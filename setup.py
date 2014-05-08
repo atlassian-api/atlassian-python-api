@@ -3,14 +3,12 @@ from setuptools import setup
 
 
 assert sys.version_info >= (2, 7), "Python 2.7+ required."
-REQUIREMENTS = [i.strip() for i in open("requirements.txt").readlines()]
-
 
 setup(
     name="atlassian-python-api",
     description="Atlassian Python API",
     license="Apache License 2.0",
-    version="0.2.1",
+    version="0.2.2",
     download_url="https://github.com/AgileBoss/atlassian-python-api",
 
     author="Matt Harasymczuk",
@@ -23,7 +21,7 @@ setup(
     include_package_data=True,
 
     zip_safe=False,
-    install_requires=REQUIREMENTS,
+    install_requires=["requests==2.2.1"],
 
     classifiers=[
         "Development Status :: 4 - Beta",
