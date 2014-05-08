@@ -12,7 +12,7 @@ class Atlassian:
         url = "{0}{1}".format(self.url, path)
         return requests.get(url, auth=(self.username, self.password))
 
-    def post(self, path, data):
+    def post(self, path, data=None):
         url = "{0}{1}".format(self.url, path)
         return requests.post(url, data, auth=(self.username, self.password))
 
