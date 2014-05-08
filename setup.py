@@ -1,11 +1,13 @@
 import sys
 from setuptools import setup
 
+
 assert sys.version_info >= (2, 7), "Python 2.7+ required."
 REQUIREMENTS = [i.strip() for i in open("requirements.txt").readlines()]
 
+
 setup(
-    name="atlassian-cli",
+    name="atlassian-python-api",
     description="Atlassian Python API",
     license="Apache License 2.0",
     version="0.1.0",
@@ -15,7 +17,7 @@ setup(
     author_email="code@agileboss.org",
     url="http://www.agileboss.org/",
 
-    packages=[],
+    packages=["atlassian"],
     package_data={"": ["LICENSE", "README"], "atlassian": ["*.py"]},
     package_dir={"atlassian": "atlassian"},
     include_package_data=True,
