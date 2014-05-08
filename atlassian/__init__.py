@@ -1,3 +1,4 @@
+import json
 import requests
 
 
@@ -8,17 +9,18 @@ class Atlassian:
         self.username = username
         self.password = password
 
-    def get(self, path):
+    def get(self, path, headers={"Content-Type": "application/json", "Accept": "application/json"}):
         url = "{0}{1}".format(self.url, path)
-        return requests.get(url, auth=(self.username, self.password))
+        return requests.get(url, headers=headers, auth=(self.username, self.password))
 
-    def post(self, path, data=None):
+    def post(self, path, data=None, headers={"Content-Type": "application/json", "Accept": "application/json"}):
         url = "{0}{1}".format(self.url, path)
-        return requests.post(url, data, auth=(self.username, self.password))
+        return requests.post(url, json.dumps(data), headers=headers, auth=(self.username, self.password))
 
-    def delete(self, path):
+    def delete(self, path, headers={"Content-Type": "application/json", "Accept": "application/json"}):
         url = "{0}{1}".format(self.url, path)
-        return requests.delete(url, auth=(self.username, self.password))
+        return requests.delete(url, headers=headers, auth=(self.username, self.password))
 
 
+from .confluence import Confluence
 from .jira import Jira
