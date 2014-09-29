@@ -11,7 +11,7 @@ class Atlassian:
 
     def get(self, path, headers={"Content-Type": "application/json", "Accept": "application/json"}):
         url = "{0}{1}".format(self.url, path)
-        return requests.get(url, headers=headers, auth=(self.username, self.password))
+        return requests.get(url, headers=headers, auth=(self.username, self.password), timeout=60)
 
     def post(self, path, data=None, headers={"Content-Type": "application/json", "Accept": "application/json"}):
         url = "{0}{1}".format(self.url, path)
