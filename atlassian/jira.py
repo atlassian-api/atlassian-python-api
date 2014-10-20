@@ -32,3 +32,9 @@ class Jira(Atlassian):
                 "lead_name": lead["displayName"],
                 "lead_key": lead["key"],
                 "lead_email": lead["emailAddress"]}
+
+    def rename_sprint(self, sprint_id, name, start_date, end_date):
+        return self.put("/rest/greenhopper/1.0/sprint/{0}".format(sprint_id), data={
+            "name": name,
+            "startDate": start_date,
+            "endDate": end_date})

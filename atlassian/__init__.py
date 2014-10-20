@@ -17,6 +17,10 @@ class Atlassian:
         url = "{0}{1}".format(self.url, path)
         return requests.post(url, json.dumps(data), headers=headers, auth=(self.username, self.password))
 
+    def put(self, path, data=None, headers={"Content-Type": "application/json", "Accept": "application/json"}):
+        url = "{0}{1}".format(self.url, path)
+        return requests.put(url, json.dumps(data), headers=headers, auth=(self.username, self.password))
+
     def delete(self, path, headers={"Content-Type": "application/json", "Accept": "application/json"}):
         url = "{0}{1}".format(self.url, path)
         return requests.delete(url, headers=headers, auth=(self.username, self.password))
