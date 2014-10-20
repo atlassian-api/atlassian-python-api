@@ -2,18 +2,18 @@ import sys
 from setuptools import setup
 
 
-assert sys.version_info >= (2, 7), "Python 2.7+ required."
+assert sys.version_info >= (3, 4), "Python 3.4+ required."
 
 setup(
     name="atlassian-python-api",
     description="Atlassian Python API",
     license="Apache License 2.0",
-    version="0.2.2",
-    download_url="https://github.com/AgileBoss/atlassian-python-api",
+    version="0.3.0",
+    download_url="https://github.com/MattAgile/atlassian-python-api",
 
     author="Matt Harasymczuk",
-    author_email="code@agileboss.org",
-    url="http://www.agileboss.org/",
+    author_email="code@mattagile.com",
+    url="http://www.mattagile.com/",
 
     packages=["atlassian"],
     package_data={"": ["LICENSE", "README"], "atlassian": ["*.py"]},
@@ -21,7 +21,7 @@ setup(
     include_package_data=True,
 
     zip_safe=False,
-    install_requires=["requests==2.2.1"],
+    install_requires=["requests==2.4.3"],
 
     classifiers=[
         "Development Status :: 4 - Beta",
@@ -35,12 +35,7 @@ setup(
         "Operating System :: MacOS :: MacOS X",
         "Operating System :: Microsoft :: Windows",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.1",
-        "Programming Language :: Python :: 3.2",
-        "Programming Language :: Python :: 3.3",
         "Programming Language :: Python :: 3.4",
         "Topic :: Internet",
         "Topic :: Internet :: WWW/HTTP",

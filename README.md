@@ -14,5 +14,5 @@ Usage
 -----
 
 * Install module
-* Checkout examples :}
+* Check examples :}
 
