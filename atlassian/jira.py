@@ -21,6 +21,9 @@ class Jira(Atlassian):
     def project(self, key):
         return self.get("/rest/api/2/project/{0}".format(key))
 
+    def issue(self, key):
+        return self.get("/rest/api/2/issue/{0}".format(key))
+
     def project_leaders(self):
         for project in self.projects().json():
             key = project["key"]
