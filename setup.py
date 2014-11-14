@@ -13,7 +13,7 @@ setup(
 
     author="Matt Harasymczuk",
     author_email="code@mattagile.com",
-    url="http://www.mattagile.com/",
+    url="http://mattagile.com/",
 
     packages=["atlassian"],
     package_data={"": ["LICENSE", "README"], "atlassian": ["*.py"]},
@@ -28,7 +28,7 @@ setup(
         "Environment :: Web Environment",
         "Intended Audience :: Developers",
         "Intended Audience :: System Administrators",
-        "License :: OSI Approved :: Apache License 2.0",
+        "License :: OSI Approved :: Apache Software License",
         "Natural Language :: English",
         "Operating System :: OS Independent",
         "Operating System :: POSIX",
