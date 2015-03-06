@@ -9,5 +9,5 @@ jira = Jira(
     username="admin",
     password="admin")
 
-data = jira.jql(JQL).json()
+data = jira.jql(JQL)
 pprint(data)

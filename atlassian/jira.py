@@ -1,7 +1,13 @@
-from atlassian import Atlassian
+import logging
+from atlassian import AtlassianRestAPI
 
 
-class Jira(Atlassian):
+logging.basicConfig(level=logging.INFO, format="[%(asctime).19s] [%(levelname)s] %(message)s")
+logging.getLogger("requests").setLevel(logging.WARNING)
+log = logging.getLogger("atlassian.jira")
+
+
+class Jira(AtlassianRestAPI):
 
     def reindex_status(self):
         return self.get("/rest/api/2/reindex")
@@ -24,11 +30,14 @@ class Jira(Atlassian):
     def issue(self, key):
         return self.get("/rest/api/2/issue/{0}".format(key))
 
+    def update_issue_field(self, key, fields):
+        return self.put("/rest/api/2/issue/{0}".format(key), data={"fields": fields})
+
     def project_leaders(self):
-        for project in self.projects().json():
+        for project in self.projects():
             key = project["key"]
-            project_data = self.project(key).json()
-            lead = self.user(project_data["lead"]["key"]).json()
+            project_data = self.project(key)
+            lead = self.user(project_data["lead"]["key"])
             yield {
                 "project_key": key,
                 "project_name": project["name"],

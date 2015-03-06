@@ -7,9 +7,9 @@ confluence = Confluence(
     username="admin",
     password="admin")
 
-status = confluence.create_page(
-    space="DEMO",
-    title="This is the title",
-    body="This is the body")
+status = confluence.update_page(
+    page_id=123456,
+    title="This is the new title",
+    body="This is the new body")
 
 pprint(status)
