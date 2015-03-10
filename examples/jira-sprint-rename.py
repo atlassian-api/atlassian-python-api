@@ -8,8 +8,8 @@ jira = Jira(
     password="admin")
 
 data = jira.rename_sprint(
-    sprint_id=195,
-    name="2014-10 week 3 - Tools",
+    sprint_id=10,
+    name="Here's the name of my new sprint",
     start_date="2014-10-13 11:44",
     end_date="2014-10-20 09:34")
 
