@@ -2,7 +2,6 @@ import json
 import logging
 import requests
 
-
 log = logging.getLogger("atlassian")
 
 
@@ -23,7 +22,8 @@ class AtlassianRestAPI:
             url='{0}{1}'.format(self.url, path))
         log.log(level=level, msg=message)
 
-    def request(self, method='GET', path='/', headers={'Content-Type': 'application/json', 'Accept': 'application/json'}, data=None):
+    def request(self, method='GET', path='/',
+                headers={'Content-Type': 'application/json', 'Accept': 'application/json'}, data=None):
         self.log_curl_debug(method, path, headers, data)
         response = requests.request(
             method=method,
@@ -35,8 +35,9 @@ class AtlassianRestAPI:
         if response.status_code != 200:
             self.log_curl_debug(method, path, headers, data, level=logging.WARNING)
             log.warning(response.json())
-        response.raise_for_status()
-        log.debug('Received: {0}'.format(response.json()))
+            response.raise_for_status()
+        else:
+            log.debug('Received: {0}'.format(response.json()))
         return response
 
     def get(self, path, headers={'Content-Type': 'application/json', 'Accept': 'application/json'}):
@@ -56,3 +57,5 @@ from .confluence import Confluence
 from .jira import Jira
 from .stash import Stash
 from .portfolio import Portfolio
+
+__all__ = ['Confluence', 'Jira', 'Stash', 'Portfolio']

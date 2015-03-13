@@ -2,43 +2,48 @@ import logging
 from atlassian import AtlassianRestAPI
 
 
-log = logging.getLogger("atlassian.portfolio")
+log = logging.getLogger('atlassian.portfolio')
 
 
 class Portfolio(AtlassianRestAPI):
-    
-    def plan(self, portfolio_id):
-        return self.get('/rest/roadmap/1.0/plans/{0}.json'.format(portfolio_id))
 
-    def stages(self, portfolio_id):
-        return self.get('/rest/roadmap/1.0/plans/{0}/stages.json'.format(portfolio_id))
+    def plan(self, plan_id):
+        return self.get('/rest/roadmap/1.0/plans/{0}.json'.format(plan_id))
 
-    def teams(self, portfolio_id):
-        return self.get('/rest/roadmap/1.0/plans/{0}/teams.json'.format(portfolio_id))
+    def stages(self, plan_id):
+        return self.get('/rest/roadmap/1.0/plans/{0}/stages.json'.format(plan_id))
 
-    def config(self, portfolio_id):
-        return self.get('/rest/roadmap/1.0/plans/{0}/config.json'.format(portfolio_id))
+    def teams(self, plan_id):
+        return self.get('/rest/roadmap/1.0/plans/{0}/teams.json'.format(plan_id))
 
-    def persons(self, portfolio_id):
-        return self.get('/rest/roadmap/1.0/plans/{0}/persons.json'.format(portfolio_id))
+    def config(self, plan_id):
+        return self.get('/rest/roadmap/1.0/plans/{0}/config.json'.format(plan_id))
 
-    def streams(self, portfolio_id):
-        return self.get('/rest/roadmap/1.0/plans/{0}/streams.json'.format(portfolio_id))
+    def persons(self, plan_id):
+        return self.get('/rest/roadmap/1.0/plans/{0}/persons.json'.format(plan_id))
 
-    def releases(self, portfolio_id):
-        return self.streams(portfolio_id)
+    def streams(self, plan_id):
+        return self.get('/rest/roadmap/1.0/plans/{0}/streams.json'.format(plan_id))
 
-    def themes(self, portfolio_id):
-        return self.get('/rest/roadmap/1.0/plans/{0}/themes.json'.format(portfolio_id))
+    def releases(self, plan_id):
+        return self.streams(plan_id)
 
-    def state(self, portfolio_id, plan_version):
-        return self.get('/rest/roadmap/1.0/scheduling/{0}/state.json?planVersion={1}'.format(portfolio_id, plan_version))
+    def themes(self, plan_id):
+        return self.get('/rest/roadmap/1.0/plans/{0}/themes.json'.format(plan_id))
 
-    def filter(self, portfolio_id, plan_version):
-        return self.get('/rest/roadmap/1.0/plans/{0}/workitems/filter.json?planVersion={1}'.format(portfolio_id, plan_version))
+    def state(self, plan_id, plan_version):
+        return self.get('/rest/roadmap/1.0/scheduling/{0}/state.json?planVersion={1}'.format(plan_id, plan_version))
 
-    def stage_name(self, portfolio_id, stage_id):
-        return [stage['title'] for stage in self.stages(portfolio_id)['collection'] if stage['id'] == str(stage_id)][0]
+    def filter(self, plan_id, plan_version, limit=500):
+        url = '/rest/roadmap/1.0/plans/{0}/workitems/filter.json?planVersion={1}'.format(plan_id, plan_version)
+        return self.post(url, data={'limit': limit})
 
-    def estimates_dict(self, portfolio_id, estimates):
-        return {self.stage_name(portfolio_id, stage['targetId']): stage['value'] for stage in estimates['stages']}
+    def dependencies(self, workitem_id, plan_version):
+        url = '/rest/roadmap/1.0/workitems/{0}/dependencies.json?planVersion={1}'.format(workitem_id, plan_version)
+        return self.get(url)
+
+    def stage_name(self, plan_id, stage_id):
+        return [stage['title'] for stage in self.stages(plan_id)['collection'] if stage['id'] == str(stage_id)][0]
+
+    def estimates_dict(self, plan_id, estimates):
+        return {self.stage_name(plan_id, stage['targetId']): stage['value'] for stage in estimates['stages']}
