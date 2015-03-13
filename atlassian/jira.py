@@ -2,8 +2,6 @@ import logging
 from atlassian import AtlassianRestAPI
 
 
-logging.basicConfig(level=logging.INFO, format="[%(asctime).19s] [%(levelname)s] %(message)s")
-logging.getLogger("requests").setLevel(logging.WARNING)
 log = logging.getLogger("atlassian.jira")
 
 

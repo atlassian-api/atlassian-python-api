@@ -2,8 +2,6 @@ import logging
 from atlassian import AtlassianRestAPI
 
 
-logging.basicConfig(level=logging.INFO, format="[%(asctime).19s] [%(levelname)s] %(message)s")
-logging.getLogger("requests").setLevel(logging.WARNING)
 log = logging.getLogger("atlassian.stash")
 
 
@@ -20,11 +18,9 @@ class Stash(AtlassianRestAPI):
 
     def project_users_with_administrator_permissions(self, key):
         project_administrators = [user['user'] for user in self.project_users(key) if user['permission'] == 'PROJECT_ADMIN']
-
         for group in self.project_groups_with_administrator_permissions(key):
             for user in self.group_members(group):
                 project_administrators.append(user)
-
         return project_administrators
 
     def project_groups(self, key):

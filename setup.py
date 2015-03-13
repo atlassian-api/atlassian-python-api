@@ -8,7 +8,7 @@ setup(
     name="atlassian-python-api",
     description="Atlassian Python API",
     license="Apache License 2.0",
-    version="0.6.4",
+    version="0.7.1",
     download_url="https://github.com/MattAgile/atlassian-python-api",
 
     author="Matt Harasymczuk",
