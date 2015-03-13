@@ -2,13 +2,13 @@ import sys
 from setuptools import setup
 
 
-assert sys.version_info >= (3, 4), "Python 3.4+ required."
+assert sys.version_info >= (2, 7), "Python 2.7+ required."
 
 setup(
     name="atlassian-python-api",
     description="Atlassian Python API",
     license="Apache License 2.0",
-    version="0.3.0",
+    version="0.3.1",
     download_url="https://github.com/MattAgile/atlassian-python-api",
 
     author="Matt Harasymczuk",

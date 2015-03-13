@@ -7,7 +7,7 @@ Dead simple Atlassian Python API.
 Install
 -------
 
-pip install git+https://github.com/AgileBoss/atlassian-python-api.git@master
+pip install atlassian-python-api
 
 
 Usage
