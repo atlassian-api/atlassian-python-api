@@ -16,6 +16,9 @@ class Portfolio(AtlassianRestAPI):
     def teams(self, plan_id):
         return self.get('/rest/roadmap/1.0/plans/{0}/teams.json'.format(plan_id))
 
+    def team_name(self, plan_id, team_id):
+        return [team['title'] for team in self.teams(team_id)['collection'] if team['id'] == str(team_id)][0]
+
     def config(self, plan_id):
         return self.get('/rest/roadmap/1.0/plans/{0}/config.json'.format(plan_id))
 
