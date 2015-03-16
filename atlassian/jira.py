@@ -28,6 +28,10 @@ class Jira(AtlassianRestAPI):
     def issue(self, key):
         return self.get('/rest/api/2/issue/{0}'.format(key))
 
+    def issue_field_value(self, key, field):
+        issue = self.get('/rest/api/2/issue/{0}?fields={1}'.format(key, field))
+        return issue['fields'][field]
+
     def update_issue_field(self, key, fields):
         return self.put('/rest/api/2/issue/{0}'.format(key), data={'fields': fields})
 
