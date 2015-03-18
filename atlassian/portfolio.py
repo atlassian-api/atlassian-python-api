@@ -68,15 +68,16 @@ class Portfolio(AtlassianRestAPI):
         url = '/rest/roadmap/1.0/system/filters.json?queryString={0}'.format(query_string)
         return self.get(url)
 
-    def import_issues(self, jql, limit=100):
+    def import_issues(self, jql, limit=100, exclude_linked=True, estimation_method='estimates', epic_fetch_enabled=True,
+                      load_story_points=True):
         url = '/rest/roadmap/1.0/system/import.json'
         data = {'planId': str(self.plan_id),
                 'query': jql,
-                'excludeLinked': False,
-                'epicFetchEnabled': True,
+                'excludeLinked': exclude_linked,
+                'epicFetchEnabled': epic_fetch_enabled,
                 'maxResults': limit,
-                'estimationMethod': 'estimates',
-                'loadStoryPoints': True}
+                'estimationMethod': estimation_method,
+                'loadStoryPoints': load_story_points}
         self.post(url, data=data)
 
     def dependencies(self, workitem_id, plan_version):
