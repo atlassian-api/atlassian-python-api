@@ -6,9 +6,10 @@ assert sys.version_info >= (3, 0), 'Python 3.0+ required.'
 
 setup(
     name='atlassian-python-api',
-    description='Atlassian Python API',
+    description='Python Atlassian REST API Wrapper',
+    long_description='Python Atlassian REST API Wrapper',
     license='Apache License 2.0',
-    version='0.8.5',
+    version='0.9.0',
     download_url='https://github.com/MattAgile/atlassian-python-api',
 
     author='Matt Harasymczuk',
@@ -22,6 +23,7 @@ setup(
 
     zip_safe=False,
     install_requires=['requests==2.5.3'],
+    platforms='Platform Independent',
 
     classifiers=[
         'Development Status :: 4 - Beta',
