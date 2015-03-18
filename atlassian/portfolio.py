@@ -83,10 +83,10 @@ class Portfolio(AtlassianRestAPI):
 
     def import_workitem(self, data):
         url = '/rest/roadmap/1.0/plans/bulk/{0}/workitems.json'.format(self.plan_id)
-        return self.post(url, data)
+        return self.post(url, data=data)
 
-    def get_jql_issues(self, jql, limit=500, exclude_linked=True, estimation_method='estimates', epic_fetch_enabled=True,
-                      load_story_points=True):
+    def get_jql_issues(self, jql, limit=500, exclude_linked=True, estimation_method='estimates',
+                       epic_fetch_enabled=True, load_story_points=True):
         url = '/rest/roadmap/1.0/system/import.json'
         data = {'planId': str(self.plan_id),
                 'query': jql,
@@ -95,4 +95,4 @@ class Portfolio(AtlassianRestAPI):
                 'maxResults': limit,
                 'estimationMethod': estimation_method,
                 'loadStoryPoints': load_story_points}
-        self.post(url, data=data)
+        return self.post(url, data=data)['data']['items']

@@ -1,4 +1,5 @@
 import sys
+from setuptools import find_packages
 from setuptools import setup
 
 
@@ -9,15 +10,15 @@ setup(
     description='Python Atlassian REST API Wrapper',
     long_description='Python Atlassian REST API Wrapper',
     license='Apache License 2.0',
-    version='0.9.0',
+    version='0.9.1',
     download_url='https://github.com/MattAgile/atlassian-python-api',
 
     author='Matt Harasymczuk',
     author_email='code@mattagile.com',
     url='http://mattagile.com/',
 
-    packages=['atlassian'],
-    package_data={'': ['LICENSE', 'README'], 'atlassian': ['*.py']},
+    packages=find_packages(),
+    package_data={'': ['LICENSE', 'README.rst'], 'atlassian': ['*.py']},
     package_dir={'atlassian': 'atlassian'},
     include_package_data=True,
 
@@ -47,7 +48,6 @@ setup(
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
         'Topic :: Software Development :: Libraries :: Python Modules',
-        'Topic :: Software Development :: Libraries :: Application Frameworks',
-    ],
+        'Topic :: Software Development :: Libraries :: Application Frameworks']
 )
 
