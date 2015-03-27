@@ -13,8 +13,11 @@ class Jira(AtlassianRestAPI):
     def reindex(self):
         return self.post('/rest/api/2/reindex')
 
-    def jql(self, jql, maxresults=999999):
-        return self.get('/rest/api/2/search?jql={0}&maxResults={1}'.format(jql, maxresults))
+    def jql(self, jql, fields='*all', limit=999999):
+        return self.get('/rest/api/2/search?maxResults={limit}&fields={fields}&jql={jql}'.format(
+            limit=limit,
+            fields=fields,
+            jql=jql))
 
     def projects(self):
         return self.get('/rest/api/2/project')
