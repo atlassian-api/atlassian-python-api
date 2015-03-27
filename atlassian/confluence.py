@@ -1,4 +1,5 @@
 import logging
+from requests.exceptions import HTTPError
 from atlassian import AtlassianRestAPI
 
 
@@ -6,6 +7,20 @@ log = logging.getLogger('atlassian.confluence')
 
 
 class Confluence(AtlassianRestAPI):
+
+    def page_exists(self, space, title):
+        try:
+            self.get_page_by_title(space, title)
+            return True
+        except (HTTPError, KeyError, IndexError):
+            return False
+
+    def get_page_by_title(self, space, title):
+        url = '/rest/api/content?spaceKey={space}&title={title}'.format(space=space, title=title)
+        return self.get(url)['results'][0]
+
+    def get_page_id(self, space, title):
+        return self.get_page_by_title(space, title).get('id')
 
     def create_page(self, space, parent_id, title, body):
         return self.post('/rest/api/content/', data={
