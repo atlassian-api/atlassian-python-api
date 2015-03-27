@@ -45,18 +45,31 @@ class Confluence(AtlassianRestAPI):
     def history(self, page_id):
         return self.get('/rest/api/content/{0}/history'.format(page_id))
 
+    def is_page_content_is_already_updated(self, page_id, body):
+        confluence_content = self.get_page_by_id(page_id, expand='body.storage')['body']['storage']['value']
+
+        if confluence_content == body:
+            log.warning('Content of {page_id} is exactly the same'.format(page_id=page_id))
+            return True
+        else:
+            log.info('Content of {page_id} differs'.format(page_id=page_id))
+            return False
+
     def update_page(self, parent_id, page_id, title, body, type='page'):
-        version = self.history(page_id)['lastUpdated']['number'] + 1
         log.info('Updating {type} "{title}"'.format(title=title, type=type))
-        return self.put('/rest/api/content/{0}'.format(page_id), data={
-            'id': page_id,
-            'type': type,
-            'ancestors': [{'type': 'page', 'id': parent_id}],
-            'title': title,
-            'body': {'storage': {
-                'value': body,
-                'representation': 'storage'}},
-            'version': {'number': version}})
+        if self.is_page_content_is_already_updated(page_id, body):
+            return self.get_page_by_id(page_id)
+        else:
+            version = self.history(page_id)['lastUpdated']['number'] + 1
+            return self.put('/rest/api/content/{0}'.format(page_id), data={
+                'id': page_id,
+                'type': type,
+                'ancestors': [{'type': 'page', 'id': parent_id}],
+                'title': title,
+                'body': {'storage': {
+                    'value': body,
+                    'representation': 'storage'}},
+                'version': {'number': version}})
 
     def update_or_create(self, parent_id, title, body):
         space = self.get_page_space(parent_id)
