@@ -47,6 +47,10 @@ class Confluence(AtlassianRestAPI):
 
     def is_page_content_is_already_updated(self, page_id, body):
         confluence_content = self.get_page_by_id(page_id, expand='body.storage')['body']['storage']['value']
+        confluence_content = confluence_content.replace('&oacute;', 'ó')
+
+        log.debug('Old Content: """{body}"""'.format(body=confluence_content))
+        log.debug('New Content: """{body}"""'.format(body=body))
 
         if confluence_content == body:
             log.warning('Content of {page_id} is exactly the same'.format(page_id=page_id))
