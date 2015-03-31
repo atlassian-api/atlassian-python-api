@@ -16,18 +16,22 @@ def is_email(string):
     """
     email_regex = r'^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]*$'
 
-    if not re.match(email_regex, string):
+    if isinstance(string, str) and not re.match(email_regex, string):
         return False
     else:
         return True
 
 
-def html_email(address):
+def html_email(email, title=None):
     """
     >>> html_email('username@example.com')
     '<a href="mailto:username@example.com">username@example.com</a>'
     """
-    return '<a href="mailto:{0}">{0}</a>'.format(address)
+
+    if not title:
+        title = email
+
+    return '<a href="mailto:{email}">{title}</a>'.format(email=email, title=title)
 
 
 def html_list(data):
@@ -37,10 +41,18 @@ def html_list(data):
     """
     html = '<ul>'
 
-    for li in data:
-        if is_email(li):
-            li = html_email(li)
-        html += '<li>{}</li>'.format(li)
+    for item in data:
+
+        if isinstance(item, dict):
+            if item.get('email'):
+                item = html_email(item.get('email'), item.get('name', None))
+            elif item.get('name'):
+                item = item.get('name')
+
+        if is_email(item):
+            item = html_email(item, item)
+
+        html += '<li>{}</li>'.format(item)
 
     return html + '</ul>'
 
