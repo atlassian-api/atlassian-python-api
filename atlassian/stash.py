@@ -95,3 +95,13 @@ class Stash(AtlassianRestAPI):
             ref_to=ref_to,
             limit=limit)
         return self.get(url)['values']
+
+    def get_content_of_file(self, project, repository, filename):
+        url = '/projects/{project}/repos/{repository}/browse/{filename}?raw'.format(
+            project=project,
+            repository=repository,
+            filename=filename
+        )
+        return self.get(url)
+
+
