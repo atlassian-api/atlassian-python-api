@@ -100,8 +100,5 @@ class Stash(AtlassianRestAPI):
         url = '/projects/{project}/repos/{repository}/browse/{filename}?raw'.format(
             project=project,
             repository=repository,
-            filename=filename
-        )
+            filename=filename)
         return self.get(url)
-
-
