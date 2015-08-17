@@ -32,22 +32,32 @@ class AtlassianRestAPI:
             data=json.dumps(data),
             auth=(self.username, self.password),
             timeout=60)
-        if response.status_code != 200:
-            self.log_curl_debug(method=method, path=path, headers=headers, data=data, level=logging.WARNING)
-            log.warning(response.json())
-            response.raise_for_status()
-        else:
+        if response.status_code == 200:
             log.debug('Received: {0}'.format(response.json()))
+        elif response.status_code == 204:
+            log.debug('Received "204 No Content" response')
+        else:
+            self.log_curl_debug(method=method, path=path, headers=headers, data=data, level=logging.DEBUG)
+            log.info(response.json())
+            response.raise_for_status()
         return response
 
     def get(self, path, data=None, headers={'Content-Type': 'application/json', 'Accept': 'application/json'}):
         return self.request('GET', path=path, data=data, headers=headers).json()
 
     def post(self, path, data=None, headers={'Content-Type': 'application/json', 'Accept': 'application/json'}):
-        return self.request('POST', path=path, data=data, headers=headers).json()
+        try:
+            return self.request('POST', path=path, data=data, headers=headers).json()
+        except ValueError:
+            log.debug('Received response with no content')
+            return None
 
     def put(self, path, data=None, headers={'Content-Type': 'application/json', 'Accept': 'application/json'}):
-        return self.request('PUT', path=path, data=data, headers=headers).json()
+        try:
+            return self.request('PUT', path=path, data=data, headers=headers).json()
+        except ValueError:
+            log.debug('Received response with no content')
+            return None
 
     def delete(self, path, data=None, headers={'Content-Type': 'application/json', 'Accept': 'application/json'}):
         return self.request('DELETE', path=path, data=data, headers=headers).json()
