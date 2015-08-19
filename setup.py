@@ -3,14 +3,14 @@ from setuptools import find_packages
 from setuptools import setup
 
 
-assert sys.version_info >= (3, 0), 'Python 3.0+ required.'
+assert sys.version_info >= (3, 2), 'Python 3.2+ required.'
 
 setup(
     name='atlassian-python-api',
     description='Python Atlassian REST API Wrapper',
     long_description='Python Atlassian REST API Wrapper',
     license='Apache License 2.0',
-    version='0.13.1',
+    version='0.13.2',
     download_url='https://github.com/MattAgile/atlassian-python-api',
 
     author='Matt Harasymczuk',

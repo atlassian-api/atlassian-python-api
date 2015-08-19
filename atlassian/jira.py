@@ -131,7 +131,7 @@ class Jira(AtlassianRestAPI):
 
     def get_transition_id_to_status_name(self, issuekey, status_name):
         for transition in self.get_issue_transitions(issuekey):
-            if status_name == transition['to']:
+            if status_name.lower() == transition['to'].lower():
                 return int(transition['id'])
 
     def issue_transition(self, issuekey, status):
