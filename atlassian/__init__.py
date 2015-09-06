@@ -1,6 +1,8 @@
 import json
 import logging
+from urllib.parse import urlencode, urljoin
 import requests
+
 
 log = logging.getLogger("atlassian")
 
@@ -22,12 +24,23 @@ class AtlassianRestAPI:
             url='{0}{1}'.format(self.url, path))
         log.log(level=level, msg=message)
 
-    def request(self, method='GET', path='/', data=None,
+    def resource_url(self, resource, version='latest'):
+        return '/'.join(['rest', 'api', version, resource])
+
+    def request(self, method='GET', path='/', data=None, flags=None, params=None,
                 headers={'Content-Type': 'application/json', 'Accept': 'application/json'}):
         self.log_curl_debug(method=method, path=path, headers=headers, data=data)
+        url = urljoin(self.url, path)
+        if params or flags:
+            url += '?'
+        if params:
+            url += urlencode(params or {})
+        if flags:
+            url += ('&' if params else '') + '&'.join(flags or [])
+
         response = requests.request(
             method=method,
-            url='{0}{1}'.format(self.url, path),
+            url=url,
             headers=headers,
             data=json.dumps(data),
             auth=(self.username, self.password),
@@ -42,8 +55,8 @@ class AtlassianRestAPI:
             response.raise_for_status()
         return response
 
-    def get(self, path, data=None, headers={'Content-Type': 'application/json', 'Accept': 'application/json'}):
-        return self.request('GET', path=path, data=data, headers=headers).json()
+    def get(self, path, data=None, flags=None, params=None, headers={'Content-Type': 'application/json', 'Accept': 'application/json'}):
+        return self.request('GET', path=path, flags=flags, params=params, data=data, headers=headers).json()
 
     def post(self, path, data=None, headers={'Content-Type': 'application/json', 'Accept': 'application/json'}):
         try:
@@ -60,12 +73,18 @@ class AtlassianRestAPI:
             return None
 
     def delete(self, path, data=None, headers={'Content-Type': 'application/json', 'Accept': 'application/json'}):
-        return self.request('DELETE', path=path, data=data, headers=headers).json()
+        """
+        Deletes resources at given paths.
+        :rtype: dict
+        :return: Empty dictionary to have consistent interface. Some of Atlassian rest resources don't return any content.
+        """
+        self.request('DELETE', path=path, data=data, headers=headers)
 
 
 from .confluence import Confluence
 from .jira import Jira
 from .stash import Stash
 from .portfolio import Portfolio
+from .bamboo import Bamboo
 
-__all__ = ['Confluence', 'Jira', 'Stash', 'Portfolio']
+__all__ = ['Confluence', 'Jira', 'Stash', 'Portfolio', 'Bamboo']
