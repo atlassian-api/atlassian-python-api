@@ -40,24 +40,24 @@ class Bamboo(AtlassianRestAPI):
         return self.base_list_call(resource, expand, favourite, cloverEnabled, start_index, max_results, **params)
 
     def latest_results(self, expand=None, favourite=False, cloverEnabled=False, label=None, issueKey=None,
-                           start_index=0, max_results=25):
+                       start_index=0, max_results=25):
         return self.results(expand=expand, favourite=favourite, cloverEnabled=cloverEnabled,
-                                label=label, issueKey=issueKey, start_index=start_index, max_results=max_results)
+                            label=label, issueKey=issueKey, start_index=start_index, max_results=max_results)
 
     def project_latest_results(self, project_key, expand=None, favourite=False, cloverEnabled=False, label=None, issueKey=None,
-                                   start_index=0, max_results=25):
+                               start_index=0, max_results=25):
         return self.results(project_key, expand=expand, favourite=favourite, cloverEnabled=cloverEnabled,
-                                label=label, issueKey=issueKey, start_index=start_index, max_results=max_results)
+                            label=label, issueKey=issueKey, start_index=start_index, max_results=max_results)
 
     def plan_results(self, project_key, plan_key, expand=None, favourite=False, cloverEnabled=False, label=None, issueKey=None,
-                         start_index=0, max_results=25):
+                     start_index=0, max_results=25):
         return self.results(project_key, plan_key, expand=expand, favourite=favourite, cloverEnabled=cloverEnabled,
-                                label=label, issueKey=issueKey, start_index=start_index, max_results=max_results)
+                            label=label, issueKey=issueKey, start_index=start_index, max_results=max_results)
 
     def build_result(self, project_key, plan_key, build_key, expand=None, favourite=False, cloverEnabled=False, label=None, issueKey=None,
-                   start_index=0, max_results=25):
+                     start_index=0, max_results=25):
         return self.results(project_key, plan_key, expand=expand, favourite=favourite, cloverEnabled=cloverEnabled,
-                                label=label, issueKey=issueKey, start_index=start_index, max_results=max_results)
+                            label=label, issueKey=issueKey, start_index=start_index, max_results=max_results)
 
     def reports(self, expand=None, start_index=0, max_results=25):
         params = {'start-index': start_index, 'max-results': max_results}
@@ -67,7 +67,7 @@ class Bamboo(AtlassianRestAPI):
         return self.get(self.resource_url('chart/reports'), params=params)
 
     def chart(self, reportKey, buildKeys, groupByPeriod, dateFilter=None, dateFrom=None, dateTo=None,
-                   width=None, height=None, start_index=9, max_results=25):
+              width=None, height=None, start_index=9, max_results=25):
         params = {'reportKey': reportKey, 'buildKeys': buildKeys, 'groupByPeriod': groupByPeriod,
                   'start-index': start_index, 'max-results': max_results}
         if dateFilter:
