@@ -67,7 +67,7 @@ class Confluence(AtlassianRestAPI):
             version = self.history(page_id)['lastUpdated']['number'] + 1
 
             data = {
-                id': page_id,
+                'id': page_id,
                 'type': type,
                 'title': title,
                 'body': {'storage': {
