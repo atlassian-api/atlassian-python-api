@@ -59,8 +59,9 @@ class Confluence(AtlassianRestAPI):
             log.info('Content of {page_id} differs'.format(page_id=page_id))
             return False
 
-    def update_page(self, parent_id=None, page_id, title, body, type='page'):
+    def update_page(self, parent_id, page_id, title, body, type='page'):
         log.info('Updating {type} "{title}"'.format(title=title, type=type))
+
         if self.is_page_content_is_already_updated(page_id, body):
             return self.get_page_by_id(page_id)
         else:
@@ -73,11 +74,12 @@ class Confluence(AtlassianRestAPI):
                 'body': {'storage': {
                     'value': body,
                     'representation': 'storage'}},
-                'version': {'number': version}}
+                'version': {'number': version}
             }
 
-            if parent_id is not None:
-                data['ancestors']: [{'type': 'page', 'id': parent_id}]
+            if parent_id:
+                data['ancestors'] = [{'type': 'page', 'id': parent_id}]
+
             return self.put('/rest/api/content/{0}'.format(page_id), data=data)
 
     def update_or_create(self, parent_id, title, body):
@@ -94,3 +96,4 @@ class Confluence(AtlassianRestAPI):
             url=result['_links']['tinyui']))
 
         return result
+

@@ -10,7 +10,7 @@ setup(
     description='Python Atlassian REST API Wrapper',
     long_description='Python Atlassian REST API Wrapper',
     license='Apache License 2.0',
-    version='0.14.0',
+    version='0.15.0',
     download_url='https://github.com/MattAgile/atlassian-python-api',
 
     author='Matt Harasymczuk',
@@ -23,7 +23,11 @@ setup(
     include_package_data=True,
 
     zip_safe=False,
-    install_requires=['requests==2.7.0'],
+    install_requires=['requests'],
+    extras_require={
+        'PEP8': ['pep8']
+    }
+
     platforms='Platform Independent',
 
     classifiers=[

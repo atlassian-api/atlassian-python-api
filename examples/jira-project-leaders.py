@@ -8,7 +8,7 @@ jira = Jira(
     password='admin')
 
 
-EMAIL_SUBJECT= urllib.parse.quote('Jira access to project {project_key}')
+EMAIL_SUBJECT = urllib.parse.quote('Jira access to project {project_key}')
 EMAIL_BODY = urllib.parse.quote('''Proszę o dostęp do projektu {project_key} w Jirze.
 
 Aby nadać mi odpowiednie uprawnienia przypisz mnie do roli na stronie:
