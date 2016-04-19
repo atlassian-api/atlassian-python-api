@@ -26,7 +26,7 @@ setup(
     install_requires=['requests'],
     extras_require={
         'PEP8': ['pep8']
-    }
+    },
 
     platforms='Platform Independent',
 
