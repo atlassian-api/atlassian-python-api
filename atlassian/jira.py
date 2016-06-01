@@ -20,14 +20,17 @@ class Jira(AtlassianRestAPI):
             fields=fields,
             jql=jql))
 
-    def projects(self):
-        return self.get('/rest/api/2/project')
-
     def user(self, username):
         return self.get('/rest/api/2/user?username={0}'.format(username))
 
+    def projects(self):
+        return self.get('/rest/api/2/project')
+
     def project(self, key):
         return self.get('/rest/api/2/project/{0}'.format(key))
+
+    def get_project_components(self, key):
+        return self.get('/rest/api/2/project/{0}/components'.format(key))
 
     def issue(self, key, fields='*all'):
         return self.get('/rest/api/2/issue/{0}?fields={1}'.format(key, fields))
@@ -145,3 +148,11 @@ class Jira(AtlassianRestAPI):
     def get_issue_status(self, issuekey):
         url = '/rest/api/2/issue/{issuekey}?fields=status'.format(issuekey=issuekey)
         return self.get(url)['fields']['status']['name']
+
+    def component(self, componentid):
+        return self.get('/rest/api/2/component/{componentid}'.format(componentid=componentid))
+
+    def create_component(self, component):
+        log.warning('Creating component "{name}"'.format(name=component['name']))
+        url = '/rest/api/2/component/'
+        return self.post(url, data=component)
