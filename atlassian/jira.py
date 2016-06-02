@@ -156,3 +156,7 @@ class Jira(AtlassianRestAPI):
         log.warning('Creating component "{name}"'.format(name=component['name']))
         url = '/rest/api/2/component/'
         return self.post(url, data=component)
+
+    def delete_component(self, componentid):
+        log.warning('Deleting component "{componentid}"'.format(componentid=componentid))
+        return self.delete('/rest/api/2/component/{componentid}'.format(componentid=componentid))
