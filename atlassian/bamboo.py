@@ -24,10 +24,12 @@ class Bamboo(AtlassianRestAPI):
     def plans(self, expand=None, favourite=False, cloverEnabled=False, start_index=0, max_results=25):
         return self.base_list_call("plan", expand, favourite, cloverEnabled, start_index, max_results)
 
-    def results(self, project_key=None, plan_key=None, build_number=None, expand=None, favourite=False,
+    def results(self, project_key=None, plan_key=None, job_key=None, build_number=None, expand=None, favourite=False,
                 cloverEnabled=False, label=None, issueKey=None, start_index=0, max_results=25):
         resource = "result"
-        if project_key and plan_key and build_number:
+        if project_key and plan_key and job_key and build_number:
+            resource += "/{}-{}-{}/{}".format(project_key, plan_key, job_key, build_number)
+        elif project_key and plan_key and build_number:
             resource += "/{}-{}/{}".format(project_key, plan_key, build_number)
         elif project_key and plan_key:
             resource += "/{}-{}".format(project_key, plan_key)
