@@ -21,7 +21,7 @@ setup(
     download_url='https://github.com/AstroMatt/atlassian-python-api',
 
     author='Matt Harasymczuk',
-    author_email='matt@astromatt.io',
+    author_email='matt@astrotech.io',
     url='http://devops.astrotech.io/',
 
     packages=find_packages(),
