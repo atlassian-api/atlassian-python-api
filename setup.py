@@ -22,7 +22,7 @@ setup(
 
     author='Matt Harasymczuk',
     author_email='matt@astromatt.io',
-    url='http://astrotech.io/',
+    url='http://devops.astrotech.io/',
 
     packages=find_packages(),
     package_dir={'atlassian': 'atlassian'},
