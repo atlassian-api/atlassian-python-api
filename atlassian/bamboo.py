@@ -1,5 +1,5 @@
 import logging
-from atlassian import AtlassianRestAPI
+from .rest_client import AtlassianRestAPI
 
 log = logging.getLogger('atlassian.stash')
 
