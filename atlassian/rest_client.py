@@ -4,7 +4,7 @@ from urllib.parse import urlencode, urljoin
 import requests
 
 
-log = logging.getLogger("atlassian")
+log = logging.getLogger(__name__)
 
 
 class AtlassianRestAPI:
@@ -22,7 +22,8 @@ class AtlassianRestAPI:
         if username and password:
             self._session.auth = (username, password)
 
-    def log_curl_debug(self, method, path, data=None, headers={}, level=logging.DEBUG):
+    def log_curl_debug(self, method, path, data=None, headers=None, level=logging.DEBUG):
+        headers = headers or self.default_headers
         message = "curl --silent -X {method} -u '{username}':'{password}' -H {headers} {data} '{url}'".format(
             method=method,
             username=self.username,
@@ -35,8 +36,7 @@ class AtlassianRestAPI:
     def resource_url(self, resource):
         return '/'.join([self.api_root, self.api_version, resource])
 
-    def request(self, method='GET', path='/', data=None, flags=None, params=None,
-                headers={'Content-Type': 'application/json', 'Accept': 'application/json'}):
+    def request(self, method='GET', path='/', data=None, flags=None, params=None, headers=None):
         self.log_curl_debug(method=method, path=path, headers=headers, data=data)
         url = urljoin(self.url, path)
         if params or flags:
@@ -46,7 +46,7 @@ class AtlassianRestAPI:
         if flags:
             url += ('&' if params else '') + '&'.join(flags or [])
 
-        response = requests.request(
+        headers = headers or self.default_headers
         response = self._session.request(
             method=method,
             url=url,
@@ -65,24 +65,24 @@ class AtlassianRestAPI:
             response.raise_for_status()
         return response
 
-    def get(self, path, data=None, flags=None, params=None, headers={'Content-Type': 'application/json', 'Accept': 'application/json'}):
+    def get(self, path, data=None, flags=None, params=None, headers=None):
         return self.request('GET', path=path, flags=flags, params=params, data=data, headers=headers).json()
 
-    def post(self, path, data=None, headers={'Content-Type': 'application/json', 'Accept': 'application/json'}):
+    def post(self, path, data=None, headers=None):
         try:
             return self.request('POST', path=path, data=data, headers=headers).json()
         except ValueError:
             log.debug('Received response with no content')
             return None
 
-    def put(self, path, data=None, headers={'Content-Type': 'application/json', 'Accept': 'application/json'}):
+    def put(self, path, data=None, headers=None):
         try:
             return self.request('PUT', path=path, data=data, headers=headers).json()
         except ValueError:
             log.debug('Received response with no content')
             return None
 
-    def delete(self, path, data=None, headers={'Content-Type': 'application/json', 'Accept': 'application/json'}):
+    def delete(self, path, data=None, headers=None):
         """
         Deletes resources at given paths.
         :rtype: dict
