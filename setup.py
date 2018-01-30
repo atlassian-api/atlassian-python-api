@@ -12,10 +12,14 @@ with open(os.path.join('atlassian', 'VERSION')) as file:
 with open('requirements.txt') as file:
     requirements = file.readlines()
 
+with open('README.rst') as file:
+    long_description = file.read()
+
+
 setup(
     name='atlassian-python-api',
     description='Python Atlassian REST API Wrapper',
-    long_description='Python Atlassian REST API Wrapper',
+    long_description=long_description,
     license='Apache License 2.0',
     version=version,
     download_url='https://github.com/AstroMatt/atlassian-python-api',
