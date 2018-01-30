@@ -13,6 +13,9 @@ class AtlassianRestAPI:
         self.url = url
         self.username = username
         self.password = password
+        self._session = requests.Session()
+        if username and password:
+            self._session.auth = (username, password)
 
     def log_curl_debug(self, method, path, data=None, headers={}, level=logging.DEBUG):
         message = "curl --silent -X {method} -u '{username}':'{password}' -H {headers} {data} '{url}'".format(
@@ -39,6 +42,7 @@ class AtlassianRestAPI:
             url += ('&' if params else '') + '&'.join(flags or [])
 
         response = requests.request(
+        response = self._session.request(
             method=method,
             url=url,
             headers=headers,
