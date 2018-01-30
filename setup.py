@@ -1,3 +1,4 @@
+import os
 import sys
 from setuptools import find_packages
 from setuptools import setup
@@ -5,29 +6,30 @@ from setuptools import setup
 
 assert sys.version_info >= (3, 2), 'Python 3.2+ required.'
 
+with open(os.path.join('atlassian', 'VERSION')) as file:
+    version = file.read().strip()
+
+with open('requirements.txt') as file:
+    requirements = file.readlines()
+
 setup(
     name='atlassian-python-api',
     description='Python Atlassian REST API Wrapper',
     long_description='Python Atlassian REST API Wrapper',
     license='Apache License 2.0',
-    version='0.15.1',
-    download_url='https://github.com/MattAgile/atlassian-python-api',
+    version=version,
+    download_url='https://github.com/AstroMatt/atlassian-python-api',
 
     author='Matt Harasymczuk',
-    author_email='code@mattagile.com',
-    url='http://mattagile.com/',
+    author_email='matt@astromatt.io',
+    url='http://astrotech.io/',
 
     packages=find_packages(),
-    package_data={'': ['LICENSE', 'README.rst'], 'atlassian': ['*.py']},
     package_dir={'atlassian': 'atlassian'},
     include_package_data=True,
 
     zip_safe=False,
-    install_requires=['requests'],
-    extras_require={
-        'PEP8': ['pep8']
-    },
-
+    install_requires=requirements,
     platforms='Platform Independent',
 
     classifiers=[
@@ -42,12 +44,11 @@ setup(
         'Operating System :: MacOS :: MacOS X',
         'Operating System :: Microsoft :: Windows',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.0',
-        'Programming Language :: Python :: 3.1',
         'Programming Language :: Python :: 3.2',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Topic :: Internet',
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
