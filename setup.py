@@ -26,7 +26,7 @@ setup(
 
     author='Matt Harasymczuk',
     author_email='matt@astrotech.io',
-    url='http://devops.astrotech.io/',
+    url='http://devops.astrotech.io/issue-tracker/jira.html',
 
     packages=find_packages(),
     package_dir={'atlassian': 'atlassian'},
