@@ -9,10 +9,15 @@ log = logging.getLogger("atlassian")
 
 class AtlassianRestAPI:
 
-    def __init__(self, url, username, password):
+    default_headers={'Content-Type': 'application/json', 'Accept': 'application/json'}
+
+    def __init__(self, url, username, password, timeout=60, api_root='rest/api', api_version='latest'):
         self.url = url
         self.username = username
         self.password = password
+        self.timeout = timeout
+        self.api_root = api_root
+        self.api_version = api_version
         self._session = requests.Session()
         if username and password:
             self._session.auth = (username, password)
@@ -27,8 +32,8 @@ class AtlassianRestAPI:
             url='{0}{1}'.format(self.url, path))
         log.log(level=level, msg=message)
 
-    def resource_url(self, resource, version='latest'):
-        return '/'.join(['rest', 'api', version, resource])
+    def resource_url(self, resource):
+        return '/'.join([self.api_root, self.api_version, resource])
 
     def request(self, method='GET', path='/', data=None, flags=None, params=None,
                 headers={'Content-Type': 'application/json', 'Accept': 'application/json'}):
@@ -48,7 +53,8 @@ class AtlassianRestAPI:
             headers=headers,
             data=json.dumps(data),
             auth=(self.username, self.password),
-            timeout=60)
+            timeout=self.timeout
+        )
         if response.status_code == 200:
             log.debug('Received: {0}'.format(response.json()))
         elif response.status_code == 204:
