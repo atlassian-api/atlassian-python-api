@@ -1,4 +1,4 @@
-from atlassian import Jira, Confluence, Stash, Portfolio, Bamboo
+from atlassian import Jira, Confluence, Bitbucket, Portfolio, Bamboo
 import os
 
 
@@ -27,8 +27,8 @@ class TestBasic(object):
             password=ATLASSIAN_PASSWORD
         )
 
-    def test_init_stash(self):
-        stash = Stash(
+    def test_init_bitbucket(self):
+        bitbucket = Bitbucket(
             url=STASH_URL,
             username=ATLASSIAN_USER,
             password=ATLASSIAN_PASSWORD
