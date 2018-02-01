@@ -15,7 +15,7 @@ class AtlassianRestAPI:
         self.url = url
         self.username = username
         self.password = password
-        self.timeout = timeout
+        self.timeout = int(timeout)
         self.api_root = api_root
         self.api_version = api_version
         self._session = requests.Session()
