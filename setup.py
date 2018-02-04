@@ -9,9 +9,6 @@ assert sys.version_info >= (3, 2), 'Python 3.2+ required.'
 with open(os.path.join('atlassian', 'VERSION')) as file:
     version = file.read().strip()
 
-with open('requirements.txt') as file:
-    requirements = file.readlines()
-
 with open('README.rst') as file:
     long_description = file.read()
 
@@ -33,7 +30,9 @@ setup(
     include_package_data=True,
 
     zip_safe=False,
-    install_requires=requirements,
+    install_requires=[
+        'requests'
+    ],
     platforms='Platform Independent',
 
     classifiers=[
