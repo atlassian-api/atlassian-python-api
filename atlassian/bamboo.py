@@ -1,7 +1,7 @@
 import logging
-from atlassian import AtlassianRestAPI
+from .rest_client import AtlassianRestAPI
 
-log = logging.getLogger('atlassian.stash')
+log = logging.getLogger(__name__)
 
 
 class Bamboo(AtlassianRestAPI):
@@ -108,3 +108,26 @@ class Bamboo(AtlassianRestAPI):
 
     def server_info(self):
         return self.get(self.resource_url('info'))
+
+    def agent_status(self):
+        return self.get(self.resource_url('agent'))
+
+    def activity(self):
+        return self.get('build/admin/ajax/getDashboardSummary.action')
+
+    def deployment_project(self, project_id=None):
+        resource = 'deploy/project/{}'.format(project_id) if project_id else 'deploy/project/all'
+        return self.get(self.resource_url(resource))
+
+    def deployment_environment_results(self, env_id, expand=None):
+        resource = 'deploy/environment/{environmentId}/results'.format(environmentId=env_id)
+        params = {'expand': expand}
+        return self.get(self.resource_url(resource), params=params)
+
+    def deployment_dashboard(self, project_id=None):
+        """
+        Returns the current status of each deployment environment
+        If no project id is provided, returns all projects.
+        """
+        resource = 'deploy/dashboard/{}'.format(project_id) if project_id else 'deploy/dashboard'
+        return self.get(self.resource_url(resource))
