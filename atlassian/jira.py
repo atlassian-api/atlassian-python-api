@@ -1,6 +1,6 @@
 import logging
 from requests.exceptions import HTTPError
-from atlassian import AtlassianRestAPI
+from .rest_client import AtlassianRestAPI
 
 
 log = logging.getLogger('atlassian.jira')
