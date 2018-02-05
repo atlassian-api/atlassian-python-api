@@ -1,5 +1,5 @@
 from pprint import pprint
-from atlassian import Stash
+from atlassian import Bitbucket
 
 
 def html(project):
@@ -8,10 +8,11 @@ def html(project):
         html += '\n\t<li><a href="mailto:{email}">{name}</a></li>'.format(**user)
     return html + '</ul></td></tr>\n'
 
-stash = Stash(
+bitbucket = Bitbucket(
     url='http://localhost:7990',
     username='admin',
     password='admin')
 
-data = stash.project('DEMO')
+data = bitbucket.project('DEMO')
 pprint(html(data))
+

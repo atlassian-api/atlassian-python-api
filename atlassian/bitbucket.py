@@ -2,10 +2,10 @@ import logging
 from .rest_client import AtlassianRestAPI
 
 
-log = logging.getLogger('atlassian.stash')
+log = logging.getLogger(__name__)
 
 
-class Stash(AtlassianRestAPI):
+class Bitbucket(AtlassianRestAPI):
 
     def project_list(self):
         return self.get('/rest/api/1.0/projects')['values']
@@ -79,7 +79,7 @@ class Stash(AtlassianRestAPI):
         return self.get(url)['diffs']
 
     def get_commits(self, project, repository, hash_oldest, hash_newest, limit=99999):
-        url = '/rest/api/1.0/projects/{project}/repos/{repository}/commits?since={hash_oldest}&until={hash_newest}&limit={limit}'.format(
+        url = '/rest/api/1.0/projects/{project}/repos/{repository}/commits?since={hash_from}&until={hash_to}&limit={limit}'.format(
             project=project,
             repository=repository,
             hash_from=hash_oldest,
