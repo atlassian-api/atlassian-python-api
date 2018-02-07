@@ -44,7 +44,7 @@ And here's another example how to get issues from Jira using JQL Query:
     data = jira.jql(JQL)
     print(data)
 
-Plasease make sure, you've checked ``examples/`` directory on how to build scripts using the API.
+Please make sure, you've checked ``examples/`` directory on how to build scripts using the API.
 
 
 For Contributors

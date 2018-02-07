@@ -1,11 +1,11 @@
-from atlassian import Stash
+from atlassian import Bitbucket
 
-stash = Stash(
+bitbucket = Bitbucket(
     url='http://localhost:7990',
     username='admin',
     password='admin')
 
-changelog = stash.get_changelog(
+changelog = bitbucket.get_changelog(
     project='DEMO',
     repository='example-repository',
     ref_from='develop',
