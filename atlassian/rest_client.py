@@ -61,7 +61,10 @@ class AtlassianRestAPI:
             log.debug('Received "204 No Content" response')
         else:
             self.log_curl_debug(method=method, path=path, headers=headers, data=data, level=logging.DEBUG)
-            log.info(response.json())
+            try:
+                log.info(response.json())
+            except json.decoder.JSONDecodeError:
+                log.info(response)
             response.raise_for_status()
         return response
 
