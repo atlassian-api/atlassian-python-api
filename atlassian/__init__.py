@@ -7,4 +7,3 @@ from .bamboo import Bamboo
 from .crowd import Crowd
 
 __all__ = ['Confluence', 'Jira', 'Bitbucket', 'Portfolio', 'Bamboo', 'Stash', 'Crowd']
-
