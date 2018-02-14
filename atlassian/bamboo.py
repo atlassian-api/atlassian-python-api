@@ -138,5 +138,4 @@ class Bamboo(AtlassianRestAPI):
     def search_branches(self, plan_key, include_default_branch=True, start_index=0, max_results=25):
         return self.base_list_call('search/branches', expand=None, start_index=start_index, max_results=max_results,
                                    clover_enabled=False, favourite=False,
-                                   masterPlanKey=plan_key,
-                                   includeMasterBranch=include_default_branch)
+                                   masterPlanKey=plan_key, includeMasterBranch=include_default_branch)
