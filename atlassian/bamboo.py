@@ -18,8 +18,9 @@ class Bamboo(AtlassianRestAPI):
         params.update(kwargs)
         return self.get(self.resource_url(resource), flags=flags, params=params)
 
-    def projects(self, expand=None, favourite=False, cloverEnabled=False, start_index=0, max_results=25):
-        return self.base_list_call('project', expand, favourite, cloverEnabled, start_index, max_results)
+    def projects(self, project_key=None, expand=None, favourite=False, cloverEnabled=False, start_index=0, max_results=25):
+        resource = 'project/{}'.format(project_key) if project_key else 'project'
+        return self.base_list_call(resource, expand, favourite, cloverEnabled, start_index, max_results)
 
     def plans(self, expand=None, favourite=False, cloverEnabled=False, start_index=0, max_results=25):
         return self.base_list_call("plan", expand, favourite, cloverEnabled, start_index, max_results)
