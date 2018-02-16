@@ -6,7 +6,7 @@ log = logging.getLogger(__name__)
 
 class Bamboo(AtlassianRestAPI):
 
-    def base_list_call(self, resource, expand, favourite, cloverEnabled, start_index, max_results, **kwargs):
+    def base_list_call(self, resource, expand, favourite, clover_enabled, start_index, max_results, **kwargs):
         flags = []
         params = {'start-index': start_index, 'max-results': max_results}
         if expand:
