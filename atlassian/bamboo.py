@@ -13,20 +13,22 @@ class Bamboo(AtlassianRestAPI):
             params['expand'] = expand
         if favourite:
             flags.append('favourite')
-        if cloverEnabled:
+        if clover_enabled:
             flags.append('cloverEnabled')
         params.update(kwargs)
         return self.get(self.resource_url(resource), flags=flags, params=params)
 
-    def projects(self, project_key=None, expand=None, favourite=False, cloverEnabled=False, start_index=0, max_results=25):
+    def projects(self, project_key=None, expand=None, favourite=False, clover_enabled=False,
+                 start_index=0, max_results=25):
         resource = 'project/{}'.format(project_key) if project_key else 'project'
-        return self.base_list_call(resource, expand, favourite, cloverEnabled, start_index, max_results)
+        return self.base_list_call(resource, expand, favourite, clover_enabled, start_index, max_results,
+                                   results_key='projects', result_key='project')
 
-    def plans(self, expand=None, favourite=False, cloverEnabled=False, start_index=0, max_results=25):
-        return self.base_list_call("plan", expand, favourite, cloverEnabled, start_index, max_results)
+    def plans(self, expand=None, favourite=False, clover_enabled=False, start_index=0, max_results=25):
+        return self.base_list_call("plan", expand, favourite, clover_enabled, start_index, max_results)
 
     def results(self, project_key=None, plan_key=None, job_key=None, build_number=None, expand=None, favourite=False,
-                cloverEnabled=False, label=None, issueKey=None, start_index=0, max_results=25):
+                clover_enabled=False, label=None, issue_key=None, start_index=0, max_results=25):
         resource = "result"
         if project_key and plan_key and job_key and build_number:
             resource += "/{}-{}-{}/{}".format(project_key, plan_key, job_key, build_number)
@@ -38,29 +40,29 @@ class Bamboo(AtlassianRestAPI):
             resource += '/' + project_key
 
         params = {}
-        if issueKey:
-            params['issueKey'] = issueKey
-        return self.base_list_call(resource, expand, favourite, cloverEnabled, start_index, max_results, **params)
+        if issue_key:
+            params['issueKey'] = issue_key
+        return self.base_list_call(resource, expand, favourite, clover_enabled, start_index, max_results, **params)
 
-    def latest_results(self, expand=None, favourite=False, cloverEnabled=False, label=None, issueKey=None,
+    def latest_results(self, expand=None, favourite=False, clover_enabled=False, label=None, issue_key=None,
                        start_index=0, max_results=25):
-        return self.results(expand=expand, favourite=favourite, cloverEnabled=cloverEnabled,
-                            label=label, issueKey=issueKey, start_index=start_index, max_results=max_results)
+        return self.results(expand=expand, favourite=favourite, clover_enabled=clover_enabled,
+                            label=label, issue_key=issue_key, start_index=start_index, max_results=max_results)
 
-    def project_latest_results(self, project_key, expand=None, favourite=False, cloverEnabled=False, label=None, issueKey=None,
-                               start_index=0, max_results=25):
-        return self.results(project_key, expand=expand, favourite=favourite, cloverEnabled=cloverEnabled,
-                            label=label, issueKey=issueKey, start_index=start_index, max_results=max_results)
+    def project_latest_results(self, project_key, expand=None, favourite=False, clover_enabled=False, label=None,
+                               issue_key=None, start_index=0, max_results=25):
+        return self.results(project_key, expand=expand, favourite=favourite, clover_enabled=clover_enabled,
+                            label=label, issue_key=issue_key, start_index=start_index, max_results=max_results)
 
-    def plan_results(self, project_key, plan_key, expand=None, favourite=False, cloverEnabled=False, label=None, issueKey=None,
-                     start_index=0, max_results=25):
-        return self.results(project_key, plan_key, expand=expand, favourite=favourite, cloverEnabled=cloverEnabled,
-                            label=label, issueKey=issueKey, start_index=start_index, max_results=max_results)
+    def plan_results(self, project_key, plan_key, expand=None, favourite=False, clover_enabled=False, label=None,
+                     issue_key=None, start_index=0, max_results=25):
+        return self.results(project_key, plan_key, expand=expand, favourite=favourite, clover_enabled=clover_enabled,
+                            label=label, issue_key=issue_key, start_index=start_index, max_results=max_results)
 
-    def build_result(self, project_key, plan_key, build_key, expand=None, favourite=False, cloverEnabled=False, label=None, issueKey=None,
-                     start_index=0, max_results=25):
-        return self.results(project_key, plan_key, expand=expand, favourite=favourite, cloverEnabled=cloverEnabled,
-                            label=label, issueKey=issueKey, start_index=start_index, max_results=max_results)
+    def build_result(self, project_key, plan_key, build_key, expand=None, favourite=False, clover_enabled=False,
+                     label=None, issue_key=None, start_index=0, max_results=25):
+        return self.results(project_key, plan_key, expand=expand, favourite=favourite, clover_enabled=clover_enabled,
+                            label=label, issue_key=issue_key, start_index=start_index, max_results=max_results)
 
     def reports(self, expand=None, start_index=0, max_results=25):
         params = {'start-index': start_index, 'max-results': max_results}
@@ -69,15 +71,15 @@ class Bamboo(AtlassianRestAPI):
 
         return self.get(self.resource_url('chart/reports'), params=params)
 
-    def chart(self, reportKey, buildKeys, groupByPeriod, dateFilter=None, dateFrom=None, dateTo=None,
+    def chart(self, report_key, build_keys, group_by_period, date_filter=None, date_from=None, date_to=None,
               width=None, height=None, start_index=9, max_results=25):
-        params = {'reportKey': reportKey, 'buildKeys': buildKeys, 'groupByPeriod': groupByPeriod,
+        params = {'reportKey': report_key, 'buildKeys': build_keys, 'groupByPeriod': group_by_period,
                   'start-index': start_index, 'max-results': max_results}
-        if dateFilter:
-            params['dateFilter'] = dateFilter
-            if dateFilter == 'RANGE':
-                params['dateFrom'] = dateFrom
-                params['dateTo'] = dateTo
+        if date_filter:
+            params['dateFilter'] = date_filter
+            if date_filter == 'RANGE':
+                params['dateFrom'] = date_from
+                params['dateTo'] = date_to
         if width:
             params['width'] = width
         if height:
@@ -135,6 +137,6 @@ class Bamboo(AtlassianRestAPI):
 
     def search_branches(self, plan_key, include_default_branch=True, start_index=0, max_results=25):
         return self.base_list_call('search/branches', expand=None, start_index=start_index, max_results=max_results,
-                                   cloverEnabled=False, favourite=False,
+                                   clover_enabled=False, favourite=False,
                                    masterPlanKey=plan_key,
                                    includeMasterBranch=include_default_branch)
