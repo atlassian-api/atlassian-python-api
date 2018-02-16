@@ -122,10 +122,18 @@ class Bamboo(AtlassianRestAPI):
         resource = 'deploy/project/{}'.format(project_id) if project_id else 'deploy/project/all'
         return self.get(self.resource_url(resource))
 
-    def deployment_environment_results(self, env_id, expand=None):
+    def deployment_environment_results(self, env_id, expand=None, max_results=25):
         resource = 'deploy/environment/{environmentId}/results'.format(environmentId=env_id)
-        params = {'expand': expand}
-        return self.get(self.resource_url(resource), params=params)
+        params = {'max-result': max_results, 'start-index': 0}
+        size = 1
+        if expand:
+            params['expand'] = expand
+        while params['start-index'] < size:
+            results = self.get(self.resource_url(resource), params=params)
+            size = results['size']
+            for r in results['results']:
+                yield r
+            params['start-index'] += results['max-result']
 
     def deployment_dashboard(self, project_id=None):
         """
