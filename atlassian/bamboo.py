@@ -6,8 +6,27 @@ log = logging.getLogger(__name__)
 
 class Bamboo(AtlassianRestAPI):
 
-    def get_generator(self, path, elements_key='results', element_key='result', data=None, flags=None,
-                      params=None, headers=None):
+    def _get_generator(self, path, elements_key='results', element_key='result', data=None, flags=None,
+                       params=None, headers=None):
+        """
+        Generic method to return a generator with the results returned from Bamboo. It is intended to work for
+        responses in the form:
+        {
+            'results':
+            {
+                'size': 5,
+                'start-index': 0,
+                'max-result': 5,
+                'result': []
+            },
+            ...
+        }
+        In this case we would have elements_key='results' element_key='result'.
+        The only reason to use this generator is to abstract dealing with response pagination from the client
+
+        :param path: URI for the resource
+        :return: generator with the contents of response[elements_key][element_key]
+        """
         size = 1
         start_index = 0
         while size:
@@ -18,7 +37,6 @@ class Bamboo(AtlassianRestAPI):
             # Check if start index was reset when reaching the end of the pages list
             if results['start-index'] < start_index:
                 break
-
             for r in results[element_key]:
                 yield r
             start_index += results['max-result']
@@ -34,9 +52,9 @@ class Bamboo(AtlassianRestAPI):
             flags.append('cloverEnabled')
         params.update(kwargs)
         if 'elements_key' in kwargs and 'element_key' in kwargs:
-            return self.get_generator(self.resource_url(resource), flags=flags, params=params,
-                                      elements_key=kwargs['elements_key'],
-                                      element_key=kwargs['element_key'])
+            return self._get_generator(self.resource_url(resource), flags=flags, params=params,
+                                       elements_key=kwargs['elements_key'],
+                                       element_key=kwargs['element_key'])
         params['start-index'] = start_index
         return self.get(self.resource_url(resource), flags=flags, params=params)
 
@@ -97,6 +115,7 @@ class Bamboo(AtlassianRestAPI):
 
     def build_result(self, build_key, expand=None):
         """
+        Returns details of a specific build result
         :param expand: expands build result details on request. Possible values are: artifacts, comments, labels,
         jiraIssues, stages. stages expand is available only for top level plans. It allows to drill down to job results
         using stages.stage.results.result. All expand parameters should contain results.result prefix.
@@ -113,8 +132,8 @@ class Bamboo(AtlassianRestAPI):
 
     def reports(self, max_results=25):
         params = {'max-results': max_results}
-        return self.get_generator(self.resource_url('chart/reports'), elements_key='reports', element_key='report',
-                                  params=params)
+        return self._get_generator(self.resource_url('chart/reports'), elements_key='reports', element_key='report',
+                                   params=params)
 
     def chart(self, report_key, build_keys, group_by_period, date_filter=None, date_from=None, date_to=None,
               width=None, height=None, start_index=9, max_results=25):
