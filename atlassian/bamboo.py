@@ -95,7 +95,8 @@ class Bamboo(AtlassianRestAPI):
         params = {}
         if issue_key:
             params['issueKey'] = issue_key
-        return self.base_list_call(resource, expand, favourite, clover_enabled, start_index, max_results,
+        return self.base_list_call(resource, expand=expand, favourite=favourite, clover_enabled=clover_enabled,
+                                   start_index=start_index, max_results=max_results,
                                    elements_key='results', element_key='result', **params)
 
     def latest_results(self, expand=None, favourite=False, clover_enabled=False, label=None, issue_key=None,
