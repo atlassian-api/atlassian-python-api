@@ -6,9 +6,44 @@ log = logging.getLogger(__name__)
 
 class Bamboo(AtlassianRestAPI):
 
-    def base_list_call(self, resource, expand, favourite, clover_enabled, start_index, max_results, **kwargs):
+    def _get_generator(self, path, elements_key='results', element_key='result', data=None, flags=None,
+                       params=None, headers=None):
+        """
+        Generic method to return a generator with the results returned from Bamboo. It is intended to work for
+        responses in the form:
+        {
+            'results':
+            {
+                'size': 5,
+                'start-index': 0,
+                'max-result': 5,
+                'result': []
+            },
+            ...
+        }
+        In this case we would have elements_key='results' element_key='result'.
+        The only reason to use this generator is to abstract dealing with response pagination from the client
+
+        :param path: URI for the resource
+        :return: generator with the contents of response[elements_key][element_key]
+        """
+        size = 1
+        start_index = 0
+        while size:
+            params['start-index'] = start_index
+            response = self.get(path, data, flags, params, headers)
+            results = response[elements_key]
+            size = results['size']
+            # Check if start index was reset when reaching the end of the pages list
+            if results['start-index'] < start_index:
+                break
+            for r in results[element_key]:
+                yield r
+            start_index += results['max-result']
+
+    def base_list_call(self, resource, expand, favourite, clover_enabled, max_results, start_index=0, **kwargs):
         flags = []
-        params = {'start-index': start_index, 'max-results': max_results}
+        params = {'max-results': max_results}
         if expand:
             params['expand'] = expand
         if favourite:
@@ -16,16 +51,34 @@ class Bamboo(AtlassianRestAPI):
         if clover_enabled:
             flags.append('cloverEnabled')
         params.update(kwargs)
+        if 'elements_key' in kwargs and 'element_key' in kwargs:
+            return self._get_generator(self.resource_url(resource), flags=flags, params=params,
+                                       elements_key=kwargs['elements_key'],
+                                       element_key=kwargs['element_key'])
+        params['start-index'] = start_index
         return self.get(self.resource_url(resource), flags=flags, params=params)
 
-    def projects(self, project_key=None, expand=None, favourite=False, clover_enabled=False,
-                 start_index=0, max_results=25):
-        resource = 'project/{}'.format(project_key) if project_key else 'project'
-        return self.base_list_call(resource, expand, favourite, clover_enabled, start_index, max_results,
-                                   results_key='projects', result_key='project')
+    def projects(self, expand=None, favourite=False, clover_enabled=False, max_results=25):
+        return self.base_list_call('project', expand, favourite, clover_enabled, max_results,
+                                   elements_key='projects', element_key='project')
+
+    def project(self, project_key, expand=None, favourite=False, clover_enabled=False):
+        resource = 'project/{}'.format(project_key)
+        return self.base_list_call(resource, expand, favourite, clover_enabled, start_index=0, max_results=25)
+
+    def project_plans(self, project_key):
+        """
+        Returns a generator with the plans in a given project
+        :param project_key: Project key
+        :return: Generator with plans
+        """
+        resource = 'project/{}'.format(project_key, max_results=25)
+        return self.base_list_call(resource, expand='plans', favourite=False, clover_enabled=False, max_results=25,
+                                   elements_key='plans', element_key='plan')
 
     def plans(self, expand=None, favourite=False, clover_enabled=False, start_index=0, max_results=25):
-        return self.base_list_call("plan", expand, favourite, clover_enabled, start_index, max_results)
+        return self.base_list_call("plan", expand, favourite, clover_enabled, start_index, max_results,
+                                   elements_key='plans', element_key='plan')
 
     def results(self, project_key=None, plan_key=None, job_key=None, build_number=None, expand=None, favourite=False,
                 clover_enabled=False, label=None, issue_key=None, start_index=0, max_results=25):
@@ -42,7 +95,9 @@ class Bamboo(AtlassianRestAPI):
         params = {}
         if issue_key:
             params['issueKey'] = issue_key
-        return self.base_list_call(resource, expand, favourite, clover_enabled, start_index, max_results, **params)
+        return self.base_list_call(resource, expand=expand, favourite=favourite, clover_enabled=clover_enabled,
+                                   start_index=start_index, max_results=max_results,
+                                   elements_key='results', element_key='result', **params)
 
     def latest_results(self, expand=None, favourite=False, clover_enabled=False, label=None, issue_key=None,
                        start_index=0, max_results=25):
@@ -59,17 +114,27 @@ class Bamboo(AtlassianRestAPI):
         return self.results(project_key, plan_key, expand=expand, favourite=favourite, clover_enabled=clover_enabled,
                             label=label, issue_key=issue_key, start_index=start_index, max_results=max_results)
 
-    def build_result(self, project_key, plan_key, build_key, expand=None, favourite=False, clover_enabled=False,
-                     label=None, issue_key=None, start_index=0, max_results=25):
-        return self.results(project_key, plan_key, expand=expand, favourite=favourite, clover_enabled=clover_enabled,
-                            label=label, issue_key=issue_key, start_index=start_index, max_results=max_results)
+    def build_result(self, build_key, expand=None):
+        """
+        Returns details of a specific build result
+        :param expand: expands build result details on request. Possible values are: artifacts, comments, labels,
+        jiraIssues, stages. stages expand is available only for top level plans. It allows to drill down to job results
+        using stages.stage.results.result. All expand parameters should contain results.result prefix.
+        :param build_key: Should be in the form XX-YY[-ZZ]-99, that is, the last token should be an integer representing
+        the build number
+        """
+        try:
+            int(build_key.split('-')[-1])
+            resource = "result/{}".format(build_key)
+            return self.base_list_call(resource, expand, favourite=False, clover_enabled=False,
+                                       start_index=0, max_results=25)
+        except ValueError:
+            raise ValueError('The key "{}" does not correspond to a build result'.format(build_key))
 
-    def reports(self, expand=None, start_index=0, max_results=25):
-        params = {'start-index': start_index, 'max-results': max_results}
-        if expand:
-            params['expand'] = expand
-
-        return self.get(self.resource_url('chart/reports'), params=params)
+    def reports(self, max_results=25):
+        params = {'max-results': max_results}
+        return self._get_generator(self.resource_url('chart/reports'), elements_key='reports', element_key='report',
+                                   params=params)
 
     def chart(self, report_key, build_keys, group_by_period, date_filter=None, date_from=None, date_to=None,
               width=None, height=None, start_index=9, max_results=25):
@@ -118,14 +183,27 @@ class Bamboo(AtlassianRestAPI):
     def activity(self):
         return self.get('build/admin/ajax/getDashboardSummary.action')
 
-    def deployment_project(self, project_id=None):
-        resource = 'deploy/project/{}'.format(project_id) if project_id else 'deploy/project/all'
+    def deployment_project(self, project_id):
+        resource = 'deploy/project/{}'.format(project_id)
         return self.get(self.resource_url(resource))
 
-    def deployment_environment_results(self, env_id, expand=None):
+    def deployment_projects(self):
+        resource = 'deploy/project/all'
+        for project in self.get(self.resource_url(resource)):
+            yield project
+
+    def deployment_environment_results(self, env_id, expand=None, max_results=25):
         resource = 'deploy/environment/{environmentId}/results'.format(environmentId=env_id)
-        params = {'expand': expand}
-        return self.get(self.resource_url(resource), params=params)
+        params = {'max-result': max_results, 'start-index': 0}
+        size = 1
+        if expand:
+            params['expand'] = expand
+        while params['start-index'] < size:
+            results = self.get(self.resource_url(resource), params=params)
+            size = results['size']
+            for r in results['results']:
+                yield r
+            params['start-index'] += results['max-result']
 
     def deployment_dashboard(self, project_id=None):
         """
@@ -135,8 +213,23 @@ class Bamboo(AtlassianRestAPI):
         resource = 'deploy/dashboard/{}'.format(project_id) if project_id else 'deploy/dashboard'
         return self.get(self.resource_url(resource))
 
-    def search_branches(self, plan_key, include_default_branch=True, start_index=0, max_results=25):
-        return self.base_list_call('search/branches', expand=None, start_index=start_index, max_results=max_results,
-                                   clover_enabled=False, favourite=False,
-                                   masterPlanKey=plan_key,
-                                   includeMasterBranch=include_default_branch)
+    def search_branches(self, plan_key, include_default_branch=True, max_results=25):
+        params = {
+            'max-result': max_results,
+            'start-index': 0,
+            'masterPlanKey': plan_key,
+            'includeMasterBranch': include_default_branch
+        }
+        size = 1
+        while params['start-index'] < size:
+            results = self.get(self.resource_url('search/branches'), params=params)
+            size = results['size']
+            for r in results['searchResults']:
+                yield r
+            params['start-index'] += results['max-result']
+
+    def plan_branches(self, plan_key, expand=None, favourite=False, clover_enabled=False, max_results=25):
+        """api/1.0/plan/{projectKey}-{buildKey}/branch"""
+        resource = 'plan/{}/branch'.format(plan_key)
+        return self.base_list_call(resource, expand, favourite, clover_enabled, max_results,
+                                   elements_key='branches', element_key='branch')
