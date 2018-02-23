@@ -17,7 +17,7 @@ confluence = Confluence(
     url='http://localhost:8090',
     username='admin',
     password='admin')
-    
+
 
 html = ['<table><tr><th>Project Key</th><th>Project Name</th><th>Leader</th><th>Email</th></tr>']
 
@@ -30,7 +30,8 @@ html.append('</table><p></p><p></p>')
 
 status = confluence.create_page(
     space='DEMO',
+    parent_id=confluence.get_page_id(self, 'DEMO', 'demo'),
     title='JIRA Administrators',
-    body=''.join(html))
+    body='\r\n'.join(html))
 
 pprint(status)
