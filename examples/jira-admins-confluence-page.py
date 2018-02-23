@@ -30,7 +30,7 @@ html.append('</table><p></p><p></p>')
 
 status = confluence.create_page(
     space='DEMO',
-    parent_id=confluence.get_page_id(self, 'DEMO', 'demo'),
+    parent_id=confluence.get_page_id('DEMO', 'demo'),
     title='JIRA Administrators',
     body='\r\n'.join(html))
 
