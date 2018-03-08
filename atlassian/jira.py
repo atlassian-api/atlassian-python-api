@@ -46,12 +46,12 @@ class Jira(AtlassianRestAPI):
         for project in self.projects():
             key = project['key']
             project_data = self.project(key)
-            lead = self.user(project_data['lead']['key'])
+            lead = self.user(project_data['lead']['name'])
             yield {
                 'project_key': key,
                 'project_name': project['name'],
                 'lead_name': lead['displayName'],
-                'lead_key': lead['key'],
+                'lead_key': lead['name'],
                 'lead_email': lead['emailAddress']}
 
     def rename_sprint(self, sprint_id, name, start_date, end_date):
