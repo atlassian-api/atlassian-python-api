@@ -24,11 +24,11 @@ class Confluence(AtlassianRestAPI):
         return self.get_page_by_id(page_id, expand='space')['space']['key']
 
     def get_page_by_title(self, space, title):
-        url = '/rest/api/content?spaceKey={space}&title={title}'.format(space=space, title=title)
+        url = 'rest/api/content?spaceKey={space}&title={title}'.format(space=space, title=title)
         return self.get(url)['results'][0]
 
     def get_page_by_id(self, page_id, expand=None):
-        url = '/rest/api/content/{page_id}?expand={expand}'.format(page_id=page_id, expand=expand)
+        url = 'rest/api/content/{page_id}?expand={expand}'.format(page_id=page_id, expand=expand)
         return self.get(url)
 
     def create_page(self, space, title, body, parent_id = None, type='page'):
@@ -46,7 +46,7 @@ class Confluence(AtlassianRestAPI):
 
 
     def history(self, page_id):
-        return self.get('/rest/api/content/{0}/history'.format(page_id))
+        return self.get('rest/api/content/{0}/history'.format(page_id))
 
     def is_page_content_is_already_updated(self, page_id, body):
         confluence_content = self.get_page_by_id(page_id, expand='body.storage')['body']['storage']['value']
@@ -83,7 +83,7 @@ class Confluence(AtlassianRestAPI):
             if parent_id:
                 data['ancestors'] = [{'type': 'page', 'id': parent_id}]
 
-            return self.put('/rest/api/content/{0}'.format(page_id), data=data)
+            return self.put('rest/api/content/{0}'.format(page_id), data=data)
 
     def update_or_create(self, parent_id, title, body):
         space = self.get_page_space(parent_id)
