@@ -31,16 +31,19 @@ class Confluence(AtlassianRestAPI):
         url = '/rest/api/content/{page_id}?expand={expand}'.format(page_id=page_id, expand=expand)
         return self.get(url)
 
-    def create_page(self, space, parent_id, title, body, type='page'):
+    def create_page(self, space, title, body, parent_id = None, type='page'):
         log.info('Creating {type} "{space}" -> "{title}"'.format(space=space, title=title, type=type))
-        return self.post('/rest/api/content/', data={
+        data={
             'type': type,
-            'ancestors': [{'type': type, 'id': parent_id}],
             'title': title,
             'space': {'key': space},
             'body': {'storage': {
                 'value': body,
-                'representation': 'storage'}}})
+                'representation': 'storage'}}}
+        if parent_id:
+            data['ancestors'] = [{'type': type, 'id': parent_id}]
+        return self.post('rest/api/content/', data = data)
+
 
     def history(self, page_id):
         return self.get('/rest/api/content/{0}/history'.format(page_id))
