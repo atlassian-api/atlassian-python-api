@@ -1,4 +1,4 @@
-import logging
+import logging, os
 from requests.exceptions import HTTPError
 from .rest_client import AtlassianRestAPI
 
@@ -7,6 +7,15 @@ log = logging.getLogger('atlassian.confluence')
 
 
 class Confluence(AtlassianRestAPI):
+
+    content_types = {
+         ".gif": "image/gif",
+         ".png": "image/png",
+         ".jpg": "image/jpeg",
+         ".jpeg": "image/jpeg",
+         ".jpeg": "image/jpeg",
+         ".pdf": "application/pdf",
+    }
 
     def page_exists(self, space, title):
         try:
@@ -44,6 +53,47 @@ class Confluence(AtlassianRestAPI):
             data['ancestors'] = [{'type': type, 'id': parent_id}]
         return self.post('rest/api/content/', data = data)
 
+
+    def attach_file(self, filename, page_id = None, title = None, space = None, comment=None):
+         """
+         Attach (upload) a file to a page, if it exists it will update the
+         automatically version the new file and keep the old one.
+         :param title: The page name
+         :type  title: ``str``
+         :param space: The space name
+         :type  space: ``str``
+         :param page_id: The page id to which we would like to upload the file
+         :type  page_id: ``str``
+         :param filename: The file to upload
+         :type  filename: ``str``
+         :param comment: A comment describing this upload/file
+         :type  comment: ``str``
+         """
+         page_id = self.get_page_id(space=space, title=title) if page_id is None else page_id
+         type = 'attachment'
+         if page_id is not None:
+            extension = os.path.splitext(filename)[-1]
+            content_type = self.content_types.get(extension, "application/binary")
+            comment = comment if comment else "Uploaded {filename}.".format(filename = filename)
+            data = {
+                'type': type,
+                "fileName": filename,
+                "contentType": content_type,
+                "comment": comment,
+                "minorEdit": "true"}
+            headers = {
+                'X-Atlassian-Token': 'nocheck',
+                'Accept': 'application/json'}
+            path = 'rest/api/content/{page_id}/child/attachment'.format(page_id=page_id)
+            # Check if there is already a file with the same name
+            attachments = self.get(path=path, headers=headers, params = {'filename': filename} )
+            if attachments['size']:
+                path = path + '/' + attachments['results'][0]['id'] + '/data'
+            with open(filename, 'rb') as infile:
+                return self.post(path=path, data=data, headers=headers, files={'file': infile})
+         else:
+             log.warn("No 'page_id' found, not uploading attachments")
+             return None
 
     def history(self, page_id):
         return self.get('rest/api/content/{0}/history'.format(page_id))

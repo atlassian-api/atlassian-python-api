@@ -37,7 +37,7 @@ class AtlassianRestAPI:
     def resource_url(self, resource):
         return '/'.join([self.api_root, self.api_version, resource])
 
-    def request(self, method='GET', path='/', data=None, flags=None, params=None, headers=None):
+    def request(self, method='GET', path='/', data=None, flags=None, params=None, headers=None, files=None):
         self.log_curl_debug(method=method, path=path, headers=headers, data=data)
         url = urljoin(self.url, path)
         if params or flags:
@@ -46,16 +46,20 @@ class AtlassianRestAPI:
             url += urlencode(params or {})
         if flags:
             url += ('&' if params else '') + '&'.join(flags or [])
+        # https://github.com/requests/requests/blob/e4fc3539b43416f9e9ba6837d73b1b7392d4b242/requests/models.py#L110-L122
+        if files is None:
+            data = json.dumps(data)
 
         headers = headers or self.default_headers
         response = self._session.request(
             method=method,
             url=url,
             headers=headers,
-            data=json.dumps(data),
+            data=data,
             auth=(self.username, self.password),
             timeout=self.timeout,
-            verify=self.verify_ssl
+            verify=self.verify_ssl,
+            files=files
         )
         if response.status_code == 200:
             log.debug('Received: {0}'.format(response.json()))
@@ -73,16 +77,17 @@ class AtlassianRestAPI:
     def get(self, path, data=None, flags=None, params=None, headers=None):
         return self.request('GET', path=path, flags=flags, params=params, data=data, headers=headers).json()
 
-    def post(self, path, data=None, headers=None):
+    def post(self, path, data=None, headers=None, files=None):
         try:
-            return self.request('POST', path=path, data=data, headers=headers).json()
+            # import pdb; pdb.set_trace()
+            return self.request('POST', path=path, data=data, headers=headers, files=files).json()
         except ValueError:
             log.debug('Received response with no content')
             return None
 
-    def put(self, path, data=None, headers=None):
+    def put(self, path, data=None, headers=None, files=None):
         try:
-            return self.request('PUT', path=path, data=data, headers=headers).json()
+            return self.request('PUT', path=path, data=data, headers=headers, files=files).json()
         except ValueError:
             log.debug('Received response with no content')
             return None
