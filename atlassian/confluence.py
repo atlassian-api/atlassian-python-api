@@ -8,6 +8,15 @@ log = logging.getLogger('atlassian.confluence')
 
 class Confluence(AtlassianRestAPI):
 
+    content_types = {
+         ".gif": "image/gif",
+         ".png": "image/png",
+         ".jpg": "image/jpeg",
+         ".jpeg": "image/jpeg",
+         ".jpeg": "image/jpeg",
+         ".pdf": "application/pdf",
+    }
+
     def page_exists(self, space, title):
         try:
             self.get_page_by_title(space, title)
