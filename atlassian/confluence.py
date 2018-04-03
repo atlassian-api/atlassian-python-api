@@ -54,7 +54,7 @@ class Confluence(AtlassianRestAPI):
         return self.post('rest/api/content/', data = data)
 
 
-    def attach_file(self, filename, page_id = None, title = None, space = None):
+    def attach_file(self, filename, page_id = None, title = None, space = None, comment=None):
          """
          Attach (upload) a file to a page, if it exists it will update the
          automatically version the new file and keep the old one.
@@ -66,17 +66,20 @@ class Confluence(AtlassianRestAPI):
          :type  page_id: ``str``
          :param filename: The file to upload
          :type  filename: ``str``
+         :param comment: A comment describing this upload/file
+         :type  comment: ``str``
          """
          page_id = self.get_page_id(space=space, title=title) if page_id is None else page_id
          type = 'attachment'
          if page_id is not None:
             extension = os.path.splitext(filename)[-1]
             content_type = self.content_types.get(extension, "application/binary")
+            comment = comment if comment else "Uploaded {filename}.".format(filename = filename)
             data = {
                 'type': type,
                 "fileName": filename,
                 "contentType": content_type,
-                "comment": "Uploaded {filename}.".format(filename = filename),
+                "comment": comment,
                 "minorEdit": "true"}
             headers = {
                 'X-Atlassian-Token': 'nocheck',
