@@ -1,6 +1,9 @@
-import logging, os
-from requests.exceptions import HTTPError
+# -*- coding: utf8 -*-
+
 from .rest_client import AtlassianRestAPI
+from requests import HTTPError
+import logging
+import os
 
 
 log = logging.getLogger('atlassian.confluence')
@@ -12,7 +15,6 @@ class Confluence(AtlassianRestAPI):
          ".gif": "image/gif",
          ".png": "image/png",
          ".jpg": "image/jpeg",
-         ".jpeg": "image/jpeg",
          ".jpeg": "image/jpeg",
          ".pdf": "application/pdf",
     }
@@ -100,7 +102,7 @@ class Confluence(AtlassianRestAPI):
 
     def is_page_content_is_already_updated(self, page_id, body):
         confluence_content = self.get_page_by_id(page_id, expand='body.storage')['body']['storage']['value']
-        confluence_content = confluence_content.replace('&oacute;', 'ó')
+        confluence_content = confluence_content.replace('&oacute;', u'ó')
 
         log.debug('Old Content: """{body}"""'.format(body=confluence_content))
         log.debug('New Content: """{body}"""'.format(body=body))

@@ -4,8 +4,6 @@ from setuptools import find_packages
 from setuptools import setup
 
 
-assert sys.version_info >= (3, 2), 'Python 3.2+ required.'
-
 with open(os.path.join('atlassian', 'VERSION')) as file:
     version = file.read().strip()
 
@@ -31,7 +29,8 @@ setup(
 
     zip_safe=False,
     install_requires=[
-        'requests'
+        'requests',
+        'six'
     ],
     platforms='Platform Independent',
 

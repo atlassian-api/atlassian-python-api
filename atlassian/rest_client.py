@@ -1,13 +1,13 @@
 import json
 import logging
-from urllib.parse import urlencode, urljoin
+from six.moves.urllib.parse import urlencode, urljoin
 import requests
 
 
 log = logging.getLogger(__name__)
 
 
-class AtlassianRestAPI:
+class AtlassianRestAPI(object):
 
     default_headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
 
