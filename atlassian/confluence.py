@@ -1,14 +1,23 @@
 # -*- coding: utf8 -*-
 
-import logging
-from requests import HTTPError
 from .rest_client import AtlassianRestAPI
+from requests import HTTPError
+import logging
+import os
 
 
 log = logging.getLogger('atlassian.confluence')
 
 
 class Confluence(AtlassianRestAPI):
+
+    content_types = {
+         ".gif": "image/gif",
+         ".png": "image/png",
+         ".jpg": "image/jpeg",
+         ".jpeg": "image/jpeg",
+         ".pdf": "application/pdf",
+    }
 
     def page_exists(self, space, title):
         try:
@@ -26,26 +35,70 @@ class Confluence(AtlassianRestAPI):
         return self.get_page_by_id(page_id, expand='space')['space']['key']
 
     def get_page_by_title(self, space, title):
-        url = '/rest/api/content?spaceKey={space}&title={title}'.format(space=space, title=title)
+        url = 'rest/api/content?spaceKey={space}&title={title}'.format(space=space, title=title)
         return self.get(url)['results'][0]
 
     def get_page_by_id(self, page_id, expand=None):
-        url = '/rest/api/content/{page_id}?expand={expand}'.format(page_id=page_id, expand=expand)
+        url = 'rest/api/content/{page_id}?expand={expand}'.format(page_id=page_id, expand=expand)
         return self.get(url)
 
-    def create_page(self, space, parent_id, title, body, type='page'):
+    def create_page(self, space, title, body, parent_id = None, type='page'):
         log.info('Creating {type} "{space}" -> "{title}"'.format(space=space, title=title, type=type))
-        return self.post('/rest/api/content/', data={
+        data={
             'type': type,
-            'ancestors': [{'type': type, 'id': parent_id}],
             'title': title,
             'space': {'key': space},
             'body': {'storage': {
                 'value': body,
-                'representation': 'storage'}}})
+                'representation': 'storage'}}}
+        if parent_id:
+            data['ancestors'] = [{'type': type, 'id': parent_id}]
+        return self.post('rest/api/content/', data = data)
+
+
+    def attach_file(self, filename, page_id = None, title = None, space = None, comment=None):
+         """
+         Attach (upload) a file to a page, if it exists it will update the
+         automatically version the new file and keep the old one.
+         :param title: The page name
+         :type  title: ``str``
+         :param space: The space name
+         :type  space: ``str``
+         :param page_id: The page id to which we would like to upload the file
+         :type  page_id: ``str``
+         :param filename: The file to upload
+         :type  filename: ``str``
+         :param comment: A comment describing this upload/file
+         :type  comment: ``str``
+         """
+         page_id = self.get_page_id(space=space, title=title) if page_id is None else page_id
+         type = 'attachment'
+         if page_id is not None:
+            extension = os.path.splitext(filename)[-1]
+            content_type = self.content_types.get(extension, "application/binary")
+            comment = comment if comment else "Uploaded {filename}.".format(filename = filename)
+            data = {
+                'type': type,
+                "fileName": filename,
+                "contentType": content_type,
+                "comment": comment,
+                "minorEdit": "true"}
+            headers = {
+                'X-Atlassian-Token': 'nocheck',
+                'Accept': 'application/json'}
+            path = 'rest/api/content/{page_id}/child/attachment'.format(page_id=page_id)
+            # Check if there is already a file with the same name
+            attachments = self.get(path=path, headers=headers, params = {'filename': filename} )
+            if attachments['size']:
+                path = path + '/' + attachments['results'][0]['id'] + '/data'
+            with open(filename, 'rb') as infile:
+                return self.post(path=path, data=data, headers=headers, files={'file': infile})
+         else:
+             log.warn("No 'page_id' found, not uploading attachments")
+             return None
 
     def history(self, page_id):
-        return self.get('/rest/api/content/{0}/history'.format(page_id))
+        return self.get('rest/api/content/{0}/history'.format(page_id))
 
     def is_page_content_is_already_updated(self, page_id, body):
         confluence_content = self.get_page_by_id(page_id, expand='body.storage')['body']['storage']['value']
@@ -82,7 +135,7 @@ class Confluence(AtlassianRestAPI):
             if parent_id:
                 data['ancestors'] = [{'type': 'page', 'id': parent_id}]
 
-            return self.put('/rest/api/content/{0}'.format(page_id), data=data)
+            return self.put('rest/api/content/{0}'.format(page_id), data=data)
 
     def update_or_create(self, parent_id, title, body):
         space = self.get_page_space(parent_id)

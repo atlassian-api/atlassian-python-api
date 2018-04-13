@@ -46,12 +46,12 @@ class Jira(AtlassianRestAPI):
         for project in self.projects():
             key = project['key']
             project_data = self.project(key)
-            lead = self.user(project_data['lead']['key'])
+            lead = self.user(project_data['lead']['name'])
             yield {
                 'project_key': key,
                 'project_name': project['name'],
                 'lead_name': lead['displayName'],
-                'lead_key': lead['key'],
+                'lead_key': lead['name'],
                 'lead_email': lead['emailAddress']}
 
     def rename_sprint(self, sprint_id, name, start_date, end_date):
@@ -126,7 +126,8 @@ class Jira(AtlassianRestAPI):
 
     def get_issue_transitions(self, issuekey):
         url = '/rest/api/2/issue/{issuekey}?expand=transitions.fields&fields=status'.format(issuekey=issuekey)
-        return [{'name': transition['name'], 'id': int(transition['id']), 'to': transition['to']['name']} for transition in self.get(url)['transitions']]
+        return [{'name': transition['name'], 'id': int(transition['id']), 'to': transition['to']['name']}
+                for transition in self.get(url)['transitions']]
 
     def get_status_id_from_name(self, status_name):
         url = '/rest/api/2/status/{name}'.format(name=status_name)
