@@ -142,13 +142,12 @@ class Confluence(AtlassianRestAPI):
 
         if self.page_exists(space, title):
             page_id = self.get_page_id(space, title)
-            result = self.update_page(parent_id, page_id, title, body)
+            result = self.update_page(parent_id=parent_id, page_id=page_id, title=title, body=body)
         else:
-            result = self.create_page(space, parent_id, title, body)
+            result = self.create_page(space=space, parent_id=parent_id, title=title, body=body)
 
         log.warning('You may access your page at: {host}{url}'.format(
             host=self.url,
             url=result['_links']['tinyui']))
 
         return result
-
