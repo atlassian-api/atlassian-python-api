@@ -46,7 +46,6 @@ class AtlassianRestAPI(object):
             url += urlencode(params or {})
         if flags:
             url += ('&' if params else '') + '&'.join(flags or [])
-        # https://github.com/requests/requests/blob/e4fc3539b43416f9e9ba6837d73b1b7392d4b242/requests/models.py#L110-L122
         if files is None:
             data = json.dumps(data)
 
@@ -68,9 +67,9 @@ class AtlassianRestAPI(object):
         else:
             self.log_curl_debug(method=method, path=path, headers=headers, data=data, level=logging.DEBUG)
             try:
-                log.info(response.json())
+                log.error(response.json())
             except json.decoder.JSONDecodeError:
-                log.info(response)
+                log.error(response)
             response.raise_for_status()
         return response
 
@@ -79,7 +78,6 @@ class AtlassianRestAPI(object):
 
     def post(self, path, data=None, headers=None, files=None):
         try:
-            # import pdb; pdb.set_trace()
             return self.request('POST', path=path, data=data, headers=headers, files=files).json()
         except ValueError:
             log.debug('Received response with no content')
