@@ -4,7 +4,7 @@ from six.moves.urllib.parse import urlencode, urljoin
 import requests
 
 
-log = logging.getLogger(__name__)
+log = logging.getLogger('atlassian')
 
 
 class AtlassianRestAPI(object):
