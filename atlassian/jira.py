@@ -99,7 +99,7 @@ class Jira(AtlassianRestAPI):
             return True
 
     def issue_update(self, issuekey, fields):
-        log.warning('Updating issue "{issuekey}" with "{summary}"'.format(issuekey=issuekey, summary=fields['summary']))
+        log.warning('Updating issue "{issuekey}" with "{fields}"'.format(issuekey=issuekey, fields=fields))
         url = '/rest/api/2/issue/{0}'.format(issuekey)
         return self.put(url, data={'fields': fields})
 
