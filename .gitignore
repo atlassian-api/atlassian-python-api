@@ -1,4 +1,4 @@
-.idea/*
+.idea
 .sonarlint
 .pytest_cache
 # Created by .ignore support plugin (hsz.mobi)
