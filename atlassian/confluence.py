@@ -40,6 +40,10 @@ class Confluence(AtlassianRestAPI):
         url = 'rest/api/content/{page_id}?expand={expand}'.format(page_id=page_id, expand=expand)
         return self.get(url)
 
+    def get_draft_page_by_id(self, page_id, status='draft'):
+        url = 'rest/api/content/{page_id}?status={status}'.format(page_id=page_id, status=status)
+        return self.get(url)
+
     def get_all_pages_from_space(self, space, start=0, limit=500):
         """
         Get all pages from Space
@@ -56,6 +60,22 @@ class Confluence(AtlassianRestAPI):
     def get_all_pages_from_space_trash(self, space, start=0, limit=500, status='trashed'):
         """
         Get list of pages from trash
+        :param space:
+        :param start:
+        :param limit:
+        :param status:
+        :return:
+        """
+        url = 'rest/api/content?spaceKey={space}&limit={limit}&start={start}&status={status}'.format(space=space,
+                                                                                                     limit=limit,
+                                                                                                     start=start,
+                                                                                                     status=status)
+        return self.get(url)['results']
+
+    def get_all_draft_pages_from_space(self, space, start=0, limit=500, status='draft'):
+        """
+        Get list of draft pages from space
+        Use case is cleanup old drafts from Confluence
         :param space:
         :param start:
         :param limit:
