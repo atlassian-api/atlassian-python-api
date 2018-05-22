@@ -68,7 +68,7 @@ class Confluence(AtlassianRestAPI):
                                                                                                      status=status)
         return self.get(url)['results']
 
-    def delete_page_from_trash(self, page_id):
+    def remove_page_from_trash(self, page_id):
         """
         This method removed page from trash
         :param page_id:
