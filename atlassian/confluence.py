@@ -5,18 +5,16 @@ from requests import HTTPError
 import logging
 import os
 
-
 log = logging.getLogger('atlassian.confluence')
 
 
 class Confluence(AtlassianRestAPI):
-
     content_types = {
-         ".gif": "image/gif",
-         ".png": "image/png",
-         ".jpg": "image/jpeg",
-         ".jpeg": "image/jpeg",
-         ".pdf": "application/pdf",
+        ".gif": "image/gif",
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".pdf": "application/pdf",
     }
 
     def page_exists(self, space, title):
@@ -42,9 +40,26 @@ class Confluence(AtlassianRestAPI):
         url = 'rest/api/content/{page_id}?expand={expand}'.format(page_id=page_id, expand=expand)
         return self.get(url)
 
-    def create_page(self, space, title, body, parent_id = None, type='page'):
+    def get_all_pages_from_space(self, space, start=0, limit=500):
+        url = 'rest/api/content?spaceKey={space}&limit={limit}&start={start}'.format(space=space,
+                                                                                     limit=limit,
+                                                                                     start=start)
+        return self.get(url)['results']
+
+    def get_all_pages_from_space_trash(self, space, start=0, limit=500, status='trashed'):
+        url = 'rest/api/content?spaceKey={space}&limit={limit}&start={start}&status={status}'.format(space=space,
+                                                                                                     limit=limit,
+                                                                                                     start=start,
+                                                                                                     status=status)
+        return self.get(url)['results']
+
+    def delete_page_from_trash(self, page_id):
+        url = 'rest/api/content/{page_id}?status=trashed'.format(page_id=page_id)
+        return self.delete(url)
+
+    def create_page(self, space, title, body, parent_id=None, type='page'):
         log.info('Creating {type} "{space}" -> "{title}"'.format(space=space, title=title, type=type))
-        data={
+        data = {
             'type': type,
             'title': title,
             'space': {'key': space},
@@ -53,30 +68,33 @@ class Confluence(AtlassianRestAPI):
                 'representation': 'storage'}}}
         if parent_id:
             data['ancestors'] = [{'type': type, 'id': parent_id}]
-        return self.post('rest/api/content/', data = data)
+        return self.post('rest/api/content/', data=data)
 
+    def get_all_spaces(self, start=0, limit=500):
+        url = 'rest/api/space?limit={limit}&start={start}'.format(limit=limit, start=start)
+        return self.get(url)['results']
 
-    def attach_file(self, filename, page_id = None, title = None, space = None, comment=None):
-         """
-         Attach (upload) a file to a page, if it exists it will update the
-         automatically version the new file and keep the old one.
-         :param title: The page name
-         :type  title: ``str``
-         :param space: The space name
-         :type  space: ``str``
-         :param page_id: The page id to which we would like to upload the file
-         :type  page_id: ``str``
-         :param filename: The file to upload
-         :type  filename: ``str``
-         :param comment: A comment describing this upload/file
-         :type  comment: ``str``
-         """
-         page_id = self.get_page_id(space=space, title=title) if page_id is None else page_id
-         type = 'attachment'
-         if page_id is not None:
+    def attach_file(self, filename, page_id=None, title=None, space=None, comment=None):
+        """
+        Attach (upload) a file to a page, if it exists it will update the
+        automatically version the new file and keep the old one.
+        :param title: The page name
+        :type  title: ``str``
+        :param space: The space name
+        :type  space: ``str``
+        :param page_id: The page id to which we would like to upload the file
+        :type  page_id: ``str``
+        :param filename: The file to upload
+        :type  filename: ``str``
+        :param comment: A comment describing this upload/file
+        :type  comment: ``str``
+        """
+        page_id = self.get_page_id(space=space, title=title) if page_id is None else page_id
+        type = 'attachment'
+        if page_id is not None:
             extension = os.path.splitext(filename)[-1]
             content_type = self.content_types.get(extension, "application/binary")
-            comment = comment if comment else "Uploaded {filename}.".format(filename = filename)
+            comment = comment if comment else "Uploaded {filename}.".format(filename=filename)
             data = {
                 'type': type,
                 "fileName": filename,
@@ -88,14 +106,14 @@ class Confluence(AtlassianRestAPI):
                 'Accept': 'application/json'}
             path = 'rest/api/content/{page_id}/child/attachment'.format(page_id=page_id)
             # Check if there is already a file with the same name
-            attachments = self.get(path=path, headers=headers, params = {'filename': filename} )
+            attachments = self.get(path=path, headers=headers, params={'filename': filename})
             if attachments['size']:
                 path = path + '/' + attachments['results'][0]['id'] + '/data'
             with open(filename, 'rb') as infile:
                 return self.post(path=path, data=data, headers=headers, files={'file': infile})
-         else:
-             log.warn("No 'page_id' found, not uploading attachments")
-             return None
+        else:
+            log.warn("No 'page_id' found, not uploading attachments")
+            return None
 
     def history(self, page_id):
         return self.get('rest/api/content/{0}/history'.format(page_id))
