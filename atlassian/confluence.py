@@ -41,12 +41,27 @@ class Confluence(AtlassianRestAPI):
         return self.get(url)
 
     def get_all_pages_from_space(self, space, start=0, limit=500):
+        """
+        Get all pages from Space
+        :param space:
+        :param start:
+        :param limit:
+        :return:
+        """
         url = 'rest/api/content?spaceKey={space}&limit={limit}&start={start}'.format(space=space,
                                                                                      limit=limit,
                                                                                      start=start)
         return self.get(url)['results']
 
     def get_all_pages_from_space_trash(self, space, start=0, limit=500, status='trashed'):
+        """
+        Get list of pages from trash
+        :param space:
+        :param start:
+        :param limit:
+        :param status:
+        :return:
+        """
         url = 'rest/api/content?spaceKey={space}&limit={limit}&start={start}&status={status}'.format(space=space,
                                                                                                      limit=limit,
                                                                                                      start=start,
@@ -54,7 +69,21 @@ class Confluence(AtlassianRestAPI):
         return self.get(url)['results']
 
     def delete_page_from_trash(self, page_id):
+        """
+        This method removed page from trash
+        :param page_id:
+        :return:
+        """
         url = 'rest/api/content/{page_id}?status=trashed'.format(page_id=page_id)
+        return self.delete(url)
+
+    def remove_page(self, page_id):
+        """
+        This method removed page
+        :param page_id:
+        :return:
+        """
+        url = 'rest/api/content/{page_id}'.format(page_id=page_id)
         return self.delete(url)
 
     def create_page(self, space, title, body, parent_id=None, type='page'):
