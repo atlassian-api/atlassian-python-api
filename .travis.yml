@@ -6,6 +6,11 @@ python:
     - "3.4"
     - "3.5"
     - "3.6"
+
+matrix:
+  allow_failures:
+    - python: "3.3"
+
 install: pip install tox
 before_script: 
     - .travis/bump_version ./ minor > atlassian/VERSION
