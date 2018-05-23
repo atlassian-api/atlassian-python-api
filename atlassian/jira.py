@@ -2,7 +2,6 @@ import logging
 from requests.exceptions import HTTPError
 from .rest_client import AtlassianRestAPI
 
-
 log = logging.getLogger('atlassian.jira')
 
 
@@ -75,6 +74,19 @@ class Jira(AtlassianRestAPI):
     def get_all_project_issues(self, project, fields='*all'):
         jql = 'project = {project} ORDER BY key'.format(project=project)
         return self.jql(jql, fields=fields)['issues']
+
+    def get_all_assignable_users_from_project(self, space, start, limit):
+        """
+        Provide assignable users for project
+        :param space:
+        :param start
+        :param limit
+        :return:
+        """
+        url = "rest/api/2/user/assignable/search?project={space}&startAt={start}&maxResults={limit}".format(space=space,
+                                                                                                            start=start,
+                                                                                                            limit=limit)
+        return self.get(url)
 
     def issue_exists(self, issuekey):
         try:
