@@ -9,38 +9,38 @@ log = logging.getLogger('atlassian.jira')
 class Jira(AtlassianRestAPI):
 
     def reindex_status(self):
-        return self.get('/rest/api/2/reindex')
+        return self.get('rest/api/2/reindex')
 
     def reindex(self):
-        return self.post('/rest/api/2/reindex')
+        return self.post('rest/api/2/reindex')
 
     def jql(self, jql, fields='*all', limit=999999):
-        return self.get('/rest/api/2/search?maxResults={limit}&fields={fields}&jql={jql}'.format(
+        return self.get('rest/api/2/search?maxResults={limit}&fields={fields}&jql={jql}'.format(
             limit=limit,
             fields=fields,
             jql=jql))
 
     def user(self, username):
-        return self.get('/rest/api/2/user?username={0}'.format(username))
+        return self.get('rest/api/2/user?username={0}'.format(username))
 
     def projects(self):
-        return self.get('/rest/api/2/project')
+        return self.get('rest/api/2/project')
 
     def project(self, key):
-        return self.get('/rest/api/2/project/{0}'.format(key))
+        return self.get('rest/api/2/project/{0}'.format(key))
 
     def get_project_components(self, key):
-        return self.get('/rest/api/2/project/{0}/components'.format(key))
+        return self.get('rest/api/2/project/{0}/components'.format(key))
 
     def issue(self, key, fields='*all'):
-        return self.get('/rest/api/2/issue/{0}?fields={1}'.format(key, fields))
+        return self.get('rest/api/2/issue/{0}?fields={1}'.format(key, fields))
 
     def issue_field_value(self, key, field):
-        issue = self.get('/rest/api/2/issue/{0}?fields={1}'.format(key, field))
+        issue = self.get('rest/api/2/issue/{0}?fields={1}'.format(key, field))
         return issue['fields'][field]
 
     def update_issue_field(self, key, fields='*all'):
-        return self.put('/rest/api/2/issue/{0}'.format(key), data={'fields': fields})
+        return self.put('rest/api/2/issue/{0}'.format(key), data={'fields': fields})
 
     def project_leaders(self):
         for project in self.projects():
@@ -55,7 +55,7 @@ class Jira(AtlassianRestAPI):
                 'lead_email': lead['emailAddress']}
 
     def rename_sprint(self, sprint_id, name, start_date, end_date):
-        return self.put('/rest/greenhopper/1.0/sprint/{0}'.format(sprint_id), data={
+        return self.put('rest/greenhopper/1.0/sprint/{0}'.format(sprint_id), data={
             'name': name,
             'startDate': start_date,
             'endDate': end_date})
@@ -114,12 +114,12 @@ class Jira(AtlassianRestAPI):
 
     def issue_update(self, issuekey, fields):
         log.warning('Updating issue "{issuekey}" with "{fields}"'.format(issuekey=issuekey, fields=fields))
-        url = '/rest/api/2/issue/{0}'.format(issuekey)
+        url = 'rest/api/2/issue/{0}'.format(issuekey)
         return self.put(url, data={'fields': fields})
 
     def issue_create(self, fields):
         log.warning('Creating issue "{summary}"'.format(summary=fields['summary']))
-        url = '/rest/api/2/issue/'
+        url = 'rest/api/2/issue/'
         return self.post(url, data={'fields': fields})
 
     def issue_create_or_update(self, fields):
@@ -139,12 +139,12 @@ class Jira(AtlassianRestAPI):
         return self.issue_update(issuekey, fields)
 
     def get_issue_transitions(self, issuekey):
-        url = '/rest/api/2/issue/{issuekey}?expand=transitions.fields&fields=status'.format(issuekey=issuekey)
+        url = 'rest/api/2/issue/{issuekey}?expand=transitions.fields&fields=status'.format(issuekey=issuekey)
         return [{'name': transition['name'], 'id': int(transition['id']), 'to': transition['to']['name']}
                 for transition in self.get(url)['transitions']]
 
     def get_status_id_from_name(self, status_name):
-        url = '/rest/api/2/status/{name}'.format(name=status_name)
+        url = 'rest/api/2/status/{name}'.format(name=status_name)
         return int(self.get(url)['id'])
 
     def get_transition_id_to_status_name(self, issuekey, status_name):
@@ -156,22 +156,22 @@ class Jira(AtlassianRestAPI):
         return self.set_issue_status(issuekey, status)
 
     def set_issue_status(self, issuekey, status_name):
-        url = '/rest/api/2/issue/{issuekey}/transitions'.format(issuekey=issuekey)
+        url = 'rest/api/2/issue/{issuekey}/transitions'.format(issuekey=issuekey)
         transition_id = self.get_transition_id_to_status_name(issuekey, status_name)
         return self.post(url, data={'transition': {'id': transition_id}})
 
     def get_issue_status(self, issuekey):
-        url = '/rest/api/2/issue/{issuekey}?fields=status'.format(issuekey=issuekey)
+        url = 'rest/api/2/issue/{issuekey}?fields=status'.format(issuekey=issuekey)
         return self.get(url)['fields']['status']['name']
 
     def component(self, componentid):
-        return self.get('/rest/api/2/component/{componentid}'.format(componentid=componentid))
+        return self.get('rest/api/2/component/{componentid}'.format(componentid=componentid))
 
     def create_component(self, component):
         log.warning('Creating component "{name}"'.format(name=component['name']))
-        url = '/rest/api/2/component/'
+        url = 'rest/api/2/component/'
         return self.post(url, data=component)
 
     def delete_component(self, componentid):
         log.warning('Deleting component "{componentid}"'.format(componentid=componentid))
-        return self.delete('/rest/api/2/component/{componentid}'.format(componentid=componentid))
+        return self.delete('rest/api/2/component/{componentid}'.format(componentid=componentid))
