@@ -90,6 +90,19 @@ class Jira(AtlassianRestAPI):
             limit=limit)
         return self.get(url)
 
+    def get_all_users_from_group(self, group, include_inactive_users=False, start=0, limit=50):
+        """
+        Just wrapping method user group members
+        :param group:
+        :param include_inactive_users:
+        :param start:
+        :param limit:
+        :return:
+        """
+        url = "rest/api/2/group/member?groupname={group}&includeInactiveUsers={include_inactive}&startAt={start}&maxResults={limit}".format(
+            group=group, include_inactive=include_inactive_users, start=start, limit=limit)
+        return self.get(url)
+
     def issue_exists(self, issuekey):
         try:
             self.issue(issuekey, fields='*none')
