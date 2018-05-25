@@ -2,7 +2,7 @@
 Atlassian Python API wrapper
 ============================
 
-.. image:: https://travis-ci.org/cattz/atlassian-python-api.svg?branch=master
+.. image:: https://travis-ci.org/AstroMatt/atlassian-python-api.svg?branch=master
 
 For users
 =========
