@@ -23,6 +23,19 @@ class Jira(AtlassianRestAPI):
     def user(self, username):
         return self.get('rest/api/2/user?username={0}'.format(username))
 
+    def user_find_by_user_string(self, username, start=0, limit=50, include_inactive_users=False):
+        """
+        Fuzzy search using username and display name
+        :param username:
+        :param start:
+        :param limit:
+        :param include_inactive_users:
+        :return:
+        """
+        url = "rest/api/2/user/search?username={username}&includeInactive={include_inactive}&startAt={start}&maxResults={limit}".format(
+            username=username, include_inactive=include_inactive_users, start=start, limit=limit)
+        return self.get(url)
+
     def projects(self):
         return self.get('rest/api/2/project')
 
@@ -30,6 +43,11 @@ class Jira(AtlassianRestAPI):
         return self.get('rest/api/2/project/{0}'.format(key))
 
     def get_project_components(self, key):
+        """
+        Get project components using project key
+        :param key: str
+        :return:
+        """
         return self.get('rest/api/2/project/{0}/components'.format(key))
 
     def issue(self, key, fields='*all'):
