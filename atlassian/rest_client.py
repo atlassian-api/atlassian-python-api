@@ -1,3 +1,4 @@
+# -*- coding: utf8 -*-
 import json
 import logging
 from six.moves.urllib.parse import urlencode, urljoin
