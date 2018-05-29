@@ -56,16 +56,33 @@ class Bitbucket(AtlassianRestAPI):
         url = 'rest/api/1.0/projects/{projectKey}/repos?limit={limit}'.format(projectKey=project_key, limit=limit)
         return self.get(url)['values']
 
-    def get_branches(self, project, repository, filter='', limit=99999):
-        url = 'rest/api/1.0/projects/{project}/repos/{repository}/branches?limit={limit}&filterText={filter}'.format(
+    def get_branches(self, project, repository, filter='', limit=99999, details=True):
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/branches?limit={limit}&filterText={filter}&details={details}'.format(
             project=project,
             repository=repository,
             limit=limit,
-            filter=filter)
+            filter=filter,
+            details=details
+        )
         return self.get(url)['values']
 
-    def get_pull_requests(self, project, repository, state='OPEN', order='newest', limit=99999, start=0):
-        url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests?state={state}&limit={limit}&start={start}&order={order}'.format(
+    def delete_branch(self, project, repository, name, end_point):
+        """
+
+        :param project:
+        :param repository:
+        :param name:
+        :param end_point:
+        :return:
+        """
+        url = 'rest/branch-utils/latest/projects/{project}/repos/{repository}/branches'.format(
+            project=project,
+            repository=repository)
+        data = {"name": str(name), "endPoint": str(end_point)}
+        return self.delete(url, data=data)
+
+    def get_pull_requests(self, project, repository, state='OPEN', order='newest', limit=100, start=0):
+        url = 'rest/api/latest/projects/{project}/repos/{repository}/pull-requests?state={state}&limit={limit}&start={start}&order={order}'.format(
             project=project,
             repository=repository,
             limit=limit,
