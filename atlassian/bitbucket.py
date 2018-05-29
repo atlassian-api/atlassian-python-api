@@ -52,12 +52,26 @@ class Bitbucket(AtlassianRestAPI):
                 'project_administrators': [{'email': x['emailAddress'], 'name': x['displayName']}
                                            for x in self.project_users_with_administrator_permissions(project['key'])]}
 
+    def repo_list(self, project_key, limit=25):
+        url = 'rest/api/1.0/projects/{projectKey}/repos?limit={limit}'.format(projectKey=project_key, limit=limit)
+        return self.get(url)['values']
+
     def get_branches(self, project, repository, filter='', limit=99999):
         url = 'rest/api/1.0/projects/{project}/repos/{repository}/branches?limit={limit}&filterText={filter}'.format(
             project=project,
             repository=repository,
             limit=limit,
             filter=filter)
+        return self.get(url)['values']
+
+    def get_pull_requests(self, project, repository, state='OPEN', order='newest', limit=99999, start=0):
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests?state={state}&limit={limit}&start={start}&order={order}'.format(
+            project=project,
+            repository=repository,
+            limit=limit,
+            state=state,
+            start=start,
+            order=order)
         return self.get(url)['values']
 
     def get_tags(self, project, repository, filter='', limit=99999):
