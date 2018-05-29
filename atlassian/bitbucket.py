@@ -2,21 +2,19 @@
 import logging
 from .rest_client import AtlassianRestAPI
 
-
 log = logging.getLogger(__name__)
 
 
 class Bitbucket(AtlassianRestAPI):
-
     def project_list(self):
-        return self.get('/rest/api/1.0/projects')['values']
+        return self.get('rest/api/1.0/projects')['values']
 
     def project(self, key):
-        url = '/rest/api/1.0/projects/{0}'.format(key)
+        url = 'rest/api/1.0/projects/{0}'.format(key)
         return self.get(url)['values']
 
     def project_users(self, key, limit=99999):
-        url = '/rest/api/1.0/projects/{key}/permissions/users?limit={limit}'.format(key=key, limit=limit)
+        url = 'rest/api/1.0/projects/{key}/permissions/users?limit={limit}'.format(key=key, limit=limit)
         return self.get(url)['values']
 
     def project_users_with_administrator_permissions(self, key):
@@ -28,7 +26,7 @@ class Bitbucket(AtlassianRestAPI):
         return project_administrators
 
     def project_groups(self, key, limit=99999):
-        url = '/rest/api/1.0/projects/{key}/permissions/groups?limit={limit}'.format(key=key, limit=limit)
+        url = 'rest/api/1.0/projects/{key}/permissions/groups?limit={limit}'.format(key=key, limit=limit)
         return self.get(url)['values']
 
     def project_groups_with_administrator_permissions(self, key):
@@ -42,7 +40,7 @@ class Bitbucket(AtlassianRestAPI):
             'groups': self.project_groups(key)}
 
     def group_members(self, group, limit=99999):
-        url = '/rest/api/1.0/admin/groups/more-members?context={group}&limit={limit}'.format(group=group, limit=limit)
+        url = 'rest/api/1.0/admin/groups/more-members?context={group}&limit={limit}'.format(group=group, limit=limit)
         return self.get(url)['values']
 
     def all_project_administrators(self):
@@ -55,7 +53,7 @@ class Bitbucket(AtlassianRestAPI):
                                            for x in self.project_users_with_administrator_permissions(project['key'])]}
 
     def get_branches(self, project, repository, filter='', limit=99999):
-        url = '/rest/api/1.0/projects/{project}/repos/{repository}/branches?limit={limit}&filterText={filter}'.format(
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/branches?limit={limit}&filterText={filter}'.format(
             project=project,
             repository=repository,
             limit=limit,
@@ -71,7 +69,7 @@ class Bitbucket(AtlassianRestAPI):
         return self.get(url)['values']
 
     def get_diff(self, project, repository, path, hash_oldest, hash_newest):
-        url = '/rest/api/1.0/projects/{project}/repos/{repository}/compare/diff/{path}?from={hash_oldest}&to={hash_newest}'.format(
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/compare/diff/{path}?from={hash_oldest}&to={hash_newest}'.format(
             project=project,
             repository=repository,
             path=path,
@@ -80,7 +78,7 @@ class Bitbucket(AtlassianRestAPI):
         return self.get(url)['diffs']
 
     def get_commits(self, project, repository, hash_oldest, hash_newest, limit=99999):
-        url = '/rest/api/1.0/projects/{project}/repos/{repository}/commits?since={hash_from}&until={hash_to}&limit={limit}'.format(
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/commits?since={hash_from}&until={hash_to}&limit={limit}'.format(
             project=project,
             repository=repository,
             hash_from=hash_oldest,
@@ -89,7 +87,7 @@ class Bitbucket(AtlassianRestAPI):
         return self.get(url)['values']
 
     def get_changelog(self, project, repository, ref_from, ref_to, limit=99999):
-        url = '/rest/api/1.0/projects/{project}/repos/{repository}/compare/commits?from={ref_from}&to={ref_to}&limit={limit}'.format(
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/compare/commits?from={ref_from}&to={ref_to}&limit={limit}'.format(
             project=project,
             repository=repository,
             ref_from=ref_from,
@@ -98,7 +96,7 @@ class Bitbucket(AtlassianRestAPI):
         return self.get(url)['values']
 
     def get_content_of_file(self, project, repository, filename):
-        url = '/projects/{project}/repos/{repository}/browse/{filename}?raw'.format(
+        url = 'projects/{project}/repos/{repository}/browse/{filename}?raw'.format(
             project=project,
             repository=repository,
             filename=filename)
