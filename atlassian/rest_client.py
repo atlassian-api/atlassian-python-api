@@ -69,7 +69,7 @@ class AtlassianRestAPI(object):
             self.log_curl_debug(method=method, path=path, headers=headers, data=data, level=logging.DEBUG)
             try:
                 log.error(response.json())
-            except json.decoder.JSONDecodeError:
+            except ValueError:
                 log.error(response)
             response.raise_for_status()
         return response
