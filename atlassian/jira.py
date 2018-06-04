@@ -119,7 +119,7 @@ class Jira(AtlassianRestAPI):
         """
         url = "rest/api/2/group/member?groupname={group}&includeInactiveUsers={include_inactive}&startAt={start}&maxResults={limit}".format(
             group=group, include_inactive=include_inactive_users, start=start, limit=limit)
-        return self.get(url)
+        return self.get(url)['values']
 
     def issue_exists(self, issuekey):
         try:
