@@ -218,3 +218,8 @@ class Confluence(AtlassianRestAPI):
             url=result['_links']['tinyui']))
 
         return result
+
+    def convert_wiki_to_storage(self, wiki):
+        data = { 'value': wiki,
+                 'representation': 'wiki' }
+        return self.post('rest/api/contentbody/convert/storage', data=data)
