@@ -44,6 +44,21 @@ class Confluence(AtlassianRestAPI):
         url = 'rest/api/content/{page_id}?status={status}'.format(page_id=page_id, status=status)
         return self.get(url)
 
+    def get_all_pages_by_label(self, label, start=0, limit=50):
+        """
+        Get all page by label
+        :param label:
+        :param start:
+        :param limit:
+        :return:
+        """
+        url = 'rest/api/content/search?cql=type={type}%20AND%20label={label}&limit={limit}&start={start}'.format(
+            type='page',
+            label=label,
+            start=start,
+            limit=limit)
+        return self.get(url)
+
     def get_all_pages_from_space(self, space, start=0, limit=500):
         """
         Get all pages from Space
