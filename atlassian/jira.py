@@ -23,6 +23,14 @@ class Jira(AtlassianRestAPI):
     def user(self, username):
         return self.get('rest/api/2/user?username={0}'.format(username))
 
+    def user_remove(self, username):
+        """
+        Remove user from Jira if this user does not have any activity
+        :param username:
+        :return:
+        """
+        return self.delete('rest/api/2/user?username={0}'.format(username))
+
     def user_find_by_user_string(self, username, start=0, limit=50, include_inactive_users=False):
         """
         Fuzzy search using username and display name
