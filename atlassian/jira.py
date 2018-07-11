@@ -30,6 +30,7 @@ class Jira(AtlassianRestAPI):
         """
         return self.delete('rest/api/2/user?username={0}'.format(username))
 
+
     def user_deactivate(self, username):
         """
         Disable user
@@ -68,6 +69,7 @@ class Jira(AtlassianRestAPI):
             'webSudoPassword': self.password,
         }
         return self.post(path=url, data=data, headers=headers)
+
 
     def user_find_by_user_string(self, username, start=0, limit=50, include_inactive_users=False):
         """
