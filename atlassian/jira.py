@@ -7,7 +7,6 @@ log = logging.getLogger('atlassian.jira')
 
 
 class Jira(AtlassianRestAPI):
-
     def reindex_status(self):
         return self.get('rest/api/2/reindex')
 
@@ -30,6 +29,47 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         return self.delete('rest/api/2/user?username={0}'.format(username))
+
+
+    def user_deactivate(self, username):
+        """
+        Disable user
+        :param username:
+        :return:
+        """
+        url = 'secure/admin/user/EditUser.jspa'
+        headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', 'X-Atlassian-Token': 'no-check'}
+        user = self.user(username)
+        user_update_info = {
+            'inline': 'true',
+            'decorator': 'dialog',
+            'username': user['name'],
+            'fullName': user['displayName'],
+            'email': user['emailAddress'],
+            'editName': user['name']
+        }
+        return self.post(data=user_update_info, path=url, headers=headers)
+
+    def user_disable(self, username):
+        """Override the disable method"""
+        return self.user_deactivate(self, username)
+
+    def user_disable_throw_rest_endpoint(self, username, url='/rest/scriptrunner/latest/custom/disableUser',
+                                         param='userName'):
+        """The disable method throw own rest enpoint"""
+        url = "{}?{}={}".format(url, param, username)
+        return self.get(path=url)
+
+    def user_get_websudo(self):
+        url = 'secure/admin/WebSudoAuthenticate.jspa'
+        headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                   'X-Atlassian-Token': 'no-check'
+                   }
+        data = {
+            'webSudoPassword': self.password,
+        }
+        return self.post(path=url, data=data, headers=headers)
+
 
     def user_find_by_user_string(self, username, start=0, limit=50, include_inactive_users=False):
         """
