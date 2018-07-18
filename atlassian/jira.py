@@ -30,7 +30,6 @@ class Jira(AtlassianRestAPI):
         """
         return self.delete('rest/api/2/user?username={0}'.format(username))
 
-
     def user_deactivate(self, username):
         """
         Disable user
@@ -69,7 +68,6 @@ class Jira(AtlassianRestAPI):
             'webSudoPassword': self.password,
         }
         return self.post(path=url, data=data, headers=headers)
-
 
     def user_find_by_user_string(self, username, start=0, limit=50, include_inactive_users=False):
         """
@@ -169,31 +167,31 @@ class Jira(AtlassianRestAPI):
             group=group, include_inactive=include_inactive_users, start=start, limit=limit)
         return self.get(url)
 
-    def issue_exists(self, issuekey):
+    def issue_exists(self, issue_key):
         try:
-            self.issue(issuekey, fields='*none')
-            log.info('Issue "{issuekey}" exists'.format(issuekey=issuekey))
+            self.issue(issue_key, fields='*none')
+            log.info('Issue "{issue_key}" exists'.format(issue_key=issue_key))
             return True
         except HTTPError as e:
             if e.response.status_code == 404:
-                log.info('Issue "{issuekey}" does not exists'.format(issuekey=issuekey))
+                log.info('Issue "{issue_key}" does not exists'.format(issue_key=issue_key))
                 return False
             else:
-                log.info('Issue "{issuekey}" existsted, but now it\'s deleted'.format(issuekey=issuekey))
+                log.info('Issue "{issue_key}" existed, but now it\'s deleted'.format(issue_key=issue_key))
                 return True
 
-    def issue_deleted(self, issuekey):
+    def issue_deleted(self, issue_key):
         try:
-            self.issue(issuekey, fields='*none')
-            log.info('Issue "{issuekey}" is not deleted'.format(issuekey=issuekey))
+            self.issue(issue_key, fields='*none')
+            log.info('Issue "{issue_key}" is not deleted'.format(issue_key=issue_key))
             return False
         except HTTPError:
-            log.info('Issue "{issuekey}" is deleted'.format(issuekey=issuekey))
+            log.info('Issue "{issue_key}" is deleted'.format(issue_key=issue_key))
             return True
 
-    def issue_update(self, issuekey, fields):
-        log.warning('Updating issue "{issuekey}" with "{fields}"'.format(issuekey=issuekey, fields=fields))
-        url = 'rest/api/2/issue/{0}'.format(issuekey)
+    def issue_update(self, issue_key, fields):
+        log.warning('Updating issue "{issue_key}" with "{fields}"'.format(issue_key=issue_key, fields=fields))
+        url = 'rest/api/2/issue/{0}'.format(issue_key)
         return self.put(url, data={'fields': fields})
 
     def issue_create(self, fields):
@@ -202,23 +200,23 @@ class Jira(AtlassianRestAPI):
         return self.post(url, data={'fields': fields})
 
     def issue_create_or_update(self, fields):
-        issuekey = fields.get('issuekey', None)
+        issue_key = fields.get('issuekey', None)
 
-        if not issuekey or not self.issue_exists(issuekey):
-            log.info('Issuekey is not provided or does not exists in destination. Will attempt to create an issue')
-            del fields['issuekey']
+        if not issue_key or not self.issue_exists(issue_key):
+            log.info('IssueKey is not provided or does not exists in destination. Will attempt to create an issue')
+            del fields['issue_key']
             return self.issue_create(fields)
 
-        if self.issue_deleted(issuekey):
-            log.warning('Issue "{issuekey}" deleted, skipping'.format(issuekey=issuekey))
+        if self.issue_deleted(issue_key):
+            log.warning('Issue "{issue_key}" deleted, skipping'.format(issue_key=issue_key))
             return None
 
-        log.info('Issue "{issuekey}" exists, will update'.format(issuekey=issuekey))
-        del fields['issuekey']
-        return self.issue_update(issuekey, fields)
+        log.info('Issue "{issue_key}" exists, will update'.format(issue_key=issue_key))
+        del fields['issue_key']
+        return self.issue_update(issue_key, fields)
 
-    def get_issue_transitions(self, issuekey):
-        url = 'rest/api/2/issue/{issuekey}?expand=transitions.fields&fields=status'.format(issuekey=issuekey)
+    def get_issue_transitions(self, issue_key):
+        url = 'rest/api/2/issue/{issue_key}?expand=transitions.fields&fields=status'.format(issue_key=issue_key)
         return [{'name': transition['name'], 'id': int(transition['id']), 'to': transition['to']['name']}
                 for transition in self.get(url)['transitions']]
 
@@ -226,31 +224,31 @@ class Jira(AtlassianRestAPI):
         url = 'rest/api/2/status/{name}'.format(name=status_name)
         return int(self.get(url)['id'])
 
-    def get_transition_id_to_status_name(self, issuekey, status_name):
-        for transition in self.get_issue_transitions(issuekey):
+    def get_transition_id_to_status_name(self, issue_key, status_name):
+        for transition in self.get_issue_transitions(issue_key):
             if status_name.lower() == transition['to'].lower():
                 return int(transition['id'])
 
-    def issue_transition(self, issuekey, status):
-        return self.set_issue_status(issuekey, status)
+    def issue_transition(self, issue_key, status):
+        return self.set_issue_status(issue_key, status)
 
-    def set_issue_status(self, issuekey, status_name):
-        url = 'rest/api/2/issue/{issuekey}/transitions'.format(issuekey=issuekey)
-        transition_id = self.get_transition_id_to_status_name(issuekey, status_name)
+    def set_issue_status(self, issue_key, status_name):
+        url = 'rest/api/2/issue/{issue_key}/transitions'.format(issue_key=issue_key)
+        transition_id = self.get_transition_id_to_status_name(issue_key, status_name)
         return self.post(url, data={'transition': {'id': transition_id}})
 
-    def get_issue_status(self, issuekey):
-        url = 'rest/api/2/issue/{issuekey}?fields=status'.format(issuekey=issuekey)
+    def get_issue_status(self, issue_key):
+        url = 'rest/api/2/issue/{issue_key}?fields=status'.format(issue_key=issue_key)
         return self.get(url)['fields']['status']['name']
 
-    def component(self, componentid):
-        return self.get('rest/api/2/component/{componentid}'.format(componentid=componentid))
+    def component(self, component_id):
+        return self.get('rest/api/2/component/{component_id}'.format(component_id=component_id))
 
     def create_component(self, component):
         log.warning('Creating component "{name}"'.format(name=component['name']))
         url = 'rest/api/2/component/'
         return self.post(url, data=component)
 
-    def delete_component(self, componentid):
-        log.warning('Deleting component "{componentid}"'.format(componentid=componentid))
-        return self.delete('rest/api/2/component/{componentid}'.format(componentid=componentid))
+    def delete_component(self, component_id):
+        log.warning('Deleting component "{component_id}"'.format(component_id=component_id))
+        return self.delete('rest/api/2/component/{component_id}'.format(component_id=component_id))
