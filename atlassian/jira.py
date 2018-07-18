@@ -78,7 +78,7 @@ class Jira(AtlassianRestAPI):
         :param include_inactive_users:
         :return:
         """
-        url = "rest/api/2/user/search?username={username}&includeInactive={include_inactive}&startAt={start}&maxResults={limit}".format(
+        url = "rest/api/latest/user/search?username={username}&includeInactive={include_inactive}&startAt={start}&maxResults={limit}".format(
             username=username, include_inactive=include_inactive_users, start=start, limit=limit)
         return self.get(url)
 
