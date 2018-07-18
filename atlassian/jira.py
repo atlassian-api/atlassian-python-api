@@ -204,7 +204,7 @@ class Jira(AtlassianRestAPI):
 
         if not issue_key or not self.issue_exists(issue_key):
             log.info('IssueKey is not provided or does not exists in destination. Will attempt to create an issue')
-            del fields['issue_key']
+            del fields['issuekey']
             return self.issue_create(fields)
 
         if self.issue_deleted(issue_key):
@@ -212,7 +212,7 @@ class Jira(AtlassianRestAPI):
             return None
 
         log.info('Issue "{issue_key}" exists, will update'.format(issue_key=issue_key))
-        del fields['issue_key']
+        del fields['issuekey']
         return self.issue_update(issue_key, fields)
 
     def get_issue_transitions(self, issue_key):
