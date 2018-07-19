@@ -78,7 +78,8 @@ class Jira(AtlassianRestAPI):
         :param include_inactive_users:
         :return:
         """
-        url = "rest/api/latest/user/search?username={username}&includeInactive={include_inactive}&startAt={start}&maxResults={limit}".format(
+        url = "rest/api/2/user/search"
+        url += "?username={username}&includeInactive={include_inactive}&startAt={start}&maxResults={limit}".format(
             username=username, include_inactive=include_inactive_users, start=start, limit=limit)
         return self.get(url)
 
@@ -163,7 +164,8 @@ class Jira(AtlassianRestAPI):
         :param limit:
         :return:
         """
-        url = "rest/api/2/group/member?groupname={group}&includeInactiveUsers={include_inactive}&startAt={start}&maxResults={limit}".format(
+        url = "rest/api/2/group/member"
+        url += "?groupname={group}&includeInactiveUsers={include_inactive}&startAt={start}&maxResults={limit}".format(
             group=group, include_inactive=include_inactive_users, start=start, limit=limit)
         return self.get(url)
 
