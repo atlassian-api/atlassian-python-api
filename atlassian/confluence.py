@@ -122,6 +122,15 @@ class Confluence(AtlassianRestAPI):
         return self.delete(url)
 
     def create_page(self, space, title, body, parent_id=None, type='page'):
+        """
+        Create page from scratch
+        :param space:
+        :param title:
+        :param body:
+        :param parent_id:
+        :param type:
+        :return:
+        """
         log.info('Creating {type} "{space}" -> "{title}"'.format(space=space, title=title, type=type))
         data = {
             'type': type,
@@ -135,6 +144,11 @@ class Confluence(AtlassianRestAPI):
         return self.post('rest/api/content/', data=data)
 
     def get_all_spaces(self, start=0, limit=500):
+        """
+        Get all spaces with provided limit
+        :param start
+        :param limit
+        """
         url = 'rest/api/space?limit={limit}&start={start}'.format(limit=limit, start=start)
         return self.get(url)['results']
 
@@ -197,6 +211,15 @@ class Confluence(AtlassianRestAPI):
             return False
 
     def update_page(self, parent_id, page_id, title, body, type='page'):
+        """
+        Update page if already exist
+        :param parent_id:
+        :param page_id:
+        :param title:
+        :param body:
+        :param type:
+        :return:
+        """
         log.info('Updating {type} "{title}"'.format(title=title, type=type))
 
         if self.is_page_content_is_already_updated(page_id, body):
@@ -220,6 +243,13 @@ class Confluence(AtlassianRestAPI):
             return self.put('rest/api/content/{0}'.format(page_id), data=data)
 
     def update_or_create(self, parent_id, title, body):
+        """
+        Update page or create page if it is not exists
+        :param parent_id:
+        :param title:
+        :param body:
+        :return:
+        """
         space = self.get_page_space(parent_id)
 
         if self.page_exists(space, title):

@@ -8,6 +8,7 @@ def html(project):
         html += '\n\t<li><a href="mailto:{email}">{name}</a></li>'.format(**user)
     return html + '</ul></td></tr>\n'
 
+
 bitbucket = Bitbucket(
     url='http://localhost:7990',
     username='admin',
@@ -15,4 +16,3 @@ bitbucket = Bitbucket(
 
 data = bitbucket.project('DEMO')
 pprint(html(data))
-

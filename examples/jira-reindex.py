@@ -17,4 +17,4 @@ while not jira.reindex_status()['success']:
     print('Still reindexing...')
     sleep(1)
 
-print('Done.')
+pprint('Done.')
