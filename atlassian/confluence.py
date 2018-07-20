@@ -258,3 +258,14 @@ class Confluence(AtlassianRestAPI):
         headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', 'X-Atlassian-Token': 'no-check'}
         data = {'cacheName': cache_name}
         return self.delete('rest/cacheManagement/1.0/cacheEntries', data=data, headers=headers)
+
+    def get_all_groups(self, start=0, limit=1000):
+        """
+        Get all groups from Confluence User management
+        :param start:
+        :param limit:
+        :return:
+        """
+        url = 'rest/api/group?limit={limit}&start={start}'.format(limit=limit,
+                                                                  start=start)
+        return self.get(url)

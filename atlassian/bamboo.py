@@ -6,7 +6,6 @@ log = logging.getLogger(__name__)
 
 
 class Bamboo(AtlassianRestAPI):
-
     def _get_generator(self, path, elements_key='results', element_key='result', data=None, flags=None,
                        params=None, headers=None):
         """
@@ -84,7 +83,7 @@ class Bamboo(AtlassianRestAPI):
     def results(self, project_key=None, plan_key=None, job_key=None, build_number=None, expand=None, favourite=False,
                 clover_enabled=False, label=None, issue_key=None, start_index=0, max_results=25):
         """
-
+        Get results as generic method
         :param project_key:
         :param plan_key:
         :param job_key:
@@ -118,7 +117,7 @@ class Bamboo(AtlassianRestAPI):
     def latest_results(self, expand=None, favourite=False, clover_enabled=False, label=None, issue_key=None,
                        start_index=0, max_results=25):
         """
-
+        Get latest Results
         :param expand:
         :param favourite:
         :param clover_enabled:
@@ -134,7 +133,7 @@ class Bamboo(AtlassianRestAPI):
     def project_latest_results(self, project_key, expand=None, favourite=False, clover_enabled=False, label=None,
                                issue_key=None, start_index=0, max_results=25):
         """
-
+        Get latest Project Results
         :param project_key:
         :param expand:
         :param favourite:
@@ -151,7 +150,7 @@ class Bamboo(AtlassianRestAPI):
     def plan_results(self, project_key, plan_key, expand=None, favourite=False, clover_enabled=False, label=None,
                      issue_key=None, start_index=0, max_results=25):
         """
-
+        Get Plan results
         :param project_key:
         :param plan_key:
         :param expand:
