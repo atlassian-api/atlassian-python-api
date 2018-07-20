@@ -235,6 +235,37 @@ class Confluence(AtlassianRestAPI):
         return result
 
     def convert_wiki_to_storage(self, wiki):
-        data = { 'value': wiki,
-                 'representation': 'wiki' }
+        """
+        Convert to Confluence XHTML format from wiki style
+        :param wiki:
+        :return:
+        """
+        data = {'value': wiki,
+                'representation': 'wiki'}
         return self.post('rest/api/contentbody/convert/storage', data=data)
+
+    def clean_all_caches(self):
+        """ Clean all caches from cache management"""
+        headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', 'X-Atlassian-Token': 'no-check'}
+        return self.delete('rest/cacheManagement/1.0/cacheEntries', headers=headers)
+
+    def clean_package_cache(self, cache_name='com.gliffy.cache.gon'):
+        """ Clean caches from cache management
+            e.g.
+            com.gliffy.cache.gon
+            org.hibernate.cache.internal.StandardQueryCache_v5
+        """
+        headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', 'X-Atlassian-Token': 'no-check'}
+        data = {'cacheName': cache_name}
+        return self.delete('rest/cacheManagement/1.0/cacheEntries', data=data, headers=headers)
+
+    def get_all_groups(self, start=0, limit=1000):
+        """
+        Get all groups from Confluence User management
+        :param start:
+        :param limit:
+        :return:
+        """
+        url = 'rest/api/group?limit={limit}&start={start}'.format(limit=limit,
+                                                                  start=start)
+        return self.get(url)

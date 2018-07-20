@@ -57,78 +57,74 @@ class Bitbucket(AtlassianRestAPI):
         return self.get(url)['values']
 
     def get_branches(self, project, repository, filter='', limit=99999, details=True):
-        url = 'rest/api/1.0/projects/{project}/repos/{repository}/branches?limit={limit}&filterText={filter}&details={details}'.format(
-            project=project,
-            repository=repository,
-            limit=limit,
-            filter=filter,
-            details=details
-        )
+        url = "rest/api/1.0/projects/{project}/repos/{repository}/branches".format(project=project,
+                                                                                   repository=repository)
+        url += "?limit={limit}&filterText={filter}&details={details}".format(limit=limit,
+                                                                             filter=filter,
+                                                                             details=details)
+
         return self.get(url)['values']
 
     def delete_branch(self, project, repository, name, end_point):
         """
 
+        :param self:
         :param project:
         :param repository:
         :param name:
         :param end_point:
         :return:
         """
-        url = 'rest/branch-utils/latest/projects/{project}/repos/{repository}/branches'.format(
-            project=project,
-            repository=repository)
+
+        url = 'rest/branch-utils/1.0/projects/{project}/repos/{repository}/branches'.format(project=project,
+                                                                                            repository=repository)
+
         data = {"name": str(name), "endPoint": str(end_point)}
         return self.delete(url, data=data)
 
     def get_pull_requests(self, project, repository, state='OPEN', order='newest', limit=100, start=0):
-        url = 'rest/api/latest/projects/{project}/repos/{repository}/pull-requests?state={state}&limit={limit}&start={start}&order={order}'.format(
-            project=project,
-            repository=repository,
-            limit=limit,
-            state=state,
-            start=start,
-            order=order)
+        url = "rest/api/1.0/projects/{project}/repos/{repository}/pull-requests".format(project=project,
+                                                                                        repository=repository)
+        url += "?state={state}&limit={limit}&start={start}&order={order}".format(limit=limit,
+                                                                                 state=state,
+                                                                                 start=start,
+                                                                                 order=order)
         return self.get(url)['values']
 
     def get_tags(self, project, repository, filter='', limit=99999):
-        url = '/rest/api/1.0/projects/{project}/repos/{repository}/tags?limit={limit}&filterText={filter}'.format(
-            project=project,
-            repository=repository,
-            limit=limit,
-            filter=filter)
+        url = '/rest/api/1.0/projects/{project}/repos/{repository}/tags'.format(project=project,
+                                                                                repository=repository)
+        url += '?limit={limit}&filterText={filter}'.format(limit=limit,
+                                                           filter=filter)
         return self.get(url)['values']
 
     def get_diff(self, project, repository, path, hash_oldest, hash_newest):
-        url = 'rest/api/1.0/projects/{project}/repos/{repository}/compare/diff/{path}?from={hash_oldest}&to={hash_newest}'.format(
-            project=project,
-            repository=repository,
-            path=path,
-            hash_oldest=hash_oldest,
-            hash_newest=hash_newest)
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/compare/diff/{path}'.format(project=project,
+                                                                                              repository=repository,
+                                                                                              path=path)
+        url += '?from={hash_oldest}&to={hash_newest}'.format(hash_oldest=hash_oldest,
+                                                             hash_newest=hash_newest)
         return self.get(url)['diffs']
 
     def get_commits(self, project, repository, hash_oldest, hash_newest, limit=99999):
-        url = 'rest/api/1.0/projects/{project}/repos/{repository}/commits?since={hash_from}&until={hash_to}&limit={limit}'.format(
-            project=project,
-            repository=repository,
-            hash_from=hash_oldest,
-            hash_to=hash_newest,
-            limit=limit)
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/commits'.format(project=project,
+                                                                                  repository=repository)
+        url += '?since={hash_from}&until={hash_to}&limit={limit}'.format(hash_from=hash_oldest,
+                                                                         hash_to=hash_newest,
+                                                                         limit=limit)
         return self.get(url)['values']
 
     def get_changelog(self, project, repository, ref_from, ref_to, limit=99999):
-        url = 'rest/api/1.0/projects/{project}/repos/{repository}/compare/commits?from={ref_from}&to={ref_to}&limit={limit}'.format(
-            project=project,
-            repository=repository,
-            ref_from=ref_from,
-            ref_to=ref_to,
-            limit=limit)
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/compare/commits'.format(project=project,
+                                                                                          repository=repository)
+        url += '?from={ref_from}&to={ref_to}&limit={limit}'.format(ref_from=ref_from,
+                                                                   ref_to=ref_to,
+                                                                   limit=limit)
         return self.get(url)['values']
 
     def get_content_of_file(self, project, repository, filename):
-        url = 'projects/{project}/repos/{repository}/browse/{filename}?raw'.format(
-            project=project,
-            repository=repository,
-            filename=filename)
+        url = 'projects/{project}/repos/{repository}/browse/{filename}?raw'.format(project=project,
+                                                                                   repository=repository,
+                                                                                   filename=filename)
+
         return self.get(url)

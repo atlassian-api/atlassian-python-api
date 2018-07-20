@@ -1,7 +1,8 @@
 # -*- coding: utf8 -*-
 import json
 import logging
-from six.moves.urllib.parse import urlencode, urljoin
+from six.moves.urllib.parse import urlencode
+from six.moves.urllib.parse import urljoin
 import requests
 
 
@@ -95,6 +96,7 @@ class AtlassianRestAPI(object):
         """
         Deletes resources at given paths.
         :rtype: dict
-        :return: Empty dictionary to have consistent interface. Some of Atlassian rest resources don't return any content.
+        :return: Empty dictionary to have consistent interface.
+        Some of Atlassian REST resources don't return any content.
         """
         self.request('DELETE', path=path, data=data, headers=headers)
