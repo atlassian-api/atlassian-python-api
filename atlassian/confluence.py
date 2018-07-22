@@ -320,11 +320,12 @@ class Confluence(AtlassianRestAPI):
         Get all groups from Confluence User management
         :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
         :param limit: OPTIONAL: The limit of the number of groups to return, this may be restricted by
-                            fixed system limits. Default: 1000
+                                fixed system limits. Default: 1000
         :return:
         """
         url = 'rest/api/group?limit={limit}&start={start}'.format(limit=limit,
                                                                   start=start)
+
         return self.get(url)['results']
 
     def get_group_members(self, group_name='confluence-users', start=0, limit=1000):
