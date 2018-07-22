@@ -63,10 +63,11 @@ class AtlassianRestAPI(object):
             files=files
         )
         if response.status_code == 200:
-            log.debug('Received: {0}'.format(response.json()))
+            log.debug('Received: {0}\n {1}'.format(response.status_code, response.json()))
         elif response.status_code == 204:
-            log.debug('Received "204 No Content" response')
+            log.debug('Received: {0}\n "No Content" response'.format(response.status_code))
         else:
+            log.debug('Received: {0}\n {1}'.format(response.status_code, response))
             self.log_curl_debug(method=method, path=path, headers=headers, data=data, level=logging.DEBUG)
             try:
                 log.error(response.json())
