@@ -40,6 +40,27 @@ class Confluence(AtlassianRestAPI):
         url = 'rest/api/content/{page_id}?expand={expand}'.format(page_id=page_id, expand=expand)
         return self.get(url)
 
+    def get_page_labels(self, page_id, prefix=None, start=None, limit=None):
+        """
+        Returns the list of labels on a piece of Content.
+        :param page_id: A string containing the id of the labels content container.
+        :param prefix: OPTIONAL: The prefixes to filter the labels with {@see Label.Prefix}.
+                                Default: None.
+        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
+        :param limit: OPTIONAL: The limit of the number of labels to return, this may be restricted by
+                            fixed system limits. Default: 200.
+        :return: The JSON data returned from the content/{id}/label endpoint, or the results of the
+                 callback. Will raise requests.HTTPError on bad input, potentially.
+        """
+        params = {}
+        if prefix:
+            params["prefix"] = prefix
+        if start is not None:
+            params["start"] = int(start)
+        if limit is not None:
+            params["limit"] = int(limit)
+        return self.get("rest/api/content/{id}/label".format(id=page_id), params=params)
+
     def get_draft_page_by_id(self, page_id, status='draft'):
         url = 'rest/api/content/{page_id}?status={status}'.format(page_id=page_id, status=status)
         return self.get(url)
@@ -48,8 +69,9 @@ class Confluence(AtlassianRestAPI):
         """
         Get all page by label
         :param label:
-        :param start:
-        :param limit:
+        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
+        :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
+                      fixed system limits. Default: 50
         :return:
         """
         url = 'rest/api/content/search?cql=type={type}%20AND%20label={label}&limit={limit}&start={start}'.format(
@@ -63,8 +85,9 @@ class Confluence(AtlassianRestAPI):
         """
         Get all pages from Space
         :param space:
-        :param start:
-        :param limit:
+        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
+        :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
+                            fixed system limits. Default: 50
         :return:
         """
         url = 'rest/api/content?spaceKey={space}&limit={limit}&start={start}'.format(space=space,
@@ -76,8 +99,9 @@ class Confluence(AtlassianRestAPI):
         """
         Get list of pages from trash
         :param space:
-        :param start:
-        :param limit:
+        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
+        :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
+                            fixed system limits. Default: 500
         :param status:
         :return:
         """
@@ -92,8 +116,9 @@ class Confluence(AtlassianRestAPI):
         Get list of draft pages from space
         Use case is cleanup old drafts from Confluence
         :param space:
-        :param start:
-        :param limit:
+        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
+        :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
+                            fixed system limits. Default: 500
         :param status:
         :return:
         """
@@ -122,6 +147,15 @@ class Confluence(AtlassianRestAPI):
         return self.delete(url)
 
     def create_page(self, space, title, body, parent_id=None, type='page'):
+        """
+        Create page from scratch
+        :param space:
+        :param title:
+        :param body:
+        :param parent_id:
+        :param type:
+        :return:
+        """
         log.info('Creating {type} "{space}" -> "{title}"'.format(space=space, title=title, type=type))
         data = {
             'type': type,
@@ -135,6 +169,12 @@ class Confluence(AtlassianRestAPI):
         return self.post('rest/api/content/', data=data)
 
     def get_all_spaces(self, start=0, limit=500):
+        """
+        Get all spaces with provided limit
+        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
+        :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
+                            fixed system limits. Default: 500
+        """
         url = 'rest/api/space?limit={limit}&start={start}'.format(limit=limit, start=start)
         return self.get(url)['results']
 
@@ -197,6 +237,15 @@ class Confluence(AtlassianRestAPI):
             return False
 
     def update_page(self, parent_id, page_id, title, body, type='page'):
+        """
+        Update page if already exist
+        :param parent_id:
+        :param page_id:
+        :param title:
+        :param body:
+        :param type:
+        :return:
+        """
         log.info('Updating {type} "{title}"'.format(title=title, type=type))
 
         if self.is_page_content_is_already_updated(page_id, body):
@@ -220,6 +269,13 @@ class Confluence(AtlassianRestAPI):
             return self.put('rest/api/content/{0}'.format(page_id), data=data)
 
     def update_or_create(self, parent_id, title, body):
+        """
+        Update page or create page if it is not exists
+        :param parent_id:
+        :param title:
+        :param body:
+        :return:
+        """
         space = self.get_page_space(parent_id)
 
         if self.page_exists(space, title):
@@ -262,10 +318,26 @@ class Confluence(AtlassianRestAPI):
     def get_all_groups(self, start=0, limit=1000):
         """
         Get all groups from Confluence User management
-        :param start:
-        :param limit:
+        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
+        :param limit: OPTIONAL: The limit of the number of groups to return, this may be restricted by
+                                fixed system limits. Default: 1000
         :return:
         """
         url = 'rest/api/group?limit={limit}&start={start}'.format(limit=limit,
                                                                   start=start)
-        return self.get(url)
+
+        return self.get(url)['results']
+
+    def get_group_members(self, group_name='confluence-users', start=0, limit=1000):
+        """
+        Get a paginated collection of users in the given group
+        :param group_name
+        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
+        :param limit: OPTIONAL: The limit of the number of users to return, this may be restricted by
+                            fixed system limits. Default: 1000
+        :return:
+        """
+        url = 'rest/api/group/{group_name}/member?limit={limit}&start={start}'.format(group_name=group_name,
+                                                                                      limit=limit,
+                                                                                      start=start)
+        return self.get(url)['results']

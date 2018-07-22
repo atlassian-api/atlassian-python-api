@@ -13,8 +13,18 @@ class Jira(AtlassianRestAPI):
     def reindex(self):
         return self.post('rest/api/2/reindex')
 
-    def jql(self, jql, fields='*all', limit=999999):
-        return self.get('rest/api/2/search?maxResults={limit}&fields={fields}&jql={jql}'.format(
+    def jql(self, jql, fields='*all', start=0, limit=999999):
+        """
+        Get issues from jql search result with all related fields
+        :param jql:
+        :param fields:
+        :param start: OPTIONAL: The start point of the collection to return. Default: 0.
+        :param limit: OPTIONAL: The limit of the number of issues to return, this may be restricted by
+                fixed system limits. Default by built-in method: 50
+        :return:
+        """
+        return self.get('rest/api/2/search?startAt={start}maxResults={limit}&fields={fields}&jql={jql}'.format(
+            start=start,
             limit=limit,
             fields=fields,
             jql=jql))
@@ -73,8 +83,9 @@ class Jira(AtlassianRestAPI):
         """
         Fuzzy search using username and display name
         :param username:
-        :param start:
-        :param limit:
+        :param start: OPTIONAL: The start point of the collection to return. Default: 0.
+        :param limit: OPTIONAL: The limit of the number of users to return, this may be restricted by
+                fixed system limits. Default by built-in method: 50
         :param include_inactive_users:
         :return:
         """
@@ -145,8 +156,9 @@ class Jira(AtlassianRestAPI):
         """
         Provide assignable users for project
         :param project_key:
-        :param start
-        :param limit
+        :param start: OPTIONAL: The start point of the collection to return. Default: 0.
+        :param limit: OPTIONAL: The limit of the number of users to return, this may be restricted by
+                fixed system limits. Default by built-in method: 50
         :return:
         """
         url = "rest/api/2/user/assignable/search?project={project_key}&startAt={start}&maxResults={limit}".format(
@@ -160,8 +172,9 @@ class Jira(AtlassianRestAPI):
         Just wrapping method user group members
         :param group:
         :param include_inactive_users:
-        :param start:
-        :param limit:
+        :param start: OPTIONAL: The start point of the collection to return. Default: 0.
+        :param limit: OPTIONAL: The limit of the number of users to return, this may be restricted by
+                fixed system limits. Default by built-in method: 50
         :return:
         """
         url = "rest/api/2/group/member"
