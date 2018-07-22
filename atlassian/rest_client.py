@@ -5,12 +5,10 @@ from six.moves.urllib.parse import urlencode
 from six.moves.urllib.parse import urljoin
 import requests
 
-
 log = logging.getLogger('atlassian')
 
 
 class AtlassianRestAPI(object):
-
     default_headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
 
     def __init__(self, url, username, password, timeout=60, api_root='rest/api', api_version='latest', verify_ssl=True):

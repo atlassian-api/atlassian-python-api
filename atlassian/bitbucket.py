@@ -14,6 +14,13 @@ class Bitbucket(AtlassianRestAPI):
         return self.get(url)['values']
 
     def project_users(self, key, limit=99999):
+        """
+        Get users who has permission in project
+        :param key:
+        :param limit: OPTIONAL: The limit of the number of users to return, this may be restricted by
+                            fixed system limits. Default by built-in method: 99999
+        :return:
+        """
         url = 'rest/api/1.0/projects/{key}/permissions/users?limit={limit}'.format(key=key, limit=limit)
         return self.get(url)['values']
 
@@ -26,6 +33,13 @@ class Bitbucket(AtlassianRestAPI):
         return project_administrators
 
     def project_groups(self, key, limit=99999):
+        """
+        Get Project Groups
+        :param key:
+        :param limit: OPTIONAL: The limit of the number of groups to return, this may be restricted by
+                            fixed system limits. Default by built-in method: 99999
+        :return:
+        """
         url = 'rest/api/1.0/projects/{key}/permissions/groups?limit={limit}'.format(key=key, limit=limit)
         return self.get(url)['values']
 
@@ -40,6 +54,13 @@ class Bitbucket(AtlassianRestAPI):
             'groups': self.project_groups(key)}
 
     def group_members(self, group, limit=99999):
+        """
+        Get group of members
+        :param group:
+        :param limit: OPTIONAL: The limit of the number of users to return, this may be restricted by
+                        fixed system limits. Default by built-in method: 99999
+        :return:
+        """
         url = 'rest/api/1.0/admin/groups/more-members?context={group}&limit={limit}'.format(group=group, limit=limit)
         return self.get(url)['values']
 
@@ -53,10 +74,27 @@ class Bitbucket(AtlassianRestAPI):
                                            for x in self.project_users_with_administrator_permissions(project['key'])]}
 
     def repo_list(self, project_key, limit=25):
+        """
+        Get repositories list from project
+        :param project_key:
+        :param limit: OPTIONAL: The limit of the number of repositories to return, this may be restricted by
+                        fixed system limits. Default by built-in method: 25
+        :return:
+        """
         url = 'rest/api/1.0/projects/{projectKey}/repos?limit={limit}'.format(projectKey=project_key, limit=limit)
         return self.get(url)['values']
 
     def get_branches(self, project, repository, filter='', limit=99999, details=True):
+        """
+        Get branches from repo
+        :param project:
+        :param repository:
+        :param filter:
+        :param limit: OPTIONAL: The limit of the number of branches to return, this may be restricted by
+                    fixed system limits. Default by built-in method: 99999
+        :param details:
+        :return:
+        """
         url = "rest/api/1.0/projects/{project}/repos/{repository}/branches".format(project=project,
                                                                                    repository=repository)
         url += "?limit={limit}&filterText={filter}&details={details}".format(limit=limit,
@@ -67,7 +105,7 @@ class Bitbucket(AtlassianRestAPI):
 
     def delete_branch(self, project, repository, name, end_point):
         """
-
+        Delete branch from related repo
         :param self:
         :param project:
         :param repository:
@@ -92,6 +130,15 @@ class Bitbucket(AtlassianRestAPI):
         return self.get(url)['values']
 
     def get_tags(self, project, repository, filter='', limit=99999):
+        """
+        Get tags for related repo
+        :param project:
+        :param repository:
+        :param filter:
+        :param limit: OPTIONAL: The limit of the number of tags to return, this may be restricted by
+                fixed system limits. Default by built-in method: 99999
+        :return:
+        """
         url = '/rest/api/1.0/projects/{project}/repos/{repository}/tags'.format(project=project,
                                                                                 repository=repository)
         url += '?limit={limit}&filterText={filter}'.format(limit=limit,
@@ -107,6 +154,16 @@ class Bitbucket(AtlassianRestAPI):
         return self.get(url)['diffs']
 
     def get_commits(self, project, repository, hash_oldest, hash_newest, limit=99999):
+        """
+        Get commit list from repo
+        :param project:
+        :param repository:
+        :param hash_oldest:
+        :param hash_newest:
+        :param limit: OPTIONAL: The limit of the number of commits to return, this may be restricted by
+               fixed system limits. Default by built-in method: 99999
+        :return:
+        """
         url = 'rest/api/1.0/projects/{project}/repos/{repository}/commits'.format(project=project,
                                                                                   repository=repository)
         url += '?since={hash_from}&until={hash_to}&limit={limit}'.format(hash_from=hash_oldest,
@@ -115,6 +172,16 @@ class Bitbucket(AtlassianRestAPI):
         return self.get(url)['values']
 
     def get_changelog(self, project, repository, ref_from, ref_to, limit=99999):
+        """
+        Get change log between 2 refs
+        :param project:
+        :param repository:
+        :param ref_from:
+        :param ref_to:
+        :param limit: OPTIONAL: The limit of the number of changes to return, this may be restricted by
+                fixed system limits. Default by built-in method: 99999
+        :return:
+        """
         url = 'rest/api/1.0/projects/{project}/repos/{repository}/compare/commits'.format(project=project,
                                                                                           repository=repository)
         url += '?from={ref_from}&to={ref_to}&limit={limit}'.format(ref_from=ref_from,
