@@ -1,4 +1,3 @@
-from pprint import pprint
 from atlassian import Bitbucket
 
 
@@ -15,4 +14,4 @@ bitbucket = Bitbucket(
     password='admin')
 
 data = bitbucket.project('DEMO')
-pprint(html(data))
+print(html(data))

@@ -1,4 +1,3 @@
-from pprint import pprint
 from atlassian import Confluence
 
 confluence = Confluence(
@@ -10,9 +9,9 @@ confluence = Confluence(
 content1 = confluence.get_page_by_title(space='SPACE',
                                         title='page title')
 
-pprint(content1)
+print(content1)
 
 # If you know page_id of the page
 content2 = confluence.get_page_by_id(page_id=1123123123)
 
-pprint(content2)
+print(content2)

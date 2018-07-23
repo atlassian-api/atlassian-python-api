@@ -1,4 +1,3 @@
-from pprint import pprint
 from atlassian import Confluence
 
 
@@ -12,4 +11,4 @@ status = confluence.update_page(
     title='This is the new title',
     body='This is the new body')
 
-pprint(status)
+print(status)

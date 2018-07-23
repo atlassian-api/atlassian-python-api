@@ -1,6 +1,4 @@
-from atlassian import Confluence
 from atlassian import Jira
-
 
 jira = Jira(
     url='http://localhost:8080',
@@ -14,7 +12,6 @@ html = """<table>
                     <th>Leader</th>
                     <th>Email</th>
                 </tr>"""
-
 
 for data in jira.project_leaders():
     html += """<tr>

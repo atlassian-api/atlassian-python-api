@@ -1,6 +1,4 @@
-from pprint import pprint
 from atlassian import Confluence
-
 
 confluence = Confluence(
     url='http://localhost:8090',
@@ -12,4 +10,4 @@ status = confluence.create_page(
     title='This is the title',
     body='This is the body')
 
-pprint(status)
+print(status)

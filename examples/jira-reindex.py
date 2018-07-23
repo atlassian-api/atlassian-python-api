@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from pprint import pprint
 from time import sleep
 from atlassian import Jira
 
@@ -17,4 +16,4 @@ while not jira.reindex_status()['success']:
     print('Still reindexing...')
     sleep(1)
 
-pprint('Done.')
+print('Done.')
