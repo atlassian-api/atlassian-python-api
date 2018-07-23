@@ -1,6 +1,4 @@
-from atlassian import Confluence
 from atlassian import Jira
-from pprint import pprint
 
 jira = Jira(
     url='http://localhost:8080',
@@ -25,4 +23,4 @@ for data in jira.project_leaders():
 
 html += '</table>'
 
-pprint(html)
+print(html)

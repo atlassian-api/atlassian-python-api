@@ -1,4 +1,3 @@
-from pprint import pprint
 from atlassian import Crowd
 import os
 import logging
@@ -16,4 +15,4 @@ crowd = Crowd(
     password=CROWD_APPLICATION_PASSWORD)
 
 user_details = crowd.user('xdfjklm')
-pprint(user_details)
+print(user_details)

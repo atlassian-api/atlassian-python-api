@@ -1,4 +1,3 @@
-from pprint import pprint
 from atlassian import Jira
 
 
@@ -10,4 +9,4 @@ jira = Jira(
     password='admin')
 
 data = jira.jql(JQL)
-pprint(data)
+print(data)

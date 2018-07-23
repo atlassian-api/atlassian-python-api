@@ -45,7 +45,14 @@ And here's another example how to get issues from Jira using JQL Query:
     print(data)
 
 Please make sure, you've checked ``examples/`` directory on how to build scripts using the API.
+If you want to see response in pretty print format json. Feel free for use construction like:
 
+.. code-block:: python
+
+    from pprint import pprint
+    # you code here
+    # and then print using pprint(result) instead of print(result)
+    pprint(response)
 
 For Contributors
 ================

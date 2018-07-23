@@ -1,7 +1,6 @@
 import logging
 from atlassian import Confluence
 from atlassian import Jira
-from pprint import pprint
 
 logging.basicConfig(level=logging.DEBUG, format='[%(asctime).19s] [%(levelname)s] %(message)s')
 logging.getLogger('requests').setLevel(logging.WARNING)
@@ -41,7 +40,7 @@ html.append('</table><p></p><p></p>')
 status = confluence.create_page(
     space='DEMO',
     parent_id=confluence.get_page_id('DEMO', 'demo'),
-    title='JIRA Administrators',
+    title='Jira Administrators',
     body='\r\n'.join(html))
 
-pprint(status)
+print(status)
