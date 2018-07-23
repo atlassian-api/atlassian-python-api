@@ -128,6 +128,15 @@ class Confluence(AtlassianRestAPI):
                                                                                                      status=status)
         return self.get(url)['results']
 
+    def get_all_restictions_for_content(self, content_id):
+        """
+        Returns info about all restrictions by operation.
+        :param content_id:
+        :return: Return the raw json response
+        """
+        url = 'rest/api/content/{}/restriction/byOperation'.format(content_id)
+        return self.get(url)
+
     def remove_page_from_trash(self, page_id):
         """
         This method removed page from trash
