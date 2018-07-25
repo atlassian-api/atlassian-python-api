@@ -309,6 +309,17 @@ class Confluence(AtlassianRestAPI):
                 'representation': 'wiki'}
         return self.post('rest/api/contentbody/convert/storage', data=data)
 
+    def set_page_property(self, page_id, data):
+        """
+
+        :param page_id:
+        :param data: data should be as json data
+        :return:
+        """
+        url = 'rest/api/content/{page_id}/property'.format(page_id=page_id)
+        json_data = data
+        return self.post(path=url, data=json_data)
+
     def clean_all_caches(self):
         """ Clean all caches from cache management"""
         headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', 'X-Atlassian-Token': 'no-check'}

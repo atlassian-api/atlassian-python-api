@@ -182,6 +182,21 @@ class Bamboo(AtlassianRestAPI):
         except ValueError:
             raise ValueError('The key "{}" does not correspond to a build result'.format(build_key))
 
+    def build_latest_result(self, plan_key, expand=None):
+        """
+        Returns details of a latest build result
+        :param expand: expands build result details on request. Possible values are: artifacts, comments, labels,
+        Jira Issues, stages. stages expand is available only for top level plans. It allows to drill down to job results
+        using stages.stage.results.result. All expand parameters should contain results.result prefix.
+        :param plan_key: Should be in the form XX-YY[-ZZ]
+        """
+        try:
+            resource = "result/{}/latest.json".format(plan_key)
+            return self.base_list_call(resource, expand, favourite=False, clover_enabled=False,
+                                       start_index=0, max_results=25)
+        except ValueError:
+            raise ValueError('The key "{}" does not correspond to the latest build result'.format(plan_key))
+
     def reports(self, max_results=25):
         params = {'max-results': max_results}
         return self._get_generator(self.resource_url('chart/reports'), elements_key='reports', element_key='report',
