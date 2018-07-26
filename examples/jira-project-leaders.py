@@ -1,4 +1,4 @@
-# -*- coding: utf8 -*-
+# coding: utf8
 from urllib.parse import quote
 from atlassian import Jira
 
