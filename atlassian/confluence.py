@@ -1,5 +1,4 @@
-# -*- coding: utf8 -*-
-
+# coding: utf8
 from .rest_client import AtlassianRestAPI
 from requests import HTTPError
 import logging
@@ -308,6 +307,17 @@ class Confluence(AtlassianRestAPI):
         data = {'value': wiki,
                 'representation': 'wiki'}
         return self.post('rest/api/contentbody/convert/storage', data=data)
+
+    def set_page_property(self, page_id, data):
+        """
+        Set the page (conten) property e.g. add hash parameters
+        :param page_id: content_id format
+        :param data: data should be as json data
+        :return:
+        """
+        url = 'rest/api/content/{page_id}/property'.format(page_id=page_id)
+        json_data = data
+        return self.post(path=url, data=json_data)
 
     def clean_all_caches(self):
         """ Clean all caches from cache management"""

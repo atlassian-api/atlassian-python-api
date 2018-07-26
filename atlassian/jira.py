@@ -1,4 +1,4 @@
-# -*- coding: utf8 -*-
+# coding: utf8
 import logging
 from requests.exceptions import HTTPError
 from .rest_client import AtlassianRestAPI
