@@ -1,3 +1,4 @@
+# -*- coding: utf8 -*-
 from atlassian import Crowd
 import os
 import logging

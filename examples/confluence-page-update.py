@@ -1,5 +1,5 @@
+# -*- coding: utf8 -*-
 from atlassian import Confluence
-
 
 confluence = Confluence(
     url='http://localhost:8090',

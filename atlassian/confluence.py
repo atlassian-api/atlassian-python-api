@@ -1,5 +1,4 @@
 # -*- coding: utf8 -*-
-
 from .rest_client import AtlassianRestAPI
 from requests import HTTPError
 import logging
@@ -311,8 +310,8 @@ class Confluence(AtlassianRestAPI):
 
     def set_page_property(self, page_id, data):
         """
-
-        :param page_id:
+        Set the page (conten) property e.g. add hash parameters
+        :param page_id: content_id format
         :param data: data should be as json data
         :return:
         """

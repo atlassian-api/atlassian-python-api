@@ -1,3 +1,4 @@
+# -*- coding: utf8 -*-
 from atlassian import Jira, Confluence, Bitbucket, Portfolio, Bamboo, Crowd
 import os
 

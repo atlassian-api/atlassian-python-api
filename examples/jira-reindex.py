@@ -1,5 +1,4 @@
-#!/usr/bin/env python3
-
+# -*- coding: utf8 -*-
 from time import sleep
 from atlassian import Jira
 

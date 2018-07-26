@@ -1,3 +1,4 @@
+# -*- coding: utf8 -*-
 from atlassian import Confluence
 
 confluence = Confluence(
