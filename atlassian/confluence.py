@@ -310,7 +310,7 @@ class Confluence(AtlassianRestAPI):
 
     def set_page_property(self, page_id, data):
         """
-        Set the page (conten) property e.g. add hash parameters
+        Set the page (content) property e.g. add hash parameters
         :param page_id: content_id format
         :param data: data should be as json data
         :return:
@@ -318,6 +318,37 @@ class Confluence(AtlassianRestAPI):
         url = 'rest/api/content/{page_id}/property'.format(page_id=page_id)
         json_data = data
         return self.post(path=url, data=json_data)
+
+    def delete_page_property(self, page_id, page_property):
+        """
+        Delete the page (content) property e.g. delete key of hash
+        :param page_id: content_id format
+        :param page_property: key of property
+        :return:
+        """
+        url = 'rest/api/content/{page_id}/property/{page_property}'.format(page_id=page_id,
+                                                                           page_property=str(page_property))
+        return self.delete(path=url)
+
+    def get_page_property(self, page_id, page_property_key):
+        """
+        Get the page (content) property e.g. get key of hash
+        :param page_id: content_id format
+        :param page_property_key: key of property
+        :return:
+        """
+        url = 'rest/api/content/{page_id}/property/{key}'.format(page_id=page_id,
+                                                                 key=str(page_property_key))
+        return self.get(path=url)
+
+    def get_page_properties(self, page_id):
+        """
+        Get the page (content) properties
+        :param page_id: content_id format
+        :return: get properties
+        """
+        url = 'rest/api/content/{page_id}/property'.format(page_id=page_id)
+        return self.get(path=url)
 
     def clean_all_caches(self):
         """ Clean all caches from cache management"""
