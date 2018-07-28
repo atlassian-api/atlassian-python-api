@@ -3,6 +3,8 @@ Atlassian Python API wrapper
 ============================
 
 .. image:: https://travis-ci.org/AstroMatt/atlassian-python-api.svg?branch=master
+.. image:: https://img.shields.io/pypi/v/atlassian-python-api.svg
+
 
 For users
 =========
