@@ -21,7 +21,8 @@ setup(
     author='Matt Harasymczuk',
     author_email='matt@astrotech.io',
     url='http://devops.astrotech.io/issue-tracker/jira.html',
-
+    keywords='jira confluence bitbucket bamboo rest api',
+    
     packages=find_packages(),
     package_dir={'atlassian': 'atlassian'},
     include_package_data=True,
@@ -51,7 +52,8 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
-        'Topic :: Internet',
+        'Topic :: Utilities',
+	'Topic :: Internet',
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
         'Topic :: Software Development :: Libraries :: Python Modules',
