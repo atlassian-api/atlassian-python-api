@@ -350,6 +350,15 @@ class Confluence(AtlassianRestAPI):
         url = 'rest/api/content/{page_id}/property'.format(page_id=page_id)
         return self.get(path=url)
 
+    def get_page_ancestors(self, page_id):
+        """
+        Provide the ancestors from the page (content) id
+        :param page_id: content_id format
+        :return: get properties
+        """
+        url = 'rest/api/content/{page_id}?expand=ancestors'.format(page_id=page_id)
+        return self.get(path=url).get('ancestors')
+
     def clean_all_caches(self):
         """ Clean all caches from cache management"""
         headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', 'X-Atlassian-Token': 'no-check'}
