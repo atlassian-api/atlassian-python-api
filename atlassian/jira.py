@@ -13,7 +13,7 @@ class Jira(AtlassianRestAPI):
     def reindex(self):
         return self.post('rest/api/2/reindex')
 
-    def jql(self, jql, fields='*all', start=0, limit=999999):
+    def jql(self, jql, fields='*all', start=0, limit=None):
         """
         Get issues from jql search result with all related fields
         :param jql:
@@ -23,11 +23,16 @@ class Jira(AtlassianRestAPI):
                 fixed system limits. Default by built-in method: 50
         :return:
         """
-        return self.get('rest/api/2/search?startAt={start}&maxResults={limit}&fields={fields}&jql={jql}'.format(
-            start=start,
-            limit=limit,
-            fields=fields,
-            jql=jql))
+        params = {}
+        if start is not None:
+            params["startAt"] = int(start)
+        if limit is not None:
+            params["maxResults"] = int(limit)
+        if fields is not None:
+            params["fields"] = fields
+        if jql is not None:
+            params['jql'] = jql
+        return self.get('rest/api/2/search', params=params)
 
     def user(self, username):
         return self.get('rest/api/2/user?username={0}'.format(username))
