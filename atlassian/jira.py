@@ -23,7 +23,7 @@ class Jira(AtlassianRestAPI):
                 fixed system limits. Default by built-in method: 50
         :return:
         """
-        return self.get('rest/api/2/search?startAt={start}maxResults={limit}&fields={fields}&jql={jql}'.format(
+        return self.get('rest/api/2/search?startAt={start}&maxResults={limit}&fields={fields}&jql={jql}'.format(
             start=start,
             limit=limit,
             fields=fields,
