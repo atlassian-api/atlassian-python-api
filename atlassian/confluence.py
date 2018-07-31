@@ -31,9 +31,33 @@ class Confluence(AtlassianRestAPI):
     def get_page_space(self, page_id):
         return self.get_page_by_id(page_id, expand='space')['space']['key']
 
-    def get_page_by_title(self, space, title):
-        url = 'rest/api/content?spaceKey={space}&title={title}'.format(space=space, title=title)
-        return self.get(url)['results'][0]
+    def get_page_by_title(self, space, title, start=None, limit=None):
+        """
+        Returns the list of labels on a piece of Content.
+        :param space: Space key
+        :param title: Title of the page
+        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
+        :param limit: OPTIONAL: The limit of the number of labels to return, this may be restricted by
+                            fixed system limits. Default: 200.
+        :return: The JSON data returned from searched results the content endpoint, or the results of the
+                 callback. Will raise requests.HTTPError on bad input, potentially.
+                 If it has IndexError then return the None.
+        """
+        params = {}
+        if start is not None:
+            params["start"] = int(start)
+        if limit is not None:
+            params["limit"] = int(limit)
+        if space is not None:
+            params['spaceKey'] = str(space)
+        if space is not None:
+            params['title'] = str(title)
+        url = 'rest/api/content'
+        try:
+            return self.get(url, params=params).get('results')[0]
+        except IndexError as e:
+            logging.error(e)
+            return None
 
     def get_page_by_id(self, page_id, expand=None):
         url = 'rest/api/content/{page_id}?expand={expand}'.format(page_id=page_id, expand=expand)
@@ -349,6 +373,15 @@ class Confluence(AtlassianRestAPI):
         """
         url = 'rest/api/content/{page_id}/property'.format(page_id=page_id)
         return self.get(path=url)
+
+    def get_page_ancestors(self, page_id):
+        """
+        Provide the ancestors from the page (content) id
+        :param page_id: content_id format
+        :return: get properties
+        """
+        url = 'rest/api/content/{page_id}?expand=ancestors'.format(page_id=page_id)
+        return self.get(path=url).get('ancestors')
 
     def clean_all_caches(self):
         """ Clean all caches from cache management"""
