@@ -1,10 +1,7 @@
 import os
-import sys
 from setuptools import find_packages
 from setuptools import setup
 
-
-assert sys.version_info >= (3, 2), 'Python 3.2+ required.'
 
 with open(os.path.join('atlassian', 'VERSION')) as file:
     version = file.read().strip()
@@ -24,14 +21,16 @@ setup(
     author='Matt Harasymczuk',
     author_email='matt@astrotech.io',
     url='http://devops.astrotech.io/issue-tracker/jira.html',
-
+    keywords='jira confluence bitbucket bamboo rest api',
+    
     packages=find_packages(),
     package_dir={'atlassian': 'atlassian'},
     include_package_data=True,
 
     zip_safe=False,
     install_requires=[
-        'requests'
+        'requests',
+        'six'
     ],
     platforms='Platform Independent',
 
@@ -47,12 +46,14 @@ setup(
         'Operating System :: MacOS :: MacOS X',
         'Operating System :: Microsoft :: Windows',
         'Programming Language :: Python',
+        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.2',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
-        'Topic :: Internet',
+        'Topic :: Utilities',
+	'Topic :: Internet',
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
         'Topic :: Software Development :: Libraries :: Python Modules',

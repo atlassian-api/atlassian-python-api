@@ -1,14 +1,14 @@
+# coding: utf8
 import json
 import logging
-from urllib.parse import urlencode, urljoin
+from six.moves.urllib.parse import urlencode
+from six.moves.urllib.parse import urljoin
 import requests
 
+log = logging.getLogger('atlassian')
 
-log = logging.getLogger(__name__)
 
-
-class AtlassianRestAPI:
-
+class AtlassianRestAPI(object):
     default_headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
 
     def __init__(self, url, username, password, timeout=60, api_root='rest/api', api_version='latest', verify_ssl=True):
@@ -46,7 +46,6 @@ class AtlassianRestAPI:
             url += urlencode(params or {})
         if flags:
             url += ('&' if params else '') + '&'.join(flags or [])
-        # https://github.com/requests/requests/blob/e4fc3539b43416f9e9ba6837d73b1b7392d4b242/requests/models.py#L110-L122
         if files is None:
             data = json.dumps(data)
 
@@ -62,16 +61,23 @@ class AtlassianRestAPI:
             files=files
         )
         if response.status_code == 200:
-            log.debug('Received: {0}'.format(response.json()))
+            log.debug('Received: {0}\n {1}'.format(response.status_code, response.json()))
         elif response.status_code == 204:
-            log.debug('Received "204 No Content" response')
+            log.debug('Received: {0}\n "No Content" response'.format(response.status_code))
+        elif response.status_code == 404:
+            log.error('Received: {0}\n Not Found'.format(response.status_code))
         else:
+            log.debug('Received: {0}\n {1}'.format(response.status_code, response))
             self.log_curl_debug(method=method, path=path, headers=headers, data=data, level=logging.DEBUG)
             try:
-                log.info(response.json())
-            except json.decoder.JSONDecodeError:
-                log.info(response)
-            response.raise_for_status()
+                log.error(response.json())
+            except ValueError:
+                log.error(response)
+            try:
+                response.raise_for_status()
+            except requests.exceptions.HTTPError as err:
+                log.error("HTTP Error occurred")
+                log.error('Response is: {content}'.format(content=err.response.content))
         return response
 
     def get(self, path, data=None, flags=None, params=None, headers=None):
@@ -79,7 +85,6 @@ class AtlassianRestAPI:
 
     def post(self, path, data=None, headers=None, files=None):
         try:
-            # import pdb; pdb.set_trace()
             return self.request('POST', path=path, data=data, headers=headers, files=files).json()
         except ValueError:
             log.debug('Received response with no content')
@@ -96,6 +101,7 @@ class AtlassianRestAPI:
         """
         Deletes resources at given paths.
         :rtype: dict
-        :return: Empty dictionary to have consistent interface. Some of Atlassian rest resources don't return any content.
+        :return: Empty dictionary to have consistent interface.
+        Some of Atlassian REST resources don't return any content.
         """
         self.request('DELETE', path=path, data=data, headers=headers)

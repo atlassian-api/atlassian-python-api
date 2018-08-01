@@ -2,7 +2,13 @@
 Atlassian Python API wrapper
 ============================
 
-.. image:: https://travis-ci.org/cattz/atlassian-python-api.svg?branch=master
+.. image:: https://img.shields.io/pypi/v/atlassian-python-api.svg
+            :target: https://pypi.python.org/pypi/atlassian-python-api/
+.. image:: https://travis-ci.org/AstroMatt/atlassian-python-api.svg?branch=master 
+            :target: https://pypi.python.org/pypi/atlassian-python-api/
+.. image:: https://img.shields.io/pypi/l/atlassian-python-api.svg
+            :target: https://pypi.python.org/pypi/atlassian-python-api/
+
 
 For users
 =========
@@ -45,7 +51,14 @@ And here's another example how to get issues from Jira using JQL Query:
     print(data)
 
 Please make sure, you've checked ``examples/`` directory on how to build scripts using the API.
+If you want to see response in pretty print format json. Feel free for use construction like:
 
+.. code-block:: python
+
+    from pprint import pprint
+    # you code here
+    # and then print using pprint(result) instead of print(result)
+    pprint(response)
 
 For Contributors
 ================

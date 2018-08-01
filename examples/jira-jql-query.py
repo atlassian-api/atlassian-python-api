@@ -1,4 +1,4 @@
-from pprint import pprint
+# coding: utf8
 from atlassian import Jira
 
 
@@ -10,4 +10,4 @@ jira = Jira(
     password='admin')
 
 data = jira.jql(JQL)
-pprint(data)
+print(data)

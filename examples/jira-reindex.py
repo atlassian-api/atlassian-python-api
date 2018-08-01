@@ -1,6 +1,4 @@
-#!/usr/bin/env python3
-
-from pprint import pprint
+# coding: utf8
 from time import sleep
 from atlassian import Jira
 

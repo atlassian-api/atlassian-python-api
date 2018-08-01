@@ -1,4 +1,4 @@
-from pprint import pprint
+# coding: utf8
 from atlassian import Crowd
 import os
 import logging
@@ -16,4 +16,4 @@ crowd = Crowd(
     password=CROWD_APPLICATION_PASSWORD)
 
 group_members = crowd.group_nested_members('bamboo-user')
-pprint(group_members)
+print(group_members)

@@ -1,3 +1,4 @@
+# coding: utf8
 import logging
 from .rest_client import AtlassianRestAPI
 
@@ -5,7 +6,6 @@ log = logging.getLogger(__name__)
 
 
 class Bamboo(AtlassianRestAPI):
-
     def _get_generator(self, path, elements_key='results', element_key='result', data=None, flags=None,
                        params=None, headers=None):
         """
@@ -82,6 +82,21 @@ class Bamboo(AtlassianRestAPI):
 
     def results(self, project_key=None, plan_key=None, job_key=None, build_number=None, expand=None, favourite=False,
                 clover_enabled=False, label=None, issue_key=None, start_index=0, max_results=25):
+        """
+        Get results as generic method
+        :param project_key:
+        :param plan_key:
+        :param job_key:
+        :param build_number:
+        :param expand:
+        :param favourite:
+        :param clover_enabled:
+        :param label:
+        :param issue_key:
+        :param start_index:
+        :param max_results:
+        :return:
+        """
         resource = "result"
         if project_key and plan_key and job_key and build_number:
             resource += "/{}-{}-{}/{}".format(project_key, plan_key, job_key, build_number)
@@ -101,16 +116,52 @@ class Bamboo(AtlassianRestAPI):
 
     def latest_results(self, expand=None, favourite=False, clover_enabled=False, label=None, issue_key=None,
                        start_index=0, max_results=25):
+        """
+        Get latest Results
+        :param expand:
+        :param favourite:
+        :param clover_enabled:
+        :param label:
+        :param issue_key:
+        :param start_index:
+        :param max_results:
+        :return:
+        """
         return self.results(expand=expand, favourite=favourite, clover_enabled=clover_enabled,
                             label=label, issue_key=issue_key, start_index=start_index, max_results=max_results)
 
     def project_latest_results(self, project_key, expand=None, favourite=False, clover_enabled=False, label=None,
                                issue_key=None, start_index=0, max_results=25):
+        """
+        Get latest Project Results
+        :param project_key:
+        :param expand:
+        :param favourite:
+        :param clover_enabled:
+        :param label:
+        :param issue_key:
+        :param start_index:
+        :param max_results:
+        :return:
+        """
         return self.results(project_key, expand=expand, favourite=favourite, clover_enabled=clover_enabled,
                             label=label, issue_key=issue_key, start_index=start_index, max_results=max_results)
 
     def plan_results(self, project_key, plan_key, expand=None, favourite=False, clover_enabled=False, label=None,
                      issue_key=None, start_index=0, max_results=25):
+        """
+        Get Plan results
+        :param project_key:
+        :param plan_key:
+        :param expand:
+        :param favourite:
+        :param clover_enabled:
+        :param label:
+        :param issue_key:
+        :param start_index:
+        :param max_results:
+        :return:
+        """
         return self.results(project_key, plan_key, expand=expand, favourite=favourite, clover_enabled=clover_enabled,
                             label=label, issue_key=issue_key, start_index=start_index, max_results=max_results)
 
@@ -118,7 +169,7 @@ class Bamboo(AtlassianRestAPI):
         """
         Returns details of a specific build result
         :param expand: expands build result details on request. Possible values are: artifacts, comments, labels,
-        jiraIssues, stages. stages expand is available only for top level plans. It allows to drill down to job results
+        Jira Issues, stages. stages expand is available only for top level plans. It allows to drill down to job results
         using stages.stage.results.result. All expand parameters should contain results.result prefix.
         :param build_key: Should be in the form XX-YY[-ZZ]-99, that is, the last token should be an integer representing
         the build number
@@ -130,6 +181,21 @@ class Bamboo(AtlassianRestAPI):
                                        start_index=0, max_results=25)
         except ValueError:
             raise ValueError('The key "{}" does not correspond to a build result'.format(build_key))
+
+    def build_latest_result(self, plan_key, expand=None):
+        """
+        Returns details of a latest build result
+        :param expand: expands build result details on request. Possible values are: artifacts, comments, labels,
+        Jira Issues, stages. stages expand is available only for top level plans. It allows to drill down to job results
+        using stages.stage.results.result. All expand parameters should contain results.result prefix.
+        :param plan_key: Should be in the form XX-YY[-ZZ]
+        """
+        try:
+            resource = "result/{}/latest.json".format(plan_key)
+            return self.base_list_call(resource, expand, favourite=False, clover_enabled=False,
+                                       start_index=0, max_results=25)
+        except ValueError:
+            raise ValueError('The key "{}" does not correspond to the latest build result'.format(plan_key))
 
     def reports(self, max_results=25):
         params = {'max-results': max_results}

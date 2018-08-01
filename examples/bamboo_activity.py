@@ -1,4 +1,4 @@
-from pprint import pprint
+# coding: utf8
 from atlassian import Bamboo
 import os
 
@@ -11,9 +11,8 @@ bamboo = Bamboo(
     username=ATLASSIAN_USER,
     password=ATLASSIAN_PASSWORD)
 
-
 agent_status = bamboo.agent_status()
-pprint(agent_status)
+print(agent_status)
 
 activity = bamboo.activity()
-pprint(activity)
+print(activity)

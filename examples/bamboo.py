@@ -1,4 +1,4 @@
-from pprint import pprint
+# coding: utf8
 from atlassian import Bamboo
 import os
 
@@ -16,27 +16,27 @@ bamboo = Bamboo(
 # all results without the need of dealing need with pagination
 
 # for project in bamboo.projects():
-#    pprint(project)
+#    print(project)
 
 
 for branch in bamboo.plan_branches('PROJ-SP2'):
-    pprint(branch)
+    print(branch)
 
 # for result in bamboo.latest_results():
-#    pprint(result)
+#    print(result)
 
 # for result in bamboo.plan_results(project_key='FOO', plan_key='BAR'):
-#    pprint(result)
+#    print(result)
 
 # for report in bamboo.reports():
-#     pprint(report)
+#    print(report)
 
 
 # Methods in singular (project, plan, result...) return a single dictionary
 
-pprint(bamboo.project('FOO'))
+print(bamboo.project('FOO'))
 
-pprint(bamboo.build_result('FOO-BAR-1'))
+print(bamboo.build_result('FOO-BAR-1'))
 
 
 
