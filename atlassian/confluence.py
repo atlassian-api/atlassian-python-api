@@ -28,19 +28,27 @@ class Confluence(AtlassianRestAPI):
             log.info('Page "{title}" does not exist in space "{space}"'.format(space=space, title=title))
             return False
 
-    def get_page_child_by_type(self, space, page_id, type='page', start=None, limit=None):
+    def get_page_child_by_type(self, page_id, type='page', start=None, limit=None):
+        """
+        Provide content by type (page, blog, comment)
+        :param page_id: A string containing the id of the type content container.
+        :param type:
+        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
+        :param limit: OPTIONAL: how many items should be returned after the start index. Default: Site limit.
+        :return:
+        """
         params = {}
         if start is not None:
             params["start"] = int(start)
         if limit is not None:
             params["limit"] = int(limit)
 
-        url = 'rest/api/content/%s/child/%s' % (page_id, type)
-        logging.info(url)
+        url = 'rest/api/content/{page_id}/child/{type}'.format(page_id=page_id, type=type)
+        log.info(url)
         try:
             return self.get(url)
         except IndexError as e:
-            logging.error(e)
+            log.error(e)
             return None
 
     def get_page_id(self, space, title):
@@ -74,7 +82,7 @@ class Confluence(AtlassianRestAPI):
         try:
             return self.get(url, params=params).get('results')[0]
         except IndexError as e:
-            logging.error(e)
+            log.error(e)
             return None
 
     def get_page_by_id(self, page_id, expand=None):
