@@ -18,9 +18,12 @@ class Confluence(AtlassianRestAPI):
 
     def page_exists(self, space, title):
         try:
-            self.get_page_by_title(space, title)
-            log.info('Page "{title}" already exists in space "{space}"'.format(space=space, title=title))
-            return True
+            if self.get_page_by_title(space, title):
+                log.info('Page "{title}" already exists in space "{space}"'.format(space=space, title=title))
+                return True
+            else:
+                log.info('Page does not exist because did not find by title search')
+                return False
         except (HTTPError, KeyError, IndexError):
             log.info('Page "{title}" does not exist in space "{space}"'.format(space=space, title=title))
             return False
