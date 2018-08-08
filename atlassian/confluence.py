@@ -4,7 +4,7 @@ from requests import HTTPError
 import logging
 import os
 
-log = logging.getLogger('atlassian.confluence')
+log = logging.getLogger(__name__)
 
 
 class Confluence(AtlassianRestAPI):

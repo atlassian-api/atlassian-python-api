@@ -2,8 +2,7 @@
 import logging
 import re
 
-
-log = logging.getLogger('atlassian.utils')
+log = logging.getLogger(__name__)
 
 
 def is_email(string):
