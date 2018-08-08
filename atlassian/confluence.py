@@ -52,9 +52,20 @@ class Confluence(AtlassianRestAPI):
             return None
 
     def get_page_id(self, space, title):
+        """
+        Provide content id from search result by title and space
+        :param space: SPACE key
+        :param title: title
+        :return:
+        """
         return self.get_page_by_title(space, title).get('id')
 
     def get_page_space(self, page_id):
+        """
+        Provide space key from content id
+        :param page_id: content ID
+        :return:
+        """
         return self.get_page_by_id(page_id, expand='space')['space']['key']
 
     def get_page_by_title(self, space, title, start=None, limit=None):
@@ -86,6 +97,12 @@ class Confluence(AtlassianRestAPI):
             return None
 
     def get_page_by_id(self, page_id, expand=None):
+        """
+        Get page by ID
+        :param page_id: Content ID
+        :param expand: OPTIONAL: expand e.g. history
+        :return:
+        """
         url = 'rest/api/content/{page_id}?expand={expand}'.format(page_id=page_id, expand=expand)
         return self.get(url)
 
@@ -281,6 +298,12 @@ class Confluence(AtlassianRestAPI):
         return self.get('rest/api/content/{0}/history'.format(page_id))
 
     def is_page_content_is_already_updated(self, page_id, body):
+        """
+        Compare content and check is already updated or not
+        :param page_id: Content ID for retrieve storage value
+        :param body: Body for compare it
+        :return: True if the same
+        """
         confluence_content = self.get_page_by_id(page_id, expand='body.storage')['body']['storage']['value']
         confluence_content = confluence_content.replace('&oacute;', u'ó')
 
