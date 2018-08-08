@@ -6,7 +6,7 @@ Atlassian Python API wrapper
 For users
 ---------
 
-For everyday normal use, just install package using pip::
+For everyday normal use, just install package using pip
 
 ::
 
@@ -43,6 +43,19 @@ And here's another example how to get issues from Jira using JQL Query:
 
     JQL = 'project = DEMO AND status NOT IN (Closed, Resolved) ORDER BY issuekey'
     data = jira.jql(JQL)
+    print(data)
+
+Also, you can use the Bitbucket module
+
+.. code-block:: python
+
+    from atlassian import Bitbucket
+
+    bitbucket = Bitbucket(
+    url='http://localhost:7990',
+    username='admin',
+    password='admin')
+    data = bitbucket.project_list()
     print(data)
 
 Please make sure, you've checked ``examples/`` directory on how to build scripts using the API.
