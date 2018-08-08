@@ -60,10 +60,8 @@ If you want to see response in pretty print format json. Feel free for use const
     # and then print using pprint(result) instead of print(result)
     pprint(response)
 
-For Contributors
+Development and Deployment (For contributors)
 ================
 
-The following command builds a package and uploads it to PIP repository::
-
-    python setup.py sdist upload
+See the `Contribution guidelines for this project`_ for details on how to make changes to this library.
 
