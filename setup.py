@@ -5,7 +5,7 @@ from setuptools import setup
 with open(os.path.join('atlassian', 'VERSION')) as file:
     version = file.read().strip()
 
-with open('README.rst', encoding='utf-8') as file:
+with open('README.rst') as file:
     long_description = file.read()
 
 setup(
@@ -35,9 +35,10 @@ setup(
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Web Environment',
-
+        'Environment :: Console',
         'Intended Audience :: Developers',
         'Intended Audience :: System Administrators',
+        'Intended Audience :: Information Technology',
         'License :: OSI Approved :: Apache Software License',
         'Natural Language :: English',
         'Operating System :: OS Independent',
