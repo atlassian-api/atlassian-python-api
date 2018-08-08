@@ -45,16 +45,16 @@ And here's another example how to get issues from Jira using JQL Query:
     data = jira.jql(JQL)
     print(data)
 
-Also, you can use the Bitbucket module
+Also, you can use the Bitbucket module e.g. for get project list
 
 .. code-block:: python
 
     from atlassian import Bitbucket
 
     bitbucket = Bitbucket(
-    url='http://localhost:7990',
-    username='admin',
-    password='admin')
+            url='http://localhost:7990',
+            username='admin',
+            password='admin')
     data = bitbucket.project_list()
     print(data)
 
