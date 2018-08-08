@@ -1,14 +1,7 @@
 ============================
 Atlassian Python API wrapper
 ============================
-
-.. image:: https://img.shields.io/pypi/v/atlassian-python-api.svg
-            :target: https://pypi.python.org/pypi/atlassian-python-api/
-.. image:: https://travis-ci.org/AstroMatt/atlassian-python-api.svg?branch=master 
-            :target: https://pypi.python.org/pypi/atlassian-python-api/
-.. image:: https://img.shields.io/pypi/l/atlassian-python-api.svg
-            :target: https://pypi.python.org/pypi/atlassian-python-api/
-
+|Build Status| |PyPI version| |License|
 
 For users
 =========
@@ -65,3 +58,12 @@ Development and Deployment (For contributors)
 
 See the `Contribution guidelines for this project`_ for details on how to make changes to this library.
 
+.. |Build Status| image:: https://travis-ci.org/AstroMatt/atlassian-python-api.svg?branch=master 
+   :target: https://pypi.python.org/pypi/atlassian-python-api
+   :alt: Build status
+.. |PyPI version| image:: https://badge.fury.io/py/atlassian-python-api.svg
+   :target: https://badge.fury.io/py/atlassian-python-api
+   :alt: PyPI version
+.. |License| image:: https://img.shields.io/pypi/l/atlassian-python-api.svg
+   :target: https://pypi.python.org/pypi/atlassian-python-api
+   :alt: License
