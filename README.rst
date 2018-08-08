@@ -58,6 +58,7 @@ Development and Deployment (For contributors)
 
 See the `Contribution guidelines for this project`_ for details on how to make changes to this library.
 
+.. _Contribution guidelines for this project: CONTRIBUTING.rst
 .. |Build Status| image:: https://travis-ci.org/AstroMatt/atlassian-python-api.svg?branch=master 
    :target: https://pypi.python.org/pypi/atlassian-python-api
    :alt: Build status
