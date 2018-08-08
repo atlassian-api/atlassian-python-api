@@ -22,9 +22,11 @@ into the global python environment by running this command from the top
 level directory.
 
 ::
-    pip install . --upgrade
+
+   pip install . --upgrade
 
 The following command builds a package and uploads it to PIP repository.
 
 ::
-      python setup.py sdist upload
+
+   python setup.py sdist upload
