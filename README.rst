@@ -4,11 +4,13 @@ Atlassian Python API wrapper
 |Build Status| |PyPI version| |License|
 
 For users
-=========
+---------
 
 For everyday normal use, just install package using pip::
 
-    pip install atlassian-python-api
+::
+
+   pip install atlassian-python-api
 
 Here's a short example how to create a Confluence page:
 
@@ -54,7 +56,7 @@ If you want to see response in pretty print format json. Feel free for use const
     pprint(response)
 
 Development and Deployment (For contributors)
-================
+---------------------------------------------
 
 See the `Contribution guidelines for this project`_ for details on how to make changes to this library.
 
