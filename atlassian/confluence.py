@@ -450,3 +450,14 @@ class Confluence(AtlassianRestAPI):
                                                                                       limit=limit,
                                                                                       start=start)
         return self.get(url)['results']
+
+    def get_space(self, space_key, expand='description.plain,homepage'):
+        """
+        Get information about a space through space key
+        :param space_key: The unique space key name
+        :param expand: OPTIONAL: additional info from description, homepage
+        :return: Returns the space along with its ID
+        """
+        url = 'rest/api/space/{space_key}?expand={expand}'.format(space_key=space_key,
+                                                                  expand=expand)
+        return self.get(url)
