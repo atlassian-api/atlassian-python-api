@@ -81,7 +81,6 @@ class AtlassianRestAPI(object):
         return response
         
     def request_att(self, method='GET', path='/', data=None, flags=None, params=None, headers=None, files=None):
-        self.log_curl_debug(method=method, path=path, headers=headers, data=data)
         url = '{0}{1}'.format(self.url,path)
 
         headers = headers or self.default_headers
@@ -95,24 +94,6 @@ class AtlassianRestAPI(object):
             verify=self.verify_ssl,
             files=files
         )
-        if response.status_code == 200:
-            log.debug('Received: {0}\n {1}'.format(response.status_code, response.json()))
-        elif response.status_code == 204:
-            log.debug('Received: {0}\n "No Content" response'.format(response.status_code))
-        elif response.status_code == 404:
-            log.error('Received: {0}\n Not Found'.format(response.status_code))
-        else:
-            log.debug('Received: {0}\n {1}'.format(response.status_code, response))
-            self.log_curl_debug(method=method, path=path, headers=headers, data=data, level=logging.DEBUG)
-            try:
-                log.error(response.json())
-            except ValueError:
-                log.error(response)
-            try:
-                response.raise_for_status()
-            except requests.exceptions.HTTPError as err:
-                log.error("HTTP Error occurred")
-                log.error('Response is: {content}'.format(content=err.response.content))
         return response
 
     def get(self, path, data=None, flags=None, params=None, headers=None):
