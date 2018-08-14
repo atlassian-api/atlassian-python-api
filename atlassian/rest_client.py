@@ -83,14 +83,6 @@ class AtlassianRestAPI(object):
     def request_att(self, method='GET', path='/', data=None, flags=None, params=None, headers=None, files=None):
         self.log_curl_debug(method=method, path=path, headers=headers, data=data)
         url = '{0}{1}'.format(self.url,path)
-        if params or flags:
-            url += '?'
-        if params:
-            url += urlencode(params or {})
-        if flags:
-            url += ('&' if params else '') + '&'.join(flags or [])
-        if files is None:
-            data = json.dumps(data)
 
         headers = headers or self.default_headers
         response = self._session.request(
