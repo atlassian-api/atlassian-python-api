@@ -80,7 +80,7 @@ class AtlassianRestAPI(object):
                 log.error('Response is: {content}'.format(content=err.response.content))
         return response
         
-        def request_att(self, method='GET', path='/', data=None, flags=None, params=None, headers=None, files=None):
+    def request_att(self, method='GET', path='/', data=None, flags=None, params=None, headers=None, files=None):
         self.log_curl_debug(method=method, path=path, headers=headers, data=data)
         url = '{0}{1}'.format(self.url,path)
         if params or flags:
