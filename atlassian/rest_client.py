@@ -83,6 +83,9 @@ class AtlassianRestAPI(object):
     def get(self, path, data=None, flags=None, params=None, headers=None):
         return self.request('GET', path=path, flags=flags, params=params, data=data, headers=headers).json()
 
+    def getnfh(self, path, data=None, flags=None, params=None, headers=None):
+        return self.request('GET', path=path, flags=flags, params=params, data=data, headers=headers)
+
     def post(self, path, data=None, headers=None, files=None):
         try:
             return self.request('POST', path=path, data=data, headers=headers, files=files).json()
