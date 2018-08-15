@@ -79,9 +79,28 @@ class AtlassianRestAPI(object):
                 log.error("HTTP Error occurred")
                 log.error('Response is: {content}'.format(content=err.response.content))
         return response
+        
+    def request_att(self, method='GET', path='/', data=None, flags=None, params=None, headers=None, files=None):
+        url = '{0}{1}'.format(self.url,path)
+
+        headers = headers or self.default_headers
+        response = self._session.request(
+            method=method,
+            url=url,
+            headers=headers,
+            data=data,
+            auth=(self.username, self.password),
+            timeout=self.timeout,
+            verify=self.verify_ssl,
+            files=files
+        )
+        return response
 
     def get(self, path, data=None, flags=None, params=None, headers=None):
         return self.request('GET', path=path, flags=flags, params=params, data=data, headers=headers).json()
+
+    def get_att(self, path, data=None, flags=None, params=None, headers=None):
+        return self.request_att('GET', path=path, flags=flags, params=params, data=data, headers=headers)
 
     def post(self, path, data=None, headers=None, files=None):
         try:
