@@ -60,8 +60,15 @@ class AtlassianRestAPI(object):
             verify=self.verify_ssl,
             files=files
         )
+        try:
+            if response.text:
+                response_content = response.json()
+            else:
+                response_content = response.content
+        except ValueError:
+            response_content = response.content
         if response.status_code == 200:
-            log.debug('Received: {0}\n {1}'.format(response.status_code, response.json()))
+            log.debug('Received: {0}\n {1}'.format(response.status_code, response_content))
         elif response.status_code == 204:
             log.debug('Received: {0}\n "No Content" response'.format(response.status_code))
         elif response.status_code == 404:
@@ -69,10 +76,7 @@ class AtlassianRestAPI(object):
         else:
             log.debug('Received: {0}\n {1}'.format(response.status_code, response))
             self.log_curl_debug(method=method, path=path, headers=headers, data=data, level=logging.DEBUG)
-            try:
-                log.error(response.json())
-            except ValueError:
-                log.error(response)
+            log.error(response_content)
             try:
                 response.raise_for_status()
             except requests.exceptions.HTTPError as err:
