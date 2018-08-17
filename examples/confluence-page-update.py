@@ -7,6 +7,7 @@ confluence = Confluence(
     password='admin')
 
 status = confluence.update_page(
+    parent_id=None,
     page_id=123456,
     title='This is the new title',
     body='This is the new body')
