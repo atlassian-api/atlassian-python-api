@@ -1,7 +1,7 @@
 ============================
 Atlassian Python API wrapper
 ============================
-|Build Status| |PyPI version| |License|
+|Build Status| |PyPI version| |License| |Codacy Badge|
 
 For users
 ---------
@@ -83,3 +83,6 @@ See the `Contribution guidelines for this project`_ for details on how to make c
 .. |License| image:: https://img.shields.io/pypi/l/atlassian-python-api.svg
    :target: https://pypi.python.org/pypi/atlassian-python-api
    :alt: License
+.. |Codacy Badge| image:: https://api.codacy.com/project/badge/Grade/c822908f507544fe98ae37b25518ae3d
+   :target: https://www.codacy.com/project/gonchik/atlassian-python-api/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=AstroMatt/atlassian-python-api&amp;utm_campaign=Badge_Grade_Dashboard
+   :alt: Codacy Badge
