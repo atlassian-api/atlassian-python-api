@@ -66,7 +66,7 @@ class Jira(AtlassianRestAPI):
 
     def user_disable(self, username):
         """Override the disable method"""
-        return self.user_deactivate(self, username)
+        return self.user_deactivate(username)
 
     def user_disable_throw_rest_endpoint(self, username, url='/rest/scriptrunner/latest/custom/disableUser',
                                          param='userName'):
