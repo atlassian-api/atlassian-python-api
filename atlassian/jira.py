@@ -3,7 +3,7 @@ import logging
 from requests.exceptions import HTTPError
 from .rest_client import AtlassianRestAPI
 
-log = logging.getLogger('atlassian.jira')
+log = logging.getLogger(__name__)
 
 
 class Jira(AtlassianRestAPI):
@@ -11,7 +11,22 @@ class Jira(AtlassianRestAPI):
         return self.get('rest/api/2/reindex')
 
     def reindex(self):
+        """ Reindex the Jira instance """
         return self.post('rest/api/2/reindex')
+
+    def reindex_with_type(self, indexing_type="BACKGROUND_PREFERRED"):
+        """
+        Reindex the Jira instance
+        Type of re-indexing available:
+        FOREGROUND - runs a lock/full reindexing
+        BACKGROUND - runs a background reindexing.
+                   If JIRA fails to finish the background reindexing, respond with 409 Conflict (error message).
+        BACKGROUND_PREFERRED  - If possible do a background reindexing.
+                   If it's not possible (due to an inconsistent index), do a foreground reindexing.
+        :param indexing_type: OPTIONAL: The default value for the type is BACKGROUND_PREFFERED
+        :return:
+        """
+        return self.post('rest/api/2/reindex?type={}'.format(indexing_type))
 
     def jql(self, jql, fields='*all', start=0, limit=None):
         """
@@ -75,6 +90,7 @@ class Jira(AtlassianRestAPI):
         return self.get(path=url)
 
     def user_get_websudo(self):
+        """ Get web sudo cookies using normal http request"""
         url = 'secure/admin/WebSudoAuthenticate.jspa'
         headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
                    'X-Atlassian-Token': 'no-check'

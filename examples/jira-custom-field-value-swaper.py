@@ -5,7 +5,7 @@ from atlassian import Jira
 
 custom_field_id = 'customfield_102589'
 source_issue_key = "TST-1"
-desctination_issue_key = "TST-2"
+destination_issue_key = "TST-2"
 
 jira = Jira(
     url='http://localhost:8080',
@@ -17,4 +17,4 @@ customfield_value = jira.issue_field_value(source_issue_key, custom_field_id)
 # prepare data like this https://developer.atlassian.com/server/jira/platform/jira-rest-api-example-edit-issues-6291632
 custom_field_preparation = {custom_field_id: customfield_value}
 # update custom field on destination issue
-jira.update_issue_field(desctination_issue_key, custom_field_preparation)
+jira.update_issue_field(destination_issue_key, custom_field_preparation)
