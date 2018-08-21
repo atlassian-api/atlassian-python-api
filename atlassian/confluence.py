@@ -58,7 +58,7 @@ class Confluence(AtlassianRestAPI):
         :param title: title
         :return:
         """
-        return self.get_page_by_title(space, title).get('id')
+        return (self.get_page_by_title(space, title) or {}).get('id')
 
     def get_page_space(self, page_id):
         """
