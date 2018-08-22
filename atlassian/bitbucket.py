@@ -7,11 +7,20 @@ log = logging.getLogger(__name__)
 
 class Bitbucket(AtlassianRestAPI):
     def project_list(self):
-        return self.get('rest/api/1.0/projects')['values']
+        """
+        Provide the project list
+        :return:
+        """
+        return (self.get('rest/api/1.0/projects') or {}).get('values')
 
     def project(self, key):
+        """
+        Provide project info
+        :param key:
+        :return:
+        """
         url = 'rest/api/1.0/projects/{0}'.format(key)
-        return self.get(url)['values']
+        return (self.get(url) or {}).get('values')
 
     def project_users(self, key, limit=99999):
         """
@@ -22,7 +31,7 @@ class Bitbucket(AtlassianRestAPI):
         :return:
         """
         url = 'rest/api/1.0/projects/{key}/permissions/users?limit={limit}'.format(key=key, limit=limit)
-        return self.get(url)['values']
+        return (self.get(url) or {}).get('values')
 
     def project_users_with_administrator_permissions(self, key):
         project_administrators = [user['user'] for user in self.project_users(key)
@@ -41,7 +50,7 @@ class Bitbucket(AtlassianRestAPI):
         :return:
         """
         url = 'rest/api/1.0/projects/{key}/permissions/groups?limit={limit}'.format(key=key, limit=limit)
-        return self.get(url)['values']
+        return (self.get(url) or {}).get('values')
 
     def project_groups_with_administrator_permissions(self, key):
         return [group['group']['name'] for group in self.project_groups(key) if group['permission'] == 'PROJECT_ADMIN']
@@ -62,7 +71,7 @@ class Bitbucket(AtlassianRestAPI):
         :return:
         """
         url = 'rest/api/1.0/admin/groups/more-members?context={group}&limit={limit}'.format(group=group, limit=limit)
-        return self.get(url)['values']
+        return (self.get(url) or {}).get('values')
 
     def all_project_administrators(self):
         for project in self.project_list():
@@ -82,7 +91,7 @@ class Bitbucket(AtlassianRestAPI):
         :return:
         """
         url = 'rest/api/1.0/projects/{projectKey}/repos?limit={limit}'.format(projectKey=project_key, limit=limit)
-        return self.get(url)['values']
+        return (self.get(url) or {}).get('values')
 
     def get_branches(self, project, repository, filter='', limit=99999, details=True):
         """
@@ -101,7 +110,7 @@ class Bitbucket(AtlassianRestAPI):
                                                                              filter=filter,
                                                                              details=details)
 
-        return self.get(url)['values']
+        return (self.get(url) or {}).get('values')
 
     def delete_branch(self, project, repository, name, end_point):
         """
@@ -127,7 +136,7 @@ class Bitbucket(AtlassianRestAPI):
                                                                                  state=state,
                                                                                  start=start,
                                                                                  order=order)
-        return self.get(url)['values']
+        return (self.get(url) or {}).get('values')
 
     def get_tags(self, project, repository, filter='', limit=99999):
         """
@@ -143,7 +152,7 @@ class Bitbucket(AtlassianRestAPI):
                                                                                 repository=repository)
         url += '?limit={limit}&filterText={filter}'.format(limit=limit,
                                                            filter=filter)
-        return self.get(url)['values']
+        return (self.get(url) or {}).get('values')
 
     def get_diff(self, project, repository, path, hash_oldest, hash_newest):
         url = 'rest/api/1.0/projects/{project}/repos/{repository}/compare/diff/{path}'.format(project=project,
@@ -151,7 +160,7 @@ class Bitbucket(AtlassianRestAPI):
                                                                                               path=path)
         url += '?from={hash_oldest}&to={hash_newest}'.format(hash_oldest=hash_oldest,
                                                              hash_newest=hash_newest)
-        return self.get(url)['diffs']
+        return (self.get(url) or {}).get('diffs')
 
     def get_commits(self, project, repository, hash_oldest, hash_newest, limit=99999):
         """
@@ -169,7 +178,7 @@ class Bitbucket(AtlassianRestAPI):
         url += '?since={hash_from}&until={hash_to}&limit={limit}'.format(hash_from=hash_oldest,
                                                                          hash_to=hash_newest,
                                                                          limit=limit)
-        return self.get(url)['values']
+        return (self.get(url) or {}).get('values')
 
     def get_changelog(self, project, repository, ref_from, ref_to, limit=99999):
         """
@@ -187,7 +196,7 @@ class Bitbucket(AtlassianRestAPI):
         url += '?from={ref_from}&to={ref_to}&limit={limit}'.format(ref_from=ref_from,
                                                                    ref_to=ref_to,
                                                                    limit=limit)
-        return self.get(url)['values']
+        return (self.get(url) or {}).get('values')
 
     def get_content_of_file(self, project, repository, filename):
         url = 'projects/{project}/repos/{repository}/browse/{filename}?raw'.format(project=project,

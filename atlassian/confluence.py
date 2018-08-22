@@ -175,7 +175,7 @@ class Confluence(AtlassianRestAPI):
                                                                                                      limit=limit,
                                                                                                      start=start,
                                                                                                      status=status)
-        return self.get(url)['results']
+        return (self.get(url) or {}).get('results')
 
     def get_all_draft_pages_from_space(self, space, start=0, limit=500, status='draft'):
         """
@@ -192,7 +192,7 @@ class Confluence(AtlassianRestAPI):
                                                                                                      limit=limit,
                                                                                                      start=start,
                                                                                                      status=status)
-        return self.get(url)['results']
+        return (self.get(url) or {}).get('results')
 
     def get_all_restictions_for_content(self, content_id):
         """
@@ -251,7 +251,7 @@ class Confluence(AtlassianRestAPI):
                             fixed system limits. Default: 500
         """
         url = 'rest/api/space?limit={limit}&start={start}'.format(limit=limit, start=start)
-        return self.get(url)['results']
+        return (self.get(url) or {}).get('results')
 
     def attach_file(self, filename, page_id=None, title=None, space=None, comment=None):
         """
@@ -458,7 +458,7 @@ class Confluence(AtlassianRestAPI):
         url = 'rest/api/group?limit={limit}&start={start}'.format(limit=limit,
                                                                   start=start)
 
-        return self.get(url)['results']
+        return (self.get(url) or {}).get('results')
 
     def get_group_members(self, group_name='confluence-users', start=0, limit=1000):
         """
@@ -472,7 +472,7 @@ class Confluence(AtlassianRestAPI):
         url = 'rest/api/group/{group_name}/member?limit={limit}&start={start}'.format(group_name=group_name,
                                                                                       limit=limit,
                                                                                       start=start)
-        return self.get(url)['results']
+        return (self.get(url) or {}).get('results')
 
     def get_space(self, space_key, expand='description.plain,homepage'):
         """
