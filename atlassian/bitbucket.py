@@ -34,6 +34,11 @@ class Bitbucket(AtlassianRestAPI):
         return (self.get(url) or {}).get('values')
 
     def project_users_with_administrator_permissions(self, key):
+        """
+        Get project administrators for project
+        :param key: project key
+        :return: project administrators
+        """
         project_administrators = [user['user'] for user in self.project_users(key)
                                   if user['permission'] == 'PROJECT_ADMIN']
         for group in self.project_groups_with_administrator_permissions(key):
@@ -53,6 +58,11 @@ class Bitbucket(AtlassianRestAPI):
         return (self.get(url) or {}).get('values')
 
     def project_groups_with_administrator_permissions(self, key):
+        """
+        Get groups with admin permissions
+        :param key:
+        :return:
+        """
         return [group['group']['name'] for group in self.project_groups(key) if group['permission'] == 'PROJECT_ADMIN']
 
     def project_summary(self, key):
@@ -199,8 +209,14 @@ class Bitbucket(AtlassianRestAPI):
         return (self.get(url) or {}).get('values')
 
     def get_content_of_file(self, project, repository, filename):
+        """
+        Get raw content of the file from repo
+        :param project:
+        :param repository:
+        :param filename:
+        :return:
+        """
         url = 'projects/{project}/repos/{repository}/browse/{filename}?raw'.format(project=project,
                                                                                    repository=repository,
                                                                                    filename=filename)
-
         return self.get(url)
