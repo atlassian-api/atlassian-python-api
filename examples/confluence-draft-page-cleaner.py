@@ -13,6 +13,7 @@ confluence = Confluence(
 def clean_draft_pages_from_space(confluence, space_key, count, date_now):
     """
     Remove draft pages from space using datetime.now
+    :param confluence:
     :param space_key:
     :param count:
     :param date_now:

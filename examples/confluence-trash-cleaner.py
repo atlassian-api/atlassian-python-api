@@ -27,7 +27,7 @@ def clean_pages_from_space(confluence, space_key):
             print("For space {} trash is empty".format(space_key))
         else:
             for value in values:
-                print(value[l'title'])
+                print(value['title'])
                 confluence.remove_page_from_trash(value['id'])
 
 
