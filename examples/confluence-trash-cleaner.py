@@ -9,19 +9,17 @@ confluence = Confluence(
     password='admin')
 
 
-def clean_pages_from_space(confluence, space_key):
+def clean_pages_from_space(confluence, space_key, limit=500):
     """
     Remove all pages from trash for related space
+    :param limit:
     :param confluence:
     :param space_key:
     :return:
     """
-    limit = 500
     flag = True
-    step = 0
     while flag:
         values = confluence.get_all_pages_from_space_trash(space=space_key, start=0, limit=limit)
-        step += 1
         if len(values) == 0:
             flag = False
             print("For space {} trash is empty".format(space_key))
