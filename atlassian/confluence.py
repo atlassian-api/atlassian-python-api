@@ -491,14 +491,14 @@ class Confluence(AtlassianRestAPI):
         :param cql:
         :param start: OPTIONAL: The start point of the collection to return. Default: 0.
         :param limit: OPTIONAL: The limit of the number of issues to return, this may be restricted by
-                fixed system limits. Default by built-in method: 50
+                fixed system limits. Default by built-in method: 25
         :return:
         """
         params = {}
         if start is not None:
-            params["startAt"] = int(start)
+            params["start"] = int(start)
         if limit is not None:
-            params["maxResults"] = int(limit)
+            params["limit"] = int(limit)
         if cql is not None:
             params['cql'] = cql
         return self.get('rest/api/search', params=params)
