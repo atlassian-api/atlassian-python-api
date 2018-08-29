@@ -484,3 +484,21 @@ class Confluence(AtlassianRestAPI):
         url = 'rest/api/space/{space_key}?expand={expand}'.format(space_key=space_key,
                                                                   expand=expand)
         return self.get(url)
+
+    def cql(self, cql, start=0, limit=None):
+        """
+        Get results from cql search result with all related fields
+        :param cql:
+        :param start: OPTIONAL: The start point of the collection to return. Default: 0.
+        :param limit: OPTIONAL: The limit of the number of issues to return, this may be restricted by
+                fixed system limits. Default by built-in method: 50
+        :return:
+        """
+        params = {}
+        if start is not None:
+            params["startAt"] = int(start)
+        if limit is not None:
+            params["maxResults"] = int(limit)
+        if cql is not None:
+            params['cql'] = cql
+        return self.get('rest/api/search', params=params)
