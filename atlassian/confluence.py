@@ -485,6 +485,26 @@ class Confluence(AtlassianRestAPI):
                                                                   expand=expand)
         return self.get(url)
 
+    def get_user_details_by_username(self, username):
+        """
+        Get information about a user through username
+        :param username: The user name
+        :return: Returns the user details
+        """
+        url = 'rest/api/user?username={username}'.format(username=username)
+
+        return self.get(url)
+
+    def get_user_details_by_userkey(self, userkey):
+        """
+        Get information about a user through user key
+        :param username: The user key
+        :return: Returns the user details
+        """
+        url = 'rest/api/user?key={userkey}'.format(userkey=userkey)
+
+        return self.get(url)
+
     def cql(self, cql, start=0, limit=None):
         """
         Get results from cql search result with all related fields
