@@ -129,6 +129,43 @@ class Jira(AtlassianRestAPI):
         """
         return self.get('rest/api/2/project/{0}/components'.format(key))
 
+    def get_project_versions(self, key, expand=None):
+        """
+        Contains a full representation of a the specified project's versions.
+        :param key:
+        :param expand: the parameters to expand
+        :return:
+        """
+        if expand is not None:
+            params["expand"] = expand
+        return self.get('rest/api/2/project/{}/versions'.format(key))
+
+    def get_project_versions_paginated(self, key, start=None, limit=None, order_by=None, expand=None):
+        """
+        Returns all versions for the specified project. Results are paginated.
+        Results can be ordered by the following fields:
+            sequence
+            name
+            startDate
+            releaseDate
+        :param key: the project key or id
+        :param start: the page offset, if not specified then defaults to 0
+        :param limit: how many results on the page should be included. Defaults to 50.
+        :param order_by: ordering of the results.
+        :param expand: the parameters to expand
+        :return:
+        """
+        params = {}
+        if start is not None:
+            params["startAt"] = int(start)
+        if limit is not None:
+            params["maxResults"] = int(limit)
+        if order_by is not None:
+            params["orderBy"] = order_by
+        if expand is not None:
+            params["expand"] = expand
+        return self.get('rest/api/2/project/{}/version'.format(key), params)
+
     def issue(self, key, fields='*all'):
         return self.get('rest/api/2/issue/{0}?fields={1}'.format(key, fields))
 
