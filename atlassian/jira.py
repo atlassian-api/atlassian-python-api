@@ -341,3 +341,39 @@ class Jira(AtlassianRestAPI):
         upm_token = self.request(method='GET', path='rest/plugins/1.0/', headers=headers).headers['upm-token']
         url = 'rest/plugins/1.0/?token={upm_token}'.format(upm_token=upm_token)
         return self.post(url, files=files, headers=headers)
+
+    """
+    #######################################################################
+    #                   Tempo Account Rest Api implements                 #
+    #######################################################################
+    """
+
+    def tempo_account_get_accounts(self, skip_archived=None, expand=None):
+        """
+        Get all Accounts that the logged in user has permission to browse.
+        :param skip_archived: bool OPTIONAL: skip archived Accounts, either true or false, default value true.
+        :param expand: bool OPTIONAL: With expanded data or not
+        :return:
+        """
+        params = {}
+        if skip_archived is not None:
+            params['skipArchived'] = skip_archived
+        if expand is not None:
+            params['expand'] = expand
+        url = 'rest/tempo-accounts/1/account'
+        return self.get(url, params=params)
+
+    def tempo_account_get_customers(self, query=None, count_accounts=None):
+        """
+        Gets all or some Attribute whose key or name contain a specific substring. Attributes can be a Category or Customer.
+        :param query: OPTIONAL: query for search
+        :param count_accounts: bool OPTIONAL: provide how many associated Accounts with Customer
+        :return: list of customers
+        """
+        params = {}
+        if query is not None:
+            params['query'] = query
+        if count_accounts is not None:
+            params['countAccounts'] = count_accounts
+        url = 'rest/tempo-accounts/1/customer'
+        return self.get(url, params=params)
