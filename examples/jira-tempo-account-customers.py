@@ -8,8 +8,8 @@ jira = Jira(
     username='admin',
     password='admin')
 
-results = jira.tempo_account_get_customers()
-print("Count of Customers" + str(len(results)))
+results = jira.tempo_account_get_all_customers()
+print("Count of Customers  " + str(len(results)))
 
 for result in results:
     print(result.get('key'), ' ', result.get('name'))

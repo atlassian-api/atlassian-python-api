@@ -363,7 +363,7 @@ class Jira(AtlassianRestAPI):
         url = 'rest/tempo-accounts/1/account'
         return self.get(url, params=params)
 
-    def tempo_account_get_customers(self, query=None, count_accounts=None):
+    def tempo_account_get_all_customers(self, query=None, count_accounts=None):
         """
         Gets all or some Attribute whose key or name contain a specific substring. Attributes can be a Category or Customer.
         :param query: OPTIONAL: query for search
@@ -377,3 +377,38 @@ class Jira(AtlassianRestAPI):
             params['countAccounts'] = count_accounts
         url = 'rest/tempo-accounts/1/customer'
         return self.get(url, params=params)
+
+    def tempo_account_get_customer_by_id(self, customer_id=1):
+        """
+        Get Account Attribute whose key or name contain a specific substring. Attribute can be a Category or Customer.
+        :param customer_id: id of Customer record
+        :return: Customer info
+        """
+        url = 'rest/tempo-accounts/1/customer/{id}'.format(id=customer_id)
+        return self.get(url)
+
+    def tempo_account_update_customer_by_id(self, customer_id=1, body=None):
+        """
+        Updates an Attribute. Caller must have Manage Account Permission. Attribute can be a Category or Customer.
+        :param customer_id: id of Customer record
+        :param body: format is
+                    {
+                        isNew:boolean
+                        name:string
+                        key:string
+                        id:number
+                    }
+        :return: json with parameters name, key and id.
+        """
+
+        url = 'rest/tempo-accounts/1/customer/{id}'.format(id=customer_id)
+        return self.put(url, data=body)
+
+    def tempo_account_delete_customer_by_id(self, customer_id=1):
+        """
+        Delete an Attribute. Caller must have Manage Account Permission. Attribute can be a Category or Customer.
+        :param customer_id: id of Customer record
+        :return: Customer info
+        """
+        url = 'rest/tempo-accounts/1/customer/{id}'.format(id=customer_id)
+        return self.delete(url)
