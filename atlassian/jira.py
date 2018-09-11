@@ -83,7 +83,7 @@ class Jira(AtlassianRestAPI):
         """Override the disable method"""
         return self.user_deactivate(username)
 
-    def user_disable_throw_rest_endpoint(self, username, url='/rest/scriptrunner/latest/custom/disableUser',
+    def user_disable_throw_rest_endpoint(self, username, url='rest/scriptrunner/latest/custom/disableUser',
                                          param='userName'):
         """The disable method throw own rest enpoint"""
         url = "{}?{}={}".format(url, param, username)
@@ -136,9 +136,10 @@ class Jira(AtlassianRestAPI):
         :param expand: the parameters to expand
         :return:
         """
+        params = {}
         if expand is not None:
             params["expand"] = expand
-        return self.get('rest/api/2/project/{}/versions'.format(key))
+        return self.get('rest/api/2/project/{}/versions'.format(key), params=params)
 
     def get_project_versions_paginated(self, key, start=None, limit=None, order_by=None, expand=None):
         """
@@ -341,3 +342,128 @@ class Jira(AtlassianRestAPI):
         upm_token = self.request(method='GET', path='rest/plugins/1.0/', headers=headers).headers['upm-token']
         url = 'rest/plugins/1.0/?token={upm_token}'.format(upm_token=upm_token)
         return self.post(url, files=files, headers=headers)
+
+    """
+    #######################################################################
+    #                   Tempo Account Rest Api implements                 #
+    #######################################################################
+    """
+
+    def tempo_account_get_accounts(self, skip_archived=None, expand=None):
+        """
+        Get all Accounts that the logged in user has permission to browse.
+        :param skip_archived: bool OPTIONAL: skip archived Accounts, either true or false, default value true.
+        :param expand: bool OPTIONAL: With expanded data or not
+        :return:
+        """
+        params = {}
+        if skip_archived is not None:
+            params['skipArchived'] = skip_archived
+        if expand is not None:
+            params['expand'] = expand
+        url = 'rest/tempo-accounts/1/account'
+        return self.get(url, params=params)
+
+    def tempo_account_add_account(self, data=None):
+        """
+        Creates Account, adding new Account requires the Manage Accounts Permission.
+        :param data: String then it will convert to json
+        :return:
+        """
+        url = 'rest/tempo-accounts/1/account/'
+        if data is None:
+            return """Please, provide data e.g.
+                       {name: "12312312321", 
+                       key: "1231231232", 
+                       lead: {name: "gonchik.tsymzhitov"},
+                       }
+                       detail info: http://developer.tempo.io/doc/accounts/api/rest/latest/#-700314780
+                   """
+        return self.post(url, data=data)
+
+    def tempo_account_delete_account_by_id(self, account_id):
+        """
+        Delete an Account by id. Caller must have the Manage Account Permission for the Account.
+        The Account can not be deleted if it has an AccountLinkBean.
+        :param account_id: the id of the Account to be deleted.
+        :return:
+        """
+        url = 'rest/tempo-accounts/1/account/{id}/'.format(id=account_id)
+        return self.delete(url)
+
+    def tempo_account_get_all_account_by_customer_id(self, customer_id):
+        """
+        Get un-archived Accounts by customer. The Caller must have the Browse Account permission for the Account.
+        :param customer_id: the Customer id.
+        :return:
+        """
+        url = 'rest/tempo-accounts/1/account/customer/{customerId}/'.format(customerId=customer_id)
+        return self.get(url)
+
+    def tempo_account_get_customers(self, query=None, count_accounts=None):
+        """
+        Gets all or some Attribute whose key or name contain a specific substring. Attributes can be a Category or Customer.
+        :param query: OPTIONAL: query for search
+        :param count_accounts: bool OPTIONAL: provide how many associated Accounts with Customer
+        :return: list of customers
+        """
+        params = {}
+        if query is not None:
+            params['query'] = query
+        if count_accounts is not None:
+            params['countAccounts'] = count_accounts
+        url = 'rest/tempo-accounts/1/customer'
+        return self.get(url, params=params)
+
+    def tempo_account_add_customer(self, data=None):
+        """
+        Gets all or some Attribute whose key or name contain a specific substring. Attributes can be a Category or Customer.
+        :param data:
+        :return: if error will show in error log, like validation unsuccessful. If success will good.
+        """
+        if data is None:
+            return """Please, set the data as { isNew:boolean
+                                                name:string
+                                                key:string
+                                                id:number } or you can put only name and key parameters"""
+        url = 'rest/tempo-accounts/1/customer'
+        return self.post(url, data=data)
+
+    def tempo_account_get_customer_by_id(self, customer_id=1):
+        """
+        Get Account Attribute whose key or name contain a specific substring. Attribute can be a Category or Customer.
+        :param customer_id: id of Customer record
+        :return: Customer info
+        """
+        url = 'rest/tempo-accounts/1/customer/{id}'.format(id=customer_id)
+        return self.get(url)
+
+    def tempo_account_update_customer_by_id(self, customer_id=1, data=None):
+        """
+        Updates an Attribute. Caller must have Manage Account Permission. Attribute can be a Category or Customer.
+        :param customer_id: id of Customer record
+        :param data: format is
+                    {
+                        isNew:boolean
+                        name:string
+                        key:string
+                        id:number
+                    }
+        :return: json with parameters name, key and id.
+        """
+        if data is None:
+            return """Please, set the data as { isNew:boolean
+                                                name:string
+                                                key:string
+                                                id:number }"""
+        url = 'rest/tempo-accounts/1/customer/{id}'.format(id=customer_id)
+        return self.put(url, data=data)
+
+    def tempo_account_delete_customer_by_id(self, customer_id=1):
+        """
+        Delete an Attribute. Caller must have Manage Account Permission. Attribute can be a Category or Customer.
+        :param customer_id: id of Customer record
+        :return: Customer info
+        """
+        url = 'rest/tempo-accounts/1/customer/{id}'.format(id=customer_id)
+        return self.delete(url)
