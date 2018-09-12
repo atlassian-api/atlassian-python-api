@@ -84,8 +84,21 @@ class AtlassianRestAPI(object):
                 log.error('Response is: {content}'.format(content=err.response.content))
         return response
 
-    def get(self, path, data=None, flags=None, params=None, headers=None):
-        return self.request('GET', path=path, flags=flags, params=params, data=data, headers=headers).json()
+    def get(self, path, data=None, flags=None, params=None, headers=None, not_json_response=None):
+        """
+        Get request based on the python-requests module. You can override headers, and also, get not json response
+        :param path:
+        :param data:
+        :param flags:
+        :param params:
+        :param headers:
+        :param not_json_response: OPTIONAL: For get content from raw requests packet
+        :return:
+        """
+        if not_json_response:
+            return self.request('GET', path=path, flags=flags, params=params, data=data, headers=headers).content
+        else:
+            return self.request('GET', path=path, flags=flags, params=params, data=data, headers=headers).json()
 
     def post(self, path, data=None, headers=None, files=None):
         try:

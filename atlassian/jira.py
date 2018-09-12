@@ -467,3 +467,12 @@ class Jira(AtlassianRestAPI):
         """
         url = 'rest/tempo-accounts/1/customer/{id}'.format(id=customer_id)
         return self.delete(url)
+
+    def tempo_account_export_accounts(self):
+        """
+        Get csv export file of Accounts from Tempo
+        :return: csv file
+        """
+        headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', 'X-Atlassian-Token': 'no-check'}
+        url = 'rest/tempo-accounts/1/export'
+        return self.get(url, headers=headers, not_json_response=True)
