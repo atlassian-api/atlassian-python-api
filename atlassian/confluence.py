@@ -227,16 +227,28 @@ class Confluence(AtlassianRestAPI):
         :param page_id:
         :return:
         """
-        url = 'rest/api/content/{page_id}?status=trashed'.format(page_id=page_id)
-        return self.delete(url)
+        return self.remove_page(page_id=page_id, status='trashed')
 
-    def remove_page(self, page_id):
+    def remove_page_as_draft(self, page_id):
         """
-        This method removed page
+        This method removed page from trash
         :param page_id:
         :return:
         """
-        url = 'rest/api/content/{page_id}'.format(page_id=page_id)
+        return self.remove_page(page_id=page_id, status='draft')
+
+    def remove_page(self, page_id, status=None):
+        """
+        This method removed page
+        :param page_id:
+        :param status: OPTIONAL: type of page
+        :return:
+        """
+        if status is None:
+            url = 'rest/api/content/{page_id}'.format(page_id=page_id)
+        else:
+            url = 'rest/api/content/{page_id}?status={status}'.format(page_id=page_id, status=status)
+
         return self.delete(url)
 
     def create_page(self, space, title, body, parent_id=None, type='page'):
