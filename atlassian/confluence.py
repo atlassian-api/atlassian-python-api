@@ -194,6 +194,24 @@ class Confluence(AtlassianRestAPI):
                                                                                                      status=status)
         return (self.get(url) or {}).get('results')
 
+    def get_all_draft_pages_from_space_through_cql(self, space, start=0, limit=500, status='draft'):
+        """
+        Search list of draft pages by space key
+        Use case is cleanup old drafts from Confluence
+        :param space: Space Key
+        :param status: Can be changed
+        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
+        :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
+                            fixed system limits. Default: 500
+        :return:
+        """
+        url = 'rest/api/content?cql=space=spaceKey={space} and status={status}'.format(space=space,
+                                                                                       status=status)
+        params = {}
+        params['limit'] = limit
+        params['start'] = start
+        return (self.get(url, params=params) or {}).get('results')
+
     def get_all_restictions_for_content(self, content_id):
         """
         Returns info about all restrictions by operation.
