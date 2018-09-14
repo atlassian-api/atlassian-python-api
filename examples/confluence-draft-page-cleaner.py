@@ -27,7 +27,9 @@ def clean_draft_pages_from_space(confluence, space_key, count, date_now):
         last_date = datetime.datetime.strptime(last_date_string.replace(".000", "")[:-6], "%Y-%m-%dT%H:%M:%S")
         if (date_now - last_date) > datetime.timedelta(days=DRAFT_DAYS):
             count += 1
-            print("Removed page with date {}".format(last_date_string))
+            print("Removing page with page id: " + page_id)
+            confluence.remove_page_as_draft(page_id=page_id)
+            print("Removed page with date " + last_date_string)
     return count
 
 
