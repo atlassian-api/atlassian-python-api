@@ -31,7 +31,7 @@ class AtlassianRestAPI(object):
             password=self.password,
             headers=' -H '.join(["'{0}: {1}'".format(key, value) for key, value in headers.items()]),
             data='' if not data else "--data '{0}'".format(json.dumps(data)),
-            url='{0}{1}'.format(self.url, path))
+            url='{0}'.format(urljoin(self.url, path)))
         log.log(level=level, msg=message)
 
     def resource_url(self, resource):

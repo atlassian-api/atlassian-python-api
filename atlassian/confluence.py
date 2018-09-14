@@ -194,6 +194,24 @@ class Confluence(AtlassianRestAPI):
                                                                                                      status=status)
         return (self.get(url) or {}).get('results')
 
+    def get_all_draft_pages_from_space_through_cql(self, space, start=0, limit=500, status='draft'):
+        """
+        Search list of draft pages by space key
+        Use case is cleanup old drafts from Confluence
+        :param space: Space Key
+        :param status: Can be changed
+        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
+        :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
+                            fixed system limits. Default: 500
+        :return:
+        """
+        url = 'rest/api/content?cql=space=spaceKey={space} and status={status}'.format(space=space,
+                                                                                       status=status)
+        params = {}
+        params['limit'] = limit
+        params['start'] = start
+        return (self.get(url, params=params) or {}).get('results')
+
     def get_all_restictions_for_content(self, content_id):
         """
         Returns info about all restrictions by operation.
@@ -209,16 +227,28 @@ class Confluence(AtlassianRestAPI):
         :param page_id:
         :return:
         """
-        url = 'rest/api/content/{page_id}?status=trashed'.format(page_id=page_id)
-        return self.delete(url)
+        return self.remove_page(page_id=page_id, status='trashed')
 
-    def remove_page(self, page_id):
+    def remove_page_as_draft(self, page_id):
         """
-        This method removed page
+        This method removed page from trash
         :param page_id:
         :return:
         """
-        url = 'rest/api/content/{page_id}'.format(page_id=page_id)
+        return self.remove_page(page_id=page_id, status='draft')
+
+    def remove_page(self, page_id, status=None):
+        """
+        This method removed page
+        :param page_id:
+        :param status: OPTIONAL: type of page
+        :return:
+        """
+        if status is None:
+            url = 'rest/api/content/{page_id}'.format(page_id=page_id)
+        else:
+            url = 'rest/api/content/{page_id}?status={status}'.format(page_id=page_id, status=status)
+
         return self.delete(url)
 
     def create_page(self, space, title, body, parent_id=None, type='page'):
