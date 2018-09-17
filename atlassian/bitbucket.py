@@ -158,11 +158,62 @@ class Bitbucket(AtlassianRestAPI):
                 fixed system limits. Default by built-in method: 99999
         :return:
         """
-        url = '/rest/api/1.0/projects/{project}/repos/{repository}/tags'.format(project=project,
-                                                                                repository=repository)
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/tags'.format(project=project,
+                                                                               repository=repository)
         url += '?limit={limit}&filterText={filter}'.format(limit=limit,
                                                            filter=filter)
         return (self.get(url) or {}).get('values')
+
+    def get_project_tags(self, project, repository, tag_name):
+        """
+        Retrieve a tag in the specified repository.
+        The authenticated user must have REPO_READ permission for the context repository to call this resource.
+        Search uri is api/1.0/projects/{projectKey}/repos/{repositorySlug}/tags/{name:.*}
+        :param project:
+        :param repository:
+        :param tag_name: OPTIONAL:
+        :return:
+        """
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/tags/{tag}'.format(project=project,
+                                                                                     repository=repository,
+                                                                                     tag=tag_name)
+        return self.get(url, not_json_response=True)
+
+    def set_tag(self, project, repository, tag_name, commit_revision, description=None):
+        """
+        Creates a tag using the information provided in the {@link RestCreateTagRequest request}
+        The authenticated user must have REPO_WRITE permission for the context repository to call this resource.
+        :param project:
+        :param repository:
+        :param tag_name:
+        :param commit_revision: commit hash
+        :param description: OPTIONAL:
+        :return:
+        """
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/tags'.format(project=project,
+                                                                               repository=repository)
+        body = {}
+        if tag_name is not None:
+            body['name'] = tag_name
+        if tag_name is not None:
+            body['startPoint'] = commit_revision
+        if tag_name is not None:
+            body['message'] = description
+        return self.post(url, data=body)
+
+    def delete_tag(self, project, repository, tag_name):
+        """
+        Creates a tag using the information provided in the {@link RestCreateTagRequest request}
+        The authenticated user must have REPO_WRITE permission for the context repository to call this resource.
+        :param project:
+        :param repository:
+        :param tag_name:
+        :return:
+        """
+        url = 'rest/git/1.0/projects/{project}/repos/{repository}/tags/{tag}'.format(project=project,
+                                                                                     repository=repository,
+                                                                                     tag=tag_name)
+        return self.delete(url)
 
     def get_diff(self, project, repository, path, hash_oldest, hash_newest):
         url = 'rest/api/1.0/projects/{project}/repos/{repository}/compare/diff/{path}'.format(project=project,
