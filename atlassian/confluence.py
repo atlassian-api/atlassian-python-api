@@ -46,7 +46,7 @@ class Confluence(AtlassianRestAPI):
         url = 'rest/api/content/{page_id}/child/{type}'.format(page_id=page_id, type=type)
         log.info(url)
         try:
-            return self.get(url, params=params).get('results')
+            return (self.get(url, params=params) or {}).get('results')
         except IndexError as e:
             log.error(e)
             return None
@@ -66,7 +66,7 @@ class Confluence(AtlassianRestAPI):
         :param page_id: content ID
         :return:
         """
-        return self.get_page_by_id(page_id, expand='space')['space']['key']
+        return ((self.get_page_by_id(page_id, expand='space') or {}).get('space') or {}).get('key')
 
     def get_page_by_title(self, space, title, start=None, limit=None):
         """
@@ -91,7 +91,7 @@ class Confluence(AtlassianRestAPI):
             params['title'] = str(title)
         url = 'rest/api/content'
         try:
-            return self.get(url, params=params).get('results')[0]
+            return (self.get(url, params=params) or {}).get('results')[0]
         except IndexError as e:
             log.error(e)
             return None
@@ -159,7 +159,7 @@ class Confluence(AtlassianRestAPI):
         url = 'rest/api/content?spaceKey={space}&limit={limit}&start={start}'.format(space=space,
                                                                                      limit=limit,
                                                                                      start=start)
-        return self.get(url)['results']
+        return (self.get(url) or {}).get('results')
 
     def get_all_pages_from_space_trash(self, space, start=0, limit=500, status='trashed'):
         """
@@ -460,7 +460,7 @@ class Confluence(AtlassianRestAPI):
         :return: get properties
         """
         url = 'rest/api/content/{page_id}?expand=ancestors'.format(page_id=page_id)
-        return self.get(path=url).get('ancestors')
+        return (self.get(path=url) or {}).get('ancestors')
 
     def clean_all_caches(self):
         """ Clean all caches from cache management"""
