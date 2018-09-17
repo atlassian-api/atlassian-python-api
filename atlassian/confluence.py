@@ -34,7 +34,7 @@ class Confluence(AtlassianRestAPI):
         :param page_id: A string containing the id of the type content container.
         :param type:
         :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
-        :param limit: OPTIONAL: how many items should be returned after the start index. Default: Site limit.
+        :param limit: OPTIONAL: how many items should be returned after the start index. Default: Site limit 200.
         :return:
         """
         params = {}
@@ -46,7 +46,7 @@ class Confluence(AtlassianRestAPI):
         url = 'rest/api/content/{page_id}/child/{type}'.format(page_id=page_id, type=type)
         log.info(url)
         try:
-            return self.get(url)
+            return self.get(url, params=params).get('results')
         except IndexError as e:
             log.error(e)
             return None
