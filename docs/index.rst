@@ -42,6 +42,7 @@ Add a connection:
 
    jira
    confluence
+   bitbucket
 
 .. |Build Status| image:: https://travis-ci.org/AstroMatt/atlassian-python-api.svg?branch=master
    :target: https://pypi.python.org/pypi/atlassian-python-api
