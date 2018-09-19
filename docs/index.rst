@@ -37,7 +37,11 @@ Add a connection:
         username='admin',
         password='admin')
 
+.. toctree::
+   :maxdept:2
 
+   jira
+   confluence
 
 .. |Build Status| image:: https://travis-ci.org/AstroMatt/atlassian-python-api.svg?branch=master
    :target: https://pypi.python.org/pypi/atlassian-python-api
