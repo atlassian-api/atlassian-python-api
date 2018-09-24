@@ -563,3 +563,24 @@ class Confluence(AtlassianRestAPI):
         if cql is not None:
             params['cql'] = cql
         return self.get('rest/api/search', params=params)
+
+    def get_descendant_page_id(self, space, parent_id, title):
+        """
+        Provide  space, parent_id and title of the descendant page, it will return the descendant page_id
+        :param space: str
+        :param parent_id: int
+        :param title: str
+        :return: page_id of the page whose title is passed in argument
+        """
+        page_id = ""
+
+        url = 'rest/api/content/search?cql=parent={}%20AND%20space="{}"'.format(
+            parent_id, space
+        )
+        response = self.get(url, {})
+
+        for each_page in response.get("results", []):
+            if each_page.get("title") == title:
+                page_id = each_page.get("id")
+                break
+        return page_id
