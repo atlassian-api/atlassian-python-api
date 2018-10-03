@@ -292,11 +292,11 @@ class Jira(AtlassianRestAPI):
     def get_issue_transitions(self, issue_key):
         url = 'rest/api/2/issue/{issue_key}?expand=transitions.fields&fields=status'.format(issue_key=issue_key)
         return [{'name': transition['name'], 'id': int(transition['id']), 'to': transition['to']['name']}
-                for transition in self.get(url)['transitions']]
+                for transition in (self.get(url) or {}).get('transitions')]
 
     def get_status_id_from_name(self, status_name):
         url = 'rest/api/2/status/{name}'.format(name=status_name)
-        return int(self.get(url)['id'])
+        return int((self.get(url) or {}).get('id'))
 
     def get_transition_id_to_status_name(self, issue_key, status_name):
         for transition in self.get_issue_transitions(issue_key):
@@ -313,7 +313,7 @@ class Jira(AtlassianRestAPI):
 
     def get_issue_status(self, issue_key):
         url = 'rest/api/2/issue/{issue_key}?fields=status'.format(issue_key=issue_key)
-        return self.get(url)['fields']['status']['name']
+        return (self.get(url) or {}).get('fields').get('status').get('name')
 
     def component(self, component_id):
         return self.get('rest/api/2/component/{component_id}'.format(component_id=component_id))
