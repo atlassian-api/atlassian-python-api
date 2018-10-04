@@ -145,7 +145,7 @@ class Confluence(AtlassianRestAPI):
             label=label,
             start=start,
             limit=limit)
-        return self.get(url)
+        return (self.get(url) or {}).get('results')
 
     def get_all_pages_from_space(self, space, start=0, limit=500):
         """
