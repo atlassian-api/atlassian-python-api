@@ -70,6 +70,8 @@ instance/
 
 # Sphinx documentation
 docs/_build/
+Thumbs.db
+.DS_Store
 
 # PyBuilder
 target/
