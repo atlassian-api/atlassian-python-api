@@ -10,6 +10,25 @@ class ServiceDesk(AtlassianRestAPI):
         """ Get info about Service Desk app """
         return self.get('rest/servicedeskapi/info')
 
+    def get_service_desks(self):
+        """
+        Returns all service desks in the JIRA Service Desk application
+        with the option to include archived service desks
+
+        :return: Service Desks
+        """
+        service_desks_list = self.get('rest/servicedeskapi/servicedesk')
+        return service_desks_list.get('values')
+
+    def get_service_desk_by_id(self, service_desk_id):
+        """
+        Returns the service desk for a given service desk ID
+
+        :param service_desk_id: str
+        :return: Service Desk
+        """
+        return self.get('rest/servicedeskapi/servicedesk/{}'.format(service_desk_id))
+
     def create_customer(self, full_name, email):
         """
         Creating customer user
@@ -68,6 +87,19 @@ class ServiceDesk(AtlassianRestAPI):
         status = request[0].get('status')
         return status
 
+    def get_customer_transitions(self, issue_id_or_key):
+        """
+        Returns a list of transitions that customers can perform on the request
+
+        :param issue_id_or_key: str
+        :return:
+        """
+        headers = {'Content-Type': 'application/json',
+                   'Accept': 'application/json',
+                   'X-ExperimentalApi': 'opt-in'
+                   }
+        return self.get('rest/servicedeskapi/request/{}/transition'.format(issue_id_or_key), headers=headers)
+
     def perform_transition(self, issue_id_or_key, transition_id, comment=None):
         """
         Perform a customer transition for a given request and transition ID.
@@ -121,17 +153,23 @@ class ServiceDesk(AtlassianRestAPI):
 
     def get_organisations(self, start=0, limit=50):
         """
-        Returns a list of organizations in the JIRA instance. If the user is not an agent, the resource returns a list of organizations the user is a member of.
+        Returns a list of organizations in the JIRA instance. If the user is not an agent,
+        the resource returns a list of organizations the user is a member of.
+
         :param start: OPTIONAL: int The starting index of the returned objects.
                      Base index: 0. See the Pagination section for more details.
         :param limit: OPTIONAL: int The maximum number of users to return per page.
                      Default: 50. See the Pagination section for more details.
         :return:
         """
+        headers = {'Content-Type': 'application/json',
+                   'Accept': 'application/json',
+                   'X-ExperimentalApi': 'opt-in'
+                   }
         params = {}
         if start is not None:
             params["start"] = int(start)
         if limit is not None:
             params["limit"] = int(limit)
 
-        return self.get('rest/servicedeskapi/organization', params=params)
+        return self.get('rest/servicedeskapi/organization', headers=headers, params=params)
