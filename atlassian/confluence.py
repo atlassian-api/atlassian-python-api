@@ -564,6 +564,24 @@ class Confluence(AtlassianRestAPI):
             params['cql'] = cql
         return self.get('rest/api/search', params=params)
 
+    def get_page_as_pdf(self, page_id):
+        """
+        Export page as standard pdf exporter
+        :param page_id: Page ID
+        :return: PDF File
+        """
+        headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', 'X-Atlassian-Token': 'no-check'}
+        url = 'spaces/flyingpdf/pdfpageexport.action?pageId={pageId}'.format(pageId=page_id)
+        return self.get(url, headers=headers, not_json_response=True)
+
+    def export_page(self, page_id):
+        """
+        Alias method for export page as pdf
+        :param page_id: Page ID
+        :return: PDF File
+        """
+        return self.get_page_as_pdf(page_id)
+
     def get_descendant_page_id(self, space, parent_id, title):
         """
         Provide  space, parent_id and title of the descendant page, it will return the descendant page_id

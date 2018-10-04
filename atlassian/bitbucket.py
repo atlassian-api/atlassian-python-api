@@ -271,3 +271,30 @@ class Bitbucket(AtlassianRestAPI):
                                                                                    repository=repository,
                                                                                    filename=filename)
         return self.get(url)
+
+    def reindex(self):
+        """
+        Rebuild the bundled Elasticsearch indexes for Bitbucket Server
+        :return:
+        """
+        url = 'rest/indexing/latest/sync'
+        return self.post(url)
+
+    def reindex_repo(self, project, repository):
+        """
+        Reindex repo
+        :param project:
+        :param repository:
+        :return:
+        """
+        url = 'rest/indexing/1.0/projects/{projectKey}/repos/{repositorySlug}/sync'.format(projectKey=project,
+                                                                                           repositorySlug=repository)
+        return self.post(url)
+
+    def check_reindexing_status(self):
+        """
+        Check reindexing status
+        :return:
+        """
+        url = 'rest/indexing/latest/status'
+        return self.get(url)
