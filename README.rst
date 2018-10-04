@@ -58,6 +58,20 @@ Also, you can use the Bitbucket module e.g. for get project list
     data = bitbucket.project_list()
     print(data)
 
+Now you can use Jira Service Desk module. See docs.
+Example to get your requests:
+
+.. code-block:: python
+
+    from atlassian import ServiceDesk
+
+    sd = ServiceDesk(
+            url='http://localhost:7990',
+            username='admin',
+            password='admin')
+    my_requests = sd.get_my_customer_requests()
+    print(my_requests)
+
 Please make sure, you've checked ``examples/`` directory on how to build scripts using the API.
 If you want to see response in pretty print format json. Feel free for use construction like:
 
