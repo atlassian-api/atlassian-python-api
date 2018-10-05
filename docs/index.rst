@@ -21,6 +21,7 @@ Add a connection:
     from atlassian import Jira
     from atlassian import Confluence
     from atlassian import Bitbucket
+    from atlassian import ServiceDesk
 
     jira = Jira(
         url='http://localhost:8080',
