@@ -411,6 +411,16 @@ class Confluence(AtlassianRestAPI):
                 'representation': 'wiki'}
         return self.post('rest/api/contentbody/convert/storage', data=data)
 
+    def convert_storage_to_view(self, storage):
+        """
+        Convert from Confluence XHTML format to view format
+        :param storage:
+        :return:
+        """
+        data = {'value': storage,
+                'representation': 'storage'}
+        return self.post('rest/api/contentbody/convert/view', data=data)
+
     def set_page_property(self, page_id, data):
         """
         Set the page (content) property e.g. add hash parameters
