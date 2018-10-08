@@ -408,8 +408,18 @@ class Confluence(AtlassianRestAPI):
         :return:
         """
         data = {'value': wiki,
-                'representation': 'storage'}
+                'representation': 'wiki'}
         return self.post('rest/api/contentbody/convert/storage', data=data)
+
+    def convert_storage_to_view(self, storage):
+        """
+        Convert to Confluence XHTML format from wiki style
+        :param storage:
+        :return:
+        """
+        data = {'value': storage,
+                'representation': 'storage'}
+        return self.post('rest/api/contentbody/convert/view', data=data)
 
     def set_page_property(self, page_id, data):
         """
