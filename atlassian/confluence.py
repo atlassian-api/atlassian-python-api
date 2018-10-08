@@ -413,7 +413,7 @@ class Confluence(AtlassianRestAPI):
 
     def convert_storage_to_view(self, storage):
         """
-        Convert to Confluence XHTML format from wiki style
+        Convert from Confluence XHTML format to view format
         :param storage:
         :return:
         """
