@@ -408,7 +408,7 @@ class Confluence(AtlassianRestAPI):
         :return:
         """
         data = {'value': wiki,
-                'representation': 'wiki'}
+                'representation': 'storage'}
         return self.post('rest/api/contentbody/convert/storage', data=data)
 
     def set_page_property(self, page_id, data):
