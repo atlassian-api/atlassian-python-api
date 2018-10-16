@@ -295,14 +295,14 @@ class Jira(AtlassianRestAPI):
 
         :param issue_key: str
         :param filename: str, name, if file in current directory or full path to file
-        :return:
         """
         log.warning('Adding attachment...')
         headers = {'X-Atlassian-Token': 'no-check'}
-        file = open(filename, 'rb')
-        files = {'file': file}
-        url = 'rest/api/2/issue/{}/attachments'.format(issue_key)
-        return self.post(url, headers=headers, files=files)
+        with open(filename, 'rb') as file:
+            files = {'file': file}
+            url = 'rest/api/2/issue/{}/attachments'.format(issue_key)
+
+            return self.post(url, headers=headers, files=files)
 
     def get_issue_transitions(self, issue_key):
         url = 'rest/api/2/issue/{issue_key}?expand=transitions.fields&fields=status'.format(issue_key=issue_key)
