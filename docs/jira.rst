@@ -144,6 +144,14 @@ Manage issues
     # Get issue status
     jira.get_issue_status(issue_key)
 
+Attachments actions
+-------------------
+
+.. code-block:: python
+
+    # Add attachment to issue
+    jira.add_attachment(issue_key, filename)
+
 Manage components
 -----------------
 

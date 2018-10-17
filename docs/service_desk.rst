@@ -71,3 +71,22 @@ Manage the Organizations
     # Get a list of organizations in the JIRA instance
     # If the user is not an agent, the resource returns a list of organizations the user is a member of
     sd.get_organisations(self, start=0, limit=50)
+
+Attachment actions
+------------------
+
+**EXPERIMENTAL** (may change without notice)
+
+.. code-block:: python
+
+    # Create attachment (only single file) as a comment
+    # You can choose type of attachment. public=True is Public attachment, public=False is Internal attachment
+    # Customers can only create public attachments
+    # An additional comment may be provided which will be prepended to the attachments
+    sd.create_attachment(service_desk_id, issue_id_or_key, filename, public=True, comment=None)
+
+    # Create temporary attachment, which can later be converted into permanent attachment
+    sd.attach_temporary_file(service_desk_id, filename)
+
+    # Add temporary attachment that were created using attach_temporary_file function to a customer request
+    sd.add_attachment(issue_id_or_key, temp_attachment_id, public=True, comment=None)
