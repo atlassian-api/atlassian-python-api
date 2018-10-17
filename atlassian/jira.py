@@ -289,6 +289,20 @@ class Jira(AtlassianRestAPI):
         del fields['issuekey']
         return self.issue_update(issue_key, fields)
 
+    def issue_add_comment(self, issue_key, comment, visibility=None):
+        """
+        Add comment into Jira issue
+        :param issue_key:
+        :param comment:
+        :param visibility: Optional
+        :return:
+        """
+        url = 'rest/api/2/issue/{issueIdOrKey}/comment'.format(issueIdOrKey=issue_key)
+        data = {'body': comment}
+        if visibility:
+            data['visibility'] = visibility
+        return self.post(url, data=data)
+
     def get_issue_transitions(self, issue_key):
         url = 'rest/api/2/issue/{issue_key}?expand=transitions.fields&fields=status'.format(issue_key=issue_key)
         return [{'name': transition['name'], 'id': int(transition['id']), 'to': transition['to']['name']}
