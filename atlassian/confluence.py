@@ -149,7 +149,7 @@ class Confluence(AtlassianRestAPI):
 
     def get_all_pages_from_space(self, space, start=0, limit=500):
         """
-        Get all pages from Space
+        Get all pages from space
         :param space:
         :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
         :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
@@ -223,7 +223,7 @@ class Confluence(AtlassianRestAPI):
 
     def remove_page_from_trash(self, page_id):
         """
-        This method removed page from trash
+        This method removes a page from trash
         :param page_id:
         :return:
         """
@@ -231,7 +231,7 @@ class Confluence(AtlassianRestAPI):
 
     def remove_page_as_draft(self, page_id):
         """
-        This method removed page from trash
+        This method removes a page from trash if it is draft
         :param page_id:
         :return:
         """
@@ -239,7 +239,7 @@ class Confluence(AtlassianRestAPI):
 
     def remove_page(self, page_id, status=None):
         """
-        This method removed page
+        This method removes a page
         :param page_id:
         :param status: OPTIONAL: type of page
         :return:
@@ -381,7 +381,7 @@ class Confluence(AtlassianRestAPI):
 
     def update_or_create(self, parent_id, title, body):
         """
-        Update page or create page if it is not exists
+        Update page or create a page if it is not exists
         :param parent_id:
         :param title:
         :param body:
@@ -612,3 +612,19 @@ class Confluence(AtlassianRestAPI):
                 page_id = each_page.get("id")
                 break
         return page_id
+
+    def reindex(self):
+        """
+        It is not public method for reindex Confluence
+        :return:
+        """
+        url = 'rest/prototype/1/index/reindex'
+        return self.post(url)
+
+    def reindex_get_status(self):
+        """
+        Get reindex status of Confluence
+        :return:
+        """
+        url = 'rest/prototype/1/index/reindex'
+        return self.get(url)
