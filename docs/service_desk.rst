@@ -72,6 +72,12 @@ Manage the Organizations
     # If the user is not an agent, the resource returns a list of organizations the user is a member of
     sd.get_organisations(self, start=0, limit=50)
 
+    # Get an organization for a given organization ID
+    sd.get_organization(organization_id)
+
+    # Get all the users of a specified organization
+    sd.get_users_in_organization(organization_id, start=0, limit=50)
+
 Attachment actions
 ------------------
 
@@ -90,3 +96,16 @@ Attachment actions
 
     # Add temporary attachment that were created using attach_temporary_file function to a customer request
     sd.add_attachment(issue_id_or_key, temp_attachment_id, public=True, comment=None)
+
+SLA actions
+-----------
+
+.. code-block:: python
+
+    # Get the SLA information for a customer request for a given request ID or key
+    # IMPORTANT: The calling user must be an agent
+    sd.get_sla(issue_id_or_key, start=0, limit=50)
+
+    # Get the SLA information for a customer request for a given request ID or key and SLA metric ID
+    # IMPORTANT: The calling user must be an agent
+    sd.get_sla_by_id(issue_id_or_key, sla_id)

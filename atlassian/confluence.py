@@ -323,6 +323,18 @@ class Confluence(AtlassianRestAPI):
         else:
             log.warn("No 'page_id' found, not uploading attachments")
             return None
+    
+    def set_page_label(self, page_id, label):
+        """
+        Set a label on the page
+        :param page_id: content_id format
+        :param label: label to add
+        :return:
+        """
+        url = 'rest/api/content/{page_id}/label'.format(page_id=page_id)
+        data= { 'prefix': 'global',
+               'name': label}
+        return self.post(path=url, data=data)
 
     def history(self, page_id):
         return self.get('rest/api/content/{0}/history'.format(page_id))
