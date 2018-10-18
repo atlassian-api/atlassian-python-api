@@ -6,6 +6,8 @@ log = logging.getLogger(__name__)
 
 
 class ServiceDesk(AtlassianRestAPI):
+
+    # Information actions
     def get_info(self):
         """ Get info about Service Desk app """
         return self.get('rest/servicedeskapi/info')
@@ -29,6 +31,7 @@ class ServiceDesk(AtlassianRestAPI):
         """
         return self.get('rest/servicedeskapi/servicedesk/{}'.format(service_desk_id))
 
+    # Customers actions
     def create_customer(self, full_name, email):
         """
         Creating customer user
@@ -100,6 +103,7 @@ class ServiceDesk(AtlassianRestAPI):
                    }
         return self.get('rest/servicedeskapi/request/{}/transition'.format(issue_id_or_key), headers=headers)
 
+    # Transitions actions
     def perform_transition(self, issue_id_or_key, transition_id, comment=None):
         """
         Perform a customer transition for a given request and transition ID.
@@ -119,6 +123,7 @@ class ServiceDesk(AtlassianRestAPI):
         url = 'rest/servicedeskapi/request/{}/transition'.format(issue_id_or_key)
         return self.post(url, headers=headers, data=data)
 
+    # Comments actions
     def create_request_comment(self, issue_id_or_key, body, public=True):
         """
         Creating request comment
@@ -151,6 +156,7 @@ class ServiceDesk(AtlassianRestAPI):
         """
         return self.get('rest/servicedeskapi/request/{0}/comment/{1}'.format(issue_id_or_key, comment_id))
 
+    # Organizations actions
     def get_organisations(self, start=0, limit=50):
         """
         Returns a list of organizations in the JIRA instance. If the user is not an agent,
@@ -174,6 +180,7 @@ class ServiceDesk(AtlassianRestAPI):
 
         return self.get('rest/servicedeskapi/organization', headers=headers, params=params)
 
+    # Attachments actions
     def create_attachment(self, service_desk_id, issue_id_or_key, filename, public=True, comment=None):
         """
         Add attachment as a comment.
@@ -241,3 +248,36 @@ class ServiceDesk(AtlassianRestAPI):
 
         return self.post(url, headers=headers, data=data)
 
+    # SLA actions
+    def get_sla(self, issue_id_or_key, start=0, limit=50):
+        """
+        Get the SLA information for a customer request for a given request ID or key
+        A request can have zero or more SLA values
+        IMPORTANT: The calling user must be an agent
+
+        :param issue_id_or_key: str
+        :param start: OPTIONAL: int
+        :param limit: OPTIONAL: int
+        :return: SLA information
+        """
+        url = 'rest/servicedeskapi/request/{}/sla'.format(issue_id_or_key)
+        params = {}
+        if start is not None:
+            params["start"] = int(start)
+        if limit is not None:
+            params["limit"] = int(limit)
+
+        return self.get(url, params=params).get('values')
+
+    def get_sla_by_id(self, issue_id_or_key, sla_id):
+        """
+        Get the SLA information for a customer request for a given request ID or key and SLA metric ID
+        IMPORTANT: The calling user must be an agent
+
+        :param issue_id_or_key: str
+        :param sla_id: str
+        :return: SLA information
+        """
+        url = 'rest/servicedeskapi/request/{0}/sla/{1}'.format(issue_id_or_key, sla_id)
+
+        return self.get(url)
