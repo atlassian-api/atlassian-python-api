@@ -3,8 +3,15 @@ Atlassian Python API wrapper
 ============================
 |Build Status| |PyPI version| |License| |Codacy Badge|
 
-For users
----------
+Documentation
+-------------
+
+`Documentation (beta)`_
+
+.. _Documentation (beta): https://atlassian-python-api.readthedocs.io/en/latest/index.html
+
+Examples
+--------
 
 For everyday normal use, just install package using pip
 
