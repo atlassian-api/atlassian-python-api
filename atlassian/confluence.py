@@ -231,19 +231,24 @@ class Confluence(AtlassianRestAPI):
 
     def remove_page_as_draft(self, page_id):
         """
-        This method removes a page from trash if it is draft
+        This method removes a page from trash if it is a draft
         :param page_id:
         :return:
         """
         return self.remove_page(page_id=page_id, status='draft')
 
-    def remove_page(self, page_id, status=None):
+    def remove_page(self, page_id, status=None, recursive=False):
         """
-        This method removes a page
+        This method removes a page, if it has recursive flag, method removes including child pages
         :param page_id:
         :param status: OPTIONAL: type of page
+        :param recursive: OPTIONAL: if True - will recursively delete all children pages too
         :return:
         """
+        if recursive:
+            children_pages = self.get_page_child_by_type(page_id)
+            for children_page in children_pages:
+                self.remove_page(children_page.get('id'), status, recursive)
         if status is None:
             url = 'rest/api/content/{page_id}'.format(page_id=page_id)
         else:
@@ -323,7 +328,7 @@ class Confluence(AtlassianRestAPI):
         else:
             log.warn("No 'page_id' found, not uploading attachments")
             return None
-    
+
     def set_page_label(self, page_id, label):
         """
         Set a label on the page
@@ -332,8 +337,8 @@ class Confluence(AtlassianRestAPI):
         :return:
         """
         url = 'rest/api/content/{page_id}/label'.format(page_id=page_id)
-        data= { 'prefix': 'global',
-               'name': label}
+        data = {'prefix': 'global',
+                'name': label}
         return self.post(path=url, data=data)
 
     def history(self, page_id):
