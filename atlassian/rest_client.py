@@ -2,7 +2,6 @@
 import json
 import logging
 from six.moves.urllib.parse import urlencode
-from six.moves.urllib.parse import urljoin
 import requests
 
 log = logging.getLogger('atlassian')
@@ -31,15 +30,19 @@ class AtlassianRestAPI(object):
             password=self.password,
             headers=' -H '.join(["'{0}: {1}'".format(key, value) for key, value in headers.items()]),
             data='' if not data else "--data '{0}'".format(json.dumps(data)),
-            url='{0}'.format(urljoin(self.url, path)))
+            url='{0}'.format(self.url_joiner(self.url, path)))
         log.log(level=level, msg=message)
 
     def resource_url(self, resource):
         return '/'.join([self.api_root, self.api_version, resource])
 
+    def url_joiner(self, url, path):
+        url_link = '/'.join(s.strip('/') for s in [url, path])
+        return url_link
+
     def request(self, method='GET', path='/', data=None, flags=None, params=None, headers=None, files=None):
         self.log_curl_debug(method=method, path=path, headers=headers, data=data)
-        url = urljoin(self.url, path)
+        url = self.url_joiner(self.url, path)
         if params or flags:
             url += '?'
         if params:
