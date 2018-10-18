@@ -72,6 +72,12 @@ Manage the Organizations
     # If the user is not an agent, the resource returns a list of organizations the user is a member of
     sd.get_organisations(self, start=0, limit=50)
 
+    # Get an organization for a given organization ID
+    sd.get_organization(organization_id)
+
+    # Get all the users of a specified organization
+    sd.get_users_in_organization(organization_id, start=0, limit=50)
+
 Attachment actions
 ------------------
 
