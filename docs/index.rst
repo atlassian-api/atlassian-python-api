@@ -51,7 +51,7 @@ Add a connection:
    bitbucket
    service_desk
 
-.. |Build Status| image:: https://travis-ci.org/AstroMatt/atlassian-python-api.svg?branch=master
+.. |Build Status| image:: https://travis-ci.org/atlassian-api/atlassian-python-api.svg?branch=master
    :target: https://pypi.python.org/pypi/atlassian-python-api
    :alt: Build status
 .. |PyPI version| image:: https://badge.fury.io/py/atlassian-python-api.svg
