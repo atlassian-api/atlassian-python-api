@@ -95,7 +95,7 @@ Development and Deployment (For contributors)
 See the `Contribution guidelines for this project`_ for details on how to make changes to this library.
 
 .. _Contribution guidelines for this project: CONTRIBUTING.rst
-.. |Build Status| image:: https://travis-ci.org/AstroMatt/atlassian-python-api.svg?branch=master 
+.. |Build Status| image:: https://travis-ci.org/atlassian-api/atlassian-python-api.svg?branch=master
    :target: https://pypi.python.org/pypi/atlassian-python-api
    :alt: Build status
 .. |PyPI version| image:: https://badge.fury.io/py/atlassian-python-api.svg
@@ -105,5 +105,5 @@ See the `Contribution guidelines for this project`_ for details on how to make c
    :target: https://pypi.python.org/pypi/atlassian-python-api
    :alt: License
 .. |Codacy Badge| image:: https://api.codacy.com/project/badge/Grade/c822908f507544fe98ae37b25518ae3d
-   :target: https://www.codacy.com/project/gonchik/atlassian-python-api/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=AstroMatt/atlassian-python-api&amp;utm_campaign=Badge_Grade_Dashboard
+   :target: https://www.codacy.com/project/gonchik/atlassian-python-api/dashboard
    :alt: Codacy Badge

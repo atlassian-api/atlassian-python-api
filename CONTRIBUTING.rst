@@ -9,7 +9,7 @@ Getting Started
 ---------------
 
 1. Fork the repository on GitHub:
-   https://github.com/AstroMatt/atlassian-python-api
+   https://github.com/atlassian-api/atlassian-python-api
 2. Make changes
 3. Send pull request
 
