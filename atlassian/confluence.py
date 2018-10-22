@@ -354,7 +354,7 @@ class Confluence(AtlassianRestAPI):
         result = self.get_page_by_id(page_id, expand='body.view')
         if len(result) == 0:
             return ""
-        body = result.get('body') or {}.get('view') or {}.get('value') or {}
+        body = (((result.get('body') or {}).get('view') or {}).get('value') or {})
         if unknown_attachment_identifier in body:
             return result.get('_links').get('base') + result.get('_links').get('tinyui')
         return ""
