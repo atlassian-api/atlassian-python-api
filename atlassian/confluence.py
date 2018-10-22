@@ -344,6 +344,21 @@ class Confluence(AtlassianRestAPI):
     def history(self, page_id):
         return self.get('rest/api/content/{0}/history'.format(page_id))
 
+    def has_unknown_attachment_error(self, page_id):
+        """
+        Check has unknown attachment error on page
+        :param page_id:
+        :return:
+        """
+        unknown_attachment_identifier = 'plugins/servlet/confluence/placeholder/unknown-attachment'
+        result = self.get_page_by_id(page_id, expand='body.view')
+        if len(result) == 0:
+            return ""
+        body = result.get('body') or {}.get('view') or {}.get('value') or {}
+        if unknown_attachment_identifier in body:
+            return result.get('_links').get('base') + result.get('_links').get('tinyui')
+        return ""
+
     def is_page_content_is_already_updated(self, page_id, body):
         """
         Compare content and check is already updated or not
