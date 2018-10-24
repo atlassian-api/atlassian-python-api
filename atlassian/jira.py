@@ -347,6 +347,14 @@ class Jira(AtlassianRestAPI):
     def component(self, component_id):
         return self.get('rest/api/2/component/{component_id}'.format(component_id=component_id))
 
+    def get_component_related_issues(self, component_id):
+        """
+        Returns counts of issues related to this component.
+        :param component_id:
+        :return:
+        """
+        return self.get("rest/api/2/component/{component_id}/relatedIssueCounts".format(component_id=component_id))
+
     def create_component(self, component):
         log.warning('Creating component "{name}"'.format(name=component['name']))
         url = 'rest/api/2/component/'
