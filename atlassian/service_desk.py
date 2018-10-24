@@ -217,6 +217,78 @@ class ServiceDesk(AtlassianRestAPI):
 
         return self.get(url, headers=headers, params=params)
 
+    def create_organization(self, name):
+        """
+        To create an organization JIRA administrator global permission or agent permission is required
+        depending on the settings
+
+        :param name: str
+        :return: Organization data
+        """
+        log.warning('Creating organization...')
+        headers = {'Content-Type': 'application/json',
+                   'Accept': 'application/json',
+                   'X-ExperimentalApi': 'opt-in'
+                   }
+        url = 'rest/servicedeskapi/organization'
+        data = {'name': name}
+
+        return self.post(url, headers=headers, data=data)
+
+    def delete_organization(self, organization_id):
+        """
+        Deletes an organization for a given organization ID
+
+        :param organization_id:
+        :return:
+        """
+        log.warning('Deleting organization...')
+        headers = {'Content-Type': 'application/json',
+                   'Accept': 'application/json',
+                   'X-ExperimentalApi': 'opt-in'
+                   }
+        url = 'rest/servicedeskapi/organization/{}'.format(organization_id)
+
+        return self.delete(url, headers=headers)
+
+    def add_users_to_organization(self, organization_id, users_list):
+        """
+        Adds users to an organization
+        users_list is a list of strings
+
+        :param organization_id: str
+        :param users_list: list
+        :return:
+        """
+        log.warning('Adding users...')
+        headers = {'Content-Type': 'application/json',
+                   'Accept': 'application/json',
+                   'X-ExperimentalApi': 'opt-in'
+                   }
+        url = 'rest/servicedeskapi/organization/{}/user'.format(organization_id)
+        data = {'usernames': users_list}
+
+        return self.post(url, headers=headers, data=data)
+
+    def remove_users_from_organization(self, organization_id, users_list):
+        """
+        Removes users from an organization
+        users_list is a list of strings
+
+        :param organization_id: str
+        :param users_list: list
+        :return:
+        """
+        log.warning('Removing users...')
+        headers = {'Content-Type': 'application/json',
+                   'Accept': 'application/json',
+                   'X-ExperimentalApi': 'opt-in'
+                   }
+        url = 'rest/servicedeskapi/organization/{}/user'.format(organization_id)
+        data = {'usernames': users_list}
+
+        return self.delete(url, headers=headers, data=data)
+
     # Attachments actions
     def create_attachment(self, service_desk_id, issue_id_or_key, filename, public=True, comment=None):
         """

@@ -78,6 +78,18 @@ Manage the Organizations
     # Get all the users of a specified organization
     sd.get_users_in_organization(organization_id, start=0, limit=50)
 
+    # Create organization
+    sd.create_organization(name)
+
+    # Delete organization
+    sd.delete_organization(organization_id)
+
+    # Add users to organization
+    sd.add_users_to_organization(organization_id, users_list)
+
+    # Remove users from organization
+    sd.remove_users_from_organization(organization_id, users_list)
+
 Attachment actions
 ------------------
 
