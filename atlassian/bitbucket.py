@@ -292,6 +292,21 @@ class Bitbucket(AtlassianRestAPI):
                                                                                    filename=filename)
         return self.get(url)
 
+    def get_branches_permissions(self, project, repository, limit=25):
+        """
+        Get branches permissions from a given repo
+        :param project:
+        :param repository:
+        :param limit:
+        :return:
+        """
+        url = 'rest/branch-permissions/2.0/projects/{project}/repos/{repository}/restrictions' \
+              '?limit={limit}'.format(project=project,
+                                      repository=repository,
+                                      limit=limit)
+
+        return self.get(url)
+
     def reindex(self):
         """
         Rebuild the bundled Elasticsearch indexes for Bitbucket Server
