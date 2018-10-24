@@ -30,3 +30,24 @@ The following command builds a package and uploads it to PIP repository.
 ::
 
    python setup.py sdist upload
+
+
+References
+----------
+
+1. Jira:
+    https://docs.atlassian.com/software/jira/docs/api/REST/latest
+2. Confluence:
+    https://developer.atlassian.com/server/confluence/confluence-server-rest-api/
+3. Jira Service Desk:
+    https://developer.atlassian.com/cloud/jira/service-desk/rest/
+    https://docs.atlassian.com/jira-servicedesk/REST/server
+4. Portfolio for Jira:
+
+5. Bitbucket:
+    https://developer.atlassian.com/server/bitbucket/reference/rest-api/
+    https://developer.atlassian.com/server/bitbucket/how-tos/command-line-rest/
+6. Bamboo:
+
+7. Tempo:
+

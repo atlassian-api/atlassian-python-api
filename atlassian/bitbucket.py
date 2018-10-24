@@ -259,6 +259,26 @@ class Bitbucket(AtlassianRestAPI):
                                                                    limit=limit)
         return (self.get(url) or {}).get('values')
 
+    def get_file_list(self, project, repository, query, limit=100000):
+        """
+        Retrieve a page of files from particular directory of a repository.
+        The search is done recursively, so all files from any sub-directory of the specified directory will be returned.
+        The authenticated user must have REPO_READ permission for the specified repository to call this resource.
+        :param project:
+        :param repository:
+        :param query: the commit ID or ref (e.g. a branch or tag) to list the files at.
+                      If not specified the default branch will be used instead.
+        :param limit: OPTIONAL
+        :return:
+        """
+        url = "rest/api/1.0/projects/{project}/repos/{repository}/files?at={query}&limit={limit}".format(
+            project=project,
+            repository=repository,
+            query=query,
+            limit=limit)
+
+        return (self.get(url) or {}).get('values')
+
     def get_content_of_file(self, project, repository, filename):
         """
         Get raw content of the file from repo
