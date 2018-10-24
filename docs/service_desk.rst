@@ -66,6 +66,8 @@ Transitions
 Manage the Organizations
 ------------------------
 
+**EXPERIMENTAL** (may change without notice)
+
 .. code-block:: python
 
     # Get a list of organizations in the JIRA instance

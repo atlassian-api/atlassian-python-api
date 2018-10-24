@@ -13,6 +13,14 @@ Getting Started
 2. Make changes
 3. Send pull request
 
+Mandatory conditions
+--------------------
+
+1. If you adding new method - add description to docs
+2. If you make changes in current methods - add changes to docs
+
+Please follow the code style in the docs.
+
 Using your changes before they’re live
 --------------------------------------
 
