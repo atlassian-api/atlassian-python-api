@@ -171,7 +171,7 @@ class Bitbucket(AtlassianRestAPI):
         :param repository:
         :param filter:
         :param limit: OPTIONAL: The limit of the number of tags to return, this may be restricted by
-                fixed system limits. Default by built-in method: 10000
+                fixed system limits. Default by built-in method: 1000
         :param order_by: OPTIONAL: ordering of refs either ALPHABETICAL (by name) or MODIFICATION (last updated)
         :return:
         """
@@ -206,7 +206,7 @@ class Bitbucket(AtlassianRestAPI):
         url = 'rest/api/1.0/projects/{project}/repos/{repository}/tags/{tag}'.format(project=project,
                                                                                      repository=repository,
                                                                                      tag=tag_name)
-        return self.get(url, not_json_response=True)
+        return self.get(url)
 
     def set_tag(self, project, repository, tag_name, commit_revision, description=None):
         """
