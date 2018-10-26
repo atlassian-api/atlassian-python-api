@@ -4,6 +4,7 @@ import logging
 from six.moves.urllib.parse import urlencode
 import requests
 
+logging.basicConfig( )
 log = logging.getLogger('atlassian')
 
 
@@ -98,10 +99,15 @@ class AtlassianRestAPI(object):
         :param not_json_response: OPTIONAL: For get content from raw requests packet
         :return:
         """
+        answer = self.request('GET', path=path, flags=flags, params=params, data=data, headers=headers)
         if not_json_response:
-            return self.request('GET', path=path, flags=flags, params=params, data=data, headers=headers).content
+            return answer.content
         else:
-            return self.request('GET', path=path, flags=flags, params=params, data=data, headers=headers).json()
+            try:
+                return answer.json()
+            except Exception as e:
+                log.error(e)
+                return
 
     def post(self, path, data=None, headers=None, files=None):
         try:
