@@ -140,29 +140,58 @@ class Bitbucket(AtlassianRestAPI):
         return self.delete(url, data=data)
 
     def get_pull_requests(self, project, repository, state='OPEN', order='newest', limit=100, start=0):
+        """
+        Get pull requests
+        :param project:
+        :param repository:
+        :param state:
+        :param order:
+        :param limit:
+        :param start:
+        :return:
+        """
         url = "rest/api/1.0/projects/{project}/repos/{repository}/pull-requests".format(project=project,
                                                                                         repository=repository)
-        url += "?state={state}&limit={limit}&start={start}&order={order}".format(limit=limit,
-                                                                                 state=state,
-                                                                                 start=start,
-                                                                                 order=order)
-        return (self.get(url) or {}).get('values')
+        params = {}
+        if state:
+            params['state'] = state
+        if limit:
+            params['limit'] = limit
+        if start:
+            params['start'] = start
+        if order:
+            params['order'] = order
+        return (self.get(url, params=params) or {}).get('values')
 
-    def get_tags(self, project, repository, filter='', limit=99999):
+    def get_tags(self, project, repository, filter='', limit=1000, order_by=None, start=0):
         """
-        Get tags for related repo
+        Retrieve the tags matching the supplied filterText param.
+        The authenticated user must have REPO_READ permission for the context repository to call this resource.
         :param project:
         :param repository:
         :param filter:
         :param limit: OPTIONAL: The limit of the number of tags to return, this may be restricted by
-                fixed system limits. Default by built-in method: 99999
+                fixed system limits. Default by built-in method: 10000
+        :param order_by: OPTIONAL: ordering of refs either ALPHABETICAL (by name) or MODIFICATION (last updated)
         :return:
         """
         url = 'rest/api/1.0/projects/{project}/repos/{repository}/tags'.format(project=project,
                                                                                repository=repository)
-        url += '?limit={limit}&filterText={filter}'.format(limit=limit,
-                                                           filter=filter)
-        return (self.get(url) or {}).get('values')
+        params = {}
+        if start:
+            params['start'] = start
+        if limit:
+            params['limit'] = limit
+        if filter:
+            params['filter'] = filter
+        if order_by:
+            params['orderBy'] = order_by
+        result = self.get(url, params=params)
+        if result.get('isLastPage'):
+            log.info('This is a last page of the result')
+        else:
+            log.info('Next page start at {}'.format(result.get('nextPageStart')))
+        return (result or {}).get('values')
 
     def get_project_tags(self, project, repository, tag_name):
         """
