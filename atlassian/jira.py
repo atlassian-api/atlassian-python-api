@@ -439,7 +439,8 @@ class Jira(AtlassianRestAPI):
 
     def tempo_account_get_customers(self, query=None, count_accounts=None):
         """
-        Gets all or some Attribute whose key or name contain a specific substring. Attributes can be a Category or Customer.
+        Gets all or some Attribute whose key or name contain a specific substring.
+        Attributes can be a Category or Customer.
         :param query: OPTIONAL: query for search
         :param count_accounts: bool OPTIONAL: provide how many associated Accounts with Customer
         :return: list of customers
@@ -454,7 +455,8 @@ class Jira(AtlassianRestAPI):
 
     def tempo_account_add_customer(self, data=None):
         """
-        Gets all or some Attribute whose key or name contain a specific substring. Attributes can be a Category or Customer.
+        Gets all or some Attribute whose key or name contain a specific substring.
+        Attributes can be a Category or Customer.
         :param data:
         :return: if error will show in error log, like validation unsuccessful. If success will good.
         """

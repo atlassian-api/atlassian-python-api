@@ -80,4 +80,8 @@ Manage code
     bitbucket.get_changelog(project, repository, ref_from, ref_to, limit=99999)
 
     # Get raw content of the file from repo
-    bitbucket.get_content_of_file(project, repository, filename)
+    bitbucket.get_content_of_file(project, repository, filename, at=None, markup=None)
+    """
+        Retrieve the raw content for a file path at a specified revision.
+        The authenticated user must have REPO_READ permission for the specified repository to call this resource.
+    """
