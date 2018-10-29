@@ -4,7 +4,7 @@ import logging
 from six.moves.urllib.parse import urlencode
 import requests
 
-logging.basicConfig( )
+logging.basicConfig()
 log = logging.getLogger('atlassian')
 
 
@@ -37,7 +37,8 @@ class AtlassianRestAPI(object):
     def resource_url(self, resource):
         return '/'.join([self.api_root, self.api_version, resource])
 
-    def url_joiner(self, url, path):
+    @staticmethod
+    def url_joiner(url, path):
         url_link = '/'.join(s.strip('/') for s in [url, path])
         return url_link
 

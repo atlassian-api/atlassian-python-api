@@ -126,7 +126,7 @@ CQL
 .. code-block:: python
 
     # Get results from cql search result with all related fields
-    confluence.cql(cql, start=0, limit=None)
+    confluence.cql(cql, start=0, limit=None, expand=None, include_archived_spaces=None, excerpt=None)
 
 Other actions
 -------------
