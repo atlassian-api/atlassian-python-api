@@ -308,18 +308,32 @@ class Bitbucket(AtlassianRestAPI):
 
         return (self.get(url) or {}).get('values')
 
-    def get_content_of_file(self, project, repository, filename):
+    def get_content_of_file(self, project, repository, filename, at=None, markup=None):
         """
-        Get raw content of the file from repo
+        Retrieve the raw content for a file path at a specified revision.
+        The authenticated user must have REPO_READ permission for the specified repository to call this resource.
         :param project:
         :param repository:
         :param filename:
+        :param at: OPTIONAL ref string
+        :param markup: 	if present or "true", triggers the raw content to be markup-rendered and returned as HTML;
+                        otherwise, if not specified, or any value other than "true",
+                        the content is streamed without markup
         :return:
         """
-        url = 'projects/{project}/repos/{repository}/browse/{filename}?raw'.format(project=project,
-                                                                                   repository=repository,
-                                                                                   filename=filename)
-        return self.get(url)
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+            'X-Atlassian-Token': 'no-check'
+        }
+        params = {}
+        if at is not None:
+            params['at'] = at
+        if markup is not None:
+            params['markup'] = markup
+        url = 'projects/{project}/repos/{repository}/raw/{filename}/'.format(project=project,
+                                                                             repository=repository,
+                                                                             filename=filename)
+        return self.get(url, params=params, not_json_response=True, headers=headers)
 
     def reindex(self):
         """
