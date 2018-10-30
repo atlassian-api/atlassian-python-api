@@ -173,3 +173,31 @@ Upload Jira plugin
 
     upload_plugin(plugin_path)
 
+Issue link types
+----------------
+.. code-block:: python
+
+    # Get Issue link types
+    jira.get_issue_link_types():
+
+    # Create Issue link types
+    jira.create_issue_link_type(data):
+    """Create a new issue link type.
+        :param data:
+                {
+                    "name": "Duplicate",
+                    "inward": "Duplicated by",
+                    "outward": "Duplicates"
+                }
+
+    """
+
+    # Get issue link type by id
+    jira.get_issue_link_type(issue_link_type_id):
+
+    # Delete issue link type
+    jira.delete_issue_link_type(issue_link_type_id):
+
+    # Update issue link type
+    jira.update_issue_link_type(issue_link_type_id, data):
+

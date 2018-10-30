@@ -344,6 +344,53 @@ class Jira(AtlassianRestAPI):
         url = 'rest/api/2/issue/{issue_key}?fields=status'.format(issue_key=issue_key)
         return (self.get(url) or {}).get('fields').get('status').get('name')
 
+    def get_issue_link_types(self):
+        """Returns a list of available issue link types,
+        if issue linking is enabled.
+        Each issue link type has an id,
+        a name and a label for the outward and inward link relationship.
+        """
+        url = 'rest/api/2/issueLinkType'
+        return (self.get(url) or {}).get('issueLinkTypes')
+
+    def create_issue_link_type(self, data):
+        """Create a new issue link type.
+        :param data:
+                {
+                    "name": "Duplicate",
+                    "inward": "Duplicated by",
+                    "outward": "Duplicates"
+                }
+        :return:
+        """
+        url = 'rest/api/2/issueLinkType'
+        return self.post(url, data=data)
+
+    def get_issue_link_type(self, issue_link_type_id):
+        """Returns for a given issue link type id all information about this issue link type.
+        """
+        url = 'rest/api/2/issueLinkType/{issueLinkTypeId}'.format(issueLinkTypeId=issue_link_type_id)
+        return self.get(url)
+
+    def delete_issue_link_type(self, issue_link_type_id):
+        """Delete the specified issue link type."""
+        url = 'rest/api/2/issueLinkType/{issueLinkTypeId}'.format(issueLinkTypeId=issue_link_type_id)
+        return self.delete(url)
+
+    def update_issue_link_type(self, issue_link_type_id, data):
+        """
+        Update the specified issue link type.
+        :param issue_link_type_id:
+        :param data: {
+                         "name": "Duplicate",
+                          "inward": "Duplicated by",
+                         "outward": "Duplicates"
+                    }
+        :return:
+        """
+        url = 'rest/api/2/issueLinkType/{issueLinkTypeId}'.format(issueLinkTypeId=issue_link_type_id)
+        return self.put(url, data=data)
+
     def component(self, component_id):
         return self.get('rest/api/2/component/{component_id}'.format(component_id=component_id))
 
