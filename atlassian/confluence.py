@@ -319,8 +319,10 @@ class Confluence(AtlassianRestAPI):
                 'X-Atlassian-Token': 'nocheck',
                 'Accept': 'application/json'}
             path = 'rest/api/content/{page_id}/child/attachment'.format(page_id=page_id)
+            # get base name of the file to get the attachment from confluence.
+            file_base_name = os.path.basename(filename)
             # Check if there is already a file with the same name
-            attachments = self.get(path=path, headers=headers, params={'filename': filename})
+            attachments = self.get(path=path, headers=headers, params={'filename': file_base_name})
             if attachments['size']:
                 path = path + '/' + attachments['results'][0]['id'] + '/data'
             with open(filename, 'rb') as infile:
