@@ -7,9 +7,16 @@ log = logging.getLogger(__name__)
 
 class ServiceDesk(AtlassianRestAPI):
 
+    experimental_headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-ExperimentalApi': 'opt-in'
+    }
+
     # Information actions
     def get_info(self):
         """ Get info about Service Desk app """
+
         return self.get('rest/servicedeskapi/info')
 
     def get_service_desks(self):
@@ -20,6 +27,7 @@ class ServiceDesk(AtlassianRestAPI):
         :return: Service Desks
         """
         service_desks_list = self.get('rest/servicedeskapi/servicedesk')
+
         return service_desks_list.get('values')
 
     def get_service_desk_by_id(self, service_desk_id):
@@ -29,6 +37,7 @@ class ServiceDesk(AtlassianRestAPI):
         :param service_desk_id: str
         :return: Service Desk
         """
+
         return self.get('rest/servicedeskapi/servicedesk/{}'.format(service_desk_id))
 
     # Customers actions
@@ -42,11 +51,8 @@ class ServiceDesk(AtlassianRestAPI):
         """
         log.warning('Creating customer...')
         data = {'fullName': full_name, 'email': email}
-        headers = {'Content-Type': 'application/json',
-                   'Accept': 'application/json',
-                   'X-ExperimentalApi': 'opt-in'
-                   }
-        return self.post('rest/servicedeskapi/customer', headers=headers, data=data)
+        
+        return self.post('rest/servicedeskapi/customer', headers=self.experimental_headers, data=data)
 
     def get_customer_request(self, issue_id_or_key):
         """
@@ -55,12 +61,14 @@ class ServiceDesk(AtlassianRestAPI):
         :param issue_id_or_key: str
         :return: Customer request
         """
+
         return self.get('rest/servicedeskapi/request/{}'.format(issue_id_or_key))
 
     def get_my_customer_requests(self):
         """ Returning requests where you are the assignee """
         requests = self.get('rest/servicedeskapi/request')
         requests_values = requests.get('values')
+
         return requests_values
 
     def create_customer_request(self, service_desk_id, request_type_id, values_dict):
@@ -73,10 +81,12 @@ class ServiceDesk(AtlassianRestAPI):
         :return: New request
         """
         log.warning('Creating request...')
-        data = {"serviceDeskId": service_desk_id,
-                "requestTypeId": request_type_id,
-                "requestFieldValues": values_dict
-                }
+        data = {
+            "serviceDeskId": service_desk_id,
+            "requestTypeId": request_type_id,
+            "requestFieldValues": values_dict
+        }
+
         return self.post('rest/servicedeskapi/request', data=data)
 
     def get_customer_request_status(self, issue_id_or_key):
@@ -88,6 +98,7 @@ class ServiceDesk(AtlassianRestAPI):
         """
         request = self.get('rest/servicedeskapi/request/{}/status'.format(issue_id_or_key)).get('values')
         status = request[0].get('status')
+
         return status
 
     def get_customer_transitions(self, issue_id_or_key):
@@ -97,11 +108,9 @@ class ServiceDesk(AtlassianRestAPI):
         :param issue_id_or_key: str
         :return:
         """
-        headers = {'Content-Type': 'application/json',
-                   'Accept': 'application/json',
-                   'X-ExperimentalApi': 'opt-in'
-                   }
-        return self.get('rest/servicedeskapi/request/{}/transition'.format(issue_id_or_key), headers=headers)
+        url = 'rest/servicedeskapi/request/{}/transition'.format(issue_id_or_key)
+        
+        return self.get(url, headers=self.experimental_headers)
 
     # Participants actions
     def get_request_participants(self, issue_id_or_key, start=0, limit=50):
@@ -162,13 +171,10 @@ class ServiceDesk(AtlassianRestAPI):
         :return: None
         """
         log.warning('Performing transition...')
-        headers = {'Content-Type': 'application/json',
-                   'Accept': 'application/json',
-                   'X-ExperimentalApi': 'opt-in'
-                   }
         data = {'id': transition_id, 'additionalComment': {'body': comment}}
         url = 'rest/servicedeskapi/request/{}/transition'.format(issue_id_or_key)
-        return self.post(url, headers=headers, data=data)
+
+        return self.post(url, headers=self.experimental_headers, data=data)
 
     # Comments actions
     def create_request_comment(self, issue_id_or_key, body, public=True):
@@ -182,6 +188,7 @@ class ServiceDesk(AtlassianRestAPI):
         """
         log.warning('Creating comment...')
         data = {"body": body, "public": public}
+
         return self.post('rest/servicedeskapi/request/{}/comment'.format(issue_id_or_key), data=data)
 
     def get_request_comments(self, issue_id_or_key):
@@ -191,6 +198,7 @@ class ServiceDesk(AtlassianRestAPI):
         :param issue_id_or_key: str
         :return: Issue comments
         """
+
         return self.get('rest/servicedeskapi/request/{}/comment'.format(issue_id_or_key))
 
     def get_request_comment_by_id(self, issue_id_or_key, comment_id):
@@ -201,6 +209,7 @@ class ServiceDesk(AtlassianRestAPI):
         :param comment_id: str
         :return: Single comment
         """
+
         return self.get('rest/servicedeskapi/request/{0}/comment/{1}'.format(issue_id_or_key, comment_id))
 
     # Organizations actions
@@ -218,10 +227,6 @@ class ServiceDesk(AtlassianRestAPI):
         """
         url_without_sd_id = 'rest/servicedeskapi/organization'
         url_with_sd_id = 'rest/servicedeskapi/servicedesk/{}/organization'.format(service_desk_id)
-        headers = {'Content-Type': 'application/json',
-                   'Accept': 'application/json',
-                   'X-ExperimentalApi': 'opt-in'
-                   }
         params = {}
         if start is not None:
             params["start"] = int(start)
@@ -229,9 +234,9 @@ class ServiceDesk(AtlassianRestAPI):
             params["limit"] = int(limit)
 
         if service_desk_id is None:
-            return self.get(url_without_sd_id, headers=headers, params=params)
+            return self.get(url_without_sd_id, headers=self.experimental_headers, params=params)
         else:
-            return self.get(url_with_sd_id, headers=headers, params=params)
+            return self.get(url_with_sd_id, headers=self.experimental_headers, params=params)
 
     def get_organization(self, organization_id):
         """
@@ -241,12 +246,8 @@ class ServiceDesk(AtlassianRestAPI):
         :return: Organization
         """
         url = 'rest/servicedeskapi/organization/{}'.format(organization_id)
-        headers = {'Content-Type': 'application/json',
-                   'Accept': 'application/json',
-                   'X-ExperimentalApi': 'opt-in'
-                   }
 
-        return self.get(url, headers=headers)
+        return self.get(url, headers=self.experimental_headers)
 
     def get_users_in_organization(self, organization_id, start=0, limit=50):
         """
@@ -258,17 +259,13 @@ class ServiceDesk(AtlassianRestAPI):
         :return: Users list in organization
         """
         url = 'rest/servicedeskapi/organization/{}/user'.format(organization_id)
-        headers = {'Content-Type': 'application/json',
-                   'Accept': 'application/json',
-                   'X-ExperimentalApi': 'opt-in'
-                   }
         params = {}
         if start is not None:
             params["start"] = int(start)
         if limit is not None:
             params["limit"] = int(limit)
 
-        return self.get(url, headers=headers, params=params)
+        return self.get(url, headers=self.experimental_headers, params=params)
 
     def create_organization(self, name):
         """
@@ -279,14 +276,10 @@ class ServiceDesk(AtlassianRestAPI):
         :return: Organization data
         """
         log.warning('Creating organization...')
-        headers = {'Content-Type': 'application/json',
-                   'Accept': 'application/json',
-                   'X-ExperimentalApi': 'opt-in'
-                   }
         url = 'rest/servicedeskapi/organization'
         data = {'name': name}
 
-        return self.post(url, headers=headers, data=data)
+        return self.post(url, headers=self.experimental_headers, data=data)
 
     def add_organization(self, service_desk_id, organization_id):
         """
@@ -296,14 +289,11 @@ class ServiceDesk(AtlassianRestAPI):
         :param organization_id: int
         :return:
         """
+        log.warning('Adding organization...')
         url = 'rest/servicedeskapi/servicedesk/{}/organization'.format(service_desk_id)
-        headers = {'Content-Type': 'application/json',
-                   'Accept': 'application/json',
-                   'X-ExperimentalApi': 'opt-in'
-                   }
         data = {'organizationId': organization_id}
 
-        return self.post(url, headers=headers, data=data)
+        return self.post(url, headers=self.experimental_headers, data=data)
 
     def remove_organization(self, service_desk_id, organization_id):
         """
@@ -313,14 +303,11 @@ class ServiceDesk(AtlassianRestAPI):
         :param organization_id: int
         :return:
         """
+        log.warning('Removing organization...')
         url = 'rest/servicedeskapi/servicedesk/{}/organization'.format(service_desk_id)
-        headers = {'Content-Type': 'application/json',
-                   'Accept': 'application/json',
-                   'X-ExperimentalApi': 'opt-in'
-                   }
         data = {'organizationId': organization_id}
 
-        return self.delete(url, headers=headers, data=data)
+        return self.delete(url, headers=self.experimental_headers, data=data)
 
     def delete_organization(self, organization_id):
         """
@@ -330,13 +317,9 @@ class ServiceDesk(AtlassianRestAPI):
         :return:
         """
         log.warning('Deleting organization...')
-        headers = {'Content-Type': 'application/json',
-                   'Accept': 'application/json',
-                   'X-ExperimentalApi': 'opt-in'
-                   }
         url = 'rest/servicedeskapi/organization/{}'.format(organization_id)
 
-        return self.delete(url, headers=headers)
+        return self.delete(url, headers=self.experimental_headers)
 
     def add_users_to_organization(self, organization_id, users_list):
         """
@@ -348,14 +331,10 @@ class ServiceDesk(AtlassianRestAPI):
         :return:
         """
         log.warning('Adding users...')
-        headers = {'Content-Type': 'application/json',
-                   'Accept': 'application/json',
-                   'X-ExperimentalApi': 'opt-in'
-                   }
         url = 'rest/servicedeskapi/organization/{}/user'.format(organization_id)
         data = {'usernames': users_list}
 
-        return self.post(url, headers=headers, data=data)
+        return self.post(url, headers=self.experimental_headers, data=data)
 
     def remove_users_from_organization(self, organization_id, users_list):
         """
@@ -367,14 +346,10 @@ class ServiceDesk(AtlassianRestAPI):
         :return:
         """
         log.warning('Removing users...')
-        headers = {'Content-Type': 'application/json',
-                   'Accept': 'application/json',
-                   'X-ExperimentalApi': 'opt-in'
-                   }
         url = 'rest/servicedeskapi/organization/{}/user'.format(organization_id)
         data = {'usernames': users_list}
 
-        return self.delete(url, headers=headers, data=data)
+        return self.delete(url, headers=self.experimental_headers, data=data)
 
     # Attachments actions
     def create_attachment(self, service_desk_id, issue_id_or_key, filename, public=True, comment=None):
@@ -414,7 +389,7 @@ class ServiceDesk(AtlassianRestAPI):
         url = 'rest/servicedeskapi/servicedesk/{}/attachTemporaryFile'.format(service_desk_id)
 
         with open(filename, 'rb') as file:
-            result = self.post(url, headers=headers, files={'file': file}).get('temporaryAttachments')
+            result = self.post(url, headers=self.experimental_headers, files={'file': file}).get('temporaryAttachments')
             temp_attachment_id = result[0].get('temporaryAttachmentId')
 
             return temp_attachment_id
@@ -430,11 +405,6 @@ class ServiceDesk(AtlassianRestAPI):
         :return:
         """
         log.warning('Adding attachment')
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'X-ExperimentalApi': 'opt-in'
-        }
         data = {
             'temporaryAttachmentIds': [temp_attachment_id],
             'public': public,
@@ -442,7 +412,7 @@ class ServiceDesk(AtlassianRestAPI):
         }
         url = 'rest/servicedeskapi/request/{}/attachment'.format(issue_id_or_key)
 
-        return self.post(url, headers=headers, data=data)
+        return self.post(url, headers=self.experimental_headers, data=data)
 
     # SLA actions
     def get_sla(self, issue_id_or_key, start=0, limit=50):
