@@ -51,11 +51,13 @@ References
     https://developer.atlassian.com/cloud/jira/service-desk/rest/
     https://docs.atlassian.com/jira-servicedesk/REST/server
 4. Portfolio for Jira:
-
+    https://docs.atlassian.com/portfolio-for-jira-server/REST/2.13.0/teams/
+    https://docs.atlassian.com/portfolio-for-jira-server/REST/2.13.0/jpo/
 5. Bitbucket:
     https://developer.atlassian.com/server/bitbucket/reference/rest-api/
     https://developer.atlassian.com/server/bitbucket/how-tos/command-line-rest/
 6. Bamboo:
-
+    https://docs.atlassian.com/atlassian-bamboo/REST/latest/
 7. Tempo:
-
+    https://www.tempo.io/server-api-documentation
+    http://tempo.io/doc/core/api/rest/latest/
