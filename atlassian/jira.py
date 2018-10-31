@@ -67,7 +67,7 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         url = 'secure/admin/user/EditUser.jspa'
-        headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', 'X-Atlassian-Token': 'no-check'}
+        headers = self.form_token_headers
         user = self.user(username)
         user_update_info = {
             'inline': 'true',
@@ -92,9 +92,7 @@ class Jira(AtlassianRestAPI):
     def user_get_websudo(self):
         """ Get web sudo cookies using normal http request"""
         url = 'secure/admin/WebSudoAuthenticate.jspa'
-        headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                   'X-Atlassian-Token': 'no-check'
-                   }
+        headers = self.form_token_headers
         data = {
             'webSudoPassword': self.password,
         }
@@ -197,7 +195,7 @@ class Jira(AtlassianRestAPI):
 
     def get_project_issuekey_last(self, project):
         jql = 'project = {project} ORDER BY issuekey DESC'.format(project=project)
-        return self.jql(jql)['issues'][0]['key']
+        return (self.jql(jql).get('issues') or {})[0]['key']
 
     def get_project_issuekey_all(self, project):
         jql = 'project = {project} ORDER BY issuekey ASC'.format(project=project)
@@ -559,6 +557,6 @@ class Jira(AtlassianRestAPI):
         Get csv export file of Accounts from Tempo
         :return: csv file
         """
-        headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', 'X-Atlassian-Token': 'no-check'}
+        headers = self.form_token_headers
         url = 'rest/tempo-accounts/1/export'
         return self.get(url, headers=headers, not_json_response=True)

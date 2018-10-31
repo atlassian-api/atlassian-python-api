@@ -370,7 +370,7 @@ class Confluence(AtlassianRestAPI):
         :param body: Body for compare it
         :return: True if the same
         """
-        confluence_content = self.get_page_by_id(page_id, expand='body.storage')['body']['storage']['value']
+        confluence_content = (self.get_page_by_id(page_id, expand='body.storage').get('body') or {}).get('storage').get('value')
         confluence_content = confluence_content.replace('&oacute;', u'ó')
 
         log.debug('Old Content: """{body}"""'.format(body=confluence_content))
@@ -510,7 +510,7 @@ class Confluence(AtlassianRestAPI):
 
     def clean_all_caches(self):
         """ Clean all caches from cache management"""
-        headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', 'X-Atlassian-Token': 'no-check'}
+        headers = self.form_token_headers
         return self.delete('rest/cacheManagement/1.0/cacheEntries', headers=headers)
 
     def clean_package_cache(self, cache_name='com.gliffy.cache.gon'):
@@ -519,7 +519,7 @@ class Confluence(AtlassianRestAPI):
             com.gliffy.cache.gon
             org.hibernate.cache.internal.StandardQueryCache_v5
         """
-        headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', 'X-Atlassian-Token': 'no-check'}
+        headers = self.form_token_headers
         data = {'cacheName': cache_name}
         return self.delete('rest/cacheManagement/1.0/cacheEntries', data=data, headers=headers)
 
@@ -630,7 +630,7 @@ class Confluence(AtlassianRestAPI):
         :param page_id: Page ID
         :return: PDF File
         """
-        headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', 'X-Atlassian-Token': 'no-check'}
+        headers = self.form_token_headers
         url = 'spaces/flyingpdf/pdfpageexport.action?pageId={pageId}'.format(pageId=page_id)
         return self.get(url, headers=headers, not_json_response=True)
 

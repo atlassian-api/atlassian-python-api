@@ -7,12 +7,6 @@ log = logging.getLogger(__name__)
 
 class ServiceDesk(AtlassianRestAPI):
 
-    experimental_headers = {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'X-ExperimentalApi': 'opt-in'
-    }
-
     # Information actions
     def get_info(self):
         """ Get info about Service Desk app """
@@ -51,7 +45,7 @@ class ServiceDesk(AtlassianRestAPI):
         """
         log.warning('Creating customer...')
         data = {'fullName': full_name, 'email': email}
-        
+
         return self.post('rest/servicedeskapi/customer', headers=self.experimental_headers, data=data)
 
     def get_customer_request(self, issue_id_or_key):
@@ -109,7 +103,7 @@ class ServiceDesk(AtlassianRestAPI):
         :return:
         """
         url = 'rest/servicedeskapi/request/{}/transition'.format(issue_id_or_key)
-        
+
         return self.get(url, headers=self.experimental_headers)
 
     # Participants actions
