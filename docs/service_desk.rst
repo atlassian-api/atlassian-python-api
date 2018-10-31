@@ -50,6 +50,22 @@ The Request actions
     # Get request comment
     sd.get_request_comment_by_id(issue_id_or_key, comment_id)
 
+Manage a Participants
+---------------------
+
+.. code-block:: python
+
+    # Get request participants
+    sd.get_request_participants(issue_id_or_key, start=0, limit=50)
+
+    # Add request participants
+    # The calling user must have permission to manage participants for this customer request
+    sd.add_request_participants(issue_id_or_key, users_list)
+
+    # Remove request participants
+    # The calling user must have permission to manage participants for this customer request
+    sd.remove_request_participants(issue_id_or_key, users_list)
+
 Transitions
 -----------
 
