@@ -204,17 +204,20 @@ class ServiceDesk(AtlassianRestAPI):
         return self.get('rest/servicedeskapi/request/{0}/comment/{1}'.format(issue_id_or_key, comment_id))
 
     # Organizations actions
-    def get_organisations(self, start=0, limit=50):
+    def get_organisations(self, service_desk_id=None, start=0, limit=50):
         """
         Returns a list of organizations in the JIRA instance. If the user is not an agent,
         the resource returns a list of organizations the user is a member of.
 
+        :param service_desk_id: OPTIONAL: str Get organizations from single Service Desk
         :param start: OPTIONAL: int The starting index of the returned objects.
                      Base index: 0. See the Pagination section for more details.
         :param limit: OPTIONAL: int The maximum number of users to return per page.
                      Default: 50. See the Pagination section for more details.
         :return:
         """
+        url_without_sd_id = 'rest/servicedeskapi/organization'
+        url_with_sd_id = 'rest/servicedeskapi/servicedesk/{}/organization'.format(service_desk_id)
         headers = {'Content-Type': 'application/json',
                    'Accept': 'application/json',
                    'X-ExperimentalApi': 'opt-in'
@@ -225,7 +228,10 @@ class ServiceDesk(AtlassianRestAPI):
         if limit is not None:
             params["limit"] = int(limit)
 
-        return self.get('rest/servicedeskapi/organization', headers=headers, params=params)
+        if service_desk_id is None:
+            return self.get(url_without_sd_id, headers=headers, params=params)
+        else:
+            return self.get(url_with_sd_id, headers=headers, params=params)
 
     def get_organization(self, organization_id):
         """
@@ -281,6 +287,40 @@ class ServiceDesk(AtlassianRestAPI):
         data = {'name': name}
 
         return self.post(url, headers=headers, data=data)
+
+    def add_organization(self, service_desk_id, organization_id):
+        """
+        Adds an organization to a servicedesk for a given servicedesk ID and organization ID
+
+        :param service_desk_id: str
+        :param organization_id: int
+        :return:
+        """
+        url = 'rest/servicedeskapi/servicedesk/{}/organization'.format(service_desk_id)
+        headers = {'Content-Type': 'application/json',
+                   'Accept': 'application/json',
+                   'X-ExperimentalApi': 'opt-in'
+                   }
+        data = {'organizationId': organization_id}
+
+        return self.post(url, headers=headers, data=data)
+
+    def remove_organization(self, service_desk_id, organization_id):
+        """
+        Removes an organization from a servicedesk for a given servicedesk ID and organization ID
+
+        :param service_desk_id: str
+        :param organization_id: int
+        :return:
+        """
+        url = 'rest/servicedeskapi/servicedesk/{}/organization'.format(service_desk_id)
+        headers = {'Content-Type': 'application/json',
+                   'Accept': 'application/json',
+                   'X-ExperimentalApi': 'opt-in'
+                   }
+        data = {'organizationId': organization_id}
+
+        return self.delete(url, headers=headers, data=data)
 
     def delete_organization(self, organization_id):
         """

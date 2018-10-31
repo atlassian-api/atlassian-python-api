@@ -88,7 +88,9 @@ Manage the Organizations
 
     # Get a list of organizations in the JIRA instance
     # If the user is not an agent, the resource returns a list of organizations the user is a member of
-    sd.get_organisations(self, start=0, limit=50)
+    # If service_desk_id is None, request returns all organizations
+    # In service_desk_id is ID, request returns organizations from given Service Desk ID
+    sd.get_organisations(service_desk_id=None, start=0, limit=50)
 
     # Get an organization for a given organization ID
     sd.get_organization(organization_id)
@@ -98,6 +100,12 @@ Manage the Organizations
 
     # Create organization
     sd.create_organization(name)
+
+    # Add an organization to a servicedesk for a given servicedesk ID (str) and organization ID (int)
+    sd.add_organization(service_desk_id, organization_id)
+
+    # Remove an organization from a servicedesk for a given servicedesk ID (str) and organization ID (int)
+    sd.remove_organization(service_desk_id, organization_id)
 
     # Delete organization
     sd.delete_organization(organization_id)
