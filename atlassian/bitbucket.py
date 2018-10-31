@@ -322,10 +322,7 @@ class Bitbucket(AtlassianRestAPI):
                         the content is streamed without markup
         :return:
         """
-        headers = {
-            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-            'X-Atlassian-Token': 'no-check'
-        }
+        headers = self.form_token_headers
         params = {}
         if at is not None:
             params['at'] = at
