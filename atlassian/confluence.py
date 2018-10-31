@@ -14,6 +14,8 @@ class Confluence(AtlassianRestAPI):
         ".jpg": "image/jpeg",
         ".jpeg": "image/jpeg",
         ".pdf": "application/pdf",
+        ".doc": "application/msword",
+        ".xls": "application/vnd.ms-excel",
     }
 
     def page_exists(self, space, title):
