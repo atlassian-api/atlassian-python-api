@@ -389,7 +389,7 @@ class ServiceDesk(AtlassianRestAPI):
         url = 'rest/servicedeskapi/servicedesk/{}/attachTemporaryFile'.format(service_desk_id)
 
         with open(filename, 'rb') as file:
-            result = self.post(url, headers=self.experimental_headers, files={'file': file}).get('temporaryAttachments')
+            result = self.post(url, headers=headers, files={'file': file}).get('temporaryAttachments')
             temp_attachment_id = result[0].get('temporaryAttachmentId')
 
             return temp_attachment_id
