@@ -147,3 +147,17 @@ SLA actions
     # Get the SLA information for a customer request for a given request ID or key and SLA metric ID
     # IMPORTANT: The calling user must be an agent
     sd.get_sla_by_id(issue_id_or_key, sla_id)
+
+Approvals
+---------
+
+.. code-block:: python
+
+    # Get all approvals on a request, for a given request ID/Key
+    sd.get_approvals(issue_id_or_key, start=0, limit=50)
+
+    # Get an approval for a given approval ID
+    sd.get_approval_by_id(issue_id_or_key, approval_id)
+
+    # Answer a pending approval
+    sd.answer_approval(issue_id_or_key, approval_id, decision)
