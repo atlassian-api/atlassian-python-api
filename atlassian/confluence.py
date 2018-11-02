@@ -348,6 +348,42 @@ class Confluence(AtlassianRestAPI):
     def history(self, page_id):
         return self.get('rest/api/content/{0}/history'.format(page_id))
 
+    def get_content_history(self, content_id):
+        return self.history(content_id)
+
+    def get_content_history_by_version_number(self, content_id, version_number):
+        url = 'rest/experimental/content/{0}/version/{1}'.format(content_id, version_number)
+        return self.get(url)
+
+    def remove_content_history(self, content_id, content_type='page'):
+        """
+        Remove content history
+        :param content_id:
+        :param content_type: OPTIONAL default value: page
+        :return:
+        """
+        url = "pages/removehistoricalversion.action"
+        data = {}
+        if content_id is not None:
+            data['pageId'] = content_id
+        if content_type is not None:
+            data['contentType'] = content_type
+        get_csrf_token = self.get('/pages/viewpreviousversions.action?pageId={}'.format(content_id),
+                                  headers=self.experimental_headers, not_json_response=True)
+        atl_token = get_csrf_token.split('atl_token" value="')[1].split('">')[0]
+        data_string = "atl_token={}pageId={}&contentType={}".format(atl_token, content_id, content_type)
+        self.post(url, data=data_string, headers=self.form_token_headers)
+
+    def remove_content_history_in_cloud(self, page_id, version_id):
+        """
+        Remove content history. It works in CLOUD
+        :param page_id:
+        :param version_id:
+        :return:
+        """
+        url = "/rest/api/content/{id}/version/{versionId}".format(id=page_id, versionId=version_id)
+        self.delete(url)
+
     def has_unknown_attachment_error(self, page_id):
         """
         Check has unknown attachment error on page
@@ -370,7 +406,8 @@ class Confluence(AtlassianRestAPI):
         :param body: Body for compare it
         :return: True if the same
         """
-        confluence_content = (self.get_page_by_id(page_id, expand='body.storage').get('body') or {}).get('storage').get('value')
+        confluence_content = (self.get_page_by_id(page_id, expand='body.storage').get('body') or {}).get('storage').get(
+            'value')
         confluence_content = confluence_content.replace('&oacute;', u'ó')
 
         log.debug('Old Content: """{body}"""'.format(body=confluence_content))
