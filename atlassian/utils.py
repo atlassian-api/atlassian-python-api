@@ -37,7 +37,11 @@ def html_email(email, title=None):
 def html_list(data):
     """
     >>> html_list(['example.com', 'admin1@example.com', 'admin2@example.com'])
-    '<ul><li>example.com</li><li><a href="mailto:admin1@example.com">admin1@example.com</a></li><li><a href="mailto:admin2@example.com">admin2@example.com</a></li></ul>'
+    '<ul>
+        <li>example.com</li>
+        <li><a href="mailto:admin1@example.com">admin1@example.com</a></li>
+        <li><a href="mailto:admin2@example.com">admin2@example.com</a></li>
+    </ul>'
     """
     html = '<ul>'
 
@@ -103,14 +107,53 @@ def html_table_from_dict(data, ordering):
     """
     >>> ordering = ['administrators', 'key', 'leader', 'project']
     >>> data = [ \
-        {'key': 'DEMO', 'project': 'Demonstration', 'leader': 'leader@example.com', 'administrators': ['admin1@example.com', 'admin2@example.com']}, \
-        {'key': 'FOO', 'project': 'Foo', 'leader': 'foo@example.com', 'administrators': ['foo-admin1@example.com', 'foo-admin2@example.com']}, \
-        {'key': 'BAR', 'project': 'Bar', 'leader': 'bar@example.com', 'administrators': ['bar-admin1@example.com', 'bar-admin2@example.com']}]
+        {'key': 'DEMO', 'project': 'Demo project', 'leader': 'lead@example.com', \
+            'administrators': ['admin@example.com', 'root@example.com']},]
     >>> html_table_from_dict(data, ordering)
-    '<table><tbody>\\n<tr><th>Administrators</th><th>Key</th><th>Leader</th><th>Project</th></tr>\\n<tr><td><ul><li><a href="mailto:admin1@example.com">admin1@example.com</a></li><li><a href="mailto:admin2@example.com">admin2@example.com</a></li></ul></td><td>DEMO</td><td>leader@example.com</td><td>Demonstration</td></tr>\\n<tr><td><ul><li><a href="mailto:foo-admin1@example.com">foo-admin1@example.com</a></li><li><a href="mailto:foo-admin2@example.com">foo-admin2@example.com</a></li></ul></td><td>FOO</td><td>foo@example.com</td><td>Foo</td></tr>\\n<tr><td><ul><li><a href="mailto:bar-admin1@example.com">bar-admin1@example.com</a></li><li><a href="mailto:bar-admin2@example.com">bar-admin2@example.com</a></li></ul></td><td>BAR</td><td>bar@example.com</td><td>Bar</td></tr>\\n</tbody></table>'
+    '<table>
+        <tbody>\\n
+            <tr>
+                <th>Administrators</th>
+                <th>Key</th>
+                <th>Leader</th>
+                <th>Project</th>
+            </tr>\\n
+        <tr>
+            <td>
+                <ul>
+                    <li><a href="mailto:admin@example.com">admin@example.com</a></li>
+                    <li><a href="mailto:root@example.com">root@example.com</a></li>
+                </ul>
+            </td>
+            <td>DEMO</td>
+            <td>lead@example.com</td>
+            <td>Demo project</td>
+        </tr>\\n
+        </tbody>
+    </table>'
     >>> ordering = ['key', 'project', 'leader', 'administrators']
     >>> html_table_from_dict(data, ordering)
-    '<table><tbody>\\n<tr><th>Key</th><th>Project</th><th>Leader</th><th>Administrators</th></tr>\\n<tr><td>DEMO</td><td>Demonstration</td><td>leader@example.com</td><td><ul><li><a href="mailto:admin1@example.com">admin1@example.com</a></li><li><a href="mailto:admin2@example.com">admin2@example.com</a></li></ul></td></tr>\\n<tr><td>FOO</td><td>Foo</td><td>foo@example.com</td><td><ul><li><a href="mailto:foo-admin1@example.com">foo-admin1@example.com</a></li><li><a href="mailto:foo-admin2@example.com">foo-admin2@example.com</a></li></ul></td></tr>\\n<tr><td>BAR</td><td>Bar</td><td>bar@example.com</td><td><ul><li><a href="mailto:bar-admin1@example.com">bar-admin1@example.com</a></li><li><a href="mailto:bar-admin2@example.com">bar-admin2@example.com</a></li></ul></td></tr>\\n</tbody></table>'
+    '<table>
+        <tbody>\\n
+            <tr>
+                <th>Key</th>
+                <th>Project</th>
+                <th>Leader</th>
+                <th>Administrators</th>
+            </tr>\\n
+            <tr>
+                <td>DEMO</td>
+                <td>Demo project</td>
+                <td>lead@example.com</td>
+                <td>
+                    <ul>
+                        <li><a href="mailto:admin@example.com">admin@example.com</a></li>
+                        <li><a href="mailto:root@example.com">root@example.com</a></li>
+                    </ul>
+                </td>
+            </tr>\\n
+        </tbody>
+    </table>'
     """
     html = '<table><tbody>'
     html += html_table_header_row(ordering)
