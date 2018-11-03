@@ -351,7 +351,14 @@ class Jira(AtlassianRestAPI):
         url = 'rest/api/2/issueLinkType'
         return (self.get(url) or {}).get('issueLinkTypes')
 
-    def create_issue_link_type(self, data):
+    def get_issue_link_types_names(self):
+        """
+        Provide issue link type names
+        :return:
+        """
+        return [link_type['name'] for link_type in self.get_issue_link_types()]
+
+    def create_issue_link_type_by_json(self, data):
         """Create a new issue link type.
         :param data:
                 {
@@ -363,6 +370,23 @@ class Jira(AtlassianRestAPI):
         """
         url = 'rest/api/2/issueLinkType'
         return self.post(url, data=data)
+
+    def create_issue_link_type(self, link_type_name, inward, outward):
+        """Create a new issue link type.
+        :param outward:
+        :param inward:
+        :param link_type_name:
+        :return:
+        """
+        if link_type_name.lower() in [x.lower() for x in self.get_issue_link_types_names()]:
+            log.error("Link type name already exists")
+            return "Link type name already exists"
+        data = {
+            'name': link_type_name,
+            'inward': inward,
+            'outward': outward
+        }
+        return self.create_issue_link_type_by_json(data=data)
 
     def get_issue_link_type(self, issue_link_type_id):
         """Returns for a given issue link type id all information about this issue link type.
