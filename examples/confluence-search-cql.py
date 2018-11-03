@@ -15,7 +15,7 @@ WORD = "componentname"
 
 def search_word(confluence, word):
     """
-    Get all founded pages with order by created date
+    Get all found pages with order by created date
     :param confluence:
     :param word:
     :return: json answer
@@ -28,7 +28,7 @@ def search_word(confluence, word):
 
 def search_word_in_space(confluence, space, word):
     """
-    Get all founded pages with order by created date
+    Get all found pages with order by created date
     :param confluence:
     :param space
     :param word:

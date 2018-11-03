@@ -355,24 +355,15 @@ class Confluence(AtlassianRestAPI):
         url = 'rest/experimental/content/{0}/version/{1}'.format(content_id, version_number)
         return self.get(url)
 
-    def remove_content_history(self, content_id, content_type='page'):
+    def remove_content_history(self, page_id, version_number):
         """
-        Remove content history
-        :param content_id:
-        :param content_type: OPTIONAL default value: page
+        Remove content history. It works as experimental method
+        :param page_id:
+        :param version_number: version number
         :return:
         """
-        url = "pages/removehistoricalversion.action"
-        data = {}
-        if content_id is not None:
-            data['pageId'] = content_id
-        if content_type is not None:
-            data['contentType'] = content_type
-        get_csrf_token = self.get('/pages/viewpreviousversions.action?pageId={}'.format(content_id),
-                                  headers=self.experimental_headers, not_json_response=True)
-        atl_token = get_csrf_token.split('atl_token" value="')[1].split('">')[0]
-        data_string = "atl_token={}pageId={}&contentType={}".format(atl_token, content_id, content_type)
-        self.post(url, data=data_string, headers=self.form_token_headers)
+        url = "rest/experimental/content/{id}/version/{versionNumber}".format(id=page_id, versionNumber=version_number)
+        self.delete(url)
 
     def remove_content_history_in_cloud(self, page_id, version_id):
         """
@@ -381,7 +372,7 @@ class Confluence(AtlassianRestAPI):
         :param version_id:
         :return:
         """
-        url = "/rest/api/content/{id}/version/{versionId}".format(id=page_id, versionId=version_id)
+        url = "rest/api/content/{id}/version/{versionId}".format(id=page_id, versionId=version_id)
         self.delete(url)
 
     def has_unknown_attachment_error(self, page_id):
