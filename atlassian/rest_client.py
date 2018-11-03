@@ -12,7 +12,7 @@ class AtlassianRestAPI(object):
     experimental_headers = {'Content-Type': 'application/json', 'Accept': 'application/json',
                             'X-ExperimentalApi': 'opt-in'}
     form_token_headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                        'X-Atlassian-Token': 'no-check'}
+                          'X-Atlassian-Token': 'no-check'}
 
     def __init__(self, url, username, password, timeout=60, api_root='rest/api', api_version='latest', verify_ssl=True):
         self.url = url

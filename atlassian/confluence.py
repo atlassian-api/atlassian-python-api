@@ -348,6 +348,33 @@ class Confluence(AtlassianRestAPI):
     def history(self, page_id):
         return self.get('rest/api/content/{0}/history'.format(page_id))
 
+    def get_content_history(self, content_id):
+        return self.history(content_id)
+
+    def get_content_history_by_version_number(self, content_id, version_number):
+        url = 'rest/experimental/content/{0}/version/{1}'.format(content_id, version_number)
+        return self.get(url)
+
+    def remove_content_history(self, page_id, version_number):
+        """
+        Remove content history. It works as experimental method
+        :param page_id:
+        :param version_number: version number
+        :return:
+        """
+        url = "rest/experimental/content/{id}/version/{versionNumber}".format(id=page_id, versionNumber=version_number)
+        self.delete(url)
+
+    def remove_content_history_in_cloud(self, page_id, version_id):
+        """
+        Remove content history. It works in CLOUD
+        :param page_id:
+        :param version_id:
+        :return:
+        """
+        url = "rest/api/content/{id}/version/{versionId}".format(id=page_id, versionId=version_id)
+        self.delete(url)
+
     def has_unknown_attachment_error(self, page_id):
         """
         Check has unknown attachment error on page
@@ -370,7 +397,8 @@ class Confluence(AtlassianRestAPI):
         :param body: Body for compare it
         :return: True if the same
         """
-        confluence_content = (self.get_page_by_id(page_id, expand='body.storage').get('body') or {}).get('storage').get('value')
+        confluence_content = (self.get_page_by_id(page_id, expand='body.storage').get('body') or {}).get('storage').get(
+            'value')
         confluence_content = confluence_content.replace('&oacute;', u'ó')
 
         log.debug('Old Content: """{body}"""'.format(body=confluence_content))

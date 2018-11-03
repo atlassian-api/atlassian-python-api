@@ -43,21 +43,23 @@ The following command builds a package and uploads it to PIP repository.
 References
 ----------
 
+All methods based on docs from: https://developer.atlassian.com/docs/
+
 1. Jira:
-    https://docs.atlassian.com/software/jira/docs/api/REST/latest
+    - https://docs.atlassian.com/software/jira/docs/api/REST/latest
 2. Confluence:
-    https://developer.atlassian.com/server/confluence/confluence-server-rest-api/
+    - https://developer.atlassian.com/server/confluence/confluence-server-rest-api/
 3. Jira Service Desk:
-    https://developer.atlassian.com/cloud/jira/service-desk/rest/
-    https://docs.atlassian.com/jira-servicedesk/REST/server
+    - https://developer.atlassian.com/cloud/jira/service-desk/rest/
+    - https://docs.atlassian.com/jira-servicedesk/REST/server
 4. Portfolio for Jira:
-    https://docs.atlassian.com/portfolio-for-jira-server/REST/2.13.0/teams/
-    https://docs.atlassian.com/portfolio-for-jira-server/REST/2.13.0/jpo/
+    - https://docs.atlassian.com/portfolio-for-jira-server/REST/2.13.0/teams/
+    - https://docs.atlassian.com/portfolio-for-jira-server/REST/2.13.0/jpo/
 5. Bitbucket:
-    https://developer.atlassian.com/server/bitbucket/reference/rest-api/
-    https://developer.atlassian.com/server/bitbucket/how-tos/command-line-rest/
+    - https://developer.atlassian.com/server/bitbucket/reference/rest-api/
+    - https://developer.atlassian.com/server/bitbucket/how-tos/command-line-rest/
 6. Bamboo:
-    https://docs.atlassian.com/atlassian-bamboo/REST/latest/
+    - https://docs.atlassian.com/atlassian-bamboo/REST/latest/
 7. Tempo:
-    https://www.tempo.io/server-api-documentation
-    http://tempo.io/doc/core/api/rest/latest/
+    - https://www.tempo.io/server-api-documentation
+    - http://tempo.io/doc/core/api/rest/latest/

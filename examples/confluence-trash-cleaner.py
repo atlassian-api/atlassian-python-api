@@ -24,7 +24,7 @@ def clean_pages_from_space(confluence, space_key, limit=500):
             flag = False
             print("For space {} trash is empty".format(space_key))
         else:
-            print("Founded in space {} pages as trashed {}".format(space_key, len(values)))
+            print("Found in space {} pages as trashed {}".format(space_key, len(values)))
             for value in values:
                 print("Removing page with title: " + value['title'])
                 confluence.remove_page_from_trash(value['id'])
