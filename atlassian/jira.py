@@ -224,6 +224,38 @@ class Jira(AtlassianRestAPI):
             limit=limit)
         return self.get(url)
 
+    def create_group(self, name):
+        """
+        Create a group by given group parameter
+
+        :param name: str
+        :return: New group params
+        """
+        url = 'rest/api/2/group'
+        data = {'name': name}
+
+        return self.post(url, data=data)
+
+    def remove_group(self, name, swap_group=None):
+        """
+        Delete a group by given group parameter
+        If you delete a group and content is restricted to that group, the content will be hidden from all users
+        To prevent this, use this parameter to specify a different group to transfer the restrictions
+        (comments and worklogs only) to
+
+        :param name: str
+        :param swap_group: str
+        :return:
+        """
+        log.warning('Removing group...')
+        url = 'rest/api/2/group'
+        if swap_group is not None:
+            params = {'groupname': name, 'swapGroup': swap_group}
+        else:
+            params = {'groupname': name}
+
+        return self.delete(url, params=params)
+
     def get_all_users_from_group(self, group, include_inactive_users=False, start=0, limit=50):
         """
         Just wrapping method user group members

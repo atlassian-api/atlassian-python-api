@@ -127,11 +127,11 @@ class AtlassianRestAPI(object):
             log.debug('Received response with no content')
             return None
 
-    def delete(self, path, data=None, headers=None):
+    def delete(self, path, data=None, headers=None, params=None):
         """
         Deletes resources at given paths.
         :rtype: dict
         :return: Empty dictionary to have consistent interface.
         Some of Atlassian REST resources don't return any content.
         """
-        self.request('DELETE', path=path, data=data, headers=headers)
+        self.request('DELETE', path=path, data=data, headers=headers, params=params)
