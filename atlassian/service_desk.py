@@ -486,3 +486,14 @@ class ServiceDesk(AtlassianRestAPI):
         data = {'decision': decision}
 
         return self.post(url, headers=self.experimental_headers, data=data)
+
+    def get_queue_settings(self, project_key):
+        """
+        Get queue settings on project
+
+        :param project_key: str
+        :return:
+        """
+        url = 'rest/servicedeskapi/queues/{}'.format(project_key)
+
+        return self.get(url, headers=self.experimental_headers)

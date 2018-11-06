@@ -161,3 +161,11 @@ Approvals
 
     # Answer a pending approval
     sd.answer_approval(issue_id_or_key, approval_id, decision)
+
+Queues
+------
+
+.. code-block:: python
+
+    # Get queue settings on project
+    sd.get_queue_settings(project_key)
