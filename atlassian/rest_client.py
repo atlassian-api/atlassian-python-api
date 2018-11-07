@@ -113,9 +113,9 @@ class AtlassianRestAPI(object):
                 log.error(e)
                 return
 
-    def post(self, path, data=None, headers=None, files=None):
+    def post(self, path, data=None, headers=None, files=None, params=None):
         try:
-            return self.request('POST', path=path, data=data, headers=headers, files=files).json()
+            return self.request('POST', path=path, data=data, headers=headers, files=files, params=params).json()
         except ValueError:
             log.debug('Received response with no content')
             return None
