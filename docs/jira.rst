@@ -68,6 +68,12 @@ Manage groups
     # Get all users from group
     jira.get_all_users_from_group(group, include_inactive_users=False, start=0, limit=50)
 
+    # Add given user to a group
+    jira.add_user_to_group(username, group_name)
+
+    # Remove given user from a group
+    jira.remove_user_from_group(username, group_name)
+
 Manage projects
 ---------------
 

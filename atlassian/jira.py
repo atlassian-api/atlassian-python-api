@@ -271,6 +271,34 @@ class Jira(AtlassianRestAPI):
             group=group, include_inactive=include_inactive_users, start=start, limit=limit)
         return self.get(url)
 
+    def add_user_to_group(self, username, group_name):
+        """
+        Add given user to a group
+
+        :param username: str
+        :param group_name: str
+        :return: Current state of the group
+        """
+        url = 'rest/api/2/group/user'
+        params = {'groupname': group_name}
+        data = {'name': username}
+
+        return self.post(url, params=params, data=data)
+
+    def remove_user_from_group(self, username, group_name):
+        """
+        Remove given user from a group
+
+        :param username: str
+        :param group_name: str
+        :return:
+        """
+        log.warning('Removing user from a group...')
+        url = 'rest/api/2/group/user'
+        params = {'groupname': group_name, 'username': username}
+
+        return self.delete(url, params=params)
+
     def issue_exists(self, issue_key):
         try:
             self.issue(issue_key, fields='*none')
