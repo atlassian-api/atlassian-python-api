@@ -80,7 +80,12 @@ Manage projects
 .. code-block:: python
 
     # Get all projects
-    jira.projects()
+    # Returns all projects which are visible for the currently logged in user.
+    jira.projects(included_archived=None)
+
+    # Get all project alternative call
+    # Returns all projects which are visible for the currently logged in user.
+    jira.get_all_projects(included_archived=None)
 
     # Get project
     jira.project(key)
@@ -127,6 +132,9 @@ Manage issues
     # Update issue field
     fields = {'summary': 'New summary'}
     jira.update_issue_field(key, fields)
+
+    # Get existing custom fields or find by filter
+    get_custom_fields(self, search=None, start=1, limit=50):
 
     # Rename sprint
     jira.rename_sprint(sprint_id, name, start_date, end_date)
