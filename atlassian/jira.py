@@ -113,8 +113,19 @@ class Jira(AtlassianRestAPI):
             username=username, include_inactive=include_inactive_users, start=start, limit=limit)
         return self.get(url)
 
-    def projects(self):
+    def projects(self, included_archived=None):
+        """Returns all projects which are visible for the currently logged in user.
+        If no user is logged in, it returns the list of projects that are visible when using anonymous access.
+        :param included_archived: boolean whether to include archived projects in response, default: false
+        :return:
+        """
+        params = {}
+        if included_archived:
+            params['includeArchived'] = included_archived
         return self.get('rest/api/2/project')
+
+    def get_all_projects(self, included_archived=None):
+        return self.projects(included_archived)
 
     def project(self, key):
         return self.get('rest/api/2/project/{0}'.format(key))
@@ -174,6 +185,24 @@ class Jira(AtlassianRestAPI):
 
     def update_issue_field(self, key, fields='*all'):
         return self.put('rest/api/2/issue/{0}'.format(key), data={'fields': fields})
+
+    def get_custom_fields(self, search=None, start=1, limit=50):
+        """
+        Get custom fields. Evaluated on 7.12
+        :param search: str
+        :param start: long Default: 1
+        :param limit: int Default: 50
+        :return:
+        """
+        url = 'rest/api/2/customFields'
+        params = {}
+        if search:
+            params['search'] = search
+        if start:
+            params['startAt'] = start
+        if limit:
+            params['maxResults'] = limit
+        return self.get(url, params=params)
 
     def project_leaders(self):
         for project in self.projects():
