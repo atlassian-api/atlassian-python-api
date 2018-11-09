@@ -253,6 +253,38 @@ class Jira(AtlassianRestAPI):
             limit=limit)
         return self.get(url)
 
+    def create_group(self, name):
+        """
+        Create a group by given group parameter
+
+        :param name: str
+        :return: New group params
+        """
+        url = 'rest/api/2/group'
+        data = {'name': name}
+
+        return self.post(url, data=data)
+
+    def remove_group(self, name, swap_group=None):
+        """
+        Delete a group by given group parameter
+        If you delete a group and content is restricted to that group, the content will be hidden from all users
+        To prevent this, use this parameter to specify a different group to transfer the restrictions
+        (comments and worklogs only) to
+
+        :param name: str
+        :param swap_group: str
+        :return:
+        """
+        log.warning('Removing group...')
+        url = 'rest/api/2/group'
+        if swap_group is not None:
+            params = {'groupname': name, 'swapGroup': swap_group}
+        else:
+            params = {'groupname': name}
+
+        return self.delete(url, params=params)
+
     def get_all_users_from_group(self, group, include_inactive_users=False, start=0, limit=50):
         """
         Just wrapping method user group members
@@ -267,6 +299,34 @@ class Jira(AtlassianRestAPI):
         url += "?groupname={group}&includeInactiveUsers={include_inactive}&startAt={start}&maxResults={limit}".format(
             group=group, include_inactive=include_inactive_users, start=start, limit=limit)
         return self.get(url)
+
+    def add_user_to_group(self, username, group_name):
+        """
+        Add given user to a group
+
+        :param username: str
+        :param group_name: str
+        :return: Current state of the group
+        """
+        url = 'rest/api/2/group/user'
+        params = {'groupname': group_name}
+        data = {'name': username}
+
+        return self.post(url, params=params, data=data)
+
+    def remove_user_from_group(self, username, group_name):
+        """
+        Remove given user from a group
+
+        :param username: str
+        :param group_name: str
+        :return:
+        """
+        log.warning('Removing user from a group...')
+        url = 'rest/api/2/group/user'
+        params = {'groupname': group_name, 'username': username}
+
+        return self.delete(url, params=params)
 
     def issue_exists(self, issue_key):
         try:

@@ -51,8 +51,28 @@ Manage users
     # Fuzzy search using username and display name
     jira.user_find_by_user_string(username, start=0, limit=50, include_inactive_users=False)
 
+Manage groups
+-------------
+
+.. code-block:: python
+
+    # Create a group
+    jira.create_group(name)
+
+    # Delete a group
+    # If you delete a group and content is restricted to that group, the content will be hidden from all users
+    # To prevent this, use this parameter to specify a different group to transfer the restrictions
+    # (comments and worklogs only) to
+    jira.remove_group(name, swap_group=None)
+
     # Get all users from group
     jira.get_all_users_from_group(group, include_inactive_users=False, start=0, limit=50)
+
+    # Add given user to a group
+    jira.add_user_to_group(username, group_name)
+
+    # Remove given user from a group
+    jira.remove_user_from_group(username, group_name)
 
 Manage projects
 ---------------
