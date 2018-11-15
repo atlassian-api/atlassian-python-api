@@ -28,10 +28,9 @@ class AtlassianRestAPI(object):
 
     def log_curl_debug(self, method, path, data=None, headers=None, level=logging.DEBUG):
         headers = headers or self.default_headers
-        message = "curl --silent -X {method} -u '{username}':'{password}' -H {headers} {data} '{url}'".format(
+        message = "curl --silent -X {method} -u '{username}':'********' -H {headers} {data} '{url}'".format(
             method=method,
             username=self.username,
-            password=self.password,
             headers=' -H '.join(["'{0}: {1}'".format(key, value) for key, value in headers.items()]),
             data='' if not data else "--data '{0}'".format(json.dumps(data)),
             url='{0}'.format(self.url_joiner(self.url, path)))
