@@ -20,7 +20,7 @@ class Jira(AtlassianRestAPI):
         Type of re-indexing available:
         FOREGROUND - runs a lock/full reindexing
         BACKGROUND - runs a background reindexing.
-                   If JIRA fails to finish the background reindexing, respond with 409 Conflict (error message).
+                   If Jira fails to finish the background reindexing, respond with 409 Conflict (error message).
         BACKGROUND_PREFERRED  - If possible do a background reindexing.
                    If it's not possible (due to an inconsistent index), do a foreground reindexing.
         :param indexing_type: OPTIONAL: The default value for the type is BACKGROUND_PREFFERED
@@ -404,6 +404,19 @@ class Jira(AtlassianRestAPI):
             url = 'rest/api/2/issue/{}/attachments'.format(issue_key)
 
             return self.post(url, headers=headers, files=files)
+
+    def get_issue_remotelinks(self, issue_key, global_id=None):
+        """
+        Finding all Remote Links on an issue, also with filtering by Global ID
+        :param issue_key:
+        :param global_id: str
+        :return:
+        """
+        url= 'rest/api/2/issue/{issue_key}/remotelink'.format(issue_key=issue_key)
+        params = {}
+        if global_id:
+            params['globalId']=global_id
+        return self.get(url, params=params)
 
     def get_issue_transitions(self, issue_key):
         url = 'rest/api/2/issue/{issue_key}?expand=transitions.fields&fields=status'.format(issue_key=issue_key)
