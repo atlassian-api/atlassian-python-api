@@ -369,7 +369,7 @@ class Bitbucket(AtlassianRestAPI):
 
     def reindex_repo_dev_panel(self, project, repository):
         """
-        Reindex all of the JIRA issues related to this repository, including branches and pull requests.
+        Reindex all of the Jira issues related to this repository, including branches and pull requests.
         This automatically happens as part of an upgrade, and calling this manually should only be required
         if something unforeseen happens and the index becomes out of sync.
         The authenticated user must have REPO_ADMIN permission for the specified repository to call this resource.

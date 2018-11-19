@@ -15,7 +15,7 @@ class ServiceDesk(AtlassianRestAPI):
 
     def get_service_desks(self):
         """
-        Returns all service desks in the JIRA Service Desk application
+        Returns all service desks in the Jira Service Desk application
         with the option to include archived service desks
 
         :return: Service Desks
@@ -209,7 +209,7 @@ class ServiceDesk(AtlassianRestAPI):
     # Organizations actions
     def get_organisations(self, service_desk_id=None, start=0, limit=50):
         """
-        Returns a list of organizations in the JIRA instance. If the user is not an agent,
+        Returns a list of organizations in the Jira instance. If the user is not an agent,
         the resource returns a list of organizations the user is a member of.
 
         :param service_desk_id: OPTIONAL: str Get organizations from single Service Desk
@@ -263,7 +263,7 @@ class ServiceDesk(AtlassianRestAPI):
 
     def create_organization(self, name):
         """
-        To create an organization JIRA administrator global permission or agent permission is required
+        To create an organization Jira administrator global permission or agent permission is required
         depending on the settings
 
         :param name: str
