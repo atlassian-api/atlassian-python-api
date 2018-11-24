@@ -412,10 +412,10 @@ class Jira(AtlassianRestAPI):
         :param global_id: str
         :return:
         """
-        url= 'rest/api/2/issue/{issue_key}/remotelink'.format(issue_key=issue_key)
+        url = 'rest/api/2/issue/{issue_key}/remotelink'.format(issue_key=issue_key)
         params = {}
         if global_id:
-            params['globalId']=global_id
+            params['globalId'] = global_id
         return self.get(url, params=params)
 
     def get_issue_transitions(self, issue_key):
@@ -534,6 +534,14 @@ class Jira(AtlassianRestAPI):
     def delete_component(self, component_id):
         log.warning('Deleting component "{component_id}"'.format(component_id=component_id))
         return self.delete('rest/api/2/component/{component_id}'.format(component_id=component_id))
+
+    def get_all_workflows(self):
+        """
+        Provide all workflows for application admin
+        :return:
+        """
+        url = 'rest/api/2/workflow'
+        return self.get(url)
 
     def upload_plugin(self, plugin_path):
         """
