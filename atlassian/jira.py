@@ -176,6 +176,43 @@ class Jira(AtlassianRestAPI):
             params["expand"] = expand
         return self.get('rest/api/2/project/{}/version'.format(key), params)
 
+    def get_project_roles(self, project_key):
+        """
+        Provide associated project roles
+        :param project_key:
+        :return:
+        """
+        return self.get('rest/api/2/project/{0}/role'.format(project_key))
+
+    def get_project_actors_for_role_project(self, project_key, role_id):
+        """
+        Returns the details for a given project role in a project.
+        :param project_key:
+        :param role_id:
+        :return:
+        """
+        url = 'rest/api/2/project/{projectIdOrKey}/role/{id}'.format(projectIdOrKey=project_key,
+                                                                     id=role_id)
+        return (self.get(url) or {}).get('actors')
+
+    def delete_project_actors(self, project_key, role_id, actor, actor_type=None):
+        """
+        Deletes actors (users or groups) from a project role.
+        Delete a user from the role: /rest/api/2/project/{projectIdOrKey}/role/{roleId}?user={username}
+        Delete a group from the role: /rest/api/2/project/{projectIdOrKey}/role/{roleId}?group={groupname}
+        :param project_key:
+        :param role_id:
+        :param actor:
+        :param actor_type: str : group or user string
+        :return:
+        """
+        url = 'rest/api/2/project/{projectIdOrKey}/role/{roleId}'.format(projectIdOrKey=project_key,
+                                                                         roleId=role_id)
+        params = {}
+        if actor_type is not None and actor_type in ['group', 'user']:
+            params[actor_type] = actor
+        self.delete(url, params=params)
+
     def issue(self, key, fields='*all'):
         return self.get('rest/api/2/issue/{0}?fields={1}'.format(key, fields))
 
@@ -541,6 +578,14 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         url = 'rest/api/2/workflow'
+        return self.get(url)
+
+    def get_all_global_project_roles(self):
+        """
+        Get all the ProjectRoles available in Jira. Currently this list is global.
+        :return:
+        """
+        url = 'rest/api/2/role'
         return self.get(url)
 
     def upload_plugin(self, plugin_path):
