@@ -176,6 +176,62 @@ class Jira(AtlassianRestAPI):
             params["expand"] = expand
         return self.get('rest/api/2/project/{}/version'.format(key), params)
 
+    def get_project_roles(self, project_key):
+        """
+        Provide associated project roles
+        :param project_key:
+        :return:
+        """
+        return self.get('rest/api/2/project/{0}/role'.format(project_key))
+
+    def get_project_actors_for_role_project(self, project_key, role_id):
+        """
+        Returns the details for a given project role in a project.
+        :param project_key:
+        :param role_id:
+        :return:
+        """
+        url = 'rest/api/2/project/{projectIdOrKey}/role/{id}'.format(projectIdOrKey=project_key,
+                                                                     id=role_id)
+        return (self.get(url) or {}).get('actors')
+
+    def delete_project_actors(self, project_key, role_id, actor, actor_type=None):
+        """
+        Deletes actors (users or groups) from a project role.
+        Delete a user from the role: /rest/api/2/project/{projectIdOrKey}/role/{roleId}?user={username}
+        Delete a group from the role: /rest/api/2/project/{projectIdOrKey}/role/{roleId}?group={groupname}
+        :param project_key:
+        :param role_id:
+        :param actor:
+        :param actor_type: str : group or user string
+        :return:
+        """
+        url = 'rest/api/2/project/{projectIdOrKey}/role/{roleId}'.format(projectIdOrKey=project_key,
+                                                                         roleId=role_id)
+        params = {}
+        if actor_type is not None and actor_type in ['group', 'user']:
+            params[actor_type] = actor
+        return self.delete(url, params=params)
+
+    def add_project_actor_in_role(self, project_key, role_id, actor, actor_type):
+        """
+
+        :param project_key:
+        :param role_id:
+        :param actor:
+        :param actor_type:
+        :return:
+        """
+        url = 'rest/api/2/project/{projectIdOrKey}/role/{roleId}'.format(projectIdOrKey=project_key,
+                                                                         roleId=role_id)
+        data = {}
+        if actor_type == 'group':
+            data['group'] = [actor]
+        elif actor_type == 'user':
+            data['user'] = [actor]
+
+        return self.post(url, data=data)
+
     def issue(self, key, fields='*all'):
         return self.get('rest/api/2/issue/{0}?fields={1}'.format(key, fields))
 
@@ -412,10 +468,10 @@ class Jira(AtlassianRestAPI):
         :param global_id: str
         :return:
         """
-        url= 'rest/api/2/issue/{issue_key}/remotelink'.format(issue_key=issue_key)
+        url = 'rest/api/2/issue/{issue_key}/remotelink'.format(issue_key=issue_key)
         params = {}
         if global_id:
-            params['globalId']=global_id
+            params['globalId'] = global_id
         return self.get(url, params=params)
 
     def get_issue_transitions(self, issue_key):
@@ -535,6 +591,22 @@ class Jira(AtlassianRestAPI):
         log.warning('Deleting component "{component_id}"'.format(component_id=component_id))
         return self.delete('rest/api/2/component/{component_id}'.format(component_id=component_id))
 
+    def get_all_workflows(self):
+        """
+        Provide all workflows for application admin
+        :return:
+        """
+        url = 'rest/api/2/workflow'
+        return self.get(url)
+
+    def get_all_global_project_roles(self):
+        """
+        Get all the ProjectRoles available in Jira. Currently this list is global.
+        :return:
+        """
+        url = 'rest/api/2/role'
+        return self.get(url)
+
     def upload_plugin(self, plugin_path):
         """
         Provide plugin path for upload into Jira e.g. useful for auto deploy
@@ -550,6 +622,39 @@ class Jira(AtlassianRestAPI):
         upm_token = self.request(method='GET', path='rest/plugins/1.0/', headers=headers).headers['upm-token']
         url = 'rest/plugins/1.0/?token={upm_token}'.format(upm_token=upm_token)
         return self.post(url, files=files, headers=headers)
+
+    def get_all_permissionschemes(self, expand=None):
+        """
+        Returns a list of all permission schemes.
+        By default only shortened beans are returned.
+        If you want to include permissions of all the schemes,
+        then specify the permissions expand parameter.
+        Permissions will be included also if you specify any other expand parameter.
+        :param expand : permissions,user,group,projectRole,field,all
+        :return:
+        """
+        url = '/rest/api/2/permissionscheme'
+        params = {}
+        if expand:
+            params['expand'] = expand
+        return (self.get(url, params=params) or {}).get('permissionSchemes')
+
+    def get_permissionscheme(self, permission_id, expand=None):
+        """
+        Returns a list of all permission schemes.
+        By default only shortened beans are returned.
+        If you want to include permissions of all the schemes,
+        then specify the permissions expand parameter.
+        Permissions will be included also if you specify any other expand parameter.
+        :param permission_id
+        :param expand : permissions,user,group,projectRole,field,all
+        :return:
+        """
+        url = '/rest/api/2/permissionscheme/{schemeID}'.format(schemeID=permission_id)
+        params = {}
+        if expand:
+            params['expand'] = expand
+        return self.get(url, params=params)
 
     """
     #######################################################################
