@@ -211,7 +211,26 @@ class Jira(AtlassianRestAPI):
         params = {}
         if actor_type is not None and actor_type in ['group', 'user']:
             params[actor_type] = actor
-        self.delete(url, params=params)
+        return self.delete(url, params=params)
+
+    def add_project_actor_in_role(self, project_key, role_id, actor, actor_type):
+        """
+
+        :param project_key:
+        :param role_id:
+        :param actor:
+        :param actor_type:
+        :return:
+        """
+        url = 'rest/api/2/project/{projectIdOrKey}/role/{roleId}'.format(projectIdOrKey=project_key,
+                                                                         roleId=role_id)
+        data = {}
+        if actor_type == 'group':
+            data['group'] = [actor]
+        elif actor_type == 'user':
+            data['user'] = [actor]
+
+        return self.post(url, data=data)
 
     def issue(self, key, fields='*all'):
         return self.get('rest/api/2/issue/{0}?fields={1}'.format(key, fields))
@@ -603,6 +622,39 @@ class Jira(AtlassianRestAPI):
         upm_token = self.request(method='GET', path='rest/plugins/1.0/', headers=headers).headers['upm-token']
         url = 'rest/plugins/1.0/?token={upm_token}'.format(upm_token=upm_token)
         return self.post(url, files=files, headers=headers)
+
+    def get_all_permissionschemes(self, expand=None):
+        """
+        Returns a list of all permission schemes.
+        By default only shortened beans are returned.
+        If you want to include permissions of all the schemes,
+        then specify the permissions expand parameter.
+        Permissions will be included also if you specify any other expand parameter.
+        :param expand : permissions,user,group,projectRole,field,all
+        :return:
+        """
+        url = '/rest/api/2/permissionscheme'
+        params = {}
+        if expand:
+            params['expand'] = expand
+        return (self.get(url, params=params) or {}).get('permissionSchemes')
+
+    def get_permissionscheme(self, permission_id, expand=None):
+        """
+        Returns a list of all permission schemes.
+        By default only shortened beans are returned.
+        If you want to include permissions of all the schemes,
+        then specify the permissions expand parameter.
+        Permissions will be included also if you specify any other expand parameter.
+        :param permission_id
+        :param expand : permissions,user,group,projectRole,field,all
+        :return:
+        """
+        url = '/rest/api/2/permissionscheme/{schemeID}'.format(schemeID=permission_id)
+        params = {}
+        if expand:
+            params['expand'] = expand
+        return self.get(url, params=params)
 
     """
     #######################################################################
