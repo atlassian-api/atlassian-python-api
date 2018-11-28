@@ -459,7 +459,7 @@ class Confluence(AtlassianRestAPI):
         else:
             result = self.create_page(space=space, parent_id=parent_id, title=title, body=body)
 
-        log.warning('You may access your page at: {host}{url}'.format(
+        log.info('You may access your page at: {host}{url}'.format(
             host=self.url,
             url=result['_links']['tinyui']))
 
