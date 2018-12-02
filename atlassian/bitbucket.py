@@ -103,24 +103,37 @@ class Bitbucket(AtlassianRestAPI):
         url = 'rest/api/1.0/projects/{projectKey}/repos?limit={limit}'.format(projectKey=project_key, limit=limit)
         return (self.get(url) or {}).get('values')
 
-    def get_branches(self, project, repository, filter='', limit=99999, details=True):
+    def get_branches(self, project, repository, base=None, filter=None, start=0, limit=99999, details=True,
+                     order_by='MODIFICATION'):
         """
-        Get branches from repo
+        Retrieve the branches matching the supplied filterText param.
+        The authenticated user must have REPO_READ permission for the specified repository to call this resource.
         :param project:
         :param repository:
+        :param base: base branch or tag to compare each branch to (for the metadata providers that uses that information)
         :param filter:
         :param limit: OPTIONAL: The limit of the number of branches to return, this may be restricted by
                     fixed system limits. Default by built-in method: 99999
-        :param details:
+        :param details: whether to retrieve plugin-provided metadata about each branch
+        :param order_by: OPTIONAL: ordering of refs either ALPHABETICAL (by name) or MODIFICATION (last updated)
         :return:
         """
         url = "rest/api/1.0/projects/{project}/repos/{repository}/branches".format(project=project,
                                                                                    repository=repository)
-        url += "?limit={limit}&filterText={filter}&details={details}".format(limit=limit,
-                                                                             filter=filter,
-                                                                             details=details)
+        params = {}
+        if start:
+            params['start'] = start
+        if limit:
+            params['limit'] = limit
+        if filter:
+            params['filterText'] = filter
+        if base:
+            params['base'] = base
+        if order_by:
+            params['orderBy'] = order_by
+        params['details'] = details
 
-        return (self.get(url) or {}).get('values')
+        return (self.get(url, params=params) or {}).get('values')
 
     def delete_branch(self, project, repository, name, end_point):
         """
@@ -145,7 +158,8 @@ class Bitbucket(AtlassianRestAPI):
         :param project:
         :param repository:
         :param state:
-        :param order:
+        :param order: OPTIONAL: defaults to NEWEST) the order to return pull requests in, either OLDEST
+                                (as in: "oldest first") or NEWEST.
         :param limit:
         :param start:
         :return:
@@ -162,6 +176,21 @@ class Bitbucket(AtlassianRestAPI):
         if order:
             params['order'] = order
         return (self.get(url, params=params) or {}).get('values')
+
+    def get_pullrequest(self, project, repository, pull_request_Id):
+        """
+        Retrieve a pull request.
+        The authenticated user must have REPO_READ permission
+        for the repository that this pull request targets to call this resource.
+        :param project:
+        :param repository:
+        :param pull_request_Id: the ID of the pull request within the repository
+        :return:
+        """
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}'.format(project=project,
+                                                                                                        repository=repository,
+                                                                                                        pullRequestId=pull_request_Id)
+        return self.get(url)
 
     def get_tags(self, project, repository, filter='', limit=1000, order_by=None, start=0):
         """
@@ -269,6 +298,35 @@ class Bitbucket(AtlassianRestAPI):
         url += '?since={hash_from}&until={hash_to}&limit={limit}'.format(hash_from=hash_oldest,
                                                                          hash_to=hash_newest,
                                                                          limit=limit)
+        return (self.get(url) or {}).get('values')
+
+    def get_commit_info(self, project, repository, commit, path=None):
+        """
+        Retrieve a single commit identified by its ID>. In general, that ID is a SHA1.
+        From 2.11, ref names like "refs/heads/master" are no longer accepted by this resource.
+        The authenticated user must have REPO_READ permission for the specified repository to call this resource.
+        :param project:
+        :param repository:
+        :param commit: the commit ID to retrieve
+        :path :OPTIONAL an optional path to filter the commit by.
+                        If supplied the details returned may not be for the specified commit.
+                        Instead, starting from the specified commit, they will be the details for the first commit
+                        affecting the specified path.
+        :return:
+        """
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/commits/{commitId}'.format(project=project,
+                                                                                             repository=repository,
+                                                                                             commitId=commit)
+        params = {}
+        if path:
+            params['path'] = path
+        return self.get(url, params=params)
+
+    def get_pull_requests_contain_commit(self, project, repository, commit):
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/commits/{commitId}/pull-requests'.format(
+            project=project,
+            repository=repository,
+            commitId=commit)
         return (self.get(url) or {}).get('values')
 
     def get_changelog(self, project, repository, ref_from, ref_to, limit=99999):
