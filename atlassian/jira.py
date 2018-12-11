@@ -108,7 +108,7 @@ class Jira(AtlassianRestAPI):
         :param include_inactive_users:
         :return:
         """
-        url = "rest/api/2/user/search"
+        url = 'rest/api/2/user/search'
         url += "?username={username}&includeInactive={include_inactive}&startAt={start}&maxResults={limit}".format(
             username=username, include_inactive=include_inactive_users, start=start, limit=limit)
         return self.get(url)
@@ -303,7 +303,7 @@ class Jira(AtlassianRestAPI):
                 fixed system limits. Default by built-in method: 50
         :return:
         """
-        url = "rest/api/2/user/assignable/search?project={project_key}&startAt={start}&maxResults={limit}".format(
+        url = 'rest/api/2/user/assignable/search?project={project_key}&startAt={start}&maxResults={limit}'.format(
             project_key=project_key,
             start=start,
             limit=limit)
@@ -351,7 +351,7 @@ class Jira(AtlassianRestAPI):
                 fixed system limits. Default by built-in method: 50
         :return:
         """
-        url = "rest/api/2/group/member"
+        url = 'rest/api/2/group/member'
         url += "?groupname={group}&includeInactiveUsers={include_inactive}&startAt={start}&maxResults={limit}".format(
             group=group, include_inactive=include_inactive_users, start=start, limit=limit)
         return self.get(url)
@@ -580,7 +580,8 @@ class Jira(AtlassianRestAPI):
         :param component_id:
         :return:
         """
-        return self.get("rest/api/2/component/{component_id}/relatedIssueCounts".format(component_id=component_id))
+        url = 'rest/api/2/component/{component_id}/relatedIssueCounts'.format(component_id=component_id)
+        return self.get(url)
 
     def create_component(self, component):
         log.warning('Creating component "{name}"'.format(name=component['name']))
