@@ -82,6 +82,7 @@ class Confluence(AtlassianRestAPI):
                  callback. Will raise requests.HTTPError on bad input, potentially.
                  If it has IndexError then return the None.
         """
+        url = 'rest/api/content'
         params = {}
         if start is not None:
             params["start"] = int(start)
@@ -91,7 +92,6 @@ class Confluence(AtlassianRestAPI):
             params['spaceKey'] = str(space)
         if space is not None:
             params['title'] = str(title)
-        url = 'rest/api/content'
         try:
             return (self.get(url, params=params) or {}).get('results')[0]
         except IndexError as e:
@@ -120,6 +120,7 @@ class Confluence(AtlassianRestAPI):
         :return: The JSON data returned from the content/{id}/label endpoint, or the results of the
                  callback. Will raise requests.HTTPError on bad input, potentially.
         """
+        url = 'rest/api/content/{id}/label'.format(id=page_id)
         params = {}
         if prefix:
             params["prefix"] = prefix
@@ -127,9 +128,15 @@ class Confluence(AtlassianRestAPI):
             params["start"] = int(start)
         if limit is not None:
             params["limit"] = int(limit)
-        return self.get("rest/api/content/{id}/label".format(id=page_id), params=params)
+        return self.get(url, params=params)
 
     def get_draft_page_by_id(self, page_id, status='draft'):
+        """
+        Provide content by id with status = draft
+        :param page_id:
+        :param status:
+        :return:
+        """
         url = 'rest/api/content/{page_id}?status={status}'.format(page_id=page_id, status=status)
         return self.get(url)
 
@@ -142,26 +149,38 @@ class Confluence(AtlassianRestAPI):
                       fixed system limits. Default: 50
         :return:
         """
-        url = 'rest/api/content/search?cql=type={type}%20AND%20label={label}&limit={limit}&start={start}'.format(
-            type='page',
-            label=label,
-            start=start,
-            limit=limit)
-        return (self.get(url) or {}).get('results')
+        url = 'rest/api/content/search'
+        params = {}
+        if label:
+            params['cql'] = 'type={type}%20AND%20label={label}'.format(type='page',
+                                                                       label=label)
+        if start:
+            params['start'] = start
+        if limit:
+            params['limit'] = limit
+        return (self.get(url, params=params) or {}).get('results')
 
-    def get_all_pages_from_space(self, space, start=0, limit=500):
+    def get_all_pages_from_space(self, space, start=0, limit=500, status=None):
         """
         Get all pages from space
         :param space:
         :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
         :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
                             fixed system limits. Default: 50
+        :param status: OPTIONAL
         :return:
         """
-        url = 'rest/api/content?spaceKey={space}&limit={limit}&start={start}'.format(space=space,
-                                                                                     limit=limit,
-                                                                                     start=start)
-        return (self.get(url) or {}).get('results')
+        url = 'rest/api/content'
+        params = {}
+        if space:
+            params['spaceKey'] = space
+        if start:
+            params['start'] = start
+        if limit:
+            params['limit'] = limit
+        if status:
+            params['status'] = status
+        return (self.get(url, params=params) or {}).get('results')
 
     def get_all_pages_from_space_trash(self, space, start=0, limit=500, status='trashed'):
         """
@@ -173,11 +192,7 @@ class Confluence(AtlassianRestAPI):
         :param status:
         :return:
         """
-        url = 'rest/api/content?spaceKey={space}&limit={limit}&start={start}&status={status}'.format(space=space,
-                                                                                                     limit=limit,
-                                                                                                     start=start,
-                                                                                                     status=status)
-        return (self.get(url) or {}).get('results')
+        return self.get_all_pages_from_space(space, start, limit, status)
 
     def get_all_draft_pages_from_space(self, space, start=0, limit=500, status='draft'):
         """
@@ -190,11 +205,7 @@ class Confluence(AtlassianRestAPI):
         :param status:
         :return:
         """
-        url = 'rest/api/content?spaceKey={space}&limit={limit}&start={start}&status={status}'.format(space=space,
-                                                                                                     limit=limit,
-                                                                                                     start=start,
-                                                                                                     status=status)
-        return (self.get(url) or {}).get('results')
+        return self.get_all_pages_from_space(space, start, limit, status)
 
     def get_all_draft_pages_from_space_through_cql(self, space, start=0, limit=500, status='draft'):
         """
@@ -210,8 +221,10 @@ class Confluence(AtlassianRestAPI):
         url = 'rest/api/content?cql=space=spaceKey={space} and status={status}'.format(space=space,
                                                                                        status=status)
         params = {}
-        params['limit'] = limit
-        params['start'] = start
+        if limit:
+            params['limit'] = limit
+        if start:
+            params['start'] = start
         return (self.get(url, params=params) or {}).get('results')
 
     def get_all_restictions_for_content(self, content_id):
@@ -247,16 +260,15 @@ class Confluence(AtlassianRestAPI):
         :param recursive: OPTIONAL: if True - will recursively delete all children pages too
         :return:
         """
+        url = 'rest/api/content/{page_id}'.format(page_id=page_id)
         if recursive:
             children_pages = self.get_page_child_by_type(page_id)
             for children_page in children_pages:
                 self.remove_page(children_page.get('id'), status, recursive)
-        if status is None:
-            url = 'rest/api/content/{page_id}'.format(page_id=page_id)
-        else:
-            url = 'rest/api/content/{page_id}?status={status}'.format(page_id=page_id, status=status)
-
-        return self.delete(url)
+        params = {}
+        if status:
+            params['status'] = status
+        return self.delete(url, params=params)
 
     def create_page(self, space, title, body, parent_id=None, type='page'):
         """
@@ -269,6 +281,7 @@ class Confluence(AtlassianRestAPI):
         :return:
         """
         log.info('Creating {type} "{space}" -> "{title}"'.format(space=space, title=title, type=type))
+        url = 'rest/api/content/'
         data = {
             'type': type,
             'title': title,
@@ -278,7 +291,7 @@ class Confluence(AtlassianRestAPI):
                 'representation': 'storage'}}}
         if parent_id:
             data['ancestors'] = [{'type': type, 'id': parent_id}]
-        return self.post('rest/api/content/', data=data)
+        return self.post(url, data=data)
 
     def get_all_spaces(self, start=0, limit=500):
         """
@@ -287,8 +300,13 @@ class Confluence(AtlassianRestAPI):
         :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
                             fixed system limits. Default: 500
         """
-        url = 'rest/api/space?limit={limit}&start={start}'.format(limit=limit, start=start)
-        return (self.get(url) or {}).get('results')
+        url = 'rest/api/space'
+        params = {}
+        if limit:
+            params['limit'] = limit
+        if start:
+            params['start'] = start
+        return (self.get(url, params=params) or {}).get('results')
 
     def attach_file(self, filename, page_id=None, title=None, space=None, comment=None):
         """
@@ -346,7 +364,8 @@ class Confluence(AtlassianRestAPI):
         return self.post(path=url, data=data)
 
     def history(self, page_id):
-        return self.get('rest/api/content/{0}/history'.format(page_id))
+        url = 'rest/api/content/{0}/history'.format(page_id)
+        return self.get(url)
 
     def get_content_history(self, content_id):
         return self.history(content_id)
@@ -362,7 +381,7 @@ class Confluence(AtlassianRestAPI):
         :param version_number: version number
         :return:
         """
-        url = "rest/experimental/content/{id}/version/{versionNumber}".format(id=page_id, versionNumber=version_number)
+        url = 'rest/experimental/content/{id}/version/{versionNumber}'.format(id=page_id, versionNumber=version_number)
         self.delete(url)
 
     def remove_content_history_in_cloud(self, page_id, version_id):
@@ -372,7 +391,7 @@ class Confluence(AtlassianRestAPI):
         :param version_id:
         :return:
         """
-        url = "rest/api/content/{id}/version/{versionId}".format(id=page_id, versionId=version_id)
+        url = 'rest/api/content/{id}/version/{versionId}'.format(id=page_id, versionId=version_id)
         self.delete(url)
 
     def has_unknown_attachment_error(self, page_id):
@@ -459,10 +478,8 @@ class Confluence(AtlassianRestAPI):
         else:
             result = self.create_page(space=space, parent_id=parent_id, title=title, body=body)
 
-        log.info('You may access your page at: {host}{url}'.format(
-            host=self.url,
-            url=result['_links']['tinyui']))
-
+        log.info('You may access your page at: {host}{url}'.format(host=self.url,
+                                                                   url=result['_links']['tinyui']))
         return result
 
     def convert_wiki_to_storage(self, wiki):
