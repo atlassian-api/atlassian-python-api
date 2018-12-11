@@ -137,7 +137,7 @@ class Bitbucket(AtlassianRestAPI):
         :param order_by: OPTIONAL: ordering of refs either ALPHABETICAL (by name) or MODIFICATION (last updated)
         :return:
         """
-        url = "rest/api/1.0/projects/{project}/repos/{repository}/branches".format(project=project,
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/branches'.format(project=project,
                                                                                    repository=repository)
         params = {}
         if start:
@@ -183,7 +183,7 @@ class Bitbucket(AtlassianRestAPI):
         :param start:
         :return:
         """
-        url = "rest/api/1.0/projects/{project}/repos/{repository}/pull-requests".format(project=project,
+        url = '/api/1.0/projects/{project}/repos/{repository}/pull-requests'.format(project=project,
                                                                                         repository=repository)
         params = {}
         if state:
