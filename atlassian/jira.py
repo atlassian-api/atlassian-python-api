@@ -260,6 +260,14 @@ class Jira(AtlassianRestAPI):
             params['maxResults'] = limit
         return self.get(url, params=params)
 
+    def get_all_custom_fields(self):
+        """
+        Returns a list of all fields, both System and Custom
+        :return: application/jsonContains a full representation of all visible fields in JSON.
+        """
+        url = 'rest/api/2/field'
+        return self.get(url)
+
     def project_leaders(self):
         for project in self.projects():
             key = project['key']
