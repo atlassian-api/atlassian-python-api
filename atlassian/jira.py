@@ -60,6 +60,28 @@ class Jira(AtlassianRestAPI):
         """
         return self.delete('rest/api/2/user?username={0}'.format(username))
 
+    def user_update(self, username, data):
+        """
+        Update user attributes based on json
+        :param username:
+        :param data:
+        :return:
+        """
+        url = 'rest/api/2/user?username={0}'.format(username)
+        return self.put(url, data=data)
+
+    def user_update_email(self, username, email):
+        """
+        Update user email for new domain changes
+        :param username:
+        :param email:
+        :return:
+        """
+        data = {}
+        data['name'] = username
+        data['emailAddress'] = email
+        return self.user_update(username, data=data)
+
     def user_deactivate(self, username):
         """
         Disable user
