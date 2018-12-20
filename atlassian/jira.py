@@ -630,6 +630,22 @@ class Jira(AtlassianRestAPI):
         url = 'rest/api/2/workflow'
         return self.get(url)
 
+    def get_all_statuses(self):
+        """
+        Returns a list of all statuses
+        :return:
+        """
+        url = 'rest/api/2/status'
+        return self.get(url)
+
+    def get_all_resolutions(self):
+        """
+        Returns a list of all resolutions.
+        :return:
+        """
+        url = 'rest/api/2/resolution'
+        return self.get(url)
+
     def get_all_global_project_roles(self):
         """
         Get all the ProjectRoles available in Jira. Currently this list is global.
