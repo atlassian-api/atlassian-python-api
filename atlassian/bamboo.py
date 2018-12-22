@@ -81,7 +81,7 @@ class Bamboo(AtlassianRestAPI):
                                    elements_key='plans', element_key='plan')
 
     def results(self, project_key=None, plan_key=None, job_key=None, build_number=None, expand=None, favourite=False,
-                clover_enabled=False, label=None, issue_key=None, start_index=0, max_results=25):
+                clover_enabled=False, issue_key=None, start_index=0, max_results=25):
         """
         Get results as generic method
         :param project_key:
@@ -91,7 +91,6 @@ class Bamboo(AtlassianRestAPI):
         :param expand:
         :param favourite:
         :param clover_enabled:
-        :param label:
         :param issue_key:
         :param start_index:
         :param max_results:

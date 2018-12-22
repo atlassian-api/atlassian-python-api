@@ -137,7 +137,7 @@ class Bitbucket(AtlassianRestAPI):
         :param start:
         :param project:
         :param repository:
-        :param base: base branch or tag to compare each branch to (for the metadata providers that uses that information)
+        :param base: base branch/tag to compare each branch to (for the metadata providers that uses that information)
         :param filter:
         :param limit: OPTIONAL: The limit of the number of branches to return, this may be restricted by
                     fixed system limits. Default by built-in method: 99999
@@ -204,19 +204,19 @@ class Bitbucket(AtlassianRestAPI):
             params['order'] = order
         return (self.get(url, params=params) or {}).get('values')
 
-    def get_pullrequest(self, project, repository, pull_request_Id):
+    def get_pullrequest(self, project, repository, pull_request_id):
         """
         Retrieve a pull request.
         The authenticated user must have REPO_READ permission
         for the repository that this pull request targets to call this resource.
         :param project:
         :param repository:
-        :param pull_request_Id: the ID of the pull request within the repository
+        :param pull_request_id: the ID of the pull request within the repository
         :return:
         """
         url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}'.format(project=project,
                                                                                                         repository=repository,
-                                                                                                        pullRequestId=pull_request_Id)
+                                                                                                        pullRequestId=pull_request_id)
         return self.get(url)
 
     def get_tags(self, project, repository, filter='', limit=1000, order_by=None, start=0):
@@ -522,7 +522,7 @@ class Bitbucket(AtlassianRestAPI):
         The authenticated user must have the SYS_ADMIN permission to call this resource.
         :return:
         """
-        url = 'api/1.0/admin/mail-server'
+        url = 'rest/api/1.0/admin/mail-server'
         return self.get(url)
 
     def get_mail_sender_address(self):
@@ -530,7 +530,7 @@ class Bitbucket(AtlassianRestAPI):
         Retrieves the server email address
         :return:
         """
-        url = 'api/1.0/admin/mail-server/sender-address'
+        url = 'rest/api/1.0/admin/mail-server/sender-address'
         return self.get(url)
 
     def remove_mail_sender_address(self):
@@ -539,5 +539,13 @@ class Bitbucket(AtlassianRestAPI):
         The authenticated user must have the ADMIN permission to call this resource.
         :return:
         """
-        url = 'api/1.0/admin/mail-server/sender-address'
+        url = 'rest/api/1.0/admin/mail-server/sender-address'
         return self.delete(url)
+
+    def get_ssh_settings(self):
+        """
+        Retrieve ssh settings for user
+        :return:
+        """
+        url = 'rest/ssh/1.0/settings'
+        return self.get(url)

@@ -77,9 +77,7 @@ class Jira(AtlassianRestAPI):
         :param email:
         :return:
         """
-        data = {}
-        data['name'] = username
-        data['emailAddress'] = email
+        data = {'name': username, 'emailAddress': email}
         return self.user_update(username, data=data)
 
     def user_deactivate(self, username):
@@ -680,7 +678,7 @@ class Jira(AtlassianRestAPI):
         :param expand : permissions,user,group,projectRole,field,all
         :return:
         """
-        url = '/rest/api/2/permissionscheme'
+        url = 'rest/api/2/permissionscheme'
         params = {}
         if expand:
             params['expand'] = expand
@@ -697,7 +695,7 @@ class Jira(AtlassianRestAPI):
         :param expand : permissions,user,group,projectRole,field,all
         :return:
         """
-        url = '/rest/api/2/permissionscheme/{schemeID}'.format(schemeID=permission_id)
+        url = 'rest/api/2/permissionscheme/{schemeID}'.format(schemeID=permission_id)
         params = {}
         if expand:
             params['expand'] = expand
