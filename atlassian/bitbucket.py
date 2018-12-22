@@ -107,10 +107,11 @@ class Bitbucket(AtlassianRestAPI):
                 'project_administrators': [{'email': x['emailAddress'], 'name': x['displayName']}
                                            for x in self.project_users_with_administrator_permissions(project['key'])]}
 
-    def repo_list(self, project_key, limit=25):
+    def repo_list(self, project_key, start=None, limit=25):
         """
         Get repositories list from project
         :param project_key:
+        :param start: OPTIONAL: The start of the
         :param limit: OPTIONAL: The limit of the number of repositories to return, this may be restricted by
                         fixed system limits. Default by built-in method: 25
         :return:
@@ -119,7 +120,14 @@ class Bitbucket(AtlassianRestAPI):
         params = {}
         if limit:
             params['limit'] = limit
-        return (self.get(url, params=params) or {}).get('values')
+        if start:
+            params['start'] = start
+        response = self.get(url, params=params)
+        if response.get('isLastPage'):
+            log.info('This is a last page of the result')
+        else:
+            log.info('Next page start at {}'.format(response.get('nextPageStart')))
+        return (response or {}).get('values')
 
     def get_branches(self, project, repository, base=None, filter=None, start=0, limit=99999, details=True,
                      order_by='MODIFICATION'):
@@ -129,7 +137,7 @@ class Bitbucket(AtlassianRestAPI):
         :param start:
         :param project:
         :param repository:
-        :param base: base branch or tag to compare each branch to (for the metadata providers that uses that information)
+        :param base: base branch/tag to compare each branch to (for the metadata providers that uses that information)
         :param filter:
         :param limit: OPTIONAL: The limit of the number of branches to return, this may be restricted by
                     fixed system limits. Default by built-in method: 99999
@@ -183,7 +191,7 @@ class Bitbucket(AtlassianRestAPI):
         :param start:
         :return:
         """
-        url = '/api/1.0/projects/{project}/repos/{repository}/pull-requests'.format(project=project,
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests'.format(project=project,
                                                                                         repository=repository)
         params = {}
         if state:
@@ -196,19 +204,19 @@ class Bitbucket(AtlassianRestAPI):
             params['order'] = order
         return (self.get(url, params=params) or {}).get('values')
 
-    def get_pullrequest(self, project, repository, pull_request_Id):
+    def get_pullrequest(self, project, repository, pull_request_id):
         """
         Retrieve a pull request.
         The authenticated user must have REPO_READ permission
         for the repository that this pull request targets to call this resource.
         :param project:
         :param repository:
-        :param pull_request_Id: the ID of the pull request within the repository
+        :param pull_request_id: the ID of the pull request within the repository
         :return:
         """
         url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}'.format(project=project,
                                                                                                         repository=repository,
-                                                                                                        pullRequestId=pull_request_Id)
+                                                                                                        pullRequestId=pull_request_id)
         return self.get(url)
 
     def get_tags(self, project, repository, filter='', limit=1000, order_by=None, start=0):
@@ -494,3 +502,50 @@ class Bitbucket(AtlassianRestAPI):
         if new_repository is not None:
             body['project'] = {'key': project}
         return self.post(url, data=body)
+
+    def get_current_license(self):
+        """
+        Retrieves details about the current license, as well as the current status of the system with
+        regards to the installed license. The status includes the current number of users applied
+        toward the license limit, as well as any status messages about the license (warnings about expiry
+        or user counts exceeding license limits).
+        The authenticated user must have ADMIN permission. Unauthenticated users, and non-administrators,
+        are not permitted to access license details.
+        :return:
+        """
+        url = 'rest/api/1.0/admin/license'
+        return self.get(url)
+
+    def get_mail_configuration(self):
+        """
+        Retrieves the current mail configuration.
+        The authenticated user must have the SYS_ADMIN permission to call this resource.
+        :return:
+        """
+        url = 'rest/api/1.0/admin/mail-server'
+        return self.get(url)
+
+    def get_mail_sender_address(self):
+        """
+        Retrieves the server email address
+        :return:
+        """
+        url = 'rest/api/1.0/admin/mail-server/sender-address'
+        return self.get(url)
+
+    def remove_mail_sender_address(self):
+        """
+        Clears the server email address.
+        The authenticated user must have the ADMIN permission to call this resource.
+        :return:
+        """
+        url = 'rest/api/1.0/admin/mail-server/sender-address'
+        return self.delete(url)
+
+    def get_ssh_settings(self):
+        """
+        Retrieve ssh settings for user
+        :return:
+        """
+        url = 'rest/ssh/1.0/settings'
+        return self.get(url)

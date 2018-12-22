@@ -77,9 +77,7 @@ class Jira(AtlassianRestAPI):
         :param email:
         :return:
         """
-        data = {}
-        data['name'] = username
-        data['emailAddress'] = email
+        data = {'name': username, 'emailAddress': email}
         return self.user_update(username, data=data)
 
     def user_deactivate(self, username):
@@ -630,6 +628,22 @@ class Jira(AtlassianRestAPI):
         url = 'rest/api/2/workflow'
         return self.get(url)
 
+    def get_all_statuses(self):
+        """
+        Returns a list of all statuses
+        :return:
+        """
+        url = 'rest/api/2/status'
+        return self.get(url)
+
+    def get_all_resolutions(self):
+        """
+        Returns a list of all resolutions.
+        :return:
+        """
+        url = 'rest/api/2/resolution'
+        return self.get(url)
+
     def get_all_global_project_roles(self):
         """
         Get all the ProjectRoles available in Jira. Currently this list is global.
@@ -664,7 +678,7 @@ class Jira(AtlassianRestAPI):
         :param expand : permissions,user,group,projectRole,field,all
         :return:
         """
-        url = '/rest/api/2/permissionscheme'
+        url = 'rest/api/2/permissionscheme'
         params = {}
         if expand:
             params['expand'] = expand
@@ -681,7 +695,7 @@ class Jira(AtlassianRestAPI):
         :param expand : permissions,user,group,projectRole,field,all
         :return:
         """
-        url = '/rest/api/2/permissionscheme/{schemeID}'.format(schemeID=permission_id)
+        url = 'rest/api/2/permissionscheme/{schemeID}'.format(schemeID=permission_id)
         params = {}
         if expand:
             params['expand'] = expand
