@@ -122,9 +122,7 @@ class Bitbucket(AtlassianRestAPI):
             params['limit'] = limit
         if start:
             params['start'] = start
-        response = self.get(url, params=params)
-        log.info('Is this last page? {}'.format(response['isLastPage']))
-        return (response or {}).get('values')
+        return self.get(url, params=params)
 
     def get_branches(self, project, repository, base=None, filter=None, start=0, limit=99999, details=True,
                      order_by='MODIFICATION'):
@@ -495,3 +493,29 @@ class Bitbucket(AtlassianRestAPI):
         """
         url = 'rest/api/1.0/admin/license'
         return self.get(url)
+
+    def get_mail_configuration(self):
+        """
+        Retrieves the current mail configuration.
+        The authenticated user must have the SYS_ADMIN permission to call this resource.
+        :return:
+        """
+        url = 'api/1.0/admin/mail-server'
+        return self.get(url)
+
+    def get_mail_sender_address(self):
+        """
+        Retrieves the server email address
+        :return:
+        """
+        url = 'api/1.0/admin/mail-server/sender-address'
+        return self.get(url)
+
+    def remove_mail_sender_address(self):
+        """
+        Clears the server email address.
+        The authenticated user must have the ADMIN permission to call this resource.
+        :return:
+        """
+        url = 'api/1.0/admin/mail-server/sender-address'
+        return self.delete(url)
