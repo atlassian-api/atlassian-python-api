@@ -123,7 +123,10 @@ class Bitbucket(AtlassianRestAPI):
         if start:
             params['start'] = start
         response = self.get(url, params=params)
-        log.info('Is this last page? {}'.format(response['isLastPage']))
+        if response.get('isLastPage'):
+            log.info('This is a last page of the result')
+        else:
+            log.info('Next page start at {}'.format(response.get('nextPageStart')))
         return (response or {}).get('values')
 
     def get_branches(self, project, repository, base=None, filter=None, start=0, limit=99999, details=True,
@@ -188,7 +191,7 @@ class Bitbucket(AtlassianRestAPI):
         :param start:
         :return:
         """
-        url = '/api/1.0/projects/{project}/repos/{repository}/pull-requests'.format(project=project,
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests'.format(project=project,
                                                                                         repository=repository)
         params = {}
         if state:
