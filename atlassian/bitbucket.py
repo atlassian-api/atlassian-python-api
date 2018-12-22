@@ -107,10 +107,11 @@ class Bitbucket(AtlassianRestAPI):
                 'project_administrators': [{'email': x['emailAddress'], 'name': x['displayName']}
                                            for x in self.project_users_with_administrator_permissions(project['key'])]}
 
-    def repo_list(self, project_key, limit=25):
+    def repo_list(self, project_key, start=None, limit=25):
         """
         Get repositories list from project
         :param project_key:
+        :param start: OPTIONAL: The start of the
         :param limit: OPTIONAL: The limit of the number of repositories to return, this may be restricted by
                         fixed system limits. Default by built-in method: 25
         :return:
@@ -119,7 +120,11 @@ class Bitbucket(AtlassianRestAPI):
         params = {}
         if limit:
             params['limit'] = limit
-        return (self.get(url, params=params) or {}).get('values')
+        if start:
+            params['start'] = start
+        response = self.get(url, params=params)
+        log.info('Is this last page? {}'.format(response['isLastPage']))
+        return (response or {}).get('values')
 
     def get_branches(self, project, repository, base=None, filter=None, start=0, limit=99999, details=True,
                      order_by='MODIFICATION'):
@@ -476,4 +481,17 @@ class Bitbucket(AtlassianRestAPI):
         :return:
         """
         url = 'rest/indexing/latest/status'
+        return self.get(url)
+
+    def get_current_license(self):
+        """
+        Retrieves details about the current license, as well as the current status of the system with
+        regards to the installed license. The status includes the current number of users applied
+        toward the license limit, as well as any status messages about the license (warnings about expiry
+        or user counts exceeding license limits).
+        The authenticated user must have ADMIN permission. Unauthenticated users, and non-administrators,
+        are not permitted to access license details.
+        :return:
+        """
+        url = 'rest/api/1.0/admin/license'
         return self.get(url)
