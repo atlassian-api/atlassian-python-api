@@ -122,7 +122,9 @@ class Bitbucket(AtlassianRestAPI):
             params['limit'] = limit
         if start:
             params['start'] = start
-        return self.get(url, params=params)
+        response = self.get(url, params=params)
+        log.info('Is this last page? {}'.format(response['isLastPage']))
+        return (response or {}).get('values')
 
     def get_branches(self, project, repository, base=None, filter=None, start=0, limit=99999, details=True,
                      order_by='MODIFICATION'):
