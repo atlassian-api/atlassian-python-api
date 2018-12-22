@@ -483,6 +483,23 @@ class Bitbucket(AtlassianRestAPI):
         url = 'rest/indexing/latest/status'
         return self.get(url)
 
+    def fork_repository(self, project, repository, new_repository):
+        """
+        Forks a repository within the same project.
+        :param project:
+        :param repository:
+        :param new_repository:
+        :return:
+        """
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}'.format(project=project,
+                                                                          repository=repository)
+        body = {}
+        if new_repository is not None:
+            body['name'] = new_repository
+        if new_repository is not None:
+            body['project'] = {'key': project}
+        return self.post(url, data=body)
+
     def get_current_license(self):
         """
         Retrieves details about the current license, as well as the current status of the system with
