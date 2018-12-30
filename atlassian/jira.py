@@ -337,6 +337,32 @@ class Jira(AtlassianRestAPI):
             limit=limit)
         return self.get(url)
 
+    def get_groups(self, query=None, exclude=None, limit=20):
+        """
+        REST endpoint for searching groups in a group picker
+        Returns groups with substrings matching a given query. This is mainly for use with the group picker,
+        so the returned groups contain html to be used as picker suggestions. The groups are also wrapped
+        in a single response object that also contains a header for use in the picker,
+        specifically Showing X of Y matching groups.
+        The number of groups returned is limited by the system property "jira.ajax.autocomplete.limit"
+        The groups will be unique and sorted.
+        :param query: str
+        :param exclude: str
+        :param limit: int
+        :return: Returned even if no groups match the given substring
+        """
+        url = 'rest/api/2/groups/picker'
+        params = {}
+        if query:
+            params['query'] = query
+        else:
+            params['query'] = ''
+        if exclude:
+            params['exclude'] = exclude
+        if limit:
+            params['maxResults'] = limit
+        return self.get(url, params=params)
+
     def create_group(self, name):
         """
         Create a group by given group parameter
