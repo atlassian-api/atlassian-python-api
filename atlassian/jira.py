@@ -406,9 +406,13 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         url = 'rest/api/2/group/member'
-        url += "?groupname={group}&includeInactiveUsers={include_inactive}&startAt={start}&maxResults={limit}".format(
-            group=group, include_inactive=include_inactive_users, start=start, limit=limit)
-        return self.get(url)
+        params = {}
+        if group:
+            params['groupname'] = group
+        params['includeInactiveUsers'] = include_inactive_users
+        params['startAt'] = start
+        params['maxResults'] = limit
+        return self.get(url, params=params)
 
     def add_user_to_group(self, username, group_name):
         """
