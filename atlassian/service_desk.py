@@ -497,3 +497,20 @@ class ServiceDesk(AtlassianRestAPI):
         url = 'rest/servicedeskapi/queues/{}'.format(project_key)
 
         return self.get(url, headers=self.experimental_headers)
+
+    def add_customers(self, service_desk_id, list_of_usernames):
+        """
+        Adds one or more existing customers to the given service desk.
+        If you need to create a customer, see Create customer method.
+
+        Administer project permission is required, or agents if public signups
+        and invites are enabled for the Service Desk project.
+
+        :param service_desk_id: str
+        :param list_of_usernames: list
+        :return: the customers added to the service desk
+        """
+        url = 'rest/servicedeskapi/servicedesk/{}/customer'.format(service_desk_id)
+        data = {'usernames': list_of_usernames}
+
+        return self.post(url, headers=self.experimental_headers, data=data)

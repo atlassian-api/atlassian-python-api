@@ -169,3 +169,13 @@ Queues
 
     # Get queue settings on project
     sd.get_queue_settings(project_key)
+
+Add customers to given Service Desk
+-----------------------------------
+
+.. code-block:: python
+    # Adds one or more existing customers to the given service desk.
+    # If you need to create a customer, see Create customer method.
+    # Administer project permission is required, or agents if public signups
+    # and invites are enabled for the Service Desk project.
+    sd.add_customers(service_desk_id, list_of_usernames)
