@@ -173,7 +173,10 @@ Queues
 Add customers to given Service Desk
 -----------------------------------
 
+**EXPERIMENTAL** (may change without notice)
+
 .. code-block:: python
+
     # Adds one or more existing customers to the given service desk.
     # If you need to create a customer, see Create customer method.
     # Administer project permission is required, or agents if public signups
