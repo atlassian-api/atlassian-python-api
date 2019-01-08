@@ -170,6 +170,24 @@ Queues
     # Get queue settings on project
     sd.get_queue_settings(project_key)
 
+**EXPERIMENTAL** (may change without notice)
+
+.. code-block:: python
+
+    # Returns a page of queues defined inside a service desk, for a given service desk ID.
+    # The returned queues will include an issue count for each queue (represented in issueCount field)
+    # if the query param includeCount is set to true (defaults to false).
+    # Permissions: The calling user must be an agent of the given service desk.
+    sd.get_queues(service_desk_id, include_count=False, start=0, limit=50)
+
+    # Returns a page of issues inside a queue for a given queue ID.
+    # Only fields that the queue is configured to show are returned.
+    # For example, if a queue is configured to show only Description and Due Date,
+    # then only those two fields are returned for each issue in the queue.
+    # Permissions: The calling user must have permission to view the requested queue,
+    # i.e. they must be an agent of the service desk that the queue belongs to.
+    sd.get_issues_in_queue(service_desk_id, queue_id, start=0, limit=50)
+
 Add customers to given Service Desk
 -----------------------------------
 
