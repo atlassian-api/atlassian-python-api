@@ -866,3 +866,16 @@ class Jira(AtlassianRestAPI):
         headers = self.form_token_headers
         url = 'rest/tempo-accounts/1/export'
         return self.get(url, headers=headers, not_json_response=True)
+
+    def health_check(self):
+        """
+        Get health status
+        https://confluence.atlassian.com/jirakb/how-to-retrieve-health-check-results-using-rest-api-867195158.html
+        :return:
+        """
+        # check as Troubleshooting & Support Tools Plugin
+        response = self.get('rest/troubleshooting/1.0/check/')
+        if not response:
+            # check as support tools
+            response = self.get('rest/supportHealthCheck/1.0/check/')
+        return response

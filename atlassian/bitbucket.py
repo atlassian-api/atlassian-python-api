@@ -549,3 +549,16 @@ class Bitbucket(AtlassianRestAPI):
         """
         url = 'rest/ssh/1.0/settings'
         return self.get(url)
+
+    def health_check(self):
+        """
+        Get health status
+        https://confluence.atlassian.com/jirakb/how-to-retrieve-health-check-results-using-rest-api-867195158.html
+        :return:
+        """
+        # check as Troubleshooting & Support Tools Plugin
+        response = self.get('rest/troubleshooting/1.0/check/')
+        if not response:
+            # check as support tools
+            response = self.get('rest/supportHealthCheck/1.0/check/')
+        return response
