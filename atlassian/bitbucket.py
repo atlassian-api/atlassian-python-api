@@ -9,6 +9,7 @@ class Bitbucket(AtlassianRestAPI):
     def project_list(self, limit=None):
         """
         Provide the project list
+        :param limit: OPTIONAL 25 is default
         :return:
         """
         params = {}
