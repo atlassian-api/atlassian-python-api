@@ -28,7 +28,7 @@ class Jira(AtlassianRestAPI):
         """
         return self.post('rest/api/2/reindex?type={}'.format(indexing_type))
 
-    def jql(self, jql, fields='*all', start=0, limit=50):
+    def jql(self, jql, fields='*all', start=0, limit=None):
         """
         Get issues from jql search result with all related fields
         :param jql:
@@ -39,21 +39,16 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         params = {}
-        
         if start is not None:
-            params["startAt"] = int(start)
-            
+            params['startAt'] = int(start)
         if limit is not None:
-            params["maxResults"] = int(limit)
-        
+            params['maxResults'] = int(limit)
         if fields is not None:
-            if isinstance(fields, (list, tuple, set))
+            if isinstance(fields, (list, tuple, set)):
                 fields = ','.join(fields)
-            params["fields"] = fields
-        
+            params['fields'] = fields
         if jql is not None:
             params['jql'] = jql
-        
         return self.get('rest/api/2/search', params=params)
 
     def user(self, username):
@@ -174,7 +169,7 @@ class Jira(AtlassianRestAPI):
         """
         params = {}
         if expand is not None:
-            params["expand"] = expand
+            params['expand'] = expand
         return self.get('rest/api/2/project/{}/versions'.format(key), params=params)
 
     def get_project_versions_paginated(self, key, start=None, limit=None, order_by=None, expand=None):
@@ -194,13 +189,13 @@ class Jira(AtlassianRestAPI):
         """
         params = {}
         if start is not None:
-            params["startAt"] = int(start)
+            params['startAt'] = int(start)
         if limit is not None:
-            params["maxResults"] = int(limit)
+            params['maxResults'] = int(limit)
         if order_by is not None:
-            params["orderBy"] = order_by
+            params['orderBy'] = order_by
         if expand is not None:
-            params["expand"] = expand
+            params['expand'] = expand
         return self.get('rest/api/2/project/{}/version'.format(key), params)
 
     def get_project_roles(self, project_key):
@@ -899,9 +894,9 @@ class Jira(AtlassianRestAPI):
         if board_type:
             params['type'] = board_type
         if start:
-            params["startAt"] = int(start)
+            params['startAt'] = int(start)
         if limit:
-            params["maxResults"] = int(limit)
+            params['maxResults'] = int(limit)
 
         return self.get(url, params=params)
 
