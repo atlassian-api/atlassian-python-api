@@ -28,25 +28,32 @@ class Jira(AtlassianRestAPI):
         """
         return self.post('rest/api/2/reindex?type={}'.format(indexing_type))
 
-    def jql(self, jql, fields='*all', start=0, limit=None):
+    def jql(self, jql, fields='*all', start=0, limit=50):
         """
         Get issues from jql search result with all related fields
         :param jql:
-        :param fields:
+        :param fields: list of fields, for example: ['priority', 'summary', 'customfield_10007']
         :param start: OPTIONAL: The start point of the collection to return. Default: 0.
         :param limit: OPTIONAL: The limit of the number of issues to return, this may be restricted by
                 fixed system limits. Default by built-in method: 50
         :return:
         """
         params = {}
+        
         if start is not None:
             params["startAt"] = int(start)
+            
         if limit is not None:
             params["maxResults"] = int(limit)
+        
         if fields is not None:
+            if isinstance(fields, (list, tuple, set))
+                fields = ','.join(fields)
             params["fields"] = fields
+        
         if jql is not None:
             params['jql'] = jql
+        
         return self.get('rest/api/2/search', params=params)
 
     def user(self, username):
