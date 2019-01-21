@@ -540,7 +540,7 @@ class Jira(AtlassianRestAPI):
 
     """
     #######################################################################
-    #                   Tempo Account Rest Api implements                 #
+    #                   Tempo Account REST API implements                 #
     #######################################################################
     """
 
@@ -673,3 +673,34 @@ class Jira(AtlassianRestAPI):
         headers = self.form_token_headers
         url = 'rest/tempo-accounts/1/export'
         return self.get(url, headers=headers, not_json_response=True)
+
+    """
+    #######################################################################
+    #   Agile(Formerly Greenhopper) REST API implements                  #
+    #######################################################################
+    """
+
+    def get_all_agile_boards(self, board_name=None, project_key=None, board_type=None, start=0, limit=50):
+        """
+        Returns all boards. This only includes boards that the user has permission to view.
+        :param board_name:
+        :param project_key:
+        :param board_type:
+        :param start:
+        :param limit:
+        :return:
+        """
+        url = 'rest/agile/1.0/board'
+        params = {}
+        if board_name:
+            params['name'] = board_name
+        if project_key:
+            params['projectKeyOrId'] = project_key
+        if board_type:
+            params['type'] = board_type
+        if start:
+            params["startAt"] = int(start)
+        if limit:
+            params["maxResults"] = int(limit)
+
+        return self.get(url, params=params)
