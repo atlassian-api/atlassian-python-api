@@ -6,12 +6,15 @@ log = logging.getLogger(__name__)
 
 
 class Bitbucket(AtlassianRestAPI):
-    def project_list(self):
+    def project_list(self, limit=None):
         """
         Provide the project list
         :return:
         """
-        return (self.get('rest/api/1.0/projects') or {}).get('values')
+        params = {}
+        if limit:
+            params['limit'] = limit
+        return (self.get('rest/api/1.0/projects', params=params) or {}).get('values')
 
     def project(self, key):
         """
