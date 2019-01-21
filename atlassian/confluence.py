@@ -348,7 +348,7 @@ class Confluence(AtlassianRestAPI):
             with open(filename, 'rb') as infile:
                 return self.post(path=path, data=data, headers=headers, files={'file': infile})
         else:
-            log.warn("No 'page_id' found, not uploading attachments")
+            log.warning("No 'page_id' found, not uploading attachments")
             return None
 
     def set_page_label(self, page_id, label):
