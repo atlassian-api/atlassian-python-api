@@ -20,7 +20,7 @@ class Jira(AtlassianRestAPI):
         Type of re-indexing available:
         FOREGROUND - runs a lock/full reindexing
         BACKGROUND - runs a background reindexing.
-                   If JIRA fails to finish the background reindexing, respond with 409 Conflict (error message).
+                   If Jira fails to finish the background reindexing, respond with 409 Conflict (error message).
         BACKGROUND_PREFERRED  - If possible do a background reindexing.
                    If it's not possible (due to an inconsistent index), do a foreground reindexing.
         :param indexing_type: OPTIONAL: The default value for the type is BACKGROUND_PREFFERED
@@ -59,6 +59,26 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         return self.delete('rest/api/2/user?username={0}'.format(username))
+
+    def user_update(self, username, data):
+        """
+        Update user attributes based on json
+        :param username:
+        :param data:
+        :return:
+        """
+        url = 'rest/api/2/user?username={0}'.format(username)
+        return self.put(url, data=data)
+
+    def user_update_email(self, username, email):
+        """
+        Update user email for new domain changes
+        :param username:
+        :param email:
+        :return:
+        """
+        data = {'name': username, 'emailAddress': email}
+        return self.user_update(username, data=data)
 
     def user_deactivate(self, username):
         """
@@ -108,7 +128,7 @@ class Jira(AtlassianRestAPI):
         :param include_inactive_users:
         :return:
         """
-        url = "rest/api/2/user/search"
+        url = 'rest/api/2/user/search'
         url += "?username={username}&includeInactive={include_inactive}&startAt={start}&maxResults={limit}".format(
             username=username, include_inactive=include_inactive_users, start=start, limit=limit)
         return self.get(url)
@@ -176,6 +196,62 @@ class Jira(AtlassianRestAPI):
             params["expand"] = expand
         return self.get('rest/api/2/project/{}/version'.format(key), params)
 
+    def get_project_roles(self, project_key):
+        """
+        Provide associated project roles
+        :param project_key:
+        :return:
+        """
+        return self.get('rest/api/2/project/{0}/role'.format(project_key))
+
+    def get_project_actors_for_role_project(self, project_key, role_id):
+        """
+        Returns the details for a given project role in a project.
+        :param project_key:
+        :param role_id:
+        :return:
+        """
+        url = 'rest/api/2/project/{projectIdOrKey}/role/{id}'.format(projectIdOrKey=project_key,
+                                                                     id=role_id)
+        return (self.get(url) or {}).get('actors')
+
+    def delete_project_actors(self, project_key, role_id, actor, actor_type=None):
+        """
+        Deletes actors (users or groups) from a project role.
+        Delete a user from the role: /rest/api/2/project/{projectIdOrKey}/role/{roleId}?user={username}
+        Delete a group from the role: /rest/api/2/project/{projectIdOrKey}/role/{roleId}?group={groupname}
+        :param project_key:
+        :param role_id:
+        :param actor:
+        :param actor_type: str : group or user string
+        :return:
+        """
+        url = 'rest/api/2/project/{projectIdOrKey}/role/{roleId}'.format(projectIdOrKey=project_key,
+                                                                         roleId=role_id)
+        params = {}
+        if actor_type is not None and actor_type in ['group', 'user']:
+            params[actor_type] = actor
+        return self.delete(url, params=params)
+
+    def add_project_actor_in_role(self, project_key, role_id, actor, actor_type):
+        """
+
+        :param project_key:
+        :param role_id:
+        :param actor:
+        :param actor_type:
+        :return:
+        """
+        url = 'rest/api/2/project/{projectIdOrKey}/role/{roleId}'.format(projectIdOrKey=project_key,
+                                                                         roleId=role_id)
+        data = {}
+        if actor_type == 'group':
+            data['group'] = [actor]
+        elif actor_type == 'user':
+            data['user'] = [actor]
+
+        return self.post(url, data=data)
+
     def issue(self, key, fields='*all'):
         return self.get('rest/api/2/issue/{0}?fields={1}'.format(key, fields))
 
@@ -203,6 +279,14 @@ class Jira(AtlassianRestAPI):
         if limit:
             params['maxResults'] = limit
         return self.get(url, params=params)
+
+    def get_all_custom_fields(self):
+        """
+        Returns a list of all fields, both System and Custom
+        :return: application/jsonContains a full representation of all visible fields in JSON.
+        """
+        url = 'rest/api/2/field'
+        return self.get(url)
 
     def project_leaders(self):
         for project in self.projects():
@@ -247,11 +331,37 @@ class Jira(AtlassianRestAPI):
                 fixed system limits. Default by built-in method: 50
         :return:
         """
-        url = "rest/api/2/user/assignable/search?project={project_key}&startAt={start}&maxResults={limit}".format(
+        url = 'rest/api/2/user/assignable/search?project={project_key}&startAt={start}&maxResults={limit}'.format(
             project_key=project_key,
             start=start,
             limit=limit)
         return self.get(url)
+
+    def get_groups(self, query=None, exclude=None, limit=20):
+        """
+        REST endpoint for searching groups in a group picker
+        Returns groups with substrings matching a given query. This is mainly for use with the group picker,
+        so the returned groups contain html to be used as picker suggestions. The groups are also wrapped
+        in a single response object that also contains a header for use in the picker,
+        specifically Showing X of Y matching groups.
+        The number of groups returned is limited by the system property "jira.ajax.autocomplete.limit"
+        The groups will be unique and sorted.
+        :param query: str
+        :param exclude: str
+        :param limit: int
+        :return: Returned even if no groups match the given substring
+        """
+        url = 'rest/api/2/groups/picker'
+        params = {}
+        if query:
+            params['query'] = query
+        else:
+            params['query'] = ''
+        if exclude:
+            params['exclude'] = exclude
+        if limit:
+            params['maxResults'] = limit
+        return self.get(url, params=params)
 
     def create_group(self, name):
         """
@@ -295,10 +405,14 @@ class Jira(AtlassianRestAPI):
                 fixed system limits. Default by built-in method: 50
         :return:
         """
-        url = "rest/api/2/group/member"
-        url += "?groupname={group}&includeInactiveUsers={include_inactive}&startAt={start}&maxResults={limit}".format(
-            group=group, include_inactive=include_inactive_users, start=start, limit=limit)
-        return self.get(url)
+        url = 'rest/api/2/group/member'
+        params = {}
+        if group:
+            params['groupname'] = group
+        params['includeInactiveUsers'] = include_inactive_users
+        params['startAt'] = start
+        params['maxResults'] = limit
+        return self.get(url, params=params)
 
     def add_user_to_group(self, username, group_name):
         """
@@ -404,6 +518,19 @@ class Jira(AtlassianRestAPI):
             url = 'rest/api/2/issue/{}/attachments'.format(issue_key)
 
             return self.post(url, headers=headers, files=files)
+
+    def get_issue_remotelinks(self, issue_key, global_id=None):
+        """
+        Finding all Remote Links on an issue, also with filtering by Global ID
+        :param issue_key:
+        :param global_id: str
+        :return:
+        """
+        url = 'rest/api/2/issue/{issue_key}/remotelink'.format(issue_key=issue_key)
+        params = {}
+        if global_id:
+            params['globalId'] = global_id
+        return self.get(url, params=params)
 
     def get_issue_transitions(self, issue_key):
         url = 'rest/api/2/issue/{issue_key}?expand=transitions.fields&fields=status'.format(issue_key=issue_key)
@@ -511,7 +638,8 @@ class Jira(AtlassianRestAPI):
         :param component_id:
         :return:
         """
-        return self.get("rest/api/2/component/{component_id}/relatedIssueCounts".format(component_id=component_id))
+        url = 'rest/api/2/component/{component_id}/relatedIssueCounts'.format(component_id=component_id)
+        return self.get(url)
 
     def create_component(self, component):
         log.warning('Creating component "{name}"'.format(name=component['name']))
@@ -521,6 +649,38 @@ class Jira(AtlassianRestAPI):
     def delete_component(self, component_id):
         log.warning('Deleting component "{component_id}"'.format(component_id=component_id))
         return self.delete('rest/api/2/component/{component_id}'.format(component_id=component_id))
+
+    def get_all_workflows(self):
+        """
+        Provide all workflows for application admin
+        :return:
+        """
+        url = 'rest/api/2/workflow'
+        return self.get(url)
+
+    def get_all_statuses(self):
+        """
+        Returns a list of all statuses
+        :return:
+        """
+        url = 'rest/api/2/status'
+        return self.get(url)
+
+    def get_all_resolutions(self):
+        """
+        Returns a list of all resolutions.
+        :return:
+        """
+        url = 'rest/api/2/resolution'
+        return self.get(url)
+
+    def get_all_global_project_roles(self):
+        """
+        Get all the ProjectRoles available in Jira. Currently this list is global.
+        :return:
+        """
+        url = 'rest/api/2/role'
+        return self.get(url)
 
     def upload_plugin(self, plugin_path):
         """
@@ -537,6 +697,39 @@ class Jira(AtlassianRestAPI):
         upm_token = self.request(method='GET', path='rest/plugins/1.0/', headers=headers).headers['upm-token']
         url = 'rest/plugins/1.0/?token={upm_token}'.format(upm_token=upm_token)
         return self.post(url, files=files, headers=headers)
+
+    def get_all_permissionschemes(self, expand=None):
+        """
+        Returns a list of all permission schemes.
+        By default only shortened beans are returned.
+        If you want to include permissions of all the schemes,
+        then specify the permissions expand parameter.
+        Permissions will be included also if you specify any other expand parameter.
+        :param expand : permissions,user,group,projectRole,field,all
+        :return:
+        """
+        url = 'rest/api/2/permissionscheme'
+        params = {}
+        if expand:
+            params['expand'] = expand
+        return (self.get(url, params=params) or {}).get('permissionSchemes')
+
+    def get_permissionscheme(self, permission_id, expand=None):
+        """
+        Returns a list of all permission schemes.
+        By default only shortened beans are returned.
+        If you want to include permissions of all the schemes,
+        then specify the permissions expand parameter.
+        Permissions will be included also if you specify any other expand parameter.
+        :param permission_id
+        :param expand : permissions,user,group,projectRole,field,all
+        :return:
+        """
+        url = 'rest/api/2/permissionscheme/{schemeID}'.format(schemeID=permission_id)
+        params = {}
+        if expand:
+            params['expand'] = expand
+        return self.get(url, params=params)
 
     """
     #######################################################################
@@ -704,3 +897,16 @@ class Jira(AtlassianRestAPI):
             params["maxResults"] = int(limit)
 
         return self.get(url, params=params)
+
+    def health_check(self):
+        """
+        Get health status
+        https://confluence.atlassian.com/jirakb/how-to-retrieve-health-check-results-using-rest-api-867195158.html
+        :return:
+        """
+        # check as Troubleshooting & Support Tools Plugin
+        response = self.get('rest/troubleshooting/1.0/check/')
+        if not response:
+            # check as support tools
+            response = self.get('rest/supportHealthCheck/1.0/check/')
+        return response
