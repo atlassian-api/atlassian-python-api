@@ -28,7 +28,7 @@ class Jira(AtlassianRestAPI):
         """
         return self.post('rest/api/2/reindex?type={}'.format(indexing_type))
 
-    def jql(self, jql, fields='*all', start=0, limit=50):
+    def jql(self, jql, fields='*all', start=0, limit=None):
         """
         Get issues from jql search result with all related fields
         :param jql:
@@ -39,21 +39,16 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         params = {}
-        
         if start is not None:
-            params["startAt"] = int(start)
-            
+            params['startAt'] = int(start)
         if limit is not None:
-            params["maxResults"] = int(limit)
-        
+            params['maxResults'] = int(limit)
         if fields is not None:
-            if isinstance(fields, (list, tuple, set))
+            if isinstance(fields, (list, tuple, set)):
                 fields = ','.join(fields)
-            params["fields"] = fields
-        
+            params['fields'] = fields
         if jql is not None:
             params['jql'] = jql
-        
         return self.get('rest/api/2/search', params=params)
 
     def user(self, username):
@@ -174,7 +169,7 @@ class Jira(AtlassianRestAPI):
         """
         params = {}
         if expand is not None:
-            params["expand"] = expand
+            params['expand'] = expand
         return self.get('rest/api/2/project/{}/versions'.format(key), params=params)
 
     def get_project_versions_paginated(self, key, start=None, limit=None, order_by=None, expand=None):
@@ -194,13 +189,13 @@ class Jira(AtlassianRestAPI):
         """
         params = {}
         if start is not None:
-            params["startAt"] = int(start)
+            params['startAt'] = int(start)
         if limit is not None:
-            params["maxResults"] = int(limit)
+            params['maxResults'] = int(limit)
         if order_by is not None:
-            params["orderBy"] = order_by
+            params['orderBy'] = order_by
         if expand is not None:
-            params["expand"] = expand
+            params['expand'] = expand
         return self.get('rest/api/2/project/{}/version'.format(key), params)
 
     def get_project_roles(self, project_key):
@@ -740,7 +735,7 @@ class Jira(AtlassianRestAPI):
 
     """
     #######################################################################
-    #                   Tempo Account Rest Api implements                 #
+    #                   Tempo Account REST API implements                 #
     #######################################################################
     """
 
@@ -873,6 +868,37 @@ class Jira(AtlassianRestAPI):
         headers = self.form_token_headers
         url = 'rest/tempo-accounts/1/export'
         return self.get(url, headers=headers, not_json_response=True)
+
+    """
+    #######################################################################
+    #   Agile(Formerly Greenhopper) REST API implements                  #
+    #######################################################################
+    """
+
+    def get_all_agile_boards(self, board_name=None, project_key=None, board_type=None, start=0, limit=50):
+        """
+        Returns all boards. This only includes boards that the user has permission to view.
+        :param board_name:
+        :param project_key:
+        :param board_type:
+        :param start:
+        :param limit:
+        :return:
+        """
+        url = 'rest/agile/1.0/board'
+        params = {}
+        if board_name:
+            params['name'] = board_name
+        if project_key:
+            params['projectKeyOrId'] = project_key
+        if board_type:
+            params['type'] = board_type
+        if start:
+            params['startAt'] = int(start)
+        if limit:
+            params['maxResults'] = int(limit)
+
+        return self.get(url, params=params)
 
     def health_check(self):
         """

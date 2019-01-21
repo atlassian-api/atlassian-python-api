@@ -41,9 +41,9 @@ class Confluence(AtlassianRestAPI):
         """
         params = {}
         if start is not None:
-            params["start"] = int(start)
+            params['start'] = int(start)
         if limit is not None:
-            params["limit"] = int(limit)
+            params['limit'] = int(limit)
 
         url = 'rest/api/content/{page_id}/child/{type}'.format(page_id=page_id, type=type)
         log.info(url)
@@ -85,9 +85,9 @@ class Confluence(AtlassianRestAPI):
         url = 'rest/api/content'
         params = {}
         if start is not None:
-            params["start"] = int(start)
+            params['start'] = int(start)
         if limit is not None:
-            params["limit"] = int(limit)
+            params['limit'] = int(limit)
         if space is not None:
             params['spaceKey'] = str(space)
         if space is not None:
@@ -123,11 +123,11 @@ class Confluence(AtlassianRestAPI):
         url = 'rest/api/content/{id}/label'.format(id=page_id)
         params = {}
         if prefix:
-            params["prefix"] = prefix
+            params['prefix'] = prefix
         if start is not None:
-            params["start"] = int(start)
+            params['start'] = int(start)
         if limit is not None:
-            params["limit"] = int(limit)
+            params['limit'] = int(limit)
         return self.get(url, params=params)
 
     def get_draft_page_by_id(self, page_id, status='draft'):
@@ -348,7 +348,7 @@ class Confluence(AtlassianRestAPI):
             with open(filename, 'rb') as infile:
                 return self.post(path=path, data=data, headers=headers, files={'file': infile})
         else:
-            log.warn("No 'page_id' found, not uploading attachments")
+            log.warning("No 'page_id' found, not uploading attachments")
             return None
 
     def set_page_label(self, page_id, label):
@@ -655,9 +655,9 @@ class Confluence(AtlassianRestAPI):
         """
         params = {}
         if start is not None:
-            params["start"] = int(start)
+            params['start'] = int(start)
         if limit is not None:
-            params["limit"] = int(limit)
+            params['limit'] = int(limit)
         if cql is not None:
             params['cql'] = cql
         if expand is not None:
