@@ -60,7 +60,7 @@ class Jira(AtlassianRestAPI):
         """
         url = 'sr/jira.issueviews:searchrequest-csv-all-fields/temp/SearchRequest.csv?tempMax={limit}&jqlQuery={jql}'.format(limit=limit, jql=jql)
         return self.get(url, not_json_response=True, header={'Accept': 'application/csv'})
-    
+
     def user(self, username):
         return self.get('rest/api/2/user?username={0}'.format(username))
 
@@ -773,9 +773,9 @@ class Jira(AtlassianRestAPI):
         url = 'rest/tempo-accounts/1/account/'
         if data is None:
             return """Please, provide data e.g.
-                       {name: "12312312321", 
-                       key: "1231231232", 
-                       lead: {name: "gonchik.tsymzhitov"},
+                       {name: "12312312321",
+                       key: "1231231232",
+                       lead: {name: "myusername"},
                        }
                        detail info: http://developer.tempo.io/doc/accounts/api/rest/latest/#-700314780
                    """
