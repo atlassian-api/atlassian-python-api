@@ -51,6 +51,16 @@ class Jira(AtlassianRestAPI):
             params['jql'] = jql
         return self.get('rest/api/2/search', params=params)
 
+    def csv(self, jql, limit=99999):
+        """
+        Get issues from jql search result with all related fields
+        :param jql: JQL query
+        :param limit: max results in the output file
+        :return: CSV file
+        """
+        url = 'sr/jira.issueviews:searchrequest-csv-all-fields/temp/SearchRequest.csv?tempMax={limit}&jqlQuery={jql}'.format(limit=limit, jql=jql)
+        return self.get(url, not_json_response=True, header={'Accept': 'application/csv'})
+    
     def user(self, username):
         return self.get('rest/api/2/user?username={0}'.format(username))
 
