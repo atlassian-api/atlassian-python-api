@@ -51,7 +51,7 @@ class Jira(AtlassianRestAPI):
             params['jql'] = jql
         return self.get('rest/api/2/search', params=params)
 
-    def csv(self, jql, limit=99999):
+    def csv(self, jql, limit=1000):
         """
         Get issues from jql search result with all related fields
         :param jql: JQL query
