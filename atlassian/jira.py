@@ -276,7 +276,7 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         data = {
-            "comment": "Work on {}".format(key),
+            # "comment": "Work on {}".format(key),
             "started": started,
             "timeSpentSeconds": time_sec
         }
