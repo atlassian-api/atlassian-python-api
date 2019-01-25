@@ -6,12 +6,16 @@ log = logging.getLogger(__name__)
 
 
 class Bitbucket(AtlassianRestAPI):
-    def project_list(self):
+    def project_list(self, limit=None):
         """
         Provide the project list
+        :param limit: OPTIONAL 25 is default
         :return:
         """
-        return (self.get('rest/api/1.0/projects') or {}).get('values')
+        params = {}
+        if limit:
+            params['limit'] = limit
+        return (self.get('rest/api/1.0/projects', params=params) or {}).get('values')
 
     def project(self, key):
         """
@@ -128,6 +132,25 @@ class Bitbucket(AtlassianRestAPI):
         else:
             log.info('Next page start at {}'.format(response.get('nextPageStart')))
         return (response or {}).get('values')
+
+    def repo_all_list(self, project_key):
+        """
+        Get all repositories list from project
+        :param project_key:
+        :return:
+        """
+        url = 'rest/api/1.0/projects/{projectKey}/repos'.format(projectKey=project_key)
+        params = {}
+        start = 0
+        params['start'] = start
+        response = self.get(url, params=params)
+        repo_list = (response or {}).get('values')
+        while not response.get('isLastPage'):
+            start = response.get('nextPageStart')
+            params['start'] = start
+            response = self.get(url, params=params)
+            repo_list += (response or {}).get('values')
+        return repo_list
 
     def get_branches(self, project, repository, base=None, filter=None, start=0, limit=99999, details=True,
                      order_by='MODIFICATION'):
