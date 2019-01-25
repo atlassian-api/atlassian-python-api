@@ -257,6 +257,31 @@ class Jira(AtlassianRestAPI):
     def issue(self, key, fields='*all'):
         return self.get('rest/api/2/issue/{0}?fields={1}'.format(key, fields))
 
+    def issue_add_json_worklog(self, key, worklog):
+        """
+
+        :param key:
+        :param worklog:
+        :return:
+        """
+        url = 'rest/api/2/issue/{}/worklog'.format(key)
+        return self.post(url, data=worklog)
+
+    def issue_worklog(self, key, started, time_sec):
+        """
+
+        :param key:
+        :param time_sec: int: second
+        :param started:
+        :return:
+        """
+        data = {
+            "comment": "Work on {}".format(key),
+            "started": started,
+            "timeSpentSeconds": time_sec
+        }
+        return self.issue_add_json_worklog(key=key, worklog=data)
+
     def issue_field_value(self, key, field):
         issue = self.get('rest/api/2/issue/{0}?fields={1}'.format(key, field))
         return issue['fields'][field]
