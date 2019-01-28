@@ -430,7 +430,8 @@ class Confluence(AtlassianRestAPI):
             log.info('Content of {page_id} differs'.format(page_id=page_id))
             return False
 
-    def update_page(self, parent_id, page_id, title, body, type='page'):
+    def update_page(self, parent_id, page_id, title, body, type='page',
+                    minor_edit=False):
         """
         Update page if already exist
         :param parent_id:
@@ -454,7 +455,8 @@ class Confluence(AtlassianRestAPI):
                 'body': {'storage': {
                     'value': body,
                     'representation': 'storage'}},
-                'version': {'number': version}
+                'version': {'number': version,
+                            'minorEdit': minor_edit}
             }
 
             if parent_id:
