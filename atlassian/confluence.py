@@ -440,6 +440,8 @@ class Confluence(AtlassianRestAPI):
         :param title:
         :param body:
         :param type:
+        :param minor_edit: Indicates whether to notify watchers about changes.
+            If False then notifications will be sent.
         :return:
         """
         log.info('Updating {type} "{title}"'.format(title=title, type=type))
