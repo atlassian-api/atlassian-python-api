@@ -346,7 +346,8 @@ class Confluence(AtlassianRestAPI):
             if attachments['size']:
                 path = path + '/' + attachments['results'][0]['id'] + '/data'
             with open(filename, 'rb') as infile:
-                return self.post(path=path, data=data, headers=headers, files={'file': infile})
+                return self.post(path=path, data=data, headers=headers,
+                                 files={'file': (filename, infile, content_type)})
         else:
             log.warning("No 'page_id' found, not uploading attachments")
             return None
