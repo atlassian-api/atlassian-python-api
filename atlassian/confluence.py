@@ -346,7 +346,8 @@ class Confluence(AtlassianRestAPI):
             if attachments['size']:
                 path = path + '/' + attachments['results'][0]['id'] + '/data'
             with open(filename, 'rb') as infile:
-                return self.post(path=path, data=data, headers=headers, files={'file': infile})
+                return self.post(path=path, data=data, headers=headers,
+                                 files={'file': (filename, infile, content_type)})
         else:
             log.warning("No 'page_id' found, not uploading attachments")
             return None
@@ -430,7 +431,8 @@ class Confluence(AtlassianRestAPI):
             log.info('Content of {page_id} differs'.format(page_id=page_id))
             return False
 
-    def update_page(self, parent_id, page_id, title, body, type='page'):
+    def update_page(self, parent_id, page_id, title, body, type='page',
+                    minor_edit=False):
         """
         Update page if already exist
         :param parent_id:
@@ -438,6 +440,8 @@ class Confluence(AtlassianRestAPI):
         :param title:
         :param body:
         :param type:
+        :param minor_edit: Indicates whether to notify watchers about changes.
+            If False then notifications will be sent.
         :return:
         """
         log.info('Updating {type} "{title}"'.format(title=title, type=type))
@@ -454,7 +458,8 @@ class Confluence(AtlassianRestAPI):
                 'body': {'storage': {
                     'value': body,
                     'representation': 'storage'}},
-                'version': {'number': version}
+                'version': {'number': version,
+                            'minorEdit': minor_edit}
             }
 
             if parent_id:
