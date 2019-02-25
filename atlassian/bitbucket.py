@@ -220,8 +220,8 @@ class Bitbucket(AtlassianRestAPI):
 
         return (self.get(url, params=params) or {}).get('values')
 
-    def create_branch(self, project_key, repository, branch_name, start_point, message):
-        """Creates a branch using the information provided in the {@link RestCreateBranchRequest request}
+    def create_branch(self, project_key, repository, name, start_point, message):
+        """Creates a branch using the information provided in the request.
 
         The authenticated user must have REPO_WRITE permission for the context repository to call this resource.
 
@@ -229,8 +229,8 @@ class Bitbucket(AtlassianRestAPI):
         :type project_key: str
         :param repository: Name of repository where branch is created (i.e. "my_repo").
         :type repository: str
-        :param branch_name: Name of branch to create (i.e. "my_branch").
-        :type branch_name: str
+        :param name: Name of branch to create (i.e. "my_branch").
+        :type name: str
         :param start_point: Name of branch to branch from.
         :type start_point: str
         :param message: Branch message.
@@ -246,7 +246,7 @@ class Bitbucket(AtlassianRestAPI):
                                                                                       repository=repository)
         headers = {'Content-Type': 'application/json'}
         data = {
-            "name": branch_name,
+            "name": name,
             "startPoint": start_point,
             "message": message
         }
