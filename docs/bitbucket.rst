@@ -46,8 +46,18 @@ Manage code
     # Get repositories list from project
     bitbucket.repo_list(project_key, limit=25)
 
+    # Create a new repository.
+    # Requires an existing project in which this repository will be created. The only parameters which will be used
+    # are name and scmId.
+    # The authenticated user must have PROJECT_ADMIN permission for the context project to call this resource.
+    bitbucket.create_repo(project_key, repository, forkable=False, is_private=True):
+
     # Get branches from repo
     bitbucket.get_branches(project, repository, filter='', limit=99999, details=True)
+
+    # Creates a branch using the information provided in the request.
+    # The authenticated user must have REPO_WRITE permission for the context repository to call this resource.
+    bitbucket.create_branch(project_key, repository, name, start_point, message)
 
     # Delete branch from related repo
     bitbucket.delete_branch(project, repository, name, end_point)
