@@ -1,5 +1,4 @@
 # coding: utf8
-import json
 import logging
 from .rest_client import AtlassianRestAPI
 
@@ -159,14 +158,13 @@ class Bitbucket(AtlassianRestAPI):
         """
 
         url = 'rest/api/1.0/projects/{projectKey}/repos'.format(projectKey=project_key)
-        headers = {'Content-Type': 'application/json'}
         data = {
             "name": repository,
             "scmId": "git",
             "forkable": forkable,
             "is_private": is_private
         }
-        return self.post(url, headers=headers, data=json.dumps(data))
+        return self.post(url, data=data)
 
     def repo_all_list(self, project_key):
         """
@@ -220,7 +218,7 @@ class Bitbucket(AtlassianRestAPI):
 
         return (self.get(url, params=params) or {}).get('values')
 
-    def create_branch(self, project_key, repository, name, start_point, message):
+    def create_branch(self, project_key, repository, name, start_point, message=""):
         """Creates a branch using the information provided in the request.
 
         The authenticated user must have REPO_WRITE permission for the context repository to call this resource.
@@ -244,13 +242,12 @@ class Bitbucket(AtlassianRestAPI):
 
         url = 'rest/api/1.0/projects/{projectKey}/repos/{repository}/branches'.format(projectKey=project_key,
                                                                                       repository=repository)
-        headers = {'Content-Type': 'application/json'}
         data = {
             "name": name,
             "startPoint": start_point,
             "message": message
         }
-        return self.post(url, headers=headers, data=json.dumps(data))
+        return self.post(url, data=data)
 
     def delete_branch(self, project, repository, name, end_point):
         """
