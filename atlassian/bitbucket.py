@@ -133,6 +133,39 @@ class Bitbucket(AtlassianRestAPI):
             log.info('Next page start at {}'.format(response.get('nextPageStart')))
         return (response or {}).get('values')
 
+    def create_repo(self, project_key, repository, forkable=False, is_private=True):
+        """Create a new repository.
+
+        Requires an existing project in which this repository will be created. The only parameters which will be used
+        are name and scmId.
+
+        The authenticated user must have PROJECT_ADMIN permission for the context project to call this resource.
+
+        :param project_key: The project matching the projectKey supplied in the resource path as shown in URL.
+        :type project_key: str
+        :param repository: Name of repository to create (i.e. "My repo").
+        :type repository: str
+        :param forkable: Set the repository to be forkable or not.
+        :type forkable: bool
+        :param is_private: Set the repository to be private or not.
+        :type is_private: bool
+        :return:
+            201 - application/json (repository)
+            400 - application/json (errors)
+            401 - application/json (errors)
+            409 - application/json (errors)
+        :rtype: requests.Response
+        """
+
+        url = 'rest/api/1.0/projects/{projectKey}/repos'.format(projectKey=project_key)
+        data = {
+            "name": repository,
+            "scmId": "git",
+            "forkable": forkable,
+            "is_private": is_private
+        }
+        return self.post(url, data=data)
+
     def repo_all_list(self, project_key):
         """
         Get all repositories list from project
@@ -184,6 +217,37 @@ class Bitbucket(AtlassianRestAPI):
         params['details'] = details
 
         return (self.get(url, params=params) or {}).get('values')
+
+    def create_branch(self, project_key, repository, name, start_point, message=""):
+        """Creates a branch using the information provided in the request.
+
+        The authenticated user must have REPO_WRITE permission for the context repository to call this resource.
+
+        :param project_key: The project matching the projectKey supplied in the resource path as shown in URL.
+        :type project_key: str
+        :param repository: Name of repository where branch is created (i.e. "my_repo").
+        :type repository: str
+        :param name: Name of branch to create (i.e. "my_branch").
+        :type name: str
+        :param start_point: Name of branch to branch from.
+        :type start_point: str
+        :param message: Branch message.
+        :type message: str
+        :return:
+            200 - application/json (repository)
+            401 - application/json (errors)
+            404 - application/json (errors)
+        :rtype: requests.Response
+        """
+
+        url = 'rest/api/1.0/projects/{projectKey}/repos/{repository}/branches'.format(projectKey=project_key,
+                                                                                      repository=repository)
+        data = {
+            "name": name,
+            "startPoint": start_point,
+            "message": message
+        }
+        return self.post(url, data=data)
 
     def delete_branch(self, project, repository, name, end_point):
         """

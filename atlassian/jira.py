@@ -282,9 +282,9 @@ class Jira(AtlassianRestAPI):
         url = 'rest/api/2/project/{projectIdOrKey}/role/{roleId}'.format(projectIdOrKey=project_key,
                                                                          roleId=role_id)
         data = {}
-        if actor_type == 'group':
+        if actor_type in ['group', 'atlassian-group-role-actor']:
             data['group'] = [actor]
-        elif actor_type == 'user':
+        elif actor_type in ['user', 'atlassian-user-role-actor']:
             data['user'] = [actor]
 
         return self.post(url, data=data)
