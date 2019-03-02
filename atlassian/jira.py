@@ -10,9 +10,26 @@ class Jira(AtlassianRestAPI):
     def reindex_status(self):
         return self.get('rest/api/2/reindex')
 
-    def reindex(self):
-        """ Reindex the Jira instance """
-        return self.post('rest/api/2/reindex')
+    def reindex(self, comments=True, change_history=True, worklogs=True):
+        """
+        Reindex the Jira instance
+        Kicks off a reindex. Need Admin permissions to perform this reindex.
+        :param comments: Indicates that comments should also be reindexed. Not relevant for foreground reindex,
+        where comments are always reindexed.
+        :param change_history: Indicates that changeHistory should also be reindexed.
+        Not relevant for foreground reindex, where changeHistory is always reindexed.
+        :param worklogs: Indicates that changeHistory should also be reindexed.
+        Not relevant for foreground reindex, where changeHistory is always reindexed.
+        :return:
+        """
+        params = {}
+        if not comments:
+            params['indexComments'] = comments
+        if not change_history:
+            params['indexChangeHistory'] = change_history
+        if not worklogs:
+            params['indexWorklogs'] = worklogs
+        return self.post('rest/api/2/reindex', params=params)
 
     def reindex_with_type(self, indexing_type="BACKGROUND_PREFERRED"):
         """
@@ -27,6 +44,13 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         return self.post('rest/api/2/reindex?type={}'.format(indexing_type))
+
+    def reindex_project(self, project_key):
+        return self.post('secure/admin/IndexProject.jspa', data='confirmed=true&key={}'.format(project_key),
+                         headers=self.form_token_headers)
+
+    def reindex_issue(self, list_of_):
+        pass
 
     def jql(self, jql, fields='*all', start=0, limit=None):
         """
@@ -58,7 +82,8 @@ class Jira(AtlassianRestAPI):
         :param limit: max results in the output file
         :return: CSV file
         """
-        url = 'sr/jira.issueviews:searchrequest-csv-all-fields/temp/SearchRequest.csv?tempMax={limit}&jqlQuery={jql}'.format(limit=limit, jql=jql)
+        url = 'sr/jira.issueviews:searchrequest-csv-all-fields/temp/SearchRequest.csv?tempMax={limit}&jqlQuery={jql}'.format(
+            limit=limit, jql=jql)
         return self.get(url, not_json_response=True, header={'Accept': 'application/csv'})
 
     def user(self, username):
@@ -257,15 +282,40 @@ class Jira(AtlassianRestAPI):
         url = 'rest/api/2/project/{projectIdOrKey}/role/{roleId}'.format(projectIdOrKey=project_key,
                                                                          roleId=role_id)
         data = {}
-        if actor_type == 'group':
+        if actor_type in ['group', 'atlassian-group-role-actor']:
             data['group'] = [actor]
-        elif actor_type == 'user':
+        elif actor_type in ['user', 'atlassian-user-role-actor']:
             data['user'] = [actor]
 
         return self.post(url, data=data)
 
     def issue(self, key, fields='*all'):
         return self.get('rest/api/2/issue/{0}?fields={1}'.format(key, fields))
+
+    def issue_add_json_worklog(self, key, worklog):
+        """
+
+        :param key:
+        :param worklog:
+        :return:
+        """
+        url = 'rest/api/2/issue/{}/worklog'.format(key)
+        return self.post(url, data=worklog)
+
+    def issue_worklog(self, key, started, time_sec):
+        """
+
+        :param key:
+        :param time_sec: int: second
+        :param started:
+        :return:
+        """
+        data = {
+            # "comment": "Work on {}".format(key),
+            "started": started,
+            "timeSpentSeconds": time_sec
+        }
+        return self.issue_add_json_worklog(key=key, worklog=data)
 
     def issue_field_value(self, key, field):
         issue = self.get('rest/api/2/issue/{0}?fields={1}'.format(key, field))
