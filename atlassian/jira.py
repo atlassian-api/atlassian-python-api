@@ -10,9 +10,26 @@ class Jira(AtlassianRestAPI):
     def reindex_status(self):
         return self.get('rest/api/2/reindex')
 
-    def reindex(self):
-        """ Reindex the Jira instance """
-        return self.post('rest/api/2/reindex')
+    def reindex(self, comments=True, change_history=True, worklogs=True):
+        """
+        Reindex the Jira instance
+        Kicks off a reindex. Need Admin permissions to perform this reindex.
+        :param comments: Indicates that comments should also be reindexed. Not relevant for foreground reindex,
+        where comments are always reindexed.
+        :param change_history: Indicates that changeHistory should also be reindexed.
+        Not relevant for foreground reindex, where changeHistory is always reindexed.
+        :param worklogs: Indicates that changeHistory should also be reindexed.
+        Not relevant for foreground reindex, where changeHistory is always reindexed.
+        :return:
+        """
+        params = {}
+        if not comments:
+            params['indexComments'] = comments
+        if not change_history:
+            params['indexChangeHistory'] = change_history
+        if not worklogs:
+            params['indexWorklogs'] = worklogs
+        return self.post('rest/api/2/reindex', params=params)
 
     def reindex_with_type(self, indexing_type="BACKGROUND_PREFERRED"):
         """
@@ -27,6 +44,13 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         return self.post('rest/api/2/reindex?type={}'.format(indexing_type))
+
+    def reindex_project(self, project_key):
+        return self.post('secure/admin/IndexProject.jspa', data='confirmed=true&key={}'.format(project_key),
+                         headers=self.form_token_headers)
+
+    def reindex_issue(self, list_of_):
+        pass
 
     def jql(self, jql, fields='*all', start=0, limit=None):
         """
@@ -58,7 +82,8 @@ class Jira(AtlassianRestAPI):
         :param limit: max results in the output file
         :return: CSV file
         """
-        url = 'sr/jira.issueviews:searchrequest-csv-all-fields/temp/SearchRequest.csv?tempMax={limit}&jqlQuery={jql}'.format(limit=limit, jql=jql)
+        url = 'sr/jira.issueviews:searchrequest-csv-all-fields/temp/SearchRequest.csv?tempMax={limit}&jqlQuery={jql}'.format(
+            limit=limit, jql=jql)
         return self.get(url, not_json_response=True, header={'Accept': 'application/csv'})
 
     def user(self, username):
