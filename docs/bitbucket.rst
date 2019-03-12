@@ -12,6 +12,9 @@ Manage projects
     # Project info
     bitbucket.project(key)
 
+    # Create project
+    bitbucket.create_project(key, name, description="My pretty project")
+
     # Get users who has permission in project
     bitbucket.project_users(key, limit=99999)
 
