@@ -649,3 +649,26 @@ class Bitbucket(AtlassianRestAPI):
             # check as support tools
             response = self.get('rest/supportHealthCheck/1.0/check/')
         return response
+
+    def get_branching_model(self, project, repository):
+        """
+        Get branching model
+        :param project:
+        :param repository:
+        :return:
+        """
+        url = 'rest/branch-utils/1.0/projects/{project}/repos/{repository}/branchmodel/configuration'.format(project=project,
+                                                                                                             repository=repository)
+        return self.get(url)
+
+    def set_branching_model(self, project, repository, data):
+        """
+        Set branching model
+        :param project:
+        :param repository:
+        :param data:
+        :return:
+        """
+        url = 'rest/branch-utils/1.0/projects/{project}/repos/{repository}/branchmodel/configuration'.format(project=project,
+                                                                                                             repository=repository)
+        return self.put(url, data=data)
