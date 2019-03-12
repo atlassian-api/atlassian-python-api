@@ -672,3 +672,43 @@ class Bitbucket(AtlassianRestAPI):
         url = 'rest/branch-utils/1.0/projects/{project}/repos/{repository}/branchmodel/configuration'.format(project=project,
                                                                                                              repository=repository)
         return self.put(url, data=data)
+
+    def enable_branching_model(self, project, repository):
+        """
+        Enable branching model by setting it with default configuration
+        :param project:
+        :param repository:
+        :return:
+        """
+        default_model_data = {'development': {'refId': None, 'useDefault': True},
+                              'types': [{'displayName': 'Bugfix',
+                                         'enabled': True,
+                                         'id': 'BUGFIX',
+                                         'prefix': 'bugfix/'},
+                                        {'displayName': 'Feature',
+                                         'enabled': True,
+                                         'id': 'FEATURE',
+                                         'prefix': 'feature/'},
+                                        {'displayName': 'Hotfix',
+                                         'enabled': True,
+                                         'id': 'HOTFIX',
+                                         'prefix': 'hotfix/'},
+                                        {'displayName': 'Release',
+                                         'enabled': True,
+                                         'id': 'RELEASE',
+                                         'prefix': 'release/'}]}
+        return self.set_branching_model(project,
+                                        repository,
+                                        default_model_data)
+
+    def disable_branching_model(self, project, repository):
+        """
+        Disable branching model
+        :param project:
+        :param repository:
+        :param data:
+        :return:
+        """
+        url = 'rest/branch-utils/1.0/projects/{project}/repos/{repository}/branchmodel/configuration'.format(project=project,
+                                                                                                             repository=repository)
+        return self.delete(url)

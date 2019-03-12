@@ -32,6 +32,12 @@ Manage repositories
 
 .. code-block:: python
 
+    # Disable branching model
+    bitbucket.disable_branching_model(project_key, repo_key)
+
+    # Enable branching model
+    bitbucket.enable_branching_model(project_key, repo_key)
+
     # Get branching model
     bitbucket.get_branching_model(project_key, repo_key)
 
