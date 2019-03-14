@@ -30,6 +30,40 @@ Manage projects
     # Project summary
     butbucket.project_summary(key)
 
+Manage repositories
+---------------
+
+.. code-block:: python
+
+    # Disable branching model
+    bitbucket.disable_branching_model(project_key, repo_key)
+
+    # Enable branching model
+    bitbucket.enable_branching_model(project_key, repo_key)
+
+    # Get branching model
+    bitbucket.get_branching_model(project_key, repo_key)
+
+    # Set branching model
+    data = {'development': {'refId': None, 'useDefault': True},
+            'types': [{'displayName': 'Bugfix',
+                       'enabled': True,
+                       'id': 'BUGFIX',
+                       'prefix': 'bugfix-'},
+                      {'displayName': 'Feature',
+                       'enabled': True,
+                       'id': 'FEATURE',
+                       'prefix': 'feature-'},
+                      {'displayName': 'Hotfix',
+                       'enabled': True,
+                       'id': 'HOTFIX',
+                       'prefix': 'hotfix-'},
+                      {'displayName': 'Release',
+                       'enabled': True,
+                       'id': 'RELEASE',
+                       'prefix': 'release/'}]}
+    bitbucket.set_branching_model(project_key, repo_key, data)
+
 Groups and admins
 -----------------
 
