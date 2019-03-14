@@ -26,6 +26,21 @@ class Bitbucket(AtlassianRestAPI):
         url = 'rest/api/1.0/projects/{0}'.format(key)
         return (self.get(url) or {}).get('values')
 
+    def create_project(self, key, name, description=""):
+        """
+        Create project
+        :param key:
+        :param name:
+        :param description:
+        :return:
+        """
+        url = 'rest/api/1.0/projects'
+        data = {"key": key,
+                "name": name,
+                "description": description
+                }
+        return self.post(url, data=data)
+
     def project_users(self, key, limit=99999):
         """
         Get users who has permission in project
