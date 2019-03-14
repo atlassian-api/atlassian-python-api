@@ -53,6 +53,14 @@ class Confluence(AtlassianRestAPI):
             log.error(e)
             return None
 
+    def get_child_pages(self, page_id):
+        """
+        Get child pages for the provided page_id
+        :param page_id:
+        :return:
+        """
+        return self.get_page_child_by_type(page_id=page_id, type='page')
+
     def get_page_id(self, space, title):
         """
         Provide content id from search result by title and space
