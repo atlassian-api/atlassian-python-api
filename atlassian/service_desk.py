@@ -65,13 +65,14 @@ class ServiceDesk(AtlassianRestAPI):
 
         return requests_values
 
-    def create_customer_request(self, service_desk_id, request_type_id, values_dict):
+    def create_customer_request(self, service_desk_id, request_type_id, values_dict, raise_on_behalf_of=None):
         """
         Creating customer request
 
         :param service_desk_id: str
         :param request_type_id: str
         :param values_dict: str
+        :param raise_on_behalf_of: str
         :return: New request
         """
         log.warning('Creating request...')
@@ -80,6 +81,9 @@ class ServiceDesk(AtlassianRestAPI):
             "requestTypeId": request_type_id,
             "requestFieldValues": values_dict
         }
+
+        if raise_on_behalf_of:
+            data["raiseOnBehalfOf"] = raise_on_behalf_of
 
         return self.post('rest/servicedeskapi/request', data=data)
 
