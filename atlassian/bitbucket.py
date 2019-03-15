@@ -304,7 +304,14 @@ class Bitbucket(AtlassianRestAPI):
             params['start'] = start
         if order:
             params['order'] = order
-        return (self.get(url, params=params) or {}).get('values')
+        response = self.get(url, params=params)
+        pr_list = (response or {}).get('values')
+        while not response.get('isLastPage'):
+            start = response.get('nextPageStart')
+            params['start'] = start
+            response = self.get(url, params=params)
+            pr_list += (response or {}).get('values')
+        return pr_list
 
     def get_pullrequest(self, project, repository, pull_request_id):
         """
