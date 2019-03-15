@@ -105,6 +105,9 @@ Manage code
     # Get pull request activities
     bitbucket.get_pull_requests_activities(self, project, repository, pull_request_id)
 
+    # Get pull request changes
+    bitbucket.get_pull_requests_changes(self, project, repository, pull_request_id)
+
     # Get tags for related repo
     bitbucket.get_tags(project, repository, filter='', limit=99999)
 

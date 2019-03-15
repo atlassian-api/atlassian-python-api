@@ -334,6 +334,30 @@ class Bitbucket(AtlassianRestAPI):
             activities_list += (response or {}).get('values')
         return activities_list
 
+    def get_pull_requests_changes(self, project, repository, pull_request_id):
+        """
+        Get pull requests changes
+        :param project:
+        :param repository:
+        :param pull_request_id: the ID of the pull request within the repository
+        :return:
+        """
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/changes'.format(project=project,
+                                                                                                                repository=repository,
+                                                                                                                pullRequestId=pull_request_id)
+        params = {}
+        params['start'] = 0
+        response = self.get(url, params=params)
+        changes_list = (response or {}).get('values')
+        while not response.get('isLastPage'):
+            params['start'] = response.get('nextPageStart')
+            if params['start'] is None:
+                log.warning('Too many changes in pull request. Changes list is incomplete.')
+                break
+            response = self.get(url, params=params)
+            changes_list += (response or {}).get('values')
+        return changes_list
+
     def get_pullrequest(self, project, repository, pull_request_id):
         """
         Retrieve a pull request.
