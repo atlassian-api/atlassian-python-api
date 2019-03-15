@@ -358,6 +358,27 @@ class Bitbucket(AtlassianRestAPI):
             changes_list += (response or {}).get('values')
         return changes_list
 
+    def get_pull_requests_commits(self, project, repository, pull_request_id):
+        """
+        Get pull requests commits
+        :param project:
+        :param repository:
+        :param pull_request_id: the ID of the pull request within the repository
+        :return:
+        """
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/commits'.format(project=project,
+                                                                                                                repository=repository,
+                                                                                                                pullRequestId=pull_request_id)
+        params = {}
+        params['start'] = 0
+        response = self.get(url, params=params)
+        commits_list = (response or {}).get('values')
+        while not response.get('isLastPage'):
+            params['start'] = response.get('nextPageStart')
+            response = self.get(url, params=params)
+            commits_list += (response or {}).get('values')
+        return commits_list
+
     def get_pullrequest(self, project, repository, pull_request_id):
         """
         Retrieve a pull request.
