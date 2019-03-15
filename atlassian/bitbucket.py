@@ -379,6 +379,22 @@ class Bitbucket(AtlassianRestAPI):
             commits_list += (response or {}).get('values')
         return commits_list
 
+    def add_pull_request_comment(self, project, repository, pull_request_id, text):
+        """
+        Add comment into pull request
+        :param project:
+        :param repository:
+        :param pull_request_id: the ID of the pull request within the repository
+        :text comment text
+        :return:
+        """
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/comments'.format(project=project,
+                                                                                                                 repository=repository,
+                                                                                                                 pullRequestId=pull_request_id)
+        body = {}
+        body['text'] = text
+        return self.post(url, data=body)
+
     def get_pullrequest(self, project, repository, pull_request_id):
         """
         Retrieve a pull request.

@@ -111,6 +111,9 @@ Manage code
     # Get pull request commits
     bitbucket.get_pull_requests_commits(self, project, repository, pull_request_id)
 
+    # Add comment into pull request
+    bitbucket.add_pull_request_comment(self, project, repository, pull_request_id, text)
+
     # Get tags for related repo
     bitbucket.get_tags(project, repository, filter='', limit=99999)
 
