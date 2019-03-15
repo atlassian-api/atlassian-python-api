@@ -313,6 +313,27 @@ class Bitbucket(AtlassianRestAPI):
             pr_list += (response or {}).get('values')
         return pr_list
 
+    def get_pull_requests_activities(self, project, repository, pull_request_id):
+        """
+        Get pull requests activities
+        :param project:
+        :param repository:
+        :param pull_request_id: the ID of the pull request within the repository
+        :return:
+        """
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/activities'.format(project=project,
+                                                                                                                   repository=repository,
+                                                                                                                   pullRequestId=pull_request_id)
+        params = {}
+        params['start'] = 0
+        response = self.get(url, params=params)
+        activities_list = (response or {}).get('values')
+        while not response.get('isLastPage'):
+            params['start'] = response.get('nextPageStart')
+            response = self.get(url, params=params)
+            activities_list += (response or {}).get('values')
+        return activities_list
+
     def get_pullrequest(self, project, repository, pull_request_id):
         """
         Retrieve a pull request.
