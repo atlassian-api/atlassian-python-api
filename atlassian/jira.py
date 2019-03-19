@@ -1,5 +1,5 @@
 # coding: utf8
-import logging
+import logging as log 
 from requests.exceptions import HTTPError
 from .rest_client import AtlassianRestAPI
 
