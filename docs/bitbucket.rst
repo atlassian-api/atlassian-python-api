@@ -16,13 +16,13 @@ Manage projects
     bitbucket.create_project(key, name, description="My pretty project")
 
     # Get users who has permission in project
-    bitbucket.project_users(key, limit=99999)
+    bitbucket.project_users(key, limit=99999, filter_str=None)
 
     # Get project administrators for project
     butbucket.project_users_with_administrator_permissions(key)
 
     # Get Project Groups
-    bitbucket.project_groups(key, limit=99999)
+    bitbucket.project_groups(key, limit=99999, filter_str=None)
 
     # Get groups with admin permissions
     bitbucket.project_groups_with_administrator_permissions(key)

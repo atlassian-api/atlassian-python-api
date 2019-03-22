@@ -41,18 +41,22 @@ class Bitbucket(AtlassianRestAPI):
                 }
         return self.post(url, data=data)
 
-    def project_users(self, key, limit=99999):
+    def project_users(self, key, limit=99999, filter_str=None):
         """
         Get users who has permission in project
         :param key:
         :param limit: OPTIONAL: The limit of the number of users to return, this may be restricted by
                             fixed system limits. Default by built-in method: 99999
+        :param filter_str:  OPTIONAL: users filter string
         :return:
         """
         url = 'rest/api/1.0/projects/{key}/permissions/users'.format(key=key)
         params = {}
         if limit:
             params['limit'] = limit
+        if filter_str:
+            params['filter'] = filter_str
+        return (self.get(url, params=params) or {}).get('values')
         return (self.get(url, params=params) or {}).get('values')
 
     def project_users_with_administrator_permissions(self, key):
@@ -68,18 +72,22 @@ class Bitbucket(AtlassianRestAPI):
                 project_administrators.append(user)
         return project_administrators
 
-    def project_groups(self, key, limit=99999):
+    def project_groups(self, key, limit=99999, filter_str=None):
         """
         Get Project Groups
         :param key:
         :param limit: OPTIONAL: The limit of the number of groups to return, this may be restricted by
                             fixed system limits. Default by built-in method: 99999
+        :param filter_str: OPTIONAL: group filter string
         :return:
         """
         url = 'rest/api/1.0/projects/{key}/permissions/groups'.format(key=key)
         params = {}
         if limit:
             params['limit'] = limit
+        if filter_str:
+            params['filter'] = filter_str
+        return (self.get(url, params=params) or {}).get('values')
         return (self.get(url, params=params) or {}).get('values')
 
     def project_groups_with_administrator_permissions(self, key):
