@@ -57,6 +57,25 @@ class Bitbucket(AtlassianRestAPI):
         if filter_str:
             params['filter'] = filter_str
         return (self.get(url, params=params) or {}).get('values')
+
+    def repo_users(self, project_key, repo_key, limit=99999, filter_str=None):
+        """
+        Get users who has permission in repository
+        :param project_key:
+        :param repo_key:
+        :param limit: OPTIONAL: The limit of the number of users to return, this may be restricted by
+                            fixed system limits. Default by built-in method: 99999
+        :param filter_str:  OPTIONAL: Users filter string
+        :return:
+        """
+        url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/users'.format(
+                project_key=project_key,
+                repo_key=repo_key)
+        params = {}
+        if limit:
+            params['limit'] = limit
+        if filter_str:
+            params['filter'] = filter_str
         return (self.get(url, params=params) or {}).get('values')
 
     def project_users_with_administrator_permissions(self, key):
@@ -88,6 +107,25 @@ class Bitbucket(AtlassianRestAPI):
         if filter_str:
             params['filter'] = filter_str
         return (self.get(url, params=params) or {}).get('values')
+
+    def repo_groups(self, project_key, repo_key, limit=99999, filter_str=None):
+        """
+        Get repository Groups
+        :param project_key:
+        :param repo_key:
+        :param limit: OPTIONAL: The limit of the number of groups to return, this may be restricted by
+                            fixed system limits. Default by built-in method: 99999
+        :param filter_str: OPTIONAL: group filter string
+        :return:
+        """
+        url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/groups'.format(
+                project_key=project_key,
+                repo_key=repo_key)
+        params = {}
+        if limit:
+            params['limit'] = limit
+        if filter_str:
+            params['filter'] = filter_str
         return (self.get(url, params=params) or {}).get('values')
 
     def project_groups_with_administrator_permissions(self, key):

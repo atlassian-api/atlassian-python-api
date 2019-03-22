@@ -64,6 +64,10 @@ Manage repositories
                        'prefix': 'release/'}]}
     bitbucket.set_branching_model(project_key, repo_key, data)
 
+    bitbucket.repo_users(self, project_key, repo_key, limit=99999, filter_str=None)
+
+    bitbucket.repo_groups(self, project_key, repo_key, limit=99999, filter_str=None)
+
 Groups and admins
 -----------------
 
