@@ -16,13 +16,13 @@ Manage projects
     bitbucket.create_project(key, name, description="My pretty project")
 
     # Get users who has permission in project
-    bitbucket.project_users(key, limit=99999)
+    bitbucket.project_users(key, limit=99999, filter_str=None)
 
     # Get project administrators for project
     butbucket.project_users_with_administrator_permissions(key)
 
     # Get Project Groups
-    bitbucket.project_groups(key, limit=99999)
+    bitbucket.project_groups(key, limit=99999, filter_str=None)
 
     # Get groups with admin permissions
     bitbucket.project_groups_with_administrator_permissions(key)
@@ -64,6 +64,10 @@ Manage repositories
                        'prefix': 'release/'}]}
     bitbucket.set_branching_model(project_key, repo_key, data)
 
+    bitbucket.repo_users(self, project_key, repo_key, limit=99999, filter_str=None)
+
+    bitbucket.repo_groups(self, project_key, repo_key, limit=99999, filter_str=None)
+
 Groups and admins
 -----------------
 
@@ -101,6 +105,18 @@ Manage code
 
     # Get pull requests
     bitbucket.get_pull_requests(project, repository, state='OPEN', order='newest', limit=100, start=0)
+
+    # Get pull request activities
+    bitbucket.get_pull_requests_activities(self, project, repository, pull_request_id)
+
+    # Get pull request changes
+    bitbucket.get_pull_requests_changes(self, project, repository, pull_request_id)
+
+    # Get pull request commits
+    bitbucket.get_pull_requests_commits(self, project, repository, pull_request_id)
+
+    # Add comment into pull request
+    bitbucket.add_pull_request_comment(self, project, repository, pull_request_id, text)
 
     # Get tags for related repo
     bitbucket.get_tags(project, repository, filter='', limit=99999)

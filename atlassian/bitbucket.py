@@ -41,18 +41,41 @@ class Bitbucket(AtlassianRestAPI):
                 }
         return self.post(url, data=data)
 
-    def project_users(self, key, limit=99999):
+    def project_users(self, key, limit=99999, filter_str=None):
         """
         Get users who has permission in project
         :param key:
         :param limit: OPTIONAL: The limit of the number of users to return, this may be restricted by
                             fixed system limits. Default by built-in method: 99999
+        :param filter_str:  OPTIONAL: users filter string
         :return:
         """
         url = 'rest/api/1.0/projects/{key}/permissions/users'.format(key=key)
         params = {}
         if limit:
             params['limit'] = limit
+        if filter_str:
+            params['filter'] = filter_str
+        return (self.get(url, params=params) or {}).get('values')
+
+    def repo_users(self, project_key, repo_key, limit=99999, filter_str=None):
+        """
+        Get users who has permission in repository
+        :param project_key:
+        :param repo_key:
+        :param limit: OPTIONAL: The limit of the number of users to return, this may be restricted by
+                            fixed system limits. Default by built-in method: 99999
+        :param filter_str:  OPTIONAL: Users filter string
+        :return:
+        """
+        url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/users'.format(
+                project_key=project_key,
+                repo_key=repo_key)
+        params = {}
+        if limit:
+            params['limit'] = limit
+        if filter_str:
+            params['filter'] = filter_str
         return (self.get(url, params=params) or {}).get('values')
 
     def project_users_with_administrator_permissions(self, key):
@@ -68,18 +91,41 @@ class Bitbucket(AtlassianRestAPI):
                 project_administrators.append(user)
         return project_administrators
 
-    def project_groups(self, key, limit=99999):
+    def project_groups(self, key, limit=99999, filter_str=None):
         """
         Get Project Groups
         :param key:
         :param limit: OPTIONAL: The limit of the number of groups to return, this may be restricted by
                             fixed system limits. Default by built-in method: 99999
+        :param filter_str: OPTIONAL: group filter string
         :return:
         """
         url = 'rest/api/1.0/projects/{key}/permissions/groups'.format(key=key)
         params = {}
         if limit:
             params['limit'] = limit
+        if filter_str:
+            params['filter'] = filter_str
+        return (self.get(url, params=params) or {}).get('values')
+
+    def repo_groups(self, project_key, repo_key, limit=99999, filter_str=None):
+        """
+        Get repository Groups
+        :param project_key:
+        :param repo_key:
+        :param limit: OPTIONAL: The limit of the number of groups to return, this may be restricted by
+                            fixed system limits. Default by built-in method: 99999
+        :param filter_str: OPTIONAL: group filter string
+        :return:
+        """
+        url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/groups'.format(
+                project_key=project_key,
+                repo_key=repo_key)
+        params = {}
+        if limit:
+            params['limit'] = limit
+        if filter_str:
+            params['filter'] = filter_str
         return (self.get(url, params=params) or {}).get('values')
 
     def project_groups_with_administrator_permissions(self, key):
@@ -304,7 +350,96 @@ class Bitbucket(AtlassianRestAPI):
             params['start'] = start
         if order:
             params['order'] = order
-        return (self.get(url, params=params) or {}).get('values')
+        response = self.get(url, params=params)
+        pr_list = (response or {}).get('values')
+        while not response.get('isLastPage'):
+            start = response.get('nextPageStart')
+            params['start'] = start
+            response = self.get(url, params=params)
+            pr_list += (response or {}).get('values')
+        return pr_list
+
+    def get_pull_requests_activities(self, project, repository, pull_request_id):
+        """
+        Get pull requests activities
+        :param project:
+        :param repository:
+        :param pull_request_id: the ID of the pull request within the repository
+        :return:
+        """
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/activities'.format(project=project,
+                                                                                                                   repository=repository,
+                                                                                                                   pullRequestId=pull_request_id)
+        params = {}
+        params['start'] = 0
+        response = self.get(url, params=params)
+        activities_list = (response or {}).get('values')
+        while not response.get('isLastPage'):
+            params['start'] = response.get('nextPageStart')
+            response = self.get(url, params=params)
+            activities_list += (response or {}).get('values')
+        return activities_list
+
+    def get_pull_requests_changes(self, project, repository, pull_request_id):
+        """
+        Get pull requests changes
+        :param project:
+        :param repository:
+        :param pull_request_id: the ID of the pull request within the repository
+        :return:
+        """
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/changes'.format(project=project,
+                                                                                                                repository=repository,
+                                                                                                                pullRequestId=pull_request_id)
+        params = {}
+        params['start'] = 0
+        response = self.get(url, params=params)
+        changes_list = (response or {}).get('values')
+        while not response.get('isLastPage'):
+            params['start'] = response.get('nextPageStart')
+            if params['start'] is None:
+                log.warning('Too many changes in pull request. Changes list is incomplete.')
+                break
+            response = self.get(url, params=params)
+            changes_list += (response or {}).get('values')
+        return changes_list
+
+    def get_pull_requests_commits(self, project, repository, pull_request_id):
+        """
+        Get pull requests commits
+        :param project:
+        :param repository:
+        :param pull_request_id: the ID of the pull request within the repository
+        :return:
+        """
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/commits'.format(project=project,
+                                                                                                                repository=repository,
+                                                                                                                pullRequestId=pull_request_id)
+        params = {}
+        params['start'] = 0
+        response = self.get(url, params=params)
+        commits_list = (response or {}).get('values')
+        while not response.get('isLastPage'):
+            params['start'] = response.get('nextPageStart')
+            response = self.get(url, params=params)
+            commits_list += (response or {}).get('values')
+        return commits_list
+
+    def add_pull_request_comment(self, project, repository, pull_request_id, text):
+        """
+        Add comment into pull request
+        :param project:
+        :param repository:
+        :param pull_request_id: the ID of the pull request within the repository
+        :text comment text
+        :return:
+        """
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/comments'.format(project=project,
+                                                                                                                 repository=repository,
+                                                                                                                 pullRequestId=pull_request_id)
+        body = {}
+        body['text'] = text
+        return self.post(url, data=body)
 
     def get_pullrequest(self, project, repository, pull_request_id):
         """
