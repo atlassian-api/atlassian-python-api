@@ -14,7 +14,7 @@ class AtlassianRestAPI(object):
     form_token_headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
                           'X-Atlassian-Token': 'no-check'}
 
-    def __init__(self, url, username, password, timeout=60, api_root='rest/api', api_version='latest', verify_ssl=True):
+    def __init__(self, url, username, password, timeout=60, api_root='rest/api', api_version='latest', verify_ssl=True, session=None):
         self.url = url
         self.username = username
         self.password = password
@@ -22,7 +22,10 @@ class AtlassianRestAPI(object):
         self.verify_ssl = verify_ssl
         self.api_root = api_root
         self.api_version = api_version
-        self._session = requests.Session()
+        if session is None:
+            self._session = requests.Session()
+        else:
+            self._session = session
         if username and password:
             self._session.auth = (username, password)
 
