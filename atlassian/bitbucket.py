@@ -69,8 +69,8 @@ class Bitbucket(AtlassianRestAPI):
         :return:
         """
         url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/users'.format(
-                project_key=project_key,
-                repo_key=repo_key)
+            project_key=project_key,
+            repo_key=repo_key)
         params = {}
         if limit:
             params['limit'] = limit
@@ -119,8 +119,8 @@ class Bitbucket(AtlassianRestAPI):
         :return:
         """
         url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/groups'.format(
-                project_key=project_key,
-                repo_key=repo_key)
+            project_key=project_key,
+            repo_key=repo_key)
         params = {}
         if limit:
             params['limit'] = limit
@@ -367,11 +367,11 @@ class Bitbucket(AtlassianRestAPI):
         :param pull_request_id: the ID of the pull request within the repository
         :return:
         """
-        url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/activities'.format(project=project,
-                                                                                                                   repository=repository,
-                                                                                                                   pullRequestId=pull_request_id)
-        params = {}
-        params['start'] = 0
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/activities'.format(
+            project=project,
+            repository=repository,
+            pullRequestId=pull_request_id)
+        params = {'start': 0}
         response = self.get(url, params=params)
         activities_list = (response or {}).get('values')
         while not response.get('isLastPage'):
@@ -388,9 +388,10 @@ class Bitbucket(AtlassianRestAPI):
         :param pull_request_id: the ID of the pull request within the repository
         :return:
         """
-        url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/changes'.format(project=project,
-                                                                                                                repository=repository,
-                                                                                                                pullRequestId=pull_request_id)
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/changes'.format(
+            project=project,
+            repository=repository,
+            pullRequestId=pull_request_id)
         params = {}
         params['start'] = 0
         response = self.get(url, params=params)
@@ -412,9 +413,10 @@ class Bitbucket(AtlassianRestAPI):
         :param pull_request_id: the ID of the pull request within the repository
         :return:
         """
-        url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/commits'.format(project=project,
-                                                                                                                repository=repository,
-                                                                                                                pullRequestId=pull_request_id)
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/commits'.format(
+            project=project,
+            repository=repository,
+            pullRequestId=pull_request_id)
         params = {}
         params['start'] = 0
         response = self.get(url, params=params)
@@ -431,12 +433,13 @@ class Bitbucket(AtlassianRestAPI):
         :param project:
         :param repository:
         :param pull_request_id: the ID of the pull request within the repository
-        :text comment text
+        :param text comment text
         :return:
         """
-        url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/comments'.format(project=project,
-                                                                                                                 repository=repository,
-                                                                                                                 pullRequestId=pull_request_id)
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/comments'.format(
+            project=project,
+            repository=repository,
+            pullRequestId=pull_request_id)
         body = {}
         body['text'] = text
         return self.post(url, data=body)
@@ -807,8 +810,9 @@ class Bitbucket(AtlassianRestAPI):
         :param repository:
         :return:
         """
-        url = 'rest/branch-utils/1.0/projects/{project}/repos/{repository}/branchmodel/configuration'.format(project=project,
-                                                                                                             repository=repository)
+        url = 'rest/branch-utils/1.0/projects/{project}/repos/{repository}/branchmodel/configuration'.format(
+            project=project,
+            repository=repository)
         return self.get(url)
 
     def set_branching_model(self, project, repository, data):
@@ -819,8 +823,9 @@ class Bitbucket(AtlassianRestAPI):
         :param data:
         :return:
         """
-        url = 'rest/branch-utils/1.0/projects/{project}/repos/{repository}/branchmodel/configuration'.format(project=project,
-                                                                                                             repository=repository)
+        url = 'rest/branch-utils/1.0/projects/{project}/repos/{repository}/branchmodel/configuration'.format(
+            project=project,
+            repository=repository)
         return self.put(url, data=data)
 
     def enable_branching_model(self, project, repository):
@@ -856,9 +861,9 @@ class Bitbucket(AtlassianRestAPI):
         Disable branching model
         :param project:
         :param repository:
-        :param data:
         :return:
         """
-        url = 'rest/branch-utils/1.0/projects/{project}/repos/{repository}/branchmodel/configuration'.format(project=project,
-                                                                                                             repository=repository)
+        url = 'rest/branch-utils/1.0/projects/{project}/repos/{repository}/branchmodel/configuration'.format(
+            project=project,
+            repository=repository)
         return self.delete(url)
