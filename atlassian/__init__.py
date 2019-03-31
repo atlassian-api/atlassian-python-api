@@ -6,5 +6,6 @@ from .portfolio import Portfolio
 from .bamboo import Bamboo
 from .crowd import Crowd
 from .service_desk import ServiceDesk
+from .marketplace import MarketPlace
 
-__all__ = ['Confluence', 'Jira', 'Bitbucket', 'Portfolio', 'Bamboo', 'Stash', 'Crowd', 'ServiceDesk']
+__all__ = ['Confluence', 'Jira', 'Bitbucket', 'Portfolio', 'Bamboo', 'Stash', 'Crowd', 'ServiceDesk', 'MarketPlace']
