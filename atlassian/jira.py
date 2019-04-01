@@ -814,6 +814,52 @@ class Jira(AtlassianRestAPI):
         url = 'rest/tempo-accounts/1/account'
         return self.get(url, params=params)
 
+    def tempo_account_get_accounts_by_jira_project(self, project_id):
+        """
+        Get Accounts by JIRA Project. The Caller must have the Browse Account permission for Account.
+        This will return Accounts for which the Caller has Browse Account Permission for.
+        :param project_id: str the project id.
+        :return:
+        """
+        url = 'rest/tempo-accounts/1/account/project/{}'.format(project_id)
+        return self.get(url)
+
+    def tempo_account_associate_with_jira_project(self, account_id, project_id,
+                                                  default_account=False,
+                                                  link_type='MANUAL'):
+        """
+        The AccountLinkBean for associate Account with project
+        Adds a link to an Account.
+        {
+            scopeType:PROJECT
+            defaultAccount:boolean
+            linkType:IMPORTED | MANUAL
+            name:string
+            key:string
+            accountId:number
+            scope:number
+            id:number
+        }
+        :param project_id:
+        :param account_id
+        :param default_account
+        :param link_type
+        :return:
+        """
+        data = {}
+        if account_id:
+            data['accountId'] = account_id
+        if default_account:
+            data['defaultAccount'] = default_account
+        if link_type:
+            data['linkType'] = link_type
+        if project_id:
+            data['scope'] = project_id
+        data['scopeType'] = 'PROJECT'
+
+        url = 'rest/tempo-accounts/1/link/'
+        return self.post(url, data=data)
+
     def tempo_account_add_account(self, data=None):
         """
         Creates Account, adding new Account requires the Manage Accounts Permission.
