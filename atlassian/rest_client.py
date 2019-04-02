@@ -3,6 +3,9 @@ import json
 import logging
 from six.moves.urllib.parse import urlencode
 import requests
+from oauthlib.oauth1 import SIGNATURE_RSA
+from requests_oauthlib import OAuth1
+
 
 log = logging.getLogger(__name__)
 
@@ -14,7 +17,7 @@ class AtlassianRestAPI(object):
     form_token_headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
                           'X-Atlassian-Token': 'no-check'}
 
-    def __init__(self, url, username, password, timeout=60, api_root='rest/api', api_version='latest', verify_ssl=True, session=None):
+    def __init__(self, url, username, password, timeout=60, api_root='rest/api', api_version='latest', verify_ssl=True, session=None, oauth=None):
         self.url = url
         self.username = username
         self.password = password
@@ -27,13 +30,24 @@ class AtlassianRestAPI(object):
         else:
             self._session = session
         if username and password:
-            self._session.auth = (username, password)
+            self._create_basic_session(username, password)
+        elif oauth is not None:
+            self._create_oauth_session(oauth, timeout)
+
+    def _create_basic_session(self, username, password):
+        self._session.auth = (username, password)
+
+    def _create_oauth_session(self, oauth_dict, timeout=60):
+        oauth = OAuth1(oauth_dict['consumer_key'],
+            rsa_key=oauth_dict['key_cert'], signature_method=SIGNATURE_RSA,
+            resource_owner_key=oauth_dict['access_token'],
+            resource_owner_secret=oauth_dict['access_token_secret'])
+        self._session.auth = oauth
 
     def log_curl_debug(self, method, path, data=None, headers=None, level=logging.DEBUG):
         headers = headers or self.default_headers
-        message = "curl --silent -X {method} -u '{username}':'********' -H {headers} {data} '{url}'".format(
+        message = "curl --silent -X {method} -H {headers} {data} '{url}'".format(
             method=method,
-            username=self.username,
             headers=' -H '.join(["'{0}: {1}'".format(key, value) for key, value in headers.items()]),
             data='' if not data else "--data '{0}'".format(json.dumps(data)),
             url='{0}'.format(self.url_joiner(self.url, path)))
@@ -65,7 +79,6 @@ class AtlassianRestAPI(object):
             url=url,
             headers=headers,
             data=data,
-            auth=(self.username, self.password),
             timeout=self.timeout,
             verify=self.verify_ssl,
             files=files
