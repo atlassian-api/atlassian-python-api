@@ -63,3 +63,5 @@ All methods based on docs from: https://developer.atlassian.com/docs/
 7. Tempo:
     - https://www.tempo.io/server-api-documentation
     - http://tempo.io/doc/core/api/rest/latest/
+8. Marketplace:
+    - https://developer.atlassian.com/platform/marketplace/rest
