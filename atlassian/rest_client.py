@@ -79,6 +79,8 @@ class AtlassianRestAPI(object):
             response_content = response.content
         if response.status_code == 200:
             log.debug('Received: {0}\n {1}'.format(response.status_code, response_content))
+        elif response.status_code == 201:
+            log.debug('Received: {0}\n "Created" response'.format(response.status_code))
         elif response.status_code == 204:
             log.debug('Received: {0}\n "No Content" response'.format(response.status_code))
         elif response.status_code == 404:
