@@ -1006,6 +1006,15 @@ class Jira(AtlassianRestAPI):
 
         return self.get(url, params=params)
 
+    def delete_agile_board(self, board_id):
+        """
+        Delete agile board by id
+        :param board_id:
+        :return:
+        """
+        url = 'rest/agile/1.0/board/{}'.format(str(board_id))
+        return self.delete(url)
+
     def health_check(self):
         """
         Get health status
