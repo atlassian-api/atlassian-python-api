@@ -316,6 +316,17 @@ class Confluence(AtlassianRestAPI):
             params['start'] = start
         return (self.get(url, params=params) or {}).get('results')
 
+    def add_comment(self, page_id, text):
+        """
+        Add comment into page
+        :param page_id
+        :param text
+        """
+        data = {'type': 'comment',
+                'container': {'id': page_id, 'type': 'page', 'status': 'current'},
+                'body': {'storage': {'value': text, 'representation': 'storage'}}}
+        return self.post('rest/api/content/', data=data)    
+    
     def attach_file(self, filename, page_id=None, title=None, space=None, comment=None):
         """
         Attach (upload) a file to a page, if it exists it will update the
