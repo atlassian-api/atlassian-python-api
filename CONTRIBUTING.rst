@@ -65,3 +65,5 @@ All methods based on docs from: https://developer.atlassian.com/docs/
     - http://tempo.io/doc/core/api/rest/latest/
 8. Marketplace:
     - https://developer.atlassian.com/platform/marketplace/rest
+9. Crowd:
+    - https://developer.atlassian.com/server/crowd/crowd-rest-apis/
