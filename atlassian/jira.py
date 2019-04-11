@@ -342,6 +342,15 @@ class Jira(AtlassianRestAPI):
             params['maxResults'] = limit
         return self.get(url, params=params)
 
+    def get_issue_labels(self, issue_key):
+        """
+        Get issue labels.
+        :param issue_key:
+        :return:
+        """
+        url = 'rest/api/2/issue/{issue_key}?fields=labels'.format(issue_key=issue_key)
+        return (self.get(url) or {}).get('fields').get('labels')
+    
     def get_all_custom_fields(self):
         """
         Returns a list of all fields, both System and Custom
