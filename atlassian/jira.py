@@ -84,7 +84,7 @@ class Jira(AtlassianRestAPI):
         """
         url = 'sr/jira.issueviews:searchrequest-csv-all-fields/temp/SearchRequest.csv?tempMax={limit}&jqlQuery={jql}'.format(
             limit=limit, jql=jql)
-        return self.get(url, not_json_response=True, header={'Accept': 'application/csv'})
+        return self.get(url, not_json_response=True, headers={'Accept': 'application/csv'})
 
     def user(self, username):
         return self.get('rest/api/2/user?username={0}'.format(username))
