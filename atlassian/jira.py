@@ -350,7 +350,7 @@ class Jira(AtlassianRestAPI):
         """
         url = 'rest/api/2/issue/{issue_key}?fields=labels'.format(issue_key=issue_key)
         return (self.get(url) or {}).get('fields').get('labels')
-    
+
     def get_all_custom_fields(self):
         """
         Returns a list of all fields, both System and Custom
@@ -769,6 +769,15 @@ class Jira(AtlassianRestAPI):
         url = 'rest/plugins/1.0/?token={upm_token}'.format(upm_token=upm_token)
         return self.post(url, files=files, headers=headers)
 
+    def get_all_permissions(self):
+        """
+        Returns all permissions that are present in the Jira instance -
+        Global, Project and the global ones added by plugins
+        :return:
+        """
+        url = 'rest/api/2/permissions'
+        return self.get(url)
+
     def get_all_permissionschemes(self, expand=None):
         """
         Returns a list of all permission schemes.
@@ -1014,6 +1023,42 @@ class Jira(AtlassianRestAPI):
             params['maxResults'] = int(limit)
 
         return self.get(url, params=params)
+
+    def get_agile_board(self, board_id):
+        """
+        Get agile board info by id
+        :param board_id:
+        :return:
+        """
+        url = 'rest/agile/1.0/board/{}'.format(str(board_id))
+        return self.get(url)
+
+    def get_agile_board_configuration(self, board_id):
+        """
+        Get the board configuration. The response contains the following fields:
+        id - Id of the board.
+        name - Name of the board.
+        filter - Reference to the filter used by the given board.
+        subQuery (Kanban only) - JQL subquery used by the given board.
+        columnConfig - The column configuration lists the columns for the board,
+             in the order defined in the column configuration. For each column,
+             it shows the issue status mapping as well as the constraint type
+             (Valid values: none, issueCount, issueCountExclSubs) for
+             the min/max number of issues. Note, the last column with statuses
+             mapped to it is treated as the "Done" column, which means that issues
+             in that column will be marked as already completed.
+        estimation (Scrum only) - Contains information about type of estimation used for the board.
+            Valid values: none, issueCount, field. If the estimation type is "field",
+            the Id and display name of the field used for estimation is also returned.
+            Note, estimates for an issue can be updated by a PUT /rest/api/2/issue/{issueIdOrKey}
+            request, however the fields must be on the screen. "timeoriginalestimate" field will never be
+            on the screen, so in order to update it "originalEstimate" in "timetracking" field should be updated.
+        ranking - Contains information about custom field used for ranking in the given board.
+        :param board_id:
+        :return:
+        """
+        url = 'rest/agile/1.0/board/{}/configuration'.format(str(board_id))
+        return self.get(url)
 
     def delete_agile_board(self, board_id):
         """
