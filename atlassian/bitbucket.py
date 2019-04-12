@@ -238,6 +238,8 @@ class Bitbucket(AtlassianRestAPI):
         start = 0
         params['start'] = start
         response = self.get(url, params=params)
+        if 'values' not in response:
+            return []
         repo_list = (response or {}).get('values')
         while not response.get('isLastPage'):
             start = response.get('nextPageStart')
@@ -351,6 +353,8 @@ class Bitbucket(AtlassianRestAPI):
         if order:
             params['order'] = order
         response = self.get(url, params=params)
+        if 'values' not in response:
+            return []
         pr_list = (response or {}).get('values')
         while not response.get('isLastPage'):
             start = response.get('nextPageStart')
@@ -373,6 +377,8 @@ class Bitbucket(AtlassianRestAPI):
             pullRequestId=pull_request_id)
         params = {'start': 0}
         response = self.get(url, params=params)
+        if 'values' not in response:
+            return []
         activities_list = (response or {}).get('values')
         while not response.get('isLastPage'):
             params['start'] = response.get('nextPageStart')
@@ -395,6 +401,8 @@ class Bitbucket(AtlassianRestAPI):
         params = {}
         params['start'] = 0
         response = self.get(url, params=params)
+        if 'values' not in response:
+            return []
         changes_list = (response or {}).get('values')
         while not response.get('isLastPage'):
             params['start'] = response.get('nextPageStart')
@@ -420,6 +428,8 @@ class Bitbucket(AtlassianRestAPI):
         params = {}
         params['start'] = 0
         response = self.get(url, params=params)
+        if 'values' not in response:
+            return []
         commits_list = (response or {}).get('values')
         while not response.get('isLastPage'):
             params['start'] = response.get('nextPageStart')
