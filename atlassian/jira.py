@@ -811,6 +811,27 @@ class Jira(AtlassianRestAPI):
             params['expand'] = expand
         return self.get(url, params=params)
 
+    def set_permissionscheme_grant(self, permission_id, new_permission):
+        """
+        Creates a permission grant in a permission scheme.
+        Example:
+
+        {
+            "holder": {
+                "type": "group",
+                "parameter": "jira-developers"
+            },
+            "permission": "ADMINISTER_PROJECTS"
+        }
+
+        :param permission_id
+        :param new_permission
+        :return:
+        """
+        url = 'rest/api/2/permissionscheme/{schemeID}/permission'.format(schemeID=permission_id)
+
+        return self.post(url, data=new_permission)
+
     """
     #######################################################################
     #                   Tempo Account REST API implements                 #
