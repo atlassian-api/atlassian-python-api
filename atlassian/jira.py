@@ -611,11 +611,9 @@ class Jira(AtlassianRestAPI):
         :param title: str
         :param global_id: str, Optional
         :param relationship: str, Optional. Default by built-in method: 'Web Link'
-
         """
         url = 'rest/api/2/issue/{issue_key}/remotelink'.format(issue_key=issue_key)
-        data = {'url': link_url, 'title': title}
-        data = {'object': data}
+        data = {'object': {'url': link_url, 'title': title}}
         if global_id:
             data['globalId'] = global_id
         if relationship:
