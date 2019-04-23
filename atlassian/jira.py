@@ -619,8 +619,16 @@ class Jira(AtlassianRestAPI):
             data['globalId'] = global_id
         if relationship:
             data['relationship'] = relationship
-        print(data)
         return self.post(url, data=data)
+    
+    def delete_issue_remotelink_by_link_id(self, issue_key, link_id):
+        """
+        Deletes Remote Link on Issue
+        :param issue_key: str
+        :param link_id: str
+        """
+        url = 'rest/api/2/issue/{issue_key}/remotelink/{link_id}'.format(issue_key=issue_key, link_id=link_id)
+        return self.delete(url)
 
     def get_issue_transitions(self, issue_key):
         url = 'rest/api/2/issue/{issue_key}?expand=transitions.fields&fields=status'.format(issue_key=issue_key)
