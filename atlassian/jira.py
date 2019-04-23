@@ -602,7 +602,7 @@ class Jira(AtlassianRestAPI):
         if global_id:
             params['globalId'] = global_id
         return self.get(url, params=params)
-    
+
     def create_or_update_issue_remotelinks(self, issue_key, link_url, title, global_id=None, relationship=None):
         """
         Add Remote Link to Issue, update url if global_id is passed
@@ -783,9 +783,18 @@ class Jira(AtlassianRestAPI):
         headers = {
             'X-Atlassian-Token': 'nocheck'
         }
-        upm_token = self.request(method='GET', path='rest/plugins/1.0/', headers=headers, trailing=True).headers['upm-token']
+        upm_token = self.request(method='GET', path='rest/plugins/1.0/', headers=headers, trailing=True).headers[
+            'upm-token']
         url = 'rest/plugins/1.0/?token={upm_token}'.format(upm_token=upm_token)
         return self.post(url, files=files, headers=headers)
+
+    def check_plugin_manager_status(self):
+        headers = {
+            'X-Atlassian-Token': 'nocheck',
+            'Content-Type': 'application/vnd.atl.plugins.safe.mode.flag+json'
+        }
+        url = 'rest/plugins/latest/safe-mode'
+        return self.request(method='GET', path=url, headers=headers)
 
     def get_all_permissions(self):
         """
