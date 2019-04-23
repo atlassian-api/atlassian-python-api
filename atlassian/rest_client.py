@@ -14,7 +14,8 @@ class AtlassianRestAPI(object):
     form_token_headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
                           'X-Atlassian-Token': 'no-check'}
 
-    def __init__(self, url, username, password, timeout=60, api_root='rest/api', api_version='latest', verify_ssl=True, session=None):
+    def __init__(self, url, username, password, timeout=60, api_root='rest/api', api_version='latest', verify_ssl=True,
+                 session=None):
         self.url = url
         self.username = username
         self.password = password
@@ -29,27 +30,52 @@ class AtlassianRestAPI(object):
         if username and password:
             self._session.auth = (username, password)
 
-    def log_curl_debug(self, method, path, data=None, headers=None, level=logging.DEBUG):
+    def log_curl_debug(self, method, path, data=None, headers=None, trailing=None, level=logging.DEBUG):
+        """
+
+        :param method:
+        :param path:
+        :param data:
+        :param headers:
+        :param trailing: bool flag for trailing /
+        :param level:
+        :return:
+        """
         headers = headers or self.default_headers
         message = "curl --silent -X {method} -u '{username}':'********' -H {headers} {data} '{url}'".format(
             method=method,
             username=self.username,
             headers=' -H '.join(["'{0}: {1}'".format(key, value) for key, value in headers.items()]),
             data='' if not data else "--data '{0}'".format(json.dumps(data)),
-            url='{0}'.format(self.url_joiner(self.url, path)))
+            url='{0}'.format(self.url_joiner(self.url, path=path, trailing=trailing)))
         log.log(level=level, msg=message)
 
     def resource_url(self, resource):
         return '/'.join([self.api_root, self.api_version, resource])
 
     @staticmethod
-    def url_joiner(url, path):
+    def url_joiner(url, path, trailing):
         url_link = '/'.join(s.strip('/') for s in [url, path])
+        if trailing:
+            url_link += '/'
         return url_link
 
-    def request(self, method='GET', path='/', data=None, flags=None, params=None, headers=None, files=None):
-        self.log_curl_debug(method=method, path=path, headers=headers, data=data)
-        url = self.url_joiner(self.url, path)
+    def request(self, method='GET', path='/', data=None, flags=None, params=None, headers=None, files=None,
+                trailing=None):
+        """
+
+        :param method:
+        :param path:
+        :param data:
+        :param flags:
+        :param params:
+        :param headers:
+        :param files:
+        :param trailing: bool
+        :return:
+        """
+        self.log_curl_debug(method=method, path=path, headers=headers, data=data, trailing=None)
+        url = self.url_joiner(self.url, path, trailing)
         if params or flags:
             url += '?'
         if params:

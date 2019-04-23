@@ -783,7 +783,7 @@ class Jira(AtlassianRestAPI):
         headers = {
             'X-Atlassian-Token': 'nocheck'
         }
-        upm_token = self.request(method='GET', path='rest/plugins/1.0/', headers=headers).headers['upm-token']
+        upm_token = self.request(method='GET', path='rest/plugins/1.0/', headers=headers, trailing=True).headers['upm-token']
         url = 'rest/plugins/1.0/?token={upm_token}'.format(upm_token=upm_token)
         return self.post(url, files=files, headers=headers)
 
