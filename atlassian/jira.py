@@ -155,19 +155,20 @@ class Jira(AtlassianRestAPI):
         }
         return self.post(path=url, data=data, headers=headers)
 
-    def user_find_by_user_string(self, username, start=0, limit=50, include_inactive_users=False):
+    def user_find_by_user_string(self, username, start=0, limit=50, include_inactive_users=False, include_active_users=True):
         """
         Fuzzy search using username and display name
-        :param username:
+        :param username: Use '.' to find all users
         :param start: OPTIONAL: The start point of the collection to return. Default: 0.
         :param limit: OPTIONAL: The limit of the number of users to return, this may be restricted by
                 fixed system limits. Default by built-in method: 50
-        :param include_inactive_users:
+        :param include_inactive_users: OPTIONAL: Return users with "active: False"
+        :param include_active_users: OPTIONAL: Return users with "active: True".
         :return:
         """
         url = 'rest/api/2/user/search'
-        url += "?username={username}&includeInactive={include_inactive}&startAt={start}&maxResults={limit}".format(
-            username=username, include_inactive=include_inactive_users, start=start, limit=limit)
+        url += "?username={username}&includeActive={include_active}&includeInactive={include_inactive}&startAt={start}&maxResults={limit}".format(
+            username=username, include_inactive=include_inactive_users, include_active=include_active_users, start=start, limit=limit)
         return self.get(url)
 
     def projects(self, included_archived=None):
