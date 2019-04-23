@@ -591,6 +591,12 @@ class Jira(AtlassianRestAPI):
 
             return self.post(url, headers=headers, files=files)
 
+    def get_issue_remotelinks(self, issue_key, global_id=None, internal_id=None):
+        """
+        Compatibility naming method with get_issue_remote_links()
+        """
+        return self.get_issue_remote_links(issue_key, global_id, internal_id)
+
     def get_issue_remote_links(self, issue_key, global_id=None, internal_id=None):
         """
         Finding all Remote Links on an issue, also with filtering by Global ID and internal ID
