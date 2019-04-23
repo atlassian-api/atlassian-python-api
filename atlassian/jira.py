@@ -567,7 +567,7 @@ class Jira(AtlassianRestAPI):
         Add comment into Jira issue
         :param issue_key:
         :param comment:
-        :param visibility: Optional
+        :param visibility: OPTIONAL
         :return:
         """
         url = 'rest/api/2/issue/{issueIdOrKey}/comment'.format(issueIdOrKey=issue_key)
@@ -591,27 +591,30 @@ class Jira(AtlassianRestAPI):
 
             return self.post(url, headers=headers, files=files)
 
-    def get_issue_remotelinks(self, issue_key, global_id=None):
+    def get_issue_remote_links(self, issue_key, global_id=None, internal_id=None):
         """
-        Finding all Remote Links on an issue, also with filtering by Global ID
+        Finding all Remote Links on an issue, also with filtering by Global ID and internal ID
         :param issue_key:
         :param global_id: str
+        :param internal_id: str
         :return:
         """
         url = 'rest/api/2/issue/{issue_key}/remotelink'.format(issue_key=issue_key)
         params = {}
         if global_id:
             params['globalId'] = global_id
+        if internal_id:
+            url += '/' + internal_id
         return self.get(url, params=params)
 
-    def create_or_update_issue_remotelinks(self, issue_key, link_url, title, global_id=None, relationship=None):
+    def create_or_update_issue_remote_links(self, issue_key, link_url, title, global_id=None, relationship=None):
         """
         Add Remote Link to Issue, update url if global_id is passed
         :param issue_key: str
         :param link_url: str
         :param title: str
-        :param global_id: str, Optional
-        :param relationship: str, Optional. Default by built-in method: 'Web Link'
+        :param global_id: str, OPTIONAL:
+        :param relationship: str, OPTIONAL: Default by built-in method: 'Web Link'
         """
         url = 'rest/api/2/issue/{issue_key}/remotelink'.format(issue_key=issue_key)
         data = {'object': {'url': link_url, 'title': title}}
@@ -621,7 +624,7 @@ class Jira(AtlassianRestAPI):
             data['relationship'] = relationship
         return self.post(url, data=data)
     
-    def delete_issue_remotelink_by_link_id(self, issue_key, link_id):
+    def delete_issue_remote_link_by_link_id(self, issue_key, link_id):
         """
         Deletes Remote Link on Issue
         :param issue_key: str
