@@ -621,6 +621,11 @@ class Jira(AtlassianRestAPI):
         return self.post(url, data=data)
     
     def delete_issue_remotelink_by_link_id(self, issue_key, link_id):
+        """
+        Deletes Remote Link on Issue
+        :param issue_key: str
+        :param link_id: str
+        """
         url = 'rest/api/2/issue/{issue_key}/remotelink/{link_id}'.format(issue_key=issue_key, link_id=link_id)
         return self.delete(url)
 
