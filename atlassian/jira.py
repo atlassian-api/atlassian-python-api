@@ -602,6 +602,24 @@ class Jira(AtlassianRestAPI):
         if global_id:
             params['globalId'] = global_id
         return self.get(url, params=params)
+    
+    def create_or_update_issue_remotelinks(self, issue_key, link_url, title, global_id=None, relationship=None):
+        """
+        Add Remote Link to Issue, update url if global_id is passed
+        :param issue_key: str
+        :param link_url: str
+        :param title: str
+        :param global_id: str, Optional
+        :param relationship: str, Optional. Default by built-in method: 'Web Link'
+        """
+        url = 'rest/api/2/issue/{issue_key}/remotelink'.format(issue_key=issue_key)
+        data = {'object': {'url': link_url, 'title': title}}
+        if global_id:
+            data['globalId'] = global_id
+        if relationship:
+            data['relationship'] = relationship
+        print(data)
+        return self.post(url, data=data)
 
     def get_issue_transitions(self, issue_key):
         url = 'rest/api/2/issue/{issue_key}?expand=transitions.fields&fields=status'.format(issue_key=issue_key)

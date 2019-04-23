@@ -171,6 +171,9 @@ Manage issues
 
     # Get issue status
     jira.get_issue_status(issue_key)
+    
+    # Create or Update Issue Links
+    jira.create_or_update_issue_remotelinks(issue_key, link_url, title, global_id=None, relationship=None)
 
 Attachments actions
 -------------------
