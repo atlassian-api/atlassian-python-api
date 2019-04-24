@@ -630,7 +630,29 @@ class Jira(AtlassianRestAPI):
             data['relationship'] = relationship
         return self.post(url, data=data)
     
-    def delete_issue_remote_link_by_link_id(self, issue_key, link_id):
+    def get_issue_remote_link_by_id(self, issue_key, link_id):
+        url = 'rest/api/2/issue/{issue_key}/remotelink/{link_id}'.format(issue_key=issue_key, link_id=link_id)
+        return self.get(url)
+
+    def update_issue_remote_link_by_id(self, issue_key, link_id, url, title, global_id=None, relationship=None):
+        """
+        Update existing Remote Link on Issue
+        :param issue_key: str
+        :param link_url: str
+        :param title: str
+        :param global_id: str, Optional
+        :param relationship: str, Optional. Default by built-in method: 'Web Link'
+        
+        """
+        data = {'object': {'url': url, 'title': title}}
+        if global_id:
+            data['globalId'] = global_id
+        if relationship:
+            data['relationship'] = relationship
+        url = 'rest/api/2/issue/{issue_key}/remotelink/{link_id}'.format(issue_key=issue_key, link_id=link_id)
+        return self.put(url, data=data)
+    
+    def delete_issue_remote_link_by_id(self, issue_key, link_id):
         """
         Deletes Remote Link on Issue
         :param issue_key: str

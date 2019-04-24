@@ -173,10 +173,16 @@ Manage issues
     jira.get_issue_status(issue_key)
     
     # Create or Update Issue Links
-    jira.create_or_update_issue_remotelinks(issue_key, link_url, title, global_id=None, relationship=None)
+    jira.create_or_update_issue_remote_links(issue_key, link_url, title, global_id=None, relationship=None)
+    
+    # Get Issue Link by link ID
+    jira.get_issue_remote_link_by_id(issue_key, link_id)
+    
+    # Update Issue Link by link ID
+    jira.update_issue_remote_link_by_id(issue_key, link_id, url, title, global_id=None, relationship=None)
     
     # Delete Issue Links
-    jira.delete_issue_remotelink_by_link_id(issue_key, link_id)
+    jira.delete_issue_remote_link_by_id(issue_key, link_id)
 
 Attachments actions
 -------------------
