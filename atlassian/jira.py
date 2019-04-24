@@ -155,19 +155,20 @@ class Jira(AtlassianRestAPI):
         }
         return self.post(path=url, data=data, headers=headers)
 
-    def user_find_by_user_string(self, username, start=0, limit=50, include_inactive_users=False):
+    def user_find_by_user_string(self, username, start=0, limit=50, include_inactive_users=False, include_active_users=True):
         """
         Fuzzy search using username and display name
-        :param username:
+        :param username: Use '.' to find all users
         :param start: OPTIONAL: The start point of the collection to return. Default: 0.
         :param limit: OPTIONAL: The limit of the number of users to return, this may be restricted by
                 fixed system limits. Default by built-in method: 50
-        :param include_inactive_users:
+        :param include_inactive_users: OPTIONAL: Return users with "active: False"
+        :param include_active_users: OPTIONAL: Return users with "active: True".
         :return:
         """
         url = 'rest/api/2/user/search'
-        url += "?username={username}&includeInactive={include_inactive}&startAt={start}&maxResults={limit}".format(
-            username=username, include_inactive=include_inactive_users, start=start, limit=limit)
+        url += "?username={username}&includeActive={include_active}&includeInactive={include_inactive}&startAt={start}&maxResults={limit}".format(
+            username=username, include_inactive=include_inactive_users, include_active=include_active_users, start=start, limit=limit)
         return self.get(url)
 
     def projects(self, included_archived=None):
@@ -566,7 +567,7 @@ class Jira(AtlassianRestAPI):
         Add comment into Jira issue
         :param issue_key:
         :param comment:
-        :param visibility: Optional
+        :param visibility: OPTIONAL
         :return:
         """
         url = 'rest/api/2/issue/{issueIdOrKey}/comment'.format(issueIdOrKey=issue_key)
@@ -590,27 +591,36 @@ class Jira(AtlassianRestAPI):
 
             return self.post(url, headers=headers, files=files)
 
-    def get_issue_remotelinks(self, issue_key, global_id=None):
+    def get_issue_remotelinks(self, issue_key, global_id=None, internal_id=None):
         """
-        Finding all Remote Links on an issue, also with filtering by Global ID
+        Compatibility naming method with get_issue_remote_links()
+        """
+        return self.get_issue_remote_links(issue_key, global_id, internal_id)
+
+    def get_issue_remote_links(self, issue_key, global_id=None, internal_id=None):
+        """
+        Finding all Remote Links on an issue, also with filtering by Global ID and internal ID
         :param issue_key:
         :param global_id: str
+        :param internal_id: str
         :return:
         """
         url = 'rest/api/2/issue/{issue_key}/remotelink'.format(issue_key=issue_key)
         params = {}
         if global_id:
             params['globalId'] = global_id
+        if internal_id:
+            url += '/' + internal_id
         return self.get(url, params=params)
-    
-    def create_or_update_issue_remotelinks(self, issue_key, link_url, title, global_id=None, relationship=None):
+
+    def create_or_update_issue_remote_links(self, issue_key, link_url, title, global_id=None, relationship=None):
         """
         Add Remote Link to Issue, update url if global_id is passed
         :param issue_key: str
         :param link_url: str
         :param title: str
-        :param global_id: str, Optional
-        :param relationship: str, Optional. Default by built-in method: 'Web Link'
+        :param global_id: str, OPTIONAL:
+        :param relationship: str, OPTIONAL: Default by built-in method: 'Web Link'
         """
         url = 'rest/api/2/issue/{issue_key}/remotelink'.format(issue_key=issue_key)
         data = {'object': {'url': link_url, 'title': title}}
@@ -620,7 +630,7 @@ class Jira(AtlassianRestAPI):
             data['relationship'] = relationship
         return self.post(url, data=data)
     
-    def delete_issue_remotelink_by_link_id(self, issue_key, link_id):
+    def delete_issue_remote_link_by_link_id(self, issue_key, link_id):
         """
         Deletes Remote Link on Issue
         :param issue_key: str
@@ -791,9 +801,18 @@ class Jira(AtlassianRestAPI):
         headers = {
             'X-Atlassian-Token': 'nocheck'
         }
-        upm_token = self.request(method='GET', path='rest/plugins/1.0/', headers=headers).headers['upm-token']
+        upm_token = self.request(method='GET', path='rest/plugins/1.0/', headers=headers, trailing=True).headers[
+            'upm-token']
         url = 'rest/plugins/1.0/?token={upm_token}'.format(upm_token=upm_token)
         return self.post(url, files=files, headers=headers)
+
+    def check_plugin_manager_status(self):
+        headers = {
+            'X-Atlassian-Token': 'nocheck',
+            'Content-Type': 'application/vnd.atl.plugins.safe.mode.flag+json'
+        }
+        url = 'rest/plugins/latest/safe-mode'
+        return self.request(method='GET', path=url, headers=headers)
 
     def get_all_permissions(self):
         """
