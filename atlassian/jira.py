@@ -638,9 +638,10 @@ class Jira(AtlassianRestAPI):
         """
         Update existing Remote Link on Issue
         :param issue_key: str
-        :param link_url: str
+        :param link_id: str
+        :param url: str
         :param title: str
-        :param global_id: str, Optional
+        :param global_id: str, OPTIONAL:
         :param relationship: str, Optional. Default by built-in method: 'Web Link'
         
         """

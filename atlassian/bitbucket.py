@@ -398,8 +398,7 @@ class Bitbucket(AtlassianRestAPI):
             project=project,
             repository=repository,
             pullRequestId=pull_request_id)
-        params = {}
-        params['start'] = 0
+        params = {'start': 0}
         response = self.get(url, params=params)
         if 'values' not in response:
             return []
@@ -425,8 +424,7 @@ class Bitbucket(AtlassianRestAPI):
             project=project,
             repository=repository,
             pullRequestId=pull_request_id)
-        params = {}
-        params['start'] = 0
+        params = {'start': 0}
         response = self.get(url, params=params)
         if 'values' not in response:
             return []
@@ -450,8 +448,7 @@ class Bitbucket(AtlassianRestAPI):
             project=project,
             repository=repository,
             pullRequestId=pull_request_id)
-        body = {}
-        body['text'] = text
+        body = {'text': text}
         return self.post(url, data=body)
 
     def get_pullrequest(self, project, repository, pull_request_id):
