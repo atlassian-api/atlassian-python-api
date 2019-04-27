@@ -290,6 +290,21 @@ class Jira(AtlassianRestAPI):
 
         return self.post(url, data=data)
 
+    def update_project(self, project_key, data, expand=None):
+        """
+        Updates a project.
+        Update project: /rest/api/2/project/{projectIdOrKey}
+
+        :param project_key: project key of project that needs to be updated
+        :param data: dictionary containing the data to be updated
+        :param expand: the parameters to expand
+        """
+        if expand:
+            url = '/rest/api/2/project/{projectIdOrKey}?expand={expand}'.format(projectIdOrKey=project_key, expand=expand)
+        else:
+            url = '/rest/api/2/project/{projectIdOrKey}'.format(projectIdOrKey=project_key)
+        return self.put(url, data)
+
     def issue(self, key, fields='*all'):
         return self.get('rest/api/2/issue/{0}?fields={1}'.format(key, fields))
 
