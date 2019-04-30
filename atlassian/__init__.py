@@ -18,5 +18,6 @@ __all__ = [
     'Stash',
     'Crowd',
     'ServiceDesk',
-    'MarketPlace'
+    'MarketPlace',
+    'Jira8'
 ]
