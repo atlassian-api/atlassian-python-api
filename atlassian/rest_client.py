@@ -109,6 +109,8 @@ class AtlassianRestAPI(object):
             log.debug('Received: {0}\n "Created" response'.format(response.status_code))
         elif response.status_code == 204:
             log.debug('Received: {0}\n "No Content" response'.format(response.status_code))
+        elif response.status_code == 401:
+            log.error('Received: {0}\n "UNAUTHORIZED" response'.format(response.status_code))
         elif response.status_code == 404:
             log.error('Received: {0}\n Not Found'.format(response.status_code))
         else:
