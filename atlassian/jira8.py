@@ -82,3 +82,59 @@ class Jira8(AtlassianRestAPI):
         url = 'rest/api/2/application-properties/advanced-settings'
 
         return self.get(url)
+
+    # Application roles
+    def get_all_application_roles(self):
+        """
+        Returns all ApplicationRoles in the system
+
+        :return:
+        """
+        url = 'rest/api/2/applicationrole'
+
+        return self.get(url)
+
+    def get_application_role(self, role_key):
+        """
+        Returns the ApplicationRole with passed key if it exists
+
+        :param role_key: str
+        :return:
+        """
+        url = 'rest/api/2/applicationrole/{}'.format(role_key)
+
+        return self.get(url)
+
+    # Attachments
+    def get_attachment(self, attachment_id):
+        """
+        Returns the meta-data for an attachment, including the URI of the actual attached file
+
+        :param attachment_id: int
+        :return:
+        """
+        url = 'rest/api/2/attachment/{}'.format(attachment_id)
+
+        return self.get(url)
+
+    def remove_attachment(self, attachment_id):
+        """
+        Remove an attachment from an issue
+
+        :param attachment_id: int
+        :return: if success, return None
+        """
+        url = 'rest/api/2/attachment/{}'.format(attachment_id)
+
+        return self.delete(url)
+
+    def get_attachment_meta(self):
+        """
+        Returns the meta information for an attachments,
+        specifically if they are enabled and the maximum upload size allowed
+
+        :return:
+        """
+        url = 'rest/api/2/attachment/meta'
+
+        return self.get(url)
