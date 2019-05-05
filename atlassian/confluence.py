@@ -3,6 +3,7 @@ from .rest_client import AtlassianRestAPI
 from requests import HTTPError
 import logging
 import os
+import time
 
 log = logging.getLogger(__name__)
 
@@ -700,9 +701,42 @@ class Confluence(AtlassianRestAPI):
         :return: PDF File
         """
         headers = self.form_token_headers
+        
+        url = self.url
+        if url[-1] == '/':
+            url = url[:-1]
+        url_parts = url.split('/')
         url = 'spaces/flyingpdf/pdfpageexport.action?pageId={pageId}'.format(pageId=page_id)
-        return self.get(url, headers=headers, not_json_response=True)
+        if url_parts[len(url_parts) - 1] == 'wiki':
+            long_running_task = True
+            log.info('Exporting PDF from Confluence Cloud')
+            response = self.get(url, headers=headers, not_json_response=True)
+            response_string = response.decode(encoding='utf-8', errors='strict')
+            task_id = response_string.split('name="ajs-taskId" content="')[1].split('">')[0]
+            poll_url = 'runningtaskxml.action?taskId={0}'.format(task_id)
+            while long_running_task:
+                longrunning_task_response = self.get(poll_url, headers=headers, not_json_response=True)
+                longrunning_task_response_parts = longrunning_task_response.decode(encoding='utf-8', errors='strict').split('\n')
+                percentage_complete = longrunning_task_response_parts[6]
+                is_successful = longrunning_task_response_parts[7].strip()
+                is_complete = longrunning_task_response_parts[8].strip()                
+                print('Sleep for 5s')
+                time.sleep(5)
+                print('Check if task has completed')
+                if is_successful == '<isSuccessful>true</isSuccessful>' and is_complete == '<isComplete>true</isComplete>':
+                    print(percentage_complete)
+                    print('Downloading content...')
+                    print('Extract taskId and download PDF')
+                    current_Status = longrunning_task_response_parts[3]
+                    url = current_Status.split('href=&quot;/wiki/')[1].split('&quot')[0]
+                    long_running_task = False
+                else:
+                    print(percentage_complete)
+                    print(is_successful)
+                    print(is_complete)
 
+        return self.get(url, headers=headers, not_json_response=True)
+        
     def export_page(self, page_id):
         """
         Alias method for export page as pdf
