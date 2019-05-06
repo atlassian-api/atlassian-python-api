@@ -393,13 +393,26 @@ class Jira(AtlassianRestAPI):
         url = 'rest/api/2/issue/{issue_key}?fields=labels'.format(issue_key=issue_key)
         return (self.get(url) or {}).get('fields').get('labels')
 
-    def get_all_custom_fields(self):
+    def get_all_fields(self):
         """
         Returns a list of all fields, both System and Custom
         :return: application/jsonContains a full representation of all visible fields in JSON.
         """
         url = 'rest/api/2/field'
         return self.get(url)
+
+    def get_all_custom_fields(self):
+        """
+        Returns a list of all custom fields
+        That method just filtering all fields method
+        :return: application/jsonContains a full representation of all visible fields in JSON.
+        """
+        fields = self.get_all_fields()
+        custom_fields = []
+        for field in fields:
+            if field['custom']:
+                custom_fields.append(field)
+        return custom_fields
 
     def project_leaders(self):
         for project in self.projects():
