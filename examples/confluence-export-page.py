@@ -1,12 +1,13 @@
 # coding: utf8
 from atlassian import Confluence
 
-"""This example shows how to export pages """
+"""This example shows how to export pages"""
 
 confluence = Confluence(
     url='https://test.atlassian.net/wiki',
     username='admin',
-    password='admin',
+    password='api-key',
+    api_version='cloud'
 )
 
 if __name__ == '__main__':
