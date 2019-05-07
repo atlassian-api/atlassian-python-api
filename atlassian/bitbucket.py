@@ -874,3 +874,42 @@ class Bitbucket(AtlassianRestAPI):
             project=project,
             repository=repository)
         return self.delete(url)
+
+    def get_assignable_users_for_issue(self, issue_key, username=None, start=0, limit=50):
+        """
+                Provide assignable users for issue
+                :param issue_key:
+                :param username: OPTIONAL: Can be used to chaeck if user can be assigned
+                :param start: OPTIONAL: The start point of the collection to return. Default: 0.
+                :param limit: OPTIONAL: The limit of the number of users to return, this may be restricted by
+                        fixed system limits. Default by built-in method: 50
+                :return:
+        """
+        url = 'rest/api/2/user/assignable/search?issueKey={issue_key}&startAt={start}&maxResults={limit}'.format(
+            issue_key=issue_key,
+            start=start,
+            limit=limit)
+        if username:
+            url += '&username={username}'.format(username=username)
+        return self.get(url)
+
+    def get_issue_changelog(self, issue_key):
+        """
+        Get issue related change log
+        :param issue_key:
+        :return:
+        """
+        url = 'rest/api/2/issue/{}?expand=changelog'.format(issue_key)
+        return (self.get(url) or {}).get('changelog')
+
+    def assign_issue(self, issue, assignee=None):
+        """Assign an issue to a user. None will set it to unassigned. -1 will set it to Automatic.
+        :param issue: the issue ID or key to assign
+        :type issue: int or str
+        :param assignee: the user to assign the issue to
+        :type assignee: str
+        :rtype: bool
+        """
+        url = 'rest/api/2/issue/{issue}/assignee'.format(issue=issue)
+        data = {'name': assignee}
+        return self.put(url, data=data)
