@@ -384,6 +384,15 @@ class Jira(AtlassianRestAPI):
             params['maxResults'] = limit
         return self.get(url, params=params)
 
+    def get_all_screen_fields(self, screen_id):
+        """
+        Screen id
+        :param screen_id:
+        :return:
+        """
+        url = 'rest/api/2/screens/{}/availableFields'.format(screen_id)
+        return self.get(url)
+
     def get_issue_labels(self, issue_key):
         """
         Get issue labels.
