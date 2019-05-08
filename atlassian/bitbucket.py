@@ -91,6 +91,21 @@ class Bitbucket(AtlassianRestAPI):
                 project_administrators.append(user)
         return project_administrators
 
+    def project_grant_user_permissions(self, project_key, username, permission):
+        """
+        Grant the specified project permission to an specific user
+        :param project_key: project key involved
+        :param user: user name to be granted
+        :param permission: the project permissions available are 'PROJECT_ADMIN', 'PROJECT_WRITE' and 'PROJECT_READ'
+        :return: 
+        """
+        url = 'rest/api/1.0/projects/{project_key}/permissions/users?permission={permission}&name={username}'.format(
+            project_key=project_key,
+            permission=permission,
+            username=username)
+
+        return self.put(url)
+
     def project_groups(self, key, limit=99999, filter_str=None):
         """
         Get Project Groups

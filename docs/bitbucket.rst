@@ -28,7 +28,10 @@ Manage projects
     bitbucket.project_groups_with_administrator_permissions(key)
 
     # Project summary
-    butbucket.project_summary(key)
+    bitbucket.project_summary(key)
+
+    # Grant project permission to an specific user
+    bitbucket.project_grant_user_permissions(project_key, username, permission)
 
 Manage repositories
 ---------------
