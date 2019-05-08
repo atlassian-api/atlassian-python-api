@@ -17,7 +17,7 @@ class AtlassianRestAPI(object):
     form_token_headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
                           'X-Atlassian-Token': 'no-check'}
 
-    def __init__(self, url, username, password, timeout=60, api_root='rest/api', api_version='latest', verify_ssl=True, session=None, oauth=None):
+    def __init__(self, url, username=None, password=None, timeout=60, api_root='rest/api', api_version='latest', verify_ssl=True, session=None, oauth=None):
         self.url = url
         self.username = username
         self.password = password
@@ -39,9 +39,9 @@ class AtlassianRestAPI(object):
 
     def _create_oauth_session(self, oauth_dict, timeout=60):
         oauth = OAuth1(oauth_dict['consumer_key'],
-            rsa_key=oauth_dict['key_cert'], signature_method=SIGNATURE_RSA,
-            resource_owner_key=oauth_dict['access_token'],
-            resource_owner_secret=oauth_dict['access_token_secret'])
+                       rsa_key=oauth_dict['key_cert'], signature_method=SIGNATURE_RSA,
+                       resource_owner_key=oauth_dict['access_token'],
+                       resource_owner_secret=oauth_dict['access_token_secret'])
         self._session.auth = oauth
 
     def log_curl_debug(self, method, path, data=None, headers=None, level=logging.DEBUG):
