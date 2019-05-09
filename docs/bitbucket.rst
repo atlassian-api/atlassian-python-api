@@ -71,6 +71,9 @@ Manage repositories
 
     bitbucket.repo_groups(self, project_key, repo_key, limit=99999, filter_str=None)
 
+    # Grant repository permission to an specific user
+    bitbucket.repo_grant_user_permissions(project_key, repo_key, username, permission)
+
 Groups and admins
 -----------------
 
