@@ -775,6 +775,7 @@ class Confluence(AtlassianRestAPI):
         :param url: URL to initiate PDF export
         :return: Download url for PDF file
         """
+        download_url = None
         try:
             long_running_task = True
             headers = self.form_token_headers
@@ -784,24 +785,25 @@ class Confluence(AtlassianRestAPI):
             task_id = response_string.split('name="ajs-taskId" content="')[1].split('">')[0]
             poll_url = 'runningtaskxml.action?taskId={0}'.format(task_id)
             while long_running_task:
-                longrunning_task_response = self.get(poll_url, headers=headers, not_json_response=True)
-                longrunning_task_response_parts = longrunning_task_response.decode(encoding='utf-8', errors='strict').split('\n')
-                percentage_complete = longrunning_task_response_parts[6].strip()
-                is_successful = longrunning_task_response_parts[7].strip()
-                is_complete = longrunning_task_response_parts[8].strip()
+                long_running_task_response = self.get(poll_url, headers=headers, not_json_response=True)
+                long_running_task_response_parts = long_running_task_response.decode(encoding='utf-8', errors='strict').split('\n')
+                percentage_complete = long_running_task_response_parts[6].strip()
+                is_successful = long_running_task_response_parts[7].strip()
+                is_complete = long_running_task_response_parts[8].strip()
                 log.info('Sleep for 5s.')
                 time.sleep(5)
                 log.info('Check if export task has completed.')
-                if is_successful == '<isSuccessful>true</isSuccessful>' and is_complete == '<isComplete>true</isComplete>':
-                    log.info(percentage_complete)
-                    log.info('Downloading content...')
-                    log.debug('Extract taskId and download PDF.')
-                    current_status = longrunning_task_response_parts[3]
-                    download_url = current_status.split('href=&quot;/wiki/')[1].split('&quot')[0]
-                    long_running_task = False
-                elif is_successful == '<isSuccessful>false</isSuccessful>' and is_complete == '<isComplete>true</isComplete>':
-                    log.error('PDF conversion not successful.')
-                    return None
+                if is_complete == '<isComplete>true</isComplete>':
+                    if is_successful == '<isSuccessful>true</isSuccessful>':
+                        log.info(percentage_complete)
+                        log.info('Downloading content...')
+                        log.debug('Extract taskId and download PDF.')
+                        current_status = long_running_task_response_parts[3]
+                        download_url = current_status.split('href=&quot;/wiki/')[1].split('&quot')[0]
+                        long_running_task = False
+                    elif is_successful == '<isSuccessful>false</isSuccessful>':
+                        log.error('PDF conversion not successful.')
+                        return None
                 else:
                     log.info(percentage_complete)
         except IndexError as e:

@@ -95,7 +95,7 @@ class Bitbucket(AtlassianRestAPI):
         """
         Grant the specified project permission to an specific user
         :param project_key: project key involved
-        :param user: user name to be granted
+        :param username: user name to be granted
         :param permission: the project permissions available are 'PROJECT_ADMIN', 'PROJECT_WRITE' and 'PROJECT_READ'
         :return: 
         """
