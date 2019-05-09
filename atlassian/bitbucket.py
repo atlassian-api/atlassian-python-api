@@ -105,7 +105,7 @@ class Bitbucket(AtlassianRestAPI):
             username=username)
         return self.put(url)
 
-        def repo_grant_user_permissions(self, project_key, repo_key, username, permission):
+    def repo_grant_user_permissions(self, project_key, repo_key, username, permission):
         """
         Grant the specified repository permission to an specific user
         :param project_key: project key involved
