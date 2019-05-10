@@ -28,7 +28,9 @@ setup(
     zip_safe=False,
     install_requires=[
         'requests',
-        'six'
+        'six',
+        'oauthlib',
+        'requests_oauthlib'
     ],
     platforms='Platform Independent',
 
