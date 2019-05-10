@@ -60,8 +60,8 @@ class AtlassianRestAPI(object):
             url_link += '/'
         return url_link
 
-    def request(self, method='GET', path='/', data=None, flags=None, params=None, headers=None, files=None,
-                trailing=None):
+    def request(self, method='GET', path='/', data=None, flags=None, params=None, headers=None,
+                files=None, trailing=None):
         """
 
         :param method:
@@ -96,32 +96,6 @@ class AtlassianRestAPI(object):
             verify=self.verify_ssl,
             files=files
         )
-        try:
-            if response.text:
-                response_content = response.json()
-            else:
-                response_content = response.content
-        except ValueError:
-            response_content = response.content
-        if response.status_code == 200:
-            log.debug('Received: {0}\n {1}'.format(response.status_code, response_content))
-        elif response.status_code == 201:
-            log.debug('Received: {0}\n "Created" response'.format(response.status_code))
-        elif response.status_code == 204:
-            log.debug('Received: {0}\n "No Content" response'.format(response.status_code))
-        elif response.status_code == 401:
-            log.error('Received: {0}\n "UNAUTHORIZED" response'.format(response.status_code))
-        elif response.status_code == 404:
-            log.error('Received: {0}\n Not Found'.format(response.status_code))
-        else:
-            log.debug('Received: {0}\n {1}'.format(response.status_code, response))
-            self.log_curl_debug(method=method, path=path, headers=headers, data=data, level=logging.DEBUG)
-            log.error(response_content)
-            try:
-                response.raise_for_status()
-            except requests.exceptions.HTTPError as err:
-                log.error("HTTP Error occurred")
-                log.error('Response is: {content}'.format(content=err.response.content))
         return response
 
     def get(self, path, data=None, flags=None, params=None, headers=None, not_json_response=None):
@@ -147,14 +121,15 @@ class AtlassianRestAPI(object):
 
     def post(self, path, data=None, headers=None, files=None, params=None):
         try:
-            return self.request('POST', path=path, data=data, headers=headers, files=files, params=params).json()
+            return self.request('POST', path=path, data=data, headers=headers, files=files,
+                                params=params)
         except ValueError:
             log.debug('Received response with no content')
             return None
 
     def put(self, path, data=None, headers=None, files=None):
         try:
-            return self.request('PUT', path=path, data=data, headers=headers, files=files).json()
+            return self.request('PUT', path=path, data=data, headers=headers, files=files)
         except ValueError:
             log.debug('Received response with no content')
             return None
