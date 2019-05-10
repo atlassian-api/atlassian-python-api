@@ -44,26 +44,51 @@ class AtlassianRestAPI(object):
                        resource_owner_secret=oauth_dict['access_token_secret'])
         self._session.auth = oauth
 
-    def log_curl_debug(self, method, path, data=None, headers=None, level=logging.DEBUG):
+    def log_curl_debug(self, method, path, data=None, headers=None, trailing=None, level=logging.DEBUG):
+        """
+
+        :param method:
+        :param path:
+        :param data:
+        :param headers:
+        :param trailing: bool flag for trailing /
+        :param level:
+        :return:
+        """
         headers = headers or self.default_headers
         message = "curl --silent -X {method} -H {headers} {data} '{url}'".format(
             method=method,
             headers=' -H '.join(["'{0}: {1}'".format(key, value) for key, value in headers.items()]),
             data='' if not data else "--data '{0}'".format(json.dumps(data)),
-            url='{0}'.format(self.url_joiner(self.url, path)))
+            url='{0}'.format(self.url_joiner(self.url, path=path, trailing=trailing)))
         log.log(level=level, msg=message)
 
     def resource_url(self, resource):
         return '/'.join([self.api_root, self.api_version, resource])
 
     @staticmethod
-    def url_joiner(url, path):
+    def url_joiner(url, path, trailing):
         url_link = '/'.join(s.strip('/') for s in [url, path])
+        if trailing:
+            url_link += '/'
         return url_link
 
-    def request(self, method='GET', path='/', data=None, flags=None, params=None, headers=None, files=None):
-        self.log_curl_debug(method=method, path=path, headers=headers, data=data)
-        url = self.url_joiner(self.url, path)
+    def request(self, method='GET', path='/', data=None, flags=None, params=None, headers=None, files=None,
+                trailing=None):
+        """
+
+        :param method:
+        :param path:
+        :param data:
+        :param flags:
+        :param params:
+        :param headers:
+        :param files:
+        :param trailing: bool
+        :return:
+        """
+        self.log_curl_debug(method=method, path=path, headers=headers, data=data, trailing=None)
+        url = self.url_joiner(self.url, path, trailing)
         if params or flags:
             url += '?'
         if params:
@@ -92,8 +117,12 @@ class AtlassianRestAPI(object):
             response_content = response.content
         if response.status_code == 200:
             log.debug('Received: {0}\n {1}'.format(response.status_code, response_content))
+        elif response.status_code == 201:
+            log.debug('Received: {0}\n "Created" response'.format(response.status_code))
         elif response.status_code == 204:
             log.debug('Received: {0}\n "No Content" response'.format(response.status_code))
+        elif response.status_code == 401:
+            log.error('Received: {0}\n "UNAUTHORIZED" response'.format(response.status_code))
         elif response.status_code == 404:
             log.error('Received: {0}\n Not Found'.format(response.status_code))
         else:

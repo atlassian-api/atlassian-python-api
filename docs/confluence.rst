@@ -92,6 +92,10 @@ Page actions
     # automatically version the new file and keep the old one
     confluence.attach_file(filename, page_id=None, title=None, space=None, comment=None)
 
+    # Export page as PDF
+    # api_version needs to be set to 'cloud' when exporting from Confluence Cloud. 
+    confluence.export_page(page_id)
+    
 Get spaces info
 ---------------
 

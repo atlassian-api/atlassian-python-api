@@ -118,6 +118,9 @@ Manage projects
     # Get all assignable users for project
     jira.get_all_assignable_users_for_project(project_key, start=0, limit=50)
 
+    # Update a project
+    jira.update_project(project_key, data, expand='lead,description')
+
 Manage issues
 -------------
 
@@ -171,6 +174,18 @@ Manage issues
 
     # Get issue status
     jira.get_issue_status(issue_key)
+    
+    # Create or Update Issue Links
+    jira.create_or_update_issue_remote_links(issue_key, link_url, title, global_id=None, relationship=None)
+    
+    # Get Issue Link by link ID
+    jira.get_issue_remote_link_by_id(issue_key, link_id)
+    
+    # Update Issue Link by link ID
+    jira.update_issue_remote_link_by_id(issue_key, link_id, url, title, global_id=None, relationship=None)
+    
+    # Delete Issue Links
+    jira.delete_issue_remote_link_by_id(issue_key, link_id)
 
 Attachments actions
 -------------------

@@ -51,7 +51,7 @@ Alternatively OAuth can be used:
         'access_token': 'access_token',
         'access_token_secret': 'access_token_secret',
         'consumer_key': 'consumer_key',
-        'key_cert': key_cert}
+        'key_cert': 'key_cert'}
 
     jira = Jira(
         url='http://localhost:8080',

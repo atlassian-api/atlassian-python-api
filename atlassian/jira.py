@@ -84,7 +84,7 @@ class Jira(AtlassianRestAPI):
         """
         url = 'sr/jira.issueviews:searchrequest-csv-all-fields/temp/SearchRequest.csv?tempMax={limit}&jqlQuery={jql}'.format(
             limit=limit, jql=jql)
-        return self.get(url, not_json_response=True, header={'Accept': 'application/csv'})
+        return self.get(url, not_json_response=True, headers={'Accept': 'application/csv'})
 
     def user(self, username):
         return self.get('rest/api/2/user?username={0}'.format(username))
@@ -155,19 +155,22 @@ class Jira(AtlassianRestAPI):
         }
         return self.post(path=url, data=data, headers=headers)
 
-    def user_find_by_user_string(self, username, start=0, limit=50, include_inactive_users=False):
+    def user_find_by_user_string(self, username, start=0, limit=50, include_inactive_users=False,
+                                 include_active_users=True):
         """
         Fuzzy search using username and display name
-        :param username:
+        :param username: Use '.' to find all users
         :param start: OPTIONAL: The start point of the collection to return. Default: 0.
         :param limit: OPTIONAL: The limit of the number of users to return, this may be restricted by
                 fixed system limits. Default by built-in method: 50
-        :param include_inactive_users:
+        :param include_inactive_users: OPTIONAL: Return users with "active: False"
+        :param include_active_users: OPTIONAL: Return users with "active: True".
         :return:
         """
         url = 'rest/api/2/user/search'
-        url += "?username={username}&includeInactive={include_inactive}&startAt={start}&maxResults={limit}".format(
-            username=username, include_inactive=include_inactive_users, start=start, limit=limit)
+        url += "?username={username}&includeActive={include_active}&includeInactive={include_inactive}&startAt={start}&maxResults={limit}".format(
+            username=username, include_inactive=include_inactive_users, include_active=include_active_users,
+            start=start, limit=limit)
         return self.get(url)
 
     def projects(self, included_archived=None):
@@ -186,6 +189,14 @@ class Jira(AtlassianRestAPI):
 
     def project(self, key):
         return self.get('rest/api/2/project/{0}'.format(key))
+
+    def delete_project(self, key):
+        """
+        DELETE /rest/api/2/project/<project_key>
+        :param key: str
+        :return:
+        """
+        return self.delete('rest/api/2/project/{0}'.format(key))
 
     def get_project_components(self, key):
         """
@@ -289,6 +300,37 @@ class Jira(AtlassianRestAPI):
 
         return self.post(url, data=data)
 
+    def update_project(self, project_key, data, expand=None):
+        """
+        Updates a project.
+        Update project: /rest/api/2/project/{projectIdOrKey}
+
+        :param project_key: project key of project that needs to be updated
+        :param data: dictionary containing the data to be updated
+        :param expand: the parameters to expand
+        """
+        if expand:
+            url = 'rest/api/2/project/{projectIdOrKey}?expand={expand}'.format(projectIdOrKey=project_key,
+                                                                               expand=expand)
+        else:
+            url = 'rest/api/2/project/{projectIdOrKey}'.format(projectIdOrKey=project_key)
+        return self.put(url, data)
+
+    def create_issue_type(self, name, description='', type='standard'):
+        """
+        Create a new issue type
+        :param name:
+        :param description:
+        :param type: standard or sub-task
+        :return:
+        """
+        data = {
+            'name': name,
+            'description': description,
+            'type': type
+        }
+        return self.post('rest/api/2/issuetype', data=data)
+
     def issue(self, key, fields='*all'):
         return self.get('rest/api/2/issue/{0}?fields={1}'.format(key, fields))
 
@@ -342,13 +384,78 @@ class Jira(AtlassianRestAPI):
             params['maxResults'] = limit
         return self.get(url, params=params)
 
-    def get_all_custom_fields(self):
+    def get_all_available_screen_fields(self, screen_id):
+        """
+        Get all available fields by screen id
+        :param screen_id:
+        :return:
+        """
+        url = 'rest/api/2/screens/{}/availableFields'.format(screen_id)
+        return self.get(url)
+
+    def get_screen_tabs(self, screen_id):
+        """
+        Get tabs for the screen id
+        :param screen_id:
+        :return:
+        """
+        url = 'rest/api/2/screens/{}/tabs'.format(screen_id)
+        return self.get(url)
+
+    def get_screen_tab_fields(self, screen_id, tab_id):
+        """
+        Get fields by the tab id and the screen id
+        :param tab_id:
+        :param screen_id:
+        :return:
+        """
+        url = 'rest/api/2/screens/{}/tabs/{}/fields'.format(screen_id, tab_id)
+        return self.get(url)
+
+    def get_all_screen_fields(self, screen_id):
+        """
+        Get all fields by screen id
+        :param screen_id:
+        :return:
+        """
+        screen_tabs = self.get_screen_tabs(screen_id)
+        fields = []
+        for screen_tab in screen_tabs:
+            tab_id = screen_tab['id']
+            if tab_id:
+                tab_fields = self.get_screen_tab_fields(screen_id=screen_id, tab_id=tab_id)
+                fields = fields + tab_fields
+        return fields
+
+    def get_issue_labels(self, issue_key):
+        """
+        Get issue labels.
+        :param issue_key:
+        :return:
+        """
+        url = 'rest/api/2/issue/{issue_key}?fields=labels'.format(issue_key=issue_key)
+        return (self.get(url) or {}).get('fields').get('labels')
+
+    def get_all_fields(self):
         """
         Returns a list of all fields, both System and Custom
         :return: application/jsonContains a full representation of all visible fields in JSON.
         """
         url = 'rest/api/2/field'
         return self.get(url)
+
+    def get_all_custom_fields(self):
+        """
+        Returns a list of all custom fields
+        That method just filtering all fields method
+        :return: application/jsonContains a full representation of all visible fields in JSON.
+        """
+        fields = self.get_all_fields()
+        custom_fields = []
+        for field in fields:
+            if field['custom']:
+                custom_fields.append(field)
+        return custom_fields
 
     def project_leaders(self):
         for project in self.projects():
@@ -557,7 +664,7 @@ class Jira(AtlassianRestAPI):
         Add comment into Jira issue
         :param issue_key:
         :param comment:
-        :param visibility: Optional
+        :param visibility: OPTIONAL
         :return:
         """
         url = 'rest/api/2/issue/{issueIdOrKey}/comment'.format(issueIdOrKey=issue_key)
@@ -581,18 +688,76 @@ class Jira(AtlassianRestAPI):
 
             return self.post(url, headers=headers, files=files)
 
-    def get_issue_remotelinks(self, issue_key, global_id=None):
+    def get_issue_remotelinks(self, issue_key, global_id=None, internal_id=None):
         """
-        Finding all Remote Links on an issue, also with filtering by Global ID
+        Compatibility naming method with get_issue_remote_links()
+        """
+        return self.get_issue_remote_links(issue_key, global_id, internal_id)
+
+    def get_issue_remote_links(self, issue_key, global_id=None, internal_id=None):
+        """
+        Finding all Remote Links on an issue, also with filtering by Global ID and internal ID
         :param issue_key:
         :param global_id: str
+        :param internal_id: str
         :return:
         """
         url = 'rest/api/2/issue/{issue_key}/remotelink'.format(issue_key=issue_key)
         params = {}
         if global_id:
             params['globalId'] = global_id
+        if internal_id:
+            url += '/' + internal_id
         return self.get(url, params=params)
+
+    def create_or_update_issue_remote_links(self, issue_key, link_url, title, global_id=None, relationship=None):
+        """
+        Add Remote Link to Issue, update url if global_id is passed
+        :param issue_key: str
+        :param link_url: str
+        :param title: str
+        :param global_id: str, OPTIONAL:
+        :param relationship: str, OPTIONAL: Default by built-in method: 'Web Link'
+        """
+        url = 'rest/api/2/issue/{issue_key}/remotelink'.format(issue_key=issue_key)
+        data = {'object': {'url': link_url, 'title': title}}
+        if global_id:
+            data['globalId'] = global_id
+        if relationship:
+            data['relationship'] = relationship
+        return self.post(url, data=data)
+
+    def get_issue_remote_link_by_id(self, issue_key, link_id):
+        url = 'rest/api/2/issue/{issue_key}/remotelink/{link_id}'.format(issue_key=issue_key, link_id=link_id)
+        return self.get(url)
+
+    def update_issue_remote_link_by_id(self, issue_key, link_id, url, title, global_id=None, relationship=None):
+        """
+        Update existing Remote Link on Issue
+        :param issue_key: str
+        :param link_id: str
+        :param url: str
+        :param title: str
+        :param global_id: str, OPTIONAL:
+        :param relationship: str, Optional. Default by built-in method: 'Web Link'
+
+        """
+        data = {'object': {'url': url, 'title': title}}
+        if global_id:
+            data['globalId'] = global_id
+        if relationship:
+            data['relationship'] = relationship
+        url = 'rest/api/2/issue/{issue_key}/remotelink/{link_id}'.format(issue_key=issue_key, link_id=link_id)
+        return self.put(url, data=data)
+
+    def delete_issue_remote_link_by_id(self, issue_key, link_id):
+        """
+        Deletes Remote Link on Issue
+        :param issue_key: str
+        :param link_id: str
+        """
+        url = 'rest/api/2/issue/{issue_key}/remotelink/{link_id}'.format(issue_key=issue_key, link_id=link_id)
+        return self.delete(url)
 
     def get_issue_transitions(self, issue_key):
         url = 'rest/api/2/issue/{issue_key}?expand=transitions.fields&fields=status'.format(issue_key=issue_key)
@@ -602,6 +767,10 @@ class Jira(AtlassianRestAPI):
     def get_status_id_from_name(self, status_name):
         url = 'rest/api/2/status/{name}'.format(name=status_name)
         return int((self.get(url) or {}).get('id'))
+
+    def get_status_for_project(self, project_key):
+        url = 'rest/api/2/project/{name}/statuses'.format(name=project_key)
+        return self.get(url)
 
     def get_transition_id_to_status_name(self, issue_key, status_name):
         for transition in self.get_issue_transitions(issue_key):
@@ -712,6 +881,24 @@ class Jira(AtlassianRestAPI):
         log.warning('Deleting component "{component_id}"'.format(component_id=component_id))
         return self.delete('rest/api/2/component/{component_id}'.format(component_id=component_id))
 
+    def get_resolution_by_id(self, resolution_id):
+        """
+        Get Resolution info by id
+        :param resolution_id:
+        :return:
+        """
+        url = 'rest/api/2/resolution/{}'.format(resolution_id)
+        return self.get(url)
+
+    def get_priority_by_id(self, priority_id):
+        """
+        Get Priority info by id
+        :param priority_id:
+        :return:
+        """
+        url = 'rest/api/2/resolution/{}'.format(priority_id)
+        return self.get(url)
+
     def get_all_workflows(self):
         """
         Provide all workflows for application admin
@@ -736,6 +923,14 @@ class Jira(AtlassianRestAPI):
         url = 'rest/api/2/resolution'
         return self.get(url)
 
+    def get_all_priorities(self):
+        """
+        Returns a list of all priorities.
+        :return:
+        """
+        url = 'rest/api/2/priority'
+        return self.get(url)
+
     def get_all_global_project_roles(self):
         """
         Get all the ProjectRoles available in Jira. Currently this list is global.
@@ -756,9 +951,27 @@ class Jira(AtlassianRestAPI):
         headers = {
             'X-Atlassian-Token': 'nocheck'
         }
-        upm_token = self.request(method='GET', path='rest/plugins/1.0/', headers=headers).headers['upm-token']
+        upm_token = self.request(method='GET', path='rest/plugins/1.0/', headers=headers, trailing=True).headers[
+            'upm-token']
         url = 'rest/plugins/1.0/?token={upm_token}'.format(upm_token=upm_token)
         return self.post(url, files=files, headers=headers)
+
+    def check_plugin_manager_status(self):
+        headers = {
+            'X-Atlassian-Token': 'nocheck',
+            'Content-Type': 'application/vnd.atl.plugins.safe.mode.flag+json'
+        }
+        url = 'rest/plugins/latest/safe-mode'
+        return self.request(method='GET', path=url, headers=headers)
+
+    def get_all_permissions(self):
+        """
+        Returns all permissions that are present in the Jira instance -
+        Global, Project and the global ones added by plugins
+        :return:
+        """
+        url = 'rest/api/2/permissions'
+        return self.get(url)
 
     def get_all_permissionschemes(self, expand=None):
         """
@@ -792,6 +1005,27 @@ class Jira(AtlassianRestAPI):
         if expand:
             params['expand'] = expand
         return self.get(url, params=params)
+
+    def set_permissionscheme_grant(self, permission_id, new_permission):
+        """
+        Creates a permission grant in a permission scheme.
+        Example:
+
+        {
+            "holder": {
+                "type": "group",
+                "parameter": "jira-developers"
+            },
+            "permission": "ADMINISTER_PROJECTS"
+        }
+
+        :param permission_id
+        :param new_permission
+        :return:
+        """
+        url = 'rest/api/2/permissionscheme/{schemeID}/permission'.format(schemeID=permission_id)
+
+        return self.post(url, data=new_permission)
 
     """
     #######################################################################
@@ -1005,6 +1239,51 @@ class Jira(AtlassianRestAPI):
             params['maxResults'] = int(limit)
 
         return self.get(url, params=params)
+
+    def get_agile_board(self, board_id):
+        """
+        Get agile board info by id
+        :param board_id:
+        :return:
+        """
+        url = 'rest/agile/1.0/board/{}'.format(str(board_id))
+        return self.get(url)
+
+    def get_agile_board_configuration(self, board_id):
+        """
+        Get the board configuration. The response contains the following fields:
+        id - Id of the board.
+        name - Name of the board.
+        filter - Reference to the filter used by the given board.
+        subQuery (Kanban only) - JQL subquery used by the given board.
+        columnConfig - The column configuration lists the columns for the board,
+             in the order defined in the column configuration. For each column,
+             it shows the issue status mapping as well as the constraint type
+             (Valid values: none, issueCount, issueCountExclSubs) for
+             the min/max number of issues. Note, the last column with statuses
+             mapped to it is treated as the "Done" column, which means that issues
+             in that column will be marked as already completed.
+        estimation (Scrum only) - Contains information about type of estimation used for the board.
+            Valid values: none, issueCount, field. If the estimation type is "field",
+            the Id and display name of the field used for estimation is also returned.
+            Note, estimates for an issue can be updated by a PUT /rest/api/2/issue/{issueIdOrKey}
+            request, however the fields must be on the screen. "timeoriginalestimate" field will never be
+            on the screen, so in order to update it "originalEstimate" in "timetracking" field should be updated.
+        ranking - Contains information about custom field used for ranking in the given board.
+        :param board_id:
+        :return:
+        """
+        url = 'rest/agile/1.0/board/{}/configuration'.format(str(board_id))
+        return self.get(url)
+
+    def delete_agile_board(self, board_id):
+        """
+        Delete agile board by id
+        :param board_id:
+        :return:
+        """
+        url = 'rest/agile/1.0/board/{}'.format(str(board_id))
+        return self.delete(url)
 
     def health_check(self):
         """
