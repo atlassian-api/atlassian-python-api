@@ -279,7 +279,8 @@ class Confluence(AtlassianRestAPI):
             params['status'] = status
         return self.delete(url, params=params)
 
-    def create_page(self, space, title, body, parent_id=None, type='page'):
+    def create_page(self, space, title, body, parent_id=None, type='page',
+                    representation='storage'):
         """
         Create page from scratch
         :param space:
@@ -287,17 +288,20 @@ class Confluence(AtlassianRestAPI):
         :param body:
         :param parent_id:
         :param type:
+        :param representation: OPTIONAL: either Confluence 'storage' or 'wiki' markup format
         :return:
         """
         log.info('Creating {type} "{space}" -> "{title}"'.format(space=space, title=title, type=type))
+        if representation not in ['wiki', 'storage']:
+            raise ValueError("Wrong value for representation, it should be either wiki or storage")
         url = 'rest/api/content/'
         data = {
             'type': type,
             'title': title,
             'space': {'key': space},
-            'body': {'storage': {
+            'body': {representation: {
                 'value': body,
-                'representation': 'storage'}}}
+                'representation': representation}}}
         if parent_id:
             data['ancestors'] = [{'type': type, 'id': parent_id}]
         return self.post(url, data=data)
