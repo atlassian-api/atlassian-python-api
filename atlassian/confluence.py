@@ -330,8 +330,8 @@ class Confluence(AtlassianRestAPI):
         data = {'type': 'comment',
                 'container': {'id': page_id, 'type': 'page', 'status': 'current'},
                 'body': {'storage': {'value': text, 'representation': 'storage'}}}
-        return self.post('rest/api/content/', data=data)    
-    
+        return self.post('rest/api/content/', data=data)
+
     def attach_file(self, filename, page_id=None, title=None, space=None, comment=None):
         """
         Attach (upload) a file to a page, if it exists it will update the
@@ -635,6 +635,28 @@ class Confluence(AtlassianRestAPI):
                                                                   expand=expand)
         return self.get(url)
 
+    def create_space(self, space_key, space_name):
+        """
+        Create space
+        :param space_key:
+        :param space_name:
+        :return:
+        """
+        data = {
+            'key': space_key,
+            'name': space_name
+        }
+        self.post('rest/api/space', data=data)
+
+    def delete_space(self, space_key):
+        """
+        Delete space
+        :param space_key:
+        :return:
+        """
+        url = 'rest/api/space/{}'.format(space_key)
+        return self.delete(url)
+
     def get_user_details_by_username(self, username, expand=None):
         """
         Get information about a user through username
@@ -710,7 +732,7 @@ class Confluence(AtlassianRestAPI):
             url = self.get_pdf_download_url_for_confluence_cloud(url)
 
         return self.get(url, headers=headers, not_json_response=True)
-        
+
     def export_page(self, page_id):
         """
         Alias method for export page as pdf
@@ -790,7 +812,8 @@ class Confluence(AtlassianRestAPI):
             poll_url = 'runningtaskxml.action?taskId={0}'.format(task_id)
             while long_running_task:
                 long_running_task_response = self.get(poll_url, headers=headers, not_json_response=True)
-                long_running_task_response_parts = long_running_task_response.decode(encoding='utf-8', errors='strict').split('\n')
+                long_running_task_response_parts = long_running_task_response.decode(encoding='utf-8',
+                                                                                     errors='strict').split('\n')
                 percentage_complete = long_running_task_response_parts[6].strip()
                 is_successful = long_running_task_response_parts[7].strip()
                 is_complete = long_running_task_response_parts[8].strip()
@@ -813,5 +836,5 @@ class Confluence(AtlassianRestAPI):
         except IndexError as e:
             log.error(e)
             return None
-        
+
         return download_url
