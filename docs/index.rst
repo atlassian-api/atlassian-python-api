@@ -43,6 +43,32 @@ Add a connection:
         username='admin',
         password='admin')
 
+Alternatively OAuth can be used:
+
+.. code-block:: python
+
+    oauth_dict = {
+        'access_token': 'access_token',
+        'access_token_secret': 'access_token_secret',
+        'consumer_key': 'consumer_key',
+        'key_cert': key_cert}
+
+    jira = Jira(
+        url='http://localhost:8080',
+        oauth=oauth_dict)
+
+    confluence = Confluence(
+        url='http://localhost:8090',
+        oauth=oauth_dict)
+
+    bitbucket = Bitbucket(
+        url='http://localhost:7990',
+        oauth=oauth_dict)
+
+    service_desk = ServiceDesk(
+        url='http://localhost:8080',
+        oauth=oauth_dict)
+
 .. toctree::
    :maxdept:2
 
