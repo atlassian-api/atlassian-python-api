@@ -95,7 +95,7 @@ class Bitbucket(AtlassianRestAPI):
         """
         Grant the specified project permission to an specific user
         :param project_key: project key involved
-        :param user: user name to be granted
+        :param username: user name to be granted
         :param permission: the project permissions available are 'PROJECT_ADMIN', 'PROJECT_WRITE' and 'PROJECT_READ'
         :return: 
         """
@@ -104,13 +104,27 @@ class Bitbucket(AtlassianRestAPI):
             permission=permission,
             username=username)
         return self.put(url)
+    
+    def project_grant_group_permissions(self, project_key, groupname, permission):
+        """
+        Grant the specified project permission to an specific group
+        :param project_key: project key involved
+        :param groupname: group to be granted
+        :param permission: the project permissions available are 'PROJECT_ADMIN', 'PROJECT_WRITE' and 'PROJECT_READ'
+        :return: 
+        """
+        url = 'rest/api/1.0/projects/{project_key}/permissions/groups?permission={permission}&name={groupname}'.format(
+            project_key=project_key,
+            permission=permission,
+            groupname=groupname)
+        return self.put(url)
 
     def repo_grant_user_permissions(self, project_key, repo_key, username, permission):
         """
         Grant the specified repository permission to an specific user
         :param project_key: project key involved
         :param repo_key: repository key involved (slug)
-        :param user: user name to be granted
+        :param username: user name to be granted
         :param permission: the repository permissions available are 'REPO_ADMIN', 'REPO_WRITE' and 'REPO_READ'
         :return: 
         """
@@ -119,6 +133,22 @@ class Bitbucket(AtlassianRestAPI):
             repo_key=repo_key,
             permission=permission,
             username=username)
+        return self.put(url)
+
+    def repo_grant_group_permissions(self, project_key, repo_key, groupname, permission):
+        """
+        Grant the specified repository permission to an specific group
+        :param project_key: project key involved
+        :param repo_key: repository key involved (slug)
+        :param groupname: group to be granted
+        :param permission: the repository permissions available are 'REPO_ADMIN', 'REPO_WRITE' and 'REPO_READ'
+        :return: 
+        """
+        url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/groups?permission={permission}&name={groupname}'.format(
+            project_key=project_key,
+            repo_key=repo_key,
+            permission=permission,
+            groupname=groupname)
         return self.put(url)
 
     def project_groups(self, key, limit=99999, filter_str=None):
