@@ -384,14 +384,48 @@ class Jira(AtlassianRestAPI):
             params['maxResults'] = limit
         return self.get(url, params=params)
 
-    def get_all_screen_fields(self, screen_id):
+    def get_all_available_screen_fields(self, screen_id):
         """
-        Screen id
+        Get all available fields by screen id
         :param screen_id:
         :return:
         """
         url = 'rest/api/2/screens/{}/availableFields'.format(screen_id)
         return self.get(url)
+
+    def get_screen_tabs(self, screen_id):
+        """
+        Get tabs for the screen id
+        :param screen_id:
+        :return:
+        """
+        url = 'rest/api/2/screens/{}/tabs'.format(screen_id)
+        return self.get(url)
+
+    def get_screen_tab_fields(self, screen_id, tab_id):
+        """
+        Get fields by the tab id and the screen id
+        :param tab_id:
+        :param screen_id:
+        :return:
+        """
+        url = 'rest/api/2/screens/{}/tabs/{}/fields'.format(screen_id, tab_id)
+        return self.get(url)
+
+    def get_all_screen_fields(self, screen_id):
+        """
+        Get all fields by screen id
+        :param screen_id:
+        :return:
+        """
+        screen_tabs = self.get_screen_tabs(screen_id)
+        fields = []
+        for screen_tab in screen_tabs:
+            tab_id = screen_tab['id']
+            if tab_id:
+                tab_fields = self.get_screen_tab_fields(screen_id=screen_id, tab_id=tab_id)
+                fields = fields + tab_fields
+        return fields
 
     def get_issue_labels(self, issue_key):
         """
@@ -847,13 +881,22 @@ class Jira(AtlassianRestAPI):
         log.warning('Deleting component "{component_id}"'.format(component_id=component_id))
         return self.delete('rest/api/2/component/{component_id}'.format(component_id=component_id))
 
-    def get_resolution_by_id(self, id):
+    def get_resolution_by_id(self, resolution_id):
         """
         Get Resolution info by id
-        :param id:
+        :param resolution_id:
         :return:
         """
-        url = 'rest/api/2/resolution/{}'.format(id)
+        url = 'rest/api/2/resolution/{}'.format(resolution_id)
+        return self.get(url)
+
+    def get_priority_by_id(self, priority_id):
+        """
+        Get Priority info by id
+        :param priority_id:
+        :return:
+        """
+        url = 'rest/api/2/resolution/{}'.format(priority_id)
         return self.get(url)
 
     def get_all_workflows(self):
@@ -878,6 +921,14 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         url = 'rest/api/2/resolution'
+        return self.get(url)
+
+    def get_all_priorities(self):
+        """
+        Returns a list of all priorities.
+        :return:
+        """
+        url = 'rest/api/2/priority'
         return self.get(url)
 
     def get_all_global_project_roles(self):
