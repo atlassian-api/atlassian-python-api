@@ -33,6 +33,9 @@ Manage projects
     # Grant project permission to an specific user
     bitbucket.project_grant_user_permissions(project_key, username, permission)
 
+    # Grant project permission to an specific group
+    bitbucket.project_grant_group_permissions(project_key, groupname, permission)
+
 Manage repositories
 ---------------
 
@@ -73,6 +76,9 @@ Manage repositories
 
     # Grant repository permission to an specific user
     bitbucket.repo_grant_user_permissions(project_key, repo_key, username, permission)
+
+    # Grant repository permission to an specific group
+    bitbucket.repo_grant_group_permissions(project_key, repo_key, groupname, permission)
 
 Groups and admins
 -----------------
