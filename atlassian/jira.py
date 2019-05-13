@@ -168,10 +168,13 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         url = 'rest/api/2/user/search'
-        url += "?username={username}&includeActive={include_active}&includeInactive={include_inactive}&startAt={start}&maxResults={limit}".format(
-            username=username, include_inactive=include_inactive_users, include_active=include_active_users,
-            start=start, limit=limit)
-        return self.get(url)
+        params = {'username': username,
+                  'includeActive': include_active_users,
+                  'includeInactive': include_inactive_users,
+                  'startAt': start,
+                  'maxResults': limit
+                  }
+        return self.get(url, params=params)
 
     def projects(self, included_archived=None):
         """Returns all projects which are visible for the currently logged in user.
