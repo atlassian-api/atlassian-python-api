@@ -3,6 +3,7 @@ from .rest_client import AtlassianRestAPI
 from requests import HTTPError
 import logging
 import os
+import time
 
 log = logging.getLogger(__name__)
 
@@ -278,7 +279,8 @@ class Confluence(AtlassianRestAPI):
             params['status'] = status
         return self.delete(url, params=params)
 
-    def create_page(self, space, title, body, parent_id=None, type='page'):
+    def create_page(self, space, title, body, parent_id=None, type='page',
+                    representation='storage'):
         """
         Create page from scratch
         :param space:
@@ -286,17 +288,20 @@ class Confluence(AtlassianRestAPI):
         :param body:
         :param parent_id:
         :param type:
+        :param representation: OPTIONAL: either Confluence 'storage' or 'wiki' markup format
         :return:
         """
         log.info('Creating {type} "{space}" -> "{title}"'.format(space=space, title=title, type=type))
+        if representation not in ['wiki', 'storage']:
+            raise ValueError("Wrong value for representation, it should be either wiki or storage")
         url = 'rest/api/content/'
         data = {
             'type': type,
             'title': title,
             'space': {'key': space},
-            'body': {'storage': {
+            'body': {representation: {
                 'value': body,
-                'representation': 'storage'}}}
+                'representation': representation}}}
         if parent_id:
             data['ancestors'] = [{'type': type, 'id': parent_id}]
         return self.post(url, data=data)
@@ -325,8 +330,8 @@ class Confluence(AtlassianRestAPI):
         data = {'type': 'comment',
                 'container': {'id': page_id, 'type': 'page', 'status': 'current'},
                 'body': {'storage': {'value': text, 'representation': 'storage'}}}
-        return self.post('rest/api/content/', data=data)    
-    
+        return self.post('rest/api/content/', data=data)
+
     def attach_file(self, filename, page_id=None, title=None, space=None, comment=None):
         """
         Attach (upload) a file to a page, if it exists it will update the
@@ -630,6 +635,28 @@ class Confluence(AtlassianRestAPI):
                                                                   expand=expand)
         return self.get(url)
 
+    def create_space(self, space_key, space_name):
+        """
+        Create space
+        :param space_key:
+        :param space_name:
+        :return:
+        """
+        data = {
+            'key': space_key,
+            'name': space_name
+        }
+        self.post('rest/api/space', data=data)
+
+    def delete_space(self, space_key):
+        """
+        Delete space
+        :param space_key:
+        :return:
+        """
+        url = 'rest/api/space/{}'.format(space_key)
+        return self.delete(url)
+
     def get_user_details_by_username(self, username, expand=None):
         """
         Get information about a user through username
@@ -701,6 +728,9 @@ class Confluence(AtlassianRestAPI):
         """
         headers = self.form_token_headers
         url = 'spaces/flyingpdf/pdfpageexport.action?pageId={pageId}'.format(pageId=page_id)
+        if self.api_version == 'cloud':
+            url = self.get_pdf_download_url_for_confluence_cloud(url)
+
         return self.get(url, headers=headers, not_json_response=True)
 
     def export_page(self, page_id):
@@ -761,3 +791,50 @@ class Confluence(AtlassianRestAPI):
             response = self.get('rest/supportHealthCheck/1.0/check/')
         return response
 
+    def get_pdf_download_url_for_confluence_cloud(self, url):
+        """
+        Confluence cloud does not return the PDF document when the PDF
+        export is initiated. Instead it starts a process in the background 
+        and provides a link to download the PDF once the process completes.
+        This functions polls the long running task page and returns the
+        download url of the PDF.
+        :param url: URL to initiate PDF export
+        :return: Download url for PDF file
+        """
+        download_url = None
+        try:
+            long_running_task = True
+            headers = self.form_token_headers
+            log.info('Initiate PDF export from Confluence Cloud')
+            response = self.get(url, headers=headers, not_json_response=True)
+            response_string = response.decode(encoding='utf-8', errors='strict')
+            task_id = response_string.split('name="ajs-taskId" content="')[1].split('">')[0]
+            poll_url = 'runningtaskxml.action?taskId={0}'.format(task_id)
+            while long_running_task:
+                long_running_task_response = self.get(poll_url, headers=headers, not_json_response=True)
+                long_running_task_response_parts = long_running_task_response.decode(encoding='utf-8',
+                                                                                     errors='strict').split('\n')
+                percentage_complete = long_running_task_response_parts[6].strip()
+                is_successful = long_running_task_response_parts[7].strip()
+                is_complete = long_running_task_response_parts[8].strip()
+                log.info('Sleep for 5s.')
+                time.sleep(5)
+                log.info('Check if export task has completed.')
+                if is_complete == '<isComplete>true</isComplete>':
+                    if is_successful == '<isSuccessful>true</isSuccessful>':
+                        log.info(percentage_complete)
+                        log.info('Downloading content...')
+                        log.debug('Extract taskId and download PDF.')
+                        current_status = long_running_task_response_parts[3]
+                        download_url = current_status.split('href=&quot;/wiki/')[1].split('&quot')[0]
+                        long_running_task = False
+                    elif is_successful == '<isSuccessful>false</isSuccessful>':
+                        log.error('PDF conversion not successful.')
+                        return None
+                else:
+                    log.info(percentage_complete)
+        except IndexError as e:
+            log.error(e)
+            return None
+
+        return download_url

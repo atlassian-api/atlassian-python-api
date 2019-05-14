@@ -118,6 +118,9 @@ Manage projects
     # Get all assignable users for project
     jira.get_all_assignable_users_for_project(project_key, start=0, limit=50)
 
+    # Update a project
+    jira.update_project(project_key, data, expand='lead,description')
+
 Manage issues
 -------------
 

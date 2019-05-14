@@ -91,6 +91,66 @@ class Bitbucket(AtlassianRestAPI):
                 project_administrators.append(user)
         return project_administrators
 
+    def project_grant_user_permissions(self, project_key, username, permission):
+        """
+        Grant the specified project permission to an specific user
+        :param project_key: project key involved
+        :param username: user name to be granted
+        :param permission: the project permissions available are 'PROJECT_ADMIN', 'PROJECT_WRITE' and 'PROJECT_READ'
+        :return: 
+        """
+        url = 'rest/api/1.0/projects/{project_key}/permissions/users?permission={permission}&name={username}'.format(
+            project_key=project_key,
+            permission=permission,
+            username=username)
+        return self.put(url)
+    
+    def project_grant_group_permissions(self, project_key, groupname, permission):
+        """
+        Grant the specified project permission to an specific group
+        :param project_key: project key involved
+        :param groupname: group to be granted
+        :param permission: the project permissions available are 'PROJECT_ADMIN', 'PROJECT_WRITE' and 'PROJECT_READ'
+        :return: 
+        """
+        url = 'rest/api/1.0/projects/{project_key}/permissions/groups?permission={permission}&name={groupname}'.format(
+            project_key=project_key,
+            permission=permission,
+            groupname=groupname)
+        return self.put(url)
+
+    def repo_grant_user_permissions(self, project_key, repo_key, username, permission):
+        """
+        Grant the specified repository permission to an specific user
+        :param project_key: project key involved
+        :param repo_key: repository key involved (slug)
+        :param username: user name to be granted
+        :param permission: the repository permissions available are 'REPO_ADMIN', 'REPO_WRITE' and 'REPO_READ'
+        :return: 
+        """
+        url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/users?permission={permission}&name={username}'.format(
+            project_key=project_key,
+            repo_key=repo_key,
+            permission=permission,
+            username=username)
+        return self.put(url)
+
+    def repo_grant_group_permissions(self, project_key, repo_key, groupname, permission):
+        """
+        Grant the specified repository permission to an specific group
+        :param project_key: project key involved
+        :param repo_key: repository key involved (slug)
+        :param groupname: group to be granted
+        :param permission: the repository permissions available are 'REPO_ADMIN', 'REPO_WRITE' and 'REPO_READ'
+        :return: 
+        """
+        url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/groups?permission={permission}&name={groupname}'.format(
+            project_key=project_key,
+            repo_key=repo_key,
+            permission=permission,
+            groupname=groupname)
+        return self.put(url)
+
     def project_groups(self, key, limit=99999, filter_str=None):
         """
         Get Project Groups
@@ -398,8 +458,7 @@ class Bitbucket(AtlassianRestAPI):
             project=project,
             repository=repository,
             pullRequestId=pull_request_id)
-        params = {}
-        params['start'] = 0
+        params = {'start': 0}
         response = self.get(url, params=params)
         if 'values' not in response:
             return []
@@ -425,8 +484,7 @@ class Bitbucket(AtlassianRestAPI):
             project=project,
             repository=repository,
             pullRequestId=pull_request_id)
-        params = {}
-        params['start'] = 0
+        params = {'start': 0}
         response = self.get(url, params=params)
         if 'values' not in response:
             return []
@@ -450,8 +508,7 @@ class Bitbucket(AtlassianRestAPI):
             project=project,
             repository=repository,
             pullRequestId=pull_request_id)
-        body = {}
-        body['text'] = text
+        body = {'text': text}
         return self.post(url, data=body)
 
     def get_pullrequest(self, project, repository, pull_request_id):
@@ -877,3 +934,42 @@ class Bitbucket(AtlassianRestAPI):
             project=project,
             repository=repository)
         return self.delete(url)
+
+    def get_assignable_users_for_issue(self, issue_key, username=None, start=0, limit=50):
+        """
+                Provide assignable users for issue
+                :param issue_key:
+                :param username: OPTIONAL: Can be used to chaeck if user can be assigned
+                :param start: OPTIONAL: The start point of the collection to return. Default: 0.
+                :param limit: OPTIONAL: The limit of the number of users to return, this may be restricted by
+                        fixed system limits. Default by built-in method: 50
+                :return:
+        """
+        url = 'rest/api/2/user/assignable/search?issueKey={issue_key}&startAt={start}&maxResults={limit}'.format(
+            issue_key=issue_key,
+            start=start,
+            limit=limit)
+        if username:
+            url += '&username={username}'.format(username=username)
+        return self.get(url)
+
+    def get_issue_changelog(self, issue_key):
+        """
+        Get issue related change log
+        :param issue_key:
+        :return:
+        """
+        url = 'rest/api/2/issue/{}?expand=changelog'.format(issue_key)
+        return (self.get(url) or {}).get('changelog')
+
+    def assign_issue(self, issue, assignee=None):
+        """Assign an issue to a user. None will set it to unassigned. -1 will set it to Automatic.
+        :param issue: the issue ID or key to assign
+        :type issue: int or str
+        :param assignee: the user to assign the issue to
+        :type assignee: str
+        :rtype: bool
+        """
+        url = 'rest/api/2/issue/{issue}/assignee'.format(issue=issue)
+        data = {'name': assignee}
+        return self.put(url, data=data)
