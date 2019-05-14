@@ -863,6 +863,20 @@ class Jira(AtlassianRestAPI):
         url = 'rest/api/2/issueLinkType/{issueLinkTypeId}'.format(issueLinkTypeId=issue_link_type_id)
         return self.put(url, data=data)
 
+    def create_filter(self, name, jql, description=None, favourite=False):
+        """
+        :param name: str
+        :param jql: str
+        :param description: str, Optional. Empty string by default
+        :param favourite: bool, Optional. False by default
+        """
+        data = {'jql': jql,
+                'name': name}
+        data['description'] = description if description else ''
+        data['favourite'] = 'true' if favourite else 'false'
+        url = 'rest/api/2/filter'
+        return self.post(url, data=data)
+    
     def component(self, component_id):
         return self.get('rest/api/2/component/{component_id}'.format(component_id=component_id))
 
@@ -1251,6 +1265,32 @@ class Jira(AtlassianRestAPI):
         """
         url = 'rest/agile/1.0/board/{}'.format(str(board_id))
         return self.get(url)
+    
+    def create_agile_board(self, name, type, filter_id, location=None):
+        """
+        Create an agile board
+        :param name: str
+        :param type: str, scrum or kanban
+        :param filter_id: int
+        :param location: dict, Optional. Default is user
+        """
+        data = {'name': name,
+                'type': type,
+                'filterId': filter_id}
+        if location:
+            data['location'] = location
+        else:
+            data['location'] = {'type': 'user'}
+        url = 'rest/agile/1.0/board'
+        return self.post(url, data=data)
+
+    def get_agile_board_by_filter_id(self, filter_id):
+        """
+        Gets an agile board by the filter id
+        :param filter_id: int, str
+        """
+        url = 'rest/agile/1.0/board/filter/{filter_id}'.format(filter_id=filter_id)
+        return self.get(url)
 
     def get_agile_board_configuration(self, board_id):
         """
@@ -1279,6 +1319,13 @@ class Jira(AtlassianRestAPI):
         url = 'rest/agile/1.0/board/{}/configuration'.format(str(board_id))
         return self.get(url)
 
+    def get_issues_for_backlog(self, board_id):
+        """
+        :param board_id: int, str
+        """
+        url = 'rest/agile/1.0/{board_id}/backlog'.format(board_id=board_id)
+        return self.get(url)
+    
     def delete_agile_board(self, board_id):
         """
         Delete agile board by id
