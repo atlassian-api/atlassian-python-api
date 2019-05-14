@@ -1335,6 +1335,14 @@ class Jira(AtlassianRestAPI):
         url = 'rest/agile/1.0/board/{}'.format(str(board_id))
         return self.delete(url)
 
+    def get_agile_board_properties(self, board_id):
+        """
+        Gets a list of all the board properties
+        :param board_id: int, str
+        """
+        url = 'rest/agile/1.0/board/{board_id}/properties'.format(board_id=board_id)
+        return self.get(url)
+    
     def health_check(self):
         """
         Get health status
