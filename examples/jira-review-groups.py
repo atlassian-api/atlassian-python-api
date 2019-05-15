@@ -1,13 +1,9 @@
 from atlassian import Jira
-import configuration
 
-"""Connection to Jira [using python file for storing credentials]"""
 jira = Jira(
-    url=configuration.URL,
-    username=configuration.LOGIN,
-    password=configuration.PASSWORD)
-
-""""""
+    url='http://localhost:8080',
+    username='admin',
+    password='admin')
 
 
 def get_all_users(group, include_inactive=True):
