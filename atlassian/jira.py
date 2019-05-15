@@ -641,6 +641,11 @@ class Jira(AtlassianRestAPI):
         url = 'rest/api/2/issue/{0}'.format(issue_key)
         return self.put(url, data={'fields': fields})
 
+    def issue_add_watcher(self, issue_key, user):
+        log.warning('Adding user {user} to "{issue_key}" watchers'.format(issue_key=issue_key, user=user))
+        data = {'': user}
+        return self.post('/rest/api/2/issue/{issue_key}/watchers'.format(issue_key=issue_key), data=data)
+
     def issue_create(self, fields):
         log.warning('Creating issue "{summary}"'.format(summary=fields['summary']))
         url = 'rest/api/2/issue/'
