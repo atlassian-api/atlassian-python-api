@@ -676,7 +676,7 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         log.warning('Adding user {user} to "{issue_key}" watchers'.format(issue_key=issue_key, user=user))
-        data = {'': user}
+        data = user
         return self.post('rest/api/2/issue/{issue_key}/watchers'.format(issue_key=issue_key), data=data)
 
     def assign_issue(self, issue, assignee=None):
