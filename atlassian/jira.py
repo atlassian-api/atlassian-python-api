@@ -1212,6 +1212,31 @@ class Jira(AtlassianRestAPI):
         url = 'rest/tempo-accounts/1/export'
         return self.get(url, headers=headers, not_json_response=True)
 
+    def tempo_holiday_get_schemes(self):
+        """
+        Provide a holiday scheme
+        :return:
+        """
+        url = 'rest/tempo-core/2/holidayschemes/'
+        return self.get(url)
+
+    def tempo_holiday_get_scheme_members(self, scheme_id):
+        """
+        Provide a holiday scheme
+        :return:
+        """
+        url = 'rest/tempo-core/2/holidayschemes/{}/members'.format(scheme_id)
+        return self.get(url)
+
+    def tempo_holiday_put_into_scheme_member(self, scheme_id, username):
+        """
+        Provide a holiday scheme
+        :return:
+        """
+        url = 'rest/tempo-core/2/holidayschemes/{}/members/{}/'.format(scheme_id, username)
+        data = {'id': scheme_id}
+        return self.put(url, data=data)
+
     """
     #######################################################################
     #   Agile(Formerly Greenhopper) REST API implements                  #
