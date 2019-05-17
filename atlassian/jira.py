@@ -89,6 +89,14 @@ class Jira(AtlassianRestAPI):
     def user(self, username):
         return self.get('rest/api/2/user?username={0}'.format(username))
 
+    def is_active_user(self, username):
+        """
+        Check status of user
+        :param username: 
+        :return:
+        """
+        return self.user(username).get('active')
+
     def user_remove(self, username):
         """
         Remove user from Jira if this user does not have any activity
@@ -1298,7 +1306,7 @@ class Jira(AtlassianRestAPI):
         Provide a holiday scheme
         :return:
         """
-        url = 'rest/tempo-core/2/holidayschemes/{}/members/{}/'.format(scheme_id, username)
+        url = 'rest/tempo-core/2/holidayschemes/{}/member/{}'.format(scheme_id, username)
         data = {'id': scheme_id}
         return self.put(url, data=data)
 

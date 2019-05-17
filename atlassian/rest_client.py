@@ -124,7 +124,7 @@ class AtlassianRestAPI(object):
                 log.error('Response is: {content}'.format(content=err.response.content))
         return response
 
-    def get(self, path, data=None, flags=None, params=None, headers=None, not_json_response=None):
+    def get(self, path, data=None, flags=None, params=None, headers=None, not_json_response=None, trailing=None):
         """
         Get request based on the python-requests module. You can override headers, and also, get not json response
         :param path:
@@ -135,7 +135,8 @@ class AtlassianRestAPI(object):
         :param not_json_response: OPTIONAL: For get content from raw requests packet
         :return:
         """
-        answer = self.request('GET', path=path, flags=flags, params=params, data=data, headers=headers)
+        answer = self.request('GET', path=path, flags=flags, params=params, data=data, headers=headers,
+                              trailing=trailing)
         if not_json_response:
             return answer.content
         else:
@@ -145,25 +146,26 @@ class AtlassianRestAPI(object):
                 log.error(e)
                 return
 
-    def post(self, path, data=None, headers=None, files=None, params=None):
+    def post(self, path, data=None, headers=None, files=None, params=None, trailing=None):
         try:
-            return self.request('POST', path=path, data=data, headers=headers, files=files, params=params).json()
+            return self.request('POST', path=path, data=data, headers=headers, files=files, params=params,
+                                trailing=trailing).json()
         except ValueError:
             log.debug('Received response with no content')
             return None
 
-    def put(self, path, data=None, headers=None, files=None):
+    def put(self, path, data=None, headers=None, files=None, trailing=None):
         try:
-            return self.request('PUT', path=path, data=data, headers=headers, files=files).json()
+            return self.request('PUT', path=path, data=data, headers=headers, files=files, trailing=trailing).json()
         except ValueError:
             log.debug('Received response with no content')
             return None
 
-    def delete(self, path, data=None, headers=None, params=None):
+    def delete(self, path, data=None, headers=None, params=None, trailing=None):
         """
         Deletes resources at given paths.
         :rtype: dict
         :return: Empty dictionary to have consistent interface.
         Some of Atlassian REST resources don't return any content.
         """
-        self.request('DELETE', path=path, data=data, headers=headers, params=params)
+        self.request('DELETE', path=path, data=data, headers=headers, params=params, trailing=trailing)
