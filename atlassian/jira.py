@@ -92,7 +92,7 @@ class Jira(AtlassianRestAPI):
     def is_active_user(self, username):
         """
         Check status of user
-        :param username: 
+        :param username:
         :return:
         """
         return self.user(username).get('active')
@@ -1309,6 +1309,14 @@ class Jira(AtlassianRestAPI):
         url = 'rest/tempo-core/2/holidayschemes/{}/member/{}'.format(scheme_id, username)
         data = {'id': scheme_id}
         return self.put(url, data=data)
+
+    def tempo_timesheets_get_configuration(self):
+        """
+        Provide the configs of timesheets
+        :return:
+        """
+        url = 'rest/tempo-timesheets/3/private/config/'
+        return self.get(url)
 
     """
     #######################################################################
