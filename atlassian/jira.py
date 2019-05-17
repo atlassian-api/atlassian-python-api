@@ -337,6 +337,15 @@ class Jira(AtlassianRestAPI):
     def issue(self, key, fields='*all'):
         return self.get('rest/api/2/issue/{0}?fields={1}'.format(key, fields))
 
+    def get_issue_changelog(self, issue_key):
+        """
+        Get issue related change log
+        :param issue_key:
+        :return:
+        """
+        url = 'rest/api/2/issue/{}?expand=changelog'.format(issue_key)
+        return (self.get(url) or {}).get('changelog')
+
     def issue_add_json_worklog(self, key, worklog):
         """
 
@@ -509,6 +518,24 @@ class Jira(AtlassianRestAPI):
             limit=limit)
         return self.get(url)
 
+    def get_assignable_users_for_issue(self, issue_key, username=None, start=0, limit=50):
+        """
+            Provide assignable users for issue
+            :param issue_key:
+            :param username: OPTIONAL: Can be used to chaeck if user can be assigned
+            :param start: OPTIONAL: The start point of the collection to return. Default: 0.
+            :param limit: OPTIONAL: The limit of the number of users to return, this may be restricted by
+                    fixed system limits. Default by built-in method: 50
+            :return:
+        """
+        url = 'rest/api/2/user/assignable/search?issueKey={issue_key}&startAt={start}&maxResults={limit}'.format(
+            issue_key=issue_key,
+            start=start,
+            limit=limit)
+        if username:
+            url += '&username={username}'.format(username=username)
+        return self.get(url)
+
     def get_groups(self, query=None, exclude=None, limit=20):
         """
         REST endpoint for searching groups in a group picker
@@ -640,6 +667,30 @@ class Jira(AtlassianRestAPI):
         log.warning('Updating issue "{issue_key}" with "{fields}"'.format(issue_key=issue_key, fields=fields))
         url = 'rest/api/2/issue/{0}'.format(issue_key)
         return self.put(url, data={'fields': fields})
+
+    def issue_add_watcher(self, issue_key, user):
+        """
+        Start watching issue
+        :param issue_key:
+        :param user:
+        :return:
+        """
+        log.warning('Adding user {user} to "{issue_key}" watchers'.format(issue_key=issue_key, user=user))
+        data = user
+        return self.post('rest/api/2/issue/{issue_key}/watchers'.format(issue_key=issue_key), data=data)
+
+    def assign_issue(self, issue, assignee=None):
+        """Assign an issue to a user. None will set it to unassigned. -1 will set it to Automatic.
+        :param issue: the issue ID or key to assign
+        :type issue: int or str
+        :param assignee: the user to assign the issue to
+        :type assignee: str
+        :rtype: bool
+        """
+        url = 'rest/api/2/issue/{issue}/assignee'.format(issue=issue)
+        data = {'name': assignee}
+
+        return self.put(url, data=data)
 
     def issue_create(self, fields):
         log.warning('Creating issue "{summary}"'.format(summary=fields['summary']))
@@ -862,6 +913,20 @@ class Jira(AtlassianRestAPI):
         """
         url = 'rest/api/2/issueLinkType/{issueLinkTypeId}'.format(issueLinkTypeId=issue_link_type_id)
         return self.put(url, data=data)
+
+    def create_filter(self, name, jql, description=None, favourite=False):
+        """
+        :param name: str
+        :param jql: str
+        :param description: str, Optional. Empty string by default
+        :param favourite: bool, Optional. False by default
+        """
+        data = {'jql': jql,
+                'name': name}
+        data['description'] = description if description else ''
+        data['favourite'] = 'true' if favourite else 'false'
+        url = 'rest/api/2/filter'
+        return self.post(url, data=data)
 
     def component(self, component_id):
         return self.get('rest/api/2/component/{component_id}'.format(component_id=component_id))
@@ -1277,6 +1342,32 @@ class Jira(AtlassianRestAPI):
         url = 'rest/agile/1.0/board/{}'.format(str(board_id))
         return self.get(url)
 
+    def create_agile_board(self, name, type, filter_id, location=None):
+        """
+        Create an agile board
+        :param name: str
+        :param type: str, scrum or kanban
+        :param filter_id: int
+        :param location: dict, Optional. Default is user
+        """
+        data = {'name': name,
+                'type': type,
+                'filterId': filter_id}
+        if location:
+            data['location'] = location
+        else:
+            data['location'] = {'type': 'user'}
+        url = 'rest/agile/1.0/board'
+        return self.post(url, data=data)
+
+    def get_agile_board_by_filter_id(self, filter_id):
+        """
+        Gets an agile board by the filter id
+        :param filter_id: int, str
+        """
+        url = 'rest/agile/1.0/board/filter/{filter_id}'.format(filter_id=filter_id)
+        return self.get(url)
+
     def get_agile_board_configuration(self, board_id):
         """
         Get the board configuration. The response contains the following fields:
@@ -1304,6 +1395,13 @@ class Jira(AtlassianRestAPI):
         url = 'rest/agile/1.0/board/{}/configuration'.format(str(board_id))
         return self.get(url)
 
+    def get_issues_for_backlog(self, board_id):
+        """
+        :param board_id: int, str
+        """
+        url = 'rest/agile/1.0/{board_id}/backlog'.format(board_id=board_id)
+        return self.get(url)
+
     def delete_agile_board(self, board_id):
         """
         Delete agile board by id
@@ -1312,6 +1410,14 @@ class Jira(AtlassianRestAPI):
         """
         url = 'rest/agile/1.0/board/{}'.format(str(board_id))
         return self.delete(url)
+
+    def get_agile_board_properties(self, board_id):
+        """
+        Gets a list of all the board properties
+        :param board_id: int, str
+        """
+        url = 'rest/agile/1.0/board/{board_id}/properties'.format(board_id=board_id)
+        return self.get(url)
 
     def health_check(self):
         """
