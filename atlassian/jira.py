@@ -89,6 +89,14 @@ class Jira(AtlassianRestAPI):
     def user(self, username):
         return self.get('rest/api/2/user?username={0}'.format(username))
 
+    def is_active_user(self, username):
+        """
+        Check status of user
+        :param username:
+        :return:
+        """
+        return self.user(username).get('active')
+
     def user_remove(self, username):
         """
         Remove user from Jira if this user does not have any activity
@@ -1276,6 +1284,39 @@ class Jira(AtlassianRestAPI):
         headers = self.form_token_headers
         url = 'rest/tempo-accounts/1/export'
         return self.get(url, headers=headers, not_json_response=True)
+
+    def tempo_holiday_get_schemes(self):
+        """
+        Provide a holiday scheme
+        :return:
+        """
+        url = 'rest/tempo-core/2/holidayschemes/'
+        return self.get(url)
+
+    def tempo_holiday_get_scheme_members(self, scheme_id):
+        """
+        Provide a holiday scheme
+        :return:
+        """
+        url = 'rest/tempo-core/2/holidayschemes/{}/members'.format(scheme_id)
+        return self.get(url)
+
+    def tempo_holiday_put_into_scheme_member(self, scheme_id, username):
+        """
+        Provide a holiday scheme
+        :return:
+        """
+        url = 'rest/tempo-core/2/holidayschemes/{}/member/{}'.format(scheme_id, username)
+        data = {'id': scheme_id}
+        return self.put(url, data=data)
+
+    def tempo_timesheets_get_configuration(self):
+        """
+        Provide the configs of timesheets
+        :return:
+        """
+        url = 'rest/tempo-timesheets/3/private/config/'
+        return self.get(url)
 
     """
     #######################################################################
