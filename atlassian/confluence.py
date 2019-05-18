@@ -491,6 +491,46 @@ class Confluence(AtlassianRestAPI):
 
             return self.put('rest/api/content/{0}'.format(page_id), data=data)
 
+    def append_page(self, parent_id, page_id, title, append_body, type='page',
+                    minor_edit=False):
+        """
+        Append body to page if already exist
+        :param parent_id:
+        :param page_id:
+        :param title:
+        :param append_body:
+        :param type:
+        :param minor_edit: Indicates whether to notify watchers about changes.
+            If False then notifications will be sent.
+        :return:
+        """
+        log.info('Updating {type} "{title}"'.format(title=title, type=type))
+
+        if self.is_page_content_is_already_updated(page_id, append_body):
+            return self.get_page_by_id(page_id)
+        else:
+            version = self.history(page_id)['lastUpdated']['number'] + 1
+            previous_body = (self.get_page_by_id(page_id, expand='body.storage').get('body') or {}).get(
+                'storage').get(
+                'value')
+            previous_body = previous_body.replace('&oacute;', u'ó')
+            body = previous_body + append_body
+            data = {
+                'id': page_id,
+                'type': type,
+                'title': title,
+                'body': {'storage': {
+                    'value': body,
+                    'representation': 'storage'}},
+                'version': {'number': version,
+                            'minorEdit': minor_edit}
+            }
+
+            if parent_id:
+                data['ancestors'] = [{'type': 'page', 'id': parent_id}]
+
+            return self.put('rest/api/content/{0}'.format(page_id), data=data)
+
     def update_or_create(self, parent_id, title, body):
         """
         Update page or create a page if it is not exists
