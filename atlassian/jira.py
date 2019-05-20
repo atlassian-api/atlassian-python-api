@@ -489,11 +489,91 @@ class Jira(AtlassianRestAPI):
                 'lead_key': lead['name'],
                 'lead_email': lead['emailAddress']}
 
+    def get_sprint(self, sprint_id):
+        """
+        Returns the sprint for a given sprint Id.
+        The sprint will only be returned if the user can view the board that the sprint was created on,
+        or view at least one of the issues in the sprint.
+        :param sprint_id:
+        :return:
+        """
+        url = 'rest/agile/1.0/sprint/{sprintId}'.format(sprintId=sprint_id)
+        return self.get(url)
+
     def rename_sprint(self, sprint_id, name, start_date, end_date):
+        """
+
+        :param sprint_id:
+        :param name:
+        :param start_date:
+        :param end_date:
+        :return:
+        """
         return self.put('rest/greenhopper/1.0/sprint/{0}'.format(sprint_id), data={
             'name': name,
             'startDate': start_date,
             'endDate': end_date})
+
+    def delete_spint(self, sprint_id):
+        """
+        Deletes a sprint.
+        Once a sprint is deleted, all issues in the sprint will be moved to the backlog.
+        Note, only future sprints can be deleted.
+        :param sprint_id:
+        :return:
+        """
+        return self.delete('rest/agile/1.0/sprint/{sprintId}'.format(sprintId=sprint_id))
+
+    def get_sprint_issues(self, sprint_id, start, limit):
+        """
+        Returns all issues in a sprint, for a given sprint Id.
+        This only includes issues that the user has permission to view.
+        By default, the returned issues are ordered by rank.
+        :param sprint_id:
+        :param start: The starting index of the returned issues.
+                      Base index: 0.
+                      See the 'Pagination' section at the top of this page for more details.
+        :param limit: The maximum number of issues to return per page.
+                      Default: 50.
+                      See the 'Pagination' section at the top of this page for more details.
+                      Note, the total number of issues returned is limited by the property
+                      'jira.search.views.default.max' in your Jira instance.
+                      If you exceed this limit, your results will be truncated.
+        :return:
+        """
+        params = {}
+        if start:
+            params['startAt'] = start
+        if limit:
+            params['maxResults'] = limit
+        url = 'rest/agile/1.0/sprint/{sprintId}/issue'.format(sprintId=sprint_id)
+        return self.get(url, params=params)
+
+    def get_all_sprint(self, board_id, state=None, start=0, limit=50):
+        """
+        Returns all sprints from a board, for a given board Id.
+        This only includes sprints that the user has permission to view.
+        :param board_id:
+        :param state: Filters results to sprints in specified states.
+                      Valid values: future, active, closed.
+                      You can define multiple states separated by commas, e.g. state=active,closed
+        :param start: The starting index of the returned sprints.
+                      Base index: 0.
+                      See the 'Pagination' section at the top of this page for more details.
+        :param limit: The maximum number of sprints to return per page.
+                      Default: 50.
+                      See the 'Pagination' section at the top of this page for more details.
+        :return:
+        """
+        params = {}
+        if start:
+            params['startAt'] = start
+        if limit:
+            params['maxResults'] = limit
+        if state:
+            params['state'] = [state]
+        url = 'rest/agile/1.0/board/{boardId}/sprint'.format(boardId=board_id)
+        return self.get(url, params=params)
 
     def get_project_issuekey_last(self, project):
         jql = 'project = {project} ORDER BY issuekey DESC'.format(project=project)
