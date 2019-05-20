@@ -929,10 +929,8 @@ class Jira(AtlassianRestAPI):
         :param description: str, Optional. Empty string by default
         :param favourite: bool, Optional. False by default
         """
-        data = {'jql': jql,
-                'name': name}
-        data['description'] = description if description else ''
-        data['favourite'] = 'true' if favourite else 'false'
+        data = {'jql': jql, 'name': name, 'description': description if description else '',
+                'favourite': 'true' if favourite else 'false'}
         url = 'rest/api/2/filter'
         return self.post(url, data=data)
 
@@ -956,6 +954,10 @@ class Jira(AtlassianRestAPI):
     def delete_component(self, component_id):
         log.warning('Deleting component "{component_id}"'.format(component_id=component_id))
         return self.delete('rest/api/2/component/{component_id}'.format(component_id=component_id))
+
+    def update_component_lead(self, component_id, lead):
+        data = {'id': component_id, 'leadUserName': lead}
+        return self.put('rest/api/2/component/{component_id}'.format(component_id=component_id), data=data)
 
     def get_resolution_by_id(self, resolution_id):
         """
