@@ -114,8 +114,11 @@ class Confluence(AtlassianRestAPI):
         :param expand: OPTIONAL: expand e.g. history
         :return:
         """
-        url = 'rest/api/content/{page_id}?expand={expand}'.format(page_id=page_id, expand=expand)
-        return self.get(url)
+        params = {}
+        if expand:
+            params = {expand: expand}
+        url = 'rest/api/content/{page_id}'.format(page_id=page_id)
+        return self.get(url, params=params)
 
     def get_page_labels(self, page_id, prefix=None, start=None, limit=None):
         """
