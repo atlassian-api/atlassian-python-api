@@ -165,7 +165,7 @@ class AtlassianRestAPI(object):
                 return answer.json()
             except Exception as e:
                 log.error(e)
-                return
+                return answer.text
 
     def post(self, path, data=None, headers=None, files=None, params=None, trailing=None):
         try:
