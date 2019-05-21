@@ -122,7 +122,7 @@ class AtlassianRestAPI(object):
         elif response.status_code == 204:
             log.debug('Received: {0}\n "No Content" response'.format(response.status_code))
         elif response.status_code == 400:
-            log.error('Received: {0}\n Bad request'.format(response.status_code))
+            log.error('Received: {0}\n Bad request \n'.format(response.status_code, response_content))
         elif response.status_code == 401:
             log.error('Received: {0}\n "UNAUTHORIZED" response'.format(response.status_code))
         elif response.status_code == 404:
@@ -130,7 +130,7 @@ class AtlassianRestAPI(object):
         elif response.status_code == 403:
             log.error('Received: {0}\n Forbidden. Please, check permissions'.format(response.status_code))
         elif response.status_code == 409:
-            log.error('Received: {0}\n Conflict'.format(response.status_code))
+            log.error('Received: {0}\n Conflict \n '.format(response.status_code, response_content))
         elif response.status_code == 413:
             log.error('Received: {0}\n Request entity too large'.format(response.status_code))
         else:
@@ -153,6 +153,7 @@ class AtlassianRestAPI(object):
         :param params:
         :param headers:
         :param not_json_response: OPTIONAL: For get content from raw requests packet
+        :param trailing: OPTIONAL: for wrap slash symbol in the end of string
         :return:
         """
         answer = self.request('GET', path=path, flags=flags, params=params, data=data, headers=headers,

@@ -60,10 +60,8 @@ class ServiceDesk(AtlassianRestAPI):
 
     def get_my_customer_requests(self):
         """ Returning requests where you are the assignee """
-        requests = self.get('rest/servicedeskapi/request')
-        requests_values = requests.get('values')
 
-        return requests_values
+        return (self.get('rest/servicedeskapi/request') or {}).get('values')
 
     def create_customer_request(self, service_desk_id, request_type_id, values_dict, raise_on_behalf_of=None):
         """
@@ -94,8 +92,8 @@ class ServiceDesk(AtlassianRestAPI):
         :param issue_id_or_key: str
         :return: Status name
         """
-        request = self.get('rest/servicedeskapi/request/{}/status'.format(issue_id_or_key)).get('values')
-        status = request[0].get('status')
+        request = (self.get('rest/servicedeskapi/request/{}/status'.format(issue_id_or_key)) or {}).get('values')
+        status = (request[0].get('status') or {})
 
         return status
 
@@ -127,7 +125,7 @@ class ServiceDesk(AtlassianRestAPI):
         if limit is not None:
             params['limit'] = int(limit)
 
-        return self.get(url, params=params).get('values')
+        return (self.get(url, params=params) or {}).get('values')
 
     def add_request_participants(self, issue_id_or_key, users_list):
         """
@@ -431,7 +429,7 @@ class ServiceDesk(AtlassianRestAPI):
         if limit is not None:
             params['limit'] = int(limit)
 
-        return self.get(url, params=params).get('values')
+        return (self.get(url, params=params) or {}).get('values')
 
     def get_sla_by_id(self, issue_id_or_key, sla_id):
         """
@@ -463,7 +461,7 @@ class ServiceDesk(AtlassianRestAPI):
         if limit is not None:
             params['limit'] = int(limit)
 
-        return self.get(url, headers=self.experimental_headers, params=params).get('values')
+        return (self.get(url, headers=self.experimental_headers, params=params) or {}).get('values')
 
     def get_approval_by_id(self, issue_id_or_key, approval_id):
         """
