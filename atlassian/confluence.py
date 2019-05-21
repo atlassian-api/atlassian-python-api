@@ -834,6 +834,32 @@ class Confluence(AtlassianRestAPI):
             response = self.get('rest/supportHealthCheck/1.0/check/')
         return response
 
+    def upload_plugin(self, plugin_path):
+        """
+        Provide plugin path for upload into Jira e.g. useful for auto deploy
+        :param plugin_path:
+        :return:
+        """
+        files = {
+            'plugin': open(plugin_path, 'rb')
+        }
+        headers = {
+            'X-Atlassian-Token': 'nocheck'
+        }
+        upm_token = self.request(method='GET', path='rest/plugins/1.0/', headers=headers, trailing=True).headers[
+            'upm-token']
+        url = 'rest/plugins/1.0/?token={upm_token}'.format(upm_token=upm_token)
+        return self.post(url, files=files, headers=headers)
+
+    def delete_plugin(self, plugin_key):
+        """
+        Delete plugin
+        :param plugin_key:
+        :return:
+        """
+        url = 'rest/plugins/1.0/{}-key'.format(plugin_key)
+        return self.delete(url)
+
     def get_pdf_download_url_for_confluence_cloud(self, url):
         """
         Confluence cloud does not return the PDF document when the PDF

@@ -1028,6 +1028,15 @@ class Jira(AtlassianRestAPI):
         url = 'rest/plugins/1.0/?token={upm_token}'.format(upm_token=upm_token)
         return self.post(url, files=files, headers=headers)
 
+    def delete_plugin(self, plugin_key):
+        """
+        Delete plugin
+        :param plugin_key:
+        :return:
+        """
+        url = 'rest/plugins/1.0/{}-key'.format(plugin_key)
+        return self.delete(url)
+
     def check_plugin_manager_status(self):
         headers = {
             'X-Atlassian-Token': 'nocheck',
