@@ -109,10 +109,18 @@ class AtlassianRestAPI(object):
             log.debug('Received: {0}\n "Created" response'.format(response.status_code))
         elif response.status_code == 204:
             log.debug('Received: {0}\n "No Content" response'.format(response.status_code))
+        elif response.status_code == 400:
+            log.error('Received: {0}\n Bad request'.format(response.status_code))
         elif response.status_code == 401:
             log.error('Received: {0}\n "UNAUTHORIZED" response'.format(response.status_code))
         elif response.status_code == 404:
             log.error('Received: {0}\n Not Found'.format(response.status_code))
+        elif response.status_code == 403:
+            log.error('Received: {0}\n Forbidden. Please, check permissions'.format(response.status_code))
+        elif response.status_code == 409:
+            log.error('Received: {0}\n Conflict'.format(response.status_code))
+        elif response.status_code == 413:
+            log.error('Received: {0}\n Request entity too large'.format(response.status_code))
         else:
             log.debug('Received: {0}\n {1}'.format(response.status_code, response))
             self.log_curl_debug(method=method, path=path, headers=headers, data=data, level=logging.DEBUG)

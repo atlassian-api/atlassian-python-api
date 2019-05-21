@@ -162,3 +162,50 @@ def html_table_from_dict(data, ordering):
         html += html_row_with_ordered_headers(row, ordering)
 
     return html + '\n</tbody></table>'
+
+
+def block_code_macro_confluence(code, lang=None):
+    """
+    Wrap into code block macro
+    :param code:
+    :param lang:
+    :return:
+    """
+    if not lang:
+        lang = ''
+    return ('''\
+                <ac:structured-macro ac:name="code" ac:schema-version="1">
+                    <ac:parameter ac:name="language">{lang}</ac:parameter>
+                    <ac:plain-text-body><![CDATA[{code}]]></ac:plain-text-body>
+                </ac:structured-macro>
+            ''').format(lang=lang, code=code)
+
+
+def html_code__macro_confluence(text):
+    """
+    Wrap into html macro
+    :param text:
+    :return:
+    """
+    return ('''\
+                <ac:structured-macro ac:name="html" ac:schema-version="1">
+                    <ac:plain-text-body><![CDATA[{text}]]></ac:plain-text-body>
+                </ac:structured-macro>
+            ''').format(text=text)
+
+
+def noformat_code_macro_confluence(text, nopanel=None):
+    """
+    Wrap into code block macro
+    :param text:
+    :param nopanel: (bool) True or False Removes the panel around the content.
+    :return:
+    """
+    if not nopanel:
+        nopanel = False
+    return ('''\
+                <ac:structured-macro ac:name="noformat" ac:schema-version="1">
+                    <ac:parameter ac:name="nopanel">{nopanel}</ac:parameter>
+                    <ac:plain-text-body><![CDATA[{text}]]></ac:plain-text-body>
+                </ac:structured-macro>
+            ''').format(nopanel=nopanel, text=text)
