@@ -444,7 +444,11 @@ class Confluence(AtlassianRestAPI):
         :param body: Body for compare it
         :return: True if the same
         """
-        confluence_content = (self.get_page_by_id(page_id, expand='body.storage').get('body') or {}).get('storage').get(
+        confluence_content = self.get_page_by_id(page_id, expand='body.storage')
+        if not confluence_content:
+            log.error('Content of {page_id} is not found'.format(page_id=page_id))
+            return False
+        confluence_content = (confluence_content.get('body') or {}).get('storage').get(
             'value')
         confluence_content = confluence_content.replace('&oacute;', u'ó')
 
