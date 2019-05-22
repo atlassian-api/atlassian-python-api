@@ -17,6 +17,7 @@ class Confluence(AtlassianRestAPI):
         ".pdf": "application/pdf",
         ".doc": "application/msword",
         ".xls": "application/vnd.ms-excel",
+        ".svg": "image/svg+xml"
     }
 
     def page_exists(self, space, title):
@@ -444,12 +445,9 @@ class Confluence(AtlassianRestAPI):
         :param body: Body for compare it
         :return: True if the same
         """
-        confluence_content = self.get_page_by_id(page_id, expand='body.storage')
-        if not confluence_content:
-            log.error('Content of {page_id} is not found'.format(page_id=page_id))
-            return False
-        confluence_content = (confluence_content.get('body') or {}).get('storage').get(
-            'value')
+        confluence_content = (((self.get_page_by_id(page_id, expand='body.storage') or {})
+                              .get('body') or {})
+                              .get('storage') or {}).get('value')
         confluence_content = confluence_content.replace('&oacute;', u'ó')
 
         log.debug('Old Content: """{body}"""'.format(body=confluence_content))
@@ -873,6 +871,25 @@ class Confluence(AtlassianRestAPI):
         """
         url = 'rest/plugins/1.0/{}-key'.format(plugin_key)
         return self.delete(url)
+
+    def check_long_task_result(self, start, limit, expand):
+        """
+        Get result of long tasks
+        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
+        :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
+                            fixed system limits. Default: 50
+        :param expand:
+        :return:
+        """
+        params = {}
+        if expand:
+            params['expand'] = expand
+        if start:
+            params['start'] = start
+        if limit:
+            params['limit'] = limit
+        return self.get('rest/api/longtask', params=params)
+
 
     def get_pdf_download_url_for_confluence_cloud(self, url):
         """

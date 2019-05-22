@@ -67,3 +67,6 @@ All methods based on docs from: https://developer.atlassian.com/docs/
     - https://developer.atlassian.com/platform/marketplace/rest
 9. Crowd:
     - https://developer.atlassian.com/server/crowd/crowd-rest-apis/
+10. Others:
+    - https://developer.atlassian.com/server/jira/platform/oauth/
+    - https://confluence.atlassian.com/cloud/api-tokens-938839638.html
