@@ -3,6 +3,9 @@ import json
 import logging
 from six.moves.urllib.parse import urlencode
 import requests
+from oauthlib.oauth1 import SIGNATURE_RSA
+from requests_oauthlib import OAuth1
+
 
 log = logging.getLogger(__name__)
 
@@ -14,8 +17,7 @@ class AtlassianRestAPI(object):
     form_token_headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
                           'X-Atlassian-Token': 'no-check'}
 
-    def __init__(self, url, username, password, timeout=60, api_root='rest/api', api_version='latest', verify_ssl=True,
-                 session=None):
+    def __init__(self, url, username=None, password=None, timeout=60, api_root='rest/api', api_version='latest', verify_ssl=True, session=None, oauth=None):
         self.url = url
         self.username = username
         self.password = password
@@ -28,7 +30,19 @@ class AtlassianRestAPI(object):
         else:
             self._session = session
         if username and password:
-            self._session.auth = (username, password)
+            self._create_basic_session(username, password)
+        elif oauth is not None:
+            self._create_oauth_session(oauth, timeout)
+
+    def _create_basic_session(self, username, password):
+        self._session.auth = (username, password)
+
+    def _create_oauth_session(self, oauth_dict, timeout=60):
+        oauth = OAuth1(oauth_dict['consumer_key'],
+                       rsa_key=oauth_dict['key_cert'], signature_method=SIGNATURE_RSA,
+                       resource_owner_key=oauth_dict['access_token'],
+                       resource_owner_secret=oauth_dict['access_token_secret'])
+        self._session.auth = oauth
 
     def log_curl_debug(self, method, path, data=None, headers=None, trailing=None, level=logging.DEBUG):
         """
@@ -42,9 +56,8 @@ class AtlassianRestAPI(object):
         :return:
         """
         headers = headers or self.default_headers
-        message = "curl --silent -X {method} -u '{username}':'********' -H {headers} {data} '{url}'".format(
+        message = "curl --silent -X {method} -H {headers} {data} '{url}'".format(
             method=method,
-            username=self.username,
             headers=' -H '.join(["'{0}: {1}'".format(key, value) for key, value in headers.items()]),
             data='' if not data else "--data '{0}'".format(json.dumps(data)),
             url='{0}'.format(self.url_joiner(self.url, path=path, trailing=trailing)))
@@ -91,14 +104,13 @@ class AtlassianRestAPI(object):
             url=url,
             headers=headers,
             data=data,
-            auth=(self.username, self.password),
             timeout=self.timeout,
             verify=self.verify_ssl,
             files=files
         )
         return response
 
-    def get(self, path, data=None, flags=None, params=None, headers=None, not_json_response=None):
+    def get(self, path, data=None, flags=None, params=None, headers=None, not_json_response=None, trailing=None):
         """
         Get request based on the python-requests module. You can override headers, and also, get not json response
         :param path:
@@ -107,9 +119,11 @@ class AtlassianRestAPI(object):
         :param params:
         :param headers:
         :param not_json_response: OPTIONAL: For get content from raw requests packet
+        :param trailing: OPTIONAL: for wrap slash symbol in the end of string
         :return:
         """
-        answer = self.request('GET', path=path, flags=flags, params=params, data=data, headers=headers)
+        answer = self.request('GET', path=path, flags=flags, params=params, data=data, headers=headers,
+                              trailing=trailing)
         if not_json_response:
             return answer.content
         else:
@@ -117,28 +131,29 @@ class AtlassianRestAPI(object):
                 return answer.json()
             except Exception as e:
                 log.error(e)
-                return
+                return answer.text
 
-    def post(self, path, data=None, headers=None, files=None, params=None):
+    def post(self, path, data=None, headers=None, files=None, params=None, trailing=None):
         try:
             return self.request('POST', path=path, data=data, headers=headers, files=files,
-                                params=params)
+                                params=params, trailing=trailing)
         except ValueError:
             log.debug('Received response with no content')
             return None
 
-    def put(self, path, data=None, headers=None, files=None):
+    def put(self, path, data=None, headers=None, files=None, trailing=None):
         try:
-            return self.request('PUT', path=path, data=data, headers=headers, files=files)
+            return self.request('PUT', path=path, data=data, headers=headers, files=files, 
+                                trailing=trailing)
         except ValueError:
             log.debug('Received response with no content')
             return None
 
-    def delete(self, path, data=None, headers=None, params=None):
+    def delete(self, path, data=None, headers=None, params=None, trailing=None):
         """
         Deletes resources at given paths.
         :rtype: dict
         :return: Empty dictionary to have consistent interface.
         Some of Atlassian REST resources don't return any content.
         """
-        self.request('DELETE', path=path, data=data, headers=headers, params=params)
+        self.request('DELETE', path=path, data=data, headers=headers, params=params, trailing=trailing)

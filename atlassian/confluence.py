@@ -17,6 +17,7 @@ class Confluence(AtlassianRestAPI):
         ".pdf": "application/pdf",
         ".doc": "application/msword",
         ".xls": "application/vnd.ms-excel",
+        ".svg": "image/svg+xml"
     }
 
     def page_exists(self, space, title):
@@ -114,8 +115,11 @@ class Confluence(AtlassianRestAPI):
         :param expand: OPTIONAL: expand e.g. history
         :return:
         """
-        url = 'rest/api/content/{page_id}?expand={expand}'.format(page_id=page_id, expand=expand)
-        return self.get(url)
+        params = {}
+        if expand:
+            params = {expand: expand}
+        url = 'rest/api/content/{page_id}'.format(page_id=page_id)
+        return self.get(url, params=params)
 
     def get_page_labels(self, page_id, prefix=None, start=None, limit=None):
         """
@@ -441,8 +445,9 @@ class Confluence(AtlassianRestAPI):
         :param body: Body for compare it
         :return: True if the same
         """
-        confluence_content = (self.get_page_by_id(page_id, expand='body.storage').get('body') or {}).get('storage').get(
-            'value')
+        confluence_content = (((self.get_page_by_id(page_id, expand='body.storage') or {})
+                              .get('body') or {})
+                              .get('storage') or {}).get('value')
         confluence_content = confluence_content.replace('&oacute;', u'ó')
 
         log.debug('Old Content: """{body}"""'.format(body=confluence_content))
@@ -475,6 +480,46 @@ class Confluence(AtlassianRestAPI):
         else:
             version = self.history(page_id)['lastUpdated']['number'] + 1
 
+            data = {
+                'id': page_id,
+                'type': type,
+                'title': title,
+                'body': {'storage': {
+                    'value': body,
+                    'representation': 'storage'}},
+                'version': {'number': version,
+                            'minorEdit': minor_edit}
+            }
+
+            if parent_id:
+                data['ancestors'] = [{'type': 'page', 'id': parent_id}]
+
+            return self.put('rest/api/content/{0}'.format(page_id), data=data)
+
+    def append_page(self, parent_id, page_id, title, append_body, type='page',
+                    minor_edit=False):
+        """
+        Append body to page if already exist
+        :param parent_id:
+        :param page_id:
+        :param title:
+        :param append_body:
+        :param type:
+        :param minor_edit: Indicates whether to notify watchers about changes.
+            If False then notifications will be sent.
+        :return:
+        """
+        log.info('Updating {type} "{title}"'.format(title=title, type=type))
+
+        if self.is_page_content_is_already_updated(page_id, append_body):
+            return self.get_page_by_id(page_id)
+        else:
+            version = self.history(page_id)['lastUpdated']['number'] + 1
+            previous_body = (self.get_page_by_id(page_id, expand='body.storage').get('body') or {}).get(
+                'storage').get(
+                'value')
+            previous_body = previous_body.replace('&oacute;', u'ó')
+            body = previous_body + append_body
             data = {
                 'id': page_id,
                 'type': type,
@@ -790,6 +835,61 @@ class Confluence(AtlassianRestAPI):
             # check as support tools
             response = self.get('rest/supportHealthCheck/1.0/check/')
         return response
+
+    def check_access_mode(self):
+        return self.get("rest/api/accessmode")
+
+    def anonymous(self):
+        """
+        Get information about the how anonymous is represented in confluence
+        :return:
+        """
+        return self.get("rest/api/user/anonymous")
+
+    def upload_plugin(self, plugin_path):
+        """
+        Provide plugin path for upload into Jira e.g. useful for auto deploy
+        :param plugin_path:
+        :return:
+        """
+        files = {
+            'plugin': open(plugin_path, 'rb')
+        }
+        headers = {
+            'X-Atlassian-Token': 'nocheck'
+        }
+        upm_token = self.request(method='GET', path='rest/plugins/1.0/', headers=headers, trailing=True).headers[
+            'upm-token']
+        url = 'rest/plugins/1.0/?token={upm_token}'.format(upm_token=upm_token)
+        return self.post(url, files=files, headers=headers)
+
+    def delete_plugin(self, plugin_key):
+        """
+        Delete plugin
+        :param plugin_key:
+        :return:
+        """
+        url = 'rest/plugins/1.0/{}-key'.format(plugin_key)
+        return self.delete(url)
+
+    def check_long_task_result(self, start, limit, expand):
+        """
+        Get result of long tasks
+        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
+        :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
+                            fixed system limits. Default: 50
+        :param expand:
+        :return:
+        """
+        params = {}
+        if expand:
+            params['expand'] = expand
+        if start:
+            params['start'] = start
+        if limit:
+            params['limit'] = limit
+        return self.get('rest/api/longtask', params=params)
+
 
     def get_pdf_download_url_for_confluence_cloud(self, url):
         """

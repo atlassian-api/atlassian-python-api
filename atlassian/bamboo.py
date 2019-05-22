@@ -311,3 +311,113 @@ class Bamboo(AtlassianRestAPI):
             # check as support tools
             response = self.get('rest/supportHealthCheck/1.0/check/')
         return response
+
+    def get_users_in_global_permissions(self, start=0, limit=25):
+        """
+        Provide users in global permissions configuration
+        :param start:
+        :param limit:
+        :return:
+        """
+        params = {'limit': limit, 'start': start}
+        url = 'rest/api/latest/permissions/global/users'
+        return self.get(url, params=params)
+
+    def get_groups(self, start=0, limit=25):
+        """
+        Retrieve a paginated list of groups.
+        The authenticated user must have restricted administrative permission or higher to use this resource.
+        :param start:
+        :param limit:
+        :return:
+        """
+        params = {'limit': limit, 'start': start}
+        url = 'rest/api/latest/admin/groups'
+        return self.get(url, params=params)
+
+    def create_group(self, group_name):
+        """
+        Create a new group.
+        The authenticated user must have restricted administrative permission or higher to use this resource.
+        :param group_name:
+        :return:
+        """
+        url = 'rest/api/latest/admin/groups'
+        data = {'name': group_name}
+        return self.post(url, data=data)
+
+    def delete_group(self, group_name):
+        """
+        Deletes the specified group, removing it from the system.
+        The authenticated user must have restricted administrative permission or higher to use this resource.
+        :param group_name:
+        :return:
+        """
+        url = 'rest/api/latest/admin/groups/{}'.format(group_name)
+        return self.delete(url)
+
+    def add_users_into_group(self, group_name, users):
+        """
+        Add multiple users to a group.
+        The list of usernames should be passed as request body.
+        The authenticated user must have restricted administrative permission or higher to use this resource.
+        :param group_name:
+        :param users: list
+        :return:
+        """
+        url = 'rest/api/latest/admin/groups/{}/add-users'.format(group_name)
+        return self.post(url, data=users)
+
+    def remove_users_into_group(self, group_name, users):
+        """
+        Remove multiple users from a group.
+        The list of usernames should be passed as request body.
+        The authenticated user must have restricted administrative permission or higher to use this resource.
+        :param group_name:
+        :param users: list
+        :return:
+        """
+        url = 'rest/api/latest/admin/groups/{}/remove-users'.format(group_name)
+        return self.delete(url, data=users)
+
+    def get_users_from_group(self, group_name, filter_users=None, start=0, limit=25):
+        """
+        Retrieves a list of users that are members of a specified group.
+        The authenticated user must have restricted administrative permission or higher to use this resource.
+        :param filter_users:
+        :param group_name:
+        :param start:
+        :param limit:
+        :return:
+        """
+        params = {'limit': limit, 'start': start}
+        if filter_users:
+            params = {'filter': filter_users}
+        url = 'rest/api/latest/admin/groups/{}/more-members'.format(group_name)
+        return self.get(url, params=params)
+
+    def get_users_not_in_group(self, group_name, filter_users='', start=0, limit=25):
+        """
+        Retrieves a list of users that are not members of a specified group.
+        The authenticated user must have restricted administrative permission or higher to use this resource.
+        :param filter_users:
+        :param group_name:
+        :param start:
+        :param limit:
+        :return:
+        """
+        params = {'limit': limit, 'start': start}
+        if filter_users:
+            params = {'filter': filter_users}
+
+        url = 'rest/api/latest/admin/groups/{}/more-non-members'.format(group_name)
+        return self.get(url, params=params)
+
+    def get_build_queue(self, expand='queuedBuilds'):
+        """
+        Lists all the builds waiting in the build queue, adds or removes a build from the build queue.
+        May be used also to resume build on manual stage or rerun failed jobs.
+        :return:
+        """
+        params = {'expand': expand}
+        return self.get('rest/api/latest/queue', params=params)

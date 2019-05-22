@@ -89,6 +89,14 @@ class Jira(AtlassianRestAPI):
     def user(self, username):
         return self.get('rest/api/2/user?username={0}'.format(username))
 
+    def is_active_user(self, username):
+        """
+        Check status of user
+        :param username:
+        :return:
+        """
+        return self.user(username).get('active')
+
     def user_remove(self, username):
         """
         Remove user from Jira if this user does not have any activity
@@ -168,10 +176,13 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         url = 'rest/api/2/user/search'
-        url += "?username={username}&includeActive={include_active}&includeInactive={include_inactive}&startAt={start}&maxResults={limit}".format(
-            username=username, include_inactive=include_inactive_users, include_active=include_active_users,
-            start=start, limit=limit)
-        return self.get(url)
+        params = {'username': username,
+                  'includeActive': include_active_users,
+                  'includeInactive': include_inactive_users,
+                  'startAt': start,
+                  'maxResults': limit
+                  }
+        return self.get(url, params=params)
 
     def projects(self, included_archived=None):
         """Returns all projects which are visible for the currently logged in user.
@@ -334,6 +345,15 @@ class Jira(AtlassianRestAPI):
     def issue(self, key, fields='*all'):
         return self.get('rest/api/2/issue/{0}?fields={1}'.format(key, fields))
 
+    def get_issue_changelog(self, issue_key):
+        """
+        Get issue related change log
+        :param issue_key:
+        :return:
+        """
+        url = 'rest/api/2/issue/{}?expand=changelog'.format(issue_key)
+        return (self.get(url) or {}).get('changelog')
+
     def issue_add_json_worklog(self, key, worklog):
         """
 
@@ -469,12 +489,6 @@ class Jira(AtlassianRestAPI):
                 'lead_key': lead['name'],
                 'lead_email': lead['emailAddress']}
 
-    def rename_sprint(self, sprint_id, name, start_date, end_date):
-        return self.put('rest/greenhopper/1.0/sprint/{0}'.format(sprint_id), data={
-            'name': name,
-            'startDate': start_date,
-            'endDate': end_date})
-
     def get_project_issuekey_last(self, project):
         jql = 'project = {project} ORDER BY issuekey DESC'.format(project=project)
         return (self.jql(jql).get('issues') or {})[0]['key']
@@ -504,6 +518,24 @@ class Jira(AtlassianRestAPI):
             project_key=project_key,
             start=start,
             limit=limit)
+        return self.get(url)
+
+    def get_assignable_users_for_issue(self, issue_key, username=None, start=0, limit=50):
+        """
+            Provide assignable users for issue
+            :param issue_key:
+            :param username: OPTIONAL: Can be used to chaeck if user can be assigned
+            :param start: OPTIONAL: The start point of the collection to return. Default: 0.
+            :param limit: OPTIONAL: The limit of the number of users to return, this may be restricted by
+                    fixed system limits. Default by built-in method: 50
+            :return:
+        """
+        url = 'rest/api/2/user/assignable/search?issueKey={issue_key}&startAt={start}&maxResults={limit}'.format(
+            issue_key=issue_key,
+            start=start,
+            limit=limit)
+        if username:
+            url += '&username={username}'.format(username=username)
         return self.get(url)
 
     def get_groups(self, query=None, exclude=None, limit=20):
@@ -637,6 +669,30 @@ class Jira(AtlassianRestAPI):
         log.warning('Updating issue "{issue_key}" with "{fields}"'.format(issue_key=issue_key, fields=fields))
         url = 'rest/api/2/issue/{0}'.format(issue_key)
         return self.put(url, data={'fields': fields})
+
+    def issue_add_watcher(self, issue_key, user):
+        """
+        Start watching issue
+        :param issue_key:
+        :param user:
+        :return:
+        """
+        log.warning('Adding user {user} to "{issue_key}" watchers'.format(issue_key=issue_key, user=user))
+        data = user
+        return self.post('rest/api/2/issue/{issue_key}/watchers'.format(issue_key=issue_key), data=data)
+
+    def assign_issue(self, issue, assignee=None):
+        """Assign an issue to a user. None will set it to unassigned. -1 will set it to Automatic.
+        :param issue: the issue ID or key to assign
+        :type issue: int or str
+        :param assignee: the user to assign the issue to
+        :type assignee: str
+        :rtype: bool
+        """
+        url = 'rest/api/2/issue/{issue}/assignee'.format(issue=issue)
+        data = {'name': assignee}
+
+        return self.put(url, data=data)
 
     def issue_create(self, fields):
         log.warning('Creating issue "{summary}"'.format(summary=fields['summary']))
@@ -784,6 +840,15 @@ class Jira(AtlassianRestAPI):
         url = 'rest/api/2/issue/{issue_key}/transitions'.format(issue_key=issue_key)
         transition_id = self.get_transition_id_to_status_name(issue_key, status_name)
         return self.post(url, data={'transition': {'id': transition_id}})
+    
+    def set_issue_status_by_id(self, issue_key, transition_id):
+        """
+        Setting status by transition_id
+        :param issue_key: str
+        :param transition_id: int
+        """
+        url = 'rest/api/2/issue/{issue_key}/transitions'.format(issue_key=issue_key)
+        return self.post(url, data={'transition': {'id': transition_id}})
 
     def get_issue_status(self, issue_key):
         url = 'rest/api/2/issue/{issue_key}?fields=status'.format(issue_key=issue_key)
@@ -860,6 +925,18 @@ class Jira(AtlassianRestAPI):
         url = 'rest/api/2/issueLinkType/{issueLinkTypeId}'.format(issueLinkTypeId=issue_link_type_id)
         return self.put(url, data=data)
 
+    def create_filter(self, name, jql, description=None, favourite=False):
+        """
+        :param name: str
+        :param jql: str
+        :param description: str, Optional. Empty string by default
+        :param favourite: bool, Optional. False by default
+        """
+        data = {'jql': jql, 'name': name, 'description': description if description else '',
+                'favourite': 'true' if favourite else 'false'}
+        url = 'rest/api/2/filter'
+        return self.post(url, data=data)
+
     def component(self, component_id):
         return self.get('rest/api/2/component/{component_id}'.format(component_id=component_id))
 
@@ -880,6 +957,10 @@ class Jira(AtlassianRestAPI):
     def delete_component(self, component_id):
         log.warning('Deleting component "{component_id}"'.format(component_id=component_id))
         return self.delete('rest/api/2/component/{component_id}'.format(component_id=component_id))
+
+    def update_component_lead(self, component_id, lead):
+        data = {'id': component_id, 'leadUserName': lead}
+        return self.put('rest/api/2/component/{component_id}'.format(component_id=component_id), data=data)
 
     def get_resolution_by_id(self, resolution_id):
         """
@@ -955,6 +1036,15 @@ class Jira(AtlassianRestAPI):
             'upm-token']
         url = 'rest/plugins/1.0/?token={upm_token}'.format(upm_token=upm_token)
         return self.post(url, files=files, headers=headers)
+
+    def delete_plugin(self, plugin_key):
+        """
+        Delete plugin
+        :param plugin_key:
+        :return:
+        """
+        url = 'rest/plugins/1.0/{}-key'.format(plugin_key)
+        return self.delete(url)
 
     def check_plugin_manager_status(self):
         headers = {
@@ -1209,6 +1299,39 @@ class Jira(AtlassianRestAPI):
         url = 'rest/tempo-accounts/1/export'
         return self.get(url, headers=headers, not_json_response=True)
 
+    def tempo_holiday_get_schemes(self):
+        """
+        Provide a holiday scheme
+        :return:
+        """
+        url = 'rest/tempo-core/2/holidayschemes/'
+        return self.get(url)
+
+    def tempo_holiday_get_scheme_members(self, scheme_id):
+        """
+        Provide a holiday scheme
+        :return:
+        """
+        url = 'rest/tempo-core/2/holidayschemes/{}/members'.format(scheme_id)
+        return self.get(url)
+
+    def tempo_holiday_put_into_scheme_member(self, scheme_id, username):
+        """
+        Provide a holiday scheme
+        :return:
+        """
+        url = 'rest/tempo-core/2/holidayschemes/{}/member/{}'.format(scheme_id, username)
+        data = {'id': scheme_id}
+        return self.put(url, data=data)
+
+    def tempo_timesheets_get_configuration(self):
+        """
+        Provide the configs of timesheets
+        :return:
+        """
+        url = 'rest/tempo-timesheets/3/private/config/'
+        return self.get(url)
+
     """
     #######################################################################
     #   Agile(Formerly Greenhopper) REST API implements                  #
@@ -1249,6 +1372,32 @@ class Jira(AtlassianRestAPI):
         url = 'rest/agile/1.0/board/{}'.format(str(board_id))
         return self.get(url)
 
+    def create_agile_board(self, name, type, filter_id, location=None):
+        """
+        Create an agile board
+        :param name: str
+        :param type: str, scrum or kanban
+        :param filter_id: int
+        :param location: dict, Optional. Default is user
+        """
+        data = {'name': name,
+                'type': type,
+                'filterId': filter_id}
+        if location:
+            data['location'] = location
+        else:
+            data['location'] = {'type': 'user'}
+        url = 'rest/agile/1.0/board'
+        return self.post(url, data=data)
+
+    def get_agile_board_by_filter_id(self, filter_id):
+        """
+        Gets an agile board by the filter id
+        :param filter_id: int, str
+        """
+        url = 'rest/agile/1.0/board/filter/{filter_id}'.format(filter_id=filter_id)
+        return self.get(url)
+
     def get_agile_board_configuration(self, board_id):
         """
         Get the board configuration. The response contains the following fields:
@@ -1276,6 +1425,13 @@ class Jira(AtlassianRestAPI):
         url = 'rest/agile/1.0/board/{}/configuration'.format(str(board_id))
         return self.get(url)
 
+    def get_issues_for_backlog(self, board_id):
+        """
+        :param board_id: int, str
+        """
+        url = 'rest/agile/1.0/{board_id}/backlog'.format(board_id=board_id)
+        return self.get(url)
+
     def delete_agile_board(self, board_id):
         """
         Delete agile board by id
@@ -1284,6 +1440,100 @@ class Jira(AtlassianRestAPI):
         """
         url = 'rest/agile/1.0/board/{}'.format(str(board_id))
         return self.delete(url)
+
+    def get_agile_board_properties(self, board_id):
+        """
+        Gets a list of all the board properties
+        :param board_id: int, str
+        """
+        url = 'rest/agile/1.0/board/{board_id}/properties'.format(board_id=board_id)
+        return self.get(url)
+
+    def get_all_sprint(self, board_id, state=None, start=0, limit=50):
+        """
+        Returns all sprints from a board, for a given board Id.
+        This only includes sprints that the user has permission to view.
+        :param board_id:
+        :param state: Filters results to sprints in specified states.
+                      Valid values: future, active, closed.
+                      You can define multiple states separated by commas, e.g. state=active,closed
+        :param start: The starting index of the returned sprints.
+                      Base index: 0.
+                      See the 'Pagination' section at the top of this page for more details.
+        :param limit: The maximum number of sprints to return per page.
+                      Default: 50.
+                      See the 'Pagination' section at the top of this page for more details.
+        :return:
+        """
+        params = {}
+        if start:
+            params['startAt'] = start
+        if limit:
+            params['maxResults'] = limit
+        if state:
+            params['state'] = [state]
+        url = 'rest/agile/1.0/board/{boardId}/sprint'.format(boardId=board_id)
+        return self.get(url, params=params)
+
+    def get_sprint(self, sprint_id):
+        """
+        Returns the sprint for a given sprint Id.
+        The sprint will only be returned if the user can view the board that the sprint was created on,
+        or view at least one of the issues in the sprint.
+        :param sprint_id:
+        :return:
+        """
+        url = 'rest/agile/1.0/sprint/{sprintId}'.format(sprintId=sprint_id)
+        return self.get(url)
+
+    def rename_sprint(self, sprint_id, name, start_date, end_date):
+        """
+
+        :param sprint_id:
+        :param name:
+        :param start_date:
+        :param end_date:
+        :return:
+        """
+        return self.put('rest/greenhopper/1.0/sprint/{0}'.format(sprint_id), data={
+            'name': name,
+            'startDate': start_date,
+            'endDate': end_date})
+
+    def delete_spint(self, sprint_id):
+        """
+        Deletes a sprint.
+        Once a sprint is deleted, all issues in the sprint will be moved to the backlog.
+        Note, only future sprints can be deleted.
+        :param sprint_id:
+        :return:
+        """
+        return self.delete('rest/agile/1.0/sprint/{sprintId}'.format(sprintId=sprint_id))
+
+    def get_sprint_issues(self, sprint_id, start, limit):
+        """
+        Returns all issues in a sprint, for a given sprint Id.
+        This only includes issues that the user has permission to view.
+        By default, the returned issues are ordered by rank.
+        :param sprint_id:
+        :param start: The starting index of the returned issues.
+                      Base index: 0.
+                      See the 'Pagination' section at the top of this page for more details.
+        :param limit: The maximum number of issues to return per page.
+                      Default: 50.
+                      See the 'Pagination' section at the top of this page for more details.
+                      Note, the total number of issues returned is limited by the property
+                      'jira.search.views.default.max' in your Jira instance.
+                      If you exceed this limit, your results will be truncated.
+        :return:
+        """
+        params = {}
+        if start:
+            params['startAt'] = start
+        if limit:
+            params['maxResults'] = limit
+        url = 'rest/agile/1.0/sprint/{sprintId}/issue'.format(sprintId=sprint_id)
+        return self.get(url, params=params)
 
     def health_check(self):
         """

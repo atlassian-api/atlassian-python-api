@@ -1,2 +1,4 @@
 six
 requests
+oauthlib
+requests_oauthlib
