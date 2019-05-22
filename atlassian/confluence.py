@@ -838,6 +838,16 @@ class Confluence(AtlassianRestAPI):
             response = self.get('rest/supportHealthCheck/1.0/check/')
         return response
 
+    def check_access_mode(self):
+        return self.get("rest/api/accessmode")
+
+    def anonymous(self):
+        """
+        Get information about the how anonymous is represented in confluence
+        :return:
+        """
+        return self.get("rest/api/user/anonymous")
+
     def upload_plugin(self, plugin_path):
         """
         Provide plugin path for upload into Jira e.g. useful for auto deploy
