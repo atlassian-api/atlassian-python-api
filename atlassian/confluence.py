@@ -1,4 +1,5 @@
 # coding: utf8
+from atlassian import utils
 from .rest_client import AtlassianRestAPI
 from requests import HTTPError
 import logging
@@ -450,25 +451,7 @@ class Confluence(AtlassianRestAPI):
                               .get('storage') or {}).get('value')
         if confluence_content:
             # @todo move into utils
-            confluence_content = confluence_content.replace('&Auml;', u'Ä')
-            confluence_content = confluence_content.replace('&auml;', u'ä')
-            confluence_content = confluence_content.replace('&Euml;', u'Ë')
-            confluence_content = confluence_content.replace('&euml;', u'ë')
-            confluence_content = confluence_content.replace('&Iuml;', u'Ï')
-            confluence_content = confluence_content.replace('&iuml;', u'ï')
-            confluence_content = confluence_content.replace('&Ouml;', u'Ö')
-            confluence_content = confluence_content.replace('&ouml;', u'ö')
-            confluence_content = confluence_content.replace('&Uuml;', u'Ü')
-            confluence_content = confluence_content.replace('&uuml;', u'ü')
-            confluence_content = confluence_content.replace('&Aacute;', u'Á')
-            confluence_content = confluence_content.replace('&aacute;', u'á')
-            confluence_content = confluence_content.replace('&Eacute;', u'É')
-            confluence_content = confluence_content.replace('&eacute;', u'é')
-            confluence_content = confluence_content.replace('&Iacute;', u'Í')
-            confluence_content = confluence_content.replace('&iacute;', u'í')
-            confluence_content = confluence_content.replace('&Oacute;', u'Ó')
-            confluence_content = confluence_content.replace('&oacute;', u'ó')
-            confluence_content = confluence_content.replace('&Uacute;', u'Ú')
+            confluence_content = utils.symbol_normalizer(confluence_content)
 
         log.debug('Old Content: """{body}"""'.format(body=confluence_content))
         log.debug('New Content: """{body}"""'.format(body=body))
