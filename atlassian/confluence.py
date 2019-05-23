@@ -556,7 +556,8 @@ class Confluence(AtlassianRestAPI):
             result = self.create_page(space=space, parent_id=parent_id, title=title, body=body)
 
         log.info('You may access your page at: {host}{url}'.format(host=self.url,
-                                                                   url=result['_links']['tinyui']))
+                                                                   url=((result or {})
+                                                                        .get('_links') or {}).get('tinyui')))
         return result
 
     def convert_wiki_to_storage(self, wiki):
@@ -875,7 +876,7 @@ class Confluence(AtlassianRestAPI):
         url = 'rest/plugins/1.0/{}-key'.format(plugin_key)
         return self.delete(url)
 
-    def check_long_task_result(self, start, limit, expand):
+    def check_long_tasks_result(self, start, limit, expand):
         """
         Get result of long tasks
         :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
@@ -892,6 +893,18 @@ class Confluence(AtlassianRestAPI):
         if limit:
             params['limit'] = limit
         return self.get('rest/api/longtask', params=params)
+
+    def check_long_task_result(self, task_id, expand):
+        """
+        Get result of long tasks
+        :param task_id: task id
+        :param expand:
+        :return:
+        """
+        params = None
+        if expand:
+            params = {'expand': expand}
+        return self.get('rest/api/longtask/{}'.format(task_id), params=params)
 
     def get_pdf_download_url_for_confluence_cloud(self, url):
         """
