@@ -115,6 +115,23 @@ class Jira(AtlassianRestAPI):
         url = 'rest/api/2/user?username={0}'.format(username)
         return self.put(url, data=data)
 
+    def user_create(self, us_cr_name, us_cr_email, us_cr_password, us_cr_displayName):
+        log.warning('Creating user...')
+        url = '/rest/api/2/user'
+        data = {'password': us_cr_password,
+                'emailAddress': us_cr_email,
+                'displayName': us_cr_displayName,
+                'name': us_cr_name}
+        return self.post(url, data=data)
+
+    def user_property(self, username):
+        return self.get('/rest/api/2/user/properties?username={0}'.format(username))
+
+    def user_set_property(self, username, key_property, value_property):
+        url = '/rest/api/2/user/properties/{key_property}?username={username}'.format(key_property=key_property, username=username)
+        data = {'Value': value_property}
+        return self.put(url, data=data)
+
     def user_update_email(self, username, email):
         """
         Update user email for new domain changes
@@ -840,7 +857,7 @@ class Jira(AtlassianRestAPI):
         url = 'rest/api/2/issue/{issue_key}/transitions'.format(issue_key=issue_key)
         transition_id = self.get_transition_id_to_status_name(issue_key, status_name)
         return self.post(url, data={'transition': {'id': transition_id}})
-    
+
     def set_issue_status_by_id(self, issue_key, transition_id):
         """
         Setting status by transition_id
