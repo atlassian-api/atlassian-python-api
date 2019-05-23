@@ -381,6 +381,32 @@ class Confluence(AtlassianRestAPI):
             log.warning("No 'page_id' found, not uploading attachments")
             return None
 
+    # @todo prepare more attachments info
+    def get_attachments_from_content(self, page_id, start=0, limit=50, expand=None, filename=None, media_type=None):
+        """
+        Get attachments for page
+        :param page_id:
+        :param start:
+        :param limit:
+        :param expand:
+        :param filename:
+        :param media_type:
+        :return:
+        """
+        params = {}
+        if start:
+            params['start'] = start
+        if limit:
+            params['limit'] = limit
+        if expand:
+            params['expand'] = expand
+        if filename:
+            params['filename'] = filename
+        if media_type:
+            params['mediaType'] = media_type
+        url = 'rest/api/content/{id}/child/attachment'.format(id=page_id, params=params)
+        return self.get(url, params=params)
+
     def set_page_label(self, page_id, label):
         """
         Set a label on the page
