@@ -115,22 +115,56 @@ class Jira(AtlassianRestAPI):
         url = 'rest/api/2/user?username={0}'.format(username)
         return self.put(url, data=data)
 
-    def user_create(self, us_cr_name, us_cr_email, us_cr_password, us_cr_displayName):
-        log.warning('Creating user...')
-        url = '/rest/api/2/user'
-        data = {'password': us_cr_password,
-                'emailAddress': us_cr_email,
-                'displayName': us_cr_displayName,
-                'name': us_cr_name}
-        return self.post(url, data=data)
+    def user_create(self, username, email, password, display_name):
+        """
+        Create a user in Jira
+        :param username:
+        :param email:
+        :param password:
+        :param display_name:
+        :return:
+        """
+        log.warning('Creating user {}'.format(display_name))
+        data = {'password': password,
+                'emailAddress': email,
+                'displayName': display_name,
+                'name': username}
+        return self.post('rest/api/2/user', data=data)
 
-    def user_property(self, username):
-        return self.get('/rest/api/2/user/properties?username={0}'.format(username))
+    def user_properties(self, username):
+        """
+        Get user property
+        :param username:
+        :return:
+        """
+        return self.get('rest/api/2/user/properties?username={}'.format(username))
+
+    def user_property(self, username, key_property):
+        """
+        Get user property
+        :param username:
+        :return:
+        """
+        params = {'username': username}
+        return self.get('rest/api/2/user/properties/{}'.format(key_property), params=params)
 
     def user_set_property(self, username, key_property, value_property):
-        url = '/rest/api/2/user/properties/{key_property}?username={username}'.format(key_property=key_property, username=username)
-        data = {'Value': value_property}
+        """
+        Set property for user
+        :param username:
+        :param key_property:
+        :param value_property:
+        :return:
+        """
+        url = 'rest/api/2/user/properties/{key_property}?username={user_name}'.format(key_property=key_property,
+                                                                                      user_name=username)
+        data = {'value': value_property}
         return self.put(url, data=data)
+
+    def user_delete_property(self, username, key_property):
+        url = 'rest/api/2/user/properties/{}'.format(key_property)
+        params = {'username': username}
+        return self.delete(url, params=params)
 
     def user_update_email(self, username, email):
         """
