@@ -142,6 +142,7 @@ class Jira(AtlassianRestAPI):
     def user_property(self, username, key_property):
         """
         Get user property
+        :param key_property:
         :param username:
         :return:
         """
@@ -162,6 +163,12 @@ class Jira(AtlassianRestAPI):
         return self.put(url, data=data)
 
     def user_delete_property(self, username, key_property):
+        """
+        Delete property for user
+        :param username:
+        :param key_property:
+        :return:
+        """
         url = 'rest/api/2/user/properties/{}'.format(key_property)
         params = {'username': username}
         return self.delete(url, params=params)
