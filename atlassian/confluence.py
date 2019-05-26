@@ -118,7 +118,7 @@ class Confluence(AtlassianRestAPI):
         """
         params = {}
         if expand:
-            params = {expand: expand}
+            params = {'expand': expand}
         url = 'rest/api/content/{page_id}'.format(page_id=page_id)
         return self.get(url, params=params)
 
