@@ -118,7 +118,7 @@ class Confluence(AtlassianRestAPI):
         """
         params = {}
         if expand:
-            params = {expand: expand}
+            params = {'expand': expand}
         url = 'rest/api/content/{page_id}'.format(page_id=page_id)
         return self.get(url, params=params)
 
@@ -381,6 +381,32 @@ class Confluence(AtlassianRestAPI):
             log.warning("No 'page_id' found, not uploading attachments")
             return None
 
+    # @todo prepare more attachments info
+    def get_attachments_from_content(self, page_id, start=0, limit=50, expand=None, filename=None, media_type=None):
+        """
+        Get attachments for page
+        :param page_id:
+        :param start:
+        :param limit:
+        :param expand:
+        :param filename:
+        :param media_type:
+        :return:
+        """
+        params = {}
+        if start:
+            params['start'] = start
+        if limit:
+            params['limit'] = limit
+        if expand:
+            params['expand'] = expand
+        if filename:
+            params['filename'] = filename
+        if media_type:
+            params['mediaType'] = media_type
+        url = 'rest/api/content/{id}/child/attachment'.format(id=page_id, params=params)
+        return self.get(url, params=params)
+
     def set_page_label(self, page_id, label):
         """
         Set a label on the page
@@ -556,7 +582,8 @@ class Confluence(AtlassianRestAPI):
             result = self.create_page(space=space, parent_id=parent_id, title=title, body=body)
 
         log.info('You may access your page at: {host}{url}'.format(host=self.url,
-                                                                   url=result['_links']['tinyui']))
+                                                                   url=((result or {})
+                                                                        .get('_links') or {}).get('tinyui')))
         return result
 
     def convert_wiki_to_storage(self, wiki):
@@ -875,7 +902,7 @@ class Confluence(AtlassianRestAPI):
         url = 'rest/plugins/1.0/{}-key'.format(plugin_key)
         return self.delete(url)
 
-    def check_long_task_result(self, start, limit, expand):
+    def check_long_tasks_result(self, start, limit, expand):
         """
         Get result of long tasks
         :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
@@ -892,6 +919,18 @@ class Confluence(AtlassianRestAPI):
         if limit:
             params['limit'] = limit
         return self.get('rest/api/longtask', params=params)
+
+    def check_long_task_result(self, task_id, expand):
+        """
+        Get result of long tasks
+        :param task_id: task id
+        :param expand:
+        :return:
+        """
+        params = None
+        if expand:
+            params = {'expand': expand}
+        return self.get('rest/api/longtask/{}'.format(task_id), params=params)
 
     def get_pdf_download_url_for_confluence_cloud(self, url):
         """
