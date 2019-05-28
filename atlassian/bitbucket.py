@@ -494,6 +494,48 @@ class Bitbucket(AtlassianRestAPI):
             response = self.get(url, params=params)
             commits_list += (response or {}).get('values')
         return commits_list
+    
+    def open_pull_request(self, source_project, source_repo, dest_project, dest_repo, source, destination, title, description):
+    """
+    Opens a pull request.
+    :param source_project: the project that the PR source is from
+    :param source_repo: the repository that the PR source is from
+    :param source: the branch name of the PR
+    :param dest_project: the project that the PR destination is from
+    :param dest_repo: the repository that the PR destination is from
+    :param destination: where the PR is being merged into
+    :param title: the title of the PR
+    :param description: the description of what the PR does
+    :return:
+    """
+    url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests'.format(
+        project=dest_project,
+        repository=source_repo)
+    body = {
+        'title': title,
+        'description': description,
+        'fromRef': {
+            'id': source,
+            'repository': {
+                'slug': source_repo,
+                'name': source_repo,
+                'project': {
+                    'key': source_project
+                }
+            }
+        },
+        'toRef': {
+            'id': destination,
+            'repository': {
+                'slug': dest_repo,
+                'name': dest_repo,
+                'project': {
+                    'key': dest_project
+                }
+            }
+        }
+    }
+    return self.post(url, data=body)
 
     def add_pull_request_comment(self, project, repository, pull_request_id, text):
         """
