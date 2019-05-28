@@ -1390,6 +1390,25 @@ class Jira(AtlassianRestAPI):
         url = 'rest/tempo-timesheets/3/private/config/'
         return self.get(url)
 
+    def tempo_get_links_to_project(self, project_id):
+        """
+        Gets all links to a specific project
+        :param project_id:
+        :return:
+        """
+        url = 'rest/tempo-accounts/1/link/project/{}/'.format(project_id)
+        return self.get(url)
+
+    def tempo_get_default_link_to_project(self, project_id):
+        """
+        Gets the default link to a specific project
+        :param project_id:
+        :return:
+        """
+        url = 'rest/tempo-accounts/1/link/project/{}/default/'.format(project_id)
+        return self.get(url)
+
+
     """
     #######################################################################
     #   Agile(Formerly Greenhopper) REST API implements                  #

@@ -161,6 +161,8 @@ class AtlassianRestAPI(object):
         if not_json_response:
             return answer.content
         else:
+            if not answer.text:
+                return None
             try:
                 return answer.json()
             except Exception as e:
