@@ -138,3 +138,35 @@ class Jira8(AtlassianRestAPI):
         url = 'rest/api/2/attachment/meta'
 
         return self.get(url)
+
+    # Issues
+    def create_issue(self, fields, update_history=False):
+        """
+        Creates an issue or a sub-task from a JSON representation
+
+        :param fields: JSON data
+        :param update_history: bool (if true then the user's project history is updated)
+        :return:
+        """
+        url = 'rest/api/2/issue'
+        data = {'fields': fields}
+        params = {}
+
+        if update_history is True:
+            params['updateHistory'] = True
+
+        return self.post(url, params=params, data=data)
+
+
+    def create_issues(self, list_of_issues_data):
+        """
+        Creates issues or sub-tasks from a JSON representation
+        Creates many issues in one bulk operation
+
+        :param list_of_issues_data: list of JSON data
+        :return:
+        """
+        url = 'rest/api/2/issue/bulk'
+        data = {'issueUpdates': list_of_issues_data}
+
+        return self.post(url, data=data)
