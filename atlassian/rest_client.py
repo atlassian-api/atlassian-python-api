@@ -1,11 +1,10 @@
-# coding: utf8
+# coding=utf-8
 import json
 import logging
 from six.moves.urllib.parse import urlencode
 import requests
 from oauthlib.oauth1 import SIGNATURE_RSA
 from requests_oauthlib import OAuth1
-
 
 log = logging.getLogger(__name__)
 
@@ -17,7 +16,8 @@ class AtlassianRestAPI(object):
     form_token_headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
                           'X-Atlassian-Token': 'no-check'}
 
-    def __init__(self, url, username=None, password=None, timeout=60, api_root='rest/api', api_version='latest', verify_ssl=True, session=None, oauth=None):
+    def __init__(self, url, username=None, password=None, timeout=60, api_root='rest/api', api_version='latest',
+                 verify_ssl=True, session=None, oauth=None):
         self.url = url
         self.username = username
         self.password = password
@@ -43,6 +43,15 @@ class AtlassianRestAPI(object):
                        resource_owner_key=oauth_dict['access_token'],
                        resource_owner_secret=oauth_dict['access_token_secret'])
         self._session.auth = oauth
+
+    def _update_header(self, key, value):
+        """
+        Update header for exist session
+        :param key:
+        :param value:
+        :return:
+        """
+        self._session.headers.update({key: value})
 
     def log_curl_debug(self, method, path, data=None, headers=None, trailing=None, level=logging.DEBUG):
         """
@@ -129,6 +138,8 @@ class AtlassianRestAPI(object):
             log.error('Received: {0}\n Not Found'.format(response.status_code))
         elif response.status_code == 403:
             log.error('Received: {0}\n Forbidden. Please, check permissions'.format(response.status_code))
+        elif response.status_code == 405:
+            log.error('Received: {0}\n Method not allowed'.format(response.status_code))
         elif response.status_code == 409:
             log.error('Received: {0}\n Conflict \n '.format(response.status_code, response_content))
         elif response.status_code == 413:
@@ -161,6 +172,8 @@ class AtlassianRestAPI(object):
         if not_json_response:
             return answer.content
         else:
+            if not answer.text:
+                return None
             try:
                 return answer.json()
             except Exception as e:

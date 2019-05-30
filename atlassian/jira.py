@@ -1,4 +1,4 @@
-# coding: utf8
+# coding=utf-8
 import logging
 from requests.exceptions import HTTPError
 from .rest_client import AtlassianRestAPI
@@ -1294,6 +1294,18 @@ class Jira(AtlassianRestAPI):
         url = 'rest/tempo-accounts/1/customer'
         return self.get(url, params=params)
 
+    def tempo_account_add_new_customer(self, key, name):
+        """
+        Gets all or some Attribute whose key or name contain a specific substring.
+        Attributes can be a Category or Customer.
+        :param key:
+        :param name:
+        :return: if error will show in error log, like validation unsuccessful. If success will good.
+        """
+        data = {'name': name, 'key': key}
+        url = 'rest/tempo-accounts/1/customer'
+        return self.post(url, data=data)
+
     def tempo_account_add_customer(self, data=None):
         """
         Gets all or some Attribute whose key or name contain a specific substring.
@@ -1388,6 +1400,24 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         url = 'rest/tempo-timesheets/3/private/config/'
+        return self.get(url)
+
+    def tempo_get_links_to_project(self, project_id):
+        """
+        Gets all links to a specific project
+        :param project_id:
+        :return:
+        """
+        url = 'rest/tempo-accounts/1/link/project/{}/'.format(project_id)
+        return self.get(url)
+
+    def tempo_get_default_link_to_project(self, project_id):
+        """
+        Gets the default link to a specific project
+        :param project_id:
+        :return:
+        """
+        url = 'rest/tempo-accounts/1/link/project/{}/default/'.format(project_id)
         return self.get(url)
 
     """

@@ -1,4 +1,4 @@
-# coding: utf8
+# coding=utf-8
 from atlassian import utils
 from .rest_client import AtlassianRestAPI
 from requests import HTTPError
@@ -174,7 +174,7 @@ class Confluence(AtlassianRestAPI):
             params['limit'] = limit
         return (self.get(url, params=params) or {}).get('results')
 
-    def get_all_pages_from_space(self, space, start=0, limit=500, status=None):
+    def get_all_pages_from_space(self, space, start=0, limit=50, status=None):
         """
         Get all pages from space
         :param space:
@@ -381,6 +381,19 @@ class Confluence(AtlassianRestAPI):
             log.warning("No 'page_id' found, not uploading attachments")
             return None
 
+    def delete_attachment(self, page_id, filename, version=None):
+        """
+        Remove completely a file if version is None or delete version
+        :param version:
+        :param page_id: file version
+        :param filename:
+        :return:
+        """
+        params = {'pageId': page_id, 'fileName': filename}
+        if version:
+            params['version'] = version
+        return self.post('json/removeattachment.action', params=params, headers=self.form_token_headers)
+
     # @todo prepare more attachments info
     def get_attachments_from_content(self, page_id, start=0, limit=50, expand=None, filename=None, media_type=None):
         """
@@ -488,6 +501,42 @@ class Confluence(AtlassianRestAPI):
         else:
             log.info('Content of {page_id} differs'.format(page_id=page_id))
             return False
+
+    def update_existing_page(self, page_id, title, body, type='page',
+                             minor_edit=False):
+        """
+        Update page if already exist
+        :param parent_id:
+        :param page_id:
+        :param title:
+        :param body:
+        :param type:
+        :param minor_edit: Indicates whether to notify watchers about changes.
+            If False then notifications will be sent.
+        :return:
+        """
+        log.info('Updating {type} "{title}"'.format(title=title, type=type))
+
+        if self.is_page_content_is_already_updated(page_id, body):
+            return self.get_page_by_id(page_id)
+        else:
+            version = self.history(page_id)['lastUpdated']['number'] + 1
+
+            data = {
+                'id': page_id,
+                'type': type,
+                'title': title,
+                'body': {'storage': {
+                    'value': body,
+                    'representation': 'storage'}},
+                'version': {'number': version,
+                            'minorEdit': minor_edit}
+            }
+
+            # if parent_id:
+            #    data['ancestors'] = [{'type': 'page', 'id': parent_id}]
+
+            return self.put('rest/api/content/{0}'.format(page_id), data=data)
 
     def update_page(self, parent_id, page_id, title, body, type='page',
                     minor_edit=False):
