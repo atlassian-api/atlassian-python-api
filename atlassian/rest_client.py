@@ -17,7 +17,7 @@ class AtlassianRestAPI(object):
                           'X-Atlassian-Token': 'no-check'}
 
     def __init__(self, url, username=None, password=None, timeout=60, api_root='rest/api', api_version='latest',
-                 verify_ssl=True, session=None, oauth=None):
+                 verify_ssl=True, session=None, oauth=None, is_advanced_mode=False):
         self.url = url
         self.username = username
         self.password = password
@@ -25,6 +25,8 @@ class AtlassianRestAPI(object):
         self.verify_ssl = verify_ssl
         self.api_root = api_root
         self.api_version = api_version
+        if is_advanced_mode:
+            self.is_advanced_mode = is_advanced_mode
         if session is None:
             self._session = requests.Session()
         else:
@@ -32,12 +34,12 @@ class AtlassianRestAPI(object):
         if username and password:
             self._create_basic_session(username, password)
         elif oauth is not None:
-            self._create_oauth_session(oauth, timeout)
+            self._create_oauth_session(oauth)
 
     def _create_basic_session(self, username, password):
         self._session.auth = (username, password)
 
-    def _create_oauth_session(self, oauth_dict, timeout=60):
+    def _create_oauth_session(self, oauth_dict):
         oauth = OAuth1(oauth_dict['consumer_key'],
                        rsa_key=oauth_dict['key_cert'], signature_method=SIGNATURE_RSA,
                        resource_owner_key=oauth_dict['access_token'],
