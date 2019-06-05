@@ -17,7 +17,7 @@ class AtlassianRestAPI(object):
                           'X-Atlassian-Token': 'no-check'}
 
     def __init__(self, url, username=None, password=None, timeout=60, api_root='rest/api', api_version='latest',
-                 verify_ssl=True, session=None, oauth=None):
+                 verify_ssl=True, session=None, oauth=None, cookies=None):
         self.url = url
         self.username = username
         self.password = password
@@ -25,6 +25,7 @@ class AtlassianRestAPI(object):
         self.verify_ssl = verify_ssl
         self.api_root = api_root
         self.api_version = api_version
+	self.cookies = cookies
         if session is None:
             self._session = requests.Session()
         else:
@@ -53,7 +54,7 @@ class AtlassianRestAPI(object):
         """
         self._session.headers.update({key: value})
 
-    def log_curl_debug(self, method, path, data=None, headers=None, trailing=None, level=logging.DEBUG):
+    def log_curl_debug(self, method, path, data=None, headers=None, trailing=None, level=logging.DEBUG, cookies=None):
         """
 
         :param method:
@@ -62,6 +63,7 @@ class AtlassianRestAPI(object):
         :param headers:
         :param trailing: bool flag for trailing /
         :param level:
+        :param cookies:
         :return:
         """
         headers = headers or self.default_headers
