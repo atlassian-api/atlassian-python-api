@@ -115,7 +115,7 @@ class Bamboo(AtlassianRestAPI):
                                    start_index=start_index, max_results=max_results,
                                    elements_key='results', element_key='result', label=label, **params)
 
-    def  latest_results(self, expand=None, favourite=False, clover_enabled=False, label=None, issue_key=None,
+    def latest_results(self, expand=None, favourite=False, clover_enabled=False, label=None, issue_key=None,
                        start_index=0, max_results=25):
         """
         Get latest Results
