@@ -115,6 +115,16 @@ class Jira(AtlassianRestAPI):
         url = 'rest/api/2/user?username={0}'.format(username)
         return self.put(url, data=data)
 
+    def user_update_username(self, old_username, new_username):
+        """
+        Update username
+        :param old_username:
+        :param new_username:
+        :return:
+        """
+        data = {"name": new_username}
+        return self.user_update(old_username, data=data)
+
     def user_create(self, username, email, password, display_name):
         """
         Create a user in Jira
@@ -1371,15 +1381,23 @@ class Jira(AtlassianRestAPI):
 
     def tempo_holiday_get_schemes(self):
         """
-        Provide a holiday scheme
+        Provide a holiday schemes
         :return:
         """
         url = 'rest/tempo-core/2/holidayschemes/'
         return self.get(url)
 
-    def tempo_holiday_get_scheme_members(self, scheme_id):
+    def tempo_holiday_get_scheme_info(self, scheme_id):
         """
         Provide a holiday scheme
+        :return:
+        """
+        url = 'rest/tempo-core/2/holidayschemes/{}'.format(scheme_id)
+        return self.get(url)
+
+    def tempo_holiday_get_scheme_members(self, scheme_id):
+        """
+        Provide a holiday scheme members
         :return:
         """
         url = 'rest/tempo-core/2/holidayschemes/{}/members'.format(scheme_id)
@@ -1393,6 +1411,28 @@ class Jira(AtlassianRestAPI):
         url = 'rest/tempo-core/2/holidayschemes/{}/member/{}'.format(scheme_id, username)
         data = {'id': scheme_id}
         return self.put(url, data=data)
+
+    def tempo_holiday_scheme_set_default(self, scheme_id):
+        """
+        Set as default the holiday scheme
+        :param scheme_id:
+        :return:
+        """
+        # @deprecated available in private mode the 1 version
+        # url = 'rest/tempo-core/1/holidayscheme/setDefault/{}'.format(scheme_id)
+
+        url = 'rest/tempo-core/2/holidayscheme/setDefault/{}'.format(scheme_id)
+        data = {'id': scheme_id}
+        return self.post(url, data=data)
+
+    def tempo_workload_scheme_get_members(self, scheme_id):
+        """
+        Provide a workload scheme members
+        :param scheme_id:
+        :return:
+        """
+        url = 'rest/tempo-core/1/workloadscheme/users/{}'.format(scheme_id)
+        return self.get(url)
 
     def tempo_timesheets_get_configuration(self):
         """
