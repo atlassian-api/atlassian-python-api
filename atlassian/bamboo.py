@@ -41,7 +41,7 @@ class Bamboo(AtlassianRestAPI):
                 yield r
             start_index += results['max-result']
 
-    def base_list_call(self, resource, expand, favourite, clover_enabled, max_results, start_index=0, **kwargs):
+    def base_list_call(self, resource, expand, favourite, clover_enabled, max_results, label, start_index=0, **kwargs):
         flags = []
         params = {'max-results': max_results}
         if expand:
@@ -50,6 +50,8 @@ class Bamboo(AtlassianRestAPI):
             flags.append('favourite')
         if clover_enabled:
             flags.append('cloverEnabled')
+        if label:
+            params['label'] = label
         params.update(kwargs)
         if 'elements_key' in kwargs and 'element_key' in kwargs:
             return self._get_generator(self.resource_url(resource), flags=flags, params=params,
@@ -81,7 +83,7 @@ class Bamboo(AtlassianRestAPI):
                                    elements_key='plans', element_key='plan')
 
     def results(self, project_key=None, plan_key=None, job_key=None, build_number=None, expand=None, favourite=False,
-                clover_enabled=False, issue_key=None, start_index=0, max_results=25):
+                clover_enabled=False, issue_key=None, label=None, start_index=0, max_results=25):
         """
         Get results as generic method
         :param project_key:
@@ -111,9 +113,9 @@ class Bamboo(AtlassianRestAPI):
             params['issueKey'] = issue_key
         return self.base_list_call(resource, expand=expand, favourite=favourite, clover_enabled=clover_enabled,
                                    start_index=start_index, max_results=max_results,
-                                   elements_key='results', element_key='result', **params)
+                                   elements_key='results', element_key='result', label=label, **params)
 
-    def latest_results(self, expand=None, favourite=False, clover_enabled=False, label=None, issue_key=None,
+    def  latest_results(self, expand=None, favourite=False, clover_enabled=False, label=None, issue_key=None,
                        start_index=0, max_results=25):
         """
         Get latest Results
