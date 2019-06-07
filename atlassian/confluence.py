@@ -9,6 +9,17 @@ import time
 log = logging.getLogger(__name__)
 
 
+def create_body(body, representation):
+    if representation not in ['wiki', 'storage']:
+        raise ValueError("Wrong value for representation, it should be either wiki or storage")
+
+    return {
+        representation: {
+            'value': body,
+            'representation': representation}
+    }
+
+
 class Confluence(AtlassianRestAPI):
     content_types = {
         ".gif": "image/gif",
@@ -297,16 +308,12 @@ class Confluence(AtlassianRestAPI):
         :return:
         """
         log.info('Creating {type} "{space}" -> "{title}"'.format(space=space, title=title, type=type))
-        if representation not in ['wiki', 'storage']:
-            raise ValueError("Wrong value for representation, it should be either wiki or storage")
         url = 'rest/api/content/'
         data = {
             'type': type,
             'title': title,
             'space': {'key': space},
-            'body': {representation: {
-                'value': body,
-                'representation': representation}}}
+            'body': create_body(body, representation)}
         if parent_id:
             data['ancestors'] = [{'type': type, 'id': parent_id}]
         return self.post(url, data=data)
@@ -334,7 +341,7 @@ class Confluence(AtlassianRestAPI):
         """
         data = {'type': 'comment',
                 'container': {'id': page_id, 'type': 'page', 'status': 'current'},
-                'body': {'storage': {'value': text, 'representation': 'storage'}}}
+                'body': create_body(text, 'storage')}
         return self.post('rest/api/content/', data=data)
 
     def attach_file(self, filename, page_id=None, title=None, space=None, comment=None):
@@ -502,7 +509,7 @@ class Confluence(AtlassianRestAPI):
             log.info('Content of {page_id} differs'.format(page_id=page_id))
             return False
 
-    def update_existing_page(self, page_id, title, body, type='page',
+    def update_existing_page(self, page_id, title, body, type='page', representation='storage',
                              minor_edit=False):
         """
         Update page if already exist
@@ -511,6 +518,7 @@ class Confluence(AtlassianRestAPI):
         :param title:
         :param body:
         :param type:
+        :param representation: OPTIONAL: either Confluence 'storage' or 'wiki' markup format
         :param minor_edit: Indicates whether to notify watchers about changes.
             If False then notifications will be sent.
         :return:
@@ -526,9 +534,7 @@ class Confluence(AtlassianRestAPI):
                 'id': page_id,
                 'type': type,
                 'title': title,
-                'body': {'storage': {
-                    'value': body,
-                    'representation': 'storage'}},
+                'body': create_body(body, representation),
                 'version': {'number': version,
                             'minorEdit': minor_edit}
             }
@@ -538,7 +544,7 @@ class Confluence(AtlassianRestAPI):
 
             return self.put('rest/api/content/{0}'.format(page_id), data=data)
 
-    def update_page(self, parent_id, page_id, title, body, type='page',
+    def update_page(self, parent_id, page_id, title, body, type='page', representation='storage',
                     minor_edit=False):
         """
         Update page if already exist
@@ -547,6 +553,7 @@ class Confluence(AtlassianRestAPI):
         :param title:
         :param body:
         :param type:
+        :param representation: OPTIONAL: either Confluence 'storage' or 'wiki' markup format
         :param minor_edit: Indicates whether to notify watchers about changes.
             If False then notifications will be sent.
         :return:
@@ -562,9 +569,7 @@ class Confluence(AtlassianRestAPI):
                 'id': page_id,
                 'type': type,
                 'title': title,
-                'body': {'storage': {
-                    'value': body,
-                    'representation': 'storage'}},
+                'body': create_body(body, representation),
                 'version': {'number': version,
                             'minorEdit': minor_edit}
             }
@@ -574,7 +579,7 @@ class Confluence(AtlassianRestAPI):
 
             return self.put('rest/api/content/{0}'.format(page_id), data=data)
 
-    def append_page(self, parent_id, page_id, title, append_body, type='page',
+    def append_page(self, parent_id, page_id, title, append_body, type='page', representation='storage',
                     minor_edit=False):
         """
         Append body to page if already exist
@@ -583,6 +588,7 @@ class Confluence(AtlassianRestAPI):
         :param title:
         :param append_body:
         :param type:
+        :param representation: OPTIONAL: either Confluence 'storage' or 'wiki' markup format
         :param minor_edit: Indicates whether to notify watchers about changes.
             If False then notifications will be sent.
         :return:
@@ -602,9 +608,7 @@ class Confluence(AtlassianRestAPI):
                 'id': page_id,
                 'type': type,
                 'title': title,
-                'body': {'storage': {
-                    'value': body,
-                    'representation': 'storage'}},
+                'body': create_body(body, representation),
                 'version': {'number': version,
                             'minorEdit': minor_edit}
             }
@@ -614,21 +618,22 @@ class Confluence(AtlassianRestAPI):
 
             return self.put('rest/api/content/{0}'.format(page_id), data=data)
 
-    def update_or_create(self, parent_id, title, body):
+    def update_or_create(self, parent_id, title, body, representation='storage'):
         """
         Update page or create a page if it is not exists
         :param parent_id:
         :param title:
         :param body:
+        :param representation: OPTIONAL: either Confluence 'storage' or 'wiki' markup format
         :return:
         """
         space = self.get_page_space(parent_id)
 
         if self.page_exists(space, title):
             page_id = self.get_page_id(space, title)
-            result = self.update_page(parent_id=parent_id, page_id=page_id, title=title, body=body)
+            result = self.update_page(parent_id=parent_id, page_id=page_id, title=title, body=body, representation=representation)
         else:
-            result = self.create_page(space=space, parent_id=parent_id, title=title, body=body)
+            result = self.create_page(space=space, parent_id=parent_id, title=title, body=body, representation=representation)
 
         log.info('You may access your page at: {host}{url}'.format(host=self.url,
                                                                    url=((result or {})
