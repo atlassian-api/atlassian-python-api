@@ -125,20 +125,29 @@ class Jira(AtlassianRestAPI):
         data = {"name": new_username}
         return self.user_update(old_username, data=data)
 
-    def user_create(self, username, email, password, display_name):
+    def user_create(self, username, email, display_name, password = None, notification = None):
+
         """
         Create a user in Jira
         :param username:
         :param email:
-        :param password:
         :param display_name:
+        :param password: OPTIONAL: If a password is not set, a random password is generated.
+        :param notification: OPTIONAL: Sends the user an email confirmation that they have been added to Jira. Default:false.
         :return:
         """
         log.warning('Creating user {}'.format(display_name))
-        data = {'password': password,
+        data = {'name': username,
                 'emailAddress': email,
-                'displayName': display_name,
-                'name': username}
+                'displayName': display_name}
+        if password is not None:
+            data['password'] = password
+        else:
+            data['notification'] = True
+        if notification is not None:
+            data['notification'] = True
+        if notification is False:
+            data['notification'] = False
         return self.post('rest/api/2/user', data=data)
 
     def user_properties(self, username):
