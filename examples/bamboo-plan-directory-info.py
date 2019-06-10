@@ -11,7 +11,7 @@ bamboo = Bamboo(
     username=ATLASSIAN_USER,
     password=ATLASSIAN_PASSWORD)
 
-plan_directories_roots = bamboo.plan_directories('PROJ-PLAN')
+plan_directories_roots = bamboo.plan_directory_info('PROJ-PLAN')
 
 print(plan_directories_roots)
 
