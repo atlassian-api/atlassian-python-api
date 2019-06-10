@@ -25,7 +25,7 @@ class AtlassianRestAPI(object):
         self.verify_ssl = verify_ssl
         self.api_root = api_root
         self.api_version = api_version
-	self.cookies = cookies
+        self.cookies = cookies
         if session is None:
             self._session = requests.Session()
         else:
