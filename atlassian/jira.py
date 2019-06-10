@@ -191,6 +191,29 @@ class Jira(AtlassianRestAPI):
         data = {'name': username, 'emailAddress': email}
         return self.user_update(username, data=data)
 
+    def user_deactivate(self, username):
+        """
+        Disable user
+        :param username:
+        :return:
+        """
+        url = 'secure/admin/user/EditUser.jspa'
+        headers = self.form_token_headers
+        user = self.user(username)
+        user_update_info = {
+            'inline': 'true',
+            'decorator': 'dialog',
+            'username': user['name'],
+            'fullName': user['displayName'],
+            'email': user['emailAddress'],
+            'editName': user['name']
+        }
+        return self.post(data=user_update_info, path=url, headers=headers)
+
+    def user_disable(self, username):
+        """Override the disable method"""
+        return self.user_deactivate(username)
+
     def user_disable_throw_rest_endpoint(self, username, url='rest/scriptrunner/latest/custom/disableUser',
                                          param='userName'):
         """The disable method throw own rest enpoint"""
