@@ -86,8 +86,17 @@ class Jira(AtlassianRestAPI):
             limit=limit, jql=jql)
         return self.get(url, not_json_response=True, headers={'Accept': 'application/csv'})
 
-    def user(self, username):
-        return self.get('rest/api/2/user?username={0}'.format(username))
+    def user(self, username, expand=None):
+        """
+        Returns a user. This resource cannot be accessed anonymously.
+        :param username:
+        :param expand: Can be 'groups,applicationRoles'
+        :return:
+        """
+        params = {'username': username}
+        if expand:
+            params['expand'] = expand
+        return self.get('rest/api/2/user', params=params)
 
     def is_active_user(self, username):
         """
@@ -125,7 +134,7 @@ class Jira(AtlassianRestAPI):
         data = {"name": new_username}
         return self.user_update(old_username, data=data)
 
-    def user_create(self, username, email, display_name, password = None, notification = None):
+    def user_create(self, username, email, display_name, password=None, notification=None):
 
         """
         Create a user in Jira

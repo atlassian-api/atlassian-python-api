@@ -9,17 +9,6 @@ import time
 log = logging.getLogger(__name__)
 
 
-def create_body(body, representation):
-    if representation not in ['wiki', 'storage']:
-        raise ValueError("Wrong value for representation, it should be either wiki or storage")
-
-    return {
-        representation: {
-            'value': body,
-            'representation': representation}
-    }
-
-
 class Confluence(AtlassianRestAPI):
     content_types = {
         ".gif": "image/gif",
@@ -31,6 +20,17 @@ class Confluence(AtlassianRestAPI):
         ".xls": "application/vnd.ms-excel",
         ".svg": "image/svg+xml"
     }
+
+    @staticmethod
+    def _create_body(body, representation):
+        if representation not in ['editor', 'export_view', 'view', 'storage', 'wiki']:
+            raise ValueError("Wrong value for representation, it should be either wiki or storage")
+
+        return {
+            representation: {
+                'value': body,
+                'representation': representation}
+        }
 
     def page_exists(self, space, title):
         try:
@@ -185,14 +185,19 @@ class Confluence(AtlassianRestAPI):
             params['limit'] = limit
         return (self.get(url, params=params) or {}).get('results')
 
-    def get_all_pages_from_space(self, space, start=0, limit=50, status=None):
+    def get_all_pages_from_space(self, space, start=0, limit=50, status=None, expand=None):
         """
         Get all pages from space
         :param space:
         :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
         :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
                             fixed system limits. Default: 50
-        :param status: OPTIONAL
+        :param status: OPTIONAL: list of statuses the content to be found is in.
+                                 Defaults to current is not specified.
+                                 If set to 'any', content in 'current' and 'trashed' status will be fetched.
+                                 Does not support 'historical' status for now.
+        :param expand: OPTIONAL: a comma separated list of properties to expand on the content.
+                                 Default value: history,space,version.
         :return:
         """
         url = 'rest/api/content'
@@ -205,6 +210,8 @@ class Confluence(AtlassianRestAPI):
             params['limit'] = limit
         if status:
             params['status'] = status
+        if expand:
+            params['expand'] = expand
         return (self.get(url, params=params) or {}).get('results')
 
     def get_all_pages_from_space_trash(self, space, start=0, limit=500, status='trashed'):
@@ -313,7 +320,7 @@ class Confluence(AtlassianRestAPI):
             'type': type,
             'title': title,
             'space': {'key': space},
-            'body': create_body(body, representation)}
+            'body': self._create_body(body, representation)}
         if parent_id:
             data['ancestors'] = [{'type': type, 'id': parent_id}]
         return self.post(url, data=data)
@@ -341,7 +348,7 @@ class Confluence(AtlassianRestAPI):
         """
         data = {'type': 'comment',
                 'container': {'id': page_id, 'type': 'page', 'status': 'current'},
-                'body': create_body(text, 'storage')}
+                'body': self._create_body(text, 'storage')}
         return self.post('rest/api/content/', data=data)
 
     def attach_file(self, filename, page_id=None, title=None, space=None, comment=None):
@@ -460,6 +467,15 @@ class Confluence(AtlassianRestAPI):
         url = 'rest/experimental/content/{id}/version/{versionNumber}'.format(id=page_id, versionNumber=version_number)
         self.delete(url)
 
+    def remove_page_history(self, page_id, version_number):
+        """
+        Remove content history. It works as experimental method
+        :param page_id:
+        :param version_number: version number
+        :return:
+        """
+        self.remove_content_history(page_id, version_number)
+
     def remove_content_history_in_cloud(self, page_id, version_id):
         """
         Remove content history. It works in CLOUD
@@ -469,6 +485,22 @@ class Confluence(AtlassianRestAPI):
         """
         url = 'rest/api/content/{id}/version/{versionId}'.format(id=page_id, versionId=version_id)
         self.delete(url)
+
+    def remove_page_history_keep_version(self, page_id, keep_last_versions):
+        """
+        Keep last versions
+        :param page_id:
+        :param keep_last_versions:
+        :return:
+        """
+        page = self.get_page_by_id(page_id=page_id, expand='version')
+        page_number = page.get('version').get('number')
+        while page_number > keep_last_versions:
+            self.remove_page_history(page_id=page_id, version_number=1)
+            page = self.get_page_by_id(page_id=page_id, expand='version')
+            page_number = page.get('version').get('number')
+            log.info("Removed oldest version for {}".format(page.get('title')))
+        log.info("Kept versions {} for {}".format(keep_last_versions, page.get('title')))
 
     def has_unknown_attachment_error(self, page_id):
         """
@@ -513,7 +545,6 @@ class Confluence(AtlassianRestAPI):
                              minor_edit=False):
         """
         Update page if already exist
-        :param parent_id:
         :param page_id:
         :param title:
         :param body:
@@ -534,7 +565,7 @@ class Confluence(AtlassianRestAPI):
                 'id': page_id,
                 'type': type,
                 'title': title,
-                'body': create_body(body, representation),
+                'body': self._create_body(body, representation),
                 'version': {'number': version,
                             'minorEdit': minor_edit}
             }
@@ -569,7 +600,7 @@ class Confluence(AtlassianRestAPI):
                 'id': page_id,
                 'type': type,
                 'title': title,
-                'body': create_body(body, representation),
+                'body': self._create_body(body, representation),
                 'version': {'number': version,
                             'minorEdit': minor_edit}
             }
@@ -608,7 +639,7 @@ class Confluence(AtlassianRestAPI):
                 'id': page_id,
                 'type': type,
                 'title': title,
-                'body': create_body(body, representation),
+                'body': self._create_body(body, representation),
                 'version': {'number': version,
                             'minorEdit': minor_edit}
             }
@@ -631,9 +662,11 @@ class Confluence(AtlassianRestAPI):
 
         if self.page_exists(space, title):
             page_id = self.get_page_id(space, title)
-            result = self.update_page(parent_id=parent_id, page_id=page_id, title=title, body=body, representation=representation)
+            result = self.update_page(parent_id=parent_id, page_id=page_id, title=title, body=body,
+                                      representation=representation)
         else:
-            result = self.create_page(space=space, parent_id=parent_id, title=title, body=body, representation=representation)
+            result = self.create_page(space=space, parent_id=parent_id, title=title, body=body,
+                                      representation=representation)
 
         log.info('You may access your page at: {host}{url}'.format(host=self.url,
                                                                    url=((result or {})
