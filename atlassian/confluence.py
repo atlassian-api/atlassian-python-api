@@ -9,17 +9,6 @@ import time
 log = logging.getLogger(__name__)
 
 
-def create_body(body, representation):
-    if representation not in ['wiki', 'storage']:
-        raise ValueError("Wrong value for representation, it should be either wiki or storage")
-
-    return {
-        representation: {
-            'value': body,
-            'representation': representation}
-    }
-
-
 class Confluence(AtlassianRestAPI):
     content_types = {
         ".gif": "image/gif",
@@ -31,6 +20,17 @@ class Confluence(AtlassianRestAPI):
         ".xls": "application/vnd.ms-excel",
         ".svg": "image/svg+xml"
     }
+
+    @staticmethod
+    def _create_body(body, representation):
+        if representation not in ['editor', 'export_view', 'view', 'storage', 'wiki']:
+            raise ValueError("Wrong value for representation, it should be either wiki or storage")
+
+        return {
+            representation: {
+                'value': body,
+                'representation': representation}
+        }
 
     def page_exists(self, space, title):
         try:
@@ -313,7 +313,7 @@ class Confluence(AtlassianRestAPI):
             'type': type,
             'title': title,
             'space': {'key': space},
-            'body': create_body(body, representation)}
+            'body': self._create_body(body, representation)}
         if parent_id:
             data['ancestors'] = [{'type': type, 'id': parent_id}]
         return self.post(url, data=data)
@@ -341,7 +341,7 @@ class Confluence(AtlassianRestAPI):
         """
         data = {'type': 'comment',
                 'container': {'id': page_id, 'type': 'page', 'status': 'current'},
-                'body': create_body(text, 'storage')}
+                'body': self._create_body(text, 'storage')}
         return self.post('rest/api/content/', data=data)
 
     def attach_file(self, filename, page_id=None, title=None, space=None, comment=None):
@@ -513,7 +513,6 @@ class Confluence(AtlassianRestAPI):
                              minor_edit=False):
         """
         Update page if already exist
-        :param parent_id:
         :param page_id:
         :param title:
         :param body:
@@ -534,7 +533,7 @@ class Confluence(AtlassianRestAPI):
                 'id': page_id,
                 'type': type,
                 'title': title,
-                'body': create_body(body, representation),
+                'body': self._create_body(body, representation),
                 'version': {'number': version,
                             'minorEdit': minor_edit}
             }
@@ -569,7 +568,7 @@ class Confluence(AtlassianRestAPI):
                 'id': page_id,
                 'type': type,
                 'title': title,
-                'body': create_body(body, representation),
+                'body': self._create_body(body, representation),
                 'version': {'number': version,
                             'minorEdit': minor_edit}
             }
@@ -608,7 +607,7 @@ class Confluence(AtlassianRestAPI):
                 'id': page_id,
                 'type': type,
                 'title': title,
-                'body': create_body(body, representation),
+                'body': self._create_body(body, representation),
                 'version': {'number': version,
                             'minorEdit': minor_edit}
             }
@@ -631,9 +630,11 @@ class Confluence(AtlassianRestAPI):
 
         if self.page_exists(space, title):
             page_id = self.get_page_id(space, title)
-            result = self.update_page(parent_id=parent_id, page_id=page_id, title=title, body=body, representation=representation)
+            result = self.update_page(parent_id=parent_id, page_id=page_id, title=title, body=body,
+                                      representation=representation)
         else:
-            result = self.create_page(space=space, parent_id=parent_id, title=title, body=body, representation=representation)
+            result = self.create_page(space=space, parent_id=parent_id, title=title, body=body,
+                                      representation=representation)
 
         log.info('You may access your page at: {host}{url}'.format(host=self.url,
                                                                    url=((result or {})
