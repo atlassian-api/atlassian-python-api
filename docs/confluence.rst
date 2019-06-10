@@ -56,7 +56,7 @@ Page actions
 .. code-block:: python
 
     # Create page from scratch
-    confluence.create_page(space, title, body, parent_id=None, type='page')
+    confluence.create_page(space, title, body, parent_id=None, type='page', representation='storage')
 
     # Remove page
     confluence.remove_page(page_id, status=None)
@@ -68,10 +68,10 @@ Page actions
     confluence.remove_page_as_draft(page_id)
 
     # Update page if already exist
-    confluence.update_page(parent_id, page_id, title, body, type='page')
+    confluence.update_page(parent_id, page_id, title, body, type='page', representation='storage')
 
     # Update page or create page if it is not exists
-    confluence.update_or_create(parent_id, title, body)
+    confluence.update_or_create(parent_id, title, body, representation='storage')
 
     # Set the page (content) property e.g. add hash parameters
     confluence.set_page_property(page_id, data)
