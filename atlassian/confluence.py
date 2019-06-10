@@ -185,14 +185,19 @@ class Confluence(AtlassianRestAPI):
             params['limit'] = limit
         return (self.get(url, params=params) or {}).get('results')
 
-    def get_all_pages_from_space(self, space, start=0, limit=50, status=None):
+    def get_all_pages_from_space(self, space, start=0, limit=50, status=None, expand=None):
         """
         Get all pages from space
         :param space:
         :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
         :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
                             fixed system limits. Default: 50
-        :param status: OPTIONAL
+        :param status: OPTIONAL: list of statuses the content to be found is in.
+                                 Defaults to current is not specified.
+                                 If set to 'any', content in 'current' and 'trashed' status will be fetched.
+                                 Does not support 'historical' status for now.
+        :param expand: OPTIONAL: a comma separated list of properties to expand on the content.
+                                 Default value: history,space,version.
         :return:
         """
         url = 'rest/api/content'
@@ -205,6 +210,8 @@ class Confluence(AtlassianRestAPI):
             params['limit'] = limit
         if status:
             params['status'] = status
+        if expand:
+            params['expand'] = expand
         return (self.get(url, params=params) or {}).get('results')
 
     def get_all_pages_from_space_trash(self, space, start=0, limit=500, status='trashed'):
@@ -460,6 +467,15 @@ class Confluence(AtlassianRestAPI):
         url = 'rest/experimental/content/{id}/version/{versionNumber}'.format(id=page_id, versionNumber=version_number)
         self.delete(url)
 
+    def remove_page_history(self, page_id, version_number):
+        """
+        Remove content history. It works as experimental method
+        :param page_id:
+        :param version_number: version number
+        :return:
+        """
+        self.remove_content_history(page_id, version_number)
+
     def remove_content_history_in_cloud(self, page_id, version_id):
         """
         Remove content history. It works in CLOUD
@@ -469,6 +485,22 @@ class Confluence(AtlassianRestAPI):
         """
         url = 'rest/api/content/{id}/version/{versionId}'.format(id=page_id, versionId=version_id)
         self.delete(url)
+
+    def remove_page_history_keep_version(self, page_id, keep_last_versions):
+        """
+        Keep last versions
+        :param page_id:
+        :param keep_last_versions:
+        :return:
+        """
+        page = self.get_page_by_id(page_id=page_id, expand='version')
+        page_number = page.get('version').get('number')
+        while page_number > keep_last_versions:
+            self.remove_page_history(page_id=page_id, version_number=1)
+            page = self.get_page_by_id(page_id=page_id, expand='version')
+            page_number = page.get('version').get('number')
+            log.info("Removed oldest version for {}".format(page.get('title')))
+        log.info("Kept versions {} for {}".format(keep_last_versions, page.get('title')))
 
     def has_unknown_attachment_error(self, page_id):
         """
