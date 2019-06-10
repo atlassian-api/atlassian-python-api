@@ -60,6 +60,17 @@ class Bamboo(AtlassianRestAPI):
         params['start-index'] = start_index
         return self.get(self.resource_url(resource), flags=flags, params=params)
 
+    def plan_directory_info(self, plan_key):
+        """
+        Returns information about the directories where artifacts, build logs, and build results will be stored. 
+        Disabled by default. 
+        See https://confluence.atlassian.com/display/BAMBOO/Plan+directory+information+REST+API for more information.
+        :param plan_key:
+        :return:
+        """
+        resource = 'planDirectoryInfo/{}'.format(plan_key)
+        return self.get(self.resource_url(resource))
+
     def projects(self, expand=None, favourite=False, clover_enabled=False, max_results=25):
         return self.base_list_call('project', expand, favourite, clover_enabled, max_results,
                                    elements_key='projects', element_key='project')
