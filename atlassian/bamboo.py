@@ -209,6 +209,18 @@ class Bamboo(AtlassianRestAPI):
         except ValueError:
             raise ValueError('The key "{}" does not correspond to the latest build result'.format(plan_key))
 
+    def delete_build_result(self, build_key):
+        """
+        Deleting result for specific build
+        :param build: Take full build key, example: PROJ-PLAN-8
+        """
+        custom_resource = '/build/admin/deletePlanResults.action'
+        build = build.split('-')
+        plan_key = '{}-{}'.format(build[0], build[1])
+        build_number = build[2]
+        params = {'buildKey': plan_key, 'buildNumber': build_number}
+        return self.post(custom_resource, params=params, headers=self.form_token_headers)
+
     def reports(self, max_results=25):
         params = {'max-results': max_results}
         return self._get_generator(self.resource_url('chart/reports'), elements_key='reports', element_key='report',
