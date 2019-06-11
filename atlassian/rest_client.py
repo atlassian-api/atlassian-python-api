@@ -190,9 +190,10 @@ class AtlassianRestAPI(object):
             log.debug('Received response with no content')
             return None
 
-    def put(self, path, data=None, headers=None, files=None, trailing=None):
+    def put(self, path, data=None, headers=None, files=None, trailing=None, params=None):
         try:
-            return self.request('PUT', path=path, data=data, headers=headers, files=files, trailing=trailing).json()
+            return self.request('PUT', path=path, data=data, headers=headers, files=files, params=params,
+                                trailing=trailing).json()
         except ValueError:
             log.debug('Received response with no content')
             return None
