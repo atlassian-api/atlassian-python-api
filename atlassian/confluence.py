@@ -499,7 +499,7 @@ class Confluence(AtlassianRestAPI):
             self.remove_page_history(page_id=page_id, version_number=1)
             page = self.get_page_by_id(page_id=page_id, expand='version')
             page_number = page.get('version').get('number')
-            log.info("Removed oldest version for {}".format(page.get('title')))
+            log.info("Removed oldest version for {}, now it's {}".format(page.get('title'), page_number))
         log.info("Kept versions {} for {}".format(keep_last_versions, page.get('title')))
 
     def has_unknown_attachment_error(self, page_id):
