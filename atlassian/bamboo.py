@@ -41,7 +41,7 @@ class Bamboo(AtlassianRestAPI):
                 yield r
             start_index += results['max-result']
 
-    def base_list_call(self, resource, expand, favourite, clover_enabled, max_results, label, start_index=0, **kwargs):
+    def base_list_call(self, resource, expand, favourite, clover_enabled, max_results, label=None, start_index=0, **kwargs):
         flags = []
         params = {'max-results': max_results}
         if expand:
