@@ -953,6 +953,24 @@ class Confluence(AtlassianRestAPI):
             response = self.get('rest/supportHealthCheck/1.0/check/')
         return response
 
+    def synchrony_enable(self):
+        """
+        Enable Synchrony
+        :return:
+        """
+        headers = {'X-Atlassian-Token': 'no-check'}
+        url = 'rest/synchrony-interop/enable'
+        return self.post(url, headers=headers)
+
+    def synchrony_disable(self):
+        """
+        Disable Synchrony
+        :return:
+        """
+        headers = {'X-Atlassian-Token': 'no-check'}
+        url = 'rest/synchrony-interop/disable'
+        return self.post(url, headers=headers)
+
     def check_access_mode(self):
         return self.get("rest/api/accessmode")
 
