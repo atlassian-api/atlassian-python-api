@@ -78,7 +78,7 @@ class AtlassianRestAPI(object):
         return '/'.join([self.api_root, self.api_version, resource])
 
     @staticmethod
-    def url_joiner(url, path, trailing):
+    def url_joiner(url, path, trailing=None):
         url_link = '/'.join(s.strip('/') for s in [url, path])
         if trailing:
             url_link += '/'
