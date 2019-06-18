@@ -216,8 +216,8 @@ class Bamboo(AtlassianRestAPI):
         """
         custom_resource = '/build/admin/deletePlanResults.action'
         build_key = build.split('-')
-        plan_key = '{}-{}'.format(build[0], build[1])
-        build_number = build[2]
+        plan_key = '{}-{}'.format(build_key[0], build_key[1])
+        build_number = build_key[2]
         params = {'buildKey': plan_key, 'buildNumber': build_number}
         return self.post(custom_resource, params=params, headers=self.form_token_headers)
     def delete_plan(self, plan_key):
