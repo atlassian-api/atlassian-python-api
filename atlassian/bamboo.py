@@ -209,15 +209,15 @@ class Bamboo(AtlassianRestAPI):
         except ValueError:
             raise ValueError('The key "{}" does not correspond to the latest build result'.format(plan_key))
 
-    def delete_build_result(self, build_key):
+    def delete_build_result(self, build):
         """
         Deleting result for specific build
         :param build_key: Take full build key, example: PROJ-PLAN-8
         """
         custom_resource = '/build/admin/deletePlanResults.action'
-        build = build.split('-')
-        plan_key = '{}-{}'.format(build[0], build[1])
-        build_number = build[2]
+        build_key = build.split('-')
+        plan_key = '{}-{}'.format(build_key[0], build_key[1])
+        build_number = build_key[2]
         params = {'buildKey': plan_key, 'buildNumber': build_number}
         return self.post(custom_resource, params=params, headers=self.form_token_headers)
     def delete_plan(self, plan_key):
