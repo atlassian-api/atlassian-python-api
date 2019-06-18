@@ -215,7 +215,7 @@ class Bamboo(AtlassianRestAPI):
         :param build_key: Take full build key, example: PROJ-PLAN-8
         """
         custom_resource = '/build/admin/deletePlanResults.action'
-        build = build.split('-')
+        build_key = build.split('-')
         plan_key = '{}-{}'.format(build[0], build[1])
         build_number = build[2]
         params = {'buildKey': plan_key, 'buildNumber': build_number}
