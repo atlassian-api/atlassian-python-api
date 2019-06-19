@@ -927,7 +927,7 @@ class Jira(AtlassianRestAPI):
         transition_id = self.get_transition_id_to_status_name(issue_key, status_name)
         return self.post(url, data={'transition': {'id': transition_id}})
 
-    def set_issue_status_by_id(self, issue_key, transition_id):
+    def set_issue_status_by_transition_id(self, issue_key, transition_id):
         """
         Setting status by transition_id
         :param issue_key: str
