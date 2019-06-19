@@ -504,41 +504,11 @@ class Confluence(AtlassianRestAPI):
 
     def update_existing_page(self, page_id, title, body, type='page',
                              minor_edit=False):
-        """
-        Update page if already exist
-        :param parent_id:
-        :param page_id:
-        :param title:
-        :param body:
-        :param type:
-        :param minor_edit: Indicates whether to notify watchers about changes.
-            If False then notifications will be sent.
-        :return:
-        """
-        log.info('Updating {type} "{title}"'.format(title=title, type=type))
+        """Duplicate update_page. Left for the people who used it before. Use update_page instead"""
+        return update_page(page_id, title, body, parent_id=None, type=type,
+                           minor_edit=minor_edit)
 
-        if self.is_page_content_is_already_updated(page_id, body):
-            return self.get_page_by_id(page_id)
-        else:
-            version = self.history(page_id)['lastUpdated']['number'] + 1
-
-            data = {
-                'id': page_id,
-                'type': type,
-                'title': title,
-                'body': {'storage': {
-                    'value': body,
-                    'representation': 'storage'}},
-                'version': {'number': version,
-                            'minorEdit': minor_edit}
-            }
-
-            # if parent_id:
-            #    data['ancestors'] = [{'type': 'page', 'id': parent_id}]
-
-            return self.put('rest/api/content/{0}'.format(page_id), data=data)
-
-    def update_page(self, parent_id, page_id, title, body, type='page',
+    def update_page(self, page_id, title, body, parent_id=None, type='page',
                     minor_edit=False):
         """
         Update page if already exist
