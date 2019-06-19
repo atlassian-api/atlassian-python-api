@@ -940,6 +940,10 @@ class Jira(AtlassianRestAPI):
         url = 'rest/api/2/issue/{issue_key}?fields=status'.format(issue_key=issue_key)
         return (self.get(url) or {}).get('fields').get('status').get('name')
 
+    def get_issue_status_id(self, issue_key):
+        url = 'rest/api/2/issue/{issue_key}?fields=status'.format(issue_key=issue_key)
+        return (self.get(url) or {}).get('fields').get('status').get('id')
+
     def get_issue_link_types(self):
         """Returns a list of available issue link types,
         if issue linking is enabled.
