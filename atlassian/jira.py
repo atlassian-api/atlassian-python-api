@@ -52,7 +52,7 @@ class Jira(AtlassianRestAPI):
     def reindex_issue(self, list_of_):
         pass
 
-    def jql(self, jql, fields='*all', start=0, limit=None):
+    def jql(self, jql, fields='*all', start=0, limit=None, expand=None):
         """
         Get issues from jql search result with all related fields
         :param jql:
@@ -60,6 +60,7 @@ class Jira(AtlassianRestAPI):
         :param start: OPTIONAL: The start point of the collection to return. Default: 0.
         :param limit: OPTIONAL: The limit of the number of issues to return, this may be restricted by
                 fixed system limits. Default by built-in method: 50
+        :param expand: OPTIONAL: expland the search result
         :return:
         """
         params = {}
@@ -73,6 +74,8 @@ class Jira(AtlassianRestAPI):
             params['fields'] = fields
         if jql is not None:
             params['jql'] = jql
+        if expand is not None:
+            params['expand'] = expand
         return self.get('rest/api/2/search', params=params)
 
     def csv(self, jql, limit=1000):
