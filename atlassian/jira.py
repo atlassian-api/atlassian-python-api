@@ -416,6 +416,22 @@ class Jira(AtlassianRestAPI):
             url = 'rest/api/2/project/{projectIdOrKey}'.format(projectIdOrKey=project_key)
         return self.put(url, data)
 
+    def get_project_permission_scheme(self, project_id_or_key, expand=None):
+        """
+        Gets a permission scheme assigned with a project
+        Use 'expand' to get details
+
+        :param project_id_or_key: str
+        :param expand: str
+        :return: data of project permission scheme
+        """
+        if expand is None:
+            url = 'rest/api/2/project/{}/permissionscheme'.format(project_id_or_key)
+        else:
+            url = 'rest/api/2/project/{0}/permissionscheme?expand={1}'.format(project_id_or_key, expand)
+
+        return self.get(url)
+
     def create_issue_type(self, name, description='', type='standard'):
         """
         Create a new issue type
