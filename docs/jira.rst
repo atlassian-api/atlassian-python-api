@@ -121,6 +121,10 @@ Manage projects
     # Update a project
     jira.update_project(project_key, data, expand='lead,description')
 
+    # Get project permission scheme
+    # Use 'expand' to get details (default is None)
+    jira.get_project_permission_scheme(project_id_or_key, expand='permissions,user,group,projectRole,field,all')
+
 Manage issues
 -------------
 
