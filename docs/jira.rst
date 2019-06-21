@@ -121,6 +121,10 @@ Manage projects
     # Update a project
     jira.update_project(project_key, data, expand='lead,description')
 
+    # Get project permission scheme
+    # Use 'expand' to get details (default is None)
+    jira.get_project_permission_scheme(project_id_or_key, expand='permissions,user,group,projectRole,field,all')
+
 Manage issues
 -------------
 
@@ -172,6 +176,9 @@ Manage issues
     # Set issue status
     jira.set_issue_status(issue_key, status_name)
 
+    # Set issue status by transition_id
+    jira.set_issue_status_by_transition_id(issue_key, transition_id)
+    
     # Get issue status
     jira.get_issue_status(issue_key)
     

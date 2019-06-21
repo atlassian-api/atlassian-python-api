@@ -52,7 +52,7 @@ class Jira(AtlassianRestAPI):
     def reindex_issue(self, list_of_):
         pass
 
-    def jql(self, jql, fields='*all', start=0, limit=None):
+    def jql(self, jql, fields='*all', start=0, limit=None, expand=None):
         """
         Get issues from jql search result with all related fields
         :param jql:
@@ -60,6 +60,7 @@ class Jira(AtlassianRestAPI):
         :param start: OPTIONAL: The start point of the collection to return. Default: 0.
         :param limit: OPTIONAL: The limit of the number of issues to return, this may be restricted by
                 fixed system limits. Default by built-in method: 50
+        :param expand: OPTIONAL: expland the search result
         :return:
         """
         params = {}
@@ -73,6 +74,8 @@ class Jira(AtlassianRestAPI):
             params['fields'] = fields
         if jql is not None:
             params['jql'] = jql
+        if expand is not None:
+            params['expand'] = expand
         return self.get('rest/api/2/search', params=params)
 
     def csv(self, jql, limit=1000):
@@ -430,6 +433,22 @@ class Jira(AtlassianRestAPI):
         else:
             url = 'rest/api/2/project/{projectIdOrKey}'.format(projectIdOrKey=project_key)
         return self.put(url, data)
+
+    def get_project_permission_scheme(self, project_id_or_key, expand=None):
+        """
+        Gets a permission scheme assigned with a project
+        Use 'expand' to get details
+
+        :param project_id_or_key: str
+        :param expand: str
+        :return: data of project permission scheme
+        """
+        if expand is None:
+            url = 'rest/api/2/project/{}/permissionscheme'.format(project_id_or_key)
+        else:
+            url = 'rest/api/2/project/{0}/permissionscheme?expand={1}'.format(project_id_or_key, expand)
+
+        return self.get(url)
 
     def create_issue_type(self, name, description='', type='standard'):
         """
@@ -945,7 +964,7 @@ class Jira(AtlassianRestAPI):
         transition_id = self.get_transition_id_to_status_name(issue_key, status_name)
         return self.post(url, data={'transition': {'id': transition_id}})
 
-    def set_issue_status_by_id(self, issue_key, transition_id):
+    def set_issue_status_by_transition_id(self, issue_key, transition_id):
         """
         Setting status by transition_id
         :param issue_key: str
@@ -957,6 +976,10 @@ class Jira(AtlassianRestAPI):
     def get_issue_status(self, issue_key):
         url = 'rest/api/2/issue/{issue_key}?fields=status'.format(issue_key=issue_key)
         return (self.get(url) or {}).get('fields').get('status').get('name')
+
+    def get_issue_status_id(self, issue_key):
+        url = 'rest/api/2/issue/{issue_key}?fields=status'.format(issue_key=issue_key)
+        return (self.get(url) or {}).get('fields').get('status').get('id')
 
     def get_issue_link_types(self):
         """Returns a list of available issue link types,

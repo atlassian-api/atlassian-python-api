@@ -41,7 +41,7 @@ class Bamboo(AtlassianRestAPI):
                 yield r
             start_index += results['max-result']
 
-    def base_list_call(self, resource, expand, favourite, clover_enabled, max_results, label, start_index=0, **kwargs):
+    def base_list_call(self, resource, expand, favourite, clover_enabled, max_results, label=None, start_index=0, **kwargs):
         flags = []
         params = {'max-results': max_results}
         if expand:
@@ -59,6 +59,17 @@ class Bamboo(AtlassianRestAPI):
                                        element_key=kwargs['element_key'])
         params['start-index'] = start_index
         return self.get(self.resource_url(resource), flags=flags, params=params)
+
+    def plan_directory_info(self, plan_key):
+        """
+        Returns information about the directories where artifacts, build logs, and build results will be stored. 
+        Disabled by default. 
+        See https://confluence.atlassian.com/display/BAMBOO/Plan+directory+information+REST+API for more information.
+        :param plan_key:
+        :return:
+        """
+        resource = 'planDirectoryInfo/{}'.format(plan_key)
+        return self.get(self.resource_url(resource))
 
     def projects(self, expand=None, favourite=False, clover_enabled=False, max_results=25):
         return self.base_list_call('project', expand, favourite, clover_enabled, max_results,
@@ -198,6 +209,25 @@ class Bamboo(AtlassianRestAPI):
         except ValueError:
             raise ValueError('The key "{}" does not correspond to the latest build result'.format(plan_key))
 
+    def delete_build_result(self, build):
+        """
+        Deleting result for specific build
+        :param build_key: Take full build key, example: PROJ-PLAN-8
+        """
+        custom_resource = '/build/admin/deletePlanResults.action'
+        build_key = build.split('-')
+        plan_key = '{}-{}'.format(build_key[0], build_key[1])
+        build_number = build_key[2]
+        params = {'buildKey': plan_key, 'buildNumber': build_number}
+        return self.post(custom_resource, params=params, headers=self.form_token_headers)
+    def delete_plan(self, plan_key):
+        """
+        Marks plan for deletion. Plan will be deleted by a batch job.
+        :param plan_key:
+        :return:
+        """
+        resource = 'rest/api/latest/plan/{}'.format(plan_key)
+        return self.delete(resource)
     def reports(self, max_results=25):
         params = {'max-results': max_results}
         return self._get_generator(self.resource_url('chart/reports'), elements_key='reports', element_key='report',
