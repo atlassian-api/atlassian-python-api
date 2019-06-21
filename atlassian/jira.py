@@ -220,7 +220,7 @@ class Jira(AtlassianRestAPI):
         url = 'secure/admin/user/EditUser.jspa'
         headers = self.form_token_headers
         user = self.user(username)
-        user_update_info = {
+        data = {
             'inline': 'true',
             'decorator': 'dialog',
             'username': user['name'],
@@ -228,7 +228,15 @@ class Jira(AtlassianRestAPI):
             'email': user['emailAddress'],
             'editName': user['name']
         }
-        return self.post(data=user_update_info, path=url, headers=headers)
+        answer = self.get('secure/admin/WebSudoAuthenticate.jspa', self.form_token_headers)
+        atl_token = None
+        if answer:
+            atl_token = \
+                answer.split('<meta id="atlassian-token" name="atlassian-token" content="')[1].split('\n')[0].split(
+                    '"')[0]
+        if atl_token:
+            data['atl_token'] = atl_token
+        return self.post(data=data, path=url, headers=headers)
 
     def user_disable(self, username):
         """Override the disable method"""
@@ -246,7 +254,17 @@ class Jira(AtlassianRestAPI):
         headers = self.form_token_headers
         data = {
             'webSudoPassword': self.password,
+            'webSudoIsPost': 'false',
         }
+        answer = self.get('secure/admin/WebSudoAuthenticate.jspa', self.form_token_headers)
+        atl_token = None
+        if answer:
+            atl_token = \
+                answer.split('<meta id="atlassian-token" name="atlassian-token" content="')[1].split('\n')[0].split(
+                    '"')[0]
+        if atl_token:
+            data['atl_token'] = atl_token
+
         return self.post(path=url, data=data, headers=headers)
 
     def user_find_by_user_string(self, username, start=0, limit=50, include_inactive_users=False,
