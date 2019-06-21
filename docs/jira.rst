@@ -172,6 +172,9 @@ Manage issues
     # Set issue status
     jira.set_issue_status(issue_key, status_name)
 
+    # Set issue status by transition_id
+    jira.set_issue_status_by_transition_id(issue_key, transition_id)
+    
     # Get issue status
     jira.get_issue_status(issue_key)
     
