@@ -5,8 +5,9 @@ from six.moves.urllib.parse import urlencode
 import requests
 from oauthlib.oauth1 import SIGNATURE_RSA
 from requests_oauthlib import OAuth1
+from atlassian.request_utils import get_default_logger
 
-log = logging.getLogger(__name__)
+log = get_default_logger(__name__)
 
 
 class AtlassianRestAPI(object):
