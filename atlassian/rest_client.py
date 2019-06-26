@@ -186,9 +186,12 @@ class AtlassianRestAPI(object):
                 return answer.text
 
     def post(self, path, data=None, headers=None, files=None, params=None, trailing=None):
+        response = self.request('POST', path=path, data=data, headers=headers, files=files, params=params,
+                                trailing=trailing)
+        if self.advanced_mode:
+            return response
         try:
-            return self.request('POST', path=path, data=data, headers=headers, files=files, params=params,
-                                trailing=trailing).json()
+            return response.json()
         except ValueError:
             log.debug('Received response with no content')
             return None
