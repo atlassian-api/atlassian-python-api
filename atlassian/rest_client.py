@@ -85,8 +85,8 @@ class AtlassianRestAPI(object):
             url_link += '/'
         return url_link
 
-    def request(self, method='GET', path='/', data=None, flags=None, params=None, headers=None, files=None,
-                trailing=None):
+    def request(self, method='GET', path='/', data=None, flags=None, params=None, headers=None,
+                files=None, trailing=None):
         """
 
         :param method:
@@ -119,7 +119,7 @@ class AtlassianRestAPI(object):
             timeout=self.timeout,
             verify=self.verify_ssl,
             files=files
-        )
+        )       
         if self.advanced_mode:
             return response
         try:
