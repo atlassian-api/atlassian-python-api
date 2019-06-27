@@ -468,6 +468,24 @@ class Jira(AtlassianRestAPI):
     def issue(self, key, fields='*all'):
         return self.get('rest/api/2/issue/{0}?fields={1}'.format(key, fields))
 
+    def bulk_issue(self, issue_list, fields='*all'):
+        """
+        :param fields:
+        :param list issue_list:
+        :return:
+        """
+        missing_issues = list()
+        jql = 'key in ({})'.format(', '.join(['"{}"'.format(key) for key in issue_list]))
+        query_result = self.jql(jql, fields=fields)
+        if 'errorMessages' in query_result.keys():
+            for message in query_result['errorMessages']:
+                for key in issue_list:
+                    if key in message:
+                        missing_issues.append(key)
+                        issue_list.remove(key)
+            query_result, missing_issues = self.bulk_issue(self, issue_list, fields)
+        return query_result, missing_issues
+
     def get_issue_changelog(self, issue_key):
         """
         Get issue related change log
