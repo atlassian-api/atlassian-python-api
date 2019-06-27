@@ -5,6 +5,7 @@ from requests import HTTPError
 import logging
 import os
 import time
+from pprint import pprint
 
 log = logging.getLogger(__name__)
 
@@ -407,6 +408,45 @@ class Confluence(AtlassianRestAPI):
         if version:
             params['version'] = version
         return self.post('json/removeattachment.action', params=params, headers=self.form_token_headers)
+
+    def delete_attachment_by_id(self, attachment_id, version):
+        """
+        Remove completely a file if version is None or delete version
+        :param version:
+        :param page_id: file version
+        :param filename:
+        :return:
+        """
+        params = {'versionId': version, 'id': attachment_id}
+        return self.delete(
+            'rest/experimental/content/{id}/version/{versionId}'.format(id=attachment_id, versionId=version))
+
+    def remove_page_attachment_keep_version(self, page_id, filename, keep_last_versions):
+        """
+        Keep last versions
+        :param filename:
+        :param page_id:
+        :param keep_last_versions:
+        :return:
+        """
+        attachment = \
+            self.get_attachments_from_content(page_id=page_id, expand='version', filename=filename).get(
+                'results')[0]
+        attachment_versions = self.get_attachment_history(attachment.get("id"))
+        while len(attachment_versions) > keep_last_versions:
+            remove_version_attachment_number = attachment_versions[keep_last_versions].get('number')
+            pprint(remove_version_attachment_number)
+            self.delete_attachment(page_id=page_id, filename=filename, version=remove_version_attachment_number)
+            log.info(
+                "Removed oldest version for {}, now versions equal more than {}".format(attachment.get('title'),
+                                                                                        len(attachment_versions)))
+            attachment_versions = self.get_attachment_history(attachment.get("id"))
+        log.info("Kept versions {} for {}".format(keep_last_versions, attachment.get('title')))
+
+    def get_attachment_history(self, attachment_id, limit=200, start=0):
+        params = {'limit': limit, 'start': start}
+        url = 'rest/experimental/content/{}/version'.format(attachment_id)
+        return (self.get(url, params=params) or {}).get("results")
 
     # @todo prepare more attachments info
     def get_attachments_from_content(self, page_id, start=0, limit=50, expand=None, filename=None, media_type=None):
@@ -1040,7 +1080,7 @@ class Confluence(AtlassianRestAPI):
     def get_pdf_download_url_for_confluence_cloud(self, url):
         """
         Confluence cloud does not return the PDF document when the PDF
-        export is initiated. Instead it starts a process in the background 
+        export is initiated. Instead it starts a process in the background
         and provides a link to download the PDF once the process completes.
         This functions polls the long running task page and returns the
         download url of the PDF.
