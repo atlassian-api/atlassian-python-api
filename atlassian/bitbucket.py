@@ -494,28 +494,30 @@ class Bitbucket(AtlassianRestAPI):
             response = self.get(url, params=params)
             commits_list += (response or {}).get('values')
         return commits_list
-    
-    def open_pull_request(self, source_project, source_repo, dest_project, dest_repo, source, destination, title, description):
+
+    def open_pull_request(self, source_project, source_repo, dest_project, dest_repo, source_branch, destination_branch,
+                          title,
+                          description):
         """
-        Opens a pull request.
+        Create a new pull request between two branches.
+        The branches may be in the same repository, or different ones.
+        When using different repositories, they must still be in the same {@link Repository#getHierarchyId() hierarchy}.
+        The authenticated user must have REPO_READ permission for the "from" and "to"repositories to call this resource.
         :param source_project: the project that the PR source is from
         :param source_repo: the repository that the PR source is from
-        :param source: the branch name of the PR
+        :param source_branch: the branch name of the PR
         :param dest_project: the project that the PR destination is from
         :param dest_repo: the repository that the PR destination is from
-        :param destination: where the PR is being merged into
+        :param destination_branch: where the PR is being merged into
         :param title: the title of the PR
         :param description: the description of what the PR does
         :return:
         """
-        url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests'.format(
-            project=dest_project,
-            repository=source_repo)
         body = {
             'title': title,
             'description': description,
             'fromRef': {
-                'id': source,
+                'id': source_branch,
                 'repository': {
                     'slug': source_repo,
                     'name': source_repo,
@@ -525,7 +527,7 @@ class Bitbucket(AtlassianRestAPI):
                 }
             },
             'toRef': {
-                'id': destination,
+                'id': destination_branch,
                 'repository': {
                     'slug': dest_repo,
                     'name': dest_repo,
@@ -535,7 +537,37 @@ class Bitbucket(AtlassianRestAPI):
                 }
             }
         }
-        return self.post(url, data=body)
+        return self.create_pull_request(dest_project, dest_repo, body)
+
+    def create_pull_request(self, project_key, repository, data):
+        """
+        :param project_key:
+        :param repository:
+        :param data: json body
+        :return:
+        """
+        url = 'rest/api/1.0/projects/{projectKey}/repos/{repositorySlug}/pull-requests'.format(projectKey=project_key,
+                                                                                               repositorySlug=repository)
+        return self.post(url, data=data)
+
+    def check_inbox_pull_requests_count(self):
+        return self.get('rest/api/1.0/inbox/pull-requests/count')
+
+    def check_inbox_pull_requests(self, start=0, limit=None, role=None):
+        """
+        Get pull request in your inbox
+        :param start:
+        :param limit:
+        :param role:
+        :return:
+        """
+        params = {'start': start}
+        if limit:
+            params['limit'] = limit
+        if role:
+            params['role'] = role
+        url = 'rest/api/1.0/inbox/pull-requests'
+        return self.get(url, params=params)
 
     def add_pull_request_comment(self, project, repository, pull_request_id, text):
         """
