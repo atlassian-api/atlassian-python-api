@@ -483,7 +483,7 @@ class Jira(AtlassianRestAPI):
                     if key in message:
                         missing_issues.append(key)
                         issue_list.remove(key)
-            query_result, missing_issues = self.bulk_issue(self, issue_list, fields)
+            query_result, missing_issues = self.bulk_issue(issue_list, fields)
         return query_result, missing_issues
 
     def get_issue_changelog(self, issue_key):
@@ -1518,6 +1518,23 @@ class Jira(AtlassianRestAPI):
         """
         url = 'rest/tempo-timesheets/3/private/config/'
         return self.get(url)
+
+    def tempo_timesheets_get_team_utilization(self, team_id, date_from, date_to=None, group_by=None):
+        """
+        GEt team utulization. Response in json
+        :param team_id:
+        :param date_from:
+        :param date_to:
+        :param group_by:
+        :return:
+        """
+        url = 'rest/tempo-timesheets/3/report/team/{}/utilization'.format(team_id)
+        params = {'dateFrom': date_from,
+                  'dateTo': date_to}
+
+        if group_by:
+            params['groupBy'] = group_by
+        return self.get(url, params=params)
 
     def tempo_get_links_to_project(self, project_id):
         """
