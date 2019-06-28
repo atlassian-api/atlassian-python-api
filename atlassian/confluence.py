@@ -5,7 +5,6 @@ from requests import HTTPError
 import logging
 import os
 import time
-from pprint import pprint
 
 log = logging.getLogger(__name__)
 
@@ -435,7 +434,6 @@ class Confluence(AtlassianRestAPI):
         attachment_versions = self.get_attachment_history(attachment.get("id"))
         while len(attachment_versions) > keep_last_versions:
             remove_version_attachment_number = attachment_versions[keep_last_versions].get('number')
-            pprint(remove_version_attachment_number)
             self.delete_attachment(page_id=page_id, filename=filename, version=remove_version_attachment_number)
             log.info(
                 "Removed oldest version for {}, now versions equal more than {}".format(attachment.get('title'),
