@@ -411,12 +411,10 @@ class Confluence(AtlassianRestAPI):
     def delete_attachment_by_id(self, attachment_id, version):
         """
         Remove completely a file if version is None or delete version
-        :param version:
-        :param page_id: file version
-        :param filename:
+        :param attachment_id:
+        :param version: file version
         :return:
         """
-        params = {'versionId': version, 'id': attachment_id}
         return self.delete(
             'rest/experimental/content/{id}/version/{versionId}'.format(id=attachment_id, versionId=version))
 
@@ -582,10 +580,11 @@ class Confluence(AtlassianRestAPI):
     def update_existing_page(self, page_id, title, body, type='page', representation='storage',
                              minor_edit=False):
         """Duplicate update_page. Left for the people who used it before. Use update_page instead"""
-        return update_page(page_id, title, body, parent_id=None, type=type,
-                           minor_edit=minor_edit)
+        return self.update_page(page_id=page_id, title=title, body=body, parent_id=None, type=type,
+                                representation=representation,
+                                minor_edit=minor_edit)
 
-    def update_page(self, page_id, title, body, parent_id=None, type='page',
+    def update_page(self, page_id, title, body, parent_id=None, type='page', representation='storage',
                     minor_edit=False):
         """
         Update page if already exist
