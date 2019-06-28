@@ -41,7 +41,8 @@ class Bamboo(AtlassianRestAPI):
                 yield r
             start_index += results['max-result']
 
-    def base_list_call(self, resource, expand, favourite, clover_enabled, max_results, label=None, start_index=0, **kwargs):
+    def base_list_call(self, resource, expand, favourite, clover_enabled, max_results, label=None, start_index=0,
+                       **kwargs):
         flags = []
         params = {'max-results': max_results}
         if expand:
@@ -105,6 +106,7 @@ class Bamboo(AtlassianRestAPI):
         :param favourite:
         :param clover_enabled:
         :param issue_key:
+        :param label:
         :param start_index:
         :param max_results:
         :return:
@@ -209,17 +211,18 @@ class Bamboo(AtlassianRestAPI):
         except ValueError:
             raise ValueError('The key "{}" does not correspond to the latest build result'.format(plan_key))
 
-    def delete_build_result(self, build):
+    def delete_build_result(self, build_key):
         """
         Deleting result for specific build
         :param build_key: Take full build key, example: PROJ-PLAN-8
         """
         custom_resource = '/build/admin/deletePlanResults.action'
-        build_key = build.split('-')
+        build_key = build_key.split('-')
         plan_key = '{}-{}'.format(build_key[0], build_key[1])
         build_number = build_key[2]
         params = {'buildKey': plan_key, 'buildNumber': build_number}
         return self.post(custom_resource, params=params, headers=self.form_token_headers)
+
     def delete_plan(self, plan_key):
         """
         Marks plan for deletion. Plan will be deleted by a batch job.
@@ -228,6 +231,7 @@ class Bamboo(AtlassianRestAPI):
         """
         resource = 'rest/api/latest/plan/{}'.format(plan_key)
         return self.delete(resource)
+
     def reports(self, max_results=25):
         params = {'max-results': max_results}
         return self._get_generator(self.resource_url('chart/reports'), elements_key='reports', element_key='report',
