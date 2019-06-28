@@ -223,7 +223,7 @@ class Jira(AtlassianRestAPI):
         url = 'secure/admin/user/EditUser.jspa'
         headers = self.form_token_headers
         user = self.user(username)
-        user_update_info = {
+        data = {
             'inline': 'true',
             'decorator': 'dialog',
             'username': user['name'],
@@ -231,7 +231,15 @@ class Jira(AtlassianRestAPI):
             'email': user['emailAddress'],
             'editName': user['name']
         }
-        return self.post(data=user_update_info, path=url, headers=headers)
+        answer = self.get('secure/admin/WebSudoAuthenticate.jspa', self.form_token_headers)
+        atl_token = None
+        if answer:
+            atl_token = \
+                answer.split('<meta id="atlassian-token" name="atlassian-token" content="')[1].split('\n')[0].split(
+                    '"')[0]
+        if atl_token:
+            data['atl_token'] = atl_token
+        return self.post(data=data, path=url, headers=headers)
 
     def user_disable(self, username):
         """Override the disable method"""
@@ -249,7 +257,17 @@ class Jira(AtlassianRestAPI):
         headers = self.form_token_headers
         data = {
             'webSudoPassword': self.password,
+            'webSudoIsPost': 'false',
         }
+        answer = self.get('secure/admin/WebSudoAuthenticate.jspa', self.form_token_headers)
+        atl_token = None
+        if answer:
+            atl_token = \
+                answer.split('<meta id="atlassian-token" name="atlassian-token" content="')[1].split('\n')[0].split(
+                    '"')[0]
+        if atl_token:
+            data['atl_token'] = atl_token
+
         return self.post(path=url, data=data, headers=headers)
 
     def user_find_by_user_string(self, username, start=0, limit=50, include_inactive_users=False,
@@ -449,6 +467,24 @@ class Jira(AtlassianRestAPI):
 
     def issue(self, key, fields='*all'):
         return self.get('rest/api/2/issue/{0}?fields={1}'.format(key, fields))
+
+    def bulk_issue(self, issue_list, fields='*all'):
+        """
+        :param fields:
+        :param list issue_list:
+        :return:
+        """
+        missing_issues = list()
+        jql = 'key in ({})'.format(', '.join(['"{}"'.format(key) for key in issue_list]))
+        query_result = self.jql(jql, fields=fields)
+        if 'errorMessages' in query_result.keys():
+            for message in query_result['errorMessages']:
+                for key in issue_list:
+                    if key in message:
+                        missing_issues.append(key)
+                        issue_list.remove(key)
+            query_result, missing_issues = self.bulk_issue(issue_list, fields)
+        return query_result, missing_issues
 
     def get_issue_changelog(self, issue_key):
         """
@@ -1482,6 +1518,23 @@ class Jira(AtlassianRestAPI):
         """
         url = 'rest/tempo-timesheets/3/private/config/'
         return self.get(url)
+
+    def tempo_timesheets_get_team_utilization(self, team_id, date_from, date_to=None, group_by=None):
+        """
+        GEt team utulization. Response in json
+        :param team_id:
+        :param date_from:
+        :param date_to:
+        :param group_by:
+        :return:
+        """
+        url = 'rest/tempo-timesheets/3/report/team/{}/utilization'.format(team_id)
+        params = {'dateFrom': date_from,
+                  'dateTo': date_to}
+
+        if group_by:
+            params['groupBy'] = group_by
+        return self.get(url, params=params)
 
     def tempo_get_links_to_project(self, project_id):
         """
