@@ -1554,6 +1554,23 @@ class Jira(AtlassianRestAPI):
         url = 'rest/tempo-accounts/1/link/project/{}/default/'.format(project_id)
         return self.get(url)
 
+    def tempo_teams_add_member(self, team_id, member_key):
+        url = 'rest/tempo-teams/2/team/{}/member/'.format(team_id)
+        data = {"member": {"key": member_key, "type": "USER"},
+                "membership": {
+                    "availability": "100",
+                    "role": {"id": 1}
+                }}
+        return self.post(url, data=data)
+
+    def tempo_teams_get_members(self, team_id):
+        url = 'rest/tempo-teams/2/team/{}/member/'.format(team_id)
+        return self.get(url)
+
+    def tempo_teams_remove_member(self, team_id, member_id, membership_id):
+        url = 'rest/tempo-teams/2/team/{}/member/{}/membership/{}'.format(team_id, member_id, membership_id)
+        return self.delete(url)
+
     """
     #######################################################################
     #   Agile(Formerly Greenhopper) REST API implements                  #
