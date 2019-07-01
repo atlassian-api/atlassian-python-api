@@ -1555,6 +1555,12 @@ class Jira(AtlassianRestAPI):
         return self.get(url)
 
     def tempo_teams_add_member(self, team_id, member_key):
+        """
+        Add team member
+        :param team_id:
+        :param member_key:
+        :return:
+        """
         url = 'rest/tempo-teams/2/team/{}/member/'.format(team_id)
         data = {"member": {"key": member_key, "type": "USER"},
                 "membership": {
@@ -1564,10 +1570,22 @@ class Jira(AtlassianRestAPI):
         return self.post(url, data=data)
 
     def tempo_teams_get_members(self, team_id):
+        """
+        Get members from team
+        :param team_id:
+        :return:
+        """
         url = 'rest/tempo-teams/2/team/{}/member/'.format(team_id)
         return self.get(url)
 
     def tempo_teams_remove_member(self, team_id, member_id, membership_id):
+        """
+        Remove team membership
+        :param team_id:
+        :param member_id:
+        :param membership_id:
+        :return:
+        """
         url = 'rest/tempo-teams/2/team/{}/member/{}/membership/{}'.format(team_id, member_id, membership_id)
         return self.delete(url)
 
