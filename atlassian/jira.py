@@ -505,19 +505,20 @@ class Jira(AtlassianRestAPI):
         url = 'rest/api/2/issue/{}/worklog'.format(key)
         return self.post(url, data=worklog)
 
-    def issue_worklog(self, key, started, time_sec):
+    def issue_worklog(self, key, started, time_sec, comment=None):
         """
-
         :param key:
         :param time_sec: int: second
         :param started:
+        :param comment:
         :return:
         """
         data = {
-            # "comment": "Work on {}".format(key),
             "started": started,
             "timeSpentSeconds": time_sec
         }
+        if comment:
+            data['comment'] = comment
         return self.issue_add_json_worklog(key=key, worklog=data)
 
     def issue_field_value(self, key, field):
@@ -1534,6 +1535,34 @@ class Jira(AtlassianRestAPI):
 
         if group_by:
             params['groupBy'] = group_by
+        return self.get(url, params=params)
+
+    def tempo_timesheets_get_worklogs(self, date_from=None, date_to=None, username=None, project_key=None,
+                                      account_key=None, team_id=None):
+        """
+
+        :param date_from: yyyy-MM-dd
+        :param date_to: yyyy-MM-dd
+        :param username: name of the user you wish to get the worklogs for
+        :param project_key: key of a project you wish to get the worklogs for
+        :param account_key: key of an account you wish to get the worklogs for
+        :param team_id: id of the Team you wish to get the worklogs for
+        :return:
+        """
+        params = {}
+        if date_from:
+            params['dateFrom'] = date_from
+        if date_to:
+            params['dateTo'] = date_to
+        if username:
+            params['username'] = username
+        if project_key:
+            params['projectKey'] = project_key
+        if account_key:
+            params['accountKey'] = account_key
+        if team_id:
+            params['teamId'] = team_id
+        url = 'rest/tempo-timesheets/3/worklogs/'
         return self.get(url, params=params)
 
     def tempo_get_links_to_project(self, project_id):
