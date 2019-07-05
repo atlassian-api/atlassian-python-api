@@ -1486,7 +1486,7 @@ class Jira(AtlassianRestAPI):
         Provide a holiday scheme
         :return:
         """
-        url = 'rest/tempo-core/2/holidayschemes/{}/member/{}'.format(scheme_id, username)
+        url = 'rest/tempo-core/2/holidayschemes/{}/member/{}/'.format(scheme_id, username)
         data = {'id': scheme_id}
         return self.put(url, data=data)
 
@@ -1565,6 +1565,25 @@ class Jira(AtlassianRestAPI):
         url = 'rest/tempo-timesheets/3/worklogs/'
         return self.get(url, params=params)
 
+    def tempo_timesheets_write_worklog(self, worker, started, time_spend_in_seconds, issue_id, comment=None):
+        """
+
+        :param comment:
+        :param worker:
+        :param started:
+        :param time_spend_in_seconds:
+        :param issue_id:
+        :return:
+        """
+        data = {"worker": worker,
+                "started": started,
+                "timeSpentSeconds": time_spend_in_seconds,
+                "originTaskId": str(issue_id)}
+        if comment:
+            data['comment'] = comment
+        url = 'rest/tempo-timesheets/4/worklogs/'
+        return self.post(url, data=data)
+
     def tempo_get_links_to_project(self, project_id):
         """
         Gets all links to a specific project
@@ -1618,6 +1637,25 @@ class Jira(AtlassianRestAPI):
         url = 'rest/tempo-teams/2/team/{}/member/{}/membership/{}'.format(team_id, member_id, membership_id)
         return self.delete(url)
 
+    def tempo_teams_update_member_information(self, team_id, member_id, membership_id, data):
+        """
+        Update team membership attribute info
+        :param team_id:
+        :param member_id:
+        :param membership_id:
+        :return:
+        """
+        url = 'rest/tempo-teams/2/team/{}/member/{}/membership/{}'.format(team_id, member_id, membership_id)
+        return self.put(url, data=data)
+
+    def tempo_timesheets_get_period_configuration(self):
+        return self.get('rest/tempo-timesheets/3/period-configuration')
+
+    def tempo_timesheets_get_private_configuration(self):
+        return self.get('rest/tempo-timesheets/3/private/config')
+
+    def tempo_teams_get_memberships_for_member(self, username):
+        return self.get('rest/tempo-teams/2/user/{}/memberships'.format(username))
     """
     #######################################################################
     #   Agile(Formerly Greenhopper) REST API implements                  #
