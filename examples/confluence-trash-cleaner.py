@@ -1,4 +1,4 @@
-# coding: utf8
+# coding=utf-8
 from atlassian import Confluence
 
 """This example shows how to remove page by page from trash for all spaces"""
@@ -19,8 +19,8 @@ def clean_pages_from_space(confluence, space_key, limit=500):
     """
     flag = True
     while flag:
-        values = confluence.get_all_pages_from_space_trash(space=space_key, start=0, limit=limit)
-        if len(values) == 0:
+        values = confluence.get_all_pages_from_space_trash(space=space_key, start=0, limit=limit, content_type='page')
+        if not values or len(values) == 0:
             flag = False
             print("For space {} trash is empty".format(space_key))
         else:
@@ -28,6 +28,28 @@ def clean_pages_from_space(confluence, space_key, limit=500):
             for value in values:
                 print("Removing page with title: " + value['title'])
                 confluence.remove_page_from_trash(value['id'])
+
+
+def clean_blog_posts_from_space(confluence, space_key, limit=500):
+    """
+    Remove all pages from trash for related space
+    :param limit:
+    :param confluence:
+    :param space_key:
+    :return:
+    """
+    flag = True
+    while flag:
+        values = confluence.get_all_pages_from_space_trash(space=space_key, start=0, limit=limit,
+                                                           content_type='blogpost')
+        if values and len(values) > 0:
+            print("Found in space {} pages as trashed {}".format(space_key, len(values)))
+            for value in values:
+                print("Removing page with title: " + value['title'])
+                confluence.remove_page_from_trash(value['id'])
+        else:
+            flag = False
+            print("For space {} trash is empty".format(space_key))
 
 
 def clean_all_trash_pages_from_all_spaces(confluence):
@@ -46,6 +68,7 @@ def clean_all_trash_pages_from_all_spaces(confluence):
             for space_list in space_lists:
                 print("Start review the space with key = " + space_list['key'])
                 clean_pages_from_space(confluence=confluence, space_key=space_list['key'])
+                clean_blog_posts_from_space(confluence=confluence, space_key=space_list['key'])
         else:
             flag = False
     return 0

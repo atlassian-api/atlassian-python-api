@@ -185,9 +185,10 @@ class Confluence(AtlassianRestAPI):
             params['limit'] = limit
         return (self.get(url, params=params) or {}).get('results')
 
-    def get_all_pages_from_space(self, space, start=0, limit=50, status=None, expand=None):
+    def get_all_pages_from_space(self, space, start=0, limit=50, status=None, expand=None, content_type='page'):
         """
         Get all pages from space
+
         :param space:
         :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
         :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
@@ -198,6 +199,7 @@ class Confluence(AtlassianRestAPI):
                                  Does not support 'historical' status for now.
         :param expand: OPTIONAL: a comma separated list of properties to expand on the content.
                                  Default value: history,space,version.
+        :param content_type: the content type to return. Default value: page. Valid values: page, blogpost.
         :return:
         """
         url = 'rest/api/content'
@@ -212,9 +214,12 @@ class Confluence(AtlassianRestAPI):
             params['status'] = status
         if expand:
             params['expand'] = expand
+        if content_type:
+            params['type'] = content_type
+
         return (self.get(url, params=params) or {}).get('results')
 
-    def get_all_pages_from_space_trash(self, space, start=0, limit=500, status='trashed'):
+    def get_all_pages_from_space_trash(self, space, start=0, limit=500, status='trashed', content_type='page'):
         """
         Get list of pages from trash
         :param space:
@@ -222,9 +227,10 @@ class Confluence(AtlassianRestAPI):
         :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
                             fixed system limits. Default: 500
         :param status:
+        :param content_type: the content type to return. Default value: page. Valid values: page, blogpost.
         :return:
         """
-        return self.get_all_pages_from_space(space, start, limit, status)
+        return self.get_all_pages_from_space(space, start, limit, status, content_type=content_type)
 
     def get_all_draft_pages_from_space(self, space, start=0, limit=500, status='draft'):
         """

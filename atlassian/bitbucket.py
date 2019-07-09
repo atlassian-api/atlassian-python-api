@@ -128,12 +128,11 @@ class Bitbucket(AtlassianRestAPI):
         :param permission: the repository permissions available are 'REPO_ADMIN', 'REPO_WRITE' and 'REPO_READ'
         :return: 
         """
-        url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/users?permission={permission}&name={username}'.format(
-            project_key=project_key,
-            repo_key=repo_key,
-            permission=permission,
-            username=username)
-        return self.put(url)
+        params = {'permission': permission,
+                  'name': username}
+        url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/users'.format(project_key=project_key,
+                                                                                              repo_key=repo_key)
+        return self.put(url, params=params)
 
     def repo_grant_group_permissions(self, project_key, repo_key, groupname, permission):
         """
@@ -144,12 +143,11 @@ class Bitbucket(AtlassianRestAPI):
         :param permission: the repository permissions available are 'REPO_ADMIN', 'REPO_WRITE' and 'REPO_READ'
         :return: 
         """
-        url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/groups?permission={permission}&name={groupname}'.format(
-            project_key=project_key,
-            repo_key=repo_key,
-            permission=permission,
-            groupname=groupname)
-        return self.put(url)
+        params = {'permission': permission,
+                  'name': groupname}
+        url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/groups'.format(project_key=project_key,
+                                                                                               repo_key=repo_key)
+        return self.put(url, params=params)
 
     def project_groups(self, key, limit=99999, filter_str=None):
         """
@@ -546,8 +544,8 @@ class Bitbucket(AtlassianRestAPI):
         :param data: json body
         :return:
         """
-        url = 'rest/api/1.0/projects/{projectKey}/repos/{repositorySlug}/pull-requests'.format(projectKey=project_key,
-                                                                                               repositorySlug=repository)
+        url = 'rest/api/1.0/projects/{projectKey}/repos/{repository}/pull-requests'.format(projectKey=project_key,
+                                                                                           repository=repository)
         return self.post(url, data=data)
 
     def check_inbox_pull_requests_count(self):
@@ -595,9 +593,10 @@ class Bitbucket(AtlassianRestAPI):
         :param pull_request_id: the ID of the pull request within the repository
         :return:
         """
-        url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}'.format(project=project,
-                                                                                                        repository=repository,
-                                                                                                        pullRequestId=pull_request_id)
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}'.format(
+            project=project,
+            repository=repository,
+            pullRequestId=pull_request_id)
         return self.get(url)
 
     def get_tags(self, project, repository, filter='', limit=1000, order_by=None, start=0):
@@ -819,8 +818,9 @@ class Bitbucket(AtlassianRestAPI):
         :param limit:
         :return:
         """
-        url = 'rest/branch-permissions/2.0/projects/{project}/repos/{repository}/restrictions'.format(project=project,
-                                                                                                      repository=repository)
+        url = 'rest/branch-permissions/2.0/projects/{project}/repos/{repository}/restrictions'.format(
+            project=project,
+            repository=repository)
         params = {}
         if limit:
             params['limit'] = limit

@@ -85,9 +85,10 @@ class Jira(AtlassianRestAPI):
         :param limit: max results in the output file
         :return: CSV file
         """
-        url = 'sr/jira.issueviews:searchrequest-csv-all-fields/temp/SearchRequest.csv?tempMax={limit}&jqlQuery={jql}'.format(
-            limit=limit, jql=jql)
-        return self.get(url, not_json_response=True, headers={'Accept': 'application/csv'})
+        params = {'tempMax': limit,
+                  'jqlQuery': jql}
+        url = 'sr/jira.issueviews:searchrequest-csv-all-fields/temp/SearchRequest.csv'
+        return self.get(url, params=params, not_json_response=True, headers={'Accept': 'application/csv'})
 
     def user(self, username, expand=None):
         """
@@ -138,14 +139,14 @@ class Jira(AtlassianRestAPI):
         return self.user_update(old_username, data=data)
 
     def user_create(self, username, email, display_name, password=None, notification=None):
-
         """
         Create a user in Jira
         :param username:
         :param email:
         :param display_name:
         :param password: OPTIONAL: If a password is not set, a random password is generated.
-        :param notification: OPTIONAL: Sends the user an email confirmation that they have been added to Jira. Default:false.
+        :param notification: OPTIONAL: Sends the user an email confirmation that they have been added to Jira.
+                             Default:false.
         :return:
         """
         log.warning('Creating user {}'.format(display_name))
@@ -1643,6 +1644,7 @@ class Jira(AtlassianRestAPI):
         :param team_id:
         :param member_id:
         :param membership_id:
+        :param data:
         :return:
         """
         url = 'rest/tempo-teams/2/team/{}/member/{}/membership/{}'.format(team_id, member_id, membership_id)
@@ -1656,6 +1658,7 @@ class Jira(AtlassianRestAPI):
 
     def tempo_teams_get_memberships_for_member(self, username):
         return self.get('rest/tempo-teams/2/user/{}/memberships'.format(username))
+
     """
     #######################################################################
     #   Agile(Formerly Greenhopper) REST API implements                  #

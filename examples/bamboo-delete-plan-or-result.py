@@ -1,4 +1,4 @@
-# coding: utf8
+# coding=utf-8
 from atlassian import Bamboo
 import os
 
@@ -15,4 +15,4 @@ bamboo = Bamboo(
 bamboo.delete_plan('PLAN-TODELETE')
 
 # Delete single result
-bamboo.delete_plan_result('PLAN-TODELETE-7')
+bamboo.delete_build_result('PLAN-TODELETE-7')

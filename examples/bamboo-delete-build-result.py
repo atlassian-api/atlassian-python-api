@@ -1,4 +1,4 @@
-# coding: utf8
+# coding=utf-8
 from atlassian import Bamboo
 import os
 
@@ -11,4 +11,4 @@ bamboo = Bamboo(
     username=ATLASSIAN_USER,
     password=ATLASSIAN_PASSWORD)
 
-bamboo.delete_plan_result('PLAN-TODELETE-7')
+bamboo.delete_build_result('PLAN-TODELETE-7')

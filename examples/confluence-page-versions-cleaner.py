@@ -1,3 +1,4 @@
+# coding=utf-8
 from atlassian import Confluence
 
 CONFLUENCE_URL = "confluence.example.com"
