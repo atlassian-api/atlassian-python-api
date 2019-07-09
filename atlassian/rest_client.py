@@ -56,7 +56,7 @@ class AtlassianRestAPI(object):
         """
         self._session.headers.update({key: value})
 
-    def log_curl_debug(self, method, path, data=None, headers=None, trailing=None, level=logging.DEBUG, cookies=None):
+    def log_curl_debug(self, method, path, data=None, headers=None, trailing=None, level=logging.DEBUG):
         """
 
         :param method:
@@ -65,7 +65,6 @@ class AtlassianRestAPI(object):
         :param headers:
         :param trailing: bool flag for trailing /
         :param level:
-        :param cookies:
         :return:
         """
         headers = headers or self.default_headers
