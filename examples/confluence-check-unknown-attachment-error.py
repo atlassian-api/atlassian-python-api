@@ -1,3 +1,4 @@
+# coding=utf-8
 from atlassian import Confluence
 
 """This example how to detect unknown-attachments errors"""

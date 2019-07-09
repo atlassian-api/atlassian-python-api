@@ -1,3 +1,4 @@
+# coding=utf-8
 from atlassian import Confluence
 
 """ How to reindex the Confluence instance """
