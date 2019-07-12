@@ -488,6 +488,18 @@ class Confluence(AtlassianRestAPI):
                 'name': label}
         return self.post(path=url, data=data)
 
+    def remove_page_label(self, page_id, label):
+        """
+        Delete Confluence page label
+        :param page_id: content_id format
+        :param label: label name
+        :return:
+        """
+        url = 'rest/api/content/{page_id}/label'.format(page_id=page_id)
+        params = {'id': page_id,
+                  'name': label}
+        return self.delete(path=url, params=params)
+
     def history(self, page_id):
         url = 'rest/api/content/{0}/history'.format(page_id)
         return self.get(url)
