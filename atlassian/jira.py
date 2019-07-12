@@ -526,6 +526,10 @@ class Jira(AtlassianRestAPI):
         issue = self.get('rest/api/2/issue/{0}?fields={1}'.format(key, field))
         return issue['fields'][field]
 
+    def issue_fields(self, key):
+        issue = self.get('rest/api/2/issue/{0}'.format(key))
+        return issue['fields']
+
     def update_issue_field(self, key, fields='*all'):
         return self.put('rest/api/2/issue/{0}'.format(key), data={'fields': fields})
 
