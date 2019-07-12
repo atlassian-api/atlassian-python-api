@@ -488,6 +488,18 @@ class Confluence(AtlassianRestAPI):
                 'name': label}
         return self.post(path=url, data=data)
 
+    def remove_page_label(self, page_id, label):
+        """
+        Delete Confluence page label
+        :param page_id: content_id format
+        :param label: label name
+        :return:
+        """
+        url = 'rest/api/content/{page_id}/label'.format(page_id=page_id)
+        params = {'id': page_id,
+                  'name': label}
+        return self.delete(path=url, params=params)
+
     def history(self, page_id):
         url = 'rest/api/content/{0}/history'.format(page_id)
         return self.get(url)
@@ -1099,3 +1111,27 @@ class Confluence(AtlassianRestAPI):
             return None
 
         return download_url
+
+    def audit(self, start_date=None, end_date=None, start=None, limit=None, search_string=None):
+        """
+        Fetch a paginated list of AuditRecord instances dating back to a certain time
+        :param start_date:
+        :param end_date:
+        :param start:
+        :param limit:
+        :param search_string:
+        :return:
+        """
+        url = 'rest/api/audit'
+        params = {}
+        if start_date:
+            params['startDate'] = start_date
+        if end_date:
+            params['endDate'] = end_date
+        if start:
+            params['start'] = start
+        if limit:
+            params['limit'] = limit
+        if search_string:
+            params['searchString'] = search_string
+        return self.get(url, params=params)

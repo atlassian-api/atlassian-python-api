@@ -1072,6 +1072,53 @@ class Jira(AtlassianRestAPI):
         url = 'rest/api/2/issueLinkType/{issueLinkTypeId}'.format(issueLinkTypeId=issue_link_type_id)
         return self.put(url, data=data)
 
+    def create_issue_link(self, data):
+        """
+        Creates an issue link between two issues.
+        The user requires the link issue permission for the issue which will be linked to another issue.
+        The specified link type in the request is used to create the link and will create a link from
+        the first issue to the second issue using the outward description. It also create a link from
+        the second issue to the first issue using the inward description of the issue link type.
+        It will add the supplied comment to the first issue. The comment can have a restriction who can view it.
+        If group is specified, only users of this group can view this comment, if roleLevel is specified only users
+        who have the specified role can view this comment.
+        The user who creates the issue link needs to belong to the specified group or have the specified role.
+        :param data: i.e.
+        {
+            "type": {"name": "Duplicate" },
+            "inwardIssue": { "key": "HSP-1"},
+            "outwardIssue": {"key": "MKY-1"},
+            "comment": { "body": "Linked related issue!",
+                         "visibility": { "type": "group", "value": "jira-software-users" }
+            }
+        }
+        :return:
+        """
+        log.info(
+            'Linking issue {inward} and {outward}'.format(inward=data['inwardIssue'], outward=data['outwardIssue']))
+        url = 'rest/api/2/issueLink'
+        return self.post(url, data=data)
+
+    def remove_issue_link(self, link_id):
+        """
+        Deletes an issue link with the specified id.
+        To be able to delete an issue link you must be able to view both issues
+        and must have the link issue permission for at least one of the issues.
+        :param link_id: the issue link id.
+        :return:
+        """
+        url = 'rest/api/2/issueLink/{}'.format(link_id)
+        return self.delete(url)
+
+    def get_issue_link(self, link_id):
+        """
+        Returns an issue link with the specified id.
+        :param link_id: the issue link id.
+        :return:
+        """
+        url = 'rest/api/2/issueLink/{}'.format(link_id)
+        return self.get(url)
+
     def create_filter(self, name, jql, description=None, favourite=False):
         """
         :param name: str

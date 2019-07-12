@@ -105,6 +105,22 @@ class Bitbucket(AtlassianRestAPI):
             username=username)
         return self.put(url)
 
+    def project_remove_user_permissions(self, project_key, username):
+        """
+        Revoke all permissions for the specified project for a user.
+        The authenticated user must have PROJECT_ADMIN permission for
+        the specified project or a higher global permission to call this resource.
+        In addition, a user may not revoke their own project permissions if they do not have a higher global permission.
+        :param project_key: project key involved
+        :param username: user name to be granted
+        :return:
+        """
+        url = 'rest/api/1.0/projects/{project_key}/permissions/users?name={username}'.format(
+            project_key=project_key,
+            permission=permission,
+            username=username)
+        return self.delete(url)
+
     def project_grant_group_permissions(self, project_key, groupname, permission):
         """
         Grant the specified project permission to an specific group
@@ -118,6 +134,22 @@ class Bitbucket(AtlassianRestAPI):
             permission=permission,
             groupname=groupname)
         return self.put(url)
+
+    def project_remove_group_permissions(self, project_key, groupname):
+        """
+        Revoke all permissions for the specified project for a group.
+        The authenticated user must have PROJECT_ADMIN permission for the specified project
+        or a higher global permission to call this resource.
+        In addition, a user may not revoke a group's permissions
+        if it will reduce their own permission level.
+        :param project_key: project key involved
+        :param groupname: group to be granted
+        :return:
+        """
+        url = 'rest/api/1.0/projects/{project_key}/permissions/groups?name={groupname}'.format(
+            project_key=project_key,
+            groupname=groupname)
+        return self.delete(url)
 
     def repo_grant_user_permissions(self, project_key, repo_key, username, permission):
         """
@@ -134,9 +166,35 @@ class Bitbucket(AtlassianRestAPI):
                                                                                               repo_key=repo_key)
         return self.put(url, params=params)
 
+    def repo_remove_user_permissions(self, project_key, repo_key, username):
+        """
+        Revoke all permissions for the specified repository for a user.
+        The authenticated user must have REPO_ADMIN permission for the specified repository
+        or a higher project or global permission to call this resource.
+        In addition, a user may not revoke their own repository permissions
+        if they do not have a higher project or global permission.
+        :param project_key: project key involved
+        :param repo_key: repository key involved (slug)
+        :param username: user name to be granted
+        :return:
+        """
+        params = {'name': username}
+        url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/users'.format(project_key=project_key,
+                                                                                              repo_key=repo_key)
+        return self.delete(url, params=params)
+
     def repo_grant_group_permissions(self, project_key, repo_key, groupname, permission):
         """
         Grant the specified repository permission to an specific group
+        Promote or demote a group's permission level for the specified repository. Available repository permissions are:
+            REPO_READ
+            REPO_WRITE
+            REPO_ADMIN
+        See the Bitbucket Server documentation for a detailed explanation of what each permission entails.
+        The authenticated user must have REPO_ADMIN permission for the specified repository or a higher project
+        or global permission to call this resource.
+        In addition, a user may not demote a group's permission level
+        if their own permission level would be reduced as a result.
         :param project_key: project key involved
         :param repo_key: repository key involved (slug)
         :param groupname: group to be granted
@@ -148,6 +206,23 @@ class Bitbucket(AtlassianRestAPI):
         url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/groups'.format(project_key=project_key,
                                                                                                repo_key=repo_key)
         return self.put(url, params=params)
+
+    def repo_remove_group_permissions(self, project_key, repo_key, groupname, permission):
+        """
+        Revoke all permissions for the specified repository for a group.
+        The authenticated user must have REPO_ADMIN permission for the specified repository
+        or a higher project or global permission to call this resource.
+        In addition, a user may not revoke a group's permissions if it will reduce their own permission level.
+        :param project_key: project key involved
+        :param repo_key: repository key involved (slug)
+        :param groupname: group to be granted
+        :param permission: the repository permissions available are 'REPO_ADMIN', 'REPO_WRITE' and 'REPO_READ'
+        :return:
+        """
+        params = {'name': groupname}
+        url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/groups'.format(project_key=project_key,
+                                                                                               repo_key=repo_key)
+        return self.delete(url, params=params)
 
     def project_groups(self, key, limit=99999, filter_str=None):
         """
