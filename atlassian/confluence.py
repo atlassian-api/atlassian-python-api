@@ -1111,3 +1111,27 @@ class Confluence(AtlassianRestAPI):
             return None
 
         return download_url
+
+    def audit(self, start_date=None, end_date=None, start=None, limit=None, search_string=None):
+        """
+        Fetch a paginated list of AuditRecord instances dating back to a certain time
+        :param start_date:
+        :param end_date:
+        :param start:
+        :param limit:
+        :param search_string:
+        :return:
+        """
+        url = 'rest/api/audit'
+        params = {}
+        if start_date:
+            params['startDate'] = start_date
+        if end_date:
+            params['endDate'] = end_date
+        if start:
+            params['start'] = start
+        if limit:
+            params['limit'] = limit
+        if search_string:
+            params['searchString'] = search_string
+        return self.get(url, params=params)
