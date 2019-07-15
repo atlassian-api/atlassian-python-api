@@ -1034,7 +1034,7 @@ class Confluence(AtlassianRestAPI):
         url = 'rest/plugins/1.0/{}-key'.format(plugin_key)
         return self.delete(url)
 
-    def check_long_tasks_result(self, start, limit, expand):
+    def check_long_tasks_result(self, start=None, limit=None, expand=None):
         """
         Get result of long tasks
         :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
@@ -1052,7 +1052,7 @@ class Confluence(AtlassianRestAPI):
             params['limit'] = limit
         return self.get('rest/api/longtask', params=params)
 
-    def check_long_task_result(self, task_id, expand):
+    def check_long_task_result(self, task_id, expand=None):
         """
         Get result of long tasks
         :param task_id: task id
