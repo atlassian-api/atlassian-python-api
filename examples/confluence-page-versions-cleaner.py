@@ -7,7 +7,7 @@ CONFLUENCE_PASSWORD = "passwordpassword"
 
 def page_version_remover(server, content_id, remained_page_numbers):
     response = server.get_content_history(content_id)
-    if not response.get('latest'):
+    if not response or not response.get('latest'):
         return
     latest_version_count = int(response.get('lastUpdated').get('number'))
     if len(response) > 0 and latest_version_count > remained_page_numbers:
