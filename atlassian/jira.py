@@ -52,7 +52,7 @@ class Jira(AtlassianRestAPI):
     def reindex_issue(self, list_of_):
         pass
 
-    def jql(self, jql, fields='*all', start=0, limit=None):
+    def jql(self, jql, fields='*all', start=0, limit=None, expand=None):
         """
         Get issues from jql search result with all related fields
         :param jql:
@@ -60,6 +60,7 @@ class Jira(AtlassianRestAPI):
         :param start: OPTIONAL: The start point of the collection to return. Default: 0.
         :param limit: OPTIONAL: The limit of the number of issues to return, this may be restricted by
                 fixed system limits. Default by built-in method: 50
+        :param expand: OPTIONAL: expland the search result
         :return:
         """
         params = {}
@@ -73,6 +74,8 @@ class Jira(AtlassianRestAPI):
             params['fields'] = fields
         if jql is not None:
             params['jql'] = jql
+        if expand is not None:
+            params['expand'] = expand
         return self.get('rest/api/2/search', params=params)
 
     def csv(self, jql, limit=1000):
@@ -86,8 +89,17 @@ class Jira(AtlassianRestAPI):
             limit=limit, jql=jql)
         return self.get(url, not_json_response=True, headers={'Accept': 'application/csv'})
 
-    def user(self, username):
-        return self.get('rest/api/2/user?username={0}'.format(username))
+    def user(self, username, expand=None):
+        """
+        Returns a user. This resource cannot be accessed anonymously.
+        :param username:
+        :param expand: Can be 'groups,applicationRoles'
+        :return:
+        """
+        params = {'username': username}
+        if expand:
+            params['expand'] = expand
+        return self.get('rest/api/2/user', params=params)
 
     def is_active_user(self, username):
         """
@@ -115,7 +127,18 @@ class Jira(AtlassianRestAPI):
         url = 'rest/api/2/user?username={0}'.format(username)
         return self.put(url, data=data)
 
-    def user_create(self, username, email, display_name, password = None, notification = None):
+    def user_update_username(self, old_username, new_username):
+        """
+        Update username
+        :param old_username:
+        :param new_username:
+        :return:
+        """
+        data = {"name": new_username}
+        return self.user_update(old_username, data=data)
+
+    def user_create(self, username, email, display_name, password=None, notification=None):
+
         """
         Create a user in Jira
         :param username:
@@ -907,7 +930,7 @@ class Jira(AtlassianRestAPI):
         transition_id = self.get_transition_id_to_status_name(issue_key, status_name)
         return self.post(url, data={'transition': {'id': transition_id}})
 
-    def set_issue_status_by_id(self, issue_key, transition_id):
+    def set_issue_status_by_transition_id(self, issue_key, transition_id):
         """
         Setting status by transition_id
         :param issue_key: str
@@ -919,6 +942,10 @@ class Jira(AtlassianRestAPI):
     def get_issue_status(self, issue_key):
         url = 'rest/api/2/issue/{issue_key}?fields=status'.format(issue_key=issue_key)
         return (self.get(url) or {}).get('fields').get('status').get('name')
+
+    def get_issue_status_id(self, issue_key):
+        url = 'rest/api/2/issue/{issue_key}?fields=status'.format(issue_key=issue_key)
+        return (self.get(url) or {}).get('fields').get('status').get('id')
 
     def get_issue_link_types(self):
         """Returns a list of available issue link types,
@@ -1379,15 +1406,23 @@ class Jira(AtlassianRestAPI):
 
     def tempo_holiday_get_schemes(self):
         """
-        Provide a holiday scheme
+        Provide a holiday schemes
         :return:
         """
         url = 'rest/tempo-core/2/holidayschemes/'
         return self.get(url)
 
-    def tempo_holiday_get_scheme_members(self, scheme_id):
+    def tempo_holiday_get_scheme_info(self, scheme_id):
         """
         Provide a holiday scheme
+        :return:
+        """
+        url = 'rest/tempo-core/2/holidayschemes/{}'.format(scheme_id)
+        return self.get(url)
+
+    def tempo_holiday_get_scheme_members(self, scheme_id):
+        """
+        Provide a holiday scheme members
         :return:
         """
         url = 'rest/tempo-core/2/holidayschemes/{}/members'.format(scheme_id)
@@ -1401,6 +1436,28 @@ class Jira(AtlassianRestAPI):
         url = 'rest/tempo-core/2/holidayschemes/{}/member/{}'.format(scheme_id, username)
         data = {'id': scheme_id}
         return self.put(url, data=data)
+
+    def tempo_holiday_scheme_set_default(self, scheme_id):
+        """
+        Set as default the holiday scheme
+        :param scheme_id:
+        :return:
+        """
+        # @deprecated available in private mode the 1 version
+        # url = 'rest/tempo-core/1/holidayscheme/setDefault/{}'.format(scheme_id)
+
+        url = 'rest/tempo-core/2/holidayscheme/setDefault/{}'.format(scheme_id)
+        data = {'id': scheme_id}
+        return self.post(url, data=data)
+
+    def tempo_workload_scheme_get_members(self, scheme_id):
+        """
+        Provide a workload scheme members
+        :param scheme_id:
+        :return:
+        """
+        url = 'rest/tempo-core/1/workloadscheme/users/{}'.format(scheme_id)
+        return self.get(url)
 
     def tempo_timesheets_get_configuration(self):
         """

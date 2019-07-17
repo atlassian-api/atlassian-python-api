@@ -21,6 +21,17 @@ class Confluence(AtlassianRestAPI):
         ".svg": "image/svg+xml"
     }
 
+    @staticmethod
+    def _create_body(body, representation):
+        if representation not in ['editor', 'export_view', 'view', 'storage', 'wiki']:
+            raise ValueError("Wrong value for representation, it should be either wiki or storage")
+
+        return {
+            representation: {
+                'value': body,
+                'representation': representation}
+        }
+
     def page_exists(self, space, title):
         try:
             if self.get_page_by_title(space, title):
@@ -174,14 +185,19 @@ class Confluence(AtlassianRestAPI):
             params['limit'] = limit
         return (self.get(url, params=params) or {}).get('results')
 
-    def get_all_pages_from_space(self, space, start=0, limit=50, status=None):
+    def get_all_pages_from_space(self, space, start=0, limit=50, status=None, expand=None):
         """
         Get all pages from space
         :param space:
         :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
         :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
                             fixed system limits. Default: 50
-        :param status: OPTIONAL
+        :param status: OPTIONAL: list of statuses the content to be found is in.
+                                 Defaults to current is not specified.
+                                 If set to 'any', content in 'current' and 'trashed' status will be fetched.
+                                 Does not support 'historical' status for now.
+        :param expand: OPTIONAL: a comma separated list of properties to expand on the content.
+                                 Default value: history,space,version.
         :return:
         """
         url = 'rest/api/content'
@@ -194,6 +210,8 @@ class Confluence(AtlassianRestAPI):
             params['limit'] = limit
         if status:
             params['status'] = status
+        if expand:
+            params['expand'] = expand
         return (self.get(url, params=params) or {}).get('results')
 
     def get_all_pages_from_space_trash(self, space, start=0, limit=500, status='trashed'):
@@ -297,16 +315,12 @@ class Confluence(AtlassianRestAPI):
         :return:
         """
         log.info('Creating {type} "{space}" -> "{title}"'.format(space=space, title=title, type=type))
-        if representation not in ['wiki', 'storage']:
-            raise ValueError("Wrong value for representation, it should be either wiki or storage")
         url = 'rest/api/content/'
         data = {
             'type': type,
             'title': title,
             'space': {'key': space},
-            'body': {representation: {
-                'value': body,
-                'representation': representation}}}
+            'body': self._create_body(body, representation)}
         if parent_id:
             data['ancestors'] = [{'type': type, 'id': parent_id}]
         return self.post(url, data=data)
@@ -334,7 +348,7 @@ class Confluence(AtlassianRestAPI):
         """
         data = {'type': 'comment',
                 'container': {'id': page_id, 'type': 'page', 'status': 'current'},
-                'body': {'storage': {'value': text, 'representation': 'storage'}}}
+                'body': self._create_body(text, 'storage')}
         return self.post('rest/api/content/', data=data)
 
     def attach_file(self, filename, page_id=None, title=None, space=None, comment=None):
@@ -453,6 +467,15 @@ class Confluence(AtlassianRestAPI):
         url = 'rest/experimental/content/{id}/version/{versionNumber}'.format(id=page_id, versionNumber=version_number)
         self.delete(url)
 
+    def remove_page_history(self, page_id, version_number):
+        """
+        Remove content history. It works as experimental method
+        :param page_id:
+        :param version_number: version number
+        :return:
+        """
+        self.remove_content_history(page_id, version_number)
+
     def remove_content_history_in_cloud(self, page_id, version_id):
         """
         Remove content history. It works in CLOUD
@@ -462,6 +485,22 @@ class Confluence(AtlassianRestAPI):
         """
         url = 'rest/api/content/{id}/version/{versionId}'.format(id=page_id, versionId=version_id)
         self.delete(url)
+
+    def remove_page_history_keep_version(self, page_id, keep_last_versions):
+        """
+        Keep last versions
+        :param page_id:
+        :param keep_last_versions:
+        :return:
+        """
+        page = self.get_page_by_id(page_id=page_id, expand='version')
+        page_number = page.get('version').get('number')
+        while page_number > keep_last_versions:
+            self.remove_page_history(page_id=page_id, version_number=1)
+            page = self.get_page_by_id(page_id=page_id, expand='version')
+            page_number = page.get('version').get('number')
+            log.info("Removed oldest version for {}, now it's {}".format(page.get('title'), page_number))
+        log.info("Kept versions {} for {}".format(keep_last_versions, page.get('title')))
 
     def has_unknown_attachment_error(self, page_id):
         """
@@ -502,7 +541,7 @@ class Confluence(AtlassianRestAPI):
             log.info('Content of {page_id} differs'.format(page_id=page_id))
             return False
 
-    def update_existing_page(self, page_id, title, body, type='page',
+    def update_existing_page(self, page_id, title, body, type='page', representation='storage',
                              minor_edit=False):
         """Duplicate update_page. Left for the people who used it before. Use update_page instead"""
         return update_page(page_id, title, body, parent_id=None, type=type,
@@ -517,6 +556,7 @@ class Confluence(AtlassianRestAPI):
         :param title:
         :param body:
         :param type:
+        :param representation: OPTIONAL: either Confluence 'storage' or 'wiki' markup format
         :param minor_edit: Indicates whether to notify watchers about changes.
             If False then notifications will be sent.
         :return:
@@ -532,9 +572,7 @@ class Confluence(AtlassianRestAPI):
                 'id': page_id,
                 'type': type,
                 'title': title,
-                'body': {'storage': {
-                    'value': body,
-                    'representation': 'storage'}},
+                'body': self._create_body(body, representation),
                 'version': {'number': version,
                             'minorEdit': minor_edit}
             }
@@ -544,7 +582,7 @@ class Confluence(AtlassianRestAPI):
 
             return self.put('rest/api/content/{0}'.format(page_id), data=data)
 
-    def append_page(self, parent_id, page_id, title, append_body, type='page',
+    def append_page(self, parent_id, page_id, title, append_body, type='page', representation='storage',
                     minor_edit=False):
         """
         Append body to page if already exist
@@ -553,6 +591,7 @@ class Confluence(AtlassianRestAPI):
         :param title:
         :param append_body:
         :param type:
+        :param representation: OPTIONAL: either Confluence 'storage' or 'wiki' markup format
         :param minor_edit: Indicates whether to notify watchers about changes.
             If False then notifications will be sent.
         :return:
@@ -572,9 +611,7 @@ class Confluence(AtlassianRestAPI):
                 'id': page_id,
                 'type': type,
                 'title': title,
-                'body': {'storage': {
-                    'value': body,
-                    'representation': 'storage'}},
+                'body': self._create_body(body, representation),
                 'version': {'number': version,
                             'minorEdit': minor_edit}
             }
@@ -584,21 +621,24 @@ class Confluence(AtlassianRestAPI):
 
             return self.put('rest/api/content/{0}'.format(page_id), data=data)
 
-    def update_or_create(self, parent_id, title, body):
+    def update_or_create(self, parent_id, title, body, representation='storage'):
         """
         Update page or create a page if it is not exists
         :param parent_id:
         :param title:
         :param body:
+        :param representation: OPTIONAL: either Confluence 'storage' or 'wiki' markup format
         :return:
         """
         space = self.get_page_space(parent_id)
 
         if self.page_exists(space, title):
             page_id = self.get_page_id(space, title)
-            result = self.update_page(parent_id=parent_id, page_id=page_id, title=title, body=body)
+            result = self.update_page(parent_id=parent_id, page_id=page_id, title=title, body=body,
+                                      representation=representation)
         else:
-            result = self.create_page(space=space, parent_id=parent_id, title=title, body=body)
+            result = self.create_page(space=space, parent_id=parent_id, title=title, body=body,
+                                      representation=representation)
 
         log.info('You may access your page at: {host}{url}'.format(host=self.url,
                                                                    url=((result or {})
@@ -884,6 +924,24 @@ class Confluence(AtlassianRestAPI):
             # check as support tools
             response = self.get('rest/supportHealthCheck/1.0/check/')
         return response
+
+    def synchrony_enable(self):
+        """
+        Enable Synchrony
+        :return:
+        """
+        headers = {'X-Atlassian-Token': 'no-check'}
+        url = 'rest/synchrony-interop/enable'
+        return self.post(url, headers=headers)
+
+    def synchrony_disable(self):
+        """
+        Disable Synchrony
+        :return:
+        """
+        headers = {'X-Atlassian-Token': 'no-check'}
+        url = 'rest/synchrony-interop/disable'
+        return self.post(url, headers=headers)
 
     def check_access_mode(self):
         return self.get("rest/api/accessmode")
