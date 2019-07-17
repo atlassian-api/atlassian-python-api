@@ -1878,7 +1878,7 @@ class Jira(AtlassianRestAPI):
             'startDate': start_date,
             'endDate': end_date})
 
-    def delete_spint(self, sprint_id):
+    def delete_sprint(self, sprint_id):
         """
         Deletes a sprint.
         Once a sprint is deleted, all issues in the sprint will be moved to the backlog.
@@ -1887,6 +1887,25 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         return self.delete('rest/agile/1.0/sprint/{sprintId}'.format(sprintId=sprint_id))
+
+    def update_partially_sprint(self, sprint_id, data):
+        """
+        Performs a partial update of a sprint.
+        A partial update means that fields not present in the request JSON will not be updated.
+        Notes:
+
+        Sprints that are in a closed state cannot be updated.
+        A sprint can be started by updating the state to 'active'.
+        This requires the sprint to be in the 'future' state and have a startDate and endDate set.
+        A sprint can be completed by updating the state to 'closed'.
+        This action requires the sprint to be in the 'active' state. This sets the completeDate to the time of the request.
+        Other changes to state are not allowed.
+        The completeDate field cannot be updated manually.
+        :param sprint_id:
+        :param data: { "name": "new name"}
+        :return:
+        """
+        return self.post('rest/agile/1.0/sprint/{}'.format(sprint_id), data=data)
 
     def get_sprint_issues(self, sprint_id, start, limit):
         """
