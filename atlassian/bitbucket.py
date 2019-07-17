@@ -414,6 +414,18 @@ class Bitbucket(AtlassianRestAPI):
 
         return (self.get(url, params=params) or {}).get('values')
 
+    def get_default_branch(self, project, repository):
+        """
+        Get the default branch of the repository.
+        The authenticated user must have REPO_READ permission for the specified repository to call this resource.
+        :param project:
+        :param repository:
+        :return:
+        """
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/branches/default'.format(project=project,
+                                                                                           repository=repository)
+        return self.get(url)
+
     def create_branch(self, project_key, repository, name, start_point, message=""):
         """Creates a branch using the information provided in the request.
 
