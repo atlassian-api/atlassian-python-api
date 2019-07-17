@@ -117,7 +117,6 @@ class Bitbucket(AtlassianRestAPI):
         """
         url = 'rest/api/1.0/projects/{project_key}/permissions/users?name={username}'.format(
             project_key=project_key,
-            permission=permission,
             username=username)
         return self.delete(url)
 
