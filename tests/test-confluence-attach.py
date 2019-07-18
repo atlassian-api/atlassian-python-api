@@ -6,27 +6,27 @@ from atlassian import Confluence
 
 
 class TestConfluenceAttach(unittest.TestCase):
+    secret_file = '../credentials.secret'
+
+    '''
+        Keep the credentials private, the file is excluded. There is an example for credentials.secret
+        See also: http://www.blacktechdiva.com/hide-api-keys/
+
+        {
+          "host" : "https://localhost:8080",
+          "username" : "john_doe",
+          "password" : "12345678"
+        }        
+    '''
 
     def test_confluence_attach(self):
         credentials = None
-        secret_file = '../credentials.secret'
-
-        '''
-            Keep the credentials private, the file is excluded. There is an example for credentials.secret
-            See also: http://www.blacktechdiva.com/hide-api-keys/
-            
-            {
-              "host" : "https://localhost:8080",
-              "username" : "john_doe",
-              "password" : "12345678"
-            }        
-        '''
 
         try:
-            with open(secret_file) as json_file:
+            with open(self.secret_file) as json_file:
                 credentials = json.load(json_file)
         except Exception as err:
-            self.fail('[{0}]: {1}'.format(secret_file, err))
+            self.fail('[{0}]: {1}'.format(self.secret_file, err))
 
         confluence = Confluence(
             url=credentials['host'],
