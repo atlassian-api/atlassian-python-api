@@ -839,7 +839,7 @@ class Bitbucket(AtlassianRestAPI):
             params['limit'] = limit
         return (self.get(url, params=params) or {}).get('values')
 
-    def get_file_list(self, project, repository, query, limit=100000):
+    def get_file_list(self, project, repository, query=None, limit=100000):
         """
         Retrieve a page of files from particular directory of a repository.
         The search is done recursively, so all files from any sub-directory of the specified directory will be returned.
@@ -1082,3 +1082,12 @@ class Bitbucket(AtlassianRestAPI):
             project=project,
             repository=repository)
         return self.delete(url)
+
+    def markup_preview(self, data):
+        """
+        Preview generated HTML for the given markdown content.
+        Only authenticated users may call this resource.
+        :param data:
+        :return:
+        """
+        return self.post('rest/api/1.0/markup/preview', data=data)
