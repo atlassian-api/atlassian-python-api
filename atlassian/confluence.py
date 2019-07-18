@@ -448,34 +448,13 @@ class Confluence(AtlassianRestAPI):
         :param comment: A comment describing this upload/file
         :type  comment: ``str``
         """
-        page_id = self.get_page_id(space=space, title=title) if page_id is None else page_id
-        type = 'attachment'
-        if page_id is not None:
-            # get base name of the file to get the attachment from confluence.
-            file_base_name = os.path.basename(filename)
-            extension = os.path.splitext(filename)[-1]
-            content_type = self.content_types.get(extension, "application/binary")
-            comment = comment if comment else "Uploaded {filename}.".format(filename=filename)
-            data = {
-                'type': type,
-                "fileName": file_base_name,
-                "contentType": content_type,
-                "comment": comment,
-                "minorEdit": "true"}
-            headers = {
-                'X-Atlassian-Token': 'nocheck',
-                'Accept': 'application/json'}
-            path = 'rest/api/content/{page_id}/child/attachment'.format(page_id=page_id)
-            # Check if there is already a file with the same name
-            attachments = self.get(path=path, headers=headers, params={'filename': file_base_name})
-            if attachments['size']:
-                path = path + '/' + attachments['results'][0]['id'] + '/data'
-            with open(filename, 'rb') as infile:
-                return self.post(path=path, data=data, headers=headers,
-                                 files={'file': (file_base_name, infile, content_type)})
-        else:
-            log.warning("No 'page_id' found, not uploading attachments")
-            return None
+        # get base name of the file to get the attachment from confluence.
+        name = os.path.basename(filename)
+        extension = os.path.splitext(filename)[-1]
+        content_type = self.content_types.get(extension, "application/binary")
+        with open(filename, 'rb') as infile:
+            content = infile.read()
+        return self.attach_content( content, name, content_type, page_id=page_id, title=title, space=space, comment=comment )
 
     def delete_attachment(self, page_id, filename, version=None):
         """
