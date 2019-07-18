@@ -5,9 +5,9 @@ import unittest
 from atlassian import Confluence
 
 
-class TestConfluenceAuth(unittest.TestCase):
+class TestConfluenceAttach(unittest.TestCase):
 
-    def test_confluence_auth(self):
+    def test_confluence_attach(self):
         credentials = None
         secret_file = '../credentials.secret'
 
