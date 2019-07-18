@@ -155,6 +155,31 @@ class Confluence(AtlassianRestAPI):
             params['limit'] = int(limit)
         return self.get(url, params=params)
 
+    def get_page_comments(self, content_id, expand=None, parent_version=None, start=0, limit=25, location=None,
+                          depth=None):
+        """
+
+        :param content_id:
+        :param expand: extensions.inlineProperties,extensions.resolution
+        :param parent_version:
+        :param start:
+        :param limit:
+        :param location: inline or not
+        :param depth:
+        :return:
+        """
+        params = {'id': content_id, 'start': start, 'limit': limit}
+        if expand:
+            params['expand'] = expand
+        if parent_version:
+            params['parentVersion'] = parent_version
+        if location:
+            params['location'] = location
+        if depth:
+            params['depth'] = depth
+        url = 'rest/api/content/{id}/child/comment'.format(id=content_id)
+        return self.get(url, params=params)
+
     def get_draft_page_by_id(self, page_id, status='draft'):
         """
         Provide content by id with status = draft
@@ -289,6 +314,14 @@ class Confluence(AtlassianRestAPI):
         :return:
         """
         return self.remove_page(page_id=page_id, status='draft')
+
+    def remove_content(self, content_id):
+        """
+        Remove any content
+        :param content_id:
+        :return:
+        """
+        return self.delete('rest/api/content/{}'.format(content_id))
 
     def remove_page(self, page_id, status=None, recursive=False):
         """

@@ -17,6 +17,8 @@ class AtlassianRestAPI(object):
     form_token_headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
                           'X-Atlassian-Token': 'no-check'}
 
+    response = None
+
     def __init__(self, url, username=None, password=None, timeout=60, api_root='rest/api', api_version='latest',
                  verify_ssl=True, session=None, oauth=None, cookies=None, advanced_mode=None):
 
@@ -124,6 +126,7 @@ class AtlassianRestAPI(object):
             files=files
         )
         if self.advanced_mode:
+            self.response = response
             return response
         try:
             if response.text:
