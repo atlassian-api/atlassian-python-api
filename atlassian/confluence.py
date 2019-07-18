@@ -433,7 +433,7 @@ class Confluence(AtlassianRestAPI):
             log.warning("No 'page_id' found, not uploading attachments")
             return None
 
-    def attach_file(self, filename, page_id=None, title=None, space=None, comment=None):
+    def attach_file(self, filename, name=None, content_type=None, page_id=None, title=None, space=None, comment=None):
         """
         Attach (upload) a file to a page, if it exists it will update the
         automatically version the new file and keep the old one.
@@ -443,15 +443,22 @@ class Confluence(AtlassianRestAPI):
         :type  space: ``str``
         :param page_id: The page id to which we would like to upload the file
         :type  page_id: ``str``
-        :param filename: The file to upload
+        :param filename: The file to upload (Specifies the content)
         :type  filename: ``str``
+        :param name: Specifies name of the attachment. This paramter is optional. Is no name give the file name is used as name
+        :type  name: ``str``
+        :param content_type: Specify the HTTP content type. The default is
+        :type  content_type: ``str``
         :param comment: A comment describing this upload/file
         :type  comment: ``str``
         """
         # get base name of the file to get the attachment from confluence.
-        name = os.path.basename(filename)
-        extension = os.path.splitext(filename)[-1]
-        content_type = self.content_types.get(extension, "application/binary")
+        if name is None:
+            name = os.path.basename(filename)
+        if content_type is None:
+            extension = os.path.splitext(filename)[-1]
+            content_type = self.content_types.get(extension, "application/binary")
+
         with open(filename, 'rb') as infile:
             content = infile.read()
         return self.attach_content( content, name, content_type, page_id=page_id, title=title, space=space, comment=comment )
