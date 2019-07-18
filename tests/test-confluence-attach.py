@@ -60,6 +60,41 @@ class TestConfluenceAttach(unittest.TestCase):
         os.close(fd)
         os.remove(filename)
 
+    def test_confluence_attach_data(self):
+        credentials = None
+
+        try:
+            with open(self.secret_file) as json_file:
+                credentials = json.load(json_file)
+        except Exception as err:
+            self.fail('[{0}]: {1}'.format(self.secret_file, err))
+
+        confluence = Confluence(
+            url=credentials['host'],
+            username=credentials['username'],
+            password=credentials['password'])
+
+        # individual configuration
+        space = 'SAN'
+        title = 'atlassian-python-rest-api-wrapper'
+
+        attachment_name = os.path.basename(tempfile.mktemp())
+
+        # upload a new file
+        content = b'Hello World - Version 1'
+        result = confluence.attach_content( content, attachment_name, 'text/plain', title=title, space=space, comment='upload from unittest')
+
+        # attach_file() returns: {'results': [{'id': 'att144005326', 'type': 'attachment', ...
+        self.assertTrue('results' in result)
+        self.assertFalse('statusCode' in result)
+
+        # upload a new version of an existing file
+        content = b'Hello Universe - Version 2'
+        result = confluence.attach_content( content, attachment_name, 'text/plain', title=title, space=space, comment='upload from unittest')
+
+        # attach_file() returns: {'id': 'att144005326', 'type': 'attachment', ...
+        self.assertTrue('id' in result)
+        self.assertFalse('statusCode' in result)
 
 if __name__ == '__main__':
     unittest.main()
