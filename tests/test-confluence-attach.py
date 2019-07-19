@@ -84,19 +84,21 @@ class TestConfluenceAttach(unittest.TestCase):
         fd, filename = tempfile.mkstemp('w')
         os.write(fd, b'Hello World - Version 1')
 
-        name = os.path.basename(tempfile.mktemp())+".txt"
+        name = os.path.basename(tempfile.mktemp()) + ".txt"
 
         # upload a new file
-        result = confluence.attach_file(filename, name, content_type='text/plain', title=title, space=space, comment='upload from unittest')
+        result = confluence.attach_file(filename, name, content_type='text/plain', title=title, space=space,
+                                        comment='upload from unittest')
 
         # attach_file() returns: {'results': [{'id': 'att144005326', 'type': 'attachment', ...
         self.assertTrue('results' in result)
         self.assertFalse('statusCode' in result)
 
         # upload a new version of an existing file
-        os.lseek(fd,0, 0)
+        os.lseek(fd, 0, 0)
         os.write(fd, b'Hello Universe - Version 2')
-        result = confluence.attach_file(filename, name, content_type='text/plain', title=title, space=space, comment='upload from unittest')
+        result = confluence.attach_file(filename, name, content_type='text/plain', title=title, space=space,
+                                        comment='upload from unittest')
 
         # attach_file() returns: {'id': 'att144005326', 'type': 'attachment', ...
         self.assertTrue('id' in result)
@@ -127,7 +129,8 @@ class TestConfluenceAttach(unittest.TestCase):
 
         # upload a new file
         content = b'Hello World - Version 1'
-        result = confluence.attach_content( content, attachment_name, 'text/plain', title=title, space=space, comment='upload from unittest')
+        result = confluence.attach_content(content, attachment_name, 'text/plain', title=title, space=space,
+                                           comment='upload from unittest')
 
         # attach_file() returns: {'results': [{'id': 'att144005326', 'type': 'attachment', ...
         self.assertTrue('results' in result)
@@ -135,11 +138,13 @@ class TestConfluenceAttach(unittest.TestCase):
 
         # upload a new version of an existing file
         content = b'Hello Universe - Version 2'
-        result = confluence.attach_content( content, attachment_name, 'text/plain', title=title, space=space, comment='upload from unittest')
+        result = confluence.attach_content(content, attachment_name, 'text/plain', title=title, space=space,
+                                           comment='upload from unittest')
 
         # attach_file() returns: {'id': 'att144005326', 'type': 'attachment', ...
         self.assertTrue('id' in result)
         self.assertFalse('statusCode' in result)
+
 
 if __name__ == '__main__':
     unittest.main()
