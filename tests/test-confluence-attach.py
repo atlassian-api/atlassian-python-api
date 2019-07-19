@@ -5,28 +5,28 @@ import unittest
 from atlassian import Confluence
 
 
-class TestConfluenceAuth(unittest.TestCase):
+class TestConfluenceAttach(unittest.TestCase):
+    secret_file = '../credentials.secret'
 
-    def test_confluence_auth(self):
+    '''
+        Keep the credentials private, the file is excluded. There is an example for credentials.secret
+        See also: http://www.blacktechdiva.com/hide-api-keys/
+
+        {
+          "host" : "https://localhost:8080",
+          "username" : "john_doe",
+          "password" : "12345678"
+        }        
+    '''
+
+    def test_confluence_attach(self):
         credentials = None
-        secret_file = '../credentials.secret'
-
-        '''
-            Keep the credentials private, the file is excluded. There is an example for credentials.secret
-            See also: http://www.blacktechdiva.com/hide-api-keys/
-            
-            {
-              "host" : "https://localhost:8080",
-              "username" : "john_doe",
-              "password" : "12345678"
-            }        
-        '''
 
         try:
-            with open(secret_file) as json_file:
+            with open(self.secret_file) as json_file:
                 credentials = json.load(json_file)
         except Exception as err:
-            self.fail('[{0}]: {1}'.format(secret_file, err))
+            self.fail('[{0}]: {1}'.format(self.secret_file, err))
 
         confluence = Confluence(
             url=credentials['host'],
@@ -60,6 +60,41 @@ class TestConfluenceAuth(unittest.TestCase):
         os.close(fd)
         os.remove(filename)
 
+    def test_confluence_attach_data(self):
+        credentials = None
+
+        try:
+            with open(self.secret_file) as json_file:
+                credentials = json.load(json_file)
+        except Exception as err:
+            self.fail('[{0}]: {1}'.format(self.secret_file, err))
+
+        confluence = Confluence(
+            url=credentials['host'],
+            username=credentials['username'],
+            password=credentials['password'])
+
+        # individual configuration
+        space = 'SAN'
+        title = 'atlassian-python-rest-api-wrapper'
+
+        attachment_name = os.path.basename(tempfile.mktemp())
+
+        # upload a new file
+        content = b'Hello World - Version 1'
+        result = confluence.attach_content( content, attachment_name, 'text/plain', title=title, space=space, comment='upload from unittest')
+
+        # attach_file() returns: {'results': [{'id': 'att144005326', 'type': 'attachment', ...
+        self.assertTrue('results' in result)
+        self.assertFalse('statusCode' in result)
+
+        # upload a new version of an existing file
+        content = b'Hello Universe - Version 2'
+        result = confluence.attach_content( content, attachment_name, 'text/plain', title=title, space=space, comment='upload from unittest')
+
+        # attach_file() returns: {'id': 'att144005326', 'type': 'attachment', ...
+        self.assertTrue('id' in result)
+        self.assertFalse('statusCode' in result)
 
 if __name__ == '__main__':
     unittest.main()
