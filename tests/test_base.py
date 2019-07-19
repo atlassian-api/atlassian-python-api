@@ -2,7 +2,6 @@
 from atlassian import Jira, Confluence, Bitbucket, Portfolio, Bamboo, Crowd, ServiceDesk
 import os
 
-
 BAMBOO_URL = os.environ.get('BAMBOO_URL', 'http://localhost:8085')
 JIRA_URL = os.environ.get('BAMBOO_URL', 'http://localhost:8080')
 CONFLUENCE_URL = os.environ.get('BAMBOO_URL', 'http://localhost:8090')
