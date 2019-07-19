@@ -90,7 +90,7 @@ Page actions
 
     # Attach (upload) a file to a page, if it exists it will update the
     # automatically version the new file and keep the old one
-    confluence.attach_file(filename, page_id=None, title=None, space=None, comment=None)
+    confluence.attach_file(filename, name=None, content_type=None, page_id=None, title=None, space=None, comment=None)
 
     # Attach (upload) a content to a page, if it exists it will update the
     # automatically version the new file and keep the old one
