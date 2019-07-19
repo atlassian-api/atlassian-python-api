@@ -390,7 +390,8 @@ class Confluence(AtlassianRestAPI):
                 'body': self._create_body(text, 'storage')}
         return self.post('rest/api/content/', data=data)
 
-    def attach_content(self, content, name, content_type='application/binary', page_id=None, title=None, space=None, comment=None):
+    def attach_content(self, content, name, content_type='application/binary', page_id=None, title=None, space=None,
+                       comment=None):
         """
         Attach (upload) a file to a page, if it exists it will update the
         automatically version the new file and keep the old one.
@@ -445,7 +446,8 @@ class Confluence(AtlassianRestAPI):
         :type  page_id: ``str``
         :param filename: The file to upload (Specifies the content)
         :type  filename: ``str``
-        :param name: Specifies name of the attachment. This paramter is optional. Is no name give the file name is used as name
+        :param name: Specifies name of the attachment. This parameter is optional.
+                     Is no name give the file name is used as name
         :type  name: ``str``
         :param content_type: Specify the HTTP content type. The default is
         :type  content_type: ``str``
@@ -461,7 +463,8 @@ class Confluence(AtlassianRestAPI):
 
         with open(filename, 'rb') as infile:
             content = infile.read()
-        return self.attach_content( content, name, content_type, page_id=page_id, title=title, space=space, comment=comment )
+        return self.attach_content(content, name, content_type, page_id=page_id, title=title, space=space,
+                                   comment=comment)
 
     def delete_attachment(self, page_id, filename, version=None):
         """
