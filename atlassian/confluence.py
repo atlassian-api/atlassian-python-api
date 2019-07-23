@@ -103,9 +103,10 @@ class Confluence(AtlassianRestAPI):
                  If it has IndexError then return the None.
         """
         url = 'rest/api/content'
-        params = {}
-        params['start'] = 0
-        params['limit'] = 1
+        params = {
+            'start': '0',
+            'limit': '1'
+        }
         if expand is not None:
             params['expand'] = expand
         if space is not None:
