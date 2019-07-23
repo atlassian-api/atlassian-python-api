@@ -1315,6 +1315,53 @@ class Jira(AtlassianRestAPI):
 
         return self.post(url, data=new_permission)
 
+    def get_issue_security_schemes(self):
+        """
+        Returns all issue security schemes that are defined
+        Administrator permission required
+
+        :return: list
+        """
+        url = 'rest/api/2/issuesecurityschemes'
+
+        return self.get(url).get('issueSecuritySchemes')
+
+    def get_issue_security_scheme(self, scheme_id, only_levels=False):
+        """
+        Returns the issue security scheme along with that are defined
+
+        Returned if the user has the administrator permission or if the scheme is used in a project in which the
+        user has the administrative permission
+
+        :param scheme_id: int
+        :param only_levels: bool
+        :return: list
+        """
+        url = 'rest/api/2/issuesecurityschemes/{}'.format(scheme_id)
+
+        if only_levels is True:
+            return self.get(url).get('levels')
+        else:
+            return self.get(url)
+
+    def get_project_issue_security_scheme(self, project_id_or_key, only_levels=False):
+        """
+        Returns the issue security scheme for project
+
+        Returned if the user has the administrator permission or if the scheme is used in a project in which the
+        user has the administrative permission
+
+        :param project_id_or_key: int
+        :param only_levels: bool
+        :return: list
+        """
+        url = 'rest/api/2/project/{}/issuesecuritylevelscheme'.format(project_id_or_key)
+
+        if only_levels is True:
+            return self.get(url).get('levels')
+        else:
+            return self.get(url)
+
     """
     #######################################################################
     #                   Tempo Account REST API implements                 #
