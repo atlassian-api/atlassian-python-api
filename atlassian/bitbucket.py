@@ -669,7 +669,8 @@ class Bitbucket(AtlassianRestAPI):
         :param comment_id: the ID of the comment to retrieve
         :return:
         """
-        url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/comments/{comment_id}'.format(
+        url = ('rest/api/1.0/projects/{project}/repos/{repository}'
+               '/pull-requests/{pullRequestId}/comments/{comment_id}').format(
             project=project,
             repository=repository,
             pullRequestId=pull_request_id,
