@@ -669,6 +669,25 @@ class Bitbucket(AtlassianRestAPI):
         body = {'text': text}
         return self.post(url, data=body)
 
+    def get_pull_request_comment(self, project, repository, pull_request_id, comment_id):
+        """
+        Retrieves a pull request comment.
+        The authenticated user must have REPO_READ permission
+        for the repository that this pull request targets to call this resource.
+        :param project:
+        :param repository:
+        :param pull_request_id: the ID of the pull request within the repository
+        :param comment_id: the ID of the comment to retrieve
+        :return:
+        """
+        url = ('rest/api/1.0/projects/{project}/repos/{repository}'
+               '/pull-requests/{pullRequestId}/comments/{comment_id}').format(
+            project=project,
+            repository=repository,
+            pullRequestId=pull_request_id,
+            comment_id=comment_id)
+        return self.get(url)
+
     def get_pullrequest(self, project, repository, pull_request_id):
         """
         Retrieve a pull request.
