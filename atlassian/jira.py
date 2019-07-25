@@ -963,9 +963,28 @@ class Jira(AtlassianRestAPI):
         return self.delete(url)
 
     def get_issue_transitions(self, issue_key):
-        url = 'rest/api/2/issue/{issue_key}?expand=transitions.fields&fields=status'.format(issue_key=issue_key)
         return [{'name': transition['name'], 'id': int(transition['id']), 'to': transition['to']['name']}
-                for transition in (self.get(url) or {}).get('transitions')]
+                for transition in (self.get_issue_transitions_full(issue_key) or {}).get('transitions')]
+
+    def get_issue_transitions_full(self, issue_key, transition_id=None, expand=None):
+        """
+        Get a list of the transitions possible for this issue by the current user,
+        along with fields that are required and their types.
+        Fields will only be returned if expand = 'transitions.fields'.
+        The fields in the metadata correspond to the fields in the transition screen for that transition.
+        Fields not in the screen will not be in the metadata.
+        :param issue_key: str
+        :param transition_id: str
+        :param expand: str
+        :return:
+        """
+        url = 'rest/api/2/issue/{issue_key}/transitions'.format(issue_key=issue_key)
+        params = {}
+        if transition_id:
+            params['transitionId'] = transition_id
+        if expand:
+            params['expand'] = expand
+        return self.get(url, params=params)
 
     def get_status_id_from_name(self, status_name):
         url = 'rest/api/2/status/{name}'.format(name=status_name)
