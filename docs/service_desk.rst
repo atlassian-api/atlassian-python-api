@@ -30,7 +30,7 @@ The Request actions
 .. code-block:: python
 
     # Create customer request
-    sd.create_customer_request(service_desk_id, request_type_id, values_dict, raise_on_behalf_of=None)
+    sd.create_customer_request(service_desk_id, request_type_id, values_dict, raise_on_behalf_of=None, request_participants=None)
 
     # Get customer request by ID
     sd.get_customer_request(issue_id_or_key)
