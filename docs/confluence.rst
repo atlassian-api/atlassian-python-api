@@ -101,6 +101,12 @@ Page actions
     # Export page as PDF
     # api_version needs to be set to 'cloud' when exporting from Confluence Cloud. 
     confluence.export_page(page_id)
+
+    # Set a label on the page
+    confluence.set_page_label(page_id, label)
+
+    # Delete Confluence page label
+    confluence.remove_page_label(page_id, label)
     
 Get spaces info
 ---------------
