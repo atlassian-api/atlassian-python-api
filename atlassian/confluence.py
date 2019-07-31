@@ -364,19 +364,22 @@ class Confluence(AtlassianRestAPI):
             data['ancestors'] = [{'type': type, 'id': parent_id}]
         return self.post(url, data=data)
 
-    def get_all_spaces(self, start=0, limit=500):
+    def get_all_spaces(self, start=0, limit=500, expand=None):
         """
         Get all spaces with provided limit
         :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
         :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
                             fixed system limits. Default: 500
+        :param expand: OPTIONAL: additional info, e.g. metadata, icon, description, homepage
         """
         url = 'rest/api/space'
         params = {}
-        if limit:
-            params['limit'] = limit
         if start:
             params['start'] = start
+        if limit:
+            params['limit'] = limit
+        if expand:
+            params['expand'] = expand
         return (self.get(url, params=params) or {}).get('results')
 
     def add_comment(self, page_id, text):
