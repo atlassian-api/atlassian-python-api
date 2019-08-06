@@ -84,6 +84,16 @@ class Confluence(AtlassianRestAPI):
         """
         return (self.get_page_by_title(space, title) or {}).get('id')
 
+    def get_parent_content_id(self, page_id):
+        """
+        Provide parent content id from page id
+        :type page_id: str
+        :return:
+        """
+        parent_content_id = ((self.get_page_by_id(page_id=page_id, expand='ancestors').get('ancestors') or {})[-1].get(
+            'id') or None)
+        return parent_content_id
+
     def get_page_space(self, page_id):
         """
         Provide space key from content id
@@ -124,7 +134,11 @@ class Confluence(AtlassianRestAPI):
         """
         Get page by ID
         :param page_id: Content ID
-        :param expand: OPTIONAL: expand e.g. history
+        :param expand: OPTIONAL: A comma separated list of properties to expand on the content.
+                       Default value: history,space,version We can also specify some extensions
+                       such as extensions.inlineProperties
+                       (for getting inline comment-specific properties) or extensions.resolution
+                       for the resolution status of each comment in the results
         :return:
         """
         params = {}
@@ -639,10 +653,10 @@ class Confluence(AtlassianRestAPI):
                     minor_edit=False):
         """
         Update page if already exist
-        :param parent_id:
         :param page_id:
         :param title:
         :param body:
+        :param parent_id:
         :param type:
         :param representation: OPTIONAL: either Confluence 'storage' or 'wiki' markup format
         :param minor_edit: Indicates whether to notify watchers about changes.
@@ -670,7 +684,7 @@ class Confluence(AtlassianRestAPI):
 
             return self.put('rest/api/content/{0}'.format(page_id), data=data)
 
-    def append_page(self, parent_id, page_id, title, append_body, type='page', representation='storage',
+    def append_page(self, page_id, title, append_body, parent_id=None, type='page', representation='storage',
                     minor_edit=False):
         """
         Append body to page if already exist
@@ -722,6 +736,7 @@ class Confluence(AtlassianRestAPI):
 
         if self.page_exists(space, title):
             page_id = self.get_page_id(space, title)
+            parent_id = self.get_parent_page_id(page_id)
             result = self.update_page(parent_id=parent_id, page_id=page_id, title=title, body=body,
                                       representation=representation)
         else:
