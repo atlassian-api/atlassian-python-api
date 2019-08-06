@@ -125,6 +125,7 @@ class AtlassianRestAPI(object):
             verify=self.verify_ssl,
             files=files
         )
+        response.encoding = 'utf-8'
         if self.advanced_mode:
             self.response = response
             return response
