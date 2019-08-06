@@ -378,19 +378,22 @@ class Confluence(AtlassianRestAPI):
             data['ancestors'] = [{'type': type, 'id': parent_id}]
         return self.post(url, data=data)
 
-    def get_all_spaces(self, start=0, limit=500):
+    def get_all_spaces(self, start=0, limit=500, expand=None):
         """
         Get all spaces with provided limit
         :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
         :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
                             fixed system limits. Default: 500
+        :param expand: OPTIONAL: additional info, e.g. metadata, icon, description, homepage
         """
         url = 'rest/api/space'
         params = {}
-        if limit:
-            params['limit'] = limit
         if start:
             params['start'] = start
+        if limit:
+            params['limit'] = limit
+        if expand:
+            params['expand'] = expand
         return (self.get(url, params=params) or {}).get('results')
 
     def add_comment(self, page_id, text):
@@ -404,7 +407,8 @@ class Confluence(AtlassianRestAPI):
                 'body': self._create_body(text, 'storage')}
         return self.post('rest/api/content/', data=data)
 
-    def attach_file(self, filename, page_id=None, title=None, space=None, comment=None):
+    def attach_content(self, content, name, content_type='application/binary', page_id=None, title=None, space=None,
+                       comment=None):
         """
         Attach (upload) a file to a page, if it exists it will update the
         automatically version the new file and keep the old one.
@@ -414,20 +418,22 @@ class Confluence(AtlassianRestAPI):
         :type  space: ``str``
         :param page_id: The page id to which we would like to upload the file
         :type  page_id: ``str``
-        :param filename: The file to upload
-        :type  filename: ``str``
+        :param name: The name of the attachment
+        :type  name: ``str``
+        :param content: Contains the content which should be uplaoded
+        :type  content: ``binary``
+        :param content_type: Specify the HTTP content type. The default is
+        :type  content_type: ``str``
         :param comment: A comment describing this upload/file
         :type  comment: ``str``
         """
         page_id = self.get_page_id(space=space, title=title) if page_id is None else page_id
         type = 'attachment'
         if page_id is not None:
-            extension = os.path.splitext(filename)[-1]
-            content_type = self.content_types.get(extension, "application/binary")
-            comment = comment if comment else "Uploaded {filename}.".format(filename=filename)
+            comment = comment if comment else "Uploaded {filename}.".format(filename=name)
             data = {
                 'type': type,
-                "fileName": filename,
+                "fileName": name,
                 "contentType": content_type,
                 "comment": comment,
                 "minorEdit": "true"}
@@ -435,18 +441,47 @@ class Confluence(AtlassianRestAPI):
                 'X-Atlassian-Token': 'nocheck',
                 'Accept': 'application/json'}
             path = 'rest/api/content/{page_id}/child/attachment'.format(page_id=page_id)
-            # get base name of the file to get the attachment from confluence.
-            file_base_name = os.path.basename(filename)
             # Check if there is already a file with the same name
-            attachments = self.get(path=path, headers=headers, params={'filename': file_base_name})
+            attachments = self.get(path=path, headers=headers, params={'filename': name})
             if attachments['size']:
                 path = path + '/' + attachments['results'][0]['id'] + '/data'
-            with open(filename, 'rb') as infile:
-                return self.post(path=path, data=data, headers=headers,
-                                 files={'file': (filename, infile, content_type)})
+            return self.post(path=path, data=data, headers=headers,
+                             files={'file': (name, content, content_type)})
         else:
             log.warning("No 'page_id' found, not uploading attachments")
             return None
+
+    def attach_file(self, filename, name=None, content_type=None, page_id=None, title=None, space=None, comment=None):
+        """
+        Attach (upload) a file to a page, if it exists it will update the
+        automatically version the new file and keep the old one.
+        :param title: The page name
+        :type  title: ``str``
+        :param space: The space name
+        :type  space: ``str``
+        :param page_id: The page id to which we would like to upload the file
+        :type  page_id: ``str``
+        :param filename: The file to upload (Specifies the content)
+        :type  filename: ``str``
+        :param name: Specifies name of the attachment. This parameter is optional.
+                     Is no name give the file name is used as name
+        :type  name: ``str``
+        :param content_type: Specify the HTTP content type. The default is
+        :type  content_type: ``str``
+        :param comment: A comment describing this upload/file
+        :type  comment: ``str``
+        """
+        # get base name of the file to get the attachment from confluence.
+        if name is None:
+            name = os.path.basename(filename)
+        if content_type is None:
+            extension = os.path.splitext(filename)[-1]
+            content_type = self.content_types.get(extension, "application/binary")
+
+        with open(filename, 'rb') as infile:
+            content = infile.read()
+        return self.attach_content(content, name, content_type, page_id=page_id, title=title, space=space,
+                                   comment=comment)
 
     def delete_attachment(self, page_id, filename, version=None):
         """

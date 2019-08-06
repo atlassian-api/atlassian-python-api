@@ -34,10 +34,12 @@ Get page info
     confluence.get_all_pages_by_label(label, start=0, limit=50)
 
     # Get all pages from Space
-    confluence.get_all_pages_from_space(space, start=0, limit=500)
+    # contet_type can be 'page' or 'blogpost'. Defaults to 'page'
+    # expand is a comma separated list of properties to expand on the content. 
+    confluence.get_all_pages_from_space(space, start=0, limit=500, status=None, expand=None, content_type='page')
 
     # Get list of pages from trash
-    confluence.get_all_pages_from_space_trash(space, start=0, limit=500, status='trashed')
+    confluence.get_all_pages_from_space_trash(space, start=0, limit=500, status='trashed', content_type='page')
 
     # Get list of draft pages from space
     # Use case is cleanup old drafts from Confluence
@@ -90,11 +92,21 @@ Page actions
 
     # Attach (upload) a file to a page, if it exists it will update the
     # automatically version the new file and keep the old one
-    confluence.attach_file(filename, page_id=None, title=None, space=None, comment=None)
+    confluence.attach_file(filename, name=None, content_type=None, page_id=None, title=None, space=None, comment=None)
+
+    # Attach (upload) a content to a page, if it exists it will update the
+    # automatically version the new file and keep the old one
+    confluence.attach_content(content, name=None, content_type=None, page_id=None, title=None, space=None, comment=None)
 
     # Export page as PDF
     # api_version needs to be set to 'cloud' when exporting from Confluence Cloud. 
     confluence.export_page(page_id)
+
+    # Set a label on the page
+    confluence.set_page_label(page_id, label)
+
+    # Delete Confluence page label
+    confluence.remove_page_label(page_id, label)
     
 Get spaces info
 ---------------
