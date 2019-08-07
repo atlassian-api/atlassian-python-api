@@ -60,6 +60,15 @@ class Bamboo(AtlassianRestAPI):
         params['start-index'] = start_index
         return self.get(self.resource_url(resource), flags=flags, params=params)
 
+    def get_custom_expiry(self, limit=25):
+        """
+        Get list of all plans where user has admin permission and which override global expiry settings. 
+        If global expiry is not enabled it returns empty response.
+        :param limit:
+        """
+        url = "rest/api/latest/admin/expiry/custom/plan?limit={}".format(limit)
+        return self.base_list_call(url)   
+
     def plan_directory_info(self, plan_key):
         """
         Returns information about the directories where artifacts, build logs, and build results will be stored. 
