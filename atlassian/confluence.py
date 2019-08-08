@@ -216,7 +216,7 @@ class Confluence(AtlassianRestAPI):
         url = 'rest/api/content/search'
         params = {}
         if label:
-            params['cql'] = 'type={type}%20AND%20label={label}'.format(type='page',
+            params['cql'] = 'type={type} AND label={label}'.format(type='page',
                                                                        label=label)
         if start:
             params['start'] = start
