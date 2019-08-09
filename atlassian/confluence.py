@@ -771,7 +771,7 @@ class Confluence(AtlassianRestAPI):
 
         if self.page_exists(space, title):
             page_id = self.get_page_id(space, title)
-            parent_id = self.get_parent_page_id(page_id)
+            parent_id = self.get_parent_content_id(page_id)
             result = self.update_page(parent_id=parent_id, page_id=page_id, title=title, body=body,
                                       representation=representation)
         else:
