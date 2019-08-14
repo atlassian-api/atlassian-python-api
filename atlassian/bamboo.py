@@ -68,7 +68,7 @@ class Bamboo(AtlassianRestAPI):
         :param limit:
         """
         url = "rest/api/latest/admin/expiry/custom/plan?limit={}".format(limit)
-        return self.base_list_call(url)   
+        return self.get(url)
 
     def plan_directory_info(self, plan_key):
         """
