@@ -758,22 +758,23 @@ class Confluence(AtlassianRestAPI):
 
             return self.put('rest/api/content/{0}'.format(page_id), data=data)
 
-    def update_or_create(self, parent_id, title, body, representation='storage'):
+    def update_or_create(self, parent_id, title, body, representation='storage', minor_edit=False):
         """
         Update page or create a page if it is not exists
         :param parent_id:
         :param title:
         :param body:
         :param representation: OPTIONAL: either Confluence 'storage' or 'wiki' markup format
+        :param minor_edit: Update page without notification
         :return:
         """
         space = self.get_page_space(parent_id)
 
         if self.page_exists(space, title):
             page_id = self.get_page_id(space, title)
-            parent_id = self.get_parent_page_id(page_id)
+            parent_id = self.get_parent_content_id(page_id)
             result = self.update_page(parent_id=parent_id, page_id=page_id, title=title, body=body,
-                                      representation=representation)
+                                      representation=representation, minor_edit=minor_edit)
         else:
             result = self.create_page(space=space, parent_id=parent_id, title=title, body=body,
                                       representation=representation)
@@ -1218,3 +1219,56 @@ class Confluence(AtlassianRestAPI):
         if search_string:
             params['searchString'] = search_string
         return self.get(url, params=params)
+
+    """
+    ##############################################################################################
+    #   Team Calendars REST API implements  (https://jira.atlassian.com/browse/CONFSERVER-51003) #
+    ##############################################################################################
+    """
+
+    def team_calendars_get_sub_calendars(self, include=None, viewing_space_key=None, calendar_context=None):
+        """
+        Get subscribed calendars
+        :param include:
+        :param viewing_space_key:
+        :param calendar_context:
+        :return:
+        """
+        url = 'rest/calendar-services/1.0/calendar/subcalendars'
+        params = {}
+        if include:
+            params['include'] = include
+        if viewing_space_key:
+            params['viewingSpaceKey'] = viewing_space_key
+        if calendar_context:
+            params['calendarContext'] = calendar_context
+        return self.get(url, params=params)
+
+    def team_calendars_get_sub_calendars_watching_status(self, include=None):
+        url = 'rest/calendar-services/1.0/calendar/subcalendars/watching/status'
+        params = {}
+        if include:
+            params['include'] = include
+        return self.get(url, params=params)
+
+    def team_calendar_events(self, sub_calendar_id, start, end, user_time_zone_id=None):
+        """
+        Get calendar event status
+        :param sub_calendar_id:
+        :param start:
+        :param end:
+        :param user_time_zone_id:
+        :return:
+        """
+        url = 'rest/calendar-services/1.0/calendar/events'
+        params = {}
+        if sub_calendar_id:
+            params['subCalendarId'] = sub_calendar_id
+        if user_time_zone_id:
+            params['userTimeZoneId'] = user_time_zone_id
+        if start:
+            params['start'] = start
+        if end:
+            params['start'] = end
+        return self.get(url, params=params)
+   
