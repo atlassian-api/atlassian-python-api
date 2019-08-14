@@ -758,22 +758,23 @@ class Confluence(AtlassianRestAPI):
 
             return self.put('rest/api/content/{0}'.format(page_id), data=data)
 
-    def update_or_create(self, parent_id, title, body, representation='storage'):
+    def update_or_create(self, parent_id, title, body, representation='storage', minor_edit=False):
         """
         Update page or create a page if it is not exists
         :param parent_id:
         :param title:
         :param body:
         :param representation: OPTIONAL: either Confluence 'storage' or 'wiki' markup format
+        :param minor_edit: Update page without notification
         :return:
         """
         space = self.get_page_space(parent_id)
 
         if self.page_exists(space, title):
             page_id = self.get_page_id(space, title)
-            parent_id = self.get_parent_page_id(page_id)
+            parent_id = self.get_parent_content_id(page_id)
             result = self.update_page(parent_id=parent_id, page_id=page_id, title=title, body=body,
-                                      representation=representation)
+                                      representation=representation, minor_edit=minor_edit)
         else:
             result = self.create_page(space=space, parent_id=parent_id, title=title, body=body,
                                       representation=representation)
