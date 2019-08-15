@@ -24,7 +24,7 @@ class Bitbucket(AtlassianRestAPI):
         :return:
         """
         url = 'rest/api/1.0/projects/{0}'.format(key)
-        return (self.get(url) or {}).get('values')
+        return (self.get(url) or {})
 
     def create_project(self, key, name, description=""):
         """
