@@ -1915,7 +1915,7 @@ class Jira(AtlassianRestAPI):
         if limit:
             params['maxResults'] = limit
         if state:
-            params['state'] = [state]
+            params['state'] = state
         url = 'rest/agile/1.0/board/{boardId}/sprint'.format(boardId=board_id)
         return self.get(url, params=params)
 
