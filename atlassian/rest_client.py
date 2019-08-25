@@ -220,4 +220,11 @@ class AtlassianRestAPI(object):
         :return: Empty dictionary to have consistent interface.
         Some of Atlassian REST resources don't return any content.
         """
-        self.request('DELETE', path=path, data=data, headers=headers, params=params, trailing=trailing)
+        response = self.request('DELETE', path=path, data=data, headers=headers, params=params, trailing=trailing)
+        if self.advanced_mode:
+            return response
+        try:
+            return response.json()
+        except ValueError:
+            log.debug('Received response with no content')
+            return None
