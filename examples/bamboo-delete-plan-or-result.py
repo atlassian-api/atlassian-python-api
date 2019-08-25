@@ -11,11 +11,8 @@ bamboo = Bamboo(
     username=ATLASSIAN_USER,
     password=ATLASSIAN_PASSWORD)
 
+# Delete entire plan
+bamboo.delete_plan('PLAN-TODELETE')
 
-bamboo.add_users_into_group(group_name='group_name', users=['user_name'])
-
-
-
-
-
-
+# Delete single result
+bamboo.delete_build_result('PLAN-TODELETE-7')

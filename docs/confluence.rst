@@ -34,10 +34,13 @@ Get page info
     confluence.get_all_pages_by_label(label, start=0, limit=50)
 
     # Get all pages from Space
-    confluence.get_all_pages_from_space(space, start=0, limit=500)
+    # contet_type can be 'page' or 'blogpost'. Defaults to 'page'
+    # expand is a comma separated list of properties to expand on the content.
+    # max limit is 100. For more you have to loop over start values.
+    confluence.get_all_pages_from_space(space, start=0, limit=100, status=None, expand=None, content_type='page')
 
     # Get list of pages from trash
-    confluence.get_all_pages_from_space_trash(space, start=0, limit=500, status='trashed')
+    confluence.get_all_pages_from_space_trash(space, start=0, limit=500, status='trashed', content_type='page')
 
     # Get list of draft pages from space
     # Use case is cleanup old drafts from Confluence
@@ -56,7 +59,7 @@ Page actions
 .. code-block:: python
 
     # Create page from scratch
-    confluence.create_page(space, title, body, parent_id=None, type='page')
+    confluence.create_page(space, title, body, parent_id=None, type='page', representation='storage')
 
     # Remove page
     confluence.remove_page(page_id, status=None)
@@ -68,10 +71,10 @@ Page actions
     confluence.remove_page_as_draft(page_id)
 
     # Update page if already exist
-    confluence.update_page(parent_id, page_id, title, body, type='page')
+    confluence.update_page(parent_id, page_id, title, body, type='page', representation='storage')
 
     # Update page or create page if it is not exists
-    confluence.update_or_create(parent_id, title, body)
+    confluence.update_or_create(parent_id, title, body, representation='storage')
 
     # Set the page (content) property e.g. add hash parameters
     confluence.set_page_property(page_id, data)
@@ -90,11 +93,21 @@ Page actions
 
     # Attach (upload) a file to a page, if it exists it will update the
     # automatically version the new file and keep the old one
-    confluence.attach_file(filename, page_id=None, title=None, space=None, comment=None)
+    confluence.attach_file(filename, name=None, content_type=None, page_id=None, title=None, space=None, comment=None)
+
+    # Attach (upload) a content to a page, if it exists it will update the
+    # automatically version the new file and keep the old one
+    confluence.attach_content(content, name=None, content_type=None, page_id=None, title=None, space=None, comment=None)
 
     # Export page as PDF
     # api_version needs to be set to 'cloud' when exporting from Confluence Cloud. 
     confluence.export_page(page_id)
+
+    # Set a label on the page
+    confluence.set_page_label(page_id, label)
+
+    # Delete Confluence page label
+    confluence.remove_page_label(page_id, label)
     
 Get spaces info
 ---------------

@@ -1,4 +1,4 @@
-# coding: utf8
+# coding=utf-8
 from atlassian import Bitbucket
 
 bitbucket = Bitbucket(
@@ -6,12 +6,9 @@ bitbucket = Bitbucket(
     username='admin',
     password='admin')
 
-
 data = bitbucket.fork_repository(
     project='DEMO',
     repository='example-repository',
     new_repository='forked-repository')
-
-
 
 print(data)

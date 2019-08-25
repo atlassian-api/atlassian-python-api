@@ -19,7 +19,7 @@ setup(
     author='Matt Harasymczuk',
     author_email='matt@astrotech.io',
     url='https://github.com/atlassian-api/atlassian-python-api',
-    keywords='atlassian jira confluence bitbucket bamboo crowd portfolio servicedesk jsd rest api',
+    keywords='atlassian jira confluence bitbucket bamboo crowd portfolio tempo teams servicedesk jsd rest api',
 
     packages=find_packages(),
     package_dir={'atlassian': 'atlassian'},

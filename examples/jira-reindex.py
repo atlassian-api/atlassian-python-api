@@ -1,4 +1,4 @@
-# coding: utf8
+# coding=utf-8
 from time import sleep
 from atlassian import Jira
 

@@ -105,6 +105,21 @@ class Bitbucket(AtlassianRestAPI):
             username=username)
         return self.put(url)
 
+    def project_remove_user_permissions(self, project_key, username):
+        """
+        Revoke all permissions for the specified project for a user.
+        The authenticated user must have PROJECT_ADMIN permission for
+        the specified project or a higher global permission to call this resource.
+        In addition, a user may not revoke their own project permissions if they do not have a higher global permission.
+        :param project_key: project key involved
+        :param username: user name to be granted
+        :return:
+        """
+        url = 'rest/api/1.0/projects/{project_key}/permissions/users?name={username}'.format(
+            project_key=project_key,
+            username=username)
+        return self.delete(url)
+
     def project_grant_group_permissions(self, project_key, groupname, permission):
         """
         Grant the specified project permission to an specific group
@@ -119,6 +134,22 @@ class Bitbucket(AtlassianRestAPI):
             groupname=groupname)
         return self.put(url)
 
+    def project_remove_group_permissions(self, project_key, groupname):
+        """
+        Revoke all permissions for the specified project for a group.
+        The authenticated user must have PROJECT_ADMIN permission for the specified project
+        or a higher global permission to call this resource.
+        In addition, a user may not revoke a group's permissions
+        if it will reduce their own permission level.
+        :param project_key: project key involved
+        :param groupname: group to be granted
+        :return:
+        """
+        url = 'rest/api/1.0/projects/{project_key}/permissions/groups?name={groupname}'.format(
+            project_key=project_key,
+            groupname=groupname)
+        return self.delete(url)
+
     def repo_grant_user_permissions(self, project_key, repo_key, username, permission):
         """
         Grant the specified repository permission to an specific user
@@ -128,28 +159,69 @@ class Bitbucket(AtlassianRestAPI):
         :param permission: the repository permissions available are 'REPO_ADMIN', 'REPO_WRITE' and 'REPO_READ'
         :return: 
         """
-        url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/users?permission={permission}&name={username}'.format(
-            project_key=project_key,
-            repo_key=repo_key,
-            permission=permission,
-            username=username)
-        return self.put(url)
+        params = {'permission': permission,
+                  'name': username}
+        url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/users'.format(project_key=project_key,
+                                                                                              repo_key=repo_key)
+        return self.put(url, params=params)
+
+    def repo_remove_user_permissions(self, project_key, repo_key, username):
+        """
+        Revoke all permissions for the specified repository for a user.
+        The authenticated user must have REPO_ADMIN permission for the specified repository
+        or a higher project or global permission to call this resource.
+        In addition, a user may not revoke their own repository permissions
+        if they do not have a higher project or global permission.
+        :param project_key: project key involved
+        :param repo_key: repository key involved (slug)
+        :param username: user name to be granted
+        :return:
+        """
+        params = {'name': username}
+        url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/users'.format(project_key=project_key,
+                                                                                              repo_key=repo_key)
+        return self.delete(url, params=params)
 
     def repo_grant_group_permissions(self, project_key, repo_key, groupname, permission):
         """
         Grant the specified repository permission to an specific group
+        Promote or demote a group's permission level for the specified repository. Available repository permissions are:
+            REPO_READ
+            REPO_WRITE
+            REPO_ADMIN
+        See the Bitbucket Server documentation for a detailed explanation of what each permission entails.
+        The authenticated user must have REPO_ADMIN permission for the specified repository or a higher project
+        or global permission to call this resource.
+        In addition, a user may not demote a group's permission level
+        if their own permission level would be reduced as a result.
         :param project_key: project key involved
         :param repo_key: repository key involved (slug)
         :param groupname: group to be granted
         :param permission: the repository permissions available are 'REPO_ADMIN', 'REPO_WRITE' and 'REPO_READ'
         :return: 
         """
-        url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/groups?permission={permission}&name={groupname}'.format(
-            project_key=project_key,
-            repo_key=repo_key,
-            permission=permission,
-            groupname=groupname)
-        return self.put(url)
+        params = {'permission': permission,
+                  'name': groupname}
+        url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/groups'.format(project_key=project_key,
+                                                                                               repo_key=repo_key)
+        return self.put(url, params=params)
+
+    def repo_remove_group_permissions(self, project_key, repo_key, groupname, permission):
+        """
+        Revoke all permissions for the specified repository for a group.
+        The authenticated user must have REPO_ADMIN permission for the specified repository
+        or a higher project or global permission to call this resource.
+        In addition, a user may not revoke a group's permissions if it will reduce their own permission level.
+        :param project_key: project key involved
+        :param repo_key: repository key involved (slug)
+        :param groupname: group to be granted
+        :param permission: the repository permissions available are 'REPO_ADMIN', 'REPO_WRITE' and 'REPO_READ'
+        :return:
+        """
+        params = {'name': groupname}
+        url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/groups'.format(project_key=project_key,
+                                                                                               repo_key=repo_key)
+        return self.delete(url, params=params)
 
     def project_groups(self, key, limit=99999, filter_str=None):
         """
@@ -341,6 +413,18 @@ class Bitbucket(AtlassianRestAPI):
 
         return (self.get(url, params=params) or {}).get('values')
 
+    def get_default_branch(self, project, repository):
+        """
+        Get the default branch of the repository.
+        The authenticated user must have REPO_READ permission for the specified repository to call this resource.
+        :param project:
+        :param repository:
+        :return:
+        """
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/branches/default'.format(project=project,
+                                                                                           repository=repository)
+        return self.get(url)
+
     def create_branch(self, project_key, repository, name, start_point, message=""):
         """Creates a branch using the information provided in the request.
 
@@ -495,6 +579,80 @@ class Bitbucket(AtlassianRestAPI):
             commits_list += (response or {}).get('values')
         return commits_list
 
+    def open_pull_request(self, source_project, source_repo, dest_project, dest_repo, source_branch, destination_branch,
+                          title,
+                          description):
+        """
+        Create a new pull request between two branches.
+        The branches may be in the same repository, or different ones.
+        When using different repositories, they must still be in the same {@link Repository#getHierarchyId() hierarchy}.
+        The authenticated user must have REPO_READ permission for the "from" and "to"repositories to call this resource.
+        :param source_project: the project that the PR source is from
+        :param source_repo: the repository that the PR source is from
+        :param source_branch: the branch name of the PR
+        :param dest_project: the project that the PR destination is from
+        :param dest_repo: the repository that the PR destination is from
+        :param destination_branch: where the PR is being merged into
+        :param title: the title of the PR
+        :param description: the description of what the PR does
+        :return:
+        """
+        body = {
+            'title': title,
+            'description': description,
+            'fromRef': {
+                'id': source_branch,
+                'repository': {
+                    'slug': source_repo,
+                    'name': source_repo,
+                    'project': {
+                        'key': source_project
+                    }
+                }
+            },
+            'toRef': {
+                'id': destination_branch,
+                'repository': {
+                    'slug': dest_repo,
+                    'name': dest_repo,
+                    'project': {
+                        'key': dest_project
+                    }
+                }
+            }
+        }
+        return self.create_pull_request(dest_project, dest_repo, body)
+
+    def create_pull_request(self, project_key, repository, data):
+        """
+        :param project_key:
+        :param repository:
+        :param data: json body
+        :return:
+        """
+        url = 'rest/api/1.0/projects/{projectKey}/repos/{repository}/pull-requests'.format(projectKey=project_key,
+                                                                                           repository=repository)
+        return self.post(url, data=data)
+
+    def check_inbox_pull_requests_count(self):
+        return self.get('rest/api/1.0/inbox/pull-requests/count')
+
+    def check_inbox_pull_requests(self, start=0, limit=None, role=None):
+        """
+        Get pull request in your inbox
+        :param start:
+        :param limit:
+        :param role:
+        :return:
+        """
+        params = {'start': start}
+        if limit:
+            params['limit'] = limit
+        if role:
+            params['role'] = role
+        url = 'rest/api/1.0/inbox/pull-requests'
+        return self.get(url, params=params)
+
     def add_pull_request_comment(self, project, repository, pull_request_id, text):
         """
         Add comment into pull request
@@ -511,6 +669,25 @@ class Bitbucket(AtlassianRestAPI):
         body = {'text': text}
         return self.post(url, data=body)
 
+    def get_pull_request_comment(self, project, repository, pull_request_id, comment_id):
+        """
+        Retrieves a pull request comment.
+        The authenticated user must have REPO_READ permission
+        for the repository that this pull request targets to call this resource.
+        :param project:
+        :param repository:
+        :param pull_request_id: the ID of the pull request within the repository
+        :param comment_id: the ID of the comment to retrieve
+        :return:
+        """
+        url = ('rest/api/1.0/projects/{project}/repos/{repository}'
+               '/pull-requests/{pullRequestId}/comments/{comment_id}').format(
+            project=project,
+            repository=repository,
+            pullRequestId=pull_request_id,
+            comment_id=comment_id)
+        return self.get(url)
+
     def get_pullrequest(self, project, repository, pull_request_id):
         """
         Retrieve a pull request.
@@ -521,9 +698,10 @@ class Bitbucket(AtlassianRestAPI):
         :param pull_request_id: the ID of the pull request within the repository
         :return:
         """
-        url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}'.format(project=project,
-                                                                                                        repository=repository,
-                                                                                                        pullRequestId=pull_request_id)
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}'.format(
+            project=project,
+            repository=repository,
+            pullRequestId=pull_request_id)
         return self.get(url)
 
     def get_tags(self, project, repository, filter='', limit=1000, order_by=None, start=0):
@@ -692,7 +870,7 @@ class Bitbucket(AtlassianRestAPI):
             params['limit'] = limit
         return (self.get(url, params=params) or {}).get('values')
 
-    def get_file_list(self, project, repository, query, limit=100000):
+    def get_file_list(self, project, repository, query=None, limit=100000):
         """
         Retrieve a page of files from particular directory of a repository.
         The search is done recursively, so all files from any sub-directory of the specified directory will be returned.
@@ -745,8 +923,9 @@ class Bitbucket(AtlassianRestAPI):
         :param limit:
         :return:
         """
-        url = 'rest/branch-permissions/2.0/projects/{project}/repos/{repository}/restrictions'.format(project=project,
-                                                                                                      repository=repository)
+        url = 'rest/branch-permissions/2.0/projects/{project}/repos/{repository}/restrictions'.format(
+            project=project,
+            repository=repository)
         params = {}
         if limit:
             params['limit'] = limit
@@ -934,3 +1113,12 @@ class Bitbucket(AtlassianRestAPI):
             project=project,
             repository=repository)
         return self.delete(url)
+
+    def markup_preview(self, data):
+        """
+        Preview generated HTML for the given markdown content.
+        Only authenticated users may call this resource.
+        :param data:
+        :return:
+        """
+        return self.post('rest/api/1.0/markup/preview', data=data)

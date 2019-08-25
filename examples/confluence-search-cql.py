@@ -1,8 +1,8 @@
-# coding: utf8
+# coding=utf-8
 from atlassian import Confluence
 
 """This example shows how to use the cql
-   More detail documentation located here https://developer.atlassian.com/server/confluence/advanced-searching-using-cql/
+   More detail documentation located here https://developer.atlassian.com/server/confluence/advanced-searching-using-cql
 """
 
 confluence = Confluence(

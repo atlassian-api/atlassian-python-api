@@ -121,6 +121,17 @@ Manage projects
     # Update a project
     jira.update_project(project_key, data, expand='lead,description')
 
+    # Get project permission scheme
+    # Use 'expand' to get details (default is None)
+    jira.get_project_permission_scheme(project_id_or_key, expand='permissions,user,group,projectRole,field,all')
+
+    # Get the issue security scheme for project.
+    # Returned if the user has the administrator permission or if the scheme is used in a project in which the
+    # user has the administrative permission.
+    # Use only_levels=True for get the only levels entries
+    jira.get_project_issue_security_scheme(project_id_or_key, only_levels=False)
+
+
 Manage issues
 -------------
 
@@ -172,6 +183,9 @@ Manage issues
     # Set issue status
     jira.set_issue_status(issue_key, status_name)
 
+    # Set issue status by transition_id
+    jira.set_issue_status_by_transition_id(issue_key, transition_id)
+    
     # Get issue status
     jira.get_issue_status(issue_key)
     
@@ -244,3 +258,17 @@ Issue link types
     # Update issue link type
     jira.update_issue_link_type(issue_link_type_id, data):
 
+Issue security schemes
+----------------------
+.. code-block:: python
+
+    # Get all security schemes.
+    # Returned if the user has the administrator permission or if the scheme is used in a project in which the
+    # user has the administrative permission.
+    jira.get_issue_security_schemes()
+
+    # Get issue security scheme.
+    # Returned if the user has the administrator permission or if the scheme is used in a project in which the
+    # user has the administrative permission.
+    # Use only_levels=True for get the only levels entries
+    jira.get_issue_security_scheme(scheme_id, only_levels=False)

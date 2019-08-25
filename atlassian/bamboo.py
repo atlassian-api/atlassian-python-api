@@ -1,4 +1,4 @@
-# coding: utf8
+# coding=utf-8
 import logging
 from .rest_client import AtlassianRestAPI
 
@@ -41,7 +41,8 @@ class Bamboo(AtlassianRestAPI):
                 yield r
             start_index += results['max-result']
 
-    def base_list_call(self, resource, expand, favourite, clover_enabled, max_results, start_index=0, **kwargs):
+    def base_list_call(self, resource, expand, favourite, clover_enabled, max_results, label=None, start_index=0,
+                       **kwargs):
         flags = []
         params = {'max-results': max_results}
         if expand:
@@ -50,6 +51,8 @@ class Bamboo(AtlassianRestAPI):
             flags.append('favourite')
         if clover_enabled:
             flags.append('cloverEnabled')
+        if label:
+            params['label'] = label
         params.update(kwargs)
         if 'elements_key' in kwargs and 'element_key' in kwargs:
             return self._get_generator(self.resource_url(resource), flags=flags, params=params,
@@ -57,6 +60,26 @@ class Bamboo(AtlassianRestAPI):
                                        element_key=kwargs['element_key'])
         params['start-index'] = start_index
         return self.get(self.resource_url(resource), flags=flags, params=params)
+
+    def get_custom_expiry(self, limit=25):
+        """
+        Get list of all plans where user has admin permission and which override global expiry settings. 
+        If global expiry is not enabled it returns empty response.
+        :param limit:
+        """
+        url = "rest/api/latest/admin/expiry/custom/plan?limit={}".format(limit)
+        return self.get(url)
+
+    def plan_directory_info(self, plan_key):
+        """
+        Returns information about the directories where artifacts, build logs, and build results will be stored. 
+        Disabled by default. 
+        See https://confluence.atlassian.com/display/BAMBOO/Plan+directory+information+REST+API for more information.
+        :param plan_key:
+        :return:
+        """
+        resource = 'planDirectoryInfo/{}'.format(plan_key)
+        return self.get(self.resource_url(resource))
 
     def projects(self, expand=None, favourite=False, clover_enabled=False, max_results=25):
         return self.base_list_call('project', expand, favourite, clover_enabled, max_results,
@@ -81,7 +104,7 @@ class Bamboo(AtlassianRestAPI):
                                    elements_key='plans', element_key='plan')
 
     def results(self, project_key=None, plan_key=None, job_key=None, build_number=None, expand=None, favourite=False,
-                clover_enabled=False, issue_key=None, start_index=0, max_results=25):
+                clover_enabled=False, issue_key=None, label=None, start_index=0, max_results=25, include_all_states=False):
         """
         Get results as generic method
         :param project_key:
@@ -92,8 +115,10 @@ class Bamboo(AtlassianRestAPI):
         :param favourite:
         :param clover_enabled:
         :param issue_key:
+        :param label:
         :param start_index:
         :param max_results:
+        :param include_all_states:
         :return:
         """
         resource = "result"
@@ -109,12 +134,14 @@ class Bamboo(AtlassianRestAPI):
         params = {}
         if issue_key:
             params['issueKey'] = issue_key
+        if include_all_states:
+            params['includeAllStates'] = include_all_states
         return self.base_list_call(resource, expand=expand, favourite=favourite, clover_enabled=clover_enabled,
                                    start_index=start_index, max_results=max_results,
-                                   elements_key='results', element_key='result', **params)
+                                   elements_key='results', element_key='result', label=label, **params)
 
     def latest_results(self, expand=None, favourite=False, clover_enabled=False, label=None, issue_key=None,
-                       start_index=0, max_results=25):
+                       start_index=0, max_results=25, include_all_states=False):
         """
         Get latest Results
         :param expand:
@@ -124,13 +151,14 @@ class Bamboo(AtlassianRestAPI):
         :param issue_key:
         :param start_index:
         :param max_results:
+        :param include_all_states:
         :return:
         """
         return self.results(expand=expand, favourite=favourite, clover_enabled=clover_enabled,
-                            label=label, issue_key=issue_key, start_index=start_index, max_results=max_results)
+                            label=label, issue_key=issue_key, start_index=start_index, max_results=max_results, include_all_states=include_all_states)
 
     def project_latest_results(self, project_key, expand=None, favourite=False, clover_enabled=False, label=None,
-                               issue_key=None, start_index=0, max_results=25):
+                               issue_key=None, start_index=0, max_results=25, include_all_states=False):
         """
         Get latest Project Results
         :param project_key:
@@ -141,13 +169,14 @@ class Bamboo(AtlassianRestAPI):
         :param issue_key:
         :param start_index:
         :param max_results:
+        :param include_all_states:
         :return:
         """
         return self.results(project_key, expand=expand, favourite=favourite, clover_enabled=clover_enabled,
-                            label=label, issue_key=issue_key, start_index=start_index, max_results=max_results)
+                            label=label, issue_key=issue_key, start_index=start_index, max_results=max_results, include_all_states=include_all_states)
 
     def plan_results(self, project_key, plan_key, expand=None, favourite=False, clover_enabled=False, label=None,
-                     issue_key=None, start_index=0, max_results=25):
+                     issue_key=None, start_index=0, max_results=25, include_all_states=False):
         """
         Get Plan results
         :param project_key:
@@ -159,12 +188,13 @@ class Bamboo(AtlassianRestAPI):
         :param issue_key:
         :param start_index:
         :param max_results:
+        :param include_all_states:
         :return:
         """
         return self.results(project_key, plan_key, expand=expand, favourite=favourite, clover_enabled=clover_enabled,
-                            label=label, issue_key=issue_key, start_index=start_index, max_results=max_results)
+                            label=label, issue_key=issue_key, start_index=start_index, max_results=max_results, include_all_states=include_all_states)
 
-    def build_result(self, build_key, expand=None):
+    def build_result(self, build_key, expand=None, include_all_states=False):
         """
         Returns details of a specific build result
         :param expand: expands build result details on request. Possible values are: artifacts, comments, labels,
@@ -177,24 +207,46 @@ class Bamboo(AtlassianRestAPI):
             int(build_key.split('-')[-1])
             resource = "result/{}".format(build_key)
             return self.base_list_call(resource, expand, favourite=False, clover_enabled=False,
-                                       start_index=0, max_results=25)
+                                       start_index=0, max_results=25, include_all_states=include_all_states)
         except ValueError:
             raise ValueError('The key "{}" does not correspond to a build result'.format(build_key))
 
-    def build_latest_result(self, plan_key, expand=None):
+    def build_latest_result(self, plan_key, expand=None, include_all_states=False):
         """
         Returns details of a latest build result
         :param expand: expands build result details on request. Possible values are: artifacts, comments, labels,
         Jira Issues, stages. stages expand is available only for top level plans. It allows to drill down to job results
         using stages.stage.results.result. All expand parameters should contain results.result prefix.
         :param plan_key: Should be in the form XX-YY[-ZZ]
+        :param include_all_states:
         """
         try:
             resource = "result/{}/latest.json".format(plan_key)
             return self.base_list_call(resource, expand, favourite=False, clover_enabled=False,
-                                       start_index=0, max_results=25)
+                                       start_index=0, max_results=25, include_all_states=include_all_states)
         except ValueError:
             raise ValueError('The key "{}" does not correspond to the latest build result'.format(plan_key))
+
+    def delete_build_result(self, build_key):
+        """
+        Deleting result for specific build
+        :param build_key: Take full build key, example: PROJ-PLAN-8
+        """
+        custom_resource = '/build/admin/deletePlanResults.action'
+        build_key = build_key.split('-')
+        plan_key = '{}-{}'.format(build_key[0], build_key[1])
+        build_number = build_key[2]
+        params = {'buildKey': plan_key, 'buildNumber': build_number}
+        return self.post(custom_resource, params=params, headers=self.form_token_headers)
+
+    def delete_plan(self, plan_key):
+        """
+        Marks plan for deletion. Plan will be deleted by a batch job.
+        :param plan_key:
+        :return:
+        """
+        resource = 'rest/api/latest/plan/{}'.format(plan_key)
+        return self.delete(resource)
 
     def reports(self, max_results=25):
         params = {'max-results': max_results}

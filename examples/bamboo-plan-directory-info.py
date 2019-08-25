@@ -11,11 +11,7 @@ bamboo = Bamboo(
     username=ATLASSIAN_USER,
     password=ATLASSIAN_PASSWORD)
 
+plan_directories_roots = bamboo.plan_directory_info('PROJ-PLAN')
 
-bamboo.add_users_into_group(group_name='group_name', users=['user_name'])
-
-
-
-
-
+print(plan_directories_roots)
 

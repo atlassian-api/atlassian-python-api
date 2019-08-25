@@ -1,3 +1,4 @@
+# coding=utf-8
 from atlassian import Jira
 
 # This example shoes how to copy custom field value from on issue to another

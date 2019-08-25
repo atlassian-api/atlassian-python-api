@@ -5,8 +5,9 @@ from six.moves.urllib.parse import urlencode
 import requests
 from oauthlib.oauth1 import SIGNATURE_RSA
 from requests_oauthlib import OAuth1
+from atlassian.request_utils import get_default_logger
 
-log = logging.getLogger(__name__)
+log = get_default_logger(__name__)
 
 
 class AtlassianRestAPI(object):
@@ -16,8 +17,12 @@ class AtlassianRestAPI(object):
     form_token_headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
                           'X-Atlassian-Token': 'no-check'}
 
+    response = None
+
     def __init__(self, url, username=None, password=None, timeout=60, api_root='rest/api', api_version='latest',
-                 verify_ssl=True, session=None, oauth=None, is_advanced_mode=False):
+                 verify_ssl=True, session=None, oauth=None, cookies=None, advanced_mode=None):
+        if ('atlassian.net' in url or 'jira.com' in url) and '/wiki' not in url:
+            url = self.url_joiner(url, '/wiki')
         self.url = url
         self.username = username
         self.password = password
@@ -25,8 +30,8 @@ class AtlassianRestAPI(object):
         self.verify_ssl = verify_ssl
         self.api_root = api_root
         self.api_version = api_version
-        if is_advanced_mode:
-            self.is_advanced_mode = is_advanced_mode
+        self.cookies = cookies
+        self.advanced_mode = advanced_mode
         if session is None:
             self._session = requests.Session()
         else:
@@ -78,14 +83,14 @@ class AtlassianRestAPI(object):
         return '/'.join([self.api_root, self.api_version, resource])
 
     @staticmethod
-    def url_joiner(url, path, trailing):
+    def url_joiner(url, path, trailing=None):
         url_link = '/'.join(s.strip('/') for s in [url, path])
         if trailing:
             url_link += '/'
         return url_link
 
-    def request(self, method='GET', path='/', data=None, flags=None, params=None, headers=None, files=None,
-                trailing=None):
+    def request(self, method='GET', path='/', data=None, flags=None, params=None, headers=None,
+                files=None, trailing=None):
         """
 
         :param method:
@@ -119,6 +124,10 @@ class AtlassianRestAPI(object):
             verify=self.verify_ssl,
             files=files
         )
+        response.encoding = 'utf-8'
+        if self.advanced_mode:
+            self.response = response
+            return response
         try:
             if response.text:
                 response_content = response.json()
@@ -183,16 +192,23 @@ class AtlassianRestAPI(object):
                 return answer.text
 
     def post(self, path, data=None, headers=None, files=None, params=None, trailing=None):
+        response = self.request('POST', path=path, data=data, headers=headers, files=files, params=params,
+                                trailing=trailing)
+        if self.advanced_mode:
+            return response
         try:
-            return self.request('POST', path=path, data=data, headers=headers, files=files, params=params,
-                                trailing=trailing).json()
+            return response.json()
         except ValueError:
             log.debug('Received response with no content')
             return None
 
-    def put(self, path, data=None, headers=None, files=None, trailing=None):
+    def put(self, path, data=None, headers=None, files=None, trailing=None, params=None):
+        response = self.request('PUT', path=path, data=data, headers=headers, files=files, params=params,
+                                trailing=trailing)
+        if self.advanced_mode:
+            return response
         try:
-            return self.request('PUT', path=path, data=data, headers=headers, files=files, trailing=trailing).json()
+            return response.json()
         except ValueError:
             log.debug('Received response with no content')
             return None
