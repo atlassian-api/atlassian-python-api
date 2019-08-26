@@ -58,6 +58,32 @@ class Bitbucket(AtlassianRestAPI):
             log.debug('Failed to update project: {0}: Unable to read project'.format(key))
             return None
 
+    def project_avatar(self, key, content_type='image/png'):
+        """
+        Get project avatar
+
+        :param key:
+        :return:
+        """
+        url = 'rest/api/1.0/projects/{0}/avatar.png'.format(key)
+        headers = dict(self.default_headers)
+        headers['Accept'] = content_type
+        headers['X-Atlassian-Token'] = 'no-check'
+
+        return (self.get(url, not_json_response=True, headers=headers) or {})
+
+    def set_project_avatar(self, key, icon, content_type='image/png'):
+        """
+        Set project avatar
+
+        :param key:
+        :return:
+        """
+        headers = {'X-Atlassian-Token': 'no-check'}
+        files = {'avatar': ("avatar.png", icon, content_type)}
+        url = 'rest/api/1.0/projects/{0}/avatar.png'.format(key)
+        return (self.post(url, files=files, headers=headers) or {})
+
     def project_users(self, key, limit=99999, filter_str=None):
         """
         Get users who has permission in project
