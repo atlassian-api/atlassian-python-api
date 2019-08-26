@@ -316,7 +316,8 @@ class Bitbucket(AtlassianRestAPI):
             'key': key,
             'data': self.project(key),
             'users': self.project_users(key),
-            'groups': self.project_groups(key)}
+            'groups': self.project_groups(key),
+            'avatar': self.project_avatar(key)}
 
     def group_members(self, group, limit=99999):
         """
