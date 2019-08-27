@@ -3,14 +3,13 @@ from atlassian import Bitbucket
 
 
 def html(project):
-    html_data = """<tr>
-                <td>{project_key}</td>
-                <td>{project_name}</td>
-                <td><ul>""".format(**project)
-    for user in project['project_administrators']:
-        html_data += '\n\t<li><a href="mailto:{email}">{name}</a></li>'.format(**user)
-    return html_data + '</ul></td></tr>\n'
-
+    html_data = '<table>\n'
+    html_data += '\t<tr><th>ITEM</th><th>VALUE</th></tr>\n'
+    html_data += '\t<tr><td>key</td><td>{key}</td></tr>\n'.format(**project)
+    html_data += '\t<tr><td>name</td><td>{name}</td></tr>\n'.format(**project)
+    html_data += '\t<tr><td>description</td><td>{description}</td></tr>\n'.format(**project)
+    html_data += '\t<tr><td>id</td><td>{id}</td></tr>\n'.format(**project)
+    return html_data + '</table>\n'
 
 bitbucket = Bitbucket(
     url='http://localhost:7990',

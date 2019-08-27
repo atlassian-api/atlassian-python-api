@@ -84,6 +84,16 @@ class Confluence(AtlassianRestAPI):
         """
         return (self.get_page_by_title(space, title) or {}).get('id')
 
+    def get_parent_content_id(self, page_id):
+        """
+        Provide parent content id from page id
+        :type page_id: str
+        :return:
+        """
+        parent_content_id = ((self.get_page_by_id(page_id=page_id, expand='ancestors').get('ancestors') or {})[-1].get(
+            'id') or None)
+        return parent_content_id
+
     def get_page_space(self, page_id):
         """
         Provide space key from content id
@@ -124,7 +134,11 @@ class Confluence(AtlassianRestAPI):
         """
         Get page by ID
         :param page_id: Content ID
-        :param expand: OPTIONAL: expand e.g. history
+        :param expand: OPTIONAL: A comma separated list of properties to expand on the content.
+                       Default value: history,space,version We can also specify some extensions
+                       such as extensions.inlineProperties
+                       (for getting inline comment-specific properties) or extensions.resolution
+                       for the resolution status of each comment in the results
         :return:
         """
         params = {}
@@ -202,7 +216,7 @@ class Confluence(AtlassianRestAPI):
         url = 'rest/api/content/search'
         params = {}
         if label:
-            params['cql'] = 'type={type}%20AND%20label={label}'.format(type='page',
+            params['cql'] = 'type={type} AND label={label}'.format(type='page',
                                                                        label=label)
         if start:
             params['start'] = start
@@ -364,19 +378,22 @@ class Confluence(AtlassianRestAPI):
             data['ancestors'] = [{'type': type, 'id': parent_id}]
         return self.post(url, data=data)
 
-    def get_all_spaces(self, start=0, limit=500):
+    def get_all_spaces(self, start=0, limit=500, expand=None):
         """
         Get all spaces with provided limit
         :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
         :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
                             fixed system limits. Default: 500
+        :param expand: OPTIONAL: additional info, e.g. metadata, icon, description, homepage
         """
         url = 'rest/api/space'
         params = {}
-        if limit:
-            params['limit'] = limit
         if start:
             params['start'] = start
+        if limit:
+            params['limit'] = limit
+        if expand:
+            params['expand'] = expand
         return (self.get(url, params=params) or {}).get('results')
 
     def add_comment(self, page_id, text):
@@ -671,10 +688,10 @@ class Confluence(AtlassianRestAPI):
                     minor_edit=False):
         """
         Update page if already exist
-        :param parent_id:
         :param page_id:
         :param title:
         :param body:
+        :param parent_id:
         :param type:
         :param representation: OPTIONAL: either Confluence 'storage' or 'wiki' markup format
         :param minor_edit: Indicates whether to notify watchers about changes.
@@ -702,7 +719,7 @@ class Confluence(AtlassianRestAPI):
 
             return self.put('rest/api/content/{0}'.format(page_id), data=data)
 
-    def append_page(self, parent_id, page_id, title, append_body, type='page', representation='storage',
+    def append_page(self, page_id, title, append_body, parent_id=None, type='page', representation='storage',
                     minor_edit=False):
         """
         Append body to page if already exist
@@ -741,21 +758,23 @@ class Confluence(AtlassianRestAPI):
 
             return self.put('rest/api/content/{0}'.format(page_id), data=data)
 
-    def update_or_create(self, parent_id, title, body, representation='storage'):
+    def update_or_create(self, parent_id, title, body, representation='storage', minor_edit=False):
         """
         Update page or create a page if it is not exists
         :param parent_id:
         :param title:
         :param body:
         :param representation: OPTIONAL: either Confluence 'storage' or 'wiki' markup format
+        :param minor_edit: Update page without notification
         :return:
         """
         space = self.get_page_space(parent_id)
 
         if self.page_exists(space, title):
             page_id = self.get_page_id(space, title)
+            parent_id = self.get_parent_content_id(page_id)
             result = self.update_page(parent_id=parent_id, page_id=page_id, title=title, body=body,
-                                      representation=representation)
+                                      representation=representation, minor_edit=minor_edit)
         else:
             result = self.create_page(space=space, parent_id=parent_id, title=title, body=body,
                                       representation=representation)
@@ -1200,3 +1219,56 @@ class Confluence(AtlassianRestAPI):
         if search_string:
             params['searchString'] = search_string
         return self.get(url, params=params)
+
+    """
+    ##############################################################################################
+    #   Team Calendars REST API implements  (https://jira.atlassian.com/browse/CONFSERVER-51003) #
+    ##############################################################################################
+    """
+
+    def team_calendars_get_sub_calendars(self, include=None, viewing_space_key=None, calendar_context=None):
+        """
+        Get subscribed calendars
+        :param include:
+        :param viewing_space_key:
+        :param calendar_context:
+        :return:
+        """
+        url = 'rest/calendar-services/1.0/calendar/subcalendars'
+        params = {}
+        if include:
+            params['include'] = include
+        if viewing_space_key:
+            params['viewingSpaceKey'] = viewing_space_key
+        if calendar_context:
+            params['calendarContext'] = calendar_context
+        return self.get(url, params=params)
+
+    def team_calendars_get_sub_calendars_watching_status(self, include=None):
+        url = 'rest/calendar-services/1.0/calendar/subcalendars/watching/status'
+        params = {}
+        if include:
+            params['include'] = include
+        return self.get(url, params=params)
+
+    def team_calendar_events(self, sub_calendar_id, start, end, user_time_zone_id=None):
+        """
+        Get calendar event status
+        :param sub_calendar_id:
+        :param start:
+        :param end:
+        :param user_time_zone_id:
+        :return:
+        """
+        url = 'rest/calendar-services/1.0/calendar/events'
+        params = {}
+        if sub_calendar_id:
+            params['subCalendarId'] = sub_calendar_id
+        if user_time_zone_id:
+            params['userTimeZoneId'] = user_time_zone_id
+        if start:
+            params['start'] = start
+        if end:
+            params['start'] = end
+        return self.get(url, params=params)
+   

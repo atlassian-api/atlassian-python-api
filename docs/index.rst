@@ -5,7 +5,7 @@
 
 Welcome to Atlassian Python API's documentation!
 ================================================
-|Build Status| |PyPI version| |License| |Codacy Badge|
+|Build Status| |PyPI version| |PyPI - Downloads| |License| |Codacy Badge| |Docs|
 
 Getting started
 ---------------
@@ -89,3 +89,8 @@ Alternatively OAuth can be used:
 .. |Codacy Badge| image:: https://api.codacy.com/project/badge/Grade/c822908f507544fe98ae37b25518ae3d
    :target: https://www.codacy.com/project/gonchik/atlassian-python-api/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=AstroMatt/atlassian-python-api&amp;utm_campaign=Badge_Grade_Dashboard
    :alt: Codacy Badge
+.. |PyPI - Downloads| image:: https://pepy.tech/badge/atlassian-python-api/month
+   :alt: PyPI - Downloads
+.. |Docs| image:: https://readthedocs.org/projects/atlassian-python-api/badge/?version=latest
+   :target: https://atlassian-python-api.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status

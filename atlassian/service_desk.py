@@ -6,6 +6,9 @@ log = logging.getLogger(__name__)
 
 
 class ServiceDesk(AtlassianRestAPI):
+    """
+    JIRA ServiceDesk API object
+    """
 
     # Information actions
     def get_info(self):
@@ -46,7 +49,9 @@ class ServiceDesk(AtlassianRestAPI):
         log.warning('Creating customer...')
         data = {'fullName': full_name, 'email': email}
 
-        return self.post('rest/servicedeskapi/customer', headers=self.experimental_headers, data=data)
+        return self.post('rest/servicedeskapi/customer',
+                         headers=self.experimental_headers,
+                         data=data)
 
     def get_customer_request(self, issue_id_or_key):
         """
@@ -63,7 +68,9 @@ class ServiceDesk(AtlassianRestAPI):
 
         return (self.get('rest/servicedeskapi/request') or {}).get('values')
 
-    def create_customer_request(self, service_desk_id, request_type_id, values_dict, raise_on_behalf_of=None):
+    def create_customer_request(self, service_desk_id, request_type_id,
+                                values_dict, raise_on_behalf_of=None,
+                                request_participants=None):
         """
         Creating customer request
 
@@ -71,6 +78,7 @@ class ServiceDesk(AtlassianRestAPI):
         :param request_type_id: str
         :param values_dict: str
         :param raise_on_behalf_of: str
+        :param request_participants: list
         :return: New request
         """
         log.warning('Creating request...')
@@ -83,6 +91,9 @@ class ServiceDesk(AtlassianRestAPI):
         if raise_on_behalf_of:
             data["raiseOnBehalfOf"] = raise_on_behalf_of
 
+        if request_participants:
+            data["requestParticipants"] = request_participants
+
         return self.post('rest/servicedeskapi/request', data=data)
 
     def get_customer_request_status(self, issue_id_or_key):
@@ -92,10 +103,11 @@ class ServiceDesk(AtlassianRestAPI):
         :param issue_id_or_key: str
         :return: Status name
         """
-        request = (self.get('rest/servicedeskapi/request/{}/status'.format(issue_id_or_key)) or {}).get('values')
-        status = (request[0].get('status') or {})
-
-        return status
+        request = self.get('rest/servicedeskapi/request/{}/status'.format(issue_id_or_key))
+        if request:
+            if request.get('values', []):
+                return request.get('values', [])[0].get('status', {})
+        return {}
 
     def get_customer_transitions(self, issue_id_or_key):
         """
@@ -107,6 +119,16 @@ class ServiceDesk(AtlassianRestAPI):
         url = 'rest/servicedeskapi/request/{}/transition'.format(issue_id_or_key)
 
         return self.get(url, headers=self.experimental_headers)
+
+    def get_request_types(self, service_desk_id):
+        """
+        Gets request types
+
+        :param service_desk_id: str
+        :return: all service desk request types
+        """
+
+        return self.get('rest/servicedeskapi/servicedesk/{}/requesttype'.format(service_desk_id))
 
     # Participants actions
     def get_request_participants(self, issue_id_or_key, start=0, limit=50):
@@ -184,8 +206,9 @@ class ServiceDesk(AtlassianRestAPI):
         """
         log.warning('Creating comment...')
         data = {"body": body, "public": public}
+        url = 'rest/servicedeskapi/request/{}/comment'.format(issue_id_or_key)
 
-        return self.post('rest/servicedeskapi/request/{}/comment'.format(issue_id_or_key), data=data)
+        return self.post(path=url, data=data)
 
     def get_request_comments(self, issue_id_or_key):
         """
@@ -206,7 +229,8 @@ class ServiceDesk(AtlassianRestAPI):
         :return: Single comment
         """
 
-        return self.get('rest/servicedeskapi/request/{0}/comment/{1}'.format(issue_id_or_key, comment_id))
+        return self.get('rest/servicedeskapi/request/{}/comment/{}'.format(issue_id_or_key,
+                                                                           comment_id))
 
     # Organizations actions
     def get_organisations(self, service_desk_id=None, start=0, limit=50):
@@ -231,8 +255,7 @@ class ServiceDesk(AtlassianRestAPI):
 
         if service_desk_id is None:
             return self.get(url_without_sd_id, headers=self.experimental_headers, params=params)
-        else:
-            return self.get(url_with_sd_id, headers=self.experimental_headers, params=params)
+        return self.get(url_with_sd_id, headers=self.experimental_headers, params=params)
 
     def get_organization(self, organization_id):
         """
@@ -265,8 +288,8 @@ class ServiceDesk(AtlassianRestAPI):
 
     def create_organization(self, name):
         """
-        To create an organization Jira administrator global permission or agent permission is required
-        depending on the settings
+        To create an organization Jira administrator global or agent
+        permission is required depending on the settings
 
         :param name: str
         :return: Organization data
@@ -348,13 +371,15 @@ class ServiceDesk(AtlassianRestAPI):
         return self.delete(url, headers=self.experimental_headers, data=data)
 
     # Attachments actions
-    def create_attachment(self, service_desk_id, issue_id_or_key, filename, public=True, comment=None):
+    def create_attachment(self, service_desk_id, issue_id_or_key, filename,
+                          public=True, comment=None):
         """
         Add attachment as a comment.
 
         Setting attachment visibility is dependent on the user's permission. For example,
-        Agents can create either public or internal attachments, while Unlicensed users can only create internal
-        attachments, and Customers can only create public attachments.
+        Agents can create either public or internal attachments,
+        while Unlicensed users can only create internal attachments,
+        and Customers can only create public attachments.
 
         An additional comment may be provided which will be prepended to the attachments.
 
@@ -385,14 +410,15 @@ class ServiceDesk(AtlassianRestAPI):
         url = 'rest/servicedeskapi/servicedesk/{}/attachTemporaryFile'.format(service_desk_id)
 
         with open(filename, 'rb') as file:
-            result = self.post(url, headers=headers, files={'file': file}).get('temporaryAttachments')
+            result = self.post(path=url, headers=headers,
+                               files={'file': file}).get('temporaryAttachments')
             temp_attachment_id = result[0].get('temporaryAttachmentId')
 
             return temp_attachment_id
 
     def add_attachment(self, issue_id_or_key, temp_attachment_id, public=True, comment=None):
         """
-        Adds temporary attachment that were created using attach_temporary_file function to a customer request
+        Adds temporary attachment to customer request using attach_temporary_file function
 
         :param issue_id_or_key: str
         :param temp_attachment_id: str, ID from result attach_temporary_file function
@@ -401,11 +427,9 @@ class ServiceDesk(AtlassianRestAPI):
         :return:
         """
         log.warning('Adding attachment')
-        data = {
-            'temporaryAttachmentIds': [temp_attachment_id],
-            'public': public,
-            'additionalComment': {'body': comment}
-        }
+        data = {'temporaryAttachmentIds': [temp_attachment_id],
+                'public': public,
+                'additionalComment': {'body': comment}}
         url = 'rest/servicedeskapi/request/{}/attachment'.format(issue_id_or_key)
 
         return self.post(url, headers=self.experimental_headers, data=data)
@@ -433,7 +457,7 @@ class ServiceDesk(AtlassianRestAPI):
 
     def get_sla_by_id(self, issue_id_or_key, sla_id):
         """
-        Get the SLA information for a customer request for a given request ID or key and SLA metric ID
+        Get customer request SLA information for given request ID or key and SLA metric ID
         IMPORTANT: The calling user must be an agent
 
         :param issue_id_or_key: str
@@ -520,8 +544,8 @@ class ServiceDesk(AtlassianRestAPI):
     def get_queues(self, service_desk_id, include_count=False, start=0, limit=50):
         """
         Returns a page of queues defined inside a service desk, for a given service desk ID.
-        The returned queues will include an issue count for each queue (represented in issueCount field)
-        if the query param includeCount is set to true (defaults to false).
+        The returned queues will include issue counts for each queue (issueCount field)
+        if the query param includeCount is set to true (default=false).
 
         Permissions: The calling user must be an agent of the given service desk.
 
@@ -559,7 +583,8 @@ class ServiceDesk(AtlassianRestAPI):
         :param limit: int
         :return: a page of issues
         """
-        url = 'rest/servicedeskapi/servicedesk/{0}/queue/{1}/issue'.format(service_desk_id, queue_id)
+        url = 'rest/servicedeskapi/servicedesk/{0}/queue/{1}/issue'.format(service_desk_id,
+                                                                           queue_id)
         params = {}
 
         if start is not None:

@@ -1,14 +1,14 @@
 ============================
 Atlassian Python API wrapper
 ============================
-|Build Status| |PyPI version| |PyPI - Downloads| |License| |Codacy Badge|
+|Build Status| |PyPI version| |PyPI - Downloads| |License| |Codacy Badge| |Docs|
 
 Documentation
 -------------
 
-`Documentation (beta)`_
+`Documentation`_
 
-.. _Documentation (beta): https://atlassian-python-api.readthedocs.io/en/latest/index.html
+.. _Documentation: https://atlassian-python-api.readthedocs.io/en/latest/index.html
 
 Examples
 --------
@@ -109,6 +109,9 @@ See the `Contribution guidelines for this project`_ for details on how to make c
    :alt: Codacy Badge
 .. |PyPI - Downloads| image:: https://pepy.tech/badge/atlassian-python-api/month
    :alt: PyPI - Downloads
+.. |Docs| image:: https://readthedocs.org/projects/atlassian-python-api/badge/?version=latest
+   :target: https://atlassian-python-api.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
 
 
 Credits
