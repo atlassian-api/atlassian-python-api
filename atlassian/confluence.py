@@ -217,7 +217,7 @@ class Confluence(AtlassianRestAPI):
         params = {}
         if label:
             params['cql'] = 'type={type} AND label={label}'.format(type='page',
-                                                                       label=label)
+                                                                   label=label)
         if start:
             params['start'] = start
         if limit:
@@ -938,13 +938,11 @@ class Confluence(AtlassianRestAPI):
                 Possible param is "status". Results are "Active, Deactivated"
         :return: Returns the user details
         """
+        url = 'rest/api/user'
+        params = {'username': username}
         if expand:
-            url = 'rest/api/user?username={username}&expand={expand}'.format(username=username,
-                                                                             expand=expand)
-        else:
-            url = 'rest/api/user?username={username}'.format(username=username)
-
-        return self.get(url)
+            params['expand'] = expand
+        return self.get(url, params=params)
 
     def get_user_details_by_userkey(self, userkey, expand=None):
         """
@@ -954,12 +952,11 @@ class Confluence(AtlassianRestAPI):
                 Possible param is "status". Results are "Active, Deactivated"
         :return: Returns the user details
         """
+        url = 'rest/api/user'
+        params = {'key': userkey}
         if expand:
-            url = 'rest/api/user?key={userkey}&expand={expand}'.format(userkey=userkey,
-                                                                       expand=expand)
-        else:
-            url = 'rest/api/user?key={userkey}'.format(userkey=userkey)
-        return self.get(url)
+            params['expand'] = expand
+        return self.get(url, params=params)
 
     def cql(self, cql, start=0, limit=None, expand=None, include_archived_spaces=None, excerpt=None):
         """
@@ -1271,4 +1268,30 @@ class Confluence(AtlassianRestAPI):
         if end:
             params['start'] = end
         return self.get(url, params=params)
-   
+
+    def get_mobile_parameters(self, username):
+        """
+        Get mobile paramaters
+        :param username:
+        :return:
+        """
+        url = 'rest/mobile/1.0/profile/{username}'.format(username=username)
+        return self.get(url)
+
+    def avatar_upload_for_user(self, user_key, data):
+        """
+
+        :param user_key:
+        :param data: json like {"avatarDataURI":"image in base64"}
+        :return:
+        """
+        url = 'rest/user-profile/1.0/{}/avatar/upload'.format(user_key)
+        return self.post(url, data=data)
+
+    def avatar_set_default_for_user(self, user_key):
+        """
+        :param user_key:
+        :return:
+        """
+        url = 'rest/user-profile/1.0/{}/avatar/default'.format(user_key)
+        return self.get(url)
