@@ -1158,4 +1158,4 @@ class Bitbucket(AtlassianRestAPI):
             project=project,
             repository=repository,
             filename=filename)
-        return self.put(url, data=data)
+        return self.put(url, files=data)
