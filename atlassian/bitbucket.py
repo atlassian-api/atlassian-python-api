@@ -1156,6 +1156,6 @@ class Bitbucket(AtlassianRestAPI):
         
         url = 'rest/api/1.0/projects/{project}/repos/{repository}/browse/{filename}'.format(
             project=project,
-            repository=repository
+            repository=repository,
             filename=filename)
         return self.put(url, data=data)
