@@ -32,7 +32,7 @@ setup(
         'six',
         'oauthlib',
         'requests_oauthlib'
-    ] + ['kerberos-sspi'] if "win" in sys.platform else ['kerberos'],
+    ] + (['kerberos-sspi'] if "win" in sys.platform else ['kerberos']),
     platforms='Platform Independent',
 
     classifiers=[
