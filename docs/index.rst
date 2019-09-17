@@ -69,6 +69,29 @@ Alternatively OAuth can be used:
         url='http://localhost:8080',
         oauth=oauth_dict)
 
+Or Kerberos:
+
+.. code-block:: python
+
+    kerberos_service = 'HTTP/jira.localhost@YOUR.DOMAIN.COM'
+
+    jira = Jira(
+        url='http://localhost:8080',
+        kerberos=kerberos_service)
+
+    confluence = Confluence(
+        url='http://localhost:8090',
+        kerberos=kerberos_service)
+
+    bitbucket = Bitbucket(
+        url='http://localhost:7990',
+        kerberos=kerberos_service)
+
+    service_desk = ServiceDesk(
+        url='http://localhost:8080',
+        kerberos=kerberos_service)
+
+
 .. toctree::
    :maxdept:2
 
