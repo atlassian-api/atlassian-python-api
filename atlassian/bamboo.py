@@ -351,6 +351,61 @@ class Bamboo(AtlassianRestAPI):
         return self.base_list_call(resource, expand, favourite, clover_enabled, max_results,
                                    elements_key='branches', element_key='branch')
 
+    def create_branch(self, plan_key, branch_name, vcs_branch=None, enabled=False, cleanup_enabled=False):
+        """
+        Method for creating branch for a specified plan. 
+        You can use vcsBranch query param to define which vcsBranch should newly created branch use. 
+        If not specified it will not override vcsBranch from the main plan. 
+
+        :param plan_key: str TST-BLD
+        :param branch_name: str new-shiny-branch
+        :param vcs_branch: str feature/new-shiny-branch, /refs/heads/new-shiny-branch
+        :param enabled: bool
+        :param cleanup_enabled: bool
+        :return: PUT request
+        """
+        resource = 'plan/{plan_key}/branch/{branch_name}'.format(plan_key=plan_key, branch_name=branch_name)
+        if vcs_branch:
+            params = {'vcsBranch':vcs_branch}
+            params['enabled'] = 'true' if enabled else 'false'
+            params['cleanupEnabled'] = 'true' if cleanup_enabled else 'false'
+        return self.put(self.resource_url(resource), params=params)
+
+    def enable_plan(self, plan_key):
+        """
+        Enable plan.
+        :param plan_key: str TST-BLD
+        :return: POST request
+        """
+        resource = 'plan/{plan_key}/enable'.format(plan_key=plan_key)
+        return self.post(self.resource_url(resource))
+
+    def execute_build(self, plan_key, stage=None, executeAllStages=True, customRevision=None, **bamboo_variables):
+        """
+        Fire build execution for specified plan. 
+        !IMPORTANT! NOTE: for some reason, this method always execute all stages
+        :param plan_key: str TST-BLD
+        :param stage: str stage-name
+        :param executeAllStages: bool
+        :param customRevision: str revisionName
+        :param bamboo_variables: dict {variable=value} 
+        :return: POST request
+        """
+        headers = self.form_token_headers
+        resource = 'queue/{plan_key}'.format(plan_key=plan_key)
+        params = {}
+        if stage:
+            executeAllStages = False
+            params['stage'] = stage
+        if customRevision:
+            params['customRevision'] = customRevision
+        params['executeAllStages'] = 'true' if executeAllStages else 'false'
+        if bamboo_variables:
+            for key, value in bamboo_variables.items():
+                params['bamboo.variable.{}'.format(key)] = value
+
+        return self.post(self.resource_url(resource), params=params, headers=headers)
+
     def health_check(self):
         """
         Get health status
