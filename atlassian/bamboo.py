@@ -366,10 +366,10 @@ class Bamboo(AtlassianRestAPI):
         """
         resource = 'plan/{plan_key}/branch/{branch_name}'.format(plan_key=plan_key, branch_name=branch_name)
         if vcs_branch:
-            resource += '?vcsBranch{vcs_branch}'.format(vcs_branch=vcs_branch)
-            resource += '&enabled={}'.format('true' if enabled else 'false')
-            resource += '&cleanupEnabled={}'.format('true' if cleanup_enabled else 'false')
-        return self.put(self.resource_url(resource))
+            params = {'vcsBranch':vcs_branch}
+            params['enabled'] = 'true' if enabled else 'false'
+            params['cleanupEnabled'] = 'true' if cleanup_enabled else 'false'
+        return self.put(self.resource_url(resource), params=params)
 
     def enable_plan(self, plan_key):
         """
