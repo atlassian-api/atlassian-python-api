@@ -1139,3 +1139,48 @@ class Bitbucket(AtlassianRestAPI):
             'upm-token']
         url = 'rest/plugins/1.0/?token={upm_token}'.format(upm_token=upm_token)
         return self.post(url, files=files, headers=headers)
+    
+    def upload_file(self, project, repository, content, message, branch, filename):
+        """
+        Upload new file for given branch.
+        :param content:
+        :param message:
+        :param branch:
+        :return:
+        """
+        data = {
+            "content": content,
+            "message": message,
+            "branch": branch
+        }
+        
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/browse/{filename}'.format(
+            project=project,
+            repository=repository,
+            filename=filename)
+        return self.put(url, files=data)
+    
+    def update_file(self, project, repository, content, message, branch, filename, sourceCommitId):
+        """
+        Update existing file for given branch.
+        :param project:
+        :param repository:
+        :param content:
+        :param message:
+        :param branch:
+        :param filename:
+        :param sourceCommitId:
+        :return:
+        """
+        data = {
+            "content": content,
+            "message": message,
+            "branch": branch,
+            "sourceCommitId": sourceCommitId
+        }
+        
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/browse/{filename}'.format(
+            project=project,
+            repository=repository,
+            filename=filename)
+        return self.put(url, files=data)       

@@ -1,4 +1,5 @@
 import os
+import sys
 from setuptools import find_packages
 from setuptools import setup
 
@@ -31,7 +32,7 @@ setup(
         'six',
         'oauthlib',
         'requests_oauthlib'
-    ],
+    ] + (['kerberos-sspi'] if "win" in sys.platform else ['kerberos']),
     platforms='Platform Independent',
 
     classifiers=[
