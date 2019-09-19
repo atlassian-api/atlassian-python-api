@@ -205,6 +205,19 @@ class Jira(AtlassianRestAPI):
         params = {'username': username}
         return self.delete(url, params=params)
 
+    def user_update_or_create_property_through_rest_point(self, username, key, value):
+        """
+        ATTENTION!
+        This method used after configuration of rest endpoint on Jira side
+        :param username:
+        :param key:
+        :param value:
+        :return:
+        """
+        url = 'rest/scriptrunner/latest/custom/updateUserProperty'
+        params = {'username': username, 'property': key, 'value': value}
+        return self.get(url, params=params)
+
     def user_update_email(self, username, email):
         """
         Update user email for new domain changes
