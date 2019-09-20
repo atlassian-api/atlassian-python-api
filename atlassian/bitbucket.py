@@ -704,6 +704,31 @@ class Bitbucket(AtlassianRestAPI):
             pullRequestId=pull_request_id)
         return self.get(url)
 
+    def change_reviewed_status(self, projectKey, repositorySlug, pullRequestId, status, userSlug):
+        """
+        Change the current user's status for a pull request. 
+        Implicitly adds the user as a participant if they are not already. 
+        If the current user is the author, this method will fail.
+        :param projectKey:
+        :param repositorySlug:
+        :param pullRequestId:
+        :param status:
+        :param userSlug:
+        :return:
+        """
+        url = "/rest/api/1.0/projects/{projectKey}/repos/{repositorySlug}/pull-requests/{pullRequestId}/participants/{userSlug}".format(
+            projectKey=projectKey, repositorySlug=repositorySlug, pullRequestId=pullRequestId, userSlug=userSlug,
+        )
+        approved = True if status == "APPROVED" else False
+        data = {
+            "user": {
+                "name": userSlug
+            },
+            "approved": approved,
+            "status": status
+        }
+        return self.put(url, data)
+
     def get_tags(self, project, repository, filter='', limit=1000, order_by=None, start=0):
         """
         Retrieve the tags matching the supplied filterText param.
@@ -1139,7 +1164,7 @@ class Bitbucket(AtlassianRestAPI):
             'upm-token']
         url = 'rest/plugins/1.0/?token={upm_token}'.format(upm_token=upm_token)
         return self.post(url, files=files, headers=headers)
-    
+
     def upload_file(self, project, repository, content, message, branch, filename):
         """
         Upload new file for given branch.
@@ -1153,13 +1178,13 @@ class Bitbucket(AtlassianRestAPI):
             "message": message,
             "branch": branch
         }
-        
+
         url = 'rest/api/1.0/projects/{project}/repos/{repository}/browse/{filename}'.format(
             project=project,
             repository=repository,
             filename=filename)
         return self.put(url, files=data)
-    
+
     def update_file(self, project, repository, content, message, branch, filename, sourceCommitId):
         """
         Update existing file for given branch.
@@ -1178,9 +1203,54 @@ class Bitbucket(AtlassianRestAPI):
             "branch": branch,
             "sourceCommitId": sourceCommitId
         }
-        
+
         url = 'rest/api/1.0/projects/{project}/repos/{repository}/browse/{filename}'.format(
             project=project,
             repository=repository,
             filename=filename)
-        return self.put(url, files=data)       
+        return self.put(url, files=data)
+
+    def get_code_insights_report(self, projectKey, repositorySlug, commitId, report_key):
+        """
+        Retrieve the specified code-insights report.
+        :projectKey: str
+        :repositorySlug: str
+        :commitId: str
+        :report_key: str
+        """
+        url = "/rest/insights/1.0/projects/{projectKey}/repos/{repositorySlug}/commits/{commitId}/reports/{key}".format(
+            projectKey=projectKey, repositorySlug=repositorySlug, commitId=commitId, key=report_key
+        )
+        return self.get(url)
+
+    def delete_code_insights_report(self, projectKey, repositorySlug, commitId, report_key):
+        """
+        Delete a report for the given commit. Also deletes any annotations associated with this report.
+        :projectKey: str
+        :repositorySlug: str
+        :commitId: str
+        :report_key: str
+        """
+        url = "/rest/insights/1.0/projects/{projectKey}/repos/{repositorySlug}/commits/{commitId}/reports/{key}".format(
+            projectKey=projectKey, repositorySlug=repositorySlug, commitId=commitId, key=report_key
+        )
+        return self.delete(url)
+
+    def create_code_insights_report(self, projectKey, repositorySlug, commitId, report_key, report_title, **report_params):
+        """
+        Create a new insight report, or replace the existing one if a report already exists for the given repository, commit, and report key. 
+        A request to replace an existing report will be rejected if the authenticated user was not the creator of the specified report.
+        For further information visit: https://docs.atlassian.com/bitbucket-server/rest/6.6.1/bitbucket-code-insights-rest.html
+        :projectKey: str
+        :repositorySlug: str
+        :commitId: str
+        :report_key: str
+        :report_title: str
+        :report_params: 
+        """
+        url = "/rest/insights/1.0/projects/{projectKey}/repos/{repositorySlug}/commits/{commitId}/reports/{key}".format(
+            projectKey=projectKey, repositorySlug=repositorySlug, commitId=commitId, key=report_key
+        )
+        data = {"title": report_title}
+        data.update(report_params)
+        return self.put(url, data=data)
