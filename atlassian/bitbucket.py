@@ -17,6 +17,16 @@ class Bitbucket(AtlassianRestAPI):
             params['limit'] = limit
         return (self.get('rest/api/1.0/projects', params=params) or {}).get('values')
 
+    def repo_list(self, project_key):
+        """
+        Provide the repository list in a specific BB project
+        :param project_key: The Project Key ID you need to list
+        return:
+        """
+        url = '/rest/api/1.0/projects/{projectKey}/repos?limit=1000'.format(
+            projectKey=project_key)
+        return self.get(url)
+
     def project(self, key):
         """
         Provide project info
