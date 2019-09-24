@@ -6,6 +6,7 @@ log = logging.getLogger(__name__)
 
 
 class Bitbucket(AtlassianRestAPI):
+
     def project_list(self, limit=None):
         """
         Provide the project list
@@ -50,6 +51,48 @@ class Bitbucket(AtlassianRestAPI):
                 "description": description
                 }
         return self.post(url, data=data)
+
+    def update_project(self, key, **params):
+        """
+        Update project
+        :param key:
+        :param **params:
+        :return:
+        """
+        data = self.project(key)
+        if not 'errors' in data:
+            data.update(params)
+            url = 'rest/api/1.0/projects/{0}'.format(key)
+            return self.put(url, data=data)
+        else:
+            log.debug('Failed to update project: {0}: Unable to read project'.format(key))
+            return None
+
+    def project_avatar(self, key, content_type='image/png'):
+        """
+        Get project avatar
+
+        :param key:
+        :return:
+        """
+        url = 'rest/api/1.0/projects/{0}/avatar.png'.format(key)
+        headers = dict(self.default_headers)
+        headers['Accept'] = content_type
+        headers['X-Atlassian-Token'] = 'no-check'
+
+        return (self.get(url, not_json_response=True, headers=headers) or {})
+
+    def set_project_avatar(self, key, icon, content_type='image/png'):
+        """
+        Set project avatar
+
+        :param key:
+        :return:
+        """
+        headers = {'X-Atlassian-Token': 'no-check'}
+        files = {'avatar': ("avatar.png", icon, content_type)}
+        url = 'rest/api/1.0/projects/{0}/avatar.png'.format(key)
+        return (self.post(url, files=files, headers=headers) or {})
 
     def project_users(self, key, limit=99999, filter_str=None):
         """
@@ -107,7 +150,7 @@ class Bitbucket(AtlassianRestAPI):
         :param project_key: project key involved
         :param username: user name to be granted
         :param permission: the project permissions available are 'PROJECT_ADMIN', 'PROJECT_WRITE' and 'PROJECT_READ'
-        :return: 
+        :return:
         """
         url = 'rest/api/1.0/projects/{project_key}/permissions/users?permission={permission}&name={username}'.format(
             project_key=project_key,
@@ -136,7 +179,7 @@ class Bitbucket(AtlassianRestAPI):
         :param project_key: project key involved
         :param groupname: group to be granted
         :param permission: the project permissions available are 'PROJECT_ADMIN', 'PROJECT_WRITE' and 'PROJECT_READ'
-        :return: 
+        :return:
         """
         url = 'rest/api/1.0/projects/{project_key}/permissions/groups?permission={permission}&name={groupname}'.format(
             project_key=project_key,
@@ -167,7 +210,7 @@ class Bitbucket(AtlassianRestAPI):
         :param repo_key: repository key involved (slug)
         :param username: user name to be granted
         :param permission: the repository permissions available are 'REPO_ADMIN', 'REPO_WRITE' and 'REPO_READ'
-        :return: 
+        :return:
         """
         params = {'permission': permission,
                   'name': username}
@@ -208,7 +251,7 @@ class Bitbucket(AtlassianRestAPI):
         :param repo_key: repository key involved (slug)
         :param groupname: group to be granted
         :param permission: the repository permissions available are 'REPO_ADMIN', 'REPO_WRITE' and 'REPO_READ'
-        :return: 
+        :return:
         """
         params = {'permission': permission,
                   'name': groupname}
@@ -283,7 +326,8 @@ class Bitbucket(AtlassianRestAPI):
             'key': key,
             'data': self.project(key),
             'users': self.project_users(key),
-            'groups': self.project_groups(key)}
+            'groups': self.project_groups(key),
+            'avatar': self.project_avatar(key)}
 
     def group_members(self, group, limit=99999):
         """
