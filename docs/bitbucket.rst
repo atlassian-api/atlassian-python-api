@@ -9,6 +9,9 @@ Manage projects
     # Project list
     bitbucket.project_list()
 
+    # Repo list
+    bitbucket.repo_list(project_key)
+
     # Project info
     bitbucket.project(key)
 
