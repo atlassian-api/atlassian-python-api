@@ -24,7 +24,7 @@ class Bitbucket(AtlassianRestAPI):
         :param project_key: The Project Key ID you need to list
         return:
         """
-        url = '/rest/api/1.0/projects/{projectKey}/repos?limit=1000'.format(
+        url = 'rest/api/1.0/projects/{projectKey}/repos?limit=1000'.format(
             projectKey=project_key)
         return self.get(url)
 
@@ -35,7 +35,7 @@ class Bitbucket(AtlassianRestAPI):
         :return:
         """
         url = 'rest/api/1.0/projects/{0}'.format(key)
-        return (self.get(url) or {})
+        return self.get(url) or {}
 
     def create_project(self, key, name, description=""):
         """
@@ -758,25 +758,25 @@ class Bitbucket(AtlassianRestAPI):
             pullRequestId=pull_request_id)
         return self.get(url)
 
-    def change_reviewed_status(self, projectKey, repositorySlug, pullRequestId, status, userSlug):
+    def change_reviewed_status(self, project_key, repository_slug, pull_request_id, status, user_slug):
         """
         Change the current user's status for a pull request. 
         Implicitly adds the user as a participant if they are not already. 
         If the current user is the author, this method will fail.
-        :param projectKey:
-        :param repositorySlug:
-        :param pullRequestId:
+        :param project_key:
+        :param repository_slug:
+        :param pull_request_id:
         :param status:
-        :param userSlug:
+        :param user_slug:
         :return:
         """
-        url = "/rest/api/1.0/projects/{projectKey}/repos/{repositorySlug}/pull-requests/{pullRequestId}/participants/{userSlug}".format(
-            projectKey=projectKey, repositorySlug=repositorySlug, pullRequestId=pullRequestId, userSlug=userSlug,
+        url = "rest/api/1.0/projects/{projectKey}/repos/{repositorySlug}/pull-requests/{pullRequestId}/participants/{userSlug}".format(
+            projectKey=project_key, repositorySlug=repository_slug, pullRequestId=pull_request_id, userSlug=user_slug,
         )
         approved = True if status == "APPROVED" else False
         data = {
             "user": {
-                "name": userSlug
+                "name": user_slug
             },
             "approved": approved,
             "status": status
@@ -1272,7 +1272,7 @@ class Bitbucket(AtlassianRestAPI):
         :commitId: str
         :report_key: str
         """
-        url = "/rest/insights/1.0/projects/{projectKey}/repos/{repositorySlug}/commits/{commitId}/reports/{key}".format(
+        url = "rest/insights/1.0/projects/{projectKey}/repos/{repositorySlug}/commits/{commitId}/reports/{key}".format(
             projectKey=projectKey, repositorySlug=repositorySlug, commitId=commitId, key=report_key
         )
         return self.get(url)
@@ -1285,12 +1285,13 @@ class Bitbucket(AtlassianRestAPI):
         :commitId: str
         :report_key: str
         """
-        url = "/rest/insights/1.0/projects/{projectKey}/repos/{repositorySlug}/commits/{commitId}/reports/{key}".format(
+        url = "rest/insights/1.0/projects/{projectKey}/repos/{repositorySlug}/commits/{commitId}/reports/{key}".format(
             projectKey=projectKey, repositorySlug=repositorySlug, commitId=commitId, key=report_key
         )
         return self.delete(url)
 
-    def create_code_insights_report(self, projectKey, repositorySlug, commitId, report_key, report_title, **report_params):
+    def create_code_insights_report(self, projectKey, repositorySlug, commitId, report_key, report_title,
+                                    **report_params):
         """
         Create a new insight report, or replace the existing one if a report already exists for the given repository, commit, and report key. 
         A request to replace an existing report will be rejected if the authenticated user was not the creator of the specified report.
@@ -1302,7 +1303,7 @@ class Bitbucket(AtlassianRestAPI):
         :report_title: str
         :report_params: 
         """
-        url = "/rest/insights/1.0/projects/{projectKey}/repos/{repositorySlug}/commits/{commitId}/reports/{key}".format(
+        url = "rest/insights/1.0/projects/{projectKey}/repos/{repositorySlug}/commits/{commitId}/reports/{key}".format(
             projectKey=projectKey, repositorySlug=repositorySlug, commitId=commitId, key=report_key
         )
         data = {"title": report_title}
