@@ -97,7 +97,7 @@ class Bitbucket(AtlassianRestAPI):
         :param project_key: project key involved
         :param username: user name to be granted
         :param permission: the project permissions available are 'PROJECT_ADMIN', 'PROJECT_WRITE' and 'PROJECT_READ'
-        :return: 
+        :return:
         """
         url = 'rest/api/1.0/projects/{project_key}/permissions/users?permission={permission}&name={username}'.format(
             project_key=project_key,
@@ -126,7 +126,7 @@ class Bitbucket(AtlassianRestAPI):
         :param project_key: project key involved
         :param groupname: group to be granted
         :param permission: the project permissions available are 'PROJECT_ADMIN', 'PROJECT_WRITE' and 'PROJECT_READ'
-        :return: 
+        :return:
         """
         url = 'rest/api/1.0/projects/{project_key}/permissions/groups?permission={permission}&name={groupname}'.format(
             project_key=project_key,
@@ -157,7 +157,7 @@ class Bitbucket(AtlassianRestAPI):
         :param repo_key: repository key involved (slug)
         :param username: user name to be granted
         :param permission: the repository permissions available are 'REPO_ADMIN', 'REPO_WRITE' and 'REPO_READ'
-        :return: 
+        :return:
         """
         params = {'permission': permission,
                   'name': username}
@@ -198,7 +198,7 @@ class Bitbucket(AtlassianRestAPI):
         :param repo_key: repository key involved (slug)
         :param groupname: group to be granted
         :param permission: the repository permissions available are 'REPO_ADMIN', 'REPO_WRITE' and 'REPO_READ'
-        :return: 
+        :return:
         """
         params = {'permission': permission,
                   'name': groupname}
@@ -653,13 +653,15 @@ class Bitbucket(AtlassianRestAPI):
         url = 'rest/api/1.0/inbox/pull-requests'
         return self.get(url, params=params)
 
-    def add_pull_request_comment(self, project, repository, pull_request_id, text):
+    def add_pull_request_comment(self, project, repository, pull_request_id, text, parent_id=None):
         """
         Add comment into pull request
         :param project:
         :param repository:
         :param pull_request_id: the ID of the pull request within the repository
         :param text comment text
+        :param parent_id parent comment id
+
         :return:
         """
         url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/comments'.format(
@@ -667,6 +669,8 @@ class Bitbucket(AtlassianRestAPI):
             repository=repository,
             pullRequestId=pull_request_id)
         body = {'text': text}
+        if parent_id:
+            body['parent'] = {'id': parent_id}
         return self.post(url, data=body)
 
     def get_pull_request_comment(self, project, repository, pull_request_id, comment_id):
@@ -688,6 +692,24 @@ class Bitbucket(AtlassianRestAPI):
             comment_id=comment_id)
         return self.get(url)
 
+    def update_pull_request_comment(self, project, repository, pull_request_id, comment_id, comment, comment_version):
+        """
+        Update the text of a comment.
+        Only the user who created a comment may update it.
+
+        Note: the supplied supplied JSON object must contain a version
+        that must match the server's version of the comment
+        or the update will fail.
+        """
+        url = "/rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pull_request_id}/comments/{comment_id}".format(
+            project=project, repository=repository, pull_request_id=pull_request_id, comment_id=comment_id
+        )
+        payload = {
+            "version": comment_version,
+            "text": comment
+        }
+        return self.put(url, data=payload)
+
     def get_pullrequest(self, project, repository, pull_request_id):
         """
         Retrieve a pull request.
@@ -706,8 +728,8 @@ class Bitbucket(AtlassianRestAPI):
 
     def change_reviewed_status(self, projectKey, repositorySlug, pullRequestId, status, userSlug):
         """
-        Change the current user's status for a pull request. 
-        Implicitly adds the user as a participant if they are not already. 
+        Change the current user's status for a pull request.
+        Implicitly adds the user as a participant if they are not already.
         If the current user is the author, this method will fail.
         :param projectKey:
         :param repositorySlug:
