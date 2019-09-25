@@ -707,13 +707,15 @@ class Bitbucket(AtlassianRestAPI):
         url = 'rest/api/1.0/inbox/pull-requests'
         return self.get(url, params=params)
 
-    def add_pull_request_comment(self, project, repository, pull_request_id, text):
+    def add_pull_request_comment(self, project, repository, pull_request_id, text, parent_id=None):
         """
         Add comment into pull request
         :param project:
         :param repository:
         :param pull_request_id: the ID of the pull request within the repository
         :param text comment text
+        :param parent_id parent comment id
+
         :return:
         """
         url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/comments'.format(
@@ -721,6 +723,8 @@ class Bitbucket(AtlassianRestAPI):
             repository=repository,
             pullRequestId=pull_request_id)
         body = {'text': text}
+        if parent_id:
+            body['parent'] = {'id': parent_id}
         return self.post(url, data=body)
 
     def get_pull_request_comment(self, project, repository, pull_request_id, comment_id):
@@ -742,6 +746,24 @@ class Bitbucket(AtlassianRestAPI):
             comment_id=comment_id)
         return self.get(url)
 
+    def update_pull_request_comment(self, project, repository, pull_request_id, comment_id, comment, comment_version):
+        """
+        Update the text of a comment.
+        Only the user who created a comment may update it.
+
+        Note: the supplied supplied JSON object must contain a version
+        that must match the server's version of the comment
+        or the update will fail.
+        """
+        url = "/rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pull_request_id}/comments/{comment_id}".format(
+            project=project, repository=repository, pull_request_id=pull_request_id, comment_id=comment_id
+        )
+        payload = {
+            "version": comment_version,
+            "text": comment
+        }
+        return self.put(url, data=payload)
+
     def get_pullrequest(self, project, repository, pull_request_id):
         """
         Retrieve a pull request.
@@ -760,8 +782,8 @@ class Bitbucket(AtlassianRestAPI):
 
     def change_reviewed_status(self, project_key, repository_slug, pull_request_id, status, user_slug):
         """
-        Change the current user's status for a pull request. 
-        Implicitly adds the user as a participant if they are not already. 
+        Change the current user's status for a pull request.
+        Implicitly adds the user as a participant if they are not already.
         If the current user is the author, this method will fail.
         :param project_key:
         :param repository_slug:
