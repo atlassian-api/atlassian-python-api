@@ -31,8 +31,10 @@ setup(
         'requests',
         'six',
         'oauthlib',
-        'requests_oauthlib'
-    ] + (['kerberos-sspi'] if "win" in sys.platform else ['kerberos']),
+        'requests_oauthlib',
+        'kerberos-sspi;platform_system=="Windows"',
+        'kerberos;platform_system!="Windows"'
+    ],
     platforms='Platform Independent',
 
     classifiers=[
