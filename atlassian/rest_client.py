@@ -6,6 +6,10 @@ import requests
 from oauthlib.oauth1 import SIGNATURE_RSA
 from requests_oauthlib import OAuth1
 from atlassian.request_utils import get_default_logger
+try:
+    import kerberos as kerb
+except ImportError:
+    import kerberos_sspi as kerb
 
 log = get_default_logger(__name__)
 
@@ -20,7 +24,7 @@ class AtlassianRestAPI(object):
     response = None
 
     def __init__(self, url, username=None, password=None, timeout=60, api_root='rest/api', api_version='latest',
-                 verify_ssl=True, session=None, oauth=None, cookies=None, advanced_mode=None):
+                 verify_ssl=True, session=None, oauth=None, cookies=None, advanced_mode=None, kerberos=None):
         if ('atlassian.net' in url or 'jira.com' in url) \
                 and '/wiki' not in url \
                 and self.__class__.__name__ in 'Confluence':
@@ -42,9 +46,19 @@ class AtlassianRestAPI(object):
             self._create_basic_session(username, password)
         elif oauth is not None:
             self._create_oauth_session(oauth)
+        elif kerberos is not None:
+            self._create_kerberos_session(kerberos)
 
     def _create_basic_session(self, username, password):
         self._session.auth = (username, password)
+
+    def _create_kerberos_session(self, kerberos_service):
+        __, krb_context = kerb.authGSSClientInit(kerberos_service)
+        kerb.authGSSClientStep(krb_context, "")
+        auth_header = ("Negotiate " + kerb.authGSSClientResponse(krb_context))
+        self._update_header("Authorization", auth_header)
+        response = self._session.get(self.url, verify=self.verify_ssl)
+        response.raise_for_status()
 
     def _create_oauth_session(self, oauth_dict):
         oauth = OAuth1(oauth_dict['consumer_key'],
