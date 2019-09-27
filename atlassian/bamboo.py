@@ -365,10 +365,11 @@ class Bamboo(AtlassianRestAPI):
         :return: PUT request
         """
         resource = 'plan/{plan_key}/branch/{branch_name}'.format(plan_key=plan_key, branch_name=branch_name)
+        params = {}
         if vcs_branch:
-            params = {'vcsBranch':vcs_branch}
-            params['enabled'] = 'true' if enabled else 'false'
-            params['cleanupEnabled'] = 'true' if cleanup_enabled else 'false'
+            params = dict(vcsBranch=vcs_branch,
+                          enabled='true' if enabled else 'false',
+                          cleanupEnabled='true' if cleanup_enabled else 'false')
         return self.put(self.resource_url(resource), params=params)
 
     def enable_plan(self, plan_key):
@@ -380,14 +381,14 @@ class Bamboo(AtlassianRestAPI):
         resource = 'plan/{plan_key}/enable'.format(plan_key=plan_key)
         return self.post(self.resource_url(resource))
 
-    def execute_build(self, plan_key, stage=None, executeAllStages=True, customRevision=None, **bamboo_variables):
+    def execute_build(self, plan_key, stage=None, execute_all_stages=True, custom_revision=None, **bamboo_variables):
         """
         Fire build execution for specified plan. 
         !IMPORTANT! NOTE: for some reason, this method always execute all stages
         :param plan_key: str TST-BLD
         :param stage: str stage-name
-        :param executeAllStages: bool
-        :param customRevision: str revisionName
+        :param execute_all_stages: bool
+        :param custom_revision: str revisionName
         :param bamboo_variables: dict {variable=value} 
         :return: POST request
         """
@@ -395,11 +396,11 @@ class Bamboo(AtlassianRestAPI):
         resource = 'queue/{plan_key}'.format(plan_key=plan_key)
         params = {}
         if stage:
-            executeAllStages = False
+            execute_all_stages = False
             params['stage'] = stage
-        if customRevision:
-            params['customRevision'] = customRevision
-        params['executeAllStages'] = 'true' if executeAllStages else 'false'
+        if custom_revision:
+            params['customRevision'] = custom_revision
+        params['executeAllStages'] = 'true' if execute_all_stages else 'false'
         if bamboo_variables:
             for key, value in bamboo_variables.items():
                 params['bamboo.variable.{}'.format(key)] = value

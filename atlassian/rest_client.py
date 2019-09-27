@@ -6,6 +6,7 @@ import requests
 from oauthlib.oauth1 import SIGNATURE_RSA
 from requests_oauthlib import OAuth1
 from atlassian.request_utils import get_default_logger
+
 log = get_default_logger(__name__)
 
 
@@ -52,6 +53,11 @@ class AtlassianRestAPI(object):
             import kerberos as kerb
         except ImportError as e:
             log.error(e)
+            try:
+                import kerberos_sspi as kerb
+            except ImportError:
+                log.info("Please, fix issue with dependency of kerberos")
+                return
         __, krb_context = kerb.authGSSClientInit(kerberos_service)
         kerb.authGSSClientStep(krb_context, "")
         auth_header = ("Negotiate " + kerb.authGSSClientResponse(krb_context))

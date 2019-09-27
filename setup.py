@@ -1,5 +1,4 @@
 import os
-import sys
 from setuptools import find_packages
 from setuptools import setup
 
@@ -32,8 +31,8 @@ setup(
         'six',
         'oauthlib',
         'requests_oauthlib',
-        'kerberos-sspi;platform_system=="Windows"',
-        'kerberos;platform_system!="Windows"'
+        'kerberos-sspi ; platform_system=="Windows"',
+        'kerberos ; platform_system!="Windows"'
     ],
     platforms='Platform Independent',
 
