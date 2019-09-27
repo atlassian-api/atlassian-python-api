@@ -373,7 +373,12 @@ class Bamboo(AtlassianRestAPI):
         return self.put(self.resource_url(resource), params=params)
 
     def get_branch_info(self, plan_key, branch_name):
-
+        """
+        Get information about a plan branch
+        :param plan_key: 
+        :param branch_name: 
+        :return:
+        """
         resource = 'plan/{plan_key}/branch/{branch_name}'.format(plan_key=plan_key, branch_name=branch_name)
         return self.get(self.resource_url(resource))
     
