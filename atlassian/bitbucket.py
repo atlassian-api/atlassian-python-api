@@ -6,6 +6,7 @@ log = logging.getLogger(__name__)
 
 
 class Bitbucket(AtlassianRestAPI):
+
     def project_list(self, limit=None):
         """
         Provide the project list
@@ -17,6 +18,16 @@ class Bitbucket(AtlassianRestAPI):
             params['limit'] = limit
         return (self.get('rest/api/1.0/projects', params=params) or {}).get('values')
 
+    def repo_list(self, project_key):
+        """
+        Provide the repository list in a specific BB project
+        :param project_key: The Project Key ID you need to list
+        return:
+        """
+        url = 'rest/api/1.0/projects/{projectKey}/repos?limit=1000'.format(
+            projectKey=project_key)
+        return self.get(url)
+
     def project(self, key):
         """
         Provide project info
@@ -24,7 +35,7 @@ class Bitbucket(AtlassianRestAPI):
         :return:
         """
         url = 'rest/api/1.0/projects/{0}'.format(key)
-        return (self.get(url) or {})
+        return self.get(url) or {}
 
     def create_project(self, key, name, description=""):
         """
@@ -40,6 +51,48 @@ class Bitbucket(AtlassianRestAPI):
                 "description": description
                 }
         return self.post(url, data=data)
+
+    def update_project(self, key, **params):
+        """
+        Update project
+        :param key:
+        :param **params:
+        :return:
+        """
+        data = self.project(key)
+        if not 'errors' in data:
+            data.update(params)
+            url = 'rest/api/1.0/projects/{0}'.format(key)
+            return self.put(url, data=data)
+        else:
+            log.debug('Failed to update project: {0}: Unable to read project'.format(key))
+            return None
+
+    def project_avatar(self, key, content_type='image/png'):
+        """
+        Get project avatar
+
+        :param key:
+        :return:
+        """
+        url = 'rest/api/1.0/projects/{0}/avatar.png'.format(key)
+        headers = dict(self.default_headers)
+        headers['Accept'] = content_type
+        headers['X-Atlassian-Token'] = 'no-check'
+
+        return self.get(url, not_json_response=True, headers=headers) or {}
+
+    def set_project_avatar(self, key, icon, content_type='image/png'):
+        """
+        Set project avatar
+
+        :param key:
+        :return:
+        """
+        headers = {'X-Atlassian-Token': 'no-check'}
+        files = {'avatar': ("avatar.png", icon, content_type)}
+        url = 'rest/api/1.0/projects/{0}/avatar.png'.format(key)
+        return self.post(url, files=files, headers=headers) or {}
 
     def project_users(self, key, limit=99999, filter_str=None):
         """
@@ -273,7 +326,8 @@ class Bitbucket(AtlassianRestAPI):
             'key': key,
             'data': self.project(key),
             'users': self.project_users(key),
-            'groups': self.project_groups(key)}
+            'groups': self.project_groups(key),
+            'avatar': self.project_avatar(key)}
 
     def group_members(self, group, limit=99999):
         """
@@ -726,25 +780,25 @@ class Bitbucket(AtlassianRestAPI):
             pullRequestId=pull_request_id)
         return self.get(url)
 
-    def change_reviewed_status(self, projectKey, repositorySlug, pullRequestId, status, userSlug):
+    def change_reviewed_status(self, project_key, repository_slug, pull_request_id, status, user_slug):
         """
         Change the current user's status for a pull request.
         Implicitly adds the user as a participant if they are not already.
         If the current user is the author, this method will fail.
-        :param projectKey:
-        :param repositorySlug:
-        :param pullRequestId:
+        :param project_key:
+        :param repository_slug:
+        :param pull_request_id:
         :param status:
-        :param userSlug:
+        :param user_slug:
         :return:
         """
-        url = "/rest/api/1.0/projects/{projectKey}/repos/{repositorySlug}/pull-requests/{pullRequestId}/participants/{userSlug}".format(
-            projectKey=projectKey, repositorySlug=repositorySlug, pullRequestId=pullRequestId, userSlug=userSlug,
+        url = "rest/api/1.0/projects/{projectKey}/repos/{repositorySlug}/pull-requests/{pullRequestId}/participants/{userSlug}".format(
+            projectKey=project_key, repositorySlug=repository_slug, pullRequestId=pull_request_id, userSlug=user_slug,
         )
         approved = True if status == "APPROVED" else False
         data = {
             "user": {
-                "name": userSlug
+                "name": user_slug
             },
             "approved": approved,
             "status": status
@@ -1207,7 +1261,7 @@ class Bitbucket(AtlassianRestAPI):
             filename=filename)
         return self.put(url, files=data)
 
-    def update_file(self, project, repository, content, message, branch, filename, sourceCommitId):
+    def update_file(self, project, repository, content, message, branch, filename, source_commit_id):
         """
         Update existing file for given branch.
         :param project:
@@ -1216,14 +1270,14 @@ class Bitbucket(AtlassianRestAPI):
         :param message:
         :param branch:
         :param filename:
-        :param sourceCommitId:
+        :param source_commit_id:
         :return:
         """
         data = {
             "content": content,
             "message": message,
             "branch": branch,
-            "sourceCommitId": sourceCommitId
+            "sourceCommitId": source_commit_id
         }
 
         url = 'rest/api/1.0/projects/{project}/repos/{repository}/browse/{filename}'.format(
@@ -1232,7 +1286,7 @@ class Bitbucket(AtlassianRestAPI):
             filename=filename)
         return self.put(url, files=data)
 
-    def get_code_insights_report(self, projectKey, repositorySlug, commitId, report_key):
+    def get_code_insights_report(self, project_key, repository_slug, commit_id, report_key):
         """
         Retrieve the specified code-insights report.
         :projectKey: str
@@ -1240,12 +1294,12 @@ class Bitbucket(AtlassianRestAPI):
         :commitId: str
         :report_key: str
         """
-        url = "/rest/insights/1.0/projects/{projectKey}/repos/{repositorySlug}/commits/{commitId}/reports/{key}".format(
-            projectKey=projectKey, repositorySlug=repositorySlug, commitId=commitId, key=report_key
+        url = "rest/insights/1.0/projects/{projectKey}/repos/{repositorySlug}/commits/{commitId}/reports/{key}".format(
+            projectKey=project_key, repositorySlug=repository_slug, commitId=commit_id, key=report_key
         )
         return self.get(url)
 
-    def delete_code_insights_report(self, projectKey, repositorySlug, commitId, report_key):
+    def delete_code_insights_report(self, project_key, repository_slug, commit_id, report_key):
         """
         Delete a report for the given commit. Also deletes any annotations associated with this report.
         :projectKey: str
@@ -1253,12 +1307,13 @@ class Bitbucket(AtlassianRestAPI):
         :commitId: str
         :report_key: str
         """
-        url = "/rest/insights/1.0/projects/{projectKey}/repos/{repositorySlug}/commits/{commitId}/reports/{key}".format(
-            projectKey=projectKey, repositorySlug=repositorySlug, commitId=commitId, key=report_key
+        url = "rest/insights/1.0/projects/{projectKey}/repos/{repositorySlug}/commits/{commitId}/reports/{key}".format(
+            projectKey=project_key, repositorySlug=repository_slug, commitId=commit_id, key=report_key
         )
         return self.delete(url)
 
-    def create_code_insights_report(self, projectKey, repositorySlug, commitId, report_key, report_title, **report_params):
+    def create_code_insights_report(self, project_key, repository_slug, commit_id, report_key, report_title,
+                                    **report_params):
         """
         Create a new insight report, or replace the existing one if a report already exists for the given repository, commit, and report key. 
         A request to replace an existing report will be rejected if the authenticated user was not the creator of the specified report.
@@ -1270,8 +1325,8 @@ class Bitbucket(AtlassianRestAPI):
         :report_title: str
         :report_params: 
         """
-        url = "/rest/insights/1.0/projects/{projectKey}/repos/{repositorySlug}/commits/{commitId}/reports/{key}".format(
-            projectKey=projectKey, repositorySlug=repositorySlug, commitId=commitId, key=report_key
+        url = "rest/insights/1.0/projects/{projectKey}/repos/{repositorySlug}/commits/{commitId}/reports/{key}".format(
+            projectKey=project_key, repositorySlug=repository_slug, commitId=commit_id, key=report_key
         )
         data = {"title": report_title}
         data.update(report_params)

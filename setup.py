@@ -30,7 +30,9 @@ setup(
         'requests',
         'six',
         'oauthlib',
-        'requests_oauthlib'
+        'requests_oauthlib',
+        'kerberos-sspi ; platform_system=="Windows"',
+        'kerberos ; platform_system!="Windows"'
     ],
     platforms='Platform Independent',
 

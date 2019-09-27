@@ -205,6 +205,19 @@ class Jira(AtlassianRestAPI):
         params = {'username': username}
         return self.delete(url, params=params)
 
+    def user_update_or_create_property_through_rest_point(self, username, key, value):
+        """
+        ATTENTION!
+        This method used after configuration of rest endpoint on Jira side
+        :param username:
+        :param key:
+        :param value:
+        :return:
+        """
+        url = 'rest/scriptrunner/latest/custom/updateUserProperty'
+        params = {'username': username, 'property': key, 'value': value}
+        return self.get(url, params=params)
+
     def user_update_email(self, username, email):
         """
         Update user email for new domain changes
@@ -362,6 +375,19 @@ class Jira(AtlassianRestAPI):
         if expand is not None:
             params['expand'] = expand
         return self.get('rest/api/2/project/{}/version'.format(key), params)
+
+    def add_version(self, project_key, project_id, version, is_archived=False, is_released=False):
+        """
+        Add missing version to project
+        :param project_key: the project key
+        :param project_id: the project id
+        :param version: the new project version to add
+        :is_archived:
+        :is_released:
+        :return:
+        """
+        payload = {'name': version, 'archived': is_archived, 'released': is_released, 'project': project_key, 'projectId': project_id}
+        return self.post("rest/api/2/version", data = payload)
 
     def get_project_roles(self, project_key):
         """

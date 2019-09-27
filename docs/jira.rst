@@ -100,6 +100,9 @@ Manage projects
     # Results can be ordered by the following fields: sequence, name, startDate, releaseDate.
     jira.get_project_versions_paginated(key, start=None, limit=None, order_by=None, expand=None)
 
+    # Add missing version to project
+    jira.add_version(key, project_id, version, is_archived=False, is_released=False)
+
     # Get project leaders
     jira.project_leaders()
 
