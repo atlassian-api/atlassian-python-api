@@ -443,7 +443,7 @@ class Confluence(AtlassianRestAPI):
             path = 'rest/api/content/{page_id}/child/attachment'.format(page_id=page_id)
             # Check if there is already a file with the same name
             attachments = self.get(path=path, headers=headers, params={'filename': name})
-            if attachments['size']:
+            if attachments.get('size'):
                 path = path + '/' + attachments['results'][0]['id'] + '/data'
             return self.post(path=path, data=data, headers=headers,
                              files={'file': (name, content, content_type)})
