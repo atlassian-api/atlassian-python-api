@@ -372,6 +372,11 @@ class Bamboo(AtlassianRestAPI):
                           cleanupEnabled='true' if cleanup_enabled else 'false')
         return self.put(self.resource_url(resource), params=params)
 
+    def get_branch_info(self, plan_key, branch_name):
+
+        resource = 'plan/{plan_key}/branch/{branch_name}'.format(plan_key=plan_key, branch_name=branch_name)
+        return self.get(self.resource_url(resource))
+    
     def enable_plan(self, plan_key):
         """
         Enable plan.
