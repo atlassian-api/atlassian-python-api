@@ -1003,6 +1003,16 @@ class Confluence(AtlassianRestAPI):
 
         return self.get(url, headers=headers, not_json_response=True)
 
+    def get_page_as_word(self, page_id):
+        """
+        Export page as standard word exporter.
+        :param page_id: Page ID
+        :return: Word File
+        """
+        headers = self.form_token_headers
+        url = 'exportword?pageId={pageId}'.format(pageId=page_id)
+        return self.get(url, headers=headers, not_json_response=True)
+
     def export_page(self, page_id):
         """
         Alias method for export page as pdf
