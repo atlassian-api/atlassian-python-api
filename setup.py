@@ -30,10 +30,12 @@ setup(
         'requests',
         'six',
         'oauthlib',
-        'requests_oauthlib',
-        'kerberos-sspi ; platform_system=="Windows"',
-        'kerberos ; platform_system!="Windows"'
+        'requests_oauthlib'
     ],
+    extras_require={
+        'kerberos': ['kerberos-sspi ; platform_system=="Windows"',
+                     'kerberos ; platform_system!="Windows"']
+    },
     platforms='Platform Independent',
 
     classifiers=[
