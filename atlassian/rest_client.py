@@ -52,11 +52,11 @@ class AtlassianRestAPI(object):
         try:
             import kerberos as kerb
         except ImportError as e:
-            log.error(e)
+            log.debug(e)
             try:
                 import kerberos_sspi as kerb
             except ImportError:
-                log.info("Please, fix issue with dependency of kerberos")
+                log.error("Please, fix issue with dependency of kerberos")
                 return
         __, krb_context = kerb.authGSSClientInit(kerberos_service)
         kerb.authGSSClientStep(krb_context, "")
