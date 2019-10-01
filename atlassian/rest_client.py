@@ -56,8 +56,7 @@ class AtlassianRestAPI(object):
             try:
                 import kerberos_sspi as kerb
             except ImportError:
-                log.error("Please, fix issue with dependency of kerberos")
-                return
+                raise ImportError("No kerberos implementation available")
         __, krb_context = kerb.authGSSClientInit(kerberos_service)
         kerb.authGSSClientStep(krb_context, "")
         auth_header = ("Negotiate " + kerb.authGSSClientResponse(krb_context))
