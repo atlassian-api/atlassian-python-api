@@ -69,7 +69,7 @@ Alternatively OAuth can be used:
         url='http://localhost:8080',
         oauth=oauth_dict)
 
-Or Kerberos:
+Or Kerberos *(installation with kerberos extra necessary)*:
 
 .. code-block:: python
 
