@@ -413,6 +413,19 @@ class Bitbucket(AtlassianRestAPI):
         }
         return self.post(url, data=data)
 
+    def get_repo(self, project_key, repository_slug):
+        """
+        Get a specific repository from a project. This operates based on slug not name which may
+        be confusing to some users.
+        :param project_key: Key of the project you wish to look in.
+        :param repository_slug: url-compatible repository identifier
+        :return: Dictionary of request response
+        """
+
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}'.format(project=project_key,
+                                                                          repository=repository_slug)
+        return self.get(url)
+
     def repo_all_list(self, project_key):
         """
         Get all repositories list from project
@@ -433,6 +446,19 @@ class Bitbucket(AtlassianRestAPI):
             response = self.get(url, params=params)
             repo_list += (response or {}).get('values')
         return repo_list
+
+    def delete_repo(self, project_key, repository_slug):
+        """
+        Delete a specific repository from a project. This operates based on slug not name which may
+        be confusing to some users.
+        :param project_key: Key of the project you wish to look in.
+        :param repository_slug: url-compatible repository identifier
+        :return: Dictionary of request response
+        """
+
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}'.format(project=project_key,
+                                                                          repository=repository_slug)
+        return self.delete(url)
 
     def get_branches(self, project, repository, base=None, filter=None, start=0, limit=99999, details=True,
                      order_by='MODIFICATION'):
