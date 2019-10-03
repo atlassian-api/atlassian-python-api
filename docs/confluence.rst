@@ -71,7 +71,7 @@ Page actions
     confluence.remove_page_as_draft(page_id)
 
     # Update page if already exist
-    confluence.update_page(parent_id, page_id, title, body, type='page', representation='storage')
+    confluence.update_page(page_id, title, body, parent_id=None, type='page', representation='storage', minor_edit=False)
 
     # Update page or create page if it is not exists
     confluence.update_or_create(parent_id, title, body, representation='storage')
