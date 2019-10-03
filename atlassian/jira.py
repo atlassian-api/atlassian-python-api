@@ -1720,6 +1720,13 @@ class Jira(AtlassianRestAPI):
         url = 'rest/tempo-accounts/1/link/project/{}/default/'.format(project_id)
         return self.get(url)
 
+    def tempo_teams_get_all_teams(self, expand=None):
+        url = "rest/tempo-teams/2/team"
+        params = {}
+        if expand:
+            params['expand'] = expand
+        return self.get(url, params=params)
+
     def tempo_teams_add_member(self, team_id, member_key):
         """
         Add team member
@@ -1727,12 +1734,37 @@ class Jira(AtlassianRestAPI):
         :param member_key:
         :return:
         """
-        url = 'rest/tempo-teams/2/team/{}/member/'.format(team_id)
-        data = {"member": {"key": member_key, "type": "USER"},
+        data = {"member": {"key": str(member_key), "type": "USER"},
                 "membership": {
                     "availability": "100",
                     "role": {"id": 1}
                 }}
+        return self.tempo_teams_add_member_raw(team_id, member_data=data)
+
+    def tempo_teams_add_membership(self, team_id, member_id):
+        """
+        Add team member
+        :param team_id:
+        :param member_id:
+        :return:
+        """
+        data = {"teamMemberId": member_id,
+                "teamId": team_id,
+                "availability": "100",
+                "role": {"id": 1}
+                }
+        url = "rest/tempo-teams/2/team/{}/member/{}/membership".format(team_id, member_id)
+        return self.post(url, data=data)
+
+    def tempo_teams_add_member_raw(self, team_id, member_data):
+        """
+        Add team member
+        :param team_id:
+        :param member_data:
+        :return:
+        """
+        url = 'rest/tempo-teams/2/team/{}/member/'.format(team_id)
+        data = member_data
         return self.post(url, data=data)
 
     def tempo_teams_get_members(self, team_id):
