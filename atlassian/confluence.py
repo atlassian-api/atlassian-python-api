@@ -1295,3 +1295,17 @@ class Confluence(AtlassianRestAPI):
         """
         url = 'rest/user-profile/1.0/{}/avatar/default'.format(user_key)
         return self.get(url)
+
+    def add_user_to_group(self, username, group_name):
+        """
+        Add given user to a group
+
+        :param username: str
+        :param group_name: str
+        :return: Current state of the group
+        """
+        url = 'rest/api/2/group/user'
+        params = {'groupname': group_name}
+        data = {'name': username}
+
+        return self.post(url, params=params, data=data)

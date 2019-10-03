@@ -386,8 +386,9 @@ class Jira(AtlassianRestAPI):
         :is_released:
         :return:
         """
-        payload = {'name': version, 'archived': is_archived, 'released': is_released, 'project': project_key, 'projectId': project_id}
-        return self.post("rest/api/2/version", data = payload)
+        payload = {'name': version, 'archived': is_archived, 'released': is_released, 'project': project_key,
+                   'projectId': project_id}
+        return self.post("rest/api/2/version", data=payload)
 
     def get_project_roles(self, project_key):
         """
@@ -1044,7 +1045,7 @@ class Jira(AtlassianRestAPI):
 
     def get_issue_status(self, issue_key):
         url = 'rest/api/2/issue/{issue_key}?fields=status'.format(issue_key=issue_key)
-        return (self.get(url) or {}).get('fields').get('status').get('name')
+        return (((self.get(url) or {}).get('fields') or {}).get('status') or {}).get('name') or {}
 
     def get_issue_status_id(self, issue_key):
         url = 'rest/api/2/issue/{issue_key}?fields=status'.format(issue_key=issue_key)
@@ -1711,12 +1712,12 @@ class Jira(AtlassianRestAPI):
 
     def tempo_timesheets_write_worklog(self, worker, started, time_spend_in_seconds, issue_id, comment=None):
         """
-
-        :param comment:
+        Log work for user
         :param worker:
         :param started:
         :param time_spend_in_seconds:
         :param issue_id:
+        :param comment:
         :return:
         """
         data = {"worker": worker,
@@ -1727,6 +1728,21 @@ class Jira(AtlassianRestAPI):
             data['comment'] = comment
         url = 'rest/tempo-timesheets/4/worklogs/'
         return self.post(url, data=data)
+
+    def tempo_timesheets_approval_worklog_report(self, user_key, period_start_date):
+        """
+        Return timesheets for approval
+        :param user_key:
+        :param period_start_date:
+        :return:
+        """
+        url = "rest/tempo-timesheets/4/timesheet-approval/current"
+        params = {}
+        if period_start_date:
+            params['periodStartDate'] = period_start_date
+        if user_key:
+            params['userKey'] = user_key
+        return self.get(url, params=params)
 
     def tempo_get_links_to_project(self, project_id):
         """
