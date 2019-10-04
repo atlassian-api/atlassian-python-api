@@ -1742,6 +1742,32 @@ class Jira(AtlassianRestAPI):
             params['periodStartDate'] = period_start_date
         if user_key:
             params['userKey'] = user_key
+
+    def tempo_timesheets_get_required_times(self, from_date, to_date, user_name):
+        """
+        Provide time how much should work
+        :param from_date:
+        :param to_date:
+        :param user_name:
+        :return:
+        """
+        url = 'rest/tempo-timesheets/3/private/days'
+        params = {}
+        if from_date:
+            params['from'] = from_date
+        if to_date:
+            params['to'] = to_date
+        if user_name:
+            params['user'] = user_name
+        return self.get(url, params=params)
+
+    def tempo_timesheets_approval_status(self, period_start_date, user_name):
+        url = 'rest/tempo-timesheets/4/timesheet-approval/approval-statuses'
+        params = {}
+        if user_name:
+            params['userKey'] = user_name
+        if period_start_date:
+            params['periodStartDate'] = period_start_date
         return self.get(url, params=params)
 
     def tempo_get_links_to_project(self, project_id):
