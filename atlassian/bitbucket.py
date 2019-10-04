@@ -80,7 +80,7 @@ class Bitbucket(AtlassianRestAPI):
         headers['Accept'] = content_type
         headers['X-Atlassian-Token'] = 'no-check'
 
-        return (self.get(url, not_json_response=True, headers=headers) or {})
+        return self.get(url, not_json_response=True, headers=headers) or {}
 
     def set_project_avatar(self, key, icon, content_type='image/png'):
         """
@@ -92,7 +92,7 @@ class Bitbucket(AtlassianRestAPI):
         headers = {'X-Atlassian-Token': 'no-check'}
         files = {'avatar': ("avatar.png", icon, content_type)}
         url = 'rest/api/1.0/projects/{0}/avatar.png'.format(key)
-        return (self.post(url, files=files, headers=headers) or {})
+        return self.post(url, files=files, headers=headers) or {}
 
     def project_users(self, key, limit=99999, filter_str=None):
         """
@@ -413,6 +413,19 @@ class Bitbucket(AtlassianRestAPI):
         }
         return self.post(url, data=data)
 
+    def get_repo(self, project_key, repository_slug):
+        """
+        Get a specific repository from a project. This operates based on slug not name which may
+        be confusing to some users.
+        :param project_key: Key of the project you wish to look in.
+        :param repository_slug: url-compatible repository identifier
+        :return: Dictionary of request response
+        """
+
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}'.format(project=project_key,
+                                                                          repository=repository_slug)
+        return self.get(url)
+
     def repo_all_list(self, project_key):
         """
         Get all repositories list from project
@@ -433,6 +446,19 @@ class Bitbucket(AtlassianRestAPI):
             response = self.get(url, params=params)
             repo_list += (response or {}).get('values')
         return repo_list
+
+    def delete_repo(self, project_key, repository_slug):
+        """
+        Delete a specific repository from a project. This operates based on slug not name which may
+        be confusing to some users.
+        :param project_key: Key of the project you wish to look in.
+        :param repository_slug: url-compatible repository identifier
+        :return: Dictionary of request response
+        """
+
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}'.format(project=project_key,
+                                                                          repository=repository_slug)
+        return self.delete(url)
 
     def get_branches(self, project, repository, base=None, filter=None, start=0, limit=99999, details=True,
                      order_by='MODIFICATION'):
@@ -1263,7 +1289,7 @@ class Bitbucket(AtlassianRestAPI):
             filename=filename)
         return self.put(url, files=data)
 
-    def update_file(self, project, repository, content, message, branch, filename, sourceCommitId):
+    def update_file(self, project, repository, content, message, branch, filename, source_commit_id):
         """
         Update existing file for given branch.
         :param project:
@@ -1272,14 +1298,14 @@ class Bitbucket(AtlassianRestAPI):
         :param message:
         :param branch:
         :param filename:
-        :param sourceCommitId:
+        :param source_commit_id:
         :return:
         """
         data = {
             "content": content,
             "message": message,
             "branch": branch,
-            "sourceCommitId": sourceCommitId
+            "sourceCommitId": source_commit_id
         }
 
         url = 'rest/api/1.0/projects/{project}/repos/{repository}/browse/{filename}'.format(
@@ -1288,7 +1314,7 @@ class Bitbucket(AtlassianRestAPI):
             filename=filename)
         return self.put(url, files=data)
 
-    def get_code_insights_report(self, projectKey, repositorySlug, commitId, report_key):
+    def get_code_insights_report(self, project_key, repository_slug, commit_id, report_key):
         """
         Retrieve the specified code-insights report.
         :projectKey: str
@@ -1297,11 +1323,11 @@ class Bitbucket(AtlassianRestAPI):
         :report_key: str
         """
         url = "rest/insights/1.0/projects/{projectKey}/repos/{repositorySlug}/commits/{commitId}/reports/{key}".format(
-            projectKey=projectKey, repositorySlug=repositorySlug, commitId=commitId, key=report_key
+            projectKey=project_key, repositorySlug=repository_slug, commitId=commit_id, key=report_key
         )
         return self.get(url)
 
-    def delete_code_insights_report(self, projectKey, repositorySlug, commitId, report_key):
+    def delete_code_insights_report(self, project_key, repository_slug, commit_id, report_key):
         """
         Delete a report for the given commit. Also deletes any annotations associated with this report.
         :projectKey: str
@@ -1310,11 +1336,11 @@ class Bitbucket(AtlassianRestAPI):
         :report_key: str
         """
         url = "rest/insights/1.0/projects/{projectKey}/repos/{repositorySlug}/commits/{commitId}/reports/{key}".format(
-            projectKey=projectKey, repositorySlug=repositorySlug, commitId=commitId, key=report_key
+            projectKey=project_key, repositorySlug=repository_slug, commitId=commit_id, key=report_key
         )
         return self.delete(url)
 
-    def create_code_insights_report(self, projectKey, repositorySlug, commitId, report_key, report_title,
+    def create_code_insights_report(self, project_key, repository_slug, commit_id, report_key, report_title,
                                     **report_params):
         """
         Create a new insight report, or replace the existing one if a report already exists for the given repository, commit, and report key. 
@@ -1328,7 +1354,7 @@ class Bitbucket(AtlassianRestAPI):
         :report_params: 
         """
         url = "rest/insights/1.0/projects/{projectKey}/repos/{repositorySlug}/commits/{commitId}/reports/{key}".format(
-            projectKey=projectKey, repositorySlug=repositorySlug, commitId=commitId, key=report_key
+            projectKey=project_key, repositorySlug=repository_slug, commitId=commit_id, key=report_key
         )
         data = {"title": report_title}
         data.update(report_params)

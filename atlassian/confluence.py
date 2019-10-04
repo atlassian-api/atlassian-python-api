@@ -443,7 +443,7 @@ class Confluence(AtlassianRestAPI):
             path = 'rest/api/content/{page_id}/child/attachment'.format(page_id=page_id)
             # Check if there is already a file with the same name
             attachments = self.get(path=path, headers=headers, params={'filename': name})
-            if attachments['size']:
+            if attachments.get('size'):
                 path = path + '/' + attachments['results'][0]['id'] + '/data'
             return self.post(path=path, data=data, headers=headers,
                              files={'file': (name, content, content_type)})
@@ -1001,6 +1001,16 @@ class Confluence(AtlassianRestAPI):
         if self.api_version == 'cloud':
             url = self.get_pdf_download_url_for_confluence_cloud(url)
 
+        return self.get(url, headers=headers, not_json_response=True)
+
+    def get_page_as_word(self, page_id):
+        """
+        Export page as standard word exporter.
+        :param page_id: Page ID
+        :return: Word File
+        """
+        headers = self.form_token_headers
+        url = 'exportword?pageId={pageId}'.format(pageId=page_id)
         return self.get(url, headers=headers, not_json_response=True)
 
     def export_page(self, page_id):

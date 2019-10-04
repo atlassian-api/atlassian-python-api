@@ -7,7 +7,7 @@ log = logging.getLogger(__name__)
 
 class Bamboo(AtlassianRestAPI):
     def _get_generator(self, path, elements_key='results', element_key='result', data=None, flags=None,
-                       params=None, headers=None):
+                       params=None, headers=None, max_results=None):
         """
         Generic method to return a generator with the results returned from Bamboo. It is intended to work for
         responses in the form:
@@ -27,22 +27,21 @@ class Bamboo(AtlassianRestAPI):
         :param path: URI for the resource
         :return: generator with the contents of response[elements_key][element_key]
         """
-        size = 1
         start_index = 0
-        while size:
-            params['start-index'] = start_index
-            response = self.get(path, data, flags, params, headers)
-            results = response[elements_key]
-            size = results['size']
-            # Check if start index was reset when reaching the end of the pages list
-            if results['start-index'] < start_index:
-                break
-            for r in results[element_key]:
-                yield r
-            start_index += results['max-result']
+        params['start-index'] = start_index
+        response = self.get(path, data, flags, params, headers)
+        results = response[elements_key]
+        size = 0 
 
-    def base_list_call(self, resource, expand, favourite, clover_enabled, max_results, label=None, start_index=0,
-                       **kwargs):
+        # Check if we still can get results
+        if size > max_results or results['size'] == 0:
+            return
+        for r in results[element_key]:
+            size += 1
+            yield r
+        start_index += results['max-result']
+
+    def base_list_call(self, resource, expand, favourite, clover_enabled, max_results, label=None, start_index=0, **kwargs):
         flags = []
         params = {'max-results': max_results}
         if expand:
@@ -57,10 +56,11 @@ class Bamboo(AtlassianRestAPI):
         if 'elements_key' in kwargs and 'element_key' in kwargs:
             return self._get_generator(self.resource_url(resource), flags=flags, params=params,
                                        elements_key=kwargs['elements_key'],
-                                       element_key=kwargs['element_key'])
+                                       element_key=kwargs['element_key'],
+                                       max_results=max_results)
         params['start-index'] = start_index
         return self.get(self.resource_url(resource), flags=flags, params=params)
-
+        
     def get_custom_expiry(self, limit=25):
         """
         Get list of all plans where user has admin permission and which override global expiry settings. 
@@ -365,12 +365,23 @@ class Bamboo(AtlassianRestAPI):
         :return: PUT request
         """
         resource = 'plan/{plan_key}/branch/{branch_name}'.format(plan_key=plan_key, branch_name=branch_name)
+        params = {}
         if vcs_branch:
-            params = {'vcsBranch':vcs_branch}
-            params['enabled'] = 'true' if enabled else 'false'
-            params['cleanupEnabled'] = 'true' if cleanup_enabled else 'false'
+            params = dict(vcsBranch=vcs_branch,
+                          enabled='true' if enabled else 'false',
+                          cleanupEnabled='true' if cleanup_enabled else 'false')
         return self.put(self.resource_url(resource), params=params)
 
+    def get_branch_info(self, plan_key, branch_name):
+        """
+        Get information about a plan branch
+        :param plan_key: 
+        :param branch_name: 
+        :return:
+        """
+        resource = 'plan/{plan_key}/branch/{branch_name}'.format(plan_key=plan_key, branch_name=branch_name)
+        return self.get(self.resource_url(resource))
+    
     def enable_plan(self, plan_key):
         """
         Enable plan.
@@ -380,14 +391,14 @@ class Bamboo(AtlassianRestAPI):
         resource = 'plan/{plan_key}/enable'.format(plan_key=plan_key)
         return self.post(self.resource_url(resource))
 
-    def execute_build(self, plan_key, stage=None, executeAllStages=True, customRevision=None, **bamboo_variables):
+    def execute_build(self, plan_key, stage=None, execute_all_stages=True, custom_revision=None, **bamboo_variables):
         """
         Fire build execution for specified plan. 
         !IMPORTANT! NOTE: for some reason, this method always execute all stages
         :param plan_key: str TST-BLD
         :param stage: str stage-name
-        :param executeAllStages: bool
-        :param customRevision: str revisionName
+        :param execute_all_stages: bool
+        :param custom_revision: str revisionName
         :param bamboo_variables: dict {variable=value} 
         :return: POST request
         """
@@ -395,11 +406,11 @@ class Bamboo(AtlassianRestAPI):
         resource = 'queue/{plan_key}'.format(plan_key=plan_key)
         params = {}
         if stage:
-            executeAllStages = False
+            execute_all_stages = False
             params['stage'] = stage
-        if customRevision:
-            params['customRevision'] = customRevision
-        params['executeAllStages'] = 'true' if executeAllStages else 'false'
+        if custom_revision:
+            params['customRevision'] = custom_revision
+        params['executeAllStages'] = 'true' if execute_all_stages else 'false'
         if bamboo_variables:
             for key, value in bamboo_variables.items():
                 params['bamboo.variable.{}'.format(key)] = value
