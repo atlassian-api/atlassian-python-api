@@ -1266,7 +1266,7 @@ class Confluence(AtlassianRestAPI):
         if start:
             params['start'] = start
         if end:
-            params['start'] = end
+            params['end'] = end
         return self.get(url, params=params)
 
     def get_mobile_parameters(self, username):
