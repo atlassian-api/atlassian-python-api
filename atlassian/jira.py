@@ -386,8 +386,9 @@ class Jira(AtlassianRestAPI):
         :is_released:
         :return:
         """
-        payload = {'name': version, 'archived': is_archived, 'released': is_released, 'project': project_key, 'projectId': project_id}
-        return self.post("rest/api/2/version", data = payload)
+        payload = {'name': version, 'archived': is_archived, 'released': is_released, 'project': project_key,
+                   'projectId': project_id}
+        return self.post("rest/api/2/version", data=payload)
 
     def get_project_roles(self, project_key):
         """
@@ -1727,6 +1728,33 @@ class Jira(AtlassianRestAPI):
             data['comment'] = comment
         url = 'rest/tempo-timesheets/4/worklogs/'
         return self.post(url, data=data)
+
+    def tempo_timesheets_get_required_times(self, from_date, to_date, user_name):
+        """
+        Provide time how much should work
+        :param from_date:
+        :param to_date:
+        :param user_name:
+        :return:
+        """
+        url = 'rest/tempo-timesheets/3/private/days'
+        params = {}
+        if from_date:
+            params['from'] = from_date
+        if to_date:
+            params['to'] = to_date
+        if user_name:
+            params['user'] = user_name
+        return self.get(url, params=params)
+
+    def tempo_timesheets_approval_status(self, period_start_date, user_name):
+        url = 'rest/tempo-timesheets/4/timesheet-approval/approval-statuses'
+        params = {}
+        if user_name:
+            params['userKey'] = user_name
+        if period_start_date:
+            params['periodStartDate'] = period_start_date
+        return self.get(url, params=params)
 
     def tempo_get_links_to_project(self, project_id):
         """
