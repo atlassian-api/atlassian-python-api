@@ -6,6 +6,9 @@ log = logging.getLogger(__name__)
 
 
 class Bamboo(AtlassianRestAPI):
+
+    """ Private methods """
+
     def _get_generator(self, path, elements_key='results', element_key='result', data=None, flags=None,
                        params=None, headers=None, max_results=None):
         """
@@ -60,26 +63,8 @@ class Bamboo(AtlassianRestAPI):
                                        max_results=max_results)
         params['start-index'] = start_index
         return self.get(self.resource_url(resource), flags=flags, params=params)
-        
-    def get_custom_expiry(self, limit=25):
-        """
-        Get list of all plans where user has admin permission and which override global expiry settings. 
-        If global expiry is not enabled it returns empty response.
-        :param limit:
-        """
-        url = "rest/api/latest/admin/expiry/custom/plan?limit={}".format(limit)
-        return self.get(url)
 
-    def plan_directory_info(self, plan_key):
-        """
-        Returns information about the directories where artifacts, build logs, and build results will be stored. 
-        Disabled by default. 
-        See https://confluence.atlassian.com/display/BAMBOO/Plan+directory+information+REST+API for more information.
-        :param plan_key:
-        :return:
-        """
-        resource = 'planDirectoryInfo/{}'.format(plan_key)
-        return self.get(self.resource_url(resource))
+    """ Projects & Plans """
 
     def projects(self, expand=None, favourite=False, clover_enabled=False, max_results=25):
         return self.base_list_call('project', expand, favourite, clover_enabled, max_results,
@@ -102,6 +87,91 @@ class Bamboo(AtlassianRestAPI):
     def plans(self, expand=None, favourite=False, clover_enabled=False, start_index=0, max_results=25):
         return self.base_list_call("plan", expand, favourite, clover_enabled, start_index, max_results,
                                    elements_key='plans', element_key='plan')
+    
+    def plan_directory_info(self, plan_key):
+        """
+        Returns information about the directories where artifacts, build logs, and build results will be stored. 
+        Disabled by default. 
+        See https://confluence.atlassian.com/display/BAMBOO/Plan+directory+information+REST+API for more information.
+        :param plan_key:
+        :return:
+        """
+        resource = 'planDirectoryInfo/{}'.format(plan_key)
+        return self.get(self.resource_url(resource))
+
+    def delete_plan(self, plan_key):
+        """
+        Marks plan for deletion. Plan will be deleted by a batch job.
+        :param plan_key:
+        :return:
+        """
+        resource = 'rest/api/latest/plan/{}'.format(plan_key)
+        return self.delete(resource)
+
+    def enable_plan(self, plan_key):
+        """
+        Enable plan.
+        :param plan_key: str TST-BLD
+        :return: POST request
+        """
+        resource = 'plan/{plan_key}/enable'.format(plan_key=plan_key)
+        return self.post(self.resource_url(resource))
+
+    """ Branches """
+    
+    def search_branches(self, plan_key, include_default_branch=True, max_results=25):
+        params = {
+            'max-result': max_results,
+            'start-index': 0,
+            'masterPlanKey': plan_key,
+            'includeMasterBranch': include_default_branch
+        }
+        size = 1
+        while params['start-index'] < size:
+            results = self.get(self.resource_url('search/branches'), params=params)
+            size = results['size']
+            for r in results['searchResults']:
+                yield r
+            params['start-index'] += results['max-result']
+
+    def plan_branches(self, plan_key, expand=None, favourite=False, clover_enabled=False, max_results=25):
+        """api/1.0/plan/{projectKey}-{buildKey}/branch"""
+        resource = 'plan/{}/branch'.format(plan_key)
+        return self.base_list_call(resource, expand, favourite, clover_enabled, max_results,
+                                   elements_key='branches', element_key='branch')
+
+    def get_branch_info(self, plan_key, branch_name):
+        """
+        Get information about a plan branch
+        :param plan_key: 
+        :param branch_name: 
+        :return:
+        """
+        resource = 'plan/{plan_key}/branch/{branch_name}'.format(plan_key=plan_key, branch_name=branch_name)
+        return self.get(self.resource_url(resource))
+
+    def create_branch(self, plan_key, branch_name, vcs_branch=None, enabled=False, cleanup_enabled=False):
+        """
+        Method for creating branch for a specified plan. 
+        You can use vcsBranch query param to define which vcsBranch should newly created branch use. 
+        If not specified it will not override vcsBranch from the main plan. 
+
+        :param plan_key: str TST-BLD
+        :param branch_name: str new-shiny-branch
+        :param vcs_branch: str feature/new-shiny-branch, /refs/heads/new-shiny-branch
+        :param enabled: bool
+        :param cleanup_enabled: bool
+        :return: PUT request
+        """
+        resource = 'plan/{plan_key}/branch/{branch_name}'.format(plan_key=plan_key, branch_name=branch_name)
+        params = {}
+        if vcs_branch:
+            params = dict(vcsBranch=vcs_branch,
+                          enabled='true' if enabled else 'false',
+                          cleanupEnabled='true' if cleanup_enabled else 'false')
+        return self.put(self.resource_url(resource), params=params)
+
+    """ Build results """
 
     def results(self, project_key=None, plan_key=None, job_key=None, build_number=None, expand=None, favourite=False,
                 clover_enabled=False, issue_key=None, label=None, start_index=0, max_results=25, include_all_states=False):
@@ -239,158 +309,6 @@ class Bamboo(AtlassianRestAPI):
         params = {'buildKey': plan_key, 'buildNumber': build_number}
         return self.post(custom_resource, params=params, headers=self.form_token_headers)
 
-    def delete_plan(self, plan_key):
-        """
-        Marks plan for deletion. Plan will be deleted by a batch job.
-        :param plan_key:
-        :return:
-        """
-        resource = 'rest/api/latest/plan/{}'.format(plan_key)
-        return self.delete(resource)
-
-    def reports(self, max_results=25):
-        params = {'max-results': max_results}
-        return self._get_generator(self.resource_url('chart/reports'), elements_key='reports', element_key='report',
-                                   params=params)
-
-    def chart(self, report_key, build_keys, group_by_period, date_filter=None, date_from=None, date_to=None,
-              width=None, height=None, start_index=9, max_results=25):
-        params = {'reportKey': report_key, 'buildKeys': build_keys, 'groupByPeriod': group_by_period,
-                  'start-index': start_index, 'max-results': max_results}
-        if date_filter:
-            params['dateFilter'] = date_filter
-            if date_filter == 'RANGE':
-                params['dateFrom'] = date_from
-                params['dateTo'] = date_to
-        if width:
-            params['width'] = width
-        if height:
-            params['height'] = height
-        return self.get(self.resource_url('chart'), params=params)
-
-    def comments(self, project_key, plan_key, build_number, start_index=0, max_results=25):
-        resource = "result/{}-{}-{}/comment".format(project_key, plan_key, build_number)
-        params = {'start-index': start_index, 'max-results': max_results}
-        return self.get(self.resource_url(resource), params=params)
-
-    def create_comment(self, project_key, plan_key, build_number, comment, author=None):
-        resource = "result/{}-{}-{}/comment".format(project_key, plan_key, build_number)
-        comment_data = {'author': author if author else self.username, 'content': comment}
-        return self.post(self.resource_url(resource), data=comment_data)
-
-    def labels(self, project_key, plan_key, build_number, start_index=0, max_results=25):
-        resource = "result/{}-{}-{}/label".format(project_key, plan_key, build_number)
-        params = {'start-index': start_index, 'max-results': max_results}
-        return self.get(self.resource_url(resource), params=params)
-
-    def create_label(self, project_key, plan_key, build_number, label):
-        resource = "result/{}-{}-{}/label".format(project_key, plan_key, build_number)
-        return self.post(self.resource_url(resource), data={'name': label})
-
-    def delete_label(self, project_key, plan_key, build_number, label):
-        resource = "result/{}-{}-{}/label/{}".format(project_key, plan_key, build_number, label)
-        return self.delete(self.resource_url(resource))
-
-    def server_info(self):
-        return self.get(self.resource_url('info'))
-
-    def agent_status(self):
-        return self.get(self.resource_url('agent'))
-
-    def activity(self):
-        return self.get('build/admin/ajax/getDashboardSummary.action')
-
-    def deployment_project(self, project_id):
-        resource = 'deploy/project/{}'.format(project_id)
-        return self.get(self.resource_url(resource))
-
-    def deployment_projects(self):
-        resource = 'deploy/project/all'
-        for project in self.get(self.resource_url(resource)):
-            yield project
-
-    def deployment_environment_results(self, env_id, expand=None, max_results=25):
-        resource = 'deploy/environment/{environmentId}/results'.format(environmentId=env_id)
-        params = {'max-result': max_results, 'start-index': 0}
-        size = 1
-        if expand:
-            params['expand'] = expand
-        while params['start-index'] < size:
-            results = self.get(self.resource_url(resource), params=params)
-            size = results['size']
-            for r in results['results']:
-                yield r
-            params['start-index'] += results['max-result']
-
-    def deployment_dashboard(self, project_id=None):
-        """
-        Returns the current status of each deployment environment
-        If no project id is provided, returns all projects.
-        """
-        resource = 'deploy/dashboard/{}'.format(project_id) if project_id else 'deploy/dashboard'
-        return self.get(self.resource_url(resource))
-
-    def search_branches(self, plan_key, include_default_branch=True, max_results=25):
-        params = {
-            'max-result': max_results,
-            'start-index': 0,
-            'masterPlanKey': plan_key,
-            'includeMasterBranch': include_default_branch
-        }
-        size = 1
-        while params['start-index'] < size:
-            results = self.get(self.resource_url('search/branches'), params=params)
-            size = results['size']
-            for r in results['searchResults']:
-                yield r
-            params['start-index'] += results['max-result']
-
-    def plan_branches(self, plan_key, expand=None, favourite=False, clover_enabled=False, max_results=25):
-        """api/1.0/plan/{projectKey}-{buildKey}/branch"""
-        resource = 'plan/{}/branch'.format(plan_key)
-        return self.base_list_call(resource, expand, favourite, clover_enabled, max_results,
-                                   elements_key='branches', element_key='branch')
-
-    def create_branch(self, plan_key, branch_name, vcs_branch=None, enabled=False, cleanup_enabled=False):
-        """
-        Method for creating branch for a specified plan. 
-        You can use vcsBranch query param to define which vcsBranch should newly created branch use. 
-        If not specified it will not override vcsBranch from the main plan. 
-
-        :param plan_key: str TST-BLD
-        :param branch_name: str new-shiny-branch
-        :param vcs_branch: str feature/new-shiny-branch, /refs/heads/new-shiny-branch
-        :param enabled: bool
-        :param cleanup_enabled: bool
-        :return: PUT request
-        """
-        resource = 'plan/{plan_key}/branch/{branch_name}'.format(plan_key=plan_key, branch_name=branch_name)
-        params = {}
-        if vcs_branch:
-            params = dict(vcsBranch=vcs_branch,
-                          enabled='true' if enabled else 'false',
-                          cleanupEnabled='true' if cleanup_enabled else 'false')
-        return self.put(self.resource_url(resource), params=params)
-
-    def get_branch_info(self, plan_key, branch_name):
-        """
-        Get information about a plan branch
-        :param plan_key: 
-        :param branch_name: 
-        :return:
-        """
-        resource = 'plan/{plan_key}/branch/{branch_name}'.format(plan_key=plan_key, branch_name=branch_name)
-        return self.get(self.resource_url(resource))
-    
-    def enable_plan(self, plan_key):
-        """
-        Enable plan.
-        :param plan_key: str TST-BLD
-        :return: POST request
-        """
-        resource = 'plan/{plan_key}/enable'.format(plan_key=plan_key)
-        return self.post(self.resource_url(resource))
-
     def execute_build(self, plan_key, stage=None, execute_all_stages=True, custom_revision=None, **bamboo_variables):
         """
         Fire build execution for specified plan. 
@@ -417,18 +335,64 @@ class Bamboo(AtlassianRestAPI):
 
         return self.post(self.resource_url(resource), params=params, headers=headers)
 
-    def health_check(self):
+    """ Comments & Labels """
+
+    def comments(self, project_key, plan_key, build_number, start_index=0, max_results=25):
+        resource = "result/{}-{}-{}/comment".format(project_key, plan_key, build_number)
+        params = {'start-index': start_index, 'max-results': max_results}
+        return self.get(self.resource_url(resource), params=params)
+
+    def create_comment(self, project_key, plan_key, build_number, comment, author=None):
+        resource = "result/{}-{}-{}/comment".format(project_key, plan_key, build_number)
+        comment_data = {'author': author if author else self.username, 'content': comment}
+        return self.post(self.resource_url(resource), data=comment_data)
+
+    def labels(self, project_key, plan_key, build_number, start_index=0, max_results=25):
+        resource = "result/{}-{}-{}/label".format(project_key, plan_key, build_number)
+        params = {'start-index': start_index, 'max-results': max_results}
+        return self.get(self.resource_url(resource), params=params)
+
+    def create_label(self, project_key, plan_key, build_number, label):
+        resource = "result/{}-{}-{}/label".format(project_key, plan_key, build_number)
+        return self.post(self.resource_url(resource), data={'name': label})
+
+    def delete_label(self, project_key, plan_key, build_number, label):
+        resource = "result/{}-{}-{}/label/{}".format(project_key, plan_key, build_number, label)
+        return self.delete(self.resource_url(resource))
+
+    """ Deployments """
+
+    def deployment_projects(self):
+        resource = 'deploy/project/all'
+        for project in self.get(self.resource_url(resource)):
+            yield project
+
+    def deployment_project(self, project_id):
+        resource = 'deploy/project/{}'.format(project_id)
+        return self.get(self.resource_url(resource))
+
+    def deployment_environment_results(self, env_id, expand=None, max_results=25):
+        resource = 'deploy/environment/{environmentId}/results'.format(environmentId=env_id)
+        params = {'max-result': max_results, 'start-index': 0}
+        size = 1
+        if expand:
+            params['expand'] = expand
+        while params['start-index'] < size:
+            results = self.get(self.resource_url(resource), params=params)
+            size = results['size']
+            for r in results['results']:
+                yield r
+            params['start-index'] += results['max-result']
+
+    def deployment_dashboard(self, project_id=None):
         """
-        Get health status
-        https://confluence.atlassian.com/jirakb/how-to-retrieve-health-check-results-using-rest-api-867195158.html
-        :return:
+        Returns the current status of each deployment environment
+        If no project id is provided, returns all projects.
         """
-        # check as Troubleshooting & Support Tools Plugin
-        response = self.get('rest/troubleshooting/1.0/check/')
-        if not response:
-            # check as support tools
-            response = self.get('rest/supportHealthCheck/1.0/check/')
-        return response
+        resource = 'deploy/dashboard/{}'.format(project_id) if project_id else 'deploy/dashboard'
+        return self.get(self.resource_url(resource))
+
+    """ Users & Groups """
 
     def get_users_in_global_permissions(self, start=0, limit=25):
         """
@@ -486,7 +450,7 @@ class Bamboo(AtlassianRestAPI):
         url = 'rest/api/latest/admin/groups/{}/add-users'.format(group_name)
         return self.post(url, data=users)
 
-    def remove_users_into_group(self, group_name, users):
+    def remove_users_from_group(self, group_name, users):
         """
         Remove multiple users from a group.
         The list of usernames should be passed as request body.
@@ -539,6 +503,59 @@ class Bamboo(AtlassianRestAPI):
         """
         params = {'expand': expand}
         return self.get('rest/api/latest/queue', params=params)
+
+    """Other actions"""
+
+    def server_info(self):
+        return self.get(self.resource_url('info'))
+
+    def agent_status(self):
+        return self.get(self.resource_url('agent'))
+
+    def activity(self):
+        return self.get('build/admin/ajax/getDashboardSummary.action')
+
+    def get_custom_expiry(self, limit=25):
+        """
+        Get list of all plans where user has admin permission and which override global expiry settings. 
+        If global expiry is not enabled it returns empty response.
+        :param limit:
+        """
+        url = "rest/api/latest/admin/expiry/custom/plan?limit={}".format(limit)
+        return self.get(url)
+    
+    def reports(self, max_results=25):
+        params = {'max-results': max_results}
+        return self._get_generator(self.resource_url('chart/reports'), elements_key='reports', element_key='report',
+                                   params=params)
+
+    def chart(self, report_key, build_keys, group_by_period, date_filter=None, date_from=None, date_to=None,
+              width=None, height=None, start_index=9, max_results=25):
+        params = {'reportKey': report_key, 'buildKeys': build_keys, 'groupByPeriod': group_by_period,
+                  'start-index': start_index, 'max-results': max_results}
+        if date_filter:
+            params['dateFilter'] = date_filter
+            if date_filter == 'RANGE':
+                params['dateFrom'] = date_from
+                params['dateTo'] = date_to
+        if width:
+            params['width'] = width
+        if height:
+            params['height'] = height
+        return self.get(self.resource_url('chart'), params=params)
+
+    def health_check(self):
+        """
+        Get health status
+        https://confluence.atlassian.com/jirakb/how-to-retrieve-health-check-results-using-rest-api-867195158.html
+        :return:
+        """
+        # check as Troubleshooting & Support Tools Plugin
+        response = self.get('rest/troubleshooting/1.0/check/')
+        if not response:
+            # check as support tools
+            response = self.get('rest/supportHealthCheck/1.0/check/')
+        return response
 
     def upload_plugin(self, plugin_path):
         """
