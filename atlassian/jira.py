@@ -577,6 +577,22 @@ class Jira(AtlassianRestAPI):
         if limit:
             params['maxResults'] = limit
         return self.get(url, params=params)
+    
+    def create_custom_field(self, name, type, search_key=None, description=None):
+        """
+        Creates a custom field with the given name and type
+        :param name: str
+        :param type: str, like 'com.atlassian.jira.plugin.system.customfieldtypes:textfield'
+        :param search_key: str, like above
+        :param description: str
+        """
+        url = 'rest/api/2/field'
+        data = {'name': name, 'type': type}
+        if search_key:
+            data['search_key'] = search_key
+        if description:
+            data['description'] = description
+        return self.post(url, data=data)
 
     def get_all_available_screen_fields(self, screen_id):
         """
