@@ -11,8 +11,11 @@ bamboo = Bamboo(
     username=ATLASSIAN_USER,
     password=ATLASSIAN_PASSWORD)
 
-agent_status = bamboo.agent_status()
-print(agent_status)
 
-activity = bamboo.activity()
-print(activity)
+bamboo.add_users_into_group(group_name='group_name', users=['user_name'])
+
+
+
+
+
+

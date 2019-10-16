@@ -1,4 +1,4 @@
-# coding: utf-8
+# coding=utf-8
 import logging
 from .rest_client import AtlassianRestAPI
 
@@ -138,3 +138,105 @@ class Jira8(AtlassianRestAPI):
         url = 'rest/api/2/attachment/meta'
 
         return self.get(url)
+
+    # Issues
+    def create_issue(self, fields, update_history=False):
+        """
+        Creates an issue or a sub-task from a JSON representation
+
+        :param fields: JSON data
+        :param update_history: bool (if true then the user's project history is updated)
+        :return:
+        """
+        url = 'rest/api/2/issue'
+        data = {'fields': fields}
+        params = {}
+
+        if update_history is True:
+            params['updateHistory'] = 'true'
+        else:
+            params['updateHistory'] = 'false'
+
+        return self.post(url, params=params, data=data)
+
+    def create_issues(self, list_of_issues_data):
+        """
+        Creates issues or sub-tasks from a JSON representation
+        Creates many issues in one bulk operation
+
+        :param list_of_issues_data: list of JSON data
+        :return:
+        """
+        url = 'rest/api/2/issue/bulk'
+        data = {'issueUpdates': list_of_issues_data}
+
+        return self.post(url, data=data)
+
+    def delete_issue(self, issue_id_or_key, delete_subtasks=True):
+        """
+        Delete an issue
+        If the issue has subtasks you must set the parameter delete_subtasks = True to delete the issue
+        You cannot delete an issue without its subtasks also being deleted
+
+        :param issue_id_or_key:
+        :param delete_subtasks:
+        :return:
+        """
+        url = 'rest/api/2/issue/{}'.format(issue_id_or_key)
+        params = {}
+
+        if delete_subtasks is True:
+            params['deleteSubtasks'] = 'true'
+        else:
+            params['deleteSubtasks'] = 'false'
+
+        log.warning('Removing issue {}...'.format(issue_id_or_key))
+
+        return self.delete(url, params=params)
+
+    def edit_issue(self, issue_id_or_key, fields, notify_users=True):
+        """
+        Edits an issue from a JSON representation
+        The issue can either be updated by setting explicit the field
+        value(s) or by using an operation to change the field value
+
+        :param issue_id_or_key: str
+        :param fields: JSON
+        :param notify_users: bool
+        :return:
+        """
+        url = 'rest/api/2/issue/{}'.format(issue_id_or_key)
+        params = {}
+        data = {'update': fields}
+
+        if notify_users is True:
+            params['notifyUsers'] = 'true'
+        else:
+            params['notifyUsers'] = 'false'
+
+        return self.put(url, data=data, params=params)
+
+    def get_issue(self, issue_id_or_key, fields=None, properties=None, update_history=True):
+        """
+        Returns a full representation of the issue for the given issue key
+        By default, all fields are returned in this get-issue resource
+
+        :param issue_id_or_key: str
+        :param fields: str
+        :param properties: str
+        :param update_history: bool
+        :return: issue
+        """
+        url = 'rest/api/2/issue/{}'.format(issue_id_or_key)
+        params = {}
+
+        if fields is not None:
+            params['fields'] = fields
+        if properties is not None:
+            params['properties'] = properties
+        if update_history is True:
+            params['updateHistory'] = 'true'
+        if update_history is False:
+            params['updateHistory'] = 'false'
+
+        return self.get(url, params=params)

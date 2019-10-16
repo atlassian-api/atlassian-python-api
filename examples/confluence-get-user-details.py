@@ -1,4 +1,4 @@
-# coding: utf8
+# coding=utf-8
 from atlassian import Confluence
 
 """ This example related get user details and his status"""

@@ -11,8 +11,7 @@ bamboo = Bamboo(
     username=ATLASSIAN_USER,
     password=ATLASSIAN_PASSWORD)
 
-agent_status = bamboo.agent_status()
-print(agent_status)
+plan_directories_roots = bamboo.plan_directory_info('PROJ-PLAN')
 
-activity = bamboo.activity()
-print(activity)
+print(plan_directories_roots)
+

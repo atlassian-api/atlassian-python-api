@@ -1,3 +1,4 @@
+# coding=utf-8
 from atlassian import Bitbucket
 
 """This example shows how to create, get and delete tags"""

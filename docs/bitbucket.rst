@@ -9,6 +9,9 @@ Manage projects
     # Project list
     bitbucket.project_list()
 
+    # Repo list
+    bitbucket.repo_list(project_key)
+
     # Project info
     bitbucket.project(key)
 
@@ -40,6 +43,9 @@ Manage repositories
 ---------------
 
 .. code-block:: python
+
+    # Get single repository
+    bitbucket.get_repo(project_key, repository_slug)
 
     # Disable branching model
     bitbucket.disable_branching_model(project_key, repo_key)
@@ -79,6 +85,9 @@ Manage repositories
 
     # Grant repository permission to an specific group
     bitbucket.repo_grant_group_permissions(project_key, repo_key, groupname, permission)
+
+    # Delete a repository (DANGER!)
+    bitbucket.delete_repo(project_key, repository_slug)
 
 Groups and admins
 -----------------

@@ -11,8 +11,8 @@ bamboo = Bamboo(
     username=ATLASSIAN_USER,
     password=ATLASSIAN_PASSWORD)
 
-agent_status = bamboo.agent_status()
-print(agent_status)
+# Delete entire plan
+bamboo.delete_plan('PLAN-TODELETE')
 
-activity = bamboo.activity()
-print(activity)
+# Delete single result
+bamboo.delete_build_result('PLAN-TODELETE-7')

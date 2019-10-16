@@ -1,14 +1,14 @@
 ============================
 Atlassian Python API wrapper
 ============================
-|Build Status| |PyPI version| |PyPI - Downloads| |License| |Codacy Badge|
+|Build Status| |PyPI version| |PyPI - Downloads| |License| |Codacy Badge| |Docs|
 
 Documentation
 -------------
 
-`Documentation (beta)`_
+`Documentation`_
 
-.. _Documentation (beta): https://atlassian-python-api.readthedocs.io/en/latest/index.html
+.. _Documentation: https://atlassian-python-api.readthedocs.io/en/latest/index.html
 
 Examples
 --------
@@ -107,5 +107,22 @@ See the `Contribution guidelines for this project`_ for details on how to make c
 .. |Codacy Badge| image:: https://api.codacy.com/project/badge/Grade/c822908f507544fe98ae37b25518ae3d
    :target: https://www.codacy.com/project/gonchik/atlassian-python-api/dashboard
    :alt: Codacy Badge
-.. |PyPI - Downloads| image:: https://img.shields.io/pypi/dm/atlassian-python-api.svg
+.. |PyPI - Downloads| image:: https://pepy.tech/badge/atlassian-python-api/month
    :alt: PyPI - Downloads
+.. |Docs| image:: https://readthedocs.org/projects/atlassian-python-api/badge/?version=latest
+   :target: https://atlassian-python-api.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
+
+
+Credits
+-------
+In addition to all the contributors we would like to thank to these companies:
+
+* Atlassian_ for developing such a powerful ecosystem.
+* JetBrains_ for providing us with free licenses of PyCharm_
+* Travis_ for hosting our continuous integration
+
+.. _Atlassian: https://www.atlassian.com/
+.. _JetBrains: http://www.jetbrains.com
+.. _PyCharm: http://www.jetbrains.com/pycharm/
+.. _Travis: https://travis-ci.org/

@@ -1,4 +1,4 @@
-# coding: utf8
+# coding=utf-8
 import logging
 import re
 
@@ -162,3 +162,100 @@ def html_table_from_dict(data, ordering):
         html += html_row_with_ordered_headers(row, ordering)
 
     return html + '\n</tbody></table>'
+
+
+def block_code_macro_confluence(code, lang=None):
+    """
+    Wrap into code block macro
+    :param code:
+    :param lang:
+    :return:
+    """
+    if not lang:
+        lang = ''
+    return ('''\
+                <ac:structured-macro ac:name="code" ac:schema-version="1">
+                    <ac:parameter ac:name="language">{lang}</ac:parameter>
+                    <ac:plain-text-body><![CDATA[{code}]]></ac:plain-text-body>
+                </ac:structured-macro>
+            ''').format(lang=lang, code=code)
+
+
+def html_code__macro_confluence(text):
+    """
+    Wrap into html macro
+    :param text:
+    :return:
+    """
+    return ('''\
+                <ac:structured-macro ac:name="html" ac:schema-version="1">
+                    <ac:plain-text-body><![CDATA[{text}]]></ac:plain-text-body>
+                </ac:structured-macro>
+            ''').format(text=text)
+
+
+def noformat_code_macro_confluence(text, nopanel=None):
+    """
+    Wrap into code block macro
+    :param text:
+    :param nopanel: (bool) True or False Removes the panel around the content.
+    :return:
+    """
+    if not nopanel:
+        nopanel = False
+    return ('''\
+                <ac:structured-macro ac:name="noformat" ac:schema-version="1">
+                    <ac:parameter ac:name="nopanel">{nopanel}</ac:parameter>
+                    <ac:plain-text-body><![CDATA[{text}]]></ac:plain-text-body>
+                </ac:structured-macro>
+            ''').format(nopanel=nopanel, text=text)
+
+
+def symbol_normalizer(text):
+    if not text:
+        return ""
+    result = text
+    result = result.replace('&Auml;', u'Ä')
+    result = result.replace('&auml;', u'ä')
+    result = result.replace('&Euml;', u'Ë')
+    result = result.replace('&euml;', u'ë')
+    result = result.replace('&Iuml;', u'Ï')
+    result = result.replace('&iuml;', u'ï')
+    result = result.replace('&Ouml;', u'Ö')
+    result = result.replace('&ouml;', u'ö')
+    result = result.replace('&Uuml;', u'Ü')
+    result = result.replace('&uuml;', u'ü')
+    result = result.replace('&Aacute;', u'Á')
+    result = result.replace('&aacute;', u'á')
+    result = result.replace('&Eacute;', u'É')
+    result = result.replace('&eacute;', u'é')
+    result = result.replace('&Iacute;', u'Í')
+    result = result.replace('&iacute;', u'í')
+    result = result.replace('&Oacute;', u'Ó')
+    result = result.replace('&oacute;', u'ó')
+    result = result.replace('&Uacute;', u'Ú')
+    result = result.replace('&uacute;', u'ú')
+    result = result.replace('&Agrave;', u'À')
+    result = result.replace('&agrave;', u'à')
+    result = result.replace('&Egrave;', u'È')
+    result = result.replace('&egrave;', u'è')
+    result = result.replace('&Igrave;', u'Ì')
+    result = result.replace('&igrave;', u'ì')
+    result = result.replace('&Ograve;', u'Ò')
+    result = result.replace('&ograve;', u'ò')
+    result = result.replace('&Ugrave;', u'Ù')
+    result = result.replace('&ugrave;', u'ù')
+    result = result.replace('&Acirc;', u'Â')
+    result = result.replace('&acirc;', u'â')
+    result = result.replace('&Ecirc;', u'Ê')
+    result = result.replace('&ecirc;', u'ê')
+    result = result.replace('&Icirc;', u'Î')
+    result = result.replace('&icirc;', u'î')
+    result = result.replace('&Ocirc;', u'Ô')
+    result = result.replace('&ocirc;', u'ô')
+    result = result.replace('&Ucirc;', u'Û')
+    result = result.replace('&ucirc;', u'û')
+    result = result.replace('&Aring;', u'Å')
+    result = result.replace('&aring;', u'å')
+    result = result.replace('&deg;', u'°')
+    return result
