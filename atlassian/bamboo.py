@@ -34,7 +34,7 @@ class Bamboo(AtlassianRestAPI):
         params['start-index'] = start_index
         response = self.get(path, data, flags, params, headers)
         results = response[elements_key]
-        size = 0 
+        size = 0
 
         # Check if we still can get results
         if size > max_results or results['size'] == 0:
@@ -87,7 +87,7 @@ class Bamboo(AtlassianRestAPI):
     def plans(self, expand=None, favourite=False, clover_enabled=False, start_index=0, max_results=25):
         return self.base_list_call("plan", expand, favourite, clover_enabled, start_index, max_results,
                                    elements_key='plans', element_key='plan')
-    
+
     def plan_directory_info(self, plan_key):
         """
         Returns information about the directories where artifacts, build logs, and build results will be stored. 
@@ -98,6 +98,15 @@ class Bamboo(AtlassianRestAPI):
         """
         resource = 'planDirectoryInfo/{}'.format(plan_key)
         return self.get(self.resource_url(resource))
+
+    def get_plan(self, plan_key):
+        """
+        Get plan information.
+        :param plan_key:
+        :return:
+        """
+        resource = 'rest/api/latest/plan/{}'.format(plan_key)
+        return self.get(resource)
 
     def delete_plan(self, plan_key):
         """
@@ -118,7 +127,7 @@ class Bamboo(AtlassianRestAPI):
         return self.post(self.resource_url(resource))
 
     """ Branches """
-    
+
     def search_branches(self, plan_key, include_default_branch=True, max_results=25):
         params = {
             'max-result': max_results,
@@ -170,6 +179,15 @@ class Bamboo(AtlassianRestAPI):
                           enabled='true' if enabled else 'false',
                           cleanupEnabled='true' if cleanup_enabled else 'false')
         return self.put(self.resource_url(resource), params=params)
+
+    def get_vcs_branches(self, plan_key, max_results=25):
+        """
+        Get all vcs names for the current plan
+        :param plan_key: str TST-BLD
+        :return:
+        """
+        resource = 'plan/{plan_key}/vcsBranches'.format(plan_key=plan_key)
+        return self.base_list_call(resource, start_index=0, max_results=max_results)
 
     """ Build results """
 
@@ -523,7 +541,7 @@ class Bamboo(AtlassianRestAPI):
         """
         url = "rest/api/latest/admin/expiry/custom/plan?limit={}".format(limit)
         return self.get(url)
-    
+
     def reports(self, max_results=25):
         params = {'max-results': max_results}
         return self._get_generator(self.resource_url('chart/reports'), elements_key='reports', element_key='report',
