@@ -1,5 +1,6 @@
 # coding=utf-8
 import logging
+from requests.exceptions import HTTPError
 from .rest_client import AtlassianRestAPI
 
 log = logging.getLogger(__name__)
@@ -33,16 +34,27 @@ class Bamboo(AtlassianRestAPI):
         start_index = 0
         params['start-index'] = start_index
         response = self.get(path, data, flags, params, headers)
-        results = response[elements_key]
-        size = 0
-
-        # Check if we still can get results
-        if size > max_results or results['size'] == 0:
-            return
-        for r in results[element_key]:
-            size += 1
-            yield r
-        start_index += results['max-result']
+        if self.advanced_mode:
+            try:
+                response.raise_for_status()
+                response = response.json()
+            except HTTPError as e:
+                logging.error("Broken response: {}".format(e))
+                yield e
+        try:
+            results = response[elements_key]
+            size = 0 
+            # Check if we still can get results
+            if size > max_results or results['size'] == 0:
+                return
+            for r in results[element_key]:
+                size += 1
+                yield r
+            start_index += results['max-result']
+        except TypeError:
+            logging.error("Broken response: {}".format(response))
+            yield response
+        
 
     def base_list_call(self, resource, expand, favourite, clover_enabled, max_results, label=None, start_index=0, **kwargs):
         flags = []
