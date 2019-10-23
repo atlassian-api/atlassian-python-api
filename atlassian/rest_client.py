@@ -198,18 +198,20 @@ class AtlassianRestAPI(object):
         :param trailing: OPTIONAL: for wrap slash symbol in the end of string
         :return:
         """
-        answer = self.request('GET', path=path, flags=flags, params=params, data=data, headers=headers,
+        response = self.request('GET', path=path, flags=flags, params=params, data=data, headers=headers,
                               trailing=trailing)
+        if self.advanced_mode:
+            return response
         if not_json_response:
-            return answer.content
+            return response.content
         else:
-            if not answer.text:
+            if not response.text:
                 return None
             try:
-                return answer.json()
+                return response.json()
             except Exception as e:
                 log.error(e)
-                return answer.text
+                return response.text
 
     def post(self, path, data=None, headers=None, files=None, params=None, trailing=None):
         response = self.request('POST', path=path, data=data, headers=headers, files=files, params=params,

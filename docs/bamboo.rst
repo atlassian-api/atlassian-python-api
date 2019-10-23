@@ -21,6 +21,9 @@ Projects & Plans
     # Get information about plan build directory
     plan_directory_info(plan_key)
 
+    # Get plan information
+    get_plan(plan_key)
+
     # Delete a plan (or a plan branch)
     delete_plan(plan_key)
 
@@ -44,6 +47,9 @@ Branches
     # Create new branch (vcs or simple)
     create_branch(plan_key, branch_name, vcs_branch=None, enabled=False, cleanup_enabled=False)
 
+    # Get VCS Branches
+    get_vcs_branches(plan_key, max_results=25)
+    
 Build results
 -------------
 
