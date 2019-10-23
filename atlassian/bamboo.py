@@ -51,7 +51,8 @@ class Bamboo(AtlassianRestAPI):
                 size += 1
                 yield r
             start_index += results['max-result']
-        except TypeError as e:
+        except TypeError:
+            logging.error("Broken response: {}".format(response))
             yield response
         
 
