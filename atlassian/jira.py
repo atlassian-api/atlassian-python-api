@@ -1657,6 +1657,17 @@ class Jira(AtlassianRestAPI):
         url = 'rest/tempo-core/1/workloadscheme/users/{}'.format(scheme_id)
         return self.get(url)
 
+    def tempo_workload_scheme_set_member(self, scheme_id, member):
+        """
+        Provide a workload scheme members
+        :param member: user name of user
+        :param scheme_id:
+        :return:
+        """
+        url = 'rest/tempo-core/1/workloadscheme/user/{}'.format(member)
+        data = {'id': scheme_id}
+        return self.put(url, data=data)
+
     def tempo_timesheets_get_configuration(self):
         """
         Provide the configs of timesheets
