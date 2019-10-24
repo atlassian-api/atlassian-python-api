@@ -553,7 +553,7 @@ class Bitbucket(AtlassianRestAPI):
         data = {"name": str(name), "endPoint": str(end_point)}
         return self.delete(url, data=data)
 
-    def get_pull_requests(self, project, repository, state='OPEN', order='newest', limit=100, start=0):
+    def get_pull_requests(self, project, repository, state='OPEN', order='newest', limit=100, start=0, at=None):
         """
         Get pull requests
         :param project:
@@ -576,6 +576,8 @@ class Bitbucket(AtlassianRestAPI):
             params['start'] = start
         if order:
             params['order'] = order
+        if at:
+            params['at'] = at
         response = self.get(url, params=params)
         if 'values' not in response:
             return []

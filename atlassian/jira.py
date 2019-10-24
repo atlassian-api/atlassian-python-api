@@ -1061,7 +1061,7 @@ class Jira(AtlassianRestAPI):
 
     def get_issue_status(self, issue_key):
         url = 'rest/api/2/issue/{issue_key}?fields=status'.format(issue_key=issue_key)
-        return (self.get(url) or {}).get('fields').get('status').get('name')
+        return (((self.get(url) or {}).get('fields') or {}).get('status') or {}).get('name') or {}
 
     def get_issue_status_id(self, issue_key):
         url = 'rest/api/2/issue/{issue_key}?fields=status'.format(issue_key=issue_key)
@@ -1673,6 +1673,17 @@ class Jira(AtlassianRestAPI):
         url = 'rest/tempo-core/1/workloadscheme/users/{}'.format(scheme_id)
         return self.get(url)
 
+    def tempo_workload_scheme_set_member(self, scheme_id, member):
+        """
+        Provide a workload scheme members
+        :param member: user name of user
+        :param scheme_id:
+        :return:
+        """
+        url = 'rest/tempo-core/1/workloadscheme/user/{}'.format(member)
+        data = {'id': scheme_id}
+        return self.put(url, data=data)
+
     def tempo_timesheets_get_configuration(self):
         """
         Provide the configs of timesheets
@@ -1728,12 +1739,12 @@ class Jira(AtlassianRestAPI):
 
     def tempo_timesheets_write_worklog(self, worker, started, time_spend_in_seconds, issue_id, comment=None):
         """
-
-        :param comment:
+        Log work for user
         :param worker:
         :param started:
         :param time_spend_in_seconds:
         :param issue_id:
+        :param comment:
         :return:
         """
         data = {"worker": worker,
@@ -1744,6 +1755,20 @@ class Jira(AtlassianRestAPI):
             data['comment'] = comment
         url = 'rest/tempo-timesheets/4/worklogs/'
         return self.post(url, data=data)
+
+    def tempo_timesheets_approval_worklog_report(self, user_key, period_start_date):
+        """
+        Return timesheets for approval
+        :param user_key:
+        :param period_start_date:
+        :return:
+        """
+        url = "rest/tempo-timesheets/4/timesheet-approval/current"
+        params = {}
+        if period_start_date:
+            params['periodStartDate'] = period_start_date
+        if user_key:
+            params['userKey'] = user_key
 
     def tempo_timesheets_get_required_times(self, from_date, to_date, user_name):
         """
@@ -1790,6 +1815,13 @@ class Jira(AtlassianRestAPI):
         url = 'rest/tempo-accounts/1/link/project/{}/default/'.format(project_id)
         return self.get(url)
 
+    def tempo_teams_get_all_teams(self, expand=None):
+        url = "rest/tempo-teams/2/team"
+        params = {}
+        if expand:
+            params['expand'] = expand
+        return self.get(url, params=params)
+
     def tempo_teams_add_member(self, team_id, member_key):
         """
         Add team member
@@ -1797,12 +1829,37 @@ class Jira(AtlassianRestAPI):
         :param member_key:
         :return:
         """
-        url = 'rest/tempo-teams/2/team/{}/member/'.format(team_id)
-        data = {"member": {"key": member_key, "type": "USER"},
+        data = {"member": {"key": str(member_key), "type": "USER"},
                 "membership": {
                     "availability": "100",
                     "role": {"id": 1}
                 }}
+        return self.tempo_teams_add_member_raw(team_id, member_data=data)
+
+    def tempo_teams_add_membership(self, team_id, member_id):
+        """
+        Add team member
+        :param team_id:
+        :param member_id:
+        :return:
+        """
+        data = {"teamMemberId": member_id,
+                "teamId": team_id,
+                "availability": "100",
+                "role": {"id": 1}
+                }
+        url = "rest/tempo-teams/2/team/{}/member/{}/membership".format(team_id, member_id)
+        return self.post(url, data=data)
+
+    def tempo_teams_add_member_raw(self, team_id, member_data):
+        """
+        Add team member
+        :param team_id:
+        :param member_data:
+        :return:
+        """
+        url = 'rest/tempo-teams/2/team/{}/member/'.format(team_id)
+        data = member_data
         return self.post(url, data=data)
 
     def tempo_teams_get_members(self, team_id):
