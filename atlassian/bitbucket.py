@@ -553,6 +553,27 @@ class Bitbucket(AtlassianRestAPI):
         data = {"name": str(name), "endPoint": str(end_point)}
         return self.delete(url, data=data)
 
+    def get_pull_request_settings(self, project, repository):
+        """
+        Get pull request settings.
+        :param project:
+        :param repository:
+        :return:
+        """
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/settings/pull-requests'.format(project=project,repository=repository)
+        return self.get(url)
+
+    def set_pull_request_settings(self, project, repository, data):
+        """
+        Set pull request settings.
+        :param project:
+        :param repository:
+        :param data: json body
+        :return:
+        """
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/settings/pull-requests'.format(project=project,repository=repository)
+        return self.post(url, data=data)
+
     def get_pull_requests(self, project, repository, state='OPEN', order='newest', limit=100, start=0, at=None):
         """
         Get pull requests
