@@ -56,8 +56,7 @@ class AtlassianRestAPI(object):
             try:
                 import kerberos_sspi as kerb
             except ImportError:
-                log.error("Please, fix issue with dependency of kerberos")
-                return
+                raise ImportError("No kerberos implementation available")
         __, krb_context = kerb.authGSSClientInit(kerberos_service)
         kerb.authGSSClientStep(krb_context, "")
         auth_header = ("Negotiate " + kerb.authGSSClientResponse(krb_context))
@@ -199,18 +198,20 @@ class AtlassianRestAPI(object):
         :param trailing: OPTIONAL: for wrap slash symbol in the end of string
         :return:
         """
-        answer = self.request('GET', path=path, flags=flags, params=params, data=data, headers=headers,
+        response = self.request('GET', path=path, flags=flags, params=params, data=data, headers=headers,
                               trailing=trailing)
+        if self.advanced_mode:
+            return response
         if not_json_response:
-            return answer.content
+            return response.content
         else:
-            if not answer.text:
+            if not response.text:
                 return None
             try:
-                return answer.json()
+                return response.json()
             except Exception as e:
                 log.error(e)
-                return answer.text
+                return response.text
 
     def post(self, path, data=None, headers=None, files=None, params=None, trailing=None):
         response = self.request('POST', path=path, data=data, headers=headers, files=files, params=params,
