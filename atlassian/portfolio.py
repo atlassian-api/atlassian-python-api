@@ -1,5 +1,6 @@
 # coding=utf-8
 import logging
+
 from .rest_client import AtlassianRestAPI
 
 log = logging.getLogger(__name__)

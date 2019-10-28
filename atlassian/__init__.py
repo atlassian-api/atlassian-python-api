@@ -1,13 +1,13 @@
-from .confluence import Confluence
-from .jira import Jira
+from .bamboo import Bamboo
 from .bitbucket import Bitbucket
 from .bitbucket import Bitbucket as Stash
-from .portfolio import Portfolio
-from .bamboo import Bamboo
+from .confluence import Confluence
 from .crowd import Crowd
-from .service_desk import ServiceDesk
-from .marketplace import MarketPlace
+from .jira import Jira
 from .jira8 import Jira8
+from .marketplace import MarketPlace
+from .portfolio import Portfolio
+from .service_desk import ServiceDesk
 
 __all__ = [
     'Confluence',
