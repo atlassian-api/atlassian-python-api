@@ -198,6 +198,7 @@ class Bamboo(AtlassianRestAPI):
         """
         Get all vcs names for the current plan
         :param plan_key: str TST-BLD
+        :param max_results
         :return:
         """
         resource = 'plan/{plan_key}/vcsBranches'.format(plan_key=plan_key)
@@ -304,6 +305,7 @@ class Bamboo(AtlassianRestAPI):
         using stages.stage.results.result. All expand parameters should contain results.result prefix.
         :param build_key: Should be in the form XX-YY[-ZZ]-99, that is, the last token should be an integer representing
         the build number
+        :param include_all_states
         """
         try:
             int(build_key.split('-')[-1])

@@ -561,7 +561,8 @@ class Bitbucket(AtlassianRestAPI):
         :param repository:
         :return:
         """
-        url = 'rest/api/1.0/projects/{project}/repos/{repository}/settings/pull-requests'.format(project=project,repository=repository)
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/settings/pull-requests'.format(project=project,
+                                                                                                 repository=repository)
         return self.get(url)
 
     def set_pull_request_settings(self, project, repository, data):
@@ -572,7 +573,8 @@ class Bitbucket(AtlassianRestAPI):
         :param data: json body
         :return:
         """
-        url = 'rest/api/1.0/projects/{project}/repos/{repository}/settings/pull-requests'.format(project=project,repository=repository)
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/settings/pull-requests'.format(project=project,
+                                                                                                 repository=repository)
         return self.post(url, data=data)
 
     def get_pull_requests(self, project, repository, state='OPEN', order='newest', limit=100, start=0, at=None):
@@ -1075,7 +1077,7 @@ class Bitbucket(AtlassianRestAPI):
         :param limit:
         :return:
         """
-        if repository != None:
+        if repository is not None:
             url = 'rest/branch-permissions/2.0/projects/{project}/repos/{repository}/restrictions'.format(
                 project=project,
                 repository=repository)
@@ -1099,12 +1101,12 @@ class Bitbucket(AtlassianRestAPI):
         """
         start = 0
         branches_permissions = []
-        response = self.get_branches_permissions(project=project, repository=repository,  start=start)
-        branches_permissions  += response.get('values')
+        response = self.get_branches_permissions(project=project, repository=repository, start=start)
+        branches_permissions += response.get('values')
         while not response.get('isLastPage'):
             start = response.get('nextPageStart')
-            response = self.get_branches_permissions(project=project, repository=repository,  start=start)
-            branches_permissions  += response.get('values')
+            response = self.get_branches_permissions(project=project, repository=repository, start=start)
+            branches_permissions += response.get('values')
         return branches_permissions
 
     def reindex(self):
