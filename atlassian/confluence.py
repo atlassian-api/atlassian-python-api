@@ -1,10 +1,12 @@
 # coding=utf-8
-from atlassian import utils
-from .rest_client import AtlassianRestAPI
-from requests import HTTPError
 import logging
 import os
 import time
+
+from requests import HTTPError
+
+from atlassian import utils
+from .rest_client import AtlassianRestAPI
 
 log = logging.getLogger(__name__)
 

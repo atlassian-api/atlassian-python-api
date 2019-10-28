@@ -1,10 +1,12 @@
 # coding=utf-8
 import json
 import logging
-from six.moves.urllib.parse import urlencode
+
 import requests
 from oauthlib.oauth1 import SIGNATURE_RSA
 from requests_oauthlib import OAuth1
+from six.moves.urllib.parse import urlencode
+
 from atlassian.request_utils import get_default_logger
 
 log = get_default_logger(__name__)
