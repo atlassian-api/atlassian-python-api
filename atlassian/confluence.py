@@ -122,7 +122,7 @@ class Confluence(AtlassianRestAPI):
             params['limit'] = int(limit)
         if space is not None:
             params['spaceKey'] = str(space)
-        if space is not None:
+        if title is not None:
             params['title'] = str(title)
         try:
             return (self.get(url, params=params) or {}).get('results')[0]
@@ -520,7 +520,7 @@ class Confluence(AtlassianRestAPI):
         attachment_versions = self.get_attachment_history(attachment.get("id"))
         while len(attachment_versions) > keep_last_versions:
             remove_version_attachment_number = attachment_versions[keep_last_versions].get('number')
-            self.delete_attachment(page_id=page_id, filename=filename, version=remove_version_attachment_number)
+            self.delete_attachment_by_id(attachment_id=attachment.get("id"), version=remove_version_attachment_number)
             log.info(
                 "Removed oldest version for {}, now versions equal more than {}".format(attachment.get('title'),
                                                                                         len(attachment_versions)))

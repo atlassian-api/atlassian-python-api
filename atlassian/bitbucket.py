@@ -1065,21 +1065,46 @@ class Bitbucket(AtlassianRestAPI):
             params['markup'] = markup
         return self.get(url, params=params, not_json_response=True, headers=headers)
 
-    def get_branches_permissions(self, project, repository, limit=25):
+    def get_branches_permissions(self, project, repository=None, start=0, limit=25):
         """
         Get branches permissions from a given repo
         :param project:
         :param repository:
+        :param start:
         :param limit:
         :return:
         """
-        url = 'rest/branch-permissions/2.0/projects/{project}/repos/{repository}/restrictions'.format(
-            project=project,
-            repository=repository)
+        if repository != None:
+            url = 'rest/branch-permissions/2.0/projects/{project}/repos/{repository}/restrictions'.format(
+                project=project,
+                repository=repository)
+        else:
+            url = 'rest/branch-permissions/2.0/projects/{project}/restrictions'.format(
+                project=project)
+
         params = {}
         if limit:
             params['limit'] = limit
+        if start:
+            params['start'] = start
         return self.get(url, params=params)
+
+    def all_branches_permissions(self, project, repository=None):
+        """
+        Get branches permissions from a given repo
+        :param project:
+        :param repository:
+        :return:
+        """
+        start = 0
+        branches_permissions = []
+        response = self.get_branches_permissions(project=project, repository=repository,  start=start)
+        branches_permissions  += response.get('values')
+        while not response.get('isLastPage'):
+            start = response.get('nextPageStart')
+            response = self.get_branches_permissions(project=project, repository=repository,  start=start)
+            branches_permissions  += response.get('values')
+        return branches_permissions
 
     def reindex(self):
         """
