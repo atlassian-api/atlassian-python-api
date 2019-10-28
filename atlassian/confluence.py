@@ -122,7 +122,7 @@ class Confluence(AtlassianRestAPI):
             params['limit'] = int(limit)
         if space is not None:
             params['spaceKey'] = str(space)
-        if space is not None:
+        if title is not None:
             params['title'] = str(title)
         try:
             return (self.get(url, params=params) or {}).get('results')[0]
