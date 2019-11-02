@@ -371,13 +371,12 @@ class Bamboo(AtlassianRestAPI):
 
     def stop_build(self, plan_key):
         """
-        Stop the build which is in progress now plan. 
+        Stop the build which is in progress at the moment. 
         :param plan_key: str TST-BLD
         :return: GET request
         """
         resource = "/build/admin/stopPlan.action?planKey={}".format(plan_key)
         return self.get(path=resource)
-
 
     """ Comments & Labels """
 
