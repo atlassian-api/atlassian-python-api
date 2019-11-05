@@ -369,6 +369,15 @@ class Bamboo(AtlassianRestAPI):
 
         return self.post(self.resource_url(resource), params=params, headers=headers)
 
+    def stop_build(self, plan_key):
+        """
+        Stop the build which is in progress at the moment. 
+        :param plan_key: str TST-BLD
+        :return: GET request
+        """
+        resource = "/build/admin/stopPlan.action?planKey={}".format(plan_key)
+        return self.get(path=resource)
+
     """ Comments & Labels """
 
     def comments(self, project_key, plan_key, build_number, start_index=0, max_results=25):
