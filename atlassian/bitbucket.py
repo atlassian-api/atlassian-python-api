@@ -878,7 +878,7 @@ class Bitbucket(AtlassianRestAPI):
         if limit:
             params['limit'] = limit
         if filter:
-            params['filter'] = filter
+            params['filterText'] = filter
         if order_by:
             params['orderBy'] = order_by
         result = self.get(url, params=params)
