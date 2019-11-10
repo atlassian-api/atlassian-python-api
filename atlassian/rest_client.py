@@ -134,7 +134,7 @@ class AtlassianRestAPI(object):
         if flags:
             url += ('&' if params else '') + '&'.join(flags or [])
         if files is None:
-            data = json.dumps(data)
+            data = None if not data else json.dumps(data)
 
         headers = headers or self.default_headers
         response = self._session.request(
