@@ -384,8 +384,8 @@ class Jira(AtlassianRestAPI):
         :param project_key: the project key
         :param project_id: the project id
         :param version: the new project version to add
-        :is_archived:
-        :is_released:
+        :param is_archived:
+        :param is_released:
         :return:
         """
         payload = {'name': version, 'archived': is_archived, 'released': is_released, 'project': project_key,
@@ -579,7 +579,7 @@ class Jira(AtlassianRestAPI):
         if limit:
             params['maxResults'] = limit
         return self.get(url, params=params)
-    
+
     def create_custom_field(self, name, type, search_key=None, description=None):
         """
         Creates a custom field with the given name and type
@@ -1771,6 +1771,7 @@ class Jira(AtlassianRestAPI):
             params['periodStartDate'] = period_start_date
         if user_key:
             params['userKey'] = user_key
+        return self.get(url, params=params)
 
     def tempo_timesheets_get_required_times(self, from_date, to_date, user_name):
         """

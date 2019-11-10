@@ -201,7 +201,7 @@ class AtlassianRestAPI(object):
         :return:
         """
         response = self.request('GET', path=path, flags=flags, params=params, data=data, headers=headers,
-                              trailing=trailing)
+                                trailing=trailing)
         if self.advanced_mode:
             return response
         if not_json_response:
