@@ -1321,3 +1321,18 @@ class Confluence(AtlassianRestAPI):
         data = {'name': username}
 
         return self.post(url, params=params, data=data)
+
+    def get_subtree_of_content_ids(self, page_id):
+        """
+        Get sub tree of page ids
+        :param page_id:
+        :return: Set of page ID
+        """
+        output = list()
+        output.append(page_id)
+        children_pages = self.get_page_child_by_type(page_id)
+        for page in children_pages:
+            child_subtree = self.get_subtree_of_content_ids(self, page.get('id'))
+            if child_subtree:
+                output.extend([p for p in child_subtree])
+        return set(output)
