@@ -1408,3 +1408,9 @@ class Bitbucket(AtlassianRestAPI):
         data = {"title": report_title}
         data.update(report_params)
         return self.put(url, data=data)
+
+    def get_lfs_repo_status(self, project_key, repo):
+        url = 'rest/git-lfs/git-lfs/admin/projects/{projectKey}/repos/{repositorySlug}/enabled'.format(
+            projectKey=project_key,
+            repositorySlug=repo)
+        return self.get(url)
