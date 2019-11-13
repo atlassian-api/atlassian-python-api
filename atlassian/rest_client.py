@@ -164,7 +164,7 @@ class AtlassianRestAPI(object):
         elif response.status_code == 204:
             log.debug('Received: {0}\n "No Content" response'.format(response.status_code))
         elif response.status_code == 400:
-            log.error('Received: {0}\n Bad request \n'.format(response.status_code, response_content))
+            log.error('Received: {0}\n Bad request \n {1}'.format(response.status_code, response_content))
         elif response.status_code == 401:
             log.error('Received: {0}\n "UNAUTHORIZED" response'.format(response.status_code))
         elif response.status_code == 404:
