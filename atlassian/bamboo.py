@@ -9,7 +9,6 @@ log = logging.getLogger(__name__)
 
 
 class Bamboo(AtlassianRestAPI):
-
     """ Private methods """
 
     def _get_generator(self, path, elements_key='results', element_key='result', data=None, flags=None,
@@ -45,7 +44,7 @@ class Bamboo(AtlassianRestAPI):
                 yield e
         try:
             results = response[elements_key]
-            size = 0 
+            size = 0
             # Check if we still can get results
             if size > max_results or results['size'] == 0:
                 return
@@ -56,9 +55,9 @@ class Bamboo(AtlassianRestAPI):
         except TypeError:
             logging.error("Broken response: {}".format(response))
             yield response
-        
 
-    def base_list_call(self, resource, expand, favourite, clover_enabled, max_results, label=None, start_index=0, **kwargs):
+    def base_list_call(self, resource, expand, favourite, clover_enabled, max_results, label=None, start_index=0,
+                       **kwargs):
         flags = []
         params = {'max-results': max_results}
         if expand:
@@ -207,7 +206,8 @@ class Bamboo(AtlassianRestAPI):
     """ Build results """
 
     def results(self, project_key=None, plan_key=None, job_key=None, build_number=None, expand=None, favourite=False,
-                clover_enabled=False, issue_key=None, label=None, start_index=0, max_results=25, include_all_states=False):
+                clover_enabled=False, issue_key=None, label=None, start_index=0, max_results=25,
+                include_all_states=False):
         """
         Get results as generic method
         :param project_key:
@@ -258,7 +258,8 @@ class Bamboo(AtlassianRestAPI):
         :return:
         """
         return self.results(expand=expand, favourite=favourite, clover_enabled=clover_enabled,
-                            label=label, issue_key=issue_key, start_index=start_index, max_results=max_results, include_all_states=include_all_states)
+                            label=label, issue_key=issue_key, start_index=start_index, max_results=max_results,
+                            include_all_states=include_all_states)
 
     def project_latest_results(self, project_key, expand=None, favourite=False, clover_enabled=False, label=None,
                                issue_key=None, start_index=0, max_results=25, include_all_states=False):
@@ -276,7 +277,8 @@ class Bamboo(AtlassianRestAPI):
         :return:
         """
         return self.results(project_key, expand=expand, favourite=favourite, clover_enabled=clover_enabled,
-                            label=label, issue_key=issue_key, start_index=start_index, max_results=max_results, include_all_states=include_all_states)
+                            label=label, issue_key=issue_key, start_index=start_index, max_results=max_results,
+                            include_all_states=include_all_states)
 
     def plan_results(self, project_key, plan_key, expand=None, favourite=False, clover_enabled=False, label=None,
                      issue_key=None, start_index=0, max_results=25, include_all_states=False):
@@ -295,7 +297,8 @@ class Bamboo(AtlassianRestAPI):
         :return:
         """
         return self.results(project_key, plan_key, expand=expand, favourite=favourite, clover_enabled=clover_enabled,
-                            label=label, issue_key=issue_key, start_index=start_index, max_results=max_results, include_all_states=include_all_states)
+                            label=label, issue_key=issue_key, start_index=start_index, max_results=max_results,
+                            include_all_states=include_all_states)
 
     def build_result(self, build_key, expand=None, include_all_states=False):
         """
@@ -334,7 +337,7 @@ class Bamboo(AtlassianRestAPI):
     def delete_build_result(self, build_key):
         """
         Deleting result for specific build
-        :param build_key: Take full build key, example: PROJ-PLAN-8
+        :param build_key: Take full build key, example: PROJECT-PLAN-8
         """
         custom_resource = '/build/admin/deletePlanResults.action'
         build_key = build_key.split('-')
@@ -368,6 +371,15 @@ class Bamboo(AtlassianRestAPI):
                 params['bamboo.variable.{}'.format(key)] = value
 
         return self.post(self.resource_url(resource), params=params, headers=headers)
+
+    def stop_build(self, plan_key):
+        """
+        Stop the build which is in progress at the moment. 
+        :param plan_key: str TST-BLD
+        :return: GET request
+        """
+        resource = "/build/admin/stopPlan.action?planKey={}".format(plan_key)
+        return self.get(path=resource)
 
     """ Comments & Labels """
 

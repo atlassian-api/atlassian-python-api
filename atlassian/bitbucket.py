@@ -19,16 +19,6 @@ class Bitbucket(AtlassianRestAPI):
             params['limit'] = limit
         return (self.get('rest/api/1.0/projects', params=params) or {}).get('values')
 
-    def repo_list(self, project_key):
-        """
-        Provide the repository list in a specific BB project
-        :param project_key: The Project Key ID you need to list
-        return:
-        """
-        url = 'rest/api/1.0/projects/{projectKey}/repos?limit=1000'.format(
-            projectKey=project_key)
-        return self.get(url)
-
     def project(self, key):
         """
         Provide project info
@@ -57,11 +47,10 @@ class Bitbucket(AtlassianRestAPI):
         """
         Update project
         :param key:
-        :param **params:
         :return:
         """
         data = self.project(key)
-        if not 'errors' in data:
+        if 'errors' not in data:
             data.update(params)
             url = 'rest/api/1.0/projects/{0}'.format(key)
             return self.put(url, data=data)
@@ -72,7 +61,7 @@ class Bitbucket(AtlassianRestAPI):
     def project_avatar(self, key, content_type='image/png'):
         """
         Get project avatar
-
+        :param content_type:
         :param key:
         :return:
         """
@@ -86,8 +75,9 @@ class Bitbucket(AtlassianRestAPI):
     def set_project_avatar(self, key, icon, content_type='image/png'):
         """
         Set project avatar
-
-        :param key:
+        :param key: A Project key
+        :param icon:
+        :param content_type:
         :return:
         """
         headers = {'X-Atlassian-Token': 'no-check'}
@@ -174,18 +164,18 @@ class Bitbucket(AtlassianRestAPI):
             username=username)
         return self.delete(url)
 
-    def project_grant_group_permissions(self, project_key, groupname, permission):
+    def project_grant_group_permissions(self, project_key, group_name, permission):
         """
         Grant the specified project permission to an specific group
         :param project_key: project key involved
-        :param groupname: group to be granted
+        :param group_name: group to be granted
         :param permission: the project permissions available are 'PROJECT_ADMIN', 'PROJECT_WRITE' and 'PROJECT_READ'
         :return:
         """
-        url = 'rest/api/1.0/projects/{project_key}/permissions/groups?permission={permission}&name={groupname}'.format(
+        url = 'rest/api/1.0/projects/{project_key}/permissions/groups?permission={permission}&name={group_name}'.format(
             project_key=project_key,
             permission=permission,
-            groupname=groupname)
+            group_name=group_name)
         return self.put(url)
 
     def project_remove_group_permissions(self, project_key, groupname):
@@ -199,9 +189,9 @@ class Bitbucket(AtlassianRestAPI):
         :param groupname: group to be granted
         :return:
         """
-        url = 'rest/api/1.0/projects/{project_key}/permissions/groups?name={groupname}'.format(
+        url = 'rest/api/1.0/projects/{project_key}/permissions/groups?name={group_name}'.format(
             project_key=project_key,
-            groupname=groupname)
+            group_name=groupname)
         return self.delete(url)
 
     def repo_grant_user_permissions(self, project_key, repo_key, username, permission):
@@ -273,6 +263,8 @@ class Bitbucket(AtlassianRestAPI):
         :return:
         """
         params = {'name': groupname}
+        if permission:
+            params['permission'] = permission
         url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/groups'.format(project_key=project_key,
                                                                                                repo_key=repo_key)
         return self.delete(url, params=params)
@@ -506,6 +498,20 @@ class Bitbucket(AtlassianRestAPI):
                                                                                            repository=repository)
         return self.get(url)
 
+    def set_default_branch(self, project, repository, ref_branch_name):
+        """
+        Update the default branch of a repository.
+        The authenticated user must have REPO_ADMIN permission for the specified repository to call this resource.
+        :param project: project key
+        :param repository: repo slug
+        :param ref_branch_name: ref name like refs/heads/master
+        :return:
+        """
+        data = {'id': ref_branch_name}
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/branches/default'.format(project=project,
+                                                                                           repository=repository)
+        return self.put(url, data=data)
+
     def create_branch(self, project_key, repository, name, start_point, message=""):
         """Creates a branch using the information provided in the request.
 
@@ -587,6 +593,7 @@ class Bitbucket(AtlassianRestAPI):
                                 (as in: "oldest first") or NEWEST.
         :param limit:
         :param start:
+        :param at:
         :return:
         """
         url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests'.format(project=project,
@@ -613,7 +620,7 @@ class Bitbucket(AtlassianRestAPI):
             pr_list += (response or {}).get('values')
         return pr_list
 
-    def get_pull_requests_activities(self, project, repository, pull_request_id):
+    def get_pull_requests_activities(self, project, repository, pull_request_id, start=0):
         """
         Get pull requests activities
         :param project:
@@ -625,7 +632,7 @@ class Bitbucket(AtlassianRestAPI):
             project=project,
             repository=repository,
             pullRequestId=pull_request_id)
-        params = {'start': 0}
+        params = {'start': start}
         response = self.get(url, params=params)
         if 'values' not in response:
             return []
@@ -807,7 +814,7 @@ class Bitbucket(AtlassianRestAPI):
         that must match the server's version of the comment
         or the update will fail.
         """
-        url = "/rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pull_request_id}/comments/{comment_id}".format(
+        url = "rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pull_request_id}/comments/{comment_id}".format(
             project=project, repository=repository, pull_request_id=pull_request_id, comment_id=comment_id
         )
         payload = {
@@ -878,7 +885,7 @@ class Bitbucket(AtlassianRestAPI):
         if limit:
             params['limit'] = limit
         if filter:
-            params['filter'] = filter
+            params['filterText'] = filter
         if order_by:
             params['orderBy'] = order_by
         result = self.get(url, params=params)
@@ -1321,6 +1328,8 @@ class Bitbucket(AtlassianRestAPI):
     def upload_file(self, project, repository, content, message, branch, filename):
         """
         Upload new file for given branch.
+        :param project:
+        :param repository:
         :param content:
         :param message:
         :param branch:
@@ -1392,8 +1401,10 @@ class Bitbucket(AtlassianRestAPI):
     def create_code_insights_report(self, project_key, repository_slug, commit_id, report_key, report_title,
                                     **report_params):
         """
-        Create a new insight report, or replace the existing one if a report already exists for the given repository, commit, and report key. 
-        A request to replace an existing report will be rejected if the authenticated user was not the creator of the specified report.
+        Create a new insight report, or replace the existing one
+        if a report already exists for the given repository, commit, and report key.
+        A request to replace an existing report will be rejected
+        if the authenticated user was not the creator of the specified report.
         For further information visit: https://docs.atlassian.com/bitbucket-server/rest/6.6.1/bitbucket-code-insights-rest.html
         :projectKey: str
         :repositorySlug: str

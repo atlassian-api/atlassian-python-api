@@ -134,7 +134,7 @@ class AtlassianRestAPI(object):
         if flags:
             url += ('&' if params else '') + '&'.join(flags or [])
         if files is None:
-            data = json.dumps(data)
+            data = None if not data else json.dumps(data)
 
         headers = headers or self.default_headers
         response = self._session.request(
@@ -164,7 +164,7 @@ class AtlassianRestAPI(object):
         elif response.status_code == 204:
             log.debug('Received: {0}\n "No Content" response'.format(response.status_code))
         elif response.status_code == 400:
-            log.error('Received: {0}\n Bad request \n'.format(response.status_code, response_content))
+            log.error('Received: {0}\n Bad request \n {1}'.format(response.status_code, response_content))
         elif response.status_code == 401:
             log.error('Received: {0}\n "UNAUTHORIZED" response'.format(response.status_code))
         elif response.status_code == 404:
@@ -201,7 +201,7 @@ class AtlassianRestAPI(object):
         :return:
         """
         response = self.request('GET', path=path, flags=flags, params=params, data=data, headers=headers,
-                              trailing=trailing)
+                                trailing=trailing)
         if self.advanced_mode:
             return response
         if not_json_response:
