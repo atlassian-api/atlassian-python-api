@@ -626,6 +626,7 @@ class Bitbucket(AtlassianRestAPI):
         :param project:
         :param repository:
         :param pull_request_id: the ID of the pull request within the repository
+        :param start:
         :return:
         """
         url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/activities'.format(
@@ -1333,6 +1334,7 @@ class Bitbucket(AtlassianRestAPI):
         :param content:
         :param message:
         :param branch:
+        :param filename
         :return:
         """
         data = {

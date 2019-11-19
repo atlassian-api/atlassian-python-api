@@ -1332,7 +1332,7 @@ class Confluence(AtlassianRestAPI):
         output.append(page_id)
         children_pages = self.get_page_child_by_type(page_id)
         for page in children_pages:
-            child_subtree = self.get_subtree_of_content_ids(self, page.get('id'))
+            child_subtree = self.get_subtree_of_content_ids(page.get('id'))
             if child_subtree:
                 output.extend([p for p in child_subtree])
         return set(output)
