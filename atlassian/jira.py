@@ -306,7 +306,36 @@ class Jira(AtlassianRestAPI):
                   'maxResults': limit
                   }
         return self.get(url, params=params)
+    
+    def is_user_in_application(self, username, applicationKey):
+        """
+        Utility function to test whether a user has an application role
+        :param username: The username of the user to test.
+        :param applicationKey: The application key of the application
+        :return: True if the user has the application, else False
+        """
+        user = self.user(username, 'applicationRoles') # Get applications roles of the user
+        if 'self' in user:
+            for applicationRole in user.get('applicationRoles').get('items'):
+                if applicationRole.get('key')==applicationKey:
+                    return True
 
+        return False
+
+    def add_user_to_application(self, username, applicationKey):
+        """
+        Add a user to an application
+        :param username: The username of the user to add.
+        :param applicationKey: The application key of the application
+        :return: True if the user was added to the application, else False        
+        :see: https://docs.atlassian.com/software/jira/docs/api/REST/7.5.3/#api/2/user-addUserToApplication
+        """
+        params = {
+            'username': username,
+            'applicationKey': applicationKey
+        }
+        return self.post('rest/api/2/user/application', params=params)==None
+    
     def projects(self, included_archived=None):
         """Returns all projects which are visible for the currently logged in user.
         If no user is logged in, it returns the list of projects that are visible when using anonymous access.
