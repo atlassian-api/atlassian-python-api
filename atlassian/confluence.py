@@ -885,18 +885,20 @@ class Confluence(AtlassianRestAPI):
 
         return (self.get(url) or {}).get('results')
 
-    def get_group_members(self, group_name='confluence-users', start=0, limit=1000):
+    def get_group_members(self, group_name='confluence-users', start=0, limit=1000, expand=None):
         """
         Get a paginated collection of users in the given group
         :param group_name
         :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
         :param limit: OPTIONAL: The limit of the number of users to return, this may be restricted by
                             fixed system limits. Default: 1000
+        :param expand: OPTIONAL: A comma separated list of properties to expand on the content. status
         :return:
         """
-        url = 'rest/api/group/{group_name}/member?limit={limit}&start={start}'.format(group_name=group_name,
+        url = 'rest/api/group/{group_name}/member?limit={limit}&start={start}&expand={expand}'.format(group_name=group_name,
                                                                                       limit=limit,
-                                                                                      start=start)
+                                                                                      start=start,
+                                                                                      expand=expand)
         return (self.get(url) or {}).get('results')
 
     def get_space(self, space_key, expand='description.plain,homepage'):
