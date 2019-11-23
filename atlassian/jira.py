@@ -315,8 +315,8 @@ class Jira(AtlassianRestAPI):
         """
         user = self.user(username, 'applicationRoles')  # Get applications roles of the user
         if 'self' in user:
-            for applicationRole in user.get('applicationRoles').get('items'):
-                if applicationRole.get('key') == application_key:
+            for application_role in user.get('applicationRoles').get('items'):
+                if application_role.get('key') == application_key:
                     return True
         return False
 
