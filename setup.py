@@ -15,11 +15,12 @@ setup(
     license='Apache License 2.0',
     version=version,
     download_url='https://github.com/atlassian-api/atlassian-python-api',
-
     author='Matt Harasymczuk',
     author_email='matt@astrotech.io',
+    maintainer='Gonchik Tsymzhitov',
+    maintainer_email='gonchik.tsymzhitov@gmail.com',
     url='https://github.com/atlassian-api/atlassian-python-api',
-    keywords='atlassian jira confluence bitbucket bamboo crowd portfolio tempo teams servicedesk jsd rest api',
+    keywords='atlassian jira core software confluence bitbucket bamboo crowd portfolio tempo servicedesk jsd rest api',
 
     packages=find_packages(),
     package_dir={'atlassian': 'atlassian'},
