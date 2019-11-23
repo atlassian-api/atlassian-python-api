@@ -590,6 +590,20 @@ class Bamboo(AtlassianRestAPI):
             params['height'] = height
         return self.get(self.resource_url('chart'), params=params)
 
+    def reindex(self):
+        """
+        Returns status of the current indexing operation.
+        reindexInProgress - reindex is currently performed in background reindexPending - reindex is required
+        (i.e. it failed before or some upgrade task asked for it)
+        """
+        return self.get(self.resource_url('reindex'))
+
+    def stop_reindex(self):
+        """
+        Kicks off a reindex. Requires system admin permissions to perform this reindex.
+        """
+        return self.post(self.resource_url('reindex'))
+
     def health_check(self):
         """
         Get health status
