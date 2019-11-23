@@ -1,6 +1,6 @@
 # coding=utf-8
 import logging
-
+import re
 from requests.exceptions import HTTPError
 from .rest_client import AtlassianRestAPI
 
@@ -576,8 +576,13 @@ class Jira(AtlassianRestAPI):
         :param list issue_list:
         :return:
         """
+        jira_issue_regex = re.compile('[A-Z]{1,10}-\d+')
         missing_issues = list()
-        jql = 'key in ({})'.format(', '.join(['"{}"'.format(key) for key in issue_list]))
+        matched_issue_keys = list()
+        for key in issue_list:
+            if re.match(jira_issue_regex, key):
+                matched_issue_keys.append(key)
+        jql = 'key in ({})'.format(', '.join(matched_issue_keys))
         query_result = self.jql(jql, fields=fields)
         if 'errorMessages' in query_result.keys():
             for message in query_result['errorMessages']:
