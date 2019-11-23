@@ -201,7 +201,8 @@ class Bamboo(AtlassianRestAPI):
         :return:
         """
         resource = 'plan/{plan_key}/vcsBranches'.format(plan_key=plan_key)
-        return self.base_list_call(resource, start_index=0, max_results=max_results)
+        return self.base_list_call(resource, start_index=0, max_results=max_results, clover_enabled=None, expand=None,
+                                   favourite=None)
 
     """ Build results """
 

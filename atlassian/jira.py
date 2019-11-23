@@ -306,34 +306,33 @@ class Jira(AtlassianRestAPI):
                   }
         return self.get(url, params=params)
 
-    def is_user_in_application(self, username, applicationKey):
+    def is_user_in_application(self, username, application_key):
         """
         Utility function to test whether a user has an application role
         :param username: The username of the user to test.
-        :param applicationKey: The application key of the application
+        :param application_key: The application key of the application
         :return: True if the user has the application, else False
         """
         user = self.user(username, 'applicationRoles')  # Get applications roles of the user
         if 'self' in user:
-            for applicationRole in user.get('applicationRoles').get('items'):
-                if applicationRole.get('key') == applicationKey:
+            for application_role in user.get('applicationRoles').get('items'):
+                if application_role.get('key') == application_key:
                     return True
-
         return False
 
-    def add_user_to_application(self, username, applicationKey):
+    def add_user_to_application(self, username, application_key):
         """
         Add a user to an application
         :param username: The username of the user to add.
-        :param applicationKey: The application key of the application
+        :param application_key: The application key of the application
         :return: True if the user was added to the application, else False        
         :see: https://docs.atlassian.com/software/jira/docs/api/REST/7.5.3/#api/2/user-addUserToApplication
         """
         params = {
             'username': username,
-            'applicationKey': applicationKey
+            'applicationKey': application_key
         }
-        return self.post('rest/api/2/user/application', params=params) == None
+        return self.post('rest/api/2/user/application', params=params) is None
 
     # Application roles
     def get_all_application_roles(self):
@@ -2071,10 +2070,9 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         data = {"member": {"key": str(member_key), "type": "USER"},
-                "membership": {
-                    "availability": "100",
-                    "role": {"id": 1}
-                }}
+                "membership": {"availability": "100",
+                               "role": {"id": 1}}
+                }
         return self.tempo_teams_add_member_raw(team_id, member_data=data)
 
     def tempo_teams_add_membership(self, team_id, member_id):
