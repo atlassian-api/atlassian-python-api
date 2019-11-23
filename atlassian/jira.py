@@ -2,7 +2,6 @@
 import logging
 
 from requests.exceptions import HTTPError
-
 from .rest_client import AtlassianRestAPI
 
 log = logging.getLogger(__name__)
@@ -62,7 +61,7 @@ class Jira(AtlassianRestAPI):
         :param start: OPTIONAL: The start point of the collection to return. Default: 0.
         :param limit: OPTIONAL: The limit of the number of issues to return, this may be restricted by
                 fixed system limits. Default by built-in method: 50
-        :param expand: OPTIONAL: expland the search result
+        :param expand: OPTIONAL: expand the search result
         :return:
         """
         params = {}
