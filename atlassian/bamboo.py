@@ -406,6 +406,25 @@ class Bamboo(AtlassianRestAPI):
         resource = "result/{}-{}-{}/label/{}".format(project_key, plan_key, build_number, label)
         return self.delete(self.resource_url(resource))
 
+    def get_projects(self):
+        """Method used to list all projects defined in Bamboo.
+        Projects without any plan are not listed by default, unless showEmpty query param is set to true."""
+        resource = 'project?showEmpty'
+        for project in self.get(self.resource_url(resource)):
+            yield project
+
+    def get_project(self, project_key):
+        """Method used to retrieve information for project specified as project key.
+        Possible expand parameters: plans, list of plans for project. plans.plan, list of plans with plan details
+        (only plans visible - READ permission for user)"""
+        resource = 'project/{}?showEmpty'.format(project_key)
+        return self.get(self.resource_url(resource))
+
+    def delete_project(self, project_key):
+        """Marks project for deletion. Project will be deleted by a batch job."""
+        resource = 'project/{}'.format(project_key)
+        return self.delete(self.resource_url(resource))
+
     """ Deployments """
 
     def deployment_projects(self):
