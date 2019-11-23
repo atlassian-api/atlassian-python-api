@@ -895,10 +895,11 @@ class Confluence(AtlassianRestAPI):
         :param expand: OPTIONAL: A comma separated list of properties to expand on the content. status
         :return:
         """
-        url = 'rest/api/group/{group_name}/member?limit={limit}&start={start}&expand={expand}'.format(group_name=group_name,
-                                                                                      limit=limit,
-                                                                                      start=start,
-                                                                                      expand=expand)
+        url = 'rest/api/group/{group_name}/member?limit={limit}&start={start}&expand={expand}'.format(
+            group_name=group_name,
+            limit=limit,
+            start=start,
+            expand=expand)
         return (self.get(url) or {}).get('results')
 
     def get_space(self, space_key, expand='description.plain,homepage'):

@@ -7,4 +7,4 @@ log = logging.getLogger(__name__)
 
 
 class Jira8(Jira):
-    # methods migrated into main module
+# methods migrated into main module

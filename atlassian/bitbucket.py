@@ -815,8 +815,8 @@ class Bitbucket(AtlassianRestAPI):
         that must match the server's version of the comment
         or the update will fail.
         """
-        url = "rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pull_request_id}/comments/{comment_id}".format(
-            project=project, repository=repository, pull_request_id=pull_request_id, comment_id=comment_id
+        url = 'rest/api/1.0/projects/{project}/repos/{repo}/pull-requests/{pull_request}/comments/{comment_id}'.format(
+            project=project, repo=repository, pull_request=pull_request_id, comment_id=comment_id
         )
         payload = {
             "version": comment_version,
@@ -852,8 +852,8 @@ class Bitbucket(AtlassianRestAPI):
         :param user_slug:
         :return:
         """
-        url = "rest/api/1.0/projects/{projectKey}/repos/{repositorySlug}/pull-requests/{pullRequestId}/participants/{userSlug}".format(
-            projectKey=project_key, repositorySlug=repository_slug, pullRequestId=pull_request_id, userSlug=user_slug,
+        url = 'rest/api/1.0/projects/{projectKey}/repos/{repo}/pull-requests/{pull_request}/participants/{userSlug}'.format(
+            projectKey=project_key, repo=repository_slug, pull_request=pull_request_id, userSlug=user_slug,
         )
         approved = True if status == "APPROVED" else False
         data = {
