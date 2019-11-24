@@ -1078,7 +1078,6 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         url = 'rest/api/2/attachment/{}'.format(attachment_id)
-
         return self.get(url)
 
     def remove_attachment(self, attachment_id):
@@ -1088,7 +1087,6 @@ class Jira(AtlassianRestAPI):
         :return: if success, return None
         """
         url = 'rest/api/2/attachment/{}'.format(attachment_id)
-
         return self.delete(url)
 
     def get_attachment_meta(self):
@@ -1098,7 +1096,6 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         url = 'rest/api/2/attachment/meta'
-
         return self.get(url)
 
     def add_attachment(self, issue_key, filename):
@@ -1112,7 +1109,7 @@ class Jira(AtlassianRestAPI):
         url = 'rest/api/2/issue/{}/attachments'.format(issue_key)
         with open(filename, 'rb') as attachment:
             files = {'file': attachment}
-        return self.post(url, headers=headers, files=files)
+            return self.post(url, headers=headers, files=files)
 
     def get_issue_remotelinks(self, issue_key, global_id=None, internal_id=None):
         """
