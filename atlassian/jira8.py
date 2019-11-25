@@ -10,4 +10,4 @@ class Jira8(Jira):
     # methods migrated into main module
     @staticmethod
     def print_module_name():
-        print(__name__)
+        print("The class {} merged into Jira Class".format(__name__))
