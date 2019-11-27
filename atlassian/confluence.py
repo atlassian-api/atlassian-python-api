@@ -144,11 +144,15 @@ class Confluence(AtlassianRestAPI):
             params['spaceKey'] = str(space)
         if title is not None:
             params['title'] = str(title)
-        try:
-            return (self.get(url, params=params) or {}).get('results')[0]
-        except IndexError as e:
-            log.error(e)
-            return None
+        if self.advanced_mode:
+            return self.get(url, params=params)
+        else:
+            try:
+                return (self.get(url, params=params) or {}).get('results')[0]
+            except IndexError as e:
+                log.error("Can't find {title} page on the {url}!".format(title=title, url=self.url))
+                log.debug(e)
+                return None
 
     def get_page_by_id(self, page_id, expand=None):
         """
