@@ -42,6 +42,39 @@ Add a connection:
         url='http://localhost:8080',
         username='admin',
         password='admin')
+        
+        
+Key/Cert Based authentication
+-----------------------------
+
+Add a connection using key/cert based authentication:
+
+.. code-block:: python
+
+    from atlassian import Jira
+    from atlassian import Confluence
+    from atlassian import Bitbucket
+    from atlassian import ServiceDesk
+
+    jira = Jira(
+        url='http://localhost:8080',
+        key='/path/to/key',
+        cert='/path/to/cert')
+
+    confluence = Confluence(
+        url='http://localhost:8090',
+        key='/path/to/key',
+        cert='/path/to/cert')
+
+    bitbucket = Bitbucket(
+        url='http://localhost:7990',
+        key='/path/to/key',
+        cert='/path/to/cert')
+
+    service_desk = ServiceDesk(
+        url='http://localhost:8080',
+        key='/path/to/key',
+        cert='/path/to/cert')
 
 Alternatively OAuth can be used:
 
@@ -112,8 +145,11 @@ Or Kerberos *(installation with kerberos extra necessary)*:
 .. |Codacy Badge| image:: https://api.codacy.com/project/badge/Grade/c822908f507544fe98ae37b25518ae3d
    :target: https://www.codacy.com/project/gonchik/atlassian-python-api/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=AstroMatt/atlassian-python-api&amp;utm_campaign=Badge_Grade_Dashboard
    :alt: Codacy Badge
+<<<<<<< HEAD
 .. |PyPI - Downloads| image:: https://pepy.tech/badge/atlassian-python-api/month
    :alt: PyPI - Downloads
 .. |Docs| image:: https://readthedocs.org/projects/atlassian-python-api/badge/?version=latest
    :target: https://atlassian-python-api.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
+=======
+>>>>>>> 9535b4082ea544f042859bdc53436923dbf8b6e1
