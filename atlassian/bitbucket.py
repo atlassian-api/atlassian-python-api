@@ -104,6 +104,23 @@ class Bitbucket(AtlassianRestAPI):
             params['filter'] = filter_str
         return (self.get(url, params=params) or {}).get('values')
 
+    def project_keys(self, key, limit=99999, filter_str=None):
+        """
+        Get SSH access keys added to the project
+        :param key:
+        :param limit: OPTIONAL: The limit of the number of users to return, this may be restricted by
+                            fixed system limits. Default by built-in method: 99999
+        :param filter_str:  OPTIONAL: users filter string
+        :return:
+        """
+        url = 'rest/keys/1.0/projects/{key}/ssh'.format(key=key)
+        params = {}
+        if limit:
+            params['limit'] = limit
+        if filter_str:
+            params['filter'] = filter_str
+        return (self.get(url, params=params) or {}).get('values')
+
     def repo_users(self, project_key, repo_key, limit=99999, filter_str=None):
         """
         Get users who has permission in repository
@@ -117,6 +134,24 @@ class Bitbucket(AtlassianRestAPI):
         url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/users'.format(
             project_key=project_key,
             repo_key=repo_key)
+        params = {}
+        if limit:
+            params['limit'] = limit
+        if filter_str:
+            params['filter'] = filter_str
+        return (self.get(url, params=params) or {}).get('values')
+
+    def repo_keys(self, project_key, repo_key, limit=99999, filter_str=None):
+        """
+        Get SSH access keys added to the repository
+        :param key:
+        :param repo_key:
+        :param limit: OPTIONAL: The limit of the number of users to return, this may be restricted by
+                            fixed system limits. Default by built-in method: 99999
+        :param filter_str:  OPTIONAL: users filter string
+        :return:
+        """
+        url = 'rest/keys/1.0/projects/{project_key}/repos/{repo_key}/ssh'.format(key=key)
         params = {}
         if limit:
             params['limit'] = limit
@@ -1601,7 +1636,7 @@ class Bitbucket(AtlassianRestAPI):
         :commitId: str
         :report_key: str
         :report_title: str
-        :report_params: 
+        :report_params:
         """
         url = "rest/insights/1.0/projects/{projectKey}/repos/{repositorySlug}/commits/{commitId}/reports/{key}".format(
             projectKey=project_key, repositorySlug=repository_slug, commitId=commit_id, key=report_key
