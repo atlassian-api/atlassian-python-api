@@ -8,6 +8,8 @@ log = logging.getLogger(__name__)
 
 class Bitbucket(AtlassianRestAPI):
 
+    bulk_headers = {"Content-Type": "application/vnd.atl.bitbucket.bulk+json"}
+
     def project_list(self, limit=None):
         """
         Provide the project list
@@ -102,6 +104,23 @@ class Bitbucket(AtlassianRestAPI):
             params['filter'] = filter_str
         return (self.get(url, params=params) or {}).get('values')
 
+    def project_keys(self, key, limit=99999, filter_str=None):
+        """
+        Get SSH access keys added to the project
+        :param key:
+        :param limit: OPTIONAL: The limit of the number of users to return, this may be restricted by
+                            fixed system limits. Default by built-in method: 99999
+        :param filter_str:  OPTIONAL: users filter string
+        :return:
+        """
+        url = 'rest/keys/1.0/projects/{key}/ssh'.format(key=key)
+        params = {}
+        if limit:
+            params['limit'] = limit
+        if filter_str:
+            params['filter'] = filter_str
+        return (self.get(url, params=params) or {}).get('values')
+
     def repo_users(self, project_key, repo_key, limit=99999, filter_str=None):
         """
         Get users who has permission in repository
@@ -115,6 +134,24 @@ class Bitbucket(AtlassianRestAPI):
         url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/users'.format(
             project_key=project_key,
             repo_key=repo_key)
+        params = {}
+        if limit:
+            params['limit'] = limit
+        if filter_str:
+            params['filter'] = filter_str
+        return (self.get(url, params=params) or {}).get('values')
+
+    def repo_keys(self, project_key, repo_key, limit=99999, filter_str=None):
+        """
+        Get SSH access keys added to the repository
+        :param key:
+        :param repo_key:
+        :param limit: OPTIONAL: The limit of the number of users to return, this may be restricted by
+                            fixed system limits. Default by built-in method: 99999
+        :param filter_str:  OPTIONAL: users filter string
+        :return:
+        """
+        url = 'rest/keys/1.0/projects/{project_key}/repos/{repo_key}/ssh'.format(key=key)
         params = {}
         if limit:
             params['limit'] = limit
@@ -748,6 +785,89 @@ class Bitbucket(AtlassianRestAPI):
                                                                                            repository=repository)
         return self.post(url, data=data)
 
+    def decline_pull_request(self, project_key, repository, pr_id, pr_version):
+        """
+        Decline a pull request.
+        The authenticated user must have REPO_READ permission for the repository 
+        that this pull request targets to call this resource.
+
+        :param project_key: PROJECT
+        :param repository: my_shiny_repo
+        :param pr_id: 2341
+        :param pr_version: 12
+        :return:
+        """
+        url = 'rest/api/1.0/projects/{project_key}/repos/{repository}/pull-requests/{pr_id}/decline'.format(
+            project_key=project_key,
+            repository=repository,
+            pr_id=pr_id
+        )
+        params = {'version': pr_version}
+
+        return self.post(url, params=params)
+
+    def is_pull_request_can_be_merged(self, project_key, repository, pr_id):
+        """
+        Test whether a pull request can be merged.
+        A pull request may not be merged if:
+        - there are conflicts that need to be manually resolved before merging; and/or
+        - one or more merge checks have vetoed the merge.
+        The authenticated user must have REPO_READ permission for the repository 
+        that this pull request targets to call this resource.
+
+        :param project_key: PROJECT
+        :param repository: my_shiny_repo
+        :param pr_id: 2341
+        :return:
+        """
+        url = 'rest/api/1.0/projects/{project_key}/repos/{repository}/pull-requests/{pr_id}/merge'.format(
+            project_key=project_key,
+            repository=repository,
+            pr_id=pr_id
+        )
+        return self.get(url)
+
+    def merge_pull_request(self, project_key, repository, pr_id, pr_version):
+        """
+        Merge pull request
+        The authenticated user must have REPO_READ permission for the repository 
+        that this pull request targets to call this resource.
+
+        :param project_key: PROJECT
+        :param repository: my_shiny_repo
+        :param pr_id: 2341
+        :return:
+        """
+        url = 'rest/api/1.0/projects/{project_key}/repos/{repository}/pull-requests/{pr_id}/merge'.format(
+            project_key=project_key,
+            repository=repository,
+            pr_id=pr_id
+        )
+        params = {'version': pr_version}
+
+        return self.post(url, params=params)
+
+    def reopen_pull_request(self, project_key, repository, pr_id, pr_version):
+        """
+        Re-open a declined pull request.
+        The authenticated user must have REPO_READ permission for the repository 
+        that this pull request targets to call this resource.
+
+        :param project_key: PROJECT
+        :param repository: my_shiny_repo
+        :param pr_id: 2341
+        :param pr_version: 12
+        :return:
+        """
+        url = 'rest/api/1.0/projects/{project_key}/repos/{repository}/pull-requests/{pr_id}/reopen'.format(
+            project_key=project_key,
+            repository=repository,
+            pr_id=pr_id
+        )
+        params = {'version': pr_version}
+
+        return self.post(url, params=params)
+
     def check_inbox_pull_requests_count(self):
         return self.get('rest/api/1.0/inbox/pull-requests/count')
 
@@ -1100,6 +1220,109 @@ class Bitbucket(AtlassianRestAPI):
             params['start'] = start
         return self.get(url, params=params)
 
+    def set_branches_permissions(
+        self, project_key,
+        multiple_permissions=False,
+        matcher_type=None,
+        matcher_value=None,
+        permission_type=None,
+        repository=None,
+        except_users=[],
+        except_groups=[],
+        except_access_keys=[],
+        start=0,
+        limit=25
+    ):
+        """
+        Create a restriction for the supplied branch or set of branches to be applied to the given repository.
+        Allows creating multiple restrictions at once. 
+        To use multiple restrictions you should format payload manually - see the bitbucket-branch-restrictions.py example.
+        Reference: https://docs.atlassian.com/bitbucket-server/rest/6.8.0/bitbucket-ref-restriction-rest.html
+
+        :param project_key:
+        :param repository:
+        :return:
+        """
+        headers = self.default_headers
+        if repository:
+            url = "/rest/branch-permissions/2.0/projects/{project_key}/repos/{repository}/restrictions".format(
+                project_key=project_key,
+                repository=repository
+            )
+        else:
+            url = "/rest/branch-permissions/2.0/projects/{project_key}/restrictions".format(
+                project_key=project_key
+            )
+        if multiple_permissions:
+            headers = self.bulk_headers
+            restriction = multiple_permissions
+        else:
+            restriction = {
+                "type": permission_type,
+                "matcher": {
+                    "id": matcher_value,
+                    "displayId": matcher_value,
+                    "type": {
+                        "id": matcher_type.upper(),
+                        "name": matcher_type.capitalize()
+                    },
+                    "active": True,
+                },
+                "users": except_users,
+                "groups": except_groups,
+                "accessKeys": except_access_keys,
+            }
+        params = {"start": start, "limit": limit}
+        return self.post(url, data=restriction, params=params, headers=headers)
+
+    def delete_branch_permission(self, project_key, permission_id, repository=None):
+        """
+        Deletes a restriction as specified by a restriction id.
+        The authenticated user must have REPO_ADMIN permission or higher to call this resource. 
+
+        :param project_key:
+        :param repository:
+        :param permission_id:
+        :return:
+        """
+
+        if repository:
+            url = "/rest/branch-permissions/2.0/projects/{project_key}/repos/{repository}/restrictions/{id}".format(
+                project_key=project_key,
+                repository=repository,
+                id=permission_id
+            )
+        else:
+            url = "/rest/branch-permissions/2.0/projects/{project_key}/restrictions/{id}".format(
+                project_key=project_key,
+                id=permission_id
+            )
+        return self.delete(url)
+
+    def get_branch_permission(self, project_key, permission_id, repository=None):
+        """
+        Returns a restriction as specified by a restriction id.
+        The authenticated user must have REPO_ADMIN permission or higher to call this resource. 
+
+        :param project_key:
+        :param repository:
+        :param permission_id:
+        :return:
+        """
+
+        if repository:
+            url = "/rest/branch-permissions/2.0/projects/{project_key}/repos/{repository}/restrictions/{id}".format(
+                project_key=project_key,
+                repository=repository,
+                id=permission_id
+            )
+        else:
+            url = "/rest/branch-permissions/2.0/projects/{project_key}/restrictions/{id}".format(
+                project_key=project_key,
+                id=permission_id
+            )
+        return self.get(url)
+
     def all_branches_permissions(self, project, repository=None):
         """
         Get branches permissions from a given repo
@@ -1413,7 +1636,7 @@ class Bitbucket(AtlassianRestAPI):
         :commitId: str
         :report_key: str
         :report_title: str
-        :report_params: 
+        :report_params:
         """
         url = "rest/insights/1.0/projects/{projectKey}/repos/{repositorySlug}/commits/{commitId}/reports/{key}".format(
             projectKey=project_key, repositorySlug=repository_slug, commitId=commit_id, key=report_key

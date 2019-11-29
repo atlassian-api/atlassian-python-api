@@ -42,6 +42,39 @@ Add a connection:
         url='http://localhost:8080',
         username='admin',
         password='admin')
+        
+        
+Key/Cert Based authentication
+-----------------------------
+
+Add a connection using key/cert based authentication:
+
+.. code-block:: python
+
+    from atlassian import Jira
+    from atlassian import Confluence
+    from atlassian import Bitbucket
+    from atlassian import ServiceDesk
+
+    jira = Jira(
+        url='http://localhost:8080',
+        key='/path/to/key',
+        cert='/path/to/cert')
+
+    confluence = Confluence(
+        url='http://localhost:8090',
+        key='/path/to/key',
+        cert='/path/to/cert')
+
+    bitbucket = Bitbucket(
+        url='http://localhost:7990',
+        key='/path/to/key',
+        cert='/path/to/cert')
+
+    service_desk = ServiceDesk(
+        url='http://localhost:8080',
+        key='/path/to/key',
+        cert='/path/to/cert')
 
 Alternatively OAuth can be used:
 

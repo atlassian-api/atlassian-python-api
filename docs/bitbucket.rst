@@ -76,9 +76,9 @@ Manage repositories
                        'prefix': 'release/'}]}
     bitbucket.set_branching_model(project_key, repo_key, data)
 
-    bitbucket.repo_users(self, project_key, repo_key, limit=99999, filter_str=None)
+    bitbucket.repo_users(project_key, repo_key, limit=99999, filter_str=None)
 
-    bitbucket.repo_groups(self, project_key, repo_key, limit=99999, filter_str=None)
+    bitbucket.repo_groups(project_key, repo_key, limit=99999, filter_str=None)
 
     # Grant repository permission to an specific user
     bitbucket.repo_grant_user_permissions(project_key, repo_key, username, permission)
@@ -112,7 +112,7 @@ Manage code
     # Requires an existing project in which this repository will be created. The only parameters which will be used
     # are name and scmId.
     # The authenticated user must have PROJECT_ADMIN permission for the context project to call this resource.
-    bitbucket.create_repo(project_key, repository, forkable=False, is_private=True):
+    bitbucket.create_repo(project_key, repository, forkable=False, is_private=True)
 
     # Get branches from repo
     bitbucket.get_branches(project, repository, filter='', limit=99999, details=True)
@@ -128,16 +128,16 @@ Manage code
     bitbucket.get_pull_requests(project, repository, state='OPEN', order='newest', limit=100, start=0)
 
     # Get pull request activities
-    bitbucket.get_pull_requests_activities(self, project, repository, pull_request_id)
+    bitbucket.get_pull_requests_activities(project, repository, pull_request_id)
 
     # Get pull request changes
-    bitbucket.get_pull_requests_changes(self, project, repository, pull_request_id)
+    bitbucket.get_pull_requests_changes(project, repository, pull_request_id)
 
     # Get pull request commits
-    bitbucket.get_pull_requests_commits(self, project, repository, pull_request_id)
+    bitbucket.get_pull_requests_commits(project, repository, pull_request_id)
 
     # Add comment into pull request
-    bitbucket.add_pull_request_comment(self, project, repository, pull_request_id, text)
+    bitbucket.add_pull_request_comment(project, repository, pull_request_id, text)
 
     # Get tags for related repo
     bitbucket.get_tags(project, repository, filter='', limit=99999)
@@ -169,3 +169,34 @@ Manage code
         Retrieve the raw content for a file path at a specified revision.
         The authenticated user must have REPO_READ permission for the specified repository to call this resource.
     """
+
+Branch permissions
+------------------
+
+.. code-block:: python
+
+    # Set branches permissions
+    bitbucket.set_branches_permissions(project_key, multiple_permissions=False, matcher_type=None, matcher_value=None, permission_type=None, repository=None, except_users=[], except_groups=[], except_access_keys=[], start=0, limit=25)
+
+    # Delete a single branch permission by premission id
+    bitbucket.delete_branch_permission(project_key, permission_id, repository=None)
+
+    # Get a single branch permission by permission id
+    bitbucket.get_branch_permission(project_key, permission_id, repository=None)
+
+Pull Request management
+-----------------------
+
+.. code-block:: python
+
+    # Decline pull request
+    bitbucket.decline_pull_request(project_key, repository, pr_id, pr_version)
+
+    # Check if pull request can be merged
+    bitbucket.is_pull_request_can_be_merged(project_key, repository, pr_id)
+
+    # Merge pull request
+    bitbucket.merge_pull_request(project_key, repository, pr_id, pr_version)
+
+    # Reopen pull request
+    bitbucket.reopen_pull_request(project_key, repository, pr_id, pr_version)

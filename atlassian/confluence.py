@@ -104,14 +104,30 @@ class Confluence(AtlassianRestAPI):
         """
         return ((self.get_page_by_id(page_id, expand='space') or {}).get('space') or {}).get('key')
 
-    def get_page_by_title(self, space, title, start=None, limit=None):
+    def get_pages_by_title(self, space, title, start=0, limit=200, expand=None):
         """
-        Returns the list of labels on a piece of Content.
+        Provide pages by title search
         :param space: Space key
         :param title: Title of the page
         :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
         :param limit: OPTIONAL: The limit of the number of labels to return, this may be restricted by
                             fixed system limits. Default: 200.
+        :param expand: OPTIONAL: expand e.g. history
+        :return: The JSON data returned from searched results the content endpoint, or the results of the
+                 callback. Will raise requests.HTTPError on bad input, potentially.
+                 If it has IndexError then return the None.
+        """
+        return self.get_page_by_title(space, title, start, limit, expand)
+
+    def get_page_by_title(self, space, title, start=0, limit=1, expand=None):
+        """
+        Returns the first page  on a piece of Content.
+        :param space: Space key
+        :param title: Title of the page
+        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
+        :param limit: OPTIONAL: The limit of the number of labels to return, this may be restricted by
+                            fixed system limits. Default: 1.
+        :param expand: OPTIONAL: expand e.g. history
         :return: The JSON data returned from searched results the content endpoint, or the results of the
                  callback. Will raise requests.HTTPError on bad input, potentially.
                  If it has IndexError then return the None.
@@ -122,15 +138,21 @@ class Confluence(AtlassianRestAPI):
             params['start'] = int(start)
         if limit is not None:
             params['limit'] = int(limit)
+        if expand is not None:
+            params['expand'] = expand
         if space is not None:
             params['spaceKey'] = str(space)
         if title is not None:
             params['title'] = str(title)
-        try:
-            return (self.get(url, params=params) or {}).get('results')[0]
-        except IndexError as e:
-            log.error(e)
-            return None
+        if self.advanced_mode:
+            return self.get(url, params=params)
+        else:
+            try:
+                return (self.get(url, params=params) or {}).get('results')[0]
+            except IndexError as e:
+                log.error("Can't find {title} page on the {url}!".format(title=title, url=self.url))
+                log.debug(e)
+                return None
 
     def get_page_by_id(self, page_id, expand=None):
         """
