@@ -358,7 +358,6 @@ class Bamboo(AtlassianRestAPI):
         :param bamboo_variables: dict {variable=value} 
         :return: POST request
         """
-        headers = self.form_token_headers
         resource = 'queue/{plan_key}'.format(plan_key=plan_key)
         if json_response:
             resource += ".json"
@@ -373,7 +372,7 @@ class Bamboo(AtlassianRestAPI):
             for key, value in bamboo_variables.items():
                 params['bamboo.variable.{}'.format(key)] = value
 
-        return self.post(self.resource_url(resource), params=params, headers=headers)
+        return self.post(self.resource_url(resource), params=params)
 
     def stop_build(self, plan_key):
         """
