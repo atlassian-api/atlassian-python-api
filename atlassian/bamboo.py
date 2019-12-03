@@ -347,7 +347,7 @@ class Bamboo(AtlassianRestAPI):
         params = {'buildKey': plan_key, 'buildNumber': build_number}
         return self.post(custom_resource, params=params, headers=self.form_token_headers)
 
-    def execute_build(self, plan_key, stage=None, execute_all_stages=True, custom_revision=None, **bamboo_variables):
+    def execute_build(self, plan_key, json_response=False, stage=None, execute_all_stages=True, custom_revision=None, **bamboo_variables):
         """
         Fire build execution for specified plan. 
         !IMPORTANT! NOTE: for some reason, this method always execute all stages
@@ -360,6 +360,8 @@ class Bamboo(AtlassianRestAPI):
         """
         headers = self.form_token_headers
         resource = 'queue/{plan_key}'.format(plan_key=plan_key)
+        if json_response:
+            resource += ".json"
         params = {}
         if stage:
             execute_all_stages = False
