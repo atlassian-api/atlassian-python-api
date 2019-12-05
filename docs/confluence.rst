@@ -22,7 +22,18 @@ Get page info
     confluence.get_page_by_title(space, title, start=None, limit=None)
 
     # Get page by ID
-    confluence.get_page_by_id(page_id, expand=None)
+    # Example request URI(s):
+    #    http://example.com/confluence/rest/api/content/1234?expand=space,body.view,version,container
+    #    http://example.com/confluence/rest/api/content/1234?status=any
+    #    page_id: Content ID
+    #    status: (str) list of Content statuses to filter results on. Default value: [current]
+    #    version: (int)
+    #    expand: OPTIONAL: A comma separated list of properties to expand on the content.
+    #                   Default value: history,space,version
+    #                   We can also specify some extensions such as extensions.inlineProperties
+    #                   (for getting inline comment-specific properties) or extensions.resolution
+    #                   for the resolution status of each comment in the results
+    confluence.get_page_by_id(self, page_id, expand=None, status=None, version=None)
 
     # The list of labels on a piece of Content
     confluence.get_page_labels(page_id, prefix=None, start=None, limit=None)
@@ -75,6 +86,9 @@ Page actions
 
     # Update page or create page if it is not exists
     confluence.update_or_create(parent_id, title, body, representation='storage')
+
+    # Append body to page if already exist
+    confluence.append_page(self, page_id, title, append_body, parent_id=None, type='page', representation='storage', minor_edit=False)
 
     # Set the page (content) property e.g. add hash parameters
     confluence.set_page_property(page_id, data)

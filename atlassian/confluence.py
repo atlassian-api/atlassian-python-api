@@ -154,20 +154,29 @@ class Confluence(AtlassianRestAPI):
                 log.debug(e)
                 return None
 
-    def get_page_by_id(self, page_id, expand=None):
+    def get_page_by_id(self, page_id, expand=None, status=None, version=None):
         """
-        Get page by ID
+        Returns a piece of Content.
+        Example request URI(s):
+        http://example.com/confluence/rest/api/content/1234?expand=space,body.view,version,container
+        http://example.com/confluence/rest/api/content/1234?status=any
         :param page_id: Content ID
+        :param status: (str) list of Content statuses to filter results on. Default value: [current]
+        :param version: (int)
         :param expand: OPTIONAL: A comma separated list of properties to expand on the content.
-                       Default value: history,space,version We can also specify some extensions
-                       such as extensions.inlineProperties
+                       Default value: history,space,version
+                       We can also specify some extensions such as extensions.inlineProperties
                        (for getting inline comment-specific properties) or extensions.resolution
                        for the resolution status of each comment in the results
         :return:
         """
         params = {}
         if expand:
-            params = {'expand': expand}
+            params['expand'] = expand
+        if status:
+            params['status'] = status
+        if version:
+            params['version'] = version
         url = 'rest/api/content/{page_id}'.format(page_id=page_id)
         return self.get(url, params=params)
 
