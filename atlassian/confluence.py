@@ -149,8 +149,8 @@ class Confluence(AtlassianRestAPI):
         else:
             try:
                 return (self.get(url, params=params) or {}).get('results')[0]
-            except IndexError as e:
-                log.error("Can't find {title} page on the {url}!".format(title=title, url=self.url))
+            except (IndexError, TypeError) as e:
+                log.error("Can't find '{title}' page on the {url}!".format(title=title, url=self.url))
                 log.debug(e)
                 return None
 
@@ -736,7 +736,12 @@ class Confluence(AtlassianRestAPI):
         if self.is_page_content_is_already_updated(page_id, body):
             return self.get_page_by_id(page_id)
         else:
-            version = self.history(page_id)['lastUpdated']['number'] + 1
+            try:
+                version = self.history(page_id)['lastUpdated']['number'] + 1
+            except (IndexError, TypeError) as e:
+                log.error("Can't find '{title}' {type}!".format(title=title, type=type))
+                log.debug(e)
+                return None
 
             data = {
                 'id': page_id,
