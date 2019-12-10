@@ -520,8 +520,10 @@ class Bitbucket(AtlassianRestAPI):
         if order_by:
             params['orderBy'] = order_by
         params['details'] = details
-
-        return (self.get(url, params=params) or {}).get('values')
+        response = self.get(url, params=params)
+        if not self.advanced_mode:
+            response = (response or {}).get('values')
+        return response
 
     def get_default_branch(self, project, repository):
         """
