@@ -783,7 +783,7 @@ class Confluence(AtlassianRestAPI):
         """
         log.info('Updating {type} "{title}"'.format(title=title, type=type))
 
-        if self.is_page_content_is_already_updated(page_id, append_body):
+        if self.is_page_content_is_already_updated(page_id, append_body, title):
             return self.get_page_by_id(page_id)
         else:
             version = self.history(page_id)['lastUpdated']['number'] + 1
