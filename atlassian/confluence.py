@@ -686,24 +686,34 @@ class Confluence(AtlassianRestAPI):
             return result.get('_links').get('base') + result.get('_links').get('tinyui')
         return ""
 
-    def is_page_content_is_already_updated(self, page_id, body):
+    def is_page_content_is_already_updated(self, page_id, body, title=None):
         """
         Compare content and check is already updated or not
         :param page_id: Content ID for retrieve storage value
         :param body: Body for compare it
+        :param title: Title to compare
         :return: True if the same
         """
         confluence_content = (((self.get_page_by_id(page_id, expand='body.storage') or {})
                                .get('body') or {})
-                              .get('storage') or {}).get('value')
-        if confluence_content:
-            # @todo move into utils
-            confluence_content = utils.symbol_normalizer(confluence_content)
+                              .get('storage') or {})
 
-        log.debug('Old Content: """{body}"""'.format(body=confluence_content))
+        if title:
+            current_title = confluence_content.get('title', None)
+            if title != current_title:
+                log.info('Title of {page_id} is different'.format(page_id=page_id))
+                return False
+            
+        confluence_body_content = confluence_content.get('value')
+        
+        if confluence_body_content:
+            # @todo move into utils
+            confluence_body_content = utils.symbol_normalizer(confluence_body_content)
+
+        log.debug('Old Content: """{body}"""'.format(body=confluence_body_content))
         log.debug('New Content: """{body}"""'.format(body=body))
 
-        if confluence_content == body:
+        if confluence_body_content == body:
             log.warning('Content of {page_id} is exactly the same'.format(page_id=page_id))
             return True
         else:
@@ -733,7 +743,7 @@ class Confluence(AtlassianRestAPI):
         """
         log.info('Updating {type} "{title}"'.format(title=title, type=type))
 
-        if self.is_page_content_is_already_updated(page_id, body):
+        if self.is_page_content_is_already_updated(page_id, body, title):
             return self.get_page_by_id(page_id)
         else:
             try:
