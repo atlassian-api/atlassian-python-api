@@ -91,7 +91,8 @@ If you want to see response in pretty print format json. Feel free for use const
 
 Development and Deployment (For contributors)
 ---------------------------------------------
-
+First of all, I am happy for any PR requests.
+Let's fork and provide your changes :)
 See the `Contribution guidelines for this project`_ for details on how to make changes to this library.
 
 .. _Contribution guidelines for this project: CONTRIBUTING.rst
