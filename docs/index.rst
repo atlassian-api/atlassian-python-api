@@ -124,6 +124,28 @@ Or Kerberos *(installation with kerberos extra necessary)*:
         url='http://localhost:8080',
         kerberos=kerberos_service)
 
+Or reuse cookie file:
+
+.. code-block:: python
+
+    from atlassian import utils
+    cookie_dict = utils.parse_cookie_file("cookie.txt")
+
+    jira = Jira(
+        url='http://localhost:8080',
+        cookie=cookie_dict)
+
+    confluence = Confluence(
+        url='http://localhost:8090',
+        cookie=cookie_dict)
+
+    bitbucket = Bitbucket(
+        url='http://localhost:7990',
+        cookie=cookie_dict)
+
+    service_desk = ServiceDesk(
+        url='http://localhost:8080',
+        cookie=cookie_dict)
 
 .. toctree::
    :maxdept:2

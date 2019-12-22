@@ -46,6 +46,8 @@ class AtlassianRestAPI(object):
             self._create_oauth_session(oauth)
         elif kerberos is not None:
             self._create_kerberos_session(kerberos)
+        elif cookies is not None:
+            self._session.cookies.update(cookies)
 
     def _create_basic_session(self, username, password):
         self._session.auth = (username, password)
