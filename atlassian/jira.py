@@ -576,7 +576,7 @@ class Jira(AtlassianRestAPI):
         :param list issue_list:
         :return:
         """
-        jira_issue_regex = re.compile('[A-Z]{1,10}-\d+')
+        jira_issue_regex = re.compile(r'[A-Z]{1,10}-\d+')
         missing_issues = list()
         matched_issue_keys = list()
         for key in issue_list:
