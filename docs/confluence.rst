@@ -34,7 +34,7 @@ Get page info
     confluence.get_all_pages_by_label(label, start=0, limit=50)
 
     # Get all pages from Space
-    # contet_type can be 'page' or 'blogpost'. Defaults to 'page'
+    # content_type can be 'page' or 'blogpost'. Defaults to 'page'
     # expand is a comma separated list of properties to expand on the content.
     # max limit is 100. For more you have to loop over start values.
     confluence.get_all_pages_from_space(space, start=0, limit=100, status=None, expand=None, content_type='page')
@@ -51,7 +51,7 @@ Get page info
     confluence.get_all_draft_pages_from_space_through_cql(space, start=0, limit=500, status='draft')
 
     # Info about all restrictions by operation
-    confluence.get_all_restictions_for_content(content_id)
+    confluence.get_all_restrictions_for_content(content_id)
 
 Page actions
 ------------
@@ -61,8 +61,11 @@ Page actions
     # Create page from scratch
     confluence.create_page(space, title, body, parent_id=None, type='page', representation='storage')
 
-    # Remove page
-    confluence.remove_page(page_id, status=None)
+    # This method removes a page, if it has recursive flag, method removes including child pages
+    confluence.remove_page(page_id, status=None, recursive=False)
+
+    # Remove any content
+    confluence.remove_content(content_id):
 
     # Remove page from trash
     confluence.remove_page_from_trash(page_id)
@@ -99,6 +102,24 @@ Page actions
     # automatically version the new file and keep the old one
     confluence.attach_content(content, name=None, content_type=None, page_id=None, title=None, space=None, comment=None)
 
+    # Remove completely a file if version is None or delete version
+    confluence.delete_attachment(page_id, filename, version=None)
+
+    # Remove completely a file if version is None or delete version
+    confluence.delete_attachment_by_id(attachment_id, version)
+
+    # Keep last versions
+    confluence.remove_page_attachment_keep_version(page_id, filename, keep_last_versions)
+
+    # Get attachment history
+    confluence.get_attachment_history(attachment_id, limit=200, start=0)
+
+    # Get attachment for content
+    confluence.get_attachments_from_content(page_id, start=0, limit=50, expand=None, filename=None, media_type=None)
+
+    # Check has unknown attachment error on page
+    confluence.has_unknown_attachment_error(page_id)
+
     # Export page as PDF
     # api_version needs to be set to 'cloud' when exporting from Confluence Cloud. 
     confluence.export_page(page_id)
@@ -108,14 +129,18 @@ Page actions
 
     # Delete Confluence page label
     confluence.remove_page_label(page_id, label)
-    
+
+    # Add comment into page
+    confluence.add_comment(page_id, text)
+
 Get spaces info
 ---------------
 
 .. code-block:: python
 
     # Get all spaces with provided limit
-    confluence.get_all_spaces(start=0, limit=500)
+    # additional info, e.g. metadata, icon, description, homepage
+    confluence.get_all_spaces(start=0, limit=500, expand=None)
 
     # Get information about a space through space key
     confluence.get_space(space_key, expand='description.plain,homepage')
@@ -164,6 +189,12 @@ Other actions
 
     # Get page history
     confluence.history(page_id)
+
+    # Get content history by version number. It works as experimental method
+    confluence.get_content_history_by_version_number(content_id, version_number)
+
+    # Remove content history. It works as experimental method
+    confluence.remove_content_history(page_id, version_number)
 
     # Compare content and check is already updated or not
     confluence.is_page_content_is_already_updated(page_id, body)
