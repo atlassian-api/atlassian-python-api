@@ -250,7 +250,7 @@ class Confluence(AtlassianRestAPI):
         params = {}
         if label:
             params['cql'] = 'type={type} AND label="{label}"'.format(type='page',
-                                                                   label=label)
+                                                                     label=label)
         if start:
             params['start'] = start
         if limit:
@@ -721,9 +721,9 @@ class Confluence(AtlassianRestAPI):
             if title != current_title:
                 log.info('Title of {page_id} is different'.format(page_id=page_id))
                 return False
-            
+
         confluence_body_content = confluence_content.get('value')
-        
+
         if confluence_body_content:
             # @todo move into utils
             confluence_body_content = utils.symbol_normalizer(confluence_body_content)

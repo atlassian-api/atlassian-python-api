@@ -7,7 +7,6 @@ log = logging.getLogger(__name__)
 
 
 class Bitbucket(AtlassianRestAPI):
-
     bulk_headers = {"Content-Type": "application/vnd.atl.bitbucket.bulk+json"}
 
     def project_list(self, limit=None):
@@ -144,14 +143,15 @@ class Bitbucket(AtlassianRestAPI):
     def repo_keys(self, project_key, repo_key, limit=99999, filter_str=None):
         """
         Get SSH access keys added to the repository
-        :param key:
+        :param project_key:
         :param repo_key:
         :param limit: OPTIONAL: The limit of the number of users to return, this may be restricted by
                             fixed system limits. Default by built-in method: 99999
         :param filter_str:  OPTIONAL: users filter string
         :return:
         """
-        url = 'rest/keys/1.0/projects/{project_key}/repos/{repo_key}/ssh'.format(key=key)
+        url = 'rest/keys/1.0/projects/{project_key}/repos/{repo_key}/ssh'.format(project_key=project_key,
+                                                                                 repo_key=repo_key)
         params = {}
         if limit:
             params['limit'] = limit
@@ -835,6 +835,7 @@ class Bitbucket(AtlassianRestAPI):
         The authenticated user must have REPO_READ permission for the repository 
         that this pull request targets to call this resource.
 
+        :param pr_version:
         :param project_key: PROJECT
         :param repository: my_shiny_repo
         :param pr_id: 2341
@@ -1222,29 +1223,31 @@ class Bitbucket(AtlassianRestAPI):
             params['start'] = start
         return self.get(url, params=params)
 
-    def set_branches_permissions(
-        self, project_key,
-        multiple_permissions=False,
-        matcher_type=None,
-        matcher_value=None,
-        permission_type=None,
-        repository=None,
-        except_users=[],
-        except_groups=[],
-        except_access_keys=[],
-        start=0,
-        limit=25
-    ):
+    def set_branches_permissions(self, project_key, multiple_permissions=False, matcher_type=None, matcher_value=None,
+                                 permission_type=None, repository=None, except_users=[], except_groups=None,
+                                 except_access_keys=None, start=0, limit=25):
         """
         Create a restriction for the supplied branch or set of branches to be applied to the given repository.
         Allows creating multiple restrictions at once. 
         To use multiple restrictions you should format payload manually - see the bitbucket-branch-restrictions.py example.
         Reference: https://docs.atlassian.com/bitbucket-server/rest/6.8.0/bitbucket-ref-restriction-rest.html
-
         :param project_key:
+        :param multiple_permissions:
+        :param matcher_type:
+        :param matcher_value:
+        :param permission_type:
         :param repository:
+        :param except_users:
+        :param except_groups:
+        :param except_access_keys:
+        :param start:
+        :param limit:
         :return:
         """
+        if except_groups is None:
+            except_groups = []
+        if except_access_keys is None:
+            except_access_keys = []
         headers = self.default_headers
         if repository:
             url = "/rest/branch-permissions/2.0/projects/{project_key}/repos/{repository}/restrictions".format(

@@ -11,6 +11,7 @@ def html(project):
     html_data += '\t<tr><td>id</td><td>{id}</td></tr>\n'.format(**project)
     return html_data + '</table>\n'
 
+
 bitbucket = Bitbucket(
     url='http://localhost:7990',
     username='admin',
