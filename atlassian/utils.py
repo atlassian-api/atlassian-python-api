@@ -259,3 +259,20 @@ def symbol_normalizer(text):
     result = result.replace('&aring;', u'å')
     result = result.replace('&deg;', u'°')
     return result
+
+
+def parse_cookie_file(cookie_file):
+    """
+    Parse a cookies.txt file (Netscape HTTP Cookie File)
+    return a dictionary of key value pairs
+    compatible with requests.
+    :param cookie_file: a cookie file
+    :return dict of cookies pair
+    """
+    cookies = {}
+    with open(cookie_file, 'r') as fp:
+        for line in fp:
+            if not re.match(r'^\#', line):
+                line_fields = line.strip().split('\t')
+                cookies[line_fields[5]] = line_fields[6]
+    return cookies

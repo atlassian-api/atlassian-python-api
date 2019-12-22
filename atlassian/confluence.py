@@ -338,6 +338,11 @@ class Confluence(AtlassianRestAPI):
         return (self.get(url, params=params) or {}).get('results')
 
     def get_all_restictions_for_content(self, content_id):
+        """keep typo method"""
+        log.warning("Please, be informed that is deprecated as typo naming")
+        return self.get_all_restrictions_for_content(content_id=content_id)
+
+    def get_all_restrictions_for_content(self, content_id):
         """
         Returns info about all restrictions by operation.
         :param content_id:
@@ -561,6 +566,13 @@ class Confluence(AtlassianRestAPI):
         log.info("Kept versions {} for {}".format(keep_last_versions, attachment.get('title')))
 
     def get_attachment_history(self, attachment_id, limit=200, start=0):
+        """
+        Get attachment history
+        :param attachment_id
+        :param limit
+        :param start
+        :return
+        """
         params = {'limit': limit, 'start': start}
         url = 'rest/experimental/content/{}/version'.format(attachment_id)
         return (self.get(url, params=params) or {}).get("results")
@@ -623,6 +635,12 @@ class Confluence(AtlassianRestAPI):
         return self.history(content_id)
 
     def get_content_history_by_version_number(self, content_id, version_number):
+        """
+        Get content history by version number
+        :param content_id:
+        :param version_number:
+        :return:
+        """
         url = 'rest/experimental/content/{0}/version/{1}'.format(content_id, version_number)
         return self.get(url)
 
