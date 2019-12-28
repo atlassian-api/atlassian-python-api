@@ -325,7 +325,7 @@ class Jira(AtlassianRestAPI):
         Add a user to an application
         :param username: The username of the user to add.
         :param application_key: The application key of the application
-        :return: True if the user was added to the application, else False        
+        :return: True if the user was added to the application, else False
         :see: https://docs.atlassian.com/software/jira/docs/api/REST/7.5.3/#api/2/user-addUserToApplication
         """
         params = {
@@ -1758,6 +1758,18 @@ class Jira(AtlassianRestAPI):
         """
         url = 'rest/tempo-accounts/1/account/{id}/'.format(id=account_id)
         return self.delete(url)
+
+    def tempo_account_get_rate_table_by_account_id(self, account_id):
+        """
+        Returns a rate table for the specified account.
+        :param account_id: the account id.
+        :return:
+        """
+        params = {}
+        params['scopeType'] = "ACCOUNT"
+        params['scopeId'] = account_id
+        url = 'rest/tempo-accounts/1/ratetable'
+        return self.get(url, params=params)
 
     def tempo_account_get_all_account_by_customer_id(self, customer_id):
         """
