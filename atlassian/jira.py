@@ -2080,7 +2080,7 @@ class Jira(AtlassianRestAPI):
         """
         Add team member
         :param team_id:
-        :param member_key:
+        :param member_key: user_name or user_key of Jira
         :return:
         """
         data = {"member": {"key": str(member_key), "type": "USER"},
