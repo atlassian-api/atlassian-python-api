@@ -1765,9 +1765,7 @@ class Jira(AtlassianRestAPI):
         :param account_id: the account id.
         :return:
         """
-        params = {}
-        params['scopeType'] = "ACCOUNT"
-        params['scopeId'] = account_id
+        params = {'scopeType': "ACCOUNT", 'scopeId': account_id}
         url = 'rest/tempo-accounts/1/ratetable'
         return self.get(url, params=params)
 

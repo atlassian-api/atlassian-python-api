@@ -1224,7 +1224,7 @@ class Bitbucket(AtlassianRestAPI):
         return self.get(url, params=params)
 
     def set_branches_permissions(self, project_key, multiple_permissions=False, matcher_type=None, matcher_value=None,
-                                 permission_type=None, repository=None, except_users=[], except_groups=None,
+                                 permission_type=None, repository=None, except_users=None, except_groups=None,
                                  except_access_keys=None, start=0, limit=25):
         """
         Create a restriction for the supplied branch or set of branches to be applied to the given repository.
@@ -1244,6 +1244,8 @@ class Bitbucket(AtlassianRestAPI):
         :param limit:
         :return:
         """
+        if except_users is None:
+            except_users = []
         if except_groups is None:
             except_groups = []
         if except_access_keys is None:
