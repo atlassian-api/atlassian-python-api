@@ -1628,6 +1628,72 @@ class Jira(AtlassianRestAPI):
         else:
             return self.get(url)
 
+    # Priority Schemes
+    def get_all_priority_schemes(self, start=0, limit=100, expand=None):
+        """
+        Returns all priority schemes.
+        All project keys associated with the priority scheme will only be returned
+        if additional query parameter is provided expand=schemes.projectKeys.
+        :param start: the page offset, if not specified then defaults to 0
+        :param limit: how many results on the page should be included. Defaults to 100, maximum is 1000.
+        :param expand: can be 'schemes.projectKeys'
+        :return:
+        """
+        url = 'rest/api/2/priorityschemes'
+        params = {}
+        if start:
+            params['startAt'] = int(start)
+        if limit:
+            params['maxResults'] = int(limit)
+        if expand:
+            params['expand'] = expand
+        return self.get(url, params=params)
+
+    def create_priority_scheme(self, data):
+        """
+        Creates new priority scheme.
+        :param data:
+                {"name": "New priority scheme",
+                "description": "Priority scheme for very important projects",
+                "defaultOptionId": "3",
+                "optionIds": [
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "5"
+                ]}
+        :return: Returned if the priority scheme was created.
+        """
+        return self.post(path="rest/api/2/priorityschemes", data=data)
+
+    # api/2/project/{projectKeyOrId}/priorityscheme
+    # Resource for associating priority schemes and projects.
+    def get_priority_scheme_of_project(self, project_key_or_id):
+        """
+        Gets a full representation of a priority scheme in JSON format used by specified project.
+        User must be global administrator or project administrator.
+        :param project_key_or_id:
+        :return:
+        """
+        url = 'rest/api/2/project/{}/priorityscheme'.format(project_key_or_id)
+        return self.get(url)
+
+    def assign_priority_scheme_for_project(self, project_key_or_id, priority_scheme_id):
+        """
+        Assigns project with priority scheme. Priority scheme assign with migration is possible from the UI.
+        Operation will fail if migration is needed as a result of operation
+        eg. there are issues with priorities invalid in the destination scheme.
+        All project keys associated with the priority scheme will only be returned
+        if additional query parameter is provided expand=projectKeys.
+        :param project_key_or_id:
+        :param priority_scheme_id:
+        :return:
+        """
+        url = "rest/api/2/project/{projectKeyOrId}/priorityscheme".format(projectKeyOrId=project_key_or_id)
+        data = {"id": priority_scheme_id}
+        return self.put(url, data=data)
+
     # Application properties
     def get_property(self, key=None, permission_level=None, key_filter=None):
         """
