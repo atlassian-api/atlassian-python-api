@@ -66,8 +66,10 @@ class ServiceDesk(AtlassianRestAPI):
 
     def get_my_customer_requests(self):
         """ Returning requests where you are the assignee """
-
-        return (self.get('rest/servicedeskapi/request') or {}).get('values')
+        response = self.get('rest/servicedeskapi/request')
+        if self.advanced_mode:
+            return response
+        return (response or {}).get('values')
 
     def create_customer_request(self, service_desk_id, request_type_id,
                                 values_dict, raise_on_behalf_of=None,
@@ -105,6 +107,8 @@ class ServiceDesk(AtlassianRestAPI):
         :return: Status name
         """
         request = self.get('rest/servicedeskapi/request/{}/status'.format(issue_id_or_key))
+        if self.advanced_mode:
+            return request
         if request:
             if request.get('values', []):
                 return request.get('values', [])[0].get('status', {})
@@ -148,7 +152,10 @@ class ServiceDesk(AtlassianRestAPI):
         if limit is not None:
             params['limit'] = int(limit)
 
-        return (self.get(url, params=params) or {}).get('values')
+        response = self.get(url, params=params)
+        if self.advanced_mode:
+            return response
+        return (response or {}).get('values')
 
     def add_request_participants(self, issue_id_or_key, users_list):
         """
@@ -454,7 +461,10 @@ class ServiceDesk(AtlassianRestAPI):
         if limit is not None:
             params['limit'] = int(limit)
 
-        return (self.get(url, params=params) or {}).get('values')
+        response = self.get(url, params=params)
+        if self.advanced_mode:
+            return response
+        return (response or {}).get('values')
 
     def get_sla_by_id(self, issue_id_or_key, sla_id):
         """
@@ -486,7 +496,10 @@ class ServiceDesk(AtlassianRestAPI):
         if limit is not None:
             params['limit'] = int(limit)
 
-        return (self.get(url, headers=self.experimental_headers, params=params) or {}).get('values')
+        response = self.get(url, headers=self.experimental_headers, params=params)
+        if self.advanced_mode:
+            return response
+        return (response or {}).get('values')
 
     def get_approval_by_id(self, issue_id_or_key, approval_id):
         """
