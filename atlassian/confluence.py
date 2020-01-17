@@ -785,6 +785,46 @@ class Confluence(AtlassianRestAPI):
 
             return self.put('rest/api/content/{0}'.format(page_id), data=data)
 
+    def _insert_to_existing_page(self, page_id, title, insert_body, parent_id=None, type='page', representation='storage',
+                    minor_edit=False, top_of_page=False):
+        """
+        Insert body to a page if already exist
+        :param parent_id:
+        :param page_id:
+        :param title:
+        :param insert_body:
+        :param type:
+        :param representation: OPTIONAL: either Confluence 'storage' or 'wiki' markup format
+        :param minor_edit: Indicates whether to notify watchers about changes.
+            If False then notifications will be sent.
+        :param top_of_page: Option to add the content to the end of page body
+        :return:
+        """
+        log.info('Updating {type} "{title}"'.format(title=title, type=type))
+
+        if self.is_page_content_is_already_updated(page_id, insert_body, title):
+            return self.get_page_by_id(page_id)
+        else:
+            version = self.history(page_id)['lastUpdated']['number'] + 1
+            previous_body = (self.get_page_by_id(page_id, expand='body.storage').get('body') or {}).get(
+                'storage').get(
+                'value')
+            previous_body = previous_body.replace('&oacute;', u'ó')
+            body = insert_body + previous_body if top_of_page else previous_body + insert_body
+            data = {
+                'id': page_id,
+                'type': type,
+                'title': title,
+                'body': self._create_body(body, representation),
+                'version': {'number': version,
+                            'minorEdit': minor_edit}
+            }
+
+            if parent_id:
+                data['ancestors'] = [{'type': 'page', 'id': parent_id}]
+
+            return self.put('rest/api/content/{0}'.format(page_id), data=data)
+
     def append_page(self, page_id, title, append_body, parent_id=None, type='page', representation='storage',
                     minor_edit=False):
         """
@@ -801,28 +841,27 @@ class Confluence(AtlassianRestAPI):
         """
         log.info('Updating {type} "{title}"'.format(title=title, type=type))
 
-        if self.is_page_content_is_already_updated(page_id, append_body, title):
-            return self.get_page_by_id(page_id)
-        else:
-            version = self.history(page_id)['lastUpdated']['number'] + 1
-            previous_body = (self.get_page_by_id(page_id, expand='body.storage').get('body') or {}).get(
-                'storage').get(
-                'value')
-            previous_body = previous_body.replace('&oacute;', u'ó')
-            body = previous_body + append_body
-            data = {
-                'id': page_id,
-                'type': type,
-                'title': title,
-                'body': self._create_body(body, representation),
-                'version': {'number': version,
-                            'minorEdit': minor_edit}
-            }
+        return self._insert_to_existing_page(page_id, title, append_body, parent_id=parent_id, type=type, representation=representation,
+                    minor_edit=minor_edit, top_of_page=False)
 
-            if parent_id:
-                data['ancestors'] = [{'type': 'page', 'id': parent_id}]
+    def prepend_page(self, page_id, title, prepend_body, parent_id=None, type='page', representation='storage',
+                    minor_edit=False):
+        """
+        Append body to page if already exist
+        :param parent_id:
+        :param page_id:
+        :param title:
+        :param prepend_body:
+        :param type:
+        :param representation: OPTIONAL: either Confluence 'storage' or 'wiki' markup format
+        :param minor_edit: Indicates whether to notify watchers about changes.
+            If False then notifications will be sent.
+        :return:
+        """
+        log.info('Updating {type} "{title}"'.format(title=title, type=type))
 
-            return self.put('rest/api/content/{0}'.format(page_id), data=data)
+        return self._insert_to_existing_page(page_id, title, prepend_body, parent_id=parent_id, type=type, representation=representation,
+                    minor_edit=minor_edit, top_of_page=True)
 
     def update_or_create(self, parent_id, title, body, representation='storage', minor_edit=False):
         """
