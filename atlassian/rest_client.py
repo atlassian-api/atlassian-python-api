@@ -22,7 +22,7 @@ class AtlassianRestAPI(object):
     response = None
 
     def __init__(self, url, username=None, password=None, timeout=60, api_root='rest/api', api_version='latest',
-                 verify_ssl=True, session=None, oauth=None, cookies=None, advanced_mode=None, kerberos=None):
+                 verify_ssl=True, session=None, oauth=None, cookies=None, advanced_mode=None, kerberos=None, standalone=True):
         if ('atlassian.net' in url or 'jira.com' in url) \
                 and '/wiki' not in url \
                 and self.__class__.__name__ in 'Confluence':
