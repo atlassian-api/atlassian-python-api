@@ -30,7 +30,7 @@ class Bitbucket(AtlassianRestAPI):
         """
         if self.standalone:
             url = 'rest/api/1.0/projects/{0}'.format(key)
-        else
+        else:
              url = 'rest/api/2.0/projects/{0}'.format(key)
         return self.get(url) or {}
 
