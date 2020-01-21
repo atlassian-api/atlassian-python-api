@@ -1081,13 +1081,21 @@ class Bitbucket(AtlassianRestAPI):
             params['to'] = hash_newest
         return (self.get(url, params=params) or {}).get('diffs')
 
-    def get_commits(self, project, repository, hash_oldest, hash_newest, limit=99999):
+    def get_commits(self, project, repository, hash_oldest=None, hash_newest=None, follow_renames=False, 
+                    ignore_missing=False, merges="include", with_counts=False, 
+                    avatar_size=None, avatar_scheme=None, limit=99999):
         """
         Get commit list from repo
         :param project:
         :param repository:
         :param hash_oldest:
         :param hash_newest:
+        :param merges: OPTIONAL: include|exclude|only if present, controls how merge commits should be filtered.
+        :param follow_renames: OPTIONAL: if true, the commit history of the specified file will be followed past renames.
+        :param ignore_missing: OPTIONAL: true to ignore missing commits, false otherwise
+        :param with_counts: OPTIONAL: optionally include the total number of commits and total number of unique authors
+        :param avatar_size: OPTIONAL: if present the service adds avatar URLs for commit authors.
+        :param avatar_scheme: OPTIONAL: the desired scheme for the avatar URL
         :param limit: OPTIONAL: The limit of the number of commits to return, this may be restricted by
                fixed system limits. Default by built-in method: 99999
         :return:
@@ -1095,10 +1103,21 @@ class Bitbucket(AtlassianRestAPI):
         url = 'rest/api/1.0/projects/{project}/repos/{repository}/commits'.format(project=project,
                                                                                   repository=repository)
         params = {}
+        params["merges"] = merges
         if hash_oldest:
             params['since'] = hash_oldest
         if hash_newest:
             params['until'] = hash_newest
+        if follow_renames:
+            params['followRenames'] = follow_renames
+        if ignore_missing:
+            params['ignoreMissing'] = ignore_missing
+        if with_counts:
+            params['withCounts'] = with_counts
+        if avatar_size:
+            params['avatarSize'] = avatar_size
+        if avatar_scheme:
+            params['avatarScheme'] = avatar_scheme
         if limit:
             params['limit'] = limit
         return (self.get(url, params=params) or {}).get('values')
