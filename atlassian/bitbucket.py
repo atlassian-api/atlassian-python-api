@@ -1669,3 +1669,4 @@ class Bitbucket(AtlassianRestAPI):
         if user_filter:
             params['filter'] = user_filter
         return self.get(url, params=params)
+
