@@ -1659,7 +1659,13 @@ class Bitbucket(AtlassianRestAPI):
         return self.get(url)
 
     def get_users(self, user_filter=None):
-        url = "/rest/api/1.0/users"
-        if user_filter: 
-            url += "?filter={}".format(user_filter)
-        return self.get(url)
+        """
+        Get list of bitbucket users. 
+        Use 'user_filter' for get specific users.
+        :user_filter: str
+        """
+        url = "rest/api/1.0/users"
+        params = {}
+        if user_filter:
+            params['filter'] = user_filter
+        return self.get(url, params=params)
