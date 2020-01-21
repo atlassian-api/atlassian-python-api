@@ -1657,3 +1657,9 @@ class Bitbucket(AtlassianRestAPI):
             projectKey=project_key,
             repositorySlug=repo)
         return self.get(url)
+
+    def get_users(self, user_filter=None):
+        url = "/rest/api/1.0/users"
+        if user_filter: 
+            url += "?filter={}".format(user_filter)
+        return self.get(url)
