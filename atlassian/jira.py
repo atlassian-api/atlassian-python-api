@@ -139,6 +139,16 @@ class Jira(AtlassianRestAPI):
         data = {"name": new_username}
         return self.user_update(old_username, data=data)
 
+    def user_update_email(self, username, email):
+        """
+        Update user email for new domain changes
+        :param username:
+        :param email:
+        :return:
+        """
+        data = {'name': username, 'emailAddress': email}
+        return self.user_update(username, data=data)
+
     def user_create(self, username, email, display_name, password=None, notification=None):
         """
         Create a user in Jira
@@ -218,16 +228,6 @@ class Jira(AtlassianRestAPI):
         url = 'rest/scriptrunner/latest/custom/updateUserProperty'
         params = {'username': username, 'property': key, 'value': value}
         return self.get(url, params=params)
-
-    def user_update_email(self, username, email):
-        """
-        Update user email for new domain changes
-        :param username:
-        :param email:
-        :return:
-        """
-        data = {'name': username, 'emailAddress': email}
-        return self.user_update(username, data=data)
 
     def user_deactivate(self, username):
         """
