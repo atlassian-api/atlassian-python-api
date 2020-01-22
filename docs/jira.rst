@@ -188,19 +188,19 @@ Manage issues
 
     # Set issue status by transition_id
     jira.set_issue_status_by_transition_id(issue_key, transition_id)
-    
+
     # Get issue status
     jira.get_issue_status(issue_key)
-    
+
     # Create or Update Issue Links
     jira.create_or_update_issue_remote_links(issue_key, link_url, title, global_id=None, relationship=None)
-    
+
     # Get Issue Link by link ID
     jira.get_issue_remote_link_by_id(issue_key, link_id)
-    
+
     # Update Issue Link by link ID
     jira.update_issue_remote_link_by_id(issue_key, link_id, url, title, global_id=None, relationship=None)
-    
+
     # Delete Issue Links
     jira.delete_issue_remote_link_by_id(issue_key, link_id)
 
@@ -275,3 +275,38 @@ Issue security schemes
     # user has the administrative permission.
     # Use only_levels=True for get the only levels entries
     jira.get_issue_security_scheme(scheme_id, only_levels=False)
+
+TEMPO
+----------------------
+.. code-block:: python
+
+    # Find existing worklogs with the search parameters.
+    # Look at the tempo docs for additional information:
+    # https://www.tempo.io/server-api-documentation/timesheets#operation/searchWorklogs
+    # NOTE: check if you are using correct types for the parameters!
+    #     :param from: string From Date
+    #     :param to: string To Date
+    #     :param worker: Array of strings
+    #     :param taskId: Array of integers
+    #     :param taskKey: Array of strings
+    #     :param projectId: Array of integers
+    #     :param projectKey: Array of strings
+    #     :param teamId: Array of integers
+    #     :param roleId: Array of integers
+    #     :param accountId: Array of integers
+    #     :param accountKey: Array of strings
+    #     :param filterId: Array of integers
+    #     :param customerId: Array of integers
+    #     :param categoryId: Array of integers
+    #     :param categoryTypeId: Array of integers
+    #     :param epicKey: Array of strings
+    #     :param updatedFrom: string
+    #     :param includeSubtasks: boolean
+    #     :param pageNo: integer
+    #     :param maxResults: integer
+    #     :param offset: integer
+    jira.tempo_4_timesheets_find_worklogs(**params)
+
+    # :PRIVATE:
+    # Get Tempo timesheet worklog by issue key or id.
+    jira.tempo_timesheets_get_worklogs_by_issue(issue)
