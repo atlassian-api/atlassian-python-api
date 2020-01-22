@@ -139,6 +139,16 @@ class Jira(AtlassianRestAPI):
         data = {"name": new_username}
         return self.user_update(old_username, data=data)
 
+    def user_update_email(self, username, email):
+        """
+        Update user email for new domain changes
+        :param username:
+        :param email:
+        :return:
+        """
+        data = {'name': username, 'emailAddress': email}
+        return self.user_update(username, data=data)
+
     def user_create(self, username, email, display_name, password=None, notification=None):
         """
         Create a user in Jira
@@ -218,16 +228,6 @@ class Jira(AtlassianRestAPI):
         url = 'rest/scriptrunner/latest/custom/updateUserProperty'
         params = {'username': username, 'property': key, 'value': value}
         return self.get(url, params=params)
-
-    def user_update_email(self, username, email):
-        """
-        Update user email for new domain changes
-        :param username:
-        :param email:
-        :return:
-        """
-        data = {'name': username, 'emailAddress': email}
-        return self.user_update(username, data=data)
 
     def user_deactivate(self, username):
         """
@@ -2053,6 +2053,45 @@ class Jira(AtlassianRestAPI):
             params['teamId'] = team_id
         url = 'rest/tempo-timesheets/3/worklogs/'
         return self.get(url, params=params)
+
+    def tempo_4_timesheets_find_worklogs(self, **params):
+        """
+        Find existing worklogs with searching parameters.
+        NOTE: check if you are using correct types for the parameters!
+        :param from: string From Date
+        :param to: string To Date
+        :param worker: Array of strings
+        :param taskId: Array of integers
+        :param taskKey: Array of strings
+        :param projectId: Array of integers
+        :param projectKey: Array of strings
+        :param teamId: Array of integers
+        :param roleId: Array of integers
+        :param accountId: Array of integers
+        :param accountKey: Array of strings
+        :param filterId: Array of integers
+        :param customerId: Array of integers
+        :param categoryId: Array of integers
+        :param categoryTypeId: Array of integers
+        :param epicKey: Array of strings
+        :param updatedFrom: string
+        :param includeSubtasks: boolean
+        :param pageNo: integer
+        :param maxResults: integer
+        :param offset: integer
+        """
+    
+        url = "rest/tempo-timesheets/4/worklogs/search"
+        return self.post(url, data=params)
+
+    def tempo_timesheets_get_worklogs_by_issue(self, issue):
+        """
+        Get Tempo timesheet worklog by issue key or id.
+        :param issue: Issue key or Id
+        :return:
+        """
+        url = "rest/tempo-timesheets/4/worklogs/jira/issue/{issue}".format(issue=issue)
+        return self.get(url)
 
     def tempo_timesheets_write_worklog(self, worker, started, time_spend_in_seconds, issue_id, comment=None):
         """

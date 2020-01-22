@@ -100,6 +100,9 @@ Groups and admins
     # All project administrators
     bitbucket.all_project_administrators()
 
+    # Get users. Use 'user_filter' parameter to get specific users. 
+    bitbucket.get_users(user_filter="username")
+
 Manage code
 -----------
 
@@ -138,6 +141,9 @@ Manage code
 
     # Add comment into pull request
     bitbucket.add_pull_request_comment(project, repository, pull_request_id, text)
+
+    # Create a new pull request between two branches.
+    bitbucket.open_pull_request(source_project, source_repo, dest_project, dest_repo, source_branch, destination_branch, title, description)
 
     # Get tags for related repo
     bitbucket.get_tags(project, repository, filter='', limit=99999)
