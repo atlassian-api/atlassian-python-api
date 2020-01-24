@@ -712,9 +712,14 @@ class Confluence(AtlassianRestAPI):
         :param title: Title to compare
         :return: True if the same
         """
-        confluence_content = (((self.get_page_by_id(page_id, expand='body.storage') or {})
-                               .get('body') or {})
-                              .get('storage') or {})
+        if self.advanced_mode:
+            confluence_content = (((self.get_page_by_id(page_id, expand='body.storage').json() or {})
+                    .get('body') or {})
+                    .get('storage') or {})
+        else:
+            confluence_content = (((self.get_page_by_id(page_id, expand='body.storage') or {})
+                    .get('body') or {})
+                    .get('storage') or {})
 
         if title:
             current_title = confluence_content.get('title', None)
@@ -765,7 +770,10 @@ class Confluence(AtlassianRestAPI):
             return self.get_page_by_id(page_id)
         else:
             try:
-                version = self.history(page_id)['lastUpdated']['number'] + 1
+                if self.advanced_mode:
+                    version = self.history(page_id).json()['lastUpdated']['number'] + 1
+                else:
+                    version = self.history(page_id)['lastUpdated']['number'] + 1
             except (IndexError, TypeError) as e:
                 log.error("Can't find '{title}' {type}!".format(title=title, type=type))
                 log.debug(e)
