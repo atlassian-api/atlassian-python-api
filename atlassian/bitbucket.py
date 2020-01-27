@@ -18,7 +18,7 @@ class Bitbucket(AtlassianRestAPI):
         params = {}
         if limit:
             params['limit'] = limit
-        if self.standalone:
+        if not self.cloud:
             return (self.get('rest/api/1.0/projects', params=params) or {}).get('values')
         return (self.get('rest/api/2.0/projects', params=params) or {}).get('values')
 
@@ -28,7 +28,7 @@ class Bitbucket(AtlassianRestAPI):
         :param key:
         :return:
         """
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{0}'.format(key)
         else:
             url = 'rest/api/2.0/projects/{0}'.format(key)
@@ -42,7 +42,7 @@ class Bitbucket(AtlassianRestAPI):
         :param description:
         :return:
         """
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects'
         else:
             url = 'rest/api/2.0/projects'
@@ -61,7 +61,7 @@ class Bitbucket(AtlassianRestAPI):
         data = self.project(key)
         if 'errors' not in data:
             data.update(params)
-            if self.standalone:
+            if not self.cloud:
                 url = 'rest/api/1.0/projects/{0}'.format(key)
             else:
                 url = 'rest/api/2.0/projects/{0}'.format(key)
@@ -77,7 +77,7 @@ class Bitbucket(AtlassianRestAPI):
         :param key:
         :return:
         """
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{0}/avatar.png'.format(key)
         else:
             url = 'rest/api/2.0/projects/{0}/avatar.png'.format(key)
@@ -97,7 +97,7 @@ class Bitbucket(AtlassianRestAPI):
         """
         headers = {'X-Atlassian-Token': 'no-check'}
         files = {'avatar': ("avatar.png", icon, content_type)}
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{0}/avatar.png'.format(key)
         else:
             url = 'rest/api/2.0/projects/{0}/avatar.png'.format(key)
@@ -112,7 +112,7 @@ class Bitbucket(AtlassianRestAPI):
         :param filter_str:  OPTIONAL: users filter string
         :return:
         """
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{key}/permissions/users'.format(key=key)
         else:
             url = 'rest/api/2.0/projects/{key}/permissions/users'.format(key=key)
@@ -132,7 +132,7 @@ class Bitbucket(AtlassianRestAPI):
         :param filter_str:  OPTIONAL: users filter string
         :return:
         """
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/keys/1.0/projects/{key}/ssh'.format(key=key)
         else:
             url = 'rest/keys/2.0/projects/{key}/ssh'.format(key=key)
@@ -153,12 +153,12 @@ class Bitbucket(AtlassianRestAPI):
         :param filter_str:  OPTIONAL: Users filter string
         :return:
         """
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/users'.format(
-                   project_key=project_key, repo_key=repo_key)
+                project_key=project_key, repo_key=repo_key)
         else:
             url = 'rest/api/2.0/projects/{project_key}/repos/{repo_key}/permissions/users'.format(
-                   project_key=project_key, repo_key=repo_key)
+                project_key=project_key, repo_key=repo_key)
         params = {}
         if limit:
             params['limit'] = limit
@@ -176,7 +176,7 @@ class Bitbucket(AtlassianRestAPI):
         :param filter_str:  OPTIONAL: users filter string
         :return:
         """
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/keys/1.0/projects/{project_key}/repos/{repo_key}/ssh'.format(project_key=project_key,
                                                                                      repo_key=repo_key)
         else:
@@ -210,12 +210,12 @@ class Bitbucket(AtlassianRestAPI):
         :param permission: the project permissions available are 'PROJECT_ADMIN', 'PROJECT_WRITE' and 'PROJECT_READ'
         :return:
         """
-        if self.standalone:
-            url = 'rest/api/1.0/projects/{project_key}/permissions/users?permission={permission}&name={username}'\
-                  .format(project_key=project_key, permission=permission, username=username)
+        if not self.cloud:
+            url = 'rest/api/1.0/projects/{project_key}/permissions/users?permission={permission}&name={username}' \
+                .format(project_key=project_key, permission=permission, username=username)
         else:
-            url = 'rest/api/2.0/projects/{project_key}/permissions/users?permission={permission}&name={username}'\
-                  .format(project_key=project_key, permission=permission, username=username)
+            url = 'rest/api/2.0/projects/{project_key}/permissions/users?permission={permission}&name={username}' \
+                .format(project_key=project_key, permission=permission, username=username)
         return self.put(url)
 
     def project_remove_user_permissions(self, project_key, username):
@@ -228,12 +228,12 @@ class Bitbucket(AtlassianRestAPI):
         :param username: user name to be granted
         :return:
         """
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{project_key}/permissions/users?name={username}'.format(
-                   project_key=project_key, username=username)
+                project_key=project_key, username=username)
         else:
             url = 'rest/api/2.0/projects/{project_key}/permissions/users?name={username}'.format(
-                   project_key=project_key, username=username)
+                project_key=project_key, username=username)
         return self.delete(url)
 
     def project_grant_group_permissions(self, project_key, group_name, permission):
@@ -244,12 +244,12 @@ class Bitbucket(AtlassianRestAPI):
         :param permission: the project permissions available are 'PROJECT_ADMIN', 'PROJECT_WRITE' and 'PROJECT_READ'
         :return:
         """
-        if self.standalone:
-            url = 'rest/api/1.0/projects/{project_key}/permissions/groups?permission={permission}&name={group_name}'\
-                  .format(project_key=project_key, permission=permission, group_name=group_name)
+        if not self.cloud:
+            url = 'rest/api/1.0/projects/{project_key}/permissions/groups?permission={permission}&name={group_name}' \
+                .format(project_key=project_key, permission=permission, group_name=group_name)
         else:
-            url = 'rest/api/2.0/projects/{project_key}/permissions/groups?permission={permission}&name={group_name}'\
-                  .format(project_key=project_key, permission=permission, group_name=group_name)
+            url = 'rest/api/2.0/projects/{project_key}/permissions/groups?permission={permission}&name={group_name}' \
+                .format(project_key=project_key, permission=permission, group_name=group_name)
         return self.put(url)
 
     def project_remove_group_permissions(self, project_key, groupname):
@@ -263,12 +263,12 @@ class Bitbucket(AtlassianRestAPI):
         :param groupname: group to be granted
         :return:
         """
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{project_key}/permissions/groups?name={group_name}'.format(
-                  project_key=project_key, group_name=groupname)
+                project_key=project_key, group_name=groupname)
         else:
             url = 'rest/api/2.0/projects/{project_key}/permissions/groups?name={group_name}'.format(
-                  project_key=project_key, group_name=groupname)
+                project_key=project_key, group_name=groupname)
         return self.delete(url)
 
     def repo_grant_user_permissions(self, project_key, repo_key, username, permission):
@@ -282,12 +282,12 @@ class Bitbucket(AtlassianRestAPI):
         """
         params = {'permission': permission,
                   'name': username}
-        if self.standalone:
-            url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/users'\
-                  .format(project_key=project_key, repo_key=repo_key)
+        if not self.cloud:
+            url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/users' \
+                .format(project_key=project_key, repo_key=repo_key)
         else:
-            url = 'rest/api/2.0/projects/{project_key}/repos/{repo_key}/permissions/users'\
-                  .format(project_key=project_key, repo_key=repo_key)
+            url = 'rest/api/2.0/projects/{project_key}/repos/{repo_key}/permissions/users' \
+                .format(project_key=project_key, repo_key=repo_key)
         return self.put(url, params=params)
 
     def repo_remove_user_permissions(self, project_key, repo_key, username):
@@ -303,12 +303,12 @@ class Bitbucket(AtlassianRestAPI):
         :return:
         """
         params = {'name': username}
-        if self.standalone:
-            url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/users'\
-                  .format(project_key=project_key, repo_key=repo_key)
+        if not self.cloud:
+            url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/users' \
+                .format(project_key=project_key, repo_key=repo_key)
         else:
-            url = 'rest/api/2.0/projects/{project_key}/repos/{repo_key}/permissions/users'\
-                  .format(project_key=project_key, repo_key=repo_key)
+            url = 'rest/api/2.0/projects/{project_key}/repos/{repo_key}/permissions/users' \
+                .format(project_key=project_key, repo_key=repo_key)
         return self.delete(url, params=params)
 
     def repo_grant_group_permissions(self, project_key, repo_key, groupname, permission):
@@ -331,12 +331,12 @@ class Bitbucket(AtlassianRestAPI):
         """
         params = {'permission': permission,
                   'name': groupname}
-        if self.standalone:
-            url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/groups'\
-                  .format(project_key=project_key, repo_key=repo_key)
+        if not self.cloud:
+            url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/groups' \
+                .format(project_key=project_key, repo_key=repo_key)
         else:
-            url = 'rest/api/2.0/projects/{project_key}/repos/{repo_key}/permissions/groups'\
-                  .format(project_key=project_key, repo_key=repo_key)
+            url = 'rest/api/2.0/projects/{project_key}/repos/{repo_key}/permissions/groups' \
+                .format(project_key=project_key, repo_key=repo_key)
         return self.put(url, params=params)
 
     def repo_remove_group_permissions(self, project_key, repo_key, groupname, permission):
@@ -354,12 +354,12 @@ class Bitbucket(AtlassianRestAPI):
         params = {'name': groupname}
         if permission:
             params['permission'] = permission
-        if self.standalone:
-            url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/groups'\
-                  .format(project_key=project_key, repo_key=repo_key)
+        if not self.cloud:
+            url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/groups' \
+                .format(project_key=project_key, repo_key=repo_key)
         else:
-            url = 'rest/api/2.0/projects/{project_key}/repos/{repo_key}/permissions/groups'\
-                  .format(project_key=project_key, repo_key=repo_key)
+            url = 'rest/api/2.0/projects/{project_key}/repos/{repo_key}/permissions/groups' \
+                .format(project_key=project_key, repo_key=repo_key)
         return self.delete(url, params=params)
 
     def project_groups(self, key, limit=99999, filter_str=None):
@@ -371,7 +371,7 @@ class Bitbucket(AtlassianRestAPI):
         :param filter_str: OPTIONAL: group filter string
         :return:
         """
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{key}/permissions/groups'.format(key=key)
         else:
             url = 'rest/api/2.0/projects/{key}/permissions/groups'.format(key=key)
@@ -392,12 +392,12 @@ class Bitbucket(AtlassianRestAPI):
         :param filter_str: OPTIONAL: group filter string
         :return:
         """
-        if self.standalone:
-            url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/groups'\
-                  .format(project_key=project_key, repo_key=repo_key)
+        if not self.cloud:
+            url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/groups' \
+                .format(project_key=project_key, repo_key=repo_key)
         else:
-            url = 'rest/api/2.0/projects/{project_key}/repos/{repo_key}/permissions/groups'\
-                  .format(project_key=project_key, repo_key=repo_key)
+            url = 'rest/api/2.0/projects/{project_key}/repos/{repo_key}/permissions/groups' \
+                .format(project_key=project_key, repo_key=repo_key)
         params = {}
         if limit:
             params['limit'] = limit
@@ -429,7 +429,7 @@ class Bitbucket(AtlassianRestAPI):
                         fixed system limits. Default by built-in method: 99999
         :return:
         """
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/admin/groups/more-members'
         else:
             url = 'rest/api/2.0/admin/groups/more-members'
@@ -462,7 +462,7 @@ class Bitbucket(AtlassianRestAPI):
                         fixed system limits. Default by built-in method: 25
         :return:
         """
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{projectKey}/repos'.format(projectKey=project_key)
         else:
             url = 'rest/api/2.0/projects/{projectKey}/repos'.format(projectKey=project_key)
@@ -501,8 +501,7 @@ class Bitbucket(AtlassianRestAPI):
             409 - application/json (errors)
         :rtype: requests.Response
         """
-
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{projectKey}/repos'.format(projectKey=project_key)
         else:
             url = 'rest/api/2.0/projects/{projectKey}/repos'.format(projectKey=project_key)
@@ -523,12 +522,12 @@ class Bitbucket(AtlassianRestAPI):
         :return: Dictionary of request response
         """
 
-        if self.standalone:
-            url = 'rest/api/1.0/projects/{project}/repos/{repository}'\
-                  .format(project=project_key, repository=repository_slug)
+        if not self.cloud:
+            url = 'rest/api/1.0/projects/{project}/repos/{repository}' \
+                .format(project=project_key, repository=repository_slug)
         else:
-            url = 'rest/api/2.0/projects/{project}/repos/{repository}'\
-                  .format(project=project_key, repository=repository_slug)
+            url = 'rest/api/2.0/projects/{project}/repos/{repository}' \
+                .format(project=project_key, repository=repository_slug)
         return self.get(url)
 
     def repo_all_list(self, project_key):
@@ -537,8 +536,7 @@ class Bitbucket(AtlassianRestAPI):
         :param project_key:
         :return:
         """
-
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{projectKey}/repos'.format(projectKey=project_key)
         else:
             url = 'rest/api/2.0/projects/{projectKey}/repos'.format(projectKey=project_key)
@@ -564,8 +562,7 @@ class Bitbucket(AtlassianRestAPI):
         :param repository_slug: url-compatible repository identifier
         :return: Dictionary of request response
         """
-
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{project}/repos/{repository}'.format(project=project_key,
                                                                               repository=repository_slug)
         else:
@@ -589,8 +586,7 @@ class Bitbucket(AtlassianRestAPI):
         :param order_by: OPTIONAL: ordering of refs either ALPHABETICAL (by name) or MODIFICATION (last updated)
         :return:
         """
-
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{project}/repos/{repository}/branches'.format(project=project,
                                                                                        repository=repository)
         else:
@@ -621,8 +617,7 @@ class Bitbucket(AtlassianRestAPI):
         :param repository:
         :return:
         """
-
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{project}/repos/{repository}/branches/default'.format(project=project,
                                                                                                repository=repository)
         else:
@@ -640,7 +635,7 @@ class Bitbucket(AtlassianRestAPI):
         :return:
         """
         data = {'id': ref_branch_name}
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{project}/repos/{repository}/branches/default'.format(project=project,
                                                                                                repository=repository)
         else:
@@ -669,8 +664,7 @@ class Bitbucket(AtlassianRestAPI):
             404 - application/json (errors)
         :rtype: requests.Response
         """
-
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{projectKey}/repos/{repository}/branches'.format(projectKey=project_key,
                                                                                           repository=repository)
         else:
@@ -693,8 +687,7 @@ class Bitbucket(AtlassianRestAPI):
         :param end_point:
         :return:
         """
-
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/branch-utils/1.0/projects/{project}/repos/{repository}/branches'.format(project=project,
                                                                                                 repository=repository)
         else:
@@ -710,13 +703,12 @@ class Bitbucket(AtlassianRestAPI):
         :param repository:
         :return:
         """
-
-        if self.standalone:
-            url = 'rest/api/1.0/projects/{project}/repos/{repository}/settings/pull-requests'\
-                  .format(project=project, repository=repository)
+        if not self.cloud:
+            url = 'rest/api/1.0/projects/{project}/repos/{repository}/settings/pull-requests' \
+                .format(project=project, repository=repository)
         else:
-            url = 'rest/api/2.0/projects/{project}/repos/{repository}/settings/pull-requests'\
-                  .format(project=project, repository=repository)
+            url = 'rest/api/2.0/projects/{project}/repos/{repository}/settings/pull-requests' \
+                .format(project=project, repository=repository)
         return self.get(url)
 
     def set_pull_request_settings(self, project, repository, data):
@@ -727,13 +719,12 @@ class Bitbucket(AtlassianRestAPI):
         :param data: json body
         :return:
         """
-
-        if self.standalone:
-            url = 'rest/api/1.0/projects/{project}/repos/{repository}/settings/pull-requests'\
-                  .format(project=project, repository=repository)
+        if not self.cloud:
+            url = 'rest/api/1.0/projects/{project}/repos/{repository}/settings/pull-requests' \
+                .format(project=project, repository=repository)
         else:
-            url = 'rest/api/2.0/projects/{project}/repos/{repository}/settings/pull-requests'\
-                  .format(project=project, repository=repository)
+            url = 'rest/api/2.0/projects/{project}/repos/{repository}/settings/pull-requests' \
+                .format(project=project, repository=repository)
         return self.post(url, data=data)
 
     def get_pull_requests(self, project, repository, state='OPEN', order='newest', limit=100, start=0, at=None):
@@ -749,8 +740,7 @@ class Bitbucket(AtlassianRestAPI):
         :param at:
         :return:
         """
-
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests'.format(project=project,
                                                                                             repository=repository)
         else:
@@ -787,17 +777,16 @@ class Bitbucket(AtlassianRestAPI):
         :param start:
         :return:
         """
-
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/activities'.format(
-                  project=project,
-                  repository=repository,
-                  pullRequestId=pull_request_id)
+                project=project,
+                repository=repository,
+                pullRequestId=pull_request_id)
         else:
             url = 'rest/api/2.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/activities'.format(
-                  project=project,
-                  repository=repository,
-                  pullRequestId=pull_request_id)
+                project=project,
+                repository=repository,
+                pullRequestId=pull_request_id)
         params = {'start': start}
         response = self.get(url, params=params)
         if 'values' not in response:
@@ -817,17 +806,16 @@ class Bitbucket(AtlassianRestAPI):
         :param pull_request_id: the ID of the pull request within the repository
         :return:
         """
-
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/changes'.format(
-                  project=project,
-                  repository=repository,
-                  pullRequestId=pull_request_id)
+                project=project,
+                repository=repository,
+                pullRequestId=pull_request_id)
         else:
             url = 'rest/api/2.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/changes'.format(
-                  project=project,
-                  repository=repository,
-                  pullRequestId=pull_request_id)
+                project=project,
+                repository=repository,
+                pullRequestId=pull_request_id)
         params = {'start': 0}
         response = self.get(url, params=params)
         if 'values' not in response:
@@ -850,13 +838,12 @@ class Bitbucket(AtlassianRestAPI):
         :param pull_request_id: the ID of the pull request within the repository
         :return:
         """
-
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/commits'.format(
-                  project=project, repository=repository, pullRequestId=pull_request_id)
+                project=project, repository=repository, pullRequestId=pull_request_id)
         else:
             url = 'rest/api/2.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/commits'.format(
-                  project=project, repository=repository, pullRequestId=pull_request_id)
+                project=project, repository=repository, pullRequestId=pull_request_id)
         params = {'start': 0}
         response = self.get(url, params=params)
         if 'values' not in response:
@@ -919,8 +906,7 @@ class Bitbucket(AtlassianRestAPI):
         :param data: json body
         :return:
         """
-
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{projectKey}/repos/{repository}/pull-requests'.format(projectKey=project_key,
                                                                                                repository=repository)
         else:
@@ -940,13 +926,12 @@ class Bitbucket(AtlassianRestAPI):
         :param pr_version: 12
         :return:
         """
-
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{project_key}/repos/{repository}/pull-requests/{pr_id}/decline'.format(
-                  project_key=project_key, repository=repository, pr_id=pr_id)
+                project_key=project_key, repository=repository, pr_id=pr_id)
         else:
             url = 'rest/api/2.0/projects/{project_key}/repos/{repository}/pull-requests/{pr_id}/decline'.format(
-                  project_key=project_key, repository=repository, pr_id=pr_id)
+                project_key=project_key, repository=repository, pr_id=pr_id)
         params = {'version': pr_version}
 
         return self.post(url, params=params)
@@ -965,13 +950,12 @@ class Bitbucket(AtlassianRestAPI):
         :param pr_id: 2341
         :return:
         """
-
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{project_key}/repos/{repository}/pull-requests/{pr_id}/merge'.format(
-                  project_key=project_key, repository=repository, pr_id=pr_id)
+                project_key=project_key, repository=repository, pr_id=pr_id)
         else:
             url = 'rest/api/2.0/projects/{project_key}/repos/{repository}/pull-requests/{pr_id}/merge'.format(
-                  project_key=project_key, repository=repository, pr_id=pr_id)
+                project_key=project_key, repository=repository, pr_id=pr_id)
         return self.get(url)
 
     def merge_pull_request(self, project_key, repository, pr_id, pr_version):
@@ -986,13 +970,12 @@ class Bitbucket(AtlassianRestAPI):
         :param pr_id: 2341
         :return:
         """
-
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{project_key}/repos/{repository}/pull-requests/{pr_id}/merge'.format(
-                  project_key=project_key, repository=repository, pr_id=pr_id)
+                project_key=project_key, repository=repository, pr_id=pr_id)
         else:
             url = 'rest/api/2.0/projects/{project_key}/repos/{repository}/pull-requests/{pr_id}/merge'.format(
-                  project_key=project_key, repository=repository, pr_id=pr_id)
+                project_key=project_key, repository=repository, pr_id=pr_id)
         params = {'version': pr_version}
 
         return self.post(url, params=params)
@@ -1009,19 +992,18 @@ class Bitbucket(AtlassianRestAPI):
         :param pr_version: 12
         :return:
         """
-
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{project_key}/repos/{repository}/pull-requests/{pr_id}/reopen'.format(
-                  project_key=project_key, repository=repository, pr_id=pr_id)
+                project_key=project_key, repository=repository, pr_id=pr_id)
         else:
             url = 'rest/api/2.0/projects/{project_key}/repos/{repository}/pull-requests/{pr_id}/reopen'.format(
-                  project_key=project_key, repository=repository, pr_id=pr_id)
+                project_key=project_key, repository=repository, pr_id=pr_id)
         params = {'version': pr_version}
 
         return self.post(url, params=params)
 
     def check_inbox_pull_requests_count(self):
-        if self.standalone:
+        if not self.cloud:
             return self.get('rest/api/1.0/inbox/pull-requests/count')
         return self.get('rest/api/2.0/inbox/pull-requests/count')
 
@@ -1038,7 +1020,7 @@ class Bitbucket(AtlassianRestAPI):
             params['limit'] = limit
         if role:
             params['role'] = role
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/inbox/pull-requests'
         else:
             url = 'rest/api/2.0/inbox/pull-requests'
@@ -1055,13 +1037,12 @@ class Bitbucket(AtlassianRestAPI):
 
         :return:
         """
-
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/comments'.format(
-                  project=project, repository=repository, pullRequestId=pull_request_id)
+                project=project, repository=repository, pullRequestId=pull_request_id)
         else:
             url = 'rest/api/2.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/comments'.format(
-                  project=project, repository=repository, pullRequestId=pull_request_id)
+                project=project, repository=repository, pullRequestId=pull_request_id)
         body = {'text': text}
         if parent_id:
             body['parent'] = {'id': parent_id}
@@ -1078,8 +1059,7 @@ class Bitbucket(AtlassianRestAPI):
         :param comment_id: the ID of the comment to retrieve
         :return:
         """
-
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/comments/' \
                   '{comment_id}'.format(project=project, repository=repository, pullRequestId=pull_request_id,
                                         comment_id=comment_id)
@@ -1098,13 +1078,12 @@ class Bitbucket(AtlassianRestAPI):
         that must match the server's version of the comment
         or the update will fail.
         """
-
-        if self.standalone:
-            url = 'rest/api/1.0/projects/{project}/repos/{repo}/pull-requests/{pull_request}/comments/{comment_id}'\
-                  .format(project=project, repo=repository, pull_request=pull_request_id, comment_id=comment_id)
+        if not self.cloud:
+            url = 'rest/api/1.0/projects/{project}/repos/{repo}/pull-requests/{pull_request}/comments/{comment_id}' \
+                .format(project=project, repo=repository, pull_request=pull_request_id, comment_id=comment_id)
         else:
-            url = 'rest/api/2.0/projects/{project}/repos/{repo}/pull-requests/{pull_request}/comments/{comment_id}'\
-                  .format(project=project, repo=repository, pull_request=pull_request_id, comment_id=comment_id)
+            url = 'rest/api/2.0/projects/{project}/repos/{repo}/pull-requests/{pull_request}/comments/{comment_id}' \
+                .format(project=project, repo=repository, pull_request=pull_request_id, comment_id=comment_id)
         payload = {
             "version": comment_version,
             "text": comment
@@ -1121,13 +1100,12 @@ class Bitbucket(AtlassianRestAPI):
         :param pull_request_id: the ID of the pull request within the repository
         :return:
         """
-
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}'.format(
-                  project=project, repository=repository, pullRequestId=pull_request_id)
+                project=project, repository=repository, pullRequestId=pull_request_id)
         else:
             url = 'rest/api/2.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}'.format(
-                  project=project, repository=repository, pullRequestId=pull_request_id)
+                project=project, repository=repository, pullRequestId=pull_request_id)
         return self.get(url)
 
     def change_reviewed_status(self, project_key, repository_slug, pull_request_id, status, user_slug):
@@ -1142,8 +1120,7 @@ class Bitbucket(AtlassianRestAPI):
         :param user_slug:
         :return:
         """
-
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{projectKey}/repos/{repo}/pull-requests/{pull_request}/participants/' \
                   '{userSlug}'.format(projectKey=project_key, repo=repository_slug, pull_request=pull_request_id,
                                       userSlug=user_slug)
@@ -1174,8 +1151,7 @@ class Bitbucket(AtlassianRestAPI):
         :param order_by: OPTIONAL: ordering of refs either ALPHABETICAL (by name) or MODIFICATION (last updated)
         :return:
         """
-
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{project}/repos/{repository}/tags'.format(project=project,
                                                                                    repository=repository)
         else:
@@ -1207,8 +1183,7 @@ class Bitbucket(AtlassianRestAPI):
         :param tag_name: OPTIONAL:
         :return:
         """
-
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{project}/repos/{repository}/tags/{tag}'.format(project=project,
                                                                                          repository=repository,
                                                                                          tag=tag_name)
@@ -1229,8 +1204,7 @@ class Bitbucket(AtlassianRestAPI):
         :param description: OPTIONAL:
         :return:
         """
-
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{project}/repos/{repository}/tags'.format(project=project,
                                                                                    repository=repository)
         else:
@@ -1254,8 +1228,7 @@ class Bitbucket(AtlassianRestAPI):
         :param tag_name:
         :return:
         """
-
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/git/1.0/projects/{project}/repos/{repository}/tags/{tag}'.format(project=project,
                                                                                          repository=repository,
                                                                                          tag=tag_name)
@@ -1266,7 +1239,7 @@ class Bitbucket(AtlassianRestAPI):
         return self.delete(url)
 
     def get_diff(self, project, repository, path, hash_oldest, hash_newest):
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{project}/repos/{repository}/compare/diff/{path}'.format(project=project,
                                                                                                   repository=repository,
                                                                                                   path=path)
@@ -1281,8 +1254,8 @@ class Bitbucket(AtlassianRestAPI):
             params['to'] = hash_newest
         return (self.get(url, params=params) or {}).get('diffs')
 
-    def get_commits(self, project, repository, hash_oldest=None, hash_newest=None, follow_renames=False, 
-                    ignore_missing=False, merges="include", with_counts=False, 
+    def get_commits(self, project, repository, hash_oldest=None, hash_newest=None, follow_renames=False,
+                    ignore_missing=False, merges="include", with_counts=False,
                     avatar_size=None, avatar_scheme=None, limit=99999):
         """
         Get commit list from repo
@@ -1300,15 +1273,13 @@ class Bitbucket(AtlassianRestAPI):
                fixed system limits. Default by built-in method: 99999
         :return:
         """
-
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{project}/repos/{repository}/commits'.format(project=project,
                                                                                       repository=repository)
         else:
             url = 'rest/api/2.0/projects/{project}/repos/{repository}/commits'.format(project=project,
                                                                                       repository=repository)
-        params = {}
-        params["merges"] = merges
+        params = {"merges": merges}
         if hash_oldest:
             params['since'] = hash_oldest
         if hash_newest:
@@ -1342,7 +1313,7 @@ class Bitbucket(AtlassianRestAPI):
         :return:
         """
 
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{project}/repos/{repository}/commits/{commitId}'.format(project=project,
                                                                                                  repository=repository,
                                                                                                  commitId=commit)
@@ -1356,12 +1327,12 @@ class Bitbucket(AtlassianRestAPI):
         return self.get(url, params=params)
 
     def get_pull_requests_contain_commit(self, project, repository, commit):
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{project}/repos/{repository}/commits/{commitId}/pull-requests'.format(
-                  project=project, repository=repository, commitId=commit)
+                project=project, repository=repository, commitId=commit)
         else:
             url = 'rest/api/2.0/projects/{project}/repos/{repository}/commits/{commitId}/pull-requests'.format(
-                  project=project, repository=repository, commitId=commit)
+                project=project, repository=repository, commitId=commit)
         return (self.get(url) or {}).get('values')
 
     def get_changelog(self, project, repository, ref_from, ref_to, limit=99999):
@@ -1375,8 +1346,7 @@ class Bitbucket(AtlassianRestAPI):
                 fixed system limits. Default by built-in method: 99999
         :return:
         """
-
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{project}/repos/{repository}/compare/commits'.format(project=project,
                                                                                               repository=repository)
         else:
@@ -1403,8 +1373,7 @@ class Bitbucket(AtlassianRestAPI):
         :param limit: OPTIONAL
         :return:
         """
-
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{project}/repos/{repository}/files'.format(project=project,
                                                                                     repository=repository)
         else:
@@ -1638,8 +1607,7 @@ class Bitbucket(AtlassianRestAPI):
         :param new_repository:
         :return:
         """
-
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{project}/repos/{repository}'.format(project=project,
                                                                               repository=repository)
         else:
@@ -1662,8 +1630,7 @@ class Bitbucket(AtlassianRestAPI):
         are not permitted to access license details.
         :return:
         """
-
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/admin/license'
         else:
             url = 'rest/api/2.0/admin/license'
@@ -1675,8 +1642,7 @@ class Bitbucket(AtlassianRestAPI):
         The authenticated user must have the SYS_ADMIN permission to call this resource.
         :return:
         """
-
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/admin/mail-server'
         else:
             url = 'rest/api/2.0/admin/mail-server'
@@ -1687,8 +1653,7 @@ class Bitbucket(AtlassianRestAPI):
         Retrieves the server email address
         :return:
         """
-
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/admin/mail-server/sender-address'
         else:
             url = 'rest/api/2.0/admin/mail-server/sender-address'
@@ -1700,8 +1665,7 @@ class Bitbucket(AtlassianRestAPI):
         The authenticated user must have the ADMIN permission to call this resource.
         :return:
         """
-
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/admin/mail-server/sender-address'
         else:
             url = 'rest/api/2.0/admin/mail-server/sender-address'
@@ -1712,8 +1676,7 @@ class Bitbucket(AtlassianRestAPI):
         Retrieve ssh settings for user
         :return:
         """
-
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/ssh/1.0/settings'
         else:
             url = 'rest/ssh/2.0/settings'
@@ -1805,7 +1768,7 @@ class Bitbucket(AtlassianRestAPI):
         :return:
         """
 
-        if self.standalone:
+        if not self.cloud:
             return self.post('rest/api/1.0/markup/preview', data=data)
         return self.post('rest/api/2.0/markup/preview', data=data)
 
@@ -1843,12 +1806,12 @@ class Bitbucket(AtlassianRestAPI):
             "branch": branch
         }
 
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{project}/repos/{repository}/browse/{filename}'.format(
-                  project=project, repository=repository, filename=filename)
+                project=project, repository=repository, filename=filename)
         else:
             url = 'rest/api/2.0/projects/{project}/repos/{repository}/browse/{filename}'.format(
-                  project=project, repository=repository, filename=filename)
+                project=project, repository=repository, filename=filename)
         return self.put(url, files=data)
 
     def update_file(self, project, repository, content, message, branch, filename, source_commit_id):
@@ -1869,13 +1832,12 @@ class Bitbucket(AtlassianRestAPI):
             "branch": branch,
             "sourceCommitId": source_commit_id
         }
-
-        if self.standalone:
+        if not self.cloud:
             url = 'rest/api/1.0/projects/{project}/repos/{repository}/browse/{filename}'.format(
-                  project=project, repository=repository, filename=filename)
+                project=project, repository=repository, filename=filename)
         else:
             url = 'rest/api/2.0/projects/{project}/repos/{repository}/browse/{filename}'.format(
-                  project=project, repository=repository, filename=filename)
+                project=project, repository=repository, filename=filename)
         return self.put(url, files=data)
 
     def get_code_insights_report(self, project_key, repository_slug, commit_id, report_key):
@@ -1944,4 +1906,3 @@ class Bitbucket(AtlassianRestAPI):
         if user_filter:
             params['filter'] = user_filter
         return self.get(url, params=params)
-
