@@ -231,30 +231,13 @@ class Jira(AtlassianRestAPI):
 
     def user_deactivate(self, username):
         """
-        Disable user
+        Disable user. Works from 8.3.0 Release
+        https://docs.atlassian.com/software/jira/docs/api/REST/8.3.0/#api/2/user-updateUser
         :param username:
         :return:
         """
-        url = 'secure/admin/user/EditUser.jspa'
-        headers = self.form_token_headers
-        user = self.user(username)
-        data = {
-            'inline': 'true',
-            'decorator': 'dialog',
-            'username': user['name'],
-            'fullName': user['displayName'],
-            'email': user['emailAddress'],
-            'editName': user['name']
-        }
-        answer = self.get('secure/admin/WebSudoAuthenticate.jspa', self.form_token_headers)
-        atl_token = None
-        if answer:
-            atl_token = \
-                answer.split('<meta id="atlassian-token" name="atlassian-token" content="')[1].split('\n')[0].split(
-                    '"')[0]
-        if atl_token:
-            data['atl_token'] = atl_token
-        return self.post(data=data, path=url, headers=headers)
+        data = {"active": "false", "name": username}
+        return self.user_update(username=username, data=data)
 
     def user_disable(self, username):
         """Override the disable method"""
@@ -2080,7 +2063,7 @@ class Jira(AtlassianRestAPI):
         :param maxResults: integer
         :param offset: integer
         """
-    
+
         url = "rest/tempo-timesheets/4/worklogs/search"
         return self.post(url, data=params)
 

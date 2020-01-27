@@ -1239,6 +1239,17 @@ class Bitbucket(AtlassianRestAPI):
         return self.delete(url)
 
     def get_diff(self, project, repository, path, hash_oldest, hash_newest):
+        """
+        Gets a diff of the changes available in the {@code from} commit but not in the {@code to} commit.
+        If either the {@code from} or {@code to} commit are not specified,
+        they will be replaced by the default branch of their containing repository.
+        :param project:
+        :param repository:
+        :param path:
+        :param hash_oldest: the source commit (can be a partial/full commit ID or qualified/unqualified ref name)
+        :param hash_newest: the target commit (can be a partial/full commit ID or qualified/unqualified ref name)
+        :return:
+        """
         if not self.cloud:
             url = 'rest/api/1.0/projects/{project}/repos/{repository}/compare/diff/{path}'.format(project=project,
                                                                                                   repository=repository,
