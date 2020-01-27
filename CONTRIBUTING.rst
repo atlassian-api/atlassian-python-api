@@ -64,6 +64,7 @@ All methods based on docs from: https://developer.atlassian.com/docs/
 *  Bitbucket:
     - https://developer.atlassian.com/server/bitbucket/reference/rest-api/
     - https://developer.atlassian.com/server/bitbucket/how-tos/command-line-rest/
+    - https://developer.atlassian.com/bitbucket/api/2/reference/resource/
 * Bamboo:
     - https://docs.atlassian.com/atlassian-bamboo/REST/latest/
 * Tempo:
