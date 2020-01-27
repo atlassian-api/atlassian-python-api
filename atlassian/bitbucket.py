@@ -1474,12 +1474,12 @@ class Bitbucket(AtlassianRestAPI):
             except_access_keys = []
         headers = self.default_headers
         if repository:
-            url = "/rest/branch-permissions/2.0/projects/{project_key}/repos/{repository}/restrictions".format(
+            url = "rest/branch-permissions/2.0/projects/{project_key}/repos/{repository}/restrictions".format(
                 project_key=project_key,
                 repository=repository
             )
         else:
-            url = "/rest/branch-permissions/2.0/projects/{project_key}/restrictions".format(
+            url = "rest/branch-permissions/2.0/projects/{project_key}/restrictions".format(
                 project_key=project_key
             )
         if multiple_permissions:
@@ -1516,13 +1516,13 @@ class Bitbucket(AtlassianRestAPI):
         """
 
         if repository:
-            url = "/rest/branch-permissions/2.0/projects/{project_key}/repos/{repository}/restrictions/{id}".format(
+            url = "rest/branch-permissions/2.0/projects/{project_key}/repos/{repository}/restrictions/{id}".format(
                 project_key=project_key,
                 repository=repository,
                 id=permission_id
             )
         else:
-            url = "/rest/branch-permissions/2.0/projects/{project_key}/restrictions/{id}".format(
+            url = "rest/branch-permissions/2.0/projects/{project_key}/restrictions/{id}".format(
                 project_key=project_key,
                 id=permission_id
             )
@@ -1540,13 +1540,13 @@ class Bitbucket(AtlassianRestAPI):
         """
 
         if repository:
-            url = "/rest/branch-permissions/2.0/projects/{project_key}/repos/{repository}/restrictions/{id}".format(
+            url = "rest/branch-permissions/2.0/projects/{project_key}/repos/{repository}/restrictions/{id}".format(
                 project_key=project_key,
                 repository=repository,
                 id=permission_id
             )
         else:
-            url = "/rest/branch-permissions/2.0/projects/{project_key}/restrictions/{id}".format(
+            url = "rest/branch-permissions/2.0/projects/{project_key}/restrictions/{id}".format(
                 project_key=project_key,
                 id=permission_id
             )

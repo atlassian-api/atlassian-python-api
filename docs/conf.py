@@ -26,7 +26,7 @@ author = 'SLRover'
 # The short X.Y version
 version = ''
 # The full version, including alpha/beta/rc tags
-release = '1.13.23'
+release = '1.15.01'
 
 # -- General configuration ---------------------------------------------------
 
