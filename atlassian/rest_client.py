@@ -116,7 +116,7 @@ class AtlassianRestAPI(object):
         return url_link
 
     def request(self, method='GET', path='/', data=None, flags=None, params=None, headers=None,
-                files=None, trailing=None):
+                files=None, trailing=None, handle_https_redirections=False):
         """
 
         :param method:
@@ -141,6 +141,15 @@ class AtlassianRestAPI(object):
             data = None if not data else json.dumps(data)
 
         headers = headers or self.default_headers
+        if handle_https_redirections and method != "GET":
+            head = self._session.head(
+                url=url,
+                headers=headers,
+                timeout=self.timeout,
+                verify=self.verify_ssl,
+            )
+            if head.status_code == 301:
+                url = url.replace("http", "https")
         response = self._session.request(
             method=method,
             url=url,
