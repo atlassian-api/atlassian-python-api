@@ -611,6 +611,16 @@ class Jira(AtlassianRestAPI):
             data['comment'] = comment
         return self.issue_add_json_worklog(key=key, worklog=data)
 
+    def issue_get_worklog(self, issue_id_or_key):
+        """
+        Returns all work logs for an issue.
+        Note: Work logs won't be returned if the Log work field is hidden for the project.
+        :param issue_id_or_key:
+        :return:
+        """
+        url = "rest/api/2/issue/{issueIdOrKey}/worklog".format(issueIdOrKey=issue_id_or_key)
+        return self.get(url)
+
     def issue_field_value(self, key, field):
         issue = self.get('rest/api/2/issue/{0}?fields={1}'.format(key, field))
         return issue['fields'][field]
