@@ -416,6 +416,15 @@ class Confluence(AtlassianRestAPI):
             data['ancestors'] = [{'type': type, 'id': parent_id}]
         return self.post(url, data=data)
 
+    def move_page(self, space_key, page_id, target_title, position="append"):
+        url = "/pages/movepage.action"
+        params = {"spaceKey": space_key, "pageId": page_id}
+        if target_title:
+            params["targetTitle"] = target_title
+        if position:
+            params["position"] = position
+        return self.get(url, params=params, headers=self.no_check_headers)
+
     def get_all_spaces(self, start=0, limit=500, expand=None):
         """
         Get all spaces with provided limit
@@ -714,12 +723,12 @@ class Confluence(AtlassianRestAPI):
         """
         if self.advanced_mode:
             confluence_content = (((self.get_page_by_id(page_id, expand='body.storage').json() or {})
-                    .get('body') or {})
-                    .get('storage') or {})
+                                   .get('body') or {})
+                                  .get('storage') or {})
         else:
             confluence_content = (((self.get_page_by_id(page_id, expand='body.storage') or {})
-                    .get('body') or {})
-                    .get('storage') or {})
+                                   .get('body') or {})
+                                  .get('storage') or {})
 
         if title:
             current_title = confluence_content.get('title', None)
@@ -793,8 +802,9 @@ class Confluence(AtlassianRestAPI):
 
             return self.put('rest/api/content/{0}'.format(page_id), data=data)
 
-    def _insert_to_existing_page(self, page_id, title, insert_body, parent_id=None, type='page', representation='storage',
-                    minor_edit=False, top_of_page=False):
+    def _insert_to_existing_page(self, page_id, title, insert_body, parent_id=None, type='page',
+                                 representation='storage',
+                                 minor_edit=False, top_of_page=False):
         """
         Insert body to a page if already exist
         :param parent_id:
@@ -849,11 +859,12 @@ class Confluence(AtlassianRestAPI):
         """
         log.info('Updating {type} "{title}"'.format(title=title, type=type))
 
-        return self._insert_to_existing_page(page_id, title, append_body, parent_id=parent_id, type=type, representation=representation,
-                    minor_edit=minor_edit, top_of_page=False)
+        return self._insert_to_existing_page(page_id, title, append_body, parent_id=parent_id, type=type,
+                                             representation=representation,
+                                             minor_edit=minor_edit, top_of_page=False)
 
     def prepend_page(self, page_id, title, prepend_body, parent_id=None, type='page', representation='storage',
-                    minor_edit=False):
+                     minor_edit=False):
         """
         Append body to page if already exist
         :param parent_id:
@@ -868,8 +879,9 @@ class Confluence(AtlassianRestAPI):
         """
         log.info('Updating {type} "{title}"'.format(title=title, type=type))
 
-        return self._insert_to_existing_page(page_id, title, prepend_body, parent_id=parent_id, type=type, representation=representation,
-                    minor_edit=minor_edit, top_of_page=True)
+        return self._insert_to_existing_page(page_id, title, prepend_body, parent_id=parent_id, type=type,
+                                             representation=representation,
+                                             minor_edit=minor_edit, top_of_page=True)
 
     def update_or_create(self, parent_id, title, body, representation='storage', minor_edit=False):
         """
