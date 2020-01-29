@@ -541,18 +541,7 @@ class Bitbucket(AtlassianRestAPI):
         else:
             url = 'rest/api/2.0/projects/{projectKey}/repos'.format(projectKey=project_key)
         params = {}
-        start = 0
-        params['start'] = start
-        response = self.get(url, params=params)
-        if 'values' not in response:
-            return []
-        repo_list = (response or {}).get('values')
-        while not response.get('isLastPage'):
-            start = response.get('nextPageStart')
-            params['start'] = start
-            response = self.get(url, params=params)
-            repo_list += (response or {}).get('values')
-        return repo_list
+        return self._get_paged(url, params)
 
     def delete_repo(self, project_key, repository_slug):
         """
@@ -1090,7 +1079,7 @@ class Bitbucket(AtlassianRestAPI):
         }
         return self.put(url, data=payload)
 
-    def get_pullrequest(self, project, repository, pull_request_id):
+    def get_pull_request(self, project, repository, pull_request_id):
         """
         Retrieve a pull request.
         The authenticated user must have REPO_READ permission
@@ -1107,6 +1096,12 @@ class Bitbucket(AtlassianRestAPI):
             url = 'rest/api/2.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}'.format(
                 project=project, repository=repository, pullRequestId=pull_request_id)
         return self.get(url)
+
+    def get_pullrequest(self, *args, **kwargs):
+        """
+        Deprecated name since 1.15.1. Let's use the get_pull_request()
+        """
+        return self.get_pull_request(*args, **kwargs)
 
     def change_reviewed_status(self, project_key, repository_slug, pull_request_id, status, user_slug):
         """
@@ -1435,9 +1430,7 @@ class Bitbucket(AtlassianRestAPI):
                 project=project,
                 repository=repository)
         else:
-            url = 'rest/branch-permissions/2.0/projects/{project}/restrictions'.format(
-                project=project)
-
+            url = 'rest/branch-permissions/2.0/projects/{project}/restrictions'.format(project=project)
         params = {}
         if limit:
             params['limit'] = limit
@@ -1900,6 +1893,18 @@ class Bitbucket(AtlassianRestAPI):
         data.update(report_params)
         return self.put(url, data=data)
 
+    def search_code(self, team, search_query, page=1, limit=10):
+        """
+        Search repositories for matching code
+        :team: str
+        :search_query: str
+        """
+        endpoint = 'rest/api/1.0'
+        if self.cloud:
+            endpoint = 'rest/api/2.0'
+        url = "{endpoint}/teams/{team}/search/code".format(endpoint=endpoint, team=team)
+        return self.get(url, params={'search_query': search_query, 'page': page, 'pagelen': limit})
+
     def get_lfs_repo_status(self, project_key, repo):
         url = 'rest/git-lfs/git-lfs/admin/projects/{projectKey}/repos/{repositorySlug}/enabled'.format(
             projectKey=project_key,
@@ -1917,3 +1922,21 @@ class Bitbucket(AtlassianRestAPI):
         if user_filter:
             params['filter'] = user_filter
         return self.get(url, params=params)
+
+    def _get_paged(self, url, params):
+        """
+        Use for get all methods
+        :param url:
+        :param params:
+        :return:
+        """
+        params['start'] = 0
+        response = self.get(url, params=params)
+        if 'values' not in response:
+            return []
+        values = response.get('values')
+        while not response.get('isLastPage'):
+            params['start'] = response.get('nextPageStart')
+            response = self.get(url, params=params)
+            values += response.get('values')
+        return values

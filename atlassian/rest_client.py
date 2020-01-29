@@ -178,7 +178,7 @@ class AtlassianRestAPI(object):
         elif response.status_code == 405:
             log.error('Received: {0}\n Method not allowed'.format(response.status_code))
         elif response.status_code == 409:
-            log.error('Received: {0}\n Conflict \n '.format(response.status_code, response_content))
+            log.error('Received: {0}\n Conflict \n {1}'.format(response.status_code, response_content))
         elif response.status_code == 413:
             log.error('Received: {0}\n Request entity too large'.format(response.status_code))
         else:

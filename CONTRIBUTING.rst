@@ -56,6 +56,7 @@ References
 All methods based on docs from: https://developer.atlassian.com/docs/
 
 * `Jira Server`_
+* `Jira Cloud`_
 * Confluence_
 * `Jira Service Desk Server`_
 * `Jira Service Desk Cloud`_
@@ -79,6 +80,7 @@ All methods based on docs from: https://developer.atlassian.com/docs/
     - https://confluence.atlassian.com/cloud/api-tokens-938839638.html
 
 .. _`Jira Server`: https://docs.atlassian.com/software/jira/docs/api/REST/latest
+.. _Jira Cloud: https://developer.atlassian.com/cloud/jira/platform/rest/v3/
 .. _Confluence: https://developer.atlassian.com/server/confluence/confluence-server-rest-api/
 .. _`Jira Service Desk Cloud`: https://developer.atlassian.com/cloud/jira/service-desk/rest/
 .. _`Jira Service Desk Server`: https://docs.atlassian.com/jira-servicedesk/REST/server
