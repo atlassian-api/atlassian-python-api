@@ -1,3 +1,5 @@
 include atlassian/VERSION
 include LICENSE
 include README.rst
+include tox.ini
+include requirements.txt

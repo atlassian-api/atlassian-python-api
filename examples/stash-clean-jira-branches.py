@@ -1,6 +1,6 @@
 from atlassian import Jira
 from atlassian import Stash
-from var import config
+import config
 import logging
 import time
 

@@ -753,7 +753,7 @@ class Confluence(AtlassianRestAPI):
         log.debug('Old Content: """{body}"""'.format(body=confluence_body_content))
         log.debug('New Content: """{body}"""'.format(body=body))
 
-        if confluence_body_content == body:
+        if confluence_body_content.strip() == body.strip():
             log.warning('Content of {page_id} is exactly the same'.format(page_id=page_id))
             return True
         else:
@@ -1040,8 +1040,10 @@ class Confluence(AtlassianRestAPI):
         :param expand: OPTIONAL: additional info from description, homepage
         :return: Returns the space along with its ID
         """
-        url = 'rest/api/space/{space_key}?expand={expand}'.format(space_key=space_key,
-                                                                  expand=expand)
+        url = 'rest/api/space/{space_key}'.format(space_key=space_key)
+        params = {}
+        if expand:
+            params["expand"] = expand
         return self.get(url)
 
     def create_space(self, space_key, space_name):
@@ -1065,6 +1067,13 @@ class Confluence(AtlassianRestAPI):
         """
         url = 'rest/api/space/{}'.format(space_key)
         return self.delete(url)
+
+    def get_space_property(self, space_key, expand=None):
+        url = 'rest/api/space/{space}/property'.format(space=space_key)
+        params = {}
+        if expand:
+            params['expand'] = expand
+        return self.get(url, params=params)
 
     def get_user_details_by_username(self, username, expand=None):
         """
