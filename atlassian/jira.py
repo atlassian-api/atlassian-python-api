@@ -2474,6 +2474,19 @@ class Jira(AtlassianRestAPI):
         url = 'rest/agile/1.0/sprint/{sprintId}/issue'.format(sprintId=sprint_id)
         return self.get(url, params=params)
 
+    def update_rank(self, issues_to_rank, rank_before, customfield_number):
+        """
+        Updates the rank of issues (max 50), placing them before a given issue.
+        :param issues_to_rank: List of issues to rank (max 50)
+        :param rank_before: Issue that the issues will be put over
+        :param customfield_number: The number of the custom field Rank
+        :return:
+        """
+        return self.put('rest/agile/1.0/issue/rank', data={
+            'issues': issues_to_rank,
+            'rankBeforeIssue': rank_before,
+            'rankCustomFieldId': customfield_number})
+
     def health_check(self):
         """
         Get health status
