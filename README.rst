@@ -38,7 +38,7 @@ Here's a short example how to create a Confluence page:
 
     print(status)
 
-And here's another example how to get issues from Jira using JQL Query:
+And here's another example of how to get issues from Jira using JQL Query:
 
 .. code-block:: python
 
@@ -48,13 +48,11 @@ And here's another example how to get issues from Jira using JQL Query:
         url='http://localhost:8080',
         username='admin',
         password='admin')
-
     JQL = 'project = DEMO AND status IN ("To Do", "In Progress") ORDER BY issuekey'
-    
     data = jira.jql(JQL)
     print(data)
 
-Also, you can use the Bitbucket module e.g. for get project list
+Also, you can use the Bitbucket module e.g. for getting project list
 
 .. code-block:: python
 
@@ -68,7 +66,7 @@ Also, you can use the Bitbucket module e.g. for get project list
     data = bitbucket.project_list()
     print(data)
 
-Now you can use Jira Service Desk module. See docs.
+Now you can use the Jira Service Desk module. See docs.
 Example to get your requests:
 
 .. code-block:: python
@@ -83,7 +81,7 @@ Example to get your requests:
     data = sd.get_my_customer_requests()
     print(data)
 
-If you want to see response in pretty print format json. Feel free for use construction like:
+If you want to see the response in pretty print format json. Feel free for use construction like:
 
 .. code-block:: python
 
