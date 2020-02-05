@@ -10,15 +10,15 @@ Documentation
 
 .. _Documentation: https://atlassian-python-api.readthedocs.io/en/latest/index.html
 
-Examples
---------
-.. tip:: More examples in ``examples/`` directory.
-
-For everyday normal use, just install package using pip
-
+Install
+-------
 .. code-block:: console
 
    $ pip install atlassian-python-api
+
+Examples
+--------
+**More examples in ``examples/`` directory.**
 
 Here's a short example how to create a Confluence page:
 
@@ -49,7 +49,7 @@ And here's another example how to get issues from Jira using JQL Query:
         username='admin',
         password='admin')
 
-    JQL = 'project = DEMO AND status NOT IN (Closed, Resolved) ORDER BY issuekey'
+    JQL = 'project = DEMO AND status IN ("To Do", "In Progress") ORDER BY issuekey'
     
     data = jira.jql(JQL)
     print(data)
