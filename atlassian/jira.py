@@ -324,8 +324,7 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         url = 'rest/api/2/applicationrole'
-
-        return self.get(url)
+        return self.get(url) or {}
 
     def get_application_role(self, role_key):
         """
@@ -334,8 +333,7 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         url = 'rest/api/2/applicationrole/{}'.format(role_key)
-
-        return self.get(url)
+        return self.get(url) or {}
 
     def projects(self, included_archived=None):
         """Returns all projects which are visible for the currently logged in user.
@@ -2499,3 +2497,44 @@ class Jira(AtlassianRestAPI):
             # check as support tools
             response = self.get('rest/supportHealthCheck/1.0/check/')
         return response
+
+    # Audit Records
+    def get_audit_records(self, offset=None, limit=None, filter=None, from_date=None, to_date=None):
+        """
+        Returns auditing records filtered using provided parameters
+        :param offset: the number of record from which search starts
+        :param limit: maximum number of returned results (if is limit is <= 0 or > 1000,
+                      it will be set do default value: 1000)
+        :param filter:	string = text query; each record that will be returned
+                        must contain the provided text in one of its fields
+        :param from: string	 - timestamp in past; 'from' must be less or equal 'to',
+                             otherwise the result set will be empty only records that
+                             where created in the same moment or after the 'from' timestamp will be provided in response
+        :param to: string	- timestamp in past; 'from' must be less or equal 'to',
+                              otherwise the result set will be empty only records that
+                              where created in the same moment or earlier than the 'to'
+                              timestamp will be provided in response
+        :return:
+        """
+        params = {}
+        if offset:
+            params["offset"] = offset
+        if limit:
+            params["limit"] = limit
+        if filter:
+            params["filter"] = filter
+        if from_date:
+            params["from"] = from_date
+        if to_date:
+            params["to"] = to_date
+        url = "rest/api/2/auditing/record"
+        return self.get(url, params=params) or {}
+
+    def post_audit_record(self, audit_record):
+        """
+        Store a record in Audit Log
+        :param audit_record: json with compat https://docs.atlassian.com/jira/REST/schema/audit-record#
+        :return:
+        """
+        url = "rest/api/2/auditing/record"
+        return self.post(url, data=audit_record)
