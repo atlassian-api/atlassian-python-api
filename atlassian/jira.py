@@ -103,6 +103,14 @@ class Jira(AtlassianRestAPI):
             params['expand'] = expand
         return self.get('rest/api/2/user', params=params)
 
+    def user_key(self, key):
+        """
+        Returns a user. This resource cannot be accessed anonymously.
+        :param key:
+        :return:
+        """
+        return self.get('rest/api/2/user/properties?key={}'.format(username))
+
     def is_active_user(self, username):
         """
         Check status of user

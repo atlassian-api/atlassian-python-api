@@ -39,6 +39,9 @@ Manage users
     # Get user
     jira.user(username)
 
+    # Get user from key
+    jira.user_key()
+
     # Remove user
     jira.user_remove(username)
 
