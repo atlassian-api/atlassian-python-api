@@ -10,14 +10,15 @@ Documentation
 
 .. _Documentation: https://atlassian-python-api.readthedocs.io/en/latest/index.html
 
+Install
+-------
+.. code-block:: console
+
+   $ pip install atlassian-python-api
+
 Examples
 --------
-
-For everyday normal use, just install package using pip
-
-::
-
-   pip install atlassian-python-api
+**More examples in ``examples/`` directory.**
 
 Here's a short example how to create a Confluence page:
 
@@ -48,7 +49,8 @@ And here's another example how to get issues from Jira using JQL Query:
         username='admin',
         password='admin')
 
-    JQL = 'project = DEMO AND status NOT IN (Closed, Resolved) ORDER BY issuekey'
+    JQL = 'project = DEMO AND status IN ("To Do", "In Progress") ORDER BY issuekey'
+    
     data = jira.jql(JQL)
     print(data)
 
@@ -62,6 +64,7 @@ Also, you can use the Bitbucket module e.g. for get project list
             url='http://localhost:7990',
             username='admin',
             password='admin')
+    
     data = bitbucket.project_list()
     print(data)
 
@@ -76,10 +79,10 @@ Example to get your requests:
             url='http://localhost:7990',
             username='admin',
             password='admin')
-    my_requests = sd.get_my_customer_requests()
-    print(my_requests)
+    
+    data = sd.get_my_customer_requests()
+    print(data)
 
-Please make sure, you've checked ``examples/`` directory on how to build scripts using the API.
 If you want to see response in pretty print format json. Feel free for use construction like:
 
 .. code-block:: python
