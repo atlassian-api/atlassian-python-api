@@ -1940,8 +1940,8 @@ class Bitbucket(AtlassianRestAPI):
             response = self.get(url, params=params)
             values += response.get('values')
         return values
-		
-	def get_project_conditions(self, project_key):
+
+    def get_project_conditions(self, project_key):
         """
         Request type: GET
         Return a page of defaults conditions with reviewers list that have been configured for this project.
@@ -1950,8 +1950,8 @@ class Bitbucket(AtlassianRestAPI):
         :return:
         """
         url = 'rest/default-reviewers/1.0/projects/{projectKey}/conditions'.format(
-            projectKey=key)
-        return (self.get(url))
+            projectKey=project_key)
+        return (self.get(url) or {})
 
     def get_project_condition(self, project_key, id_condition):
         """
@@ -1994,7 +1994,7 @@ class Bitbucket(AtlassianRestAPI):
         """
         url = 'rest/default-reviewers/1.0/projects/{projectKey}/condition/{idCondition}'.format(
             projectKey=project_key,
-            idCondition = id_condition)
+            idCondition=id_condition)
         return (self.put(url, data=condition) or {})
 
     def delete_project_condition(self, project_key, condition, id_condition):
@@ -2008,7 +2008,7 @@ class Bitbucket(AtlassianRestAPI):
         """
         url = 'rest/default-reviewers/1.0/projects/{projectKey}/condition/{idCondition}'.format(
             projectKey=project_key,
-            idCondition = id_condition)
+            idCondition=id_condition)
         return (self.delete(url) or {})
 
     def get_repo_conditions(self, project_key, repo_key):
@@ -2038,7 +2038,7 @@ class Bitbucket(AtlassianRestAPI):
         url = 'rest/default-reviewers/1.0/projects/{projectKey}/repos/{repoKey}/conditions/{idCondition}'.format(
             projectKey=project_key,
             repoKey=repo_key,
-            idCondition = id_condition)
+            idCondition=id_condition)
         return (self.get(url) or {})
 
     def create_repo_condition(self, project_key, repo_key, condition):
@@ -2072,7 +2072,7 @@ class Bitbucket(AtlassianRestAPI):
         url = 'rest/default-reviewers/1.0/projects/{projectKey}/repos/{repoKey}/condition/{idCondition}'.format(
             projectKey=project_key,
             repoKey=repo_key,
-            idCondition = id_condition)
+            idCondition=id_condition)
         return (self.put(url, data=condition) or {})
 
     def delete_repo_condition(self, project_key, repo_key, condition, id_condition):
@@ -2088,7 +2088,7 @@ class Bitbucket(AtlassianRestAPI):
         url = 'rest/default-reviewers/1.0/projects/{projectKey}/repos/{repoKey}/condition/{idCondition}'.format(
             projectKey=project_key,
             repoKey=repo_key,
-            idCondition = id_condition)
+            idCondition=id_condition)
         return (self.delete(url) or {})
 
     def get_repo_details(self, project_key, repo_key):
@@ -2099,9 +2099,7 @@ class Bitbucket(AtlassianRestAPI):
         :repoKey: str - repo key involved
         :return:
         """
-        url = 'rest/api/1.0/projects/{key}/repos/{repoKey}'.format(
+        url = 'rest/api/1.0/projects/{projectKey}/repos/{repoKey}'.format(
             projectKey=project_key,
-            repoKey = repo_key)
-		return (self.get(url) or {})
-		
-		
+            repoKey=repo_key)
+        return (self.get(url) or {})
