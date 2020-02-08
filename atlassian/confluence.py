@@ -416,19 +416,22 @@ class Confluence(AtlassianRestAPI):
             data['ancestors'] = [{'type': type, 'id': parent_id}]
         return self.post(url, data=data)
 
-    def move_page(self, space_key, page_id, target_title, position="append"):
+    def move_page(self, space_key, page_id, target_id=None, target_title=None, position="append"):
         """
         Move page method
         :param space_key:
         :param page_id:
         :param target_title:
-        :param position: topLevel or append
+        :param target_id:
+        :param position: topLevel or append , above
         :return:
         """
         url = "/pages/movepage.action"
         params = {"spaceKey": space_key, "pageId": page_id}
         if target_title:
             params["targetTitle"] = target_title
+        if target_id:
+            params["targetId"] = target_id
         if position:
             params["position"] = position
         return self.get(url, params=params, headers=self.no_check_headers)
