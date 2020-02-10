@@ -6,6 +6,13 @@ import time
 from requests import HTTPError
 
 from atlassian import utils
+from .errors import (
+    ApiError,
+    ApiNotFoundError,
+    ApiPermissionError,
+    ApiValueError,
+    ApiConflictError
+)
 from .rest_client import AtlassianRestAPI
 
 log = logging.getLogger(__name__)
@@ -63,11 +70,20 @@ class Confluence(AtlassianRestAPI):
 
         url = 'rest/api/content/{page_id}/child/{type}'.format(page_id=page_id, type=type)
         log.info(url)
+
         try:
-            return (self.get(url, params=params) or {}).get('results')
-        except IndexError as e:
-            log.error(e)
-            return None
+            response = self.get(url, params=params)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                # Raise ApiError as the documented reason is ambiguous
+                raise ApiError(
+                    "There is no content with the given id, "
+                    "or the calling user does not have permission to view the content"
+                ) from e
+
+            raise
+
+        return response.get('results')
 
     def get_child_pages(self, page_id):
         """
@@ -144,15 +160,26 @@ class Confluence(AtlassianRestAPI):
             params['spaceKey'] = str(space)
         if title is not None:
             params['title'] = str(title)
+
         if self.advanced_mode:
             return self.get(url, params=params)
-        else:
-            try:
-                return (self.get(url, params=params) or {}).get('results')[0]
-            except (IndexError, TypeError) as e:
-                log.error("Can't find '{title}' page on the {url}!".format(title=title, url=self.url))
-                log.debug(e)
-                return None
+
+        try:
+            response = self.get(url, params=params)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                raise ApiPermissionError(
+                    "The calling user does not have permission to view the content"
+                ) from e
+
+            raise
+
+        try:
+            return response.get('results')[0]
+        except (IndexError, TypeError) as e:
+            log.error("Can't find '{title}' page on the {url}!".format(title=title, url=self.url))
+            log.debug(e)
+            return None
 
     def get_page_by_id(self, page_id, expand=None, status=None, version=None):
         """
@@ -178,7 +205,20 @@ class Confluence(AtlassianRestAPI):
         if version:
             params['version'] = version
         url = 'rest/api/content/{page_id}'.format(page_id=page_id)
-        return self.get(url, params=params)
+
+        try:
+            response = self.get(url, params=params)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                # Raise ApiError as the documented reason is ambiguous
+                raise ApiError(
+                    "There is no content with the given id, "
+                    "or the calling user does not have permission to view the content"
+                ) from e
+
+            raise
+
+        return response
 
     def get_page_labels(self, page_id, prefix=None, start=None, limit=None):
         """
@@ -200,7 +240,20 @@ class Confluence(AtlassianRestAPI):
             params['start'] = int(start)
         if limit is not None:
             params['limit'] = int(limit)
-        return self.get(url, params=params)
+
+        try:
+            response = self.get(url, params=params)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                # Raise ApiError as the documented reason is ambiguous
+                raise ApiError(
+                    "There is no content with the given id, "
+                    "or the calling user does not have permission to view the content"
+                ) from e
+
+            raise
+
+        return response
 
     def get_page_comments(self, content_id, expand=None, parent_version=None, start=0, limit=25, location=None,
                           depth=None):
@@ -225,7 +278,20 @@ class Confluence(AtlassianRestAPI):
         if depth:
             params['depth'] = depth
         url = 'rest/api/content/{id}/child/comment'.format(id=content_id)
-        return self.get(url, params=params)
+
+        try:
+            response = self.get(url, params=params)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                # Raise ApiError as the documented reason is ambiguous
+                raise ApiError(
+                    "There is no content with the given id, "
+                    "or the calling user does not have permission to view the content"
+                ) from e
+
+            raise
+
+        return response
 
     def get_draft_page_by_id(self, page_id, status='draft'):
         """
@@ -235,7 +301,18 @@ class Confluence(AtlassianRestAPI):
         :return:
         """
         url = 'rest/api/content/{page_id}?status={status}'.format(page_id=page_id, status=status)
-        return self.get(url)
+
+        try:
+            response = self.get(url)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                raise ApiPermissionError(
+                    "The calling user does not have permission to view the content"
+                ) from e
+
+            raise
+
+        return response
 
     def get_all_pages_by_label(self, label, start=0, limit=50):
         """
@@ -255,7 +332,16 @@ class Confluence(AtlassianRestAPI):
             params['start'] = start
         if limit:
             params['limit'] = limit
-        return (self.get(url, params=params) or {}).get('results')
+
+        try:
+            response = self.get(url, params=params)
+        except HTTPError as e:
+            if e.response.status_code == 400:
+                raise ApiValueError("The CQL is invalid or missing") from e
+
+            raise
+
+        return response.get('results')
 
     def get_all_pages_from_space(self, space, start=0, limit=50, status=None, expand=None, content_type='page'):
         """
@@ -289,7 +375,17 @@ class Confluence(AtlassianRestAPI):
         if content_type:
             params['type'] = content_type
 
-        return (self.get(url, params=params) or {}).get('results')
+        try:
+            response = self.get(url, params=params)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                raise ApiPermissionError(
+                    "The calling user does not have permission to view the content"
+                ) from e
+
+            raise
+
+        return response.get('results')
 
     def get_all_pages_from_space_trash(self, space, start=0, limit=500, status='trashed', content_type='page'):
         """
@@ -335,7 +431,18 @@ class Confluence(AtlassianRestAPI):
             params['limit'] = limit
         if start:
             params['start'] = start
-        return (self.get(url, params=params) or {}).get('results')
+
+        try:
+            response = self.get(url, params=params)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                raise ApiPermissionError(
+                    "The calling user does not have permission to view the content"
+                ) from e
+
+            raise
+
+        return response.get('results')
 
     def get_all_restictions_for_content(self, content_id):
         """keep typo method"""
@@ -373,7 +480,23 @@ class Confluence(AtlassianRestAPI):
         :param content_id:
         :return:
         """
-        return self.delete('rest/api/content/{}'.format(content_id))
+        try:
+            response = self.delete('rest/api/content/{}'.format(content_id))
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                # Raise ApiError as the documented reason is ambiguous
+                raise ApiError(
+                    "There is no content with the given id, or the calling "
+                    "user does not have permission to trash or purge the content"
+                ) from e
+            if e.response.status_code == 409:
+                raise ApiConflictError(
+                    "There is a stale data object conflict when trying to delete a draft"
+                ) from e
+
+            raise
+
+        return response
 
     def remove_page(self, page_id, status=None, recursive=False):
         """
@@ -391,7 +514,24 @@ class Confluence(AtlassianRestAPI):
         params = {}
         if status:
             params['status'] = status
-        return self.delete(url, params=params)
+
+        try:
+            response = self.delete(url, params=params)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                # Raise ApiError as the documented reason is ambiguous
+                raise ApiError(
+                    "There is no content with the given id, or the calling "
+                    "user does not have permission to trash or purge the content"
+                ) from e
+            if e.response.status_code == 409:
+                raise ApiConflictError(
+                    "There is a stale data object conflict when trying to delete a draft"
+                ) from e
+
+            raise
+
+        return response
 
     def create_page(self, space, title, body, parent_id=None, type='page',
                     representation='storage'):
@@ -414,7 +554,18 @@ class Confluence(AtlassianRestAPI):
             'body': self._create_body(body, representation)}
         if parent_id:
             data['ancestors'] = [{'type': type, 'id': parent_id}]
-        return self.post(url, data=data)
+
+        try:
+            response = self.post(url, data=data)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                raise ApiPermissionError(
+                    "The calling user does not have permission to view the content"
+                ) from e
+
+            raise
+
+        return response
 
     def move_page(self, space_key, page_id, target_id=None, target_title=None, position="append"):
         """
@@ -463,7 +614,18 @@ class Confluence(AtlassianRestAPI):
         data = {'type': 'comment',
                 'container': {'id': page_id, 'type': 'page', 'status': 'current'},
                 'body': self._create_body(text, 'storage')}
-        return self.post('rest/api/content/', data=data)
+
+        try:
+            response = self.post('rest/api/content/', data=data)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                raise ApiPermissionError(
+                    "The calling user does not have permission to view the content"
+                ) from e
+
+            raise
+
+        return response
 
     def attach_content(self, content, name, content_type='application/binary', page_id=None, title=None, space=None,
                        comment=None):
@@ -503,8 +665,28 @@ class Confluence(AtlassianRestAPI):
             attachments = self.get(path=path, headers=headers, params={'filename': name})
             if attachments.get('size'):
                 path = path + '/' + attachments['results'][0]['id'] + '/data'
-            return self.post(path=path, data=data, headers=headers,
-                             files={'file': (name, content, content_type)})
+
+            try:
+                response = self.post(path=path, data=data, headers=headers,
+                                     files={'file': (name, content, content_type)})
+            except HTTPError as e:
+                if e.response.status_code == 403:
+                    # Raise ApiError as the documented reason is ambiguous
+                    raise ApiError(
+                        "Attachments are disabled or the calling user does "
+                        "not have permission to add attachments to this content"
+                    ) from e
+                if e.response.status_code == 404:
+                    # Raise ApiError as the documented reason is ambiguous
+                    raise ApiError(
+                        "The requested content is not found, the user does not have "
+                        "permission to view it, or the attachments exceeds the maximum "
+                        "configured attachment size"
+                    ) from e
+
+                raise
+
+            return response
         else:
             log.warning("No 'page_id' found, not uploading attachments")
             return None
@@ -621,7 +803,20 @@ class Confluence(AtlassianRestAPI):
         if media_type:
             params['mediaType'] = media_type
         url = 'rest/api/content/{id}/child/attachment'.format(id=page_id, params=params)
-        return self.get(url, params=params)
+
+        try:
+            response = self.get(url, params=params)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                # Raise ApiError as the documented reason is ambiguous
+                raise ApiError(
+                    "There is no content with the given id, "
+                    "or the calling user does not have permission to view the content"
+                ) from e
+
+            raise
+
+        return response
 
     def set_page_label(self, page_id, label):
         """
@@ -633,7 +828,20 @@ class Confluence(AtlassianRestAPI):
         url = 'rest/api/content/{page_id}/label'.format(page_id=page_id)
         data = {'prefix': 'global',
                 'name': label}
-        return self.post(path=url, data=data)
+
+        try:
+            response = self.post(path=url, data=data)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                # Raise ApiError as the documented reason is ambiguous
+                raise ApiError(
+                    "There is no content with the given id, "
+                    "or the calling user does not have permission to view the content"
+                ) from e
+
+            raise
+
+        return response
 
     def remove_page_label(self, page_id, label):
         """
@@ -645,11 +853,42 @@ class Confluence(AtlassianRestAPI):
         url = 'rest/api/content/{page_id}/label'.format(page_id=page_id)
         params = {'id': page_id,
                   'name': label}
-        return self.delete(path=url, params=params)
+
+        try:
+            response = self.delete(path=url, params=params)
+        except HTTPError as e:
+            if e.response.status_code == 403:
+                raise ApiPermissionError(
+                    "The user has view permission, "
+                    "but no edit permission to the content"
+                ) from e
+            if e.response.status_code == 404:
+                # Raise ApiError as the documented reason is ambiguous
+                raise ApiError(
+                    "The content or label doesn't exist, "
+                    "or the calling user doesn't have view permission to the content"
+                ) from e
+
+            raise
+
+        return response
+
 
     def history(self, page_id):
         url = 'rest/api/content/{0}/history'.format(page_id)
-        return self.get(url)
+        try:
+            response = self.get(url)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                # Raise ApiError as the documented reason is ambiguous
+                raise ApiError(
+                    "There is no content with the given id, "
+                    "or the calling user does not have permission to view the content"
+                ) from e
+
+            raise
+
+        return response
 
     def get_content_history(self, content_id):
         return self.history(content_id)
@@ -811,7 +1050,23 @@ class Confluence(AtlassianRestAPI):
             if parent_id:
                 data['ancestors'] = [{'type': 'page', 'id': parent_id}]
 
-            return self.put('rest/api/content/{0}'.format(page_id), data=data)
+            try:
+                response = self.put('rest/api/content/{0}'.format(page_id), data=data)
+            except HTTPError as e:
+                if e.response.status_code == 400:
+                    raise ApiValueError(
+                        "No space or no content type, or setup a wrong version "
+                        "type set to content, or status param is not draft and "
+                        "status content is current"
+                    ) from e
+                if e.response.status_code == 404:
+                    raise ApiNotFoundError(
+                        "Can not find draft with current content"
+                    ) from e
+
+                raise
+
+            return response
 
     def _insert_to_existing_page(self, page_id, title, insert_body, parent_id=None, type='page',
                                  representation='storage',
@@ -852,7 +1107,23 @@ class Confluence(AtlassianRestAPI):
             if parent_id:
                 data['ancestors'] = [{'type': 'page', 'id': parent_id}]
 
-            return self.put('rest/api/content/{0}'.format(page_id), data=data)
+            try:
+                response = self.put('rest/api/content/{0}'.format(page_id), data=data)
+            except HTTPError as e:
+                if e.response.status_code == 400:
+                    raise ApiValueError(
+                        "No space or no content type, or setup a wrong version "
+                        "type set to content, or status param is not draft and "
+                        "status content is current"
+                    ) from e
+                if e.response.status_code == 404:
+                    raise ApiNotFoundError(
+                        "Can not find draft with current content"
+                    ) from e
+
+                raise
+
+            return response
 
     def append_page(self, page_id, title, append_body, parent_id=None, type='page', representation='storage',
                     minor_edit=False):
@@ -949,7 +1220,27 @@ class Confluence(AtlassianRestAPI):
         """
         url = 'rest/api/content/{page_id}/property'.format(page_id=page_id)
         json_data = data
-        return self.post(path=url, data=json_data)
+
+        try:
+            reponse = self.post(path=url, data=json_data)
+        except HTTPError as e:
+            if e.response.status_code == 400:
+                raise ApiValueError(
+                    "The given property has a different content id to the one in the "
+                    "path, or the content already has a value with the given key, or "
+                    "the value is missing, or the value is too long"
+                ) from e
+            if e.response.status_code == 403:
+                raise ApiPermissionError(
+                    "The user does not have permission to "
+                    "edit the content with the given id"
+                ) from e
+            if e.response.status_code == 413:
+                raise ApiValueError("The value is too long") from e
+
+            raise
+
+        return response
 
     def delete_page_property(self, page_id, page_property):
         """
@@ -960,7 +1251,20 @@ class Confluence(AtlassianRestAPI):
         """
         url = 'rest/api/content/{page_id}/property/{page_property}'.format(page_id=page_id,
                                                                            page_property=str(page_property))
-        return self.delete(path=url)
+        try:
+            response = self.delete(path=url)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                # Raise ApiError as the documented reason is ambiguous
+                raise ApiError(
+                    "There is no content with the given id, "
+                    "or the calling user does not have permission to view the content"
+                ) from e
+
+            raise
+
+        return response
+
 
     def get_page_property(self, page_id, page_property_key):
         """
@@ -971,7 +1275,21 @@ class Confluence(AtlassianRestAPI):
         """
         url = 'rest/api/content/{page_id}/property/{key}'.format(page_id=page_id,
                                                                  key=str(page_property_key))
-        return self.get(path=url)
+
+        try:
+            response = self.get(path=url)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                # Raise ApiError as the documented reason is ambiguous
+                raise ApiError(
+                    "There is no content with the given id, or no property with the "
+                    "given key, or the calling user does not have permission to view "
+                    "the content"
+                ) from e
+
+            raise
+
+        return response
 
     def get_page_properties(self, page_id):
         """
@@ -980,7 +1298,20 @@ class Confluence(AtlassianRestAPI):
         :return: get properties
         """
         url = 'rest/api/content/{page_id}/property'.format(page_id=page_id)
-        return self.get(path=url)
+
+        try:
+            response = self.get(path=url)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                # Raise ApiError as the documented reason is ambiguous
+                raise ApiError(
+                    "There is no content with the given id, "
+                    "or the calling user does not have permission to view the content"
+                ) from e
+
+            raise
+
+        return response
 
     def get_page_ancestors(self, page_id):
         """
@@ -989,7 +1320,18 @@ class Confluence(AtlassianRestAPI):
         :return: get properties
         """
         url = 'rest/api/content/{page_id}?expand=ancestors'.format(page_id=page_id)
-        return (self.get(path=url) or {}).get('ancestors')
+
+        try:
+            response = self.get(path=url)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                raise ApiPermissionError(
+                    "The calling user does not have permission to view the content"
+                ) from e
+
+            raise
+
+        return response.get('ancestors')
 
     def clean_all_caches(self):
         """ Clean all caches from cache management"""
@@ -1017,7 +1359,17 @@ class Confluence(AtlassianRestAPI):
         url = 'rest/api/group?limit={limit}&start={start}'.format(limit=limit,
                                                                   start=start)
 
-        return (self.get(url) or {}).get('results')
+        try:
+            response = self.get(url)
+        except HTTPError as e:
+            if e.response.status_code == 403:
+                raise ApiPermissionError(
+                    "The calling user does not have permission to view groups"
+                ) from e
+
+            raise
+
+        return response.get('results')
 
     def get_group_members(self, group_name='confluence-users', start=0, limit=1000, expand=None):
         """
@@ -1034,7 +1386,18 @@ class Confluence(AtlassianRestAPI):
             limit=limit,
             start=start,
             expand=expand)
-        return (self.get(url) or {}).get('results')
+
+        try:
+            response = self.get(url)
+        except HTTPError as e:
+            if e.response.status_code == 403:
+                raise ApiPermissionError(
+                    "The calling user does not have permission to view users"
+                ) from e
+
+            raise
+
+        return response.get('results')
 
     def get_space(self, space_key, expand='description.plain,homepage'):
         """
@@ -1047,7 +1410,20 @@ class Confluence(AtlassianRestAPI):
         params = {}
         if expand:
             params["expand"] = expand
-        return self.get(url)
+
+        try:
+            response = self.get(url, params=params)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                # Raise ApiError as the documented reason is ambiguous
+                raise ApiError(
+                    "There is no space with the given key, "
+                    "or the calling user does not have permission to view the space"
+                ) from e
+
+            raise
+
+        return response
 
     def create_space(self, space_key, space_name):
         """
@@ -1069,14 +1445,40 @@ class Confluence(AtlassianRestAPI):
         :return:
         """
         url = 'rest/api/space/{}'.format(space_key)
-        return self.delete(url)
+
+        try:
+            response = self.delete(url)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                # Raise ApiError as the documented reason is ambiguous
+                raise ApiError(
+                    "There is no space with the given key, "
+                    "or the calling user does not have permission to delete it"
+                ) from e
+
+            raise
+
+        return response
 
     def get_space_property(self, space_key, expand=None):
         url = 'rest/api/space/{space}/property'.format(space=space_key)
         params = {}
         if expand:
             params['expand'] = expand
-        return self.get(url, params=params)
+
+        try:
+            response = self.get(url, params=params)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                # Raise ApiError as the documented reason is ambiguous
+                raise ApiError(
+                    "There is no space with the given key, "
+                    "or the calling user does not have permission to view the space"
+                ) from e
+
+            raise
+
+        return response
 
     def get_user_details_by_username(self, username, expand=None):
         """
@@ -1090,7 +1492,22 @@ class Confluence(AtlassianRestAPI):
         params = {'username': username}
         if expand:
             params['expand'] = expand
-        return self.get(url, params=params)
+
+        try:
+            response = self.get(url, params=params)
+        except HTTPError as e:
+            if e.response.status_code == 403:
+                raise ApiPermissionError(
+                    "The calling user does not have permission to view users"
+                ) from e
+            if e.response.status_code == 404:
+                raise ApiNotFoundError(
+                    "The user with the given username or userkey does not exist"
+                ) from e
+
+            raise
+
+        return response
 
     def get_user_details_by_userkey(self, userkey, expand=None):
         """
@@ -1104,7 +1521,22 @@ class Confluence(AtlassianRestAPI):
         params = {'key': userkey}
         if expand:
             params['expand'] = expand
-        return self.get(url, params=params)
+
+        try:
+            response = self.get(url, params=params)
+        except HTTPError as e:
+            if e.response.status_code == 403:
+                raise ApiPermissionError(
+                    "The calling user does not have permission to view users"
+                ) from e
+            if e.response.status_code == 404:
+                raise ApiNotFoundError(
+                    "The user with the given username or userkey does not exist"
+                ) from e
+
+            raise
+
+        return response
 
     def cql(self, cql, start=0, limit=None, expand=None, include_archived_spaces=None, excerpt=None):
         """
@@ -1136,7 +1568,15 @@ class Confluence(AtlassianRestAPI):
         if excerpt is not None:
             params['excerpt'] = excerpt
 
-        return self.get('rest/api/search', params=params)
+        try:
+            response = self.get('rest/api/search', params=params)
+        except HTTPError as e:
+            if e.response.status_code == 400:
+                raise ApiValueError("The query cannot be parsed") from e
+
+            raise
+
+        return response
 
     def get_page_as_pdf(self, page_id):
         """
@@ -1182,7 +1622,14 @@ class Confluence(AtlassianRestAPI):
         url = 'rest/api/content/search?cql=parent={}%20AND%20space="{}"'.format(
             parent_id, space
         )
-        response = self.get(url, {})
+
+        try:
+            response = self.get(url, {})
+        except HTTPError as e:
+            if e.response.status_code == 400:
+                raise ApiValueError("The CQL is invalid or missing") from e
+
+            raise
 
         for each_page in response.get("results", []):
             if each_page.get("title") == title:
@@ -1245,7 +1692,17 @@ class Confluence(AtlassianRestAPI):
         Get information about the how anonymous is represented in confluence
         :return:
         """
-        return self.get("rest/api/user/anonymous")
+        try:
+            response = self.get("rest/api/user/anonymous")
+        except HTTPError as e:
+            if e.response.status_code == 403:
+                raise ApiPermissionError(
+                    "The calling user does not have permission to use Confluence"
+                ) from e
+
+            raise
+
+        return response
 
     def upload_plugin(self, plugin_path):
         """
@@ -1301,7 +1758,20 @@ class Confluence(AtlassianRestAPI):
         params = None
         if expand:
             params = {'expand': expand}
-        return self.get('rest/api/longtask/{}'.format(task_id), params=params)
+
+        try:
+            response = self.get('rest/api/longtask/{}'.format(task_id), params=params)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                # Raise ApiError as the documented reason is ambiguous
+                raise ApiError(
+                    "There is no task with the given key, "
+                    "or the calling user does not have permission to view it"
+                ) from e
+
+            raise
+
+        return response
 
     def get_pdf_download_url_for_confluence_cloud(self, url):
         """
