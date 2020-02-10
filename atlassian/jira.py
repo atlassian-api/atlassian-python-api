@@ -904,26 +904,28 @@ class Jira(AtlassianRestAPI):
         return self.delete(url, params=params)
 
     def issue_exists(self, issue_key):
+        original_value = self.advanced_mode
+        self.advanced_mode = True
         try:
-            self.issue(issue_key, fields='*none')
+            resp = self.issue(issue_key, fields="*none")
+            if resp.status_code == 404:
+                log.info(
+                    'Issue "{issue_key}" does not exists'.format(issue_key=issue_key)
+                )
+                return False
+            resp.raise_for_status()
             log.info('Issue "{issue_key}" exists'.format(issue_key=issue_key))
             return True
-        except HTTPError as e:
-            if e.response.status_code == 404:
-                log.info('Issue "{issue_key}" does not exists'.format(issue_key=issue_key))
-                return False
-            else:
-                log.info('Issue "{issue_key}" existed, but now it\'s deleted'.format(issue_key=issue_key))
-                return True
+        finally:
+            self.advanced_mode = original_value
 
     def issue_deleted(self, issue_key):
-        try:
-            self.issue(issue_key, fields='*none')
+        exists = self.issue_exists(issue_key)
+        if exists:
             log.info('Issue "{issue_key}" is not deleted'.format(issue_key=issue_key))
-            return False
-        except HTTPError:
+        else:
             log.info('Issue "{issue_key}" is deleted'.format(issue_key=issue_key))
-            return True
+        return not exists
 
     def delete_issue(self, issue_id_or_key, delete_subtasks=True):
         """
