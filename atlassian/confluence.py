@@ -764,14 +764,15 @@ class Confluence(AtlassianRestAPI):
             return False
 
     def update_existing_page(self, page_id, title, body, type='page', representation='storage',
-                             minor_edit=False):
+                             minor_edit=False, version_comment=None):
         """Duplicate update_page. Left for the people who used it before. Use update_page instead"""
         return self.update_page(page_id=page_id, title=title, body=body, parent_id=None, type=type,
                                 representation=representation,
-                                minor_edit=minor_edit)
+                                minor_edit=minor_edit,
+                                version_comment=version_comment)
 
     def update_page(self, page_id, title, body, parent_id=None, type='page', representation='storage',
-                    minor_edit=False):
+                    minor_edit=False, version_comment=None):
         """
         Update page if already exist
         :param page_id:
@@ -810,12 +811,14 @@ class Confluence(AtlassianRestAPI):
 
             if parent_id:
                 data['ancestors'] = [{'type': 'page', 'id': parent_id}]
+            if version_comment:
+                data['version']['message'] = version_comment
 
             return self.put('rest/api/content/{0}'.format(page_id), data=data)
 
     def _insert_to_existing_page(self, page_id, title, insert_body, parent_id=None, type='page',
                                  representation='storage',
-                                 minor_edit=False, top_of_page=False):
+                                 minor_edit=False, version_comment=None, top_of_page=False):
         """
         Insert body to a page if already exist
         :param parent_id:
@@ -851,6 +854,8 @@ class Confluence(AtlassianRestAPI):
 
             if parent_id:
                 data['ancestors'] = [{'type': 'page', 'id': parent_id}]
+            if version_comment:
+                data['version']['message'] = version_comment
 
             return self.put('rest/api/content/{0}'.format(page_id), data=data)
 
@@ -894,7 +899,7 @@ class Confluence(AtlassianRestAPI):
                                              representation=representation,
                                              minor_edit=minor_edit, top_of_page=True)
 
-    def update_or_create(self, parent_id, title, body, representation='storage', minor_edit=False):
+    def update_or_create(self, parent_id, title, body, representation='storage', minor_edit=False, version_comment=None):
         """
         Update page or create a page if it is not exists
         :param parent_id:
@@ -910,7 +915,7 @@ class Confluence(AtlassianRestAPI):
             page_id = self.get_page_id(space, title)
             parent_id = self.get_parent_content_id(page_id)
             result = self.update_page(parent_id=parent_id, page_id=page_id, title=title, body=body,
-                                      representation=representation, minor_edit=minor_edit)
+                                      representation=representation, minor_edit=minor_edit, version_comment=version_comment)
         else:
             result = self.create_page(space=space, parent_id=parent_id, title=title, body=body,
                                       representation=representation)
