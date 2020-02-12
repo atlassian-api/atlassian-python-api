@@ -30,10 +30,9 @@ def get_all_pages_ids(conf, space_key):
     return page_ids
 
 
-def check_unknown_attachment_in_space(confluence, space_key):
+def check_unknown_attachment_in_space(,space_key):
     """
     Detect errors in space
-    :param confluence:
     :param space_key:
     :return:
     """
@@ -49,4 +48,4 @@ if __name__ == '__main__':
     space_list = confluence.get_all_spaces()
     for space in space_list:
         print("Start review {} space".format(space['key']))
-        check_unknown_attachment_in_space(confluence, space['key'])
+        check_unknown_attachment_in_space(space['key'])

@@ -20,9 +20,8 @@ def page_version_remover(server, content_id, remained_page_numbers):
         print('Number of page history smaller than remained')
 
 
-def get_all_page_ids_from_space(confluence, space_key):
+def get_all_page_ids_from_space(space_key):
     """
-    :param confluence:
     :param space_key:
     :return:
     """
@@ -63,8 +62,8 @@ def get_all_spaces(confluence):
     return space_key_list
 
 
-def reduce_page_numbers(confluence, page_id, remained_page_history_count):
-    page_version_remover(confluence, page_id, remained_page_history_count)
+def reduce_page_numbers(page_id, remained_page_history_count):
+    page_version_remover(page_id, remained_page_history_count)
     return
 
 

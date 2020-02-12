@@ -11,10 +11,11 @@ EXCLUDE_REPO_RULES = config.exclude_parameters
 LAST_COMMIT_CONDITION_IN_DAYS = 75
 ATLASSIAN_USER = config.JIRA_LOGIN
 ATLASSIAN_PASSWORD = config.JIRA_PASSWORD
+JIRA_URL = "http://localhost:8080"
 
 logging.basicConfig(level=logging.ERROR)
 jira = Jira(
-    url=config.JIRA_URL,
+    url=JIRA_URL,
     username=ATLASSIAN_USER,
     password=ATLASSIAN_PASSWORD)
 

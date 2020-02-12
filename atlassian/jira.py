@@ -1,7 +1,6 @@
 # coding=utf-8
 import logging
 import re
-from requests.exceptions import HTTPError
 from .rest_client import AtlassianRestAPI
 
 log = logging.getLogger(__name__)
@@ -2440,7 +2439,8 @@ class Jira(AtlassianRestAPI):
         A sprint can be started by updating the state to 'active'.
         This requires the sprint to be in the 'future' state and have a startDate and endDate set.
         A sprint can be completed by updating the state to 'closed'.
-        This action requires the sprint to be in the 'active' state. This sets the completeDate to the time of the request.
+        This action requires the sprint to be in the 'active' state.
+        This sets the completeDate to the time of the request.
         Other changes to state are not allowed.
         The completeDate field cannot be updated manually.
         :param sprint_id:
@@ -2509,10 +2509,10 @@ class Jira(AtlassianRestAPI):
                       it will be set do default value: 1000)
         :param filter:	string = text query; each record that will be returned
                         must contain the provided text in one of its fields
-        :param from: string	 - timestamp in past; 'from' must be less or equal 'to',
+        :param from_date: string	 - timestamp in past; 'from' must be less or equal 'to',
                              otherwise the result set will be empty only records that
                              where created in the same moment or after the 'from' timestamp will be provided in response
-        :param to: string	- timestamp in past; 'from' must be less or equal 'to',
+        :param to_date: string	- timestamp in past; 'from' must be less or equal 'to',
                               otherwise the result set will be empty only records that
                               where created in the same moment or earlier than the 'to'
                               timestamp will be provided in response

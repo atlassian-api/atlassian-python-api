@@ -10,10 +10,9 @@ confluence = Confluence(
     password='admin')
 
 
-def clean_draft_pages_from_space(confluence, space_key, count, date_now):
+def clean_draft_pages_from_space(space_key, count, date_now):
     """
     Remove draft pages from space using datetime.now
-    :param confluence:
     :param space_key:
     :param count:
     :param date_now:
@@ -33,11 +32,10 @@ def clean_draft_pages_from_space(confluence, space_key, count, date_now):
     return count
 
 
-def clean_all_draft_pages_from_all_spaces(confluence, days=30):
+def clean_all_draft_pages_from_all_spaces(days=30):
     """
     Remove all draft pages for all spaces older than DRAFT_DAYS
     :param days: int
-    :param confluence:
     :return:
     """
     date_now = datetime.datetime.now()
@@ -51,7 +49,7 @@ def clean_all_draft_pages_from_all_spaces(confluence, days=30):
             i += 1
             for space_list in space_lists:
                 print("Start review the space {}".format(space_list['key']))
-                count = clean_draft_pages_from_space(confluence=confluence, space_key=space_list['key'], count=count,
+                count = clean_draft_pages_from_space(space_key=space_list['key'], count=count,
                                                      date_now=date_now)
         else:
             flag = False

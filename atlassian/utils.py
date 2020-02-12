@@ -80,12 +80,22 @@ def html_table_header_row(data):
 def html_row_with_ordered_headers(data, headers):
     """
     >>> headers = ['administrators', 'key', 'leader', 'project']
-    >>> data = {'key': 'DEMO', 'project': 'Demonstration', 'leader': 'leader@example.com', 'administrators': ['admin1@example.com', 'admin2@example.com']}
+    >>> data = {'key': 'DEMO', 'project': 'Demonstration',
+                'leader': 'leader@example.com',
+                'administrators': ['admin1@example.com', 'admin2@example.com']}
     >>> html_row_with_ordered_headers(data, headers)
-    '\\n\\t<tr><td><ul><li><a href="mailto:admin1@example.com">admin1@example.com</a></li><li><a href="mailto:admin2@example.com">admin2@example.com</a></li></ul></td><td>DEMO</td><td>leader@example.com</td><td>Demonstration</td></tr>'
+    '\\n\\t<tr><td><ul>
+                        <li><a href="mailto:admin1@example.com">admin1@example.com</a></li>
+                        <li><a href="mailto:admin2@example.com">admin2@example.com</a></li>
+                    </ul></td><td>DEMO</td><td>leader@example.com</td><td>Demonstration</td></tr>'
     >>> headers = ['key', 'project', 'leader', 'administrators']
     >>> html_row_with_ordered_headers(data, headers)
-    '\\n\\t<tr><td>DEMO</td><td>Demonstration</td><td>leader@example.com</td><td><ul><li><a href="mailto:admin1@example.com">admin1@example.com</a></li><li><a href="mailto:admin2@example.com">admin2@example.com</a></li></ul></td></tr>'
+    '\\n\\t<tr><td>DEMO</td><td>Demonstration</td>
+                <td>leader@example.com</td><td>
+                <ul>
+                    <li><a href="mailto:admin1@example.com">admin1@example.com</a></li>
+                    <li><a href="mailto:admin2@example.com">admin2@example.com</a></li>
+                </ul></td></tr>'
     """
     html = '\n\t<tr>'
 

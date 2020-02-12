@@ -7,8 +7,9 @@ jira = Jira(
     url='http://localhost:8080',
     username='admin',
     password='admin',
-    advanced_mode=True  #  You can use it without advanced mode. 
-    )
+    # You can use it without advanced mode.
+    advanced_mode=True
+)
 
 logging.basicConfig(level=logging.DEBUG)
 # deprecated_issue_worklog = jira.tempo_timesheets_get_worklogs_by_issue("PROJ-1234")

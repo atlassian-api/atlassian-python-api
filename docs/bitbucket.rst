@@ -6,206 +6,206 @@ Manage projects
 
 .. code-block:: python
 
-    # Project list
-    bitbucket.project_list()
+	# Project list
+	bitbucket.project_list()
 
-    # Repo list
-    bitbucket.repo_list(project_key)
+	# Repo list
+	bitbucket.repo_list(project_key)
 
-    # Project info
-    bitbucket.project(key)
+	# Project info
+	bitbucket.project(key)
 
-    # Create project
-    bitbucket.create_project(key, name, description="My pretty project")
+	# Create project
+	bitbucket.create_project(key, name, description="My pretty project")
 
-    # Get users who has permission in project
-    bitbucket.project_users(key, limit=99999, filter_str=None)
+	# Get users who has permission in project
+	bitbucket.project_users(key, limit=99999, filter_str=None)
 
-    # Get project administrators for project
-    butbucket.project_users_with_administrator_permissions(key)
+	# Get project administrators for project
+	butbucket.project_users_with_administrator_permissions(key)
 
-    # Get Project Groups
-    bitbucket.project_groups(key, limit=99999, filter_str=None)
+	# Get Project Groups
+	bitbucket.project_groups(key, limit=99999, filter_str=None)
 
-    # Get groups with admin permissions
-    bitbucket.project_groups_with_administrator_permissions(key)
+	# Get groups with admin permissions
+	bitbucket.project_groups_with_administrator_permissions(key)
 
-    # Project summary
-    bitbucket.project_summary(key)
+	# Project summary
+	bitbucket.project_summary(key)
 
-    # Grant project permission to an specific user
-    bitbucket.project_grant_user_permissions(project_key, username, permission)
+	# Grant project permission to an specific user
+	bitbucket.project_grant_user_permissions(project_key, username, permission)
 
-    # Grant project permission to an specific group
-    bitbucket.project_grant_group_permissions(project_key, groupname, permission)
+	# Grant project permission to an specific group
+	bitbucket.project_grant_group_permissions(project_key, groupname, permission)
 
 Manage repositories
 ---------------
 
 .. code-block:: python
 
-    # Get single repository
-    bitbucket.get_repo(project_key, repository_slug)
+	# Get single repository
+	bitbucket.get_repo(project_key, repository_slug)
 
-    # Disable branching model
-    bitbucket.disable_branching_model(project_key, repo_key)
+	# Disable branching model
+	bitbucket.disable_branching_model(project_key, repo_key)
 
-    # Enable branching model
-    bitbucket.enable_branching_model(project_key, repo_key)
+	# Enable branching model
+	bitbucket.enable_branching_model(project_key, repo_key)
 
-    # Get branching model
-    bitbucket.get_branching_model(project_key, repo_key)
+	# Get branching model
+	bitbucket.get_branching_model(project_key, repo_key)
 
-    # Set branching model
-    data = {'development': {'refId': None, 'useDefault': True},
-            'types': [{'displayName': 'Bugfix',
-                       'enabled': True,
-                       'id': 'BUGFIX',
-                       'prefix': 'bugfix-'},
-                      {'displayName': 'Feature',
-                       'enabled': True,
-                       'id': 'FEATURE',
-                       'prefix': 'feature-'},
-                      {'displayName': 'Hotfix',
-                       'enabled': True,
-                       'id': 'HOTFIX',
-                       'prefix': 'hotfix-'},
-                      {'displayName': 'Release',
-                       'enabled': True,
-                       'id': 'RELEASE',
-                       'prefix': 'release/'}]}
-    bitbucket.set_branching_model(project_key, repo_key, data)
+	# Set branching model
+	data = {'development': {'refId': None, 'useDefault': True},
+			'types': [{'displayName': 'Bugfix',
+					   'enabled': True,
+					   'id': 'BUGFIX',
+					   'prefix': 'bugfix-'},
+					  {'displayName': 'Feature',
+					   'enabled': True,
+					   'id': 'FEATURE',
+					   'prefix': 'feature-'},
+					  {'displayName': 'Hotfix',
+					   'enabled': True,
+					   'id': 'HOTFIX',
+					   'prefix': 'hotfix-'},
+					  {'displayName': 'Release',
+					   'enabled': True,
+					   'id': 'RELEASE',
+					   'prefix': 'release/'}]}
+	bitbucket.set_branching_model(project_key, repo_key, data)
 
-    bitbucket.repo_users(project_key, repo_key, limit=99999, filter_str=None)
+	bitbucket.repo_users(project_key, repo_key, limit=99999, filter_str=None)
 
-    bitbucket.repo_groups(project_key, repo_key, limit=99999, filter_str=None)
+	bitbucket.repo_groups(project_key, repo_key, limit=99999, filter_str=None)
 
-    # Grant repository permission to an specific user
-    bitbucket.repo_grant_user_permissions(project_key, repo_key, username, permission)
+	# Grant repository permission to an specific user
+	bitbucket.repo_grant_user_permissions(project_key, repo_key, username, permission)
 
-    # Grant repository permission to an specific group
-    bitbucket.repo_grant_group_permissions(project_key, repo_key, groupname, permission)
+	# Grant repository permission to an specific group
+	bitbucket.repo_grant_group_permissions(project_key, repo_key, groupname, permission)
 
-    # Delete a repository (DANGER!)
-    bitbucket.delete_repo(project_key, repository_slug)
+	# Delete a repository (DANGER!)
+	bitbucket.delete_repo(project_key, repository_slug)
 
 Groups and admins
 -----------------
 
 .. code-block:: python
 
-    # Get group of members
-    bitbucket.group_members(group, limit=99999)
+	# Get group of members
+	bitbucket.group_members(group, limit=99999)
 
-    # All project administrators
-    bitbucket.all_project_administrators()
+	# All project administrators
+	bitbucket.all_project_administrators()
 
-    # Get users. Use 'user_filter' parameter to get specific users. 
-    bitbucket.get_users(user_filter="username")
+	# Get users. Use 'user_filter' parameter to get specific users.
+	bitbucket.get_users(user_filter="username")
 
 Manage code
 -----------
 
 .. code-block:: python
 
-    # Get repositories list from project
-    bitbucket.repo_list(project_key, limit=25)
+	# Get repositories list from project
+	bitbucket.repo_list(project_key, limit=25)
 
-    # Create a new repository.
-    # Requires an existing project in which this repository will be created. The only parameters which will be used
-    # are name and scmId.
-    # The authenticated user must have PROJECT_ADMIN permission for the context project to call this resource.
-    bitbucket.create_repo(project_key, repository, forkable=False, is_private=True)
+	# Create a new repository.
+	# Requires an existing project in which this repository will be created. The only parameters which will be used
+	# are name and scmId.
+	# The authenticated user must have PROJECT_ADMIN permission for the context project to call this resource.
+	bitbucket.create_repo(project_key, repository, forkable=False, is_private=True)
 
-    # Get branches from repo
-    bitbucket.get_branches(project, repository, filter='', limit=99999, details=True)
+	# Get branches from repo
+	bitbucket.get_branches(project, repository, filter='', limit=99999, details=True)
 
-    # Creates a branch using the information provided in the request.
-    # The authenticated user must have REPO_WRITE permission for the context repository to call this resource.
-    bitbucket.create_branch(project_key, repository, name, start_point, message)
+	# Creates a branch using the information provided in the request.
+	# The authenticated user must have REPO_WRITE permission for the context repository to call this resource.
+	bitbucket.create_branch(project_key, repository, name, start_point, message)
 
-    # Delete branch from related repo
-    bitbucket.delete_branch(project, repository, name, end_point)
+	# Delete branch from related repo
+	bitbucket.delete_branch(project, repository, name, end_point)
 
-    # Get pull requests
-    bitbucket.get_pull_requests(project, repository, state='OPEN', order='newest', limit=100, start=0)
+	# Get pull requests
+	bitbucket.get_pull_requests(project, repository, state='OPEN', order='newest', limit=100, start=0)
 
-    # Get pull request activities
-    bitbucket.get_pull_requests_activities(project, repository, pull_request_id)
+	# Get pull request activities
+	bitbucket.get_pull_requests_activities(project, repository, pull_request_id)
 
-    # Get pull request changes
-    bitbucket.get_pull_requests_changes(project, repository, pull_request_id)
+	# Get pull request changes
+	bitbucket.get_pull_requests_changes(project, repository, pull_request_id)
 
-    # Get pull request commits
-    bitbucket.get_pull_requests_commits(project, repository, pull_request_id)
+	# Get pull request commits
+	bitbucket.get_pull_requests_commits(project, repository, pull_request_id)
 
-    # Add comment into pull request
-    bitbucket.add_pull_request_comment(project, repository, pull_request_id, text)
+	# Add comment into pull request
+	bitbucket.add_pull_request_comment(project, repository, pull_request_id, text)
 
-    # Create a new pull request between two branches.
-    bitbucket.open_pull_request(source_project, source_repo, dest_project, dest_repo, source_branch, destination_branch, title, description)
+	# Create a new pull request between two branches.
+	bitbucket.open_pull_request(source_project, source_repo, dest_project, dest_repo, source_branch, destination_branch, title, description)
 
-    # Get tags for related repo
-    bitbucket.get_tags(project, repository, filter='', limit=99999)
+	# Get tags for related repo
+	bitbucket.get_tags(project, repository, filter='', limit=99999)
 
-    # Get project tags
-    # The authenticated user must have REPO_READ permission for the context repository to call this resource
-    bitbucket.get_project_tags(project, repository, tag_name)
+	# Get project tags
+	# The authenticated user must have REPO_READ permission for the context repository to call this resource
+	bitbucket.get_project_tags(project, repository, tag_name)
 
-    # Set tag
-    # The authenticated user must have REPO_WRITE permission for the context repository to call this resource
-    bitbucket.set_tag(project, repository, tag_name, commit_revision, description=None)
+	# Set tag
+	# The authenticated user must have REPO_WRITE permission for the context repository to call this resource
+	bitbucket.set_tag(project, repository, tag_name, commit_revision, description=None)
 
-    # Delete tag
-    # The authenticated user must have REPO_WRITE permission for the context repository to call this resource
-    bitbucket.delete_tag(project, repository, tag_name)
+	# Delete tag
+	# The authenticated user must have REPO_WRITE permission for the context repository to call this resource
+	bitbucket.delete_tag(project, repository, tag_name)
 
-    # Get diff
-    bitbucket.get_diff(project, repository, path, hash_oldest, hash_newest)
+	# Get diff
+	bitbucket.get_diff(project, repository, path, hash_oldest, hash_newest)
 
-    # Get commit list from repo
-    bitbucket.get_commits(project, repository, hash_oldest, hash_newest, limit=99999)
+	# Get commit list from repo
+	bitbucket.get_commits(project, repository, hash_oldest, hash_newest, limit=99999)
 
-    # Get change log between 2 refs
-    bitbucket.get_changelog(project, repository, ref_from, ref_to, limit=99999)
+	# Get change log between 2 refs
+	bitbucket.get_changelog(project, repository, ref_from, ref_to, limit=99999)
 
-    # Get raw content of the file from repo
-    bitbucket.get_content_of_file(project, repository, filename, at=None, markup=None)
-    """
-        Retrieve the raw content for a file path at a specified revision.
-        The authenticated user must have REPO_READ permission for the specified repository to call this resource.
-    """
+	# Get raw content of the file from repo
+	bitbucket.get_content_of_file(project, repository, filename, at=None, markup=None)
+	"""
+		Retrieve the raw content for a file path at a specified revision.
+		The authenticated user must have REPO_READ permission for the specified repository to call this resource.
+	"""
 
 Branch permissions
 ------------------
 
 .. code-block:: python
 
-    # Set branches permissions
-    bitbucket.set_branches_permissions(project_key, multiple_permissions=False, matcher_type=None, matcher_value=None, permission_type=None, repository=None, except_users=[], except_groups=[], except_access_keys=[], start=0, limit=25)
+	# Set branches permissions
+	bitbucket.set_branches_permissions(project_key, multiple_permissions=False, matcher_type=None, matcher_value=None, permission_type=None, repository=None, except_users=[], except_groups=[], except_access_keys=[], start=0, limit=25)
 
-    # Delete a single branch permission by premission id
-    bitbucket.delete_branch_permission(project_key, permission_id, repository=None)
+	# Delete a single branch permission by premission id
+	bitbucket.delete_branch_permission(project_key, permission_id, repository=None)
 
-    # Get a single branch permission by permission id
-    bitbucket.get_branch_permission(project_key, permission_id, repository=None)
+	# Get a single branch permission by permission id
+	bitbucket.get_branch_permission(project_key, permission_id, repository=None)
 
 Pull Request management
 -----------------------
 
 .. code-block:: python
 
-    # Decline pull request
-    bitbucket.decline_pull_request(project_key, repository, pr_id, pr_version)
+	# Decline pull request
+	bitbucket.decline_pull_request(project_key, repository, pr_id, pr_version)
 
-    # Check if pull request can be merged
-    bitbucket.is_pull_request_can_be_merged(project_key, repository, pr_id)
+	# Check if pull request can be merged
+	bitbucket.is_pull_request_can_be_merged(project_key, repository, pr_id)
 
-    # Merge pull request
-    bitbucket.merge_pull_request(project_key, repository, pr_id, pr_version)
+	# Merge pull request
+	bitbucket.merge_pull_request(project_key, repository, pr_id, pr_version)
 
-    # Reopen pull request
-    bitbucket.reopen_pull_request(project_key, repository, pr_id, pr_version)
+	# Reopen pull request
+	bitbucket.reopen_pull_request(project_key, repository, pr_id, pr_version)
 	
 Conditions-Reviewers management
 -----------------------
@@ -213,41 +213,41 @@ Conditions-Reviewers management
 .. code-block:: python
 
 	# Get all project conditions with reviewers list for specific project
-    bitbucket.get_project_conditions(project_key)
+	bitbucket.get_project_conditions(project_key)
 
-    # Get a project condition with reviewers list for specific project
-    bitbucket.get_project_condition(project_key, id_condition)
+	# Get a project condition with reviewers list for specific project
+	bitbucket.get_project_condition(project_key, id_condition)
 
-    # Create project condition with reviewers for specific project
+	# Create project condition with reviewers for specific project
 	# :example condition: '{"sourceMatcher":{"id":"any","type":{"id":"ANY_REF"}},"targetMatcher":{"id":"refs/heads/master","type":{"id":"BRANCH"}},"reviewers":[{"id": 12}],"requiredApprovals":"0"}'
-    bitbucket.create_project_condition(project_key, condition)
+	bitbucket.create_project_condition(project_key, condition)
 	
 	# Update a project condition with reviewers for specific project
 	# :example condition: '{"sourceMatcher":{"id":"any","type":{"id":"ANY_REF"}},"targetMatcher":{"id":"refs/heads/master","type":{"id":"BRANCH"}},"reviewers":[{"id": 12}],"requiredApprovals":"0"}'
-    bitbucket.update_project_condition(project_key, condition, id_condition)
+	bitbucket.update_project_condition(project_key, condition, id_condition)
 	
 	# Delete a project condition for specific project
-    bitbucket.delete_project_condition(project_key, id_condition)
+	bitbucket.delete_project_condition(project_key, id_condition)
 	
 	# Get all repository conditions with reviewers list for specific repository in project
-    bitbucket.get_repo_conditions(project_key, repo_key)
+	bitbucket.get_repo_conditions(project_key, repo_key)
 	
 	# Get repository conditions with reviewers list only only conditions type PROJECT for specific repository in project
-    bitbucket.get_repo_project_conditions(project_key, repo_key)
+	bitbucket.get_repo_project_conditions(project_key, repo_key)
 	
 	# Get repository conditions with reviewers list only conditions type REPOSITORY for specific repository in project
-    bitbucket.get_repo_repo_conditions(project_key, repo_key)
+	bitbucket.get_repo_repo_conditions(project_key, repo_key)
 	
-    # Get a project condition with reviewers list for specific repository in project
-    bitbucket.get_repo_condition(project_key, repo_key, id_condition)
+	# Get a project condition with reviewers list for specific repository in project
+	bitbucket.get_repo_condition(project_key, repo_key, id_condition)
 
-    # Create project condition with reviewers for specific repository in project
+	# Create project condition with reviewers for specific repository in project
 	# :example condition: '{"sourceMatcher":{"id":"any","type":{"id":"ANY_REF"}},"targetMatcher":{"id":"refs/heads/master","type":{"id":"BRANCH"}},"reviewers":[{"id": 12}],"requiredApprovals":"0"}'
-    bitbucket.create_repo_condition(project_key, repo_key, condition)
+	bitbucket.create_repo_condition(project_key, repo_key, condition)
 	
 	# Update a project condition with reviewers for specific repository in project
 	# :example condition: '{"sourceMatcher":{"id":"any","type":{"id":"ANY_REF"}},"targetMatcher":{"id":"refs/heads/master","type":{"id":"BRANCH"}},"reviewers":[{"id": 12}],"requiredApprovals":"0"}'
-    bitbucket.update_repo_condition(project_key, repo_key, condition, id_condition)
+	bitbucket.update_repo_condition(project_key, repo_key, condition, id_condition)
 	
 	# Delete a project condition for specific repository in project
-    bitbucket.delete_repo_condition(project_key, repo_key, id_condition)
+	bitbucket.delete_repo_condition(project_key, repo_key, id_condition)
