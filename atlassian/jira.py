@@ -231,30 +231,13 @@ class Jira(AtlassianRestAPI):
 
     def user_deactivate(self, username):
         """
-        Disable user
+        Disable user. Works from 8.3.0 Release
+        https://docs.atlassian.com/software/jira/docs/api/REST/8.3.0/#api/2/user-updateUser
         :param username:
         :return:
         """
-        url = 'secure/admin/user/EditUser.jspa'
-        headers = self.form_token_headers
-        user = self.user(username)
-        data = {
-            'inline': 'true',
-            'decorator': 'dialog',
-            'username': user['name'],
-            'fullName': user['displayName'],
-            'email': user['emailAddress'],
-            'editName': user['name']
-        }
-        answer = self.get('secure/admin/WebSudoAuthenticate.jspa', self.form_token_headers)
-        atl_token = None
-        if answer:
-            atl_token = \
-                answer.split('<meta id="atlassian-token" name="atlassian-token" content="')[1].split('\n')[0].split(
-                    '"')[0]
-        if atl_token:
-            data['atl_token'] = atl_token
-        return self.post(data=data, path=url, headers=headers)
+        data = {"active": "false", "name": username}
+        return self.user_update(username=username, data=data)
 
     def user_disable(self, username):
         """Override the disable method"""
@@ -341,8 +324,7 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         url = 'rest/api/2/applicationrole'
-
-        return self.get(url)
+        return self.get(url) or {}
 
     def get_application_role(self, role_key):
         """
@@ -351,8 +333,7 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         url = 'rest/api/2/applicationrole/{}'.format(role_key)
-
-        return self.get(url)
+        return self.get(url) or {}
 
     def projects(self, included_archived=None):
         """Returns all projects which are visible for the currently logged in user.
@@ -627,6 +608,16 @@ class Jira(AtlassianRestAPI):
         if comment:
             data['comment'] = comment
         return self.issue_add_json_worklog(key=key, worklog=data)
+
+    def issue_get_worklog(self, issue_id_or_key):
+        """
+        Returns all work logs for an issue.
+        Note: Work logs won't be returned if the Log work field is hidden for the project.
+        :param issue_id_or_key:
+        :return:
+        """
+        url = "rest/api/2/issue/{issueIdOrKey}/worklog".format(issueIdOrKey=issue_id_or_key)
+        return self.get(url)
 
     def issue_field_value(self, key, field):
         issue = self.get('rest/api/2/issue/{0}?fields={1}'.format(key, field))
@@ -913,26 +904,28 @@ class Jira(AtlassianRestAPI):
         return self.delete(url, params=params)
 
     def issue_exists(self, issue_key):
+        original_value = self.advanced_mode
+        self.advanced_mode = True
         try:
-            self.issue(issue_key, fields='*none')
+            resp = self.issue(issue_key, fields="*none")
+            if resp.status_code == 404:
+                log.info(
+                    'Issue "{issue_key}" does not exists'.format(issue_key=issue_key)
+                )
+                return False
+            resp.raise_for_status()
             log.info('Issue "{issue_key}" exists'.format(issue_key=issue_key))
             return True
-        except HTTPError as e:
-            if e.response.status_code == 404:
-                log.info('Issue "{issue_key}" does not exists'.format(issue_key=issue_key))
-                return False
-            else:
-                log.info('Issue "{issue_key}" existed, but now it\'s deleted'.format(issue_key=issue_key))
-                return True
+        finally:
+            self.advanced_mode = original_value
 
     def issue_deleted(self, issue_key):
-        try:
-            self.issue(issue_key, fields='*none')
+        exists = self.issue_exists(issue_key)
+        if exists:
             log.info('Issue "{issue_key}" is not deleted'.format(issue_key=issue_key))
-            return False
-        except HTTPError:
+        else:
             log.info('Issue "{issue_key}" is deleted'.format(issue_key=issue_key))
-            return True
+        return not exists
 
     def delete_issue(self, issue_id_or_key, delete_subtasks=True):
         """
@@ -2080,7 +2073,7 @@ class Jira(AtlassianRestAPI):
         :param maxResults: integer
         :param offset: integer
         """
-    
+
         url = "rest/tempo-timesheets/4/worklogs/search"
         return self.post(url, data=params)
 
@@ -2481,6 +2474,19 @@ class Jira(AtlassianRestAPI):
         url = 'rest/agile/1.0/sprint/{sprintId}/issue'.format(sprintId=sprint_id)
         return self.get(url, params=params)
 
+    def update_rank(self, issues_to_rank, rank_before, customfield_number):
+        """
+        Updates the rank of issues (max 50), placing them before a given issue.
+        :param issues_to_rank: List of issues to rank (max 50)
+        :param rank_before: Issue that the issues will be put over
+        :param customfield_number: The number of the custom field Rank
+        :return:
+        """
+        return self.put('rest/agile/1.0/issue/rank', data={
+            'issues': issues_to_rank,
+            'rankBeforeIssue': rank_before,
+            'rankCustomFieldId': customfield_number})
+
     def health_check(self):
         """
         Get health status
@@ -2493,3 +2499,44 @@ class Jira(AtlassianRestAPI):
             # check as support tools
             response = self.get('rest/supportHealthCheck/1.0/check/')
         return response
+
+    # Audit Records
+    def get_audit_records(self, offset=None, limit=None, filter=None, from_date=None, to_date=None):
+        """
+        Returns auditing records filtered using provided parameters
+        :param offset: the number of record from which search starts
+        :param limit: maximum number of returned results (if is limit is <= 0 or > 1000,
+                      it will be set do default value: 1000)
+        :param filter:	string = text query; each record that will be returned
+                        must contain the provided text in one of its fields
+        :param from: string	 - timestamp in past; 'from' must be less or equal 'to',
+                             otherwise the result set will be empty only records that
+                             where created in the same moment or after the 'from' timestamp will be provided in response
+        :param to: string	- timestamp in past; 'from' must be less or equal 'to',
+                              otherwise the result set will be empty only records that
+                              where created in the same moment or earlier than the 'to'
+                              timestamp will be provided in response
+        :return:
+        """
+        params = {}
+        if offset:
+            params["offset"] = offset
+        if limit:
+            params["limit"] = limit
+        if filter:
+            params["filter"] = filter
+        if from_date:
+            params["from"] = from_date
+        if to_date:
+            params["to"] = to_date
+        url = "rest/api/2/auditing/record"
+        return self.get(url, params=params) or {}
+
+    def post_audit_record(self, audit_record):
+        """
+        Store a record in Audit Log
+        :param audit_record: json with compat https://docs.atlassian.com/jira/REST/schema/audit-record#
+        :return:
+        """
+        url = "rest/api/2/auditing/record"
+        return self.post(url, data=audit_record)

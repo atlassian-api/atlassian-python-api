@@ -521,7 +521,6 @@ class Bitbucket(AtlassianRestAPI):
         :param repository_slug: url-compatible repository identifier
         :return: Dictionary of request response
         """
-
         if not self.cloud:
             url = 'rest/api/1.0/projects/{project}/repos/{repository}' \
                 .format(project=project_key, repository=repository_slug)
@@ -541,18 +540,7 @@ class Bitbucket(AtlassianRestAPI):
         else:
             url = 'rest/api/2.0/projects/{projectKey}/repos'.format(projectKey=project_key)
         params = {}
-        start = 0
-        params['start'] = start
-        response = self.get(url, params=params)
-        if 'values' not in response:
-            return []
-        repo_list = (response or {}).get('values')
-        while not response.get('isLastPage'):
-            start = response.get('nextPageStart')
-            params['start'] = start
-            response = self.get(url, params=params)
-            repo_list += (response or {}).get('values')
-        return repo_list
+        return self._get_paged(url, params)
 
     def delete_repo(self, project_key, repository_slug):
         """
@@ -1090,7 +1078,7 @@ class Bitbucket(AtlassianRestAPI):
         }
         return self.put(url, data=payload)
 
-    def get_pullrequest(self, project, repository, pull_request_id):
+    def get_pull_request(self, project, repository, pull_request_id):
         """
         Retrieve a pull request.
         The authenticated user must have REPO_READ permission
@@ -1107,6 +1095,12 @@ class Bitbucket(AtlassianRestAPI):
             url = 'rest/api/2.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}'.format(
                 project=project, repository=repository, pullRequestId=pull_request_id)
         return self.get(url)
+
+    def get_pullrequest(self, *args, **kwargs):
+        """
+        Deprecated name since 1.15.1. Let's use the get_pull_request()
+        """
+        return self.get_pull_request(*args, **kwargs)
 
     def change_reviewed_status(self, project_key, repository_slug, pull_request_id, status, user_slug):
         """
@@ -1239,6 +1233,17 @@ class Bitbucket(AtlassianRestAPI):
         return self.delete(url)
 
     def get_diff(self, project, repository, path, hash_oldest, hash_newest):
+        """
+        Gets a diff of the changes available in the {@code from} commit but not in the {@code to} commit.
+        If either the {@code from} or {@code to} commit are not specified,
+        they will be replaced by the default branch of their containing repository.
+        :param project:
+        :param repository:
+        :param path:
+        :param hash_oldest: the source commit (can be a partial/full commit ID or qualified/unqualified ref name)
+        :param hash_newest: the target commit (can be a partial/full commit ID or qualified/unqualified ref name)
+        :return:
+        """
         if not self.cloud:
             url = 'rest/api/1.0/projects/{project}/repos/{repository}/compare/diff/{path}'.format(project=project,
                                                                                                   repository=repository,
@@ -1424,9 +1429,7 @@ class Bitbucket(AtlassianRestAPI):
                 project=project,
                 repository=repository)
         else:
-            url = 'rest/branch-permissions/2.0/projects/{project}/restrictions'.format(
-                project=project)
-
+            url = 'rest/branch-permissions/2.0/projects/{project}/restrictions'.format(project=project)
         params = {}
         if limit:
             params['limit'] = limit
@@ -1463,12 +1466,12 @@ class Bitbucket(AtlassianRestAPI):
             except_access_keys = []
         headers = self.default_headers
         if repository:
-            url = "/rest/branch-permissions/2.0/projects/{project_key}/repos/{repository}/restrictions".format(
+            url = "rest/branch-permissions/2.0/projects/{project_key}/repos/{repository}/restrictions".format(
                 project_key=project_key,
                 repository=repository
             )
         else:
-            url = "/rest/branch-permissions/2.0/projects/{project_key}/restrictions".format(
+            url = "rest/branch-permissions/2.0/projects/{project_key}/restrictions".format(
                 project_key=project_key
             )
         if multiple_permissions:
@@ -1505,13 +1508,13 @@ class Bitbucket(AtlassianRestAPI):
         """
 
         if repository:
-            url = "/rest/branch-permissions/2.0/projects/{project_key}/repos/{repository}/restrictions/{id}".format(
+            url = "rest/branch-permissions/2.0/projects/{project_key}/repos/{repository}/restrictions/{id}".format(
                 project_key=project_key,
                 repository=repository,
                 id=permission_id
             )
         else:
-            url = "/rest/branch-permissions/2.0/projects/{project_key}/restrictions/{id}".format(
+            url = "rest/branch-permissions/2.0/projects/{project_key}/restrictions/{id}".format(
                 project_key=project_key,
                 id=permission_id
             )
@@ -1529,13 +1532,13 @@ class Bitbucket(AtlassianRestAPI):
         """
 
         if repository:
-            url = "/rest/branch-permissions/2.0/projects/{project_key}/repos/{repository}/restrictions/{id}".format(
+            url = "rest/branch-permissions/2.0/projects/{project_key}/repos/{repository}/restrictions/{id}".format(
                 project_key=project_key,
                 repository=repository,
                 id=permission_id
             )
         else:
-            url = "/rest/branch-permissions/2.0/projects/{project_key}/restrictions/{id}".format(
+            url = "rest/branch-permissions/2.0/projects/{project_key}/restrictions/{id}".format(
                 project_key=project_key,
                 id=permission_id
             )
@@ -1889,6 +1892,18 @@ class Bitbucket(AtlassianRestAPI):
         data.update(report_params)
         return self.put(url, data=data)
 
+    def search_code(self, team, search_query, page=1, limit=10):
+        """
+        Search repositories for matching code
+        :team: str
+        :search_query: str
+        """
+        endpoint = 'rest/api/1.0'
+        if self.cloud:
+            endpoint = 'rest/api/2.0'
+        url = "{endpoint}/teams/{team}/search/code".format(endpoint=endpoint, team=team)
+        return self.get(url, params={'search_query': search_query, 'page': page, 'pagelen': limit})
+
     def get_lfs_repo_status(self, project_key, repo):
         url = 'rest/git-lfs/git-lfs/admin/projects/{projectKey}/repos/{repositorySlug}/enabled'.format(
             projectKey=project_key,
@@ -1906,3 +1921,215 @@ class Bitbucket(AtlassianRestAPI):
         if user_filter:
             params['filter'] = user_filter
         return self.get(url, params=params)
+
+    def _get_paged(self, url, params):
+        """
+        Use for get all methods
+        :param url:
+        :param params:
+        :return:
+        """
+        params['start'] = 0
+        response = self.get(url, params=params)
+        if 'values' not in response:
+            return []
+        values = response.get('values')
+        while not response.get('isLastPage'):
+            params['start'] = response.get('nextPageStart')
+            response = self.get(url, params=params)
+            values += response.get('values')
+        return values
+
+    def get_project_conditions(self, project_key):
+        """
+        Request type: GET
+        Return a page of defaults conditions with reviewers list that have been configured for this project.
+        For further information visit: https://docs.atlassian.com/bitbucket-server/rest/5.16.0/bitbucket-default-reviewers-rest.html#idm52264904368
+        :projectKey: str
+        :return:
+        """
+        url = 'rest/default-reviewers/1.0/projects/{projectKey}/conditions'.format(
+            projectKey=project_key)
+        return (self.get(url) or {})
+
+    def get_project_condition(self, project_key, id_condition):
+        """
+        Request type: GET
+        Return a specific condition with reviewers list that has been configured for this project.
+        For further information visit: https://docs.atlassian.com/bitbucket-server/rest/5.16.0/bitbucket-default-reviewers-rest.html#idm52264901504
+        :projectKey: str - project key involved
+        :idCondition: int - condition id involved
+        :return:
+        """
+        url = 'rest/default-reviewers/1.0/projects/{projectKey}/conditions/{idCondition}'.format(
+            projectKey=key,
+            idCondition=id_condition)
+        return (self.get(url) or {})
+
+    def create_project_condition(self, project_key, condition):
+        """
+        Request type: POST
+        Create a new condition for this project.
+        For further information visit: https://docs.atlassian.com/bitbucket-server/rest/5.16.0/bitbucket-default-reviewers-rest.html#idm52264893584
+        :projectKey: str- project key involved
+        :data: condition: dictionary object
+        :example condition: '{"sourceMatcher":{"id":"any","type":{"id":"ANY_REF"}},"targetMatcher":{"id":"refs/heads/master","type":{"id":"BRANCH"}},"reviewers":[{"id": 12}],"requiredApprovals":"0"}'
+        :return:
+        """
+        url = 'rest/default-reviewers/1.0/projects/{projectKey}/condition'.format(
+            projectKey=project_key)
+        return (self.post(url, data=condition) or {})
+
+    def update_project_condition(self, project_key, condition, id_condition):
+        """
+        Request type: PUT
+        Update a new condition for this project.
+        For further information visit: https://docs.atlassian.com/bitbucket-server/rest/5.16.0/bitbucket-default-reviewers-rest.html#idm52264927632
+        :projectKey: str- project key involved
+        :idCondition: int - condition id involved
+        :data: condition: dictionary object
+        :example condition: '{"sourceMatcher":{"id":"any","type":{"id":"ANY_REF"}},"targetMatcher":{"id":"refs/heads/master","type":{"id":"BRANCH"}},"reviewers":[{"id": 12}],"requiredApprovals":"0"}' 
+        :return:
+        """
+        url = 'rest/default-reviewers/1.0/projects/{projectKey}/condition/{idCondition}'.format(
+            projectKey=project_key,
+            idCondition=id_condition)
+        return (self.put(url, data=condition) or {})
+
+    def delete_project_condition(self, project_key, id_condition):
+        """
+        Request type: DELETE
+        Delete a specific condition for this repository slug inside project.
+        For further information visit: https://docs.atlassian.com/bitbucket-server/rest/5.16.0/bitbucket-default-reviewers-rest.html#idm52264896304
+        :projectKey: str- project key involved
+        :idCondition: int - condition id involved
+        :return:
+        """
+        url = 'rest/default-reviewers/1.0/projects/{projectKey}/condition/{idCondition}'.format(
+            projectKey=project_key,
+            idCondition=id_condition)
+        return (self.delete(url) or {})
+
+    def get_repo_conditions(self, project_key, repo_key):
+        """
+        Request type: GET
+        Return a page of defaults conditions with reviewers list (type REPOSITORY or PROJECT) that have been configured for this repository slug inside project specified.
+        For further information visit: https://docs.atlassian.com/bitbucket-server/rest/5.16.0/bitbucket-default-reviewers-rest.html#idm52264928992
+        :projectKey: str- project key involved
+        :repoKey: str - repo key involved
+        :return:
+        """
+        url = 'rest/default-reviewers/1.0/projects/{projectKey}/repos/{repoKey}/conditions'.format(
+            projectKey=project_key,
+            repoKey=repo_key)
+        return (self.get(url) or {})
+
+    def get_repo_project_conditions(self, project_key, repo_key):
+        """
+        Request type: GET
+        Return a page of repository conditions (only type PROJECT) with reviewers list associated that have been configured for this repository slug inside project specified.
+        For further information visit: https://docs.atlassian.com/bitbucket-server/rest/5.16.0/bitbucket-default-reviewers-rest.html#idm52264928992
+        :projectKey: str- project key involved
+        :repoKey: str - repo key involved
+        :return:
+        """
+        TYPE_REPO = 'REPOSITORY'
+        url = 'rest/default-reviewers/1.0/projects/{projectKey}/repos/{repoKey}/conditions'.format(
+            projectKey=project_key,
+            repoKey=repo_key)
+
+        response = (self.get(url) or {})
+        count = 0
+        for condition in response:
+            if condition['scope']['type'] == TYPE_REPO:
+                del response[count]
+            count+=1
+        return response
+
+    def get_repo_repo_conditions(self, project_key, repo_key):
+        """
+        Request type: GET
+        Return a page of repository conditions (only type REPOSITORY) with reviewers list associated that have been configured for this repository slug inside project specified.
+        For further information visit: https://docs.atlassian.com/bitbucket-server/rest/5.16.0/bitbucket-default-reviewers-rest.html#idm52264928992
+        :projectKey: str- project key involved
+        :repoKey: str - repo key involved
+        :return:
+        """
+        TYPE_PROYECT = 'PROJECT'
+        url = 'rest/default-reviewers/1.0/projects/{projectKey}/repos/{repoKey}/conditions'.format(
+            projectKey=project_key,
+            repoKey=repo_key)
+
+        response = (self.get(url) or {})
+        count = 0
+        for condition in response:
+            if condition['scope']['type'] == TYPE_PROYECT:
+                del response[count]
+            count+=1
+        return response
+
+    def get_repo_condition(self, project_key, repo_key, id_condition):
+        """
+        Request type: GET
+        Return a specific condition with reviewers list that have been configured for this repository slug inside project specified.
+        For further information visit: https://docs.atlassian.com/bitbucket-server/rest/5.16.0/bitbucket-default-reviewers-rest.html#idm52264927632
+        :projectKey: str- project key involved
+        :repoKey: str - repo key involved
+        :idCondition: int - condition id involved
+        :return:
+        """
+        url = 'rest/default-reviewers/1.0/projects/{projectKey}/repos/{repoKey}/conditions/{idCondition}'.format(
+            projectKey=project_key,
+            repoKey=repo_key,
+            idCondition=id_condition)
+        return (self.get(url) or {})
+
+    def create_repo_condition(self, project_key, repo_key, condition):
+        """
+        Request type: POST
+        Create a new condition for this repository slug inside project specified.
+        For further information visit: https://docs.atlassian.com/bitbucket-server/rest/5.16.0/bitbucket-default-reviewers-rest.html#idm52264908128
+        :projectKey: str- project key involved
+        :repoKey: str - repo key involved
+        :data: condition: dictionary object
+        :example condition: '{"sourceMatcher":{"id":"any","type":{"id":"ANY_REF"}},"targetMatcher":{"id":"refs/heads/master","type":{"id":"BRANCH"}},"reviewers":[{"id": 12}],"requiredApprovals":"0"}'
+        :return:
+        """
+        url = 'rest/default-reviewers/1.0/projects/{projectKey}/repos/{repoKey}/condition'.format(
+            projectKey=project_key,
+            repoKey=repo_key)
+        return (self.post(url, data=condition) or {})
+
+    def update_repo_condition(self, project_key, repo_key, condition, id_condition):
+        """
+        Request type: PUT
+        Update a specific condition for this repository slug inside project.
+        For further information visit: https://docs.atlassian.com/bitbucket-server/rest/5.16.0/bitbucket-default-reviewers-rest.html#idm52264927632
+        :projectKey: str- project key involved
+        :repoKey: str - repo key involved
+        :idCondition: int - condition id involved
+        :data: condition: dictionary object
+        :example condition: '{"sourceMatcher":{"id":"any","type":{"id":"ANY_REF"}},"targetMatcher":{"id":"refs/heads/master","type":{"id":"BRANCH"}},"reviewers":[{"id": 12}],"requiredApprovals":"0"}' 
+        :return:
+        """
+        url = 'rest/default-reviewers/1.0/projects/{projectKey}/repos/{repoKey}/condition/{idCondition}'.format(
+            projectKey=project_key,
+            repoKey=repo_key,
+            idCondition=id_condition)
+        return (self.put(url, data=condition) or {})
+
+    def delete_repo_condition(self, project_key, repo_key, id_condition):
+        """
+        Request type: DELETE
+        Delete a specific condition for this repository slug inside project.
+        For further information visit: https://docs.atlassian.com/bitbucket-server/rest/5.16.0/bitbucket-default-reviewers-rest.html#idm8287339888
+        :projectKey: str- project key involved
+        :repoKey: str - repo key involved
+        :idCondition: int - condition id involved
+        :return:
+        """
+        url = 'rest/default-reviewers/1.0/projects/{projectKey}/repos/{repoKey}/condition/{idCondition}'.format(
+            projectKey=project_key,
+            repoKey=repo_key,
+            idCondition=id_condition)
+        return (self.delete(url) or {})

@@ -99,6 +99,9 @@ Page actions
     # Delete the page (content) property e.g. delete key of hash
     confluence.delete_page_property(page_id, page_property)
 
+    # Move page
+    confluence.move_page(space_key, page_id, target_title, position="append")
+
     # Get the page (content) property e.g. get key of hash
     confluence.get_page_property(page_id, page_property_key)
 

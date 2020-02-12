@@ -10,14 +10,15 @@ Documentation
 
 .. _Documentation: https://atlassian-python-api.readthedocs.io/en/latest/index.html
 
+Install
+-------
+.. code-block:: console
+
+   $ pip install atlassian-python-api
+
 Examples
 --------
-
-For everyday normal use, just install package using pip
-
-::
-
-   pip install atlassian-python-api
+**More examples in ``examples/`` directory.**
 
 Here's a short example how to create a Confluence page:
 
@@ -37,7 +38,7 @@ Here's a short example how to create a Confluence page:
 
     print(status)
 
-And here's another example how to get issues from Jira using JQL Query:
+And here's another example of how to get issues from Jira using JQL Query:
 
 .. code-block:: python
 
@@ -47,12 +48,11 @@ And here's another example how to get issues from Jira using JQL Query:
         url='http://localhost:8080',
         username='admin',
         password='admin')
-
-    JQL = 'project = DEMO AND status NOT IN (Closed, Resolved) ORDER BY issuekey'
+    JQL = 'project = DEMO AND status IN ("To Do", "In Progress") ORDER BY issuekey'
     data = jira.jql(JQL)
     print(data)
 
-Also, you can use the Bitbucket module e.g. for get project list
+Also, you can use the Bitbucket module e.g. for getting project list
 
 .. code-block:: python
 
@@ -62,10 +62,11 @@ Also, you can use the Bitbucket module e.g. for get project list
             url='http://localhost:7990',
             username='admin',
             password='admin')
+    
     data = bitbucket.project_list()
     print(data)
 
-Now you can use Jira Service Desk module. See docs.
+Now you can use the Jira Service Desk module. See docs.
 Example to get your requests:
 
 .. code-block:: python
@@ -76,11 +77,11 @@ Example to get your requests:
             url='http://localhost:7990',
             username='admin',
             password='admin')
-    my_requests = sd.get_my_customer_requests()
-    print(my_requests)
+    
+    data = sd.get_my_customer_requests()
+    print(data)
 
-Please make sure, you've checked ``examples/`` directory on how to build scripts using the API.
-If you want to see response in pretty print format json. Feel free for use construction like:
+If you want to see the response in pretty print format json. Feel free for use construction like:
 
 .. code-block:: python
 
