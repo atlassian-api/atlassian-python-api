@@ -42,7 +42,7 @@ Manage users
     # Remove user
     jira.user_remove(username)
 
-    # Deactivate user
+    # Deactivate user. Works from 8.3.0 release
     jira.user_deactivate(username)
 
     # Get web sudo cookies using normal http request

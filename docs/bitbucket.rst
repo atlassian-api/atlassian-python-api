@@ -206,3 +206,48 @@ Pull Request management
 
     # Reopen pull request
     bitbucket.reopen_pull_request(project_key, repository, pr_id, pr_version)
+	
+Conditions-Reviewers management
+-----------------------
+
+.. code-block:: python
+
+	# Get all project conditions with reviewers list for specific project
+    bitbucket.get_project_conditions(project_key)
+
+    # Get a project condition with reviewers list for specific project
+    bitbucket.get_project_condition(project_key, id_condition)
+
+    # Create project condition with reviewers for specific project
+	# :example condition: '{"sourceMatcher":{"id":"any","type":{"id":"ANY_REF"}},"targetMatcher":{"id":"refs/heads/master","type":{"id":"BRANCH"}},"reviewers":[{"id": 12}],"requiredApprovals":"0"}'
+    bitbucket.create_project_condition(project_key, condition)
+	
+	# Update a project condition with reviewers for specific project
+	# :example condition: '{"sourceMatcher":{"id":"any","type":{"id":"ANY_REF"}},"targetMatcher":{"id":"refs/heads/master","type":{"id":"BRANCH"}},"reviewers":[{"id": 12}],"requiredApprovals":"0"}'
+    bitbucket.update_project_condition(project_key, condition, id_condition)
+	
+	# Delete a project condition for specific project
+    bitbucket.delete_project_condition(project_key, id_condition)
+	
+	# Get all repository conditions with reviewers list for specific repository in project
+    bitbucket.get_repo_conditions(project_key, repo_key)
+	
+	# Get repository conditions with reviewers list only only conditions type PROJECT for specific repository in project
+    bitbucket.get_repo_project_conditions(project_key, repo_key)
+	
+	# Get repository conditions with reviewers list only conditions type REPOSITORY for specific repository in project
+    bitbucket.get_repo_repo_conditions(project_key, repo_key)
+	
+    # Get a project condition with reviewers list for specific repository in project
+    bitbucket.get_repo_condition(project_key, repo_key, id_condition)
+
+    # Create project condition with reviewers for specific repository in project
+	# :example condition: '{"sourceMatcher":{"id":"any","type":{"id":"ANY_REF"}},"targetMatcher":{"id":"refs/heads/master","type":{"id":"BRANCH"}},"reviewers":[{"id": 12}],"requiredApprovals":"0"}'
+    bitbucket.create_repo_condition(project_key, repo_key, condition)
+	
+	# Update a project condition with reviewers for specific repository in project
+	# :example condition: '{"sourceMatcher":{"id":"any","type":{"id":"ANY_REF"}},"targetMatcher":{"id":"refs/heads/master","type":{"id":"BRANCH"}},"reviewers":[{"id": 12}],"requiredApprovals":"0"}'
+    bitbucket.update_repo_condition(project_key, repo_key, condition, id_condition)
+	
+	# Delete a project condition for specific repository in project
+    bitbucket.delete_repo_condition(project_key, repo_key, id_condition)
