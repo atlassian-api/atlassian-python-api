@@ -9,11 +9,10 @@ confluence = Confluence(
     password='admin')
 
 
-def clean_pages_from_space(confluence, space_key, limit=500):
+def clean_pages_from_space(space_key, limit=500):
     """
     Remove all pages from trash for related space
     :param limit:
-    :param confluence:
     :param space_key:
     :return:
     """
@@ -30,11 +29,10 @@ def clean_pages_from_space(confluence, space_key, limit=500):
                 confluence.remove_page_from_trash(value['id'])
 
 
-def clean_blog_posts_from_space(confluence, space_key, limit=500):
+def clean_blog_posts_from_space(space_key, limit=500):
     """
     Remove all pages from trash for related space
     :param limit:
-    :param confluence:
     :param space_key:
     :return:
     """
@@ -52,10 +50,9 @@ def clean_blog_posts_from_space(confluence, space_key, limit=500):
             print("For space {} trash is empty".format(space_key))
 
 
-def clean_all_trash_pages_from_all_spaces(confluence):
+def clean_all_trash_pages_from_all_spaces():
     """
     Main function for retrieve space keys and provide space for cleaner
-    :param confluence:
     :return:
     """
     limit = 50
@@ -67,12 +64,12 @@ def clean_all_trash_pages_from_all_spaces(confluence):
             i += 1
             for space_list in space_lists:
                 print("Start review the space with key = " + space_list['key'])
-                clean_pages_from_space(confluence=confluence, space_key=space_list['key'])
-                clean_blog_posts_from_space(confluence=confluence, space_key=space_list['key'])
+                clean_pages_from_space(space_key=space_list['key'])
+                clean_blog_posts_from_space(space_key=space_list['key'])
         else:
             flag = False
     return 0
 
 
 if __name__ == '__main__':
-    clean_all_trash_pages_from_all_spaces(confluence=confluence)
+    clean_all_trash_pages_from_all_spaces()

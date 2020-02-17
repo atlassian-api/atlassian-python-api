@@ -58,4 +58,4 @@ def clean_all_draft_pages_from_all_spaces(days=30):
 
 if __name__ == '__main__':
     DRAFT_DAYS = 30
-    clean_all_draft_pages_from_all_spaces(confluence=confluence, days=DRAFT_DAYS)
+    clean_all_draft_pages_from_all_spaces(days=DRAFT_DAYS)

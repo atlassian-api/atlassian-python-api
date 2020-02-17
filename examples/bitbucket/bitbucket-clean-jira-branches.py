@@ -4,6 +4,9 @@ import config
 import logging
 import time
 
+"""
+Clean branches for closed issues
+"""
 PROJECT_KEY = 'PROJ'
 REPOS = ['repo1', 'repo2']
 ACCEPTED_ISSUE_STATUSES = ["Closed", "Verified"]

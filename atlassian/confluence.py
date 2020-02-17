@@ -783,6 +783,7 @@ class Confluence(AtlassianRestAPI):
         :param representation: OPTIONAL: either Confluence 'storage' or 'wiki' markup format
         :param minor_edit: Indicates whether to notify watchers about changes.
             If False then notifications will be sent.
+        :param version_comment: Version comment
         :return:
         """
         log.info('Updating {type} "{title}"'.format(title=title, type=type))
@@ -899,7 +900,8 @@ class Confluence(AtlassianRestAPI):
                                              representation=representation,
                                              minor_edit=minor_edit, top_of_page=True)
 
-    def update_or_create(self, parent_id, title, body, representation='storage', minor_edit=False, version_comment=None):
+    def update_or_create(self, parent_id, title, body, representation='storage', minor_edit=False,
+                         version_comment=None):
         """
         Update page or create a page if it is not exists
         :param parent_id:
@@ -907,6 +909,7 @@ class Confluence(AtlassianRestAPI):
         :param body:
         :param representation: OPTIONAL: either Confluence 'storage' or 'wiki' markup format
         :param minor_edit: Update page without notification
+        :param version_comment: Version comment
         :return:
         """
         space = self.get_page_space(parent_id)
@@ -915,7 +918,8 @@ class Confluence(AtlassianRestAPI):
             page_id = self.get_page_id(space, title)
             parent_id = self.get_parent_content_id(page_id)
             result = self.update_page(parent_id=parent_id, page_id=page_id, title=title, body=body,
-                                      representation=representation, minor_edit=minor_edit, version_comment=version_comment)
+                                      representation=representation, minor_edit=minor_edit,
+                                      version_comment=version_comment)
         else:
             result = self.create_page(space=space, parent_id=parent_id, title=title, body=body,
                                       representation=representation)

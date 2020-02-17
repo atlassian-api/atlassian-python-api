@@ -10,14 +10,14 @@ confluence = Confluence(
     timeout=185)
 
 
-def get_all_pages_ids(conf, space_key):
+def get_all_pages_ids(space_key):
     page_ids = []
 
     limit = 50
     flag = True
     step = 0
     while flag:
-        values = conf.get_all_pages_from_space(space=space_key, start=step * limit, limit=limit)
+        values = confluence.get_all_pages_from_space(space=space_key, start=step * limit, limit=limit)
         step += 1
 
         if len(values) == 0:
@@ -30,13 +30,13 @@ def get_all_pages_ids(conf, space_key):
     return page_ids
 
 
-def check_unknown_attachment_in_space(,space_key):
+def check_unknown_attachment_in_space(space_key):
     """
     Detect errors in space
     :param space_key:
     :return:
     """
-    page_ids = get_all_pages_ids(confluence, space_key)
+    page_ids = get_all_pages_ids(space_key)
     print("Start review pages {} in {}".format(len(page_ids), space_key))
     for page_id in page_ids:
         link = confluence.has_unknown_attachment_error(page_id)
