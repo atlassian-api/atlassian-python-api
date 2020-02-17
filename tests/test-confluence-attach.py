@@ -1,3 +1,4 @@
+# coding=utf-8
 import tempfile
 import json
 import os

@@ -1,3 +1,4 @@
+# coding=utf-8
 from atlassian import Jira
 from atlassian import Stash
 import config
