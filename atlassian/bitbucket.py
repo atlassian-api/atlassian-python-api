@@ -2170,3 +2170,18 @@ class Bitbucket(AtlassianRestAPI):
             repoKey=repo_key,
             idCondition=id_condition)
         return self.delete(url) or {}
+    
+    def get_associated_build_statuses(self,commit):
+        """
+        To get the build statuses associated with a commit.
+        :commit: str- commit id
+        :return:
+        """
+        if not self.cloud:
+            url = '/rest/build-status/1.0/commits/{commitId}'.format(commitId=commit)
+        else:
+            url = '/rest/build-status/2.0/commits/{commitId}'.format(commitId=commit)
+            
+        return self.get(url)
+        
+        
