@@ -1,4 +1,4 @@
-Confluence module
+Bamboo module
 =================
 
 Projects & Plans
@@ -26,6 +26,9 @@ Projects & Plans
 
     # Delete a plan (or a plan branch)
     delete_plan(plan_key)
+
+    # Disable plan
+    disable_plan(plan_key)
 
     # Enable plan
     enable_plan(plan_key)
