@@ -130,6 +130,15 @@ class Bamboo(AtlassianRestAPI):
         resource = 'rest/api/latest/plan/{}'.format(plan_key)
         return self.delete(resource)
 
+    def disable_plan(self, plan_key):
+        """
+        Disable plan.
+        :param plan_key: str TST-BLD
+        :return: DELETE request
+        """
+        resource = 'plan/{plan_key}/enable'.format(plan_key=plan_key)
+        return self.delete(self.resource_url(resource))
+
     def enable_plan(self, plan_key):
         """
         Enable plan.
