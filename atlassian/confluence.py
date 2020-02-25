@@ -732,6 +732,13 @@ class Confluence(AtlassianRestAPI):
         :param title: Title to compare
         :return: True if the same
         """
+        confluence_content = self.get_page_by_id(page_id)
+        if title:
+            current_title = confluence_content.get('title', None)
+            if title != current_title:
+                log.info('Title of {page_id} is different'.format(page_id=page_id))
+                return False
+
         if self.advanced_mode:
             confluence_content = (((self.get_page_by_id(page_id, expand='body.storage').json() or {})
                                    .get('body') or {})
@@ -740,12 +747,6 @@ class Confluence(AtlassianRestAPI):
             confluence_content = (((self.get_page_by_id(page_id, expand='body.storage') or {})
                                    .get('body') or {})
                                   .get('storage') or {})
-
-        if title:
-            current_title = confluence_content.get('title', None)
-            if title != current_title:
-                log.info('Title of {page_id} is different'.format(page_id=page_id))
-                return False
 
         confluence_body_content = confluence_content.get('value')
 
