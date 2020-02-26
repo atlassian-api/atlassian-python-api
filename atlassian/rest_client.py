@@ -23,7 +23,7 @@ class AtlassianRestAPI(object):
 
     def __init__(self, url, username=None, password=None, timeout=60, api_root='rest/api', api_version='latest',
                  verify_ssl=True, session=None, oauth=None, cookies=None, advanced_mode=None, kerberos=None,
-                 cloud=False):
+                 cloud=False, proxies=None):
         if ('atlassian.net' in url or 'jira.com' in url) \
                 and '/wiki' not in url \
                 and self.__class__.__name__ in 'Confluence':
@@ -38,6 +38,7 @@ class AtlassianRestAPI(object):
         self.cookies = cookies
         self.advanced_mode = advanced_mode
         self.cloud = cloud
+        self.proxies = proxies
         if session is None:
             self._session = requests.Session()
         else:
@@ -148,7 +149,8 @@ class AtlassianRestAPI(object):
             data=data,
             timeout=self.timeout,
             verify=self.verify_ssl,
-            files=files
+            files=files,
+            proxies=self.proxies
         )
         response.encoding = 'utf-8'
         if self.advanced_mode:
