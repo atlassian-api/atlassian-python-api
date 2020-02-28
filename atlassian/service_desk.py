@@ -15,7 +15,7 @@ class ServiceDesk(AtlassianRestAPI):
     def get_info(self):
         """ Get info about Service Desk app """
 
-        return self.get('rest/servicedeskapi/info')
+        return self.get('rest/servicedeskapi/info', headers=self.experimental_headers, )
 
     def get_service_desks(self):
         """
@@ -24,9 +24,7 @@ class ServiceDesk(AtlassianRestAPI):
 
         :return: Service Desks
         """
-        service_desks_list = self.get('rest/servicedeskapi/servicedesk')
-
-        return service_desks_list.get('values')
+        return (self.get('rest/servicedeskapi/servicedesk', headers=self.experimental_headers) or {}).get('values')
 
     def get_service_desk_by_id(self, service_desk_id):
         """
@@ -36,7 +34,7 @@ class ServiceDesk(AtlassianRestAPI):
         :return: Service Desk
         """
 
-        return self.get('rest/servicedeskapi/servicedesk/{}'.format(service_desk_id))
+        return self.get('rest/servicedeskapi/servicedesk/{}'.format(service_desk_id), headers=self.experimental_headers)
 
     # Customers actions
     def create_customer(self, full_name, email):
@@ -62,11 +60,11 @@ class ServiceDesk(AtlassianRestAPI):
         :return: Customer request
         """
 
-        return self.get('rest/servicedeskapi/request/{}'.format(issue_id_or_key))
+        return self.get('rest/servicedeskapi/request/{}'.format(issue_id_or_key), headers=self.experimental_headers)
 
     def get_my_customer_requests(self):
         """ Returning requests where you are the assignee """
-        response = self.get('rest/servicedeskapi/request')
+        response = self.get('rest/servicedeskapi/request', headers=self.experimental_headers)
         if self.advanced_mode:
             return response
         return (response or {}).get('values')
@@ -97,7 +95,7 @@ class ServiceDesk(AtlassianRestAPI):
         if request_participants:
             data["requestParticipants"] = request_participants
 
-        return self.post('rest/servicedeskapi/request', data=data)
+        return self.post('rest/servicedeskapi/request', data=data, headers=self.experimental_headers)
 
     def get_customer_request_status(self, issue_id_or_key):
         """
@@ -106,7 +104,8 @@ class ServiceDesk(AtlassianRestAPI):
         :param issue_id_or_key: str
         :return: Status name
         """
-        request = self.get('rest/servicedeskapi/request/{}/status'.format(issue_id_or_key))
+        request = self.get('rest/servicedeskapi/request/{}/status'.format(issue_id_or_key),
+                           headers=self.experimental_headers)
         if self.advanced_mode:
             return request
         if request:
@@ -133,7 +132,8 @@ class ServiceDesk(AtlassianRestAPI):
         :return: all service desk request types
         """
 
-        return self.get('rest/servicedeskapi/servicedesk/{}/requesttype'.format(service_desk_id))
+        return self.get('rest/servicedeskapi/servicedesk/{}/requesttype'.format(service_desk_id),
+                        headers=self.experimental_headers)
 
     # Participants actions
     def get_request_participants(self, issue_id_or_key, start=0, limit=50):
@@ -152,7 +152,7 @@ class ServiceDesk(AtlassianRestAPI):
         if limit is not None:
             params['limit'] = int(limit)
 
-        response = self.get(url, params=params)
+        response = self.get(url, params=params, headers=self.experimental_headers)
         if self.advanced_mode:
             return response
         return (response or {}).get('values')
@@ -169,7 +169,7 @@ class ServiceDesk(AtlassianRestAPI):
         url = 'rest/servicedeskapi/request/{}/participant'.format(issue_id_or_key)
         data = {'usernames': users_list}
 
-        return self.post(url, data=data)
+        return self.post(url, data=data, headers=self.experimental_headers)
 
     def remove_request_participants(self, issue_id_or_key, users_list):
         """
@@ -183,7 +183,7 @@ class ServiceDesk(AtlassianRestAPI):
         url = 'rest/servicedeskapi/request/{}/participant'.format(issue_id_or_key)
         data = {'usernames': users_list}
 
-        return self.delete(url, data=data)
+        return self.delete(url, data=data, headers=self.experimental_headers)
 
     # Transitions actions
     def perform_transition(self, issue_id_or_key, transition_id, comment=None):
@@ -216,7 +216,7 @@ class ServiceDesk(AtlassianRestAPI):
         data = {"body": body, "public": public}
         url = 'rest/servicedeskapi/request/{}/comment'.format(issue_id_or_key)
 
-        return self.post(path=url, data=data)
+        return self.post(path=url, data=data, headers=self.experimental_headers)
 
     def get_request_comments(self, issue_id_or_key):
         """
@@ -226,7 +226,8 @@ class ServiceDesk(AtlassianRestAPI):
         :return: Issue comments
         """
 
-        return self.get('rest/servicedeskapi/request/{}/comment'.format(issue_id_or_key))
+        return self.get('rest/servicedeskapi/request/{}/comment'.format(issue_id_or_key),
+                        headers=self.experimental_headers)
 
     def get_request_comment_by_id(self, issue_id_or_key, comment_id):
         """
@@ -238,7 +239,8 @@ class ServiceDesk(AtlassianRestAPI):
         """
 
         return self.get('rest/servicedeskapi/request/{}/comment/{}'.format(issue_id_or_key,
-                                                                           comment_id))
+                                                                           comment_id),
+                        headers=self.experimental_headers)
 
     # Organizations actions
     def get_organisations(self, service_desk_id=None, start=0, limit=50):
@@ -414,11 +416,10 @@ class ServiceDesk(AtlassianRestAPI):
         :param filename: str
         :return: Temporary Attachment ID
         """
-        headers = {'X-Atlassian-Token': 'no-check', 'X-ExperimentalApi': 'opt-in'}
         url = 'rest/servicedeskapi/servicedesk/{}/attachTemporaryFile'.format(service_desk_id)
 
         with open(filename, 'rb') as file:
-            result = self.post(path=url, headers=headers,
+            result = self.post(path=url, headers=self.experimental_headers,
                                files={'file': file}).get('temporaryAttachments')
             temp_attachment_id = result[0].get('temporaryAttachmentId')
 
@@ -461,7 +462,7 @@ class ServiceDesk(AtlassianRestAPI):
         if limit is not None:
             params['limit'] = int(limit)
 
-        response = self.get(url, params=params)
+        response = self.get(url, params=params, headers=self.experimental_headers)
         if self.advanced_mode:
             return response
         return (response or {}).get('values')
@@ -477,7 +478,7 @@ class ServiceDesk(AtlassianRestAPI):
         """
         url = 'rest/servicedeskapi/request/{0}/sla/{1}'.format(issue_id_or_key, sla_id)
 
-        return self.get(url)
+        return self.get(url, headers=self.experimental_headers)
 
     # Approvals
     def get_approvals(self, issue_id_or_key, start=0, limit=50):
