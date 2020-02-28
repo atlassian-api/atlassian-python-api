@@ -20,7 +20,7 @@ setup(
     maintainer='Gonchik Tsymzhitov',
     maintainer_email='gonchik.tsymzhitov@gmail.com',
     url='https://github.com/atlassian-api/atlassian-python-api',
-    keywords='atlassian jira core software confluence bitbucket bamboo crowd portfolio tempo servicedesk jsd rest api',
+    keywords='atlassian jira core software confluence bitbucket bamboo crowd portfolio tempo servicedesk rest api',
 
     packages=find_packages(),
     package_dir={'atlassian': 'atlassian'},

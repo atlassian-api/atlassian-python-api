@@ -20,7 +20,7 @@ Examples
 --------
 **More examples in ``examples/`` directory.**
 
-Here's a short example how to create a Confluence page:
+Here's a short example of how to create a Confluence page:
 
 .. code-block:: python
 
@@ -81,7 +81,7 @@ Example to get your requests:
     data = sd.get_my_customer_requests()
     print(data)
 
-If you want to see the response in pretty print format json. Feel free for use construction like:
+If you want to see the response in pretty print format JSON. Feel free for use construction like:
 
 .. code-block:: python
 
@@ -94,9 +94,9 @@ Development and Deployment (For contributors)
 ---------------------------------------------
 First of all, I am happy for any PR requests.
 Let's fork and provide your changes :)
-See the `Contribution guidelines for this project`_ for details on how to make changes to this library.
+See the `Contribution Guidelines for this project`_ for details on how to make changes to this library.
 
-.. _Contribution guidelines for this project: CONTRIBUTING.rst
+.. _Contribution Guidelines for this project: CONTRIBUTING.rst
 .. |Build Status| image:: https://travis-ci.org/atlassian-api/atlassian-python-api.svg?branch=master
    :target: https://pypi.python.org/pypi/atlassian-python-api
    :alt: Build status
@@ -118,7 +118,7 @@ See the `Contribution guidelines for this project`_ for details on how to make c
 
 Credits
 -------
-In addition to all the contributors we would like to thank to these companies:
+In addition to all the contributors we would like to thank these vendors:
 
 * Atlassian_ for developing such a powerful ecosystem.
 * JetBrains_ for providing us with free licenses of PyCharm_
