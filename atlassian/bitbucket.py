@@ -2181,3 +2181,43 @@ class Bitbucket(AtlassianRestAPI):
             url = '/rest/build-status/2.0/commits/{commitId}'.format(commitId=commit)
 
         return self.get(url)
+
+    def get_announcement_banner(self):
+        """
+        Gets the announcement banner, if one exists and is available to the user
+        :return:
+        """
+        if not self.cloud:
+            url = "rest/api/1.0/admin/banner"
+        else:
+            url = "rest/api/2.0/admin/banner"
+        return self.get(url)
+
+    def set_announcement_banner(self, body):
+        """
+        Sets the announcement banner with the provided JSON.
+        Only users authenticated as Admins may call this resource
+        :param body
+            {
+                "id": "https://docs.atlassian.com/jira/REST/schema/rest-announcement-banner#",
+                "title": "Rest Announcement Banner",
+                "type": "object"
+            }
+        :return:
+        """
+        if not self.cloud:
+            url = "rest/api/1.0/admin/banner"
+        else:
+            url = "rest/api/2.0/admin/banner"
+        return self.put(url, data=body)
+
+    def delete_announcement_banner(self):
+        """
+        Gets the announcement banner, if one exists and is available to the user
+        :return:
+        """
+        if not self.cloud:
+            url = "rest/api/1.0/admin/banner"
+        else:
+            url = "rest/api/2.0/admin/banner"
+        return self.delete(url)
