@@ -1037,7 +1037,7 @@ class Jira(AtlassianRestAPI):
 
         if not issue_key or not self.issue_exists(issue_key):
             log.info('IssueKey is not provided or does not exists in destination. Will attempt to create an issue')
-            del fields['issuekey']
+            fields.pop("issuekey", None)
             return self.issue_create(fields)
 
         if self.issue_deleted(issue_key):
@@ -1045,7 +1045,7 @@ class Jira(AtlassianRestAPI):
             return None
 
         log.info('Issue "{issue_key}" exists, will update'.format(issue_key=issue_key))
-        del fields['issuekey']
+        fields.pop("issuekey", None)
         return self.issue_update(issue_key, fields)
 
     def issue_add_comment(self, issue_key, comment, visibility=None):
