@@ -562,7 +562,7 @@ class Jira(AtlassianRestAPI):
         for key in issue_list:
             if re.match(jira_issue_regex, key):
                 matched_issue_keys.append(key)
-        jql = 'key in ({})'.format(', '.join(matched_issue_keys))
+        jql = 'key in ({})'.format(', '.join(set(matched_issue_keys)))
         query_result = self.jql(jql, fields=fields)
         if 'errorMessages' in query_result.keys():
             for message in query_result['errorMessages']:
