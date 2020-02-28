@@ -607,3 +607,18 @@ class ServiceDesk(AtlassianRestAPI):
             params['limit'] = int(limit)
 
         return self.get(url, headers=self.experimental_headers, params=params)
+
+    def upload_plugin(self, plugin_path):
+        """
+        Provide plugin path for upload into Jira e.g. useful for auto deploy
+        :param plugin_path:
+        :return:
+        """
+        files = {
+            'plugin': open(plugin_path, 'rb')
+        }
+        upm_token = \
+            self.request(method='GET', path='rest/plugins/1.0/', headers=self.no_check_headers, trailing=True).headers[
+                'upm-token']
+        url = 'rest/plugins/1.0/?token={upm_token}'.format(upm_token=upm_token)
+        return self.post(url, files=files, headers=self.no_check_headers)

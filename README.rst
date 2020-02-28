@@ -8,7 +8,7 @@ Documentation
 
 `Documentation`_
 
-.. _Documentation: https://atlassian-python-api.readthedocs.io/en/latest/index.html
+.. _Documentation: https://atlassian-python-api.readthedocs.io
 
 Install
 -------

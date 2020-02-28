@@ -153,6 +153,7 @@ Or reuse cookie file:
    jira
    confluence
    bitbucket
+   bamboo
    service_desk
 
 .. |Build Status| image:: https://travis-ci.org/atlassian-api/atlassian-python-api.svg?branch=master

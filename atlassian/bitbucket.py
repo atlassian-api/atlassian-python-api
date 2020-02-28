@@ -1785,13 +1785,11 @@ class Bitbucket(AtlassianRestAPI):
         files = {
             'plugin': open(plugin_path, 'rb')
         }
-        headers = {
-            'X-Atlassian-Token': 'nocheck'
-        }
-        upm_token = self.request(method='GET', path='rest/plugins/1.0/', headers=headers, trailing=True).headers[
-            'upm-token']
+        upm_token = \
+            self.request(method='GET', path='rest/plugins/1.0/', headers=self.no_check_headers, trailing=True).headers[
+                'upm-token']
         url = 'rest/plugins/1.0/?token={upm_token}'.format(upm_token=upm_token)
-        return self.post(url, files=files, headers=headers)
+        return self.post(url, files=files, headers=self.no_check_headers)
 
     def upload_file(self, project, repository, content, message, branch, filename):
         """
@@ -2170,8 +2168,8 @@ class Bitbucket(AtlassianRestAPI):
             repoKey=repo_key,
             idCondition=id_condition)
         return self.delete(url) or {}
-    
-    def get_associated_build_statuses(self,commit):
+
+    def get_associated_build_statuses(self, commit):
         """
         To get the build statuses associated with a commit.
         :commit: str- commit id
@@ -2181,7 +2179,5 @@ class Bitbucket(AtlassianRestAPI):
             url = '/rest/build-status/1.0/commits/{commitId}'.format(commitId=commit)
         else:
             url = '/rest/build-status/2.0/commits/{commitId}'.format(commitId=commit)
-            
+
         return self.get(url)
-        
-        

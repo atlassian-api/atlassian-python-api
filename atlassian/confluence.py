@@ -148,7 +148,8 @@ class Confluence(AtlassianRestAPI):
             return self.get(url, params=params)
         else:
             try:
-                return (self.get(url, params=params) or {}).get('results')[0]
+                response = (self.get(url, params=params) or {}).get('results')
+                return response[0] if response else None
             except (IndexError, TypeError) as e:
                 log.error("Can't find '{title}' page on the {url}!".format(title=title, url=self.url))
                 log.debug(e)
@@ -1266,13 +1267,11 @@ class Confluence(AtlassianRestAPI):
         files = {
             'plugin': open(plugin_path, 'rb')
         }
-        headers = {
-            'X-Atlassian-Token': 'nocheck'
-        }
-        upm_token = self.request(method='GET', path='rest/plugins/1.0/', headers=headers, trailing=True).headers[
-            'upm-token']
+        upm_token = \
+            self.request(method='GET', path='rest/plugins/1.0/', headers=self.no_check_headers, trailing=True).headers[
+                'upm-token']
         url = 'rest/plugins/1.0/?token={upm_token}'.format(upm_token=upm_token)
-        return self.post(url, files=files, headers=headers)
+        return self.post(url, files=files, headers=self.no_check_headers)
 
     def delete_plugin(self, plugin_key):
         """

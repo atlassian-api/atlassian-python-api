@@ -87,14 +87,16 @@ class Bamboo(AtlassianRestAPI):
         resource = 'project/{}'.format(project_key)
         return self.base_list_call(resource, expand, favourite, clover_enabled, start_index=0, max_results=25)
 
-    def project_plans(self, project_key):
+    def project_plans(self, project_key, max_results=25):
         """
         Returns a generator with the plans in a given project
         :param project_key: Project key
+        :param max_results:
         :return: Generator with plans
         """
-        resource = 'project/{}'.format(project_key, max_results=25)
-        return self.base_list_call(resource, expand='plans', favourite=False, clover_enabled=False, max_results=25,
+        resource = 'project/{}'.format(project_key, max_results=max_results)
+        return self.base_list_call(resource, expand='plans', favourite=False,
+                                   clover_enabled=False, max_results=max_results,
                                    elements_key='plans', element_key='plan')
 
     def plans(self, expand=None, favourite=False, clover_enabled=False, start_index=0, max_results=25):
@@ -150,10 +152,10 @@ class Bamboo(AtlassianRestAPI):
 
     """ Branches """
 
-    def search_branches(self, plan_key, include_default_branch=True, max_results=25):
+    def search_branches(self, plan_key, include_default_branch=True, max_results=25, start=0):
         params = {
             'max-result': max_results,
-            'start-index': 0,
+            'start-index': start,
             'masterPlanKey': plan_key,
             'includeMasterBranch': include_default_branch
         }
@@ -310,7 +312,7 @@ class Bamboo(AtlassianRestAPI):
                             label=label, issue_key=issue_key, start_index=start_index, max_results=max_results,
                             include_all_states=include_all_states)
 
-    def build_result(self, build_key, expand=None, include_all_states=False):
+    def build_result(self, build_key, expand=None, include_all_states=False, start=0, max_results=25):
         """
         Returns details of a specific build result
         :param expand: expands build result details on request. Possible values are: artifacts, comments, labels,
@@ -319,12 +321,15 @@ class Bamboo(AtlassianRestAPI):
         :param build_key: Should be in the form XX-YY[-ZZ]-99, that is, the last token should be an integer representing
         the build number
         :param include_all_states
+        :param start:
+        :param max_results:
         """
         try:
             int(build_key.split('-')[-1])
             resource = "result/{}".format(build_key)
             return self.base_list_call(resource, expand, favourite=False, clover_enabled=False,
-                                       start_index=0, max_results=25, include_all_states=include_all_states)
+                                       start_index=start, max_results=max_results,
+                                       include_all_states=include_all_states)
         except ValueError:
             raise ValueError('The key "{}" does not correspond to a build result'.format(build_key))
 
@@ -654,10 +659,8 @@ class Bamboo(AtlassianRestAPI):
         files = {
             'plugin': open(plugin_path, 'rb')
         }
-        headers = {
-            'X-Atlassian-Token': 'nocheck'
-        }
-        upm_token = self.request(method='GET', path='rest/plugins/1.0/', headers=headers, trailing=True).headers[
-            'upm-token']
+        upm_token = \
+            self.request(method='GET', path='rest/plugins/1.0/', headers=self.no_check_headers, trailing=True).headers[
+                'upm-token']
         url = 'rest/plugins/1.0/?token={upm_token}'.format(upm_token=upm_token)
-        return self.post(url, files=files, headers=headers)
+        return self.post(url, files=files, headers=self.no_check_headers)

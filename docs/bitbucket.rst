@@ -1,4 +1,4 @@
-Bitbucket module
+BitBucket module
 ================
 
 Manage projects
