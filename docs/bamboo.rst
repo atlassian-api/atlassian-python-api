@@ -1,8 +1,8 @@
 Bamboo module
-=================
+=============
 
 Projects & Plans
--------------
+----------------
 
 .. code-block:: python
 
@@ -87,7 +87,7 @@ Build results
     execute_build(plan_key, stage=None, execute_all_stages=True, custom_revision=None, **bamboo_variables)
 
 Comments & Labels
--------------
+-----------------
 
 .. code-block:: python
 
@@ -124,7 +124,7 @@ Deployments
     deployment_dashboard(project_id=None)
 
 Users & Groups
--------------
+--------------
 
 .. code-block:: python
 

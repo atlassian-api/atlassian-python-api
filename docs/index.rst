@@ -148,7 +148,7 @@ Or reuse cookie file:
         cookie=cookie_dict)
 
 .. toctree::
-   :maxdept:2
+   :maxdepth: 2
 
    jira
    confluence

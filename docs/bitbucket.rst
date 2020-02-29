@@ -40,7 +40,7 @@ Manage projects
 	bitbucket.project_grant_group_permissions(project_key, groupname, permission)
 
 Manage repositories
----------------
+-------------------
 
 .. code-block:: python
 
@@ -208,7 +208,7 @@ Pull Request management
 	bitbucket.reopen_pull_request(project_key, repository, pr_id, pr_version)
 	
 Conditions-Reviewers management
------------------------
+-------------------------------
 
 .. code-block:: python
 

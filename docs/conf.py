@@ -5,7 +5,11 @@
 # This file does only contain a selection of the most common options. For a
 # full list see the documentation:
 # http://www.sphinx-doc.org/en/master/config
+import os
+import sys
 
+sys.path.insert(0, os.path.abspath('../..'))
+sys.path.insert(0, os.path.abspath('../atlassian/'))
 # -- Project information -----------------------------------------------------
 
 project = 'Atlassian Python API'
@@ -48,7 +52,7 @@ master_doc = 'index'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = "en"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -63,7 +67,7 @@ pygments_style = None
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'
+html_theme = 'agogo'
 html_theme_options = {
     "rightsidebar": "false",
 }
@@ -111,7 +115,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'AtlassianPythonAPI.tex', 'Atlassian Python API Documentation',
-     'SLRover', 'manual'),
+     author, 'manual'),
 ]
 
 # -- Options for manual page output ------------------------------------------
