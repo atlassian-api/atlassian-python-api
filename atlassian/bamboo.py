@@ -87,16 +87,17 @@ class Bamboo(AtlassianRestAPI):
         resource = 'project/{}'.format(project_key)
         return self.base_list_call(resource, expand, favourite, clover_enabled, start_index=0, max_results=25)
 
-    def project_plans(self, project_key, max_results=25):
+    def project_plans(self, project_key, start_index=0, max_results=25):
         """
         Returns a generator with the plans in a given project
         :param project_key: Project key
+        :param start_index:
         :param max_results:
         :return: Generator with plans
         """
         resource = 'project/{}'.format(project_key, max_results=max_results)
         return self.base_list_call(resource, expand='plans', favourite=False,
-                                   clover_enabled=False, max_results=max_results,
+                                   clover_enabled=False, start_index=start_index, max_results=max_results,
                                    elements_key='plans', element_key='plan')
 
     def plans(self, expand=None, favourite=False, clover_enabled=False, start_index=0, max_results=25):

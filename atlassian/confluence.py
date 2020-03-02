@@ -1058,7 +1058,7 @@ class Confluence(AtlassianRestAPI):
         params = {}
         if expand:
             params["expand"] = expand
-        return self.get(url)
+        return self.get(url, params=params)
 
     def create_space(self, space_key, space_name):
         """
@@ -1474,7 +1474,6 @@ class Confluence(AtlassianRestAPI):
         url = 'rest/api/2/group/user'
         params = {'groupname': group_name}
         data = {'name': username}
-
         return self.post(url, params=params, data=data)
 
     def get_subtree_of_content_ids(self, page_id):

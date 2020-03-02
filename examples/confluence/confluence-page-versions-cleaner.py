@@ -4,6 +4,7 @@ from atlassian import Confluence
 CONFLUENCE_URL = "confluence.example.com"
 CONFLUENCE_LOGIN = "gonchik.tsymzhitov"
 CONFLUENCE_PASSWORD = "passwordpassword"
+REMAINED_PAGE_HISTORY_COUNT = 1
 
 
 def page_version_remover(content_id, remained_page_numbers):
@@ -74,11 +75,10 @@ if __name__ == '__main__':
         password=CONFLUENCE_PASSWORD,
         timeout=190
     )
-    remained_count = 1
     space_keys = get_all_spaces()
     counter = 0
     for space_key in space_keys:
         print("Starting review space with key {}".format(space_key))
         page_ids = get_all_page_ids_from_space(space_key)
         for page_id in page_ids:
-            reduce_page_numbers(page_id=page_id, remained_page_history_count=remained_count)
+            reduce_page_numbers(page_id=page_id, remained_page_history_count=REMAINED_PAGE_HISTORY_COUNT)
