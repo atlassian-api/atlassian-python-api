@@ -801,7 +801,7 @@ class Bitbucket(AtlassianRestAPI):
                 pr_list.extend(response.get("values", []))
 
         else:
-            while not response.get('isLastPage'):
+            while not response.get('isLastPage') and len(pr_list) < limit:
                 start = response.get('nextPageStart')
                 params['start'] = start
                 response = self.get(url, params=params)
