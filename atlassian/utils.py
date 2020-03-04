@@ -5,7 +5,7 @@ import re
 log = logging.getLogger(__name__)
 
 
-def is_email(string):
+def is_email(element):
     """
     >>> is_email('username@example.com')
     True
@@ -15,11 +15,7 @@ def is_email(string):
     True
     """
     email_regex = r'^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]*$'
-
-    if isinstance(string, str) and not re.match(email_regex, string):
-        return False
-    else:
-        return True
+    return re.match(email_regex, str(element))
 
 
 def html_email(email, title=None):
