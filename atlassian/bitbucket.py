@@ -844,8 +844,7 @@ class Bitbucket(AtlassianRestAPI):
         return commits_list
 
     def open_pull_request(self, source_project, source_repo, dest_project, dest_repo, source_branch, destination_branch,
-                          title,
-                          description):
+                          title, description, reviewers=None):
         """
         Create a new pull request between two branches.
         The branches may be in the same repository, or different ones.
@@ -859,6 +858,7 @@ class Bitbucket(AtlassianRestAPI):
         :param destination_branch: where the PR is being merged into
         :param title: the title of the PR
         :param description: the description of what the PR does
+        :param reviewers: the list of reviewers or a single reviewer of the PR
         :return:
         """
         body = {
@@ -883,8 +883,25 @@ class Bitbucket(AtlassianRestAPI):
                         'key': dest_project
                     }
                 }
-            }
+            },
+            'reviewers': []
         }
+
+        def add_reviewer(reviewer):
+            entry = {
+                'user': {
+                    'name': reviewer
+                }
+            }
+            body['reviewers'].append(entry)
+
+        if reviewers is not None:
+            if isinstance(reviewers, str):
+                add_reviewer(reviewers)
+            elif isinstance(reviewers, list):
+                for reviewer in reviewers:
+                    add_reviewer(reviewer)
+
         return self.create_pull_request(dest_project, dest_repo, body)
 
     def create_pull_request(self, project_key, repository, data):

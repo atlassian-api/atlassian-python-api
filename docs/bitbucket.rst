@@ -145,6 +145,12 @@ Manage code
 	# Create a new pull request between two branches.
 	bitbucket.open_pull_request(source_project, source_repo, dest_project, dest_repo, source_branch, destination_branch, title, description)
 
+	# Create a new pull request between two branches with one reviewer
+	bitbucket.open_pull_request(source_project, source_repo, dest_project, dest_repo, source_branch, destination_branch, title, description, reviewers='name')
+
+	# Create a new pull request between two branches with multiple reviewers.
+	bitbucket.open_pull_request(source_project, source_repo, dest_project, dest_repo, source_branch, destination_branch, title, description, reviewers=['name1', 'name2'])
+
 	# Get tags for related repo
 	bitbucket.get_tags(project, repository, filter='', limit=99999)
 
