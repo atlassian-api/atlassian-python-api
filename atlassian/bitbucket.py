@@ -919,6 +919,25 @@ class Bitbucket(AtlassianRestAPI):
                                                                                                repository=repository)
         return self.post(url, data=data)
 
+    def delete_pull_request(self, project, repository, pull_request_id, pull_request_version):
+        """
+        Delete a pull request.
+
+        :param project: the project key
+        :param repository: the repository slug
+        :param pull_request_id: the ID of the pull request within the repository
+        :param pull_request_version: the version of the pull request
+        :return:
+        """
+        if not self.cloud:
+            url = 'rest/api/1.0/projects/{projectKey}/repos/{repositorySlug}/pull-requests/{pullRequestId}'.format(
+                projectKey=project, repositorySlug=repository, pullRequestId=pull_request_id)
+        else:
+            url = 'rest/api/2.0/projects/{projectKey}/repos/{repositorySlug}/pull-requests/{pullRequestId}'.format(
+                projectKey=project, repositorySlug=repository, pullRequestId=pull_request_id)
+        data = {'version': pull_request_version}
+        return self.delete(url, data=data)
+
     def decline_pull_request(self, project_key, repository, pr_id, pr_version):
         """
         Decline a pull request.
