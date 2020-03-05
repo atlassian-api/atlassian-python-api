@@ -108,79 +108,82 @@ Manage code
 
 .. code-block:: python
 
-	# Get repositories list from project
-	bitbucket.repo_list(project_key, limit=25)
+    # Get repositories list from project
+    bitbucket.repo_list(project_key, limit=25)
 
-	# Create a new repository.
-	# Requires an existing project in which this repository will be created. The only parameters which will be used
-	# are name and scmId.
-	# The authenticated user must have PROJECT_ADMIN permission for the context project to call this resource.
-	bitbucket.create_repo(project_key, repository, forkable=False, is_private=True)
+    # Create a new repository.
+    # Requires an existing project in which this repository will be created. The only parameters which will be used
+    # are name and scmId.
+    # The authenticated user must have PROJECT_ADMIN permission for the context project to call this resource.
+    bitbucket.create_repo(project_key, repository, forkable=False, is_private=True)
 
-	# Get branches from repo
-	bitbucket.get_branches(project, repository, filter='', limit=99999, details=True)
+    # Get branches from repo
+    bitbucket.get_branches(project, repository, filter='', limit=99999, details=True)
 
-	# Creates a branch using the information provided in the request.
-	# The authenticated user must have REPO_WRITE permission for the context repository to call this resource.
-	bitbucket.create_branch(project_key, repository, name, start_point, message)
+    # Creates a branch using the information provided in the request.
+    # The authenticated user must have REPO_WRITE permission for the context repository to call this resource.
+    bitbucket.create_branch(project_key, repository, name, start_point, message)
 
-	# Delete branch from related repo
-	bitbucket.delete_branch(project, repository, name, end_point)
+    # Delete branch from related repo
+    bitbucket.delete_branch(project, repository, name, end_point)
 
-	# Get pull requests
-	bitbucket.get_pull_requests(project, repository, state='OPEN', order='newest', limit=100, start=0)
+    # Get pull requests
+    bitbucket.get_pull_requests(project, repository, state='OPEN', order='newest', limit=100, start=0)
 
-	# Get pull request activities
-	bitbucket.get_pull_requests_activities(project, repository, pull_request_id)
+    # Get pull request activities
+    bitbucket.get_pull_requests_activities(project, repository, pull_request_id)
 
-	# Get pull request changes
-	bitbucket.get_pull_requests_changes(project, repository, pull_request_id)
+    # Get pull request changes
+    bitbucket.get_pull_requests_changes(project, repository, pull_request_id)
 
-	# Get pull request commits
-	bitbucket.get_pull_requests_commits(project, repository, pull_request_id)
+    # Get pull request commits
+    bitbucket.get_pull_requests_commits(project, repository, pull_request_id)
 
-	# Add comment into pull request
-	bitbucket.add_pull_request_comment(project, repository, pull_request_id, text)
+    # Add comment into pull request
+    bitbucket.add_pull_request_comment(project, repository, pull_request_id, text)
 
-	# Create a new pull request between two branches.
-	bitbucket.open_pull_request(source_project, source_repo, dest_project, dest_repo, source_branch, destination_branch, title, description)
+    # Create a new pull request between two branches.
+    bitbucket.open_pull_request(source_project, source_repo, dest_project, dest_repo, source_branch, destination_branch, title, description)
 
-	# Create a new pull request between two branches with one reviewer
-	bitbucket.open_pull_request(source_project, source_repo, dest_project, dest_repo, source_branch, destination_branch, title, description, reviewers='name')
+    # Create a new pull request between two branches with one reviewer
+    bitbucket.open_pull_request(source_project, source_repo, dest_project, dest_repo, source_branch, destination_branch, title, description, reviewers='name')
 
-	# Create a new pull request between two branches with multiple reviewers.
-	bitbucket.open_pull_request(source_project, source_repo, dest_project, dest_repo, source_branch, destination_branch, title, description, reviewers=['name1', 'name2'])
+    # Create a new pull request between two branches with multiple reviewers.
+    bitbucket.open_pull_request(source_project, source_repo, dest_project, dest_repo, source_branch, destination_branch, title, description, reviewers=['name1', 'name2'])
 
-	# Get tags for related repo
-	bitbucket.get_tags(project, repository, filter='', limit=99999)
+    # Delete a pull request
+    bitbucket.delete_pull_request(project, repository, pull_request_id, pull_request_version)
 
-	# Get project tags
-	# The authenticated user must have REPO_READ permission for the context repository to call this resource
-	bitbucket.get_project_tags(project, repository, tag_name)
+    # Get tags for related repo
+    bitbucket.get_tags(project, repository, filter='', limit=99999)
 
-	# Set tag
-	# The authenticated user must have REPO_WRITE permission for the context repository to call this resource
-	bitbucket.set_tag(project, repository, tag_name, commit_revision, description=None)
+    # Get project tags
+    # The authenticated user must have REPO_READ permission for the context repository to call this resource
+    bitbucket.get_project_tags(project, repository, tag_name)
 
-	# Delete tag
-	# The authenticated user must have REPO_WRITE permission for the context repository to call this resource
-	bitbucket.delete_tag(project, repository, tag_name)
+    # Set tag
+    # The authenticated user must have REPO_WRITE permission for the context repository to call this resource
+    bitbucket.set_tag(project, repository, tag_name, commit_revision, description=None)
 
-	# Get diff
-	bitbucket.get_diff(project, repository, path, hash_oldest, hash_newest)
+    # Delete tag
+    # The authenticated user must have REPO_WRITE permission for the context repository to call this resource
+    bitbucket.delete_tag(project, repository, tag_name)
 
-	# Get commit list from repo
-	bitbucket.get_commits(project, repository, hash_oldest, hash_newest, limit=99999)
+    # Get diff
+    bitbucket.get_diff(project, repository, path, hash_oldest, hash_newest)
 
-	# Get change log between 2 refs
-	bitbucket.get_changelog(project, repository, ref_from, ref_to, limit=99999)
+    # Get commit list from repo
+    bitbucket.get_commits(project, repository, hash_oldest, hash_newest, limit=99999)
 
-	# Get raw content of the file from repo
-	bitbucket.get_content_of_file(project, repository, filename, at=None, markup=None)
-	"""
-		Retrieve the raw content for a file path at a specified revision.
-		The authenticated user must have REPO_READ permission for the specified repository to call this resource.
-	"""
+    # Get change log between 2 refs
+    bitbucket.get_changelog(project, repository, ref_from, ref_to, limit=99999)
+
+    # Get raw content of the file from repo
+    bitbucket.get_content_of_file(project, repository, filename, at=None, markup=None)
+    """
+        Retrieve the raw content for a file path at a specified revision.
+        The authenticated user must have REPO_READ permission for the specified repository to call this resource.
+    """
 
 Branch permissions
 ------------------
