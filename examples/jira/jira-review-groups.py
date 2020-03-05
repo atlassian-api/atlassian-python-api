@@ -72,7 +72,7 @@ def exclude_inactive_users(groups):
     """
     for group in groups:
         for user in group['users']:
-            print(f'Trying to delete {user["name"]} from group {group["group_name"]}')
+            print('Trying to delete {} from group {}'.format(user["name"], group["group_name"]))
             jira.remove_user_from_group(user['name'], group['group_name'])
     return True
 
@@ -100,4 +100,4 @@ def find_group(groups, group_name):
 
             return group
         else:
-            return f'Group {group_name} not in list'
+            return 'Group {} not in list'.format(group_name)

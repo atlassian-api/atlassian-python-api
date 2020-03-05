@@ -1,5 +1,4 @@
 from atlassian import Bamboo
-from var import config
 import logging
 
 """
@@ -11,9 +10,9 @@ logging.basicConfig(level=logging.ERROR)
 REMOVE = True
 STATUS_CLEANED_RESULTS = ['Incomplete', 'Unknown']
 EXCLUDED_PROJECTS = ["EXCLUDE_PROJECT"]
-BAMBOO_LOGIN = config.JIRA_LOGIN
-BAMBOO_PASS = config.JIRA_PASSWORD
-BAMBOO_URL = config.BAMBOO_URL
+BAMBOO_LOGIN = "admin"
+BAMBOO_PASS = "password"
+BAMBOO_URL = "https://bamboo.example.com"
 
 
 def get_all_projects():

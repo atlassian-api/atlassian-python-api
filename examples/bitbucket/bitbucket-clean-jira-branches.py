@@ -1,7 +1,6 @@
 # coding=utf-8
 from atlassian import Jira
 from atlassian import Stash
-import config
 import logging
 import time
 
@@ -11,10 +10,12 @@ Clean branches for closed issues
 PROJECT_KEY = 'PROJ'
 REPOS = ['repo1', 'repo2']
 ACCEPTED_ISSUE_STATUSES = ["Closed", "Verified"]
-EXCLUDE_REPO_RULES = config.exclude_parameters
+EXCLUDE_REPO_RULES = ['refs/heads/release/',
+                      'refs/heads/master/',
+                      'development']
 LAST_COMMIT_CONDITION_IN_DAYS = 75
-ATLASSIAN_USER = config.JIRA_LOGIN
-ATLASSIAN_PASSWORD = config.JIRA_PASSWORD
+ATLASSIAN_USER = "gonchik.tsymzhitov"
+ATLASSIAN_PASSWORD = "password"
 JIRA_URL = "http://localhost:8080"
 
 logging.basicConfig(level=logging.ERROR)

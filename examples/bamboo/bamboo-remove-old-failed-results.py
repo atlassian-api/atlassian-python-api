@@ -1,5 +1,4 @@
 from atlassian import Bamboo
-from var import config
 from datetime import datetime
 from datetime import timedelta
 import logging
@@ -13,9 +12,9 @@ logging.basicConfig(level=logging.ERROR)
 DRY_RUN = False
 STATUS_CLEANED_RESULTS = ["Failed"]
 EXCLUDED_PROJECTS = ["EXCLUDE_PROJECT"]
-BAMBOO_LOGIN = config.JIRA_LOGIN
-BAMBOO_PASS = config.JIRA_PASSWORD
-BAMBOO_URL = config.BAMBOO_URL
+BAMBOO_LOGIN = "admin"
+BAMBOO_PASS = "password"
+BAMBOO_URL = "https://bamboo.example.com"
 OLDER_DAYS = 360
 
 
@@ -32,7 +31,7 @@ def get_branches_from_plan(plan_key):
 
 
 def get_results_from_branch(plan_key):
-    return [results for results in bamboo.results(plan_key, expand='results.result')]
+    return [x for x in bamboo.results(plan_key, expand='results.result')]
 
 
 def remove_build_result(build_key, status):

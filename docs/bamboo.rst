@@ -60,19 +60,19 @@ Build results
 
     # Get build results (Scalable from a single result to all build results)
     results(project_key=None, plan_key=None, job_key=None, build_number=None, expand=None, favourite=False,
-                clover_enabled=False, issue_key=None, label=None, start_index=0, max_results=25, include_all_states=False)
+            clover_enabled=False, issue_key=None, label=None, start_index=0, max_results=25, include_all_states=False)
     
     # Get latest build results
     latest_results(expand=None, favourite=False, clover_enabled=False, label=None, issue_key=None,
-                       start_index=0, max_results=25, include_all_states=False)
+                   start_index=0, max_results=25, include_all_states=False)
     
     # Get latest build results for the project
     project_latest_results(project_key, expand=None, favourite=False, clover_enabled=False, label=None,
-                               issue_key=None, start_index=0, max_results=25, include_all_states=False)
+                           issue_key=None, start_index=0, max_results=25, include_all_states=False)
     
     # Get build results for a single plan
     plan_results(project_key, plan_key, expand=None, favourite=False, clover_enabled=False, label=None,
-                     issue_key=None, start_index=0, max_results=25, include_all_states=False)
+                 issue_key=None, start_index=0, max_results=25, include_all_states=False)
 
     # Get a single build result
     build_result(build_key, expand=None, include_all_states=False)

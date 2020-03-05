@@ -25,12 +25,12 @@ def execute_build(build_key, params):
     params: dict
     """
     started_build = bamboo.execute_build(build_key, **params)
-    logging.info(f"Build execution status: {started_build.status_code}")
+    logging.info("Build execution status: {}".format(started_build.status_code))
     if started_build.status_code == 200:
-        logging.info(f"Build key: {started_build.json().get('buildResultKey')}")
+        logging.info("Build key: {}".format(started_build.json().get('buildResultKey')))
         logging.info(started_build.json().get('link', {}).get("href"))
     else:
-        logging.error(f"Execution failed!")
+        logging.error("Execution failed!")
         logging.error(started_build.json().get("message"))
 
 
