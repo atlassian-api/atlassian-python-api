@@ -107,9 +107,9 @@ Comments & Labels
     delete_label(project_key, plan_key, build_number, label)
 
 Deployments
--------------
+-----------
 
-.. code-block:: python   
+.. code-block:: python
 
     # Get deployment projects
     deployment_projects()
@@ -128,7 +128,7 @@ Users & Groups
 
 .. code-block:: python
 
-    # Get users in global permissons
+    # Get users in global permissions
     get_users_in_global_permissions(start=0, limit=25)
 
     # Get Groups
@@ -151,8 +151,6 @@ Users & Groups
 
     # Get users without Group
     get_users_not_in_group(group_name, filter_users='', start=0, limit=25)
-
-
 
 Other actions
 -------------
