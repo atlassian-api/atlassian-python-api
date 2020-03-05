@@ -11,10 +11,11 @@ Getting Started
 * Fork_ repository
 * Keep it sync_'ed while you are developing
 * Install pyenv_
-* Install related atlassian product for testing through SDK_
-* pip install -r requirements.txt
-* Start up related product
-  - atlas-run-standalone_
+* Install related atlassian product for testing through SDK_ or use the cloud instance
+* ``pip install -r requirements-dev.txt``
+* Start up related product:
+  - Standalone product atlas-run-standalone_
+  - For cloud product, just do registration
 * Send pull request
 
 .. _Fork: https://help.github.com/articles/fork-a-repo/
@@ -57,7 +58,8 @@ All methods based on docs from: https://developer.atlassian.com/docs/
 
 * `Jira Server`_
 * `Jira Cloud`_
-* Confluence_
+* `Confluence Server`_
+* `Confluence Cloud`_
 * `Jira Service Desk Server`_
 * `Jira Service Desk Cloud`_
 * `Portfolio for Jira`_
@@ -80,8 +82,9 @@ All methods based on docs from: https://developer.atlassian.com/docs/
     - https://confluence.atlassian.com/cloud/api-tokens-938839638.html
 
 .. _`Jira Server`: https://docs.atlassian.com/software/jira/docs/api/REST/latest
-.. _Jira Cloud: https://developer.atlassian.com/cloud/jira/platform/rest/v3/
-.. _Confluence: https://developer.atlassian.com/server/confluence/confluence-server-rest-api/
+.. _`Jira Cloud`: https://developer.atlassian.com/cloud/jira/platform/rest/v3/
+.. _`Confluence Server`: https://developer.atlassian.com/server/confluence/confluence-server-rest-api/
+.. _`Confluence Cloud`: https://developer.atlassian.com/cloud/confluence/rest/
 .. _`Jira Service Desk Cloud`: https://developer.atlassian.com/cloud/jira/service-desk/rest/
 .. _`Jira Service Desk Server`: https://docs.atlassian.com/jira-servicedesk/REST/server
 .. _`Portfolio for Jira Teams`: https://docs.atlassian.com/portfolio-for-jira-server/REST/2.13.0/teams/
@@ -95,8 +98,9 @@ In addition to all the contributors we would like to thank to these companies:
 * Atlassian_ for developing such a powerful ecosystem.
 * JetBrains_ for providing us with free licenses of PyCharm_
 * Travis_ for hosting our continuous integration
-
+* Insomnia_ for providing the human rest client easy to test the methods
 .. _Atlassian: https://www.atlassian.com/
 .. _JetBrains: http://www.jetbrains.com
 .. _PyCharm: http://www.jetbrains.com/pycharm/
 .. _Travis: https://travis-ci.org/
+.. _Insomnia: https://insomnia.rest/
