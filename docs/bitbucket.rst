@@ -268,3 +268,15 @@ Pipelines management
 
     # Get most recent Pipelines results for repository
     bitbucket.get_pipelines(workspace, repository)
+
+    # Trigger default Pipeline on the latest revision of the master branch
+    bitbucket.trigger_pipeline(workspace, repository)
+
+    # Trigger default Pipeline on the latest revision of the develop branch
+    bitbucket.trigger_pipeline(workspace, repository, branch="develop")
+
+    # Trigger default Pipeline on a specific revision of the develop branch
+    bitbucket.trigger_pipeline(workspace, repository, branch="develop", revision="<40-char hash>")
+
+    # Trigger specific Pipeline on a specific revision of the master branch
+    bitbucket.trigger_pipeline(workspace, repository, revision="<40-char hash>", name="style-check")

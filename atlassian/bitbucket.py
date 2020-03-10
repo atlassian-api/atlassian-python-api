@@ -2272,3 +2272,40 @@ class Bitbucket(AtlassianRestAPI):
             version=version, workspace=workspace, repository=repository)
         return self.get(url, params={"pagelen": number, "sort": sort_by},
                         trailing=True)
+
+    def trigger_pipeline(self, workspace, repository, branch="master", revision=None,
+                         name=None):
+        """
+        Trigger a new pipeline. The following options are possible (1 and 2
+        trigger the pipeline that the branch is associated with in the Pipelines
+        configuration):
+        1. Latest revision of a branch (specify ``branch``)
+        2. Specific revision on a branch (additionally specify ``revision``)
+        3. Specific pipeline (additionally specify ``name``)
+        :return: the initiated pipeline; or error information
+        """
+        version = "2.0" if self.cloud else "1.0"
+        url = "rest/api/{version}/repositories/{workspace}/{repository}/pipelines/".format(
+            version=version, workspace=workspace, repository=repository)
+
+        data = {
+            "target": {
+                "ref_type": "branch", 
+                "type": "pipeline_ref_target", 
+                "ref_name": branch,
+            },
+        }
+        if revision:
+            data["target"]["commit"] = {
+                "type": "commit",
+                "hash": revision,
+            }
+        if name:
+            if not revision:
+                raise ValueError("Missing revision")
+            data["target"]["selector"] = {
+                "type": "custom",
+                "pattern": name,
+            }
+
+        return self.post(url, data=data, trailing=True)
