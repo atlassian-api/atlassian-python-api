@@ -260,3 +260,11 @@ Conditions-Reviewers management
 
     # Delete a project condition for specific repository in project
     bitbucket.delete_repo_condition(project_key, repo_key, id_condition)
+
+Pipelines management
+--------------------
+
+.. code-block:: python
+
+    # Get most recent Pipelines results for repository
+    bitbucket.get_pipelines(workspace, repository)

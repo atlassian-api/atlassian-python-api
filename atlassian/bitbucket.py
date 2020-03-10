@@ -2257,3 +2257,18 @@ class Bitbucket(AtlassianRestAPI):
         else:
             url = "rest/api/2.0/admin/banner"
         return self.delete(url)
+
+    def get_pipelines(self, workspace, repository, number=10,
+                      sort_by="-created_on"):
+        """
+        Get information about latest pipelines runs.
+
+        :param number: number of pipelines to fetch
+        :param :sort_by: optional key to sort available pipelines for
+        :return: information in form {"values": [...]}
+        """
+        version = "2.0" if self.cloud else "1.0"
+        url = "rest/api/{version}/repositories/{workspace}/{repository}/pipelines/".format(
+            version=version, workspace=workspace, repository=repository)
+        return self.get(url, params={"pagelen": number, "sort": sort_by},
+                        trailing=True)
