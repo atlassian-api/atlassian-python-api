@@ -295,3 +295,29 @@ Pipelines management
 
     # Get log of step of Pipeline specified by UUIDs
     bitbucket.get_pipeline_step_log(workspace, repository, "{7d6c327d-6336-4721-bfeb-c24caf25045c}", "{56d2d8af-6526-4813-a22c-733ec6ecabf3}")
+
+Manage issues
+-------------
+
+.. code-block:: python
+
+    # Get the latest issues of the issue tracker
+    bitbucket.get_issues(workspace, repository)
+
+    # Create a new issue
+    bitbucket.create_issue(workspace, repository, "The title", "The description")
+
+    # Create a new issue of kind 'enhancement' and priority 'minor'
+    bitbucket.create_issue(workspace, repository, "New idea", "How about this", kind="enhancement", priority="minor")
+
+    # Update the 'priority' field of the issue 42
+    bitbucket.update_issue(workspace, repository, 42, priority="blocker")
+
+    # Mark issue 42 as resolved
+    bitbucket.update_issue(workspace, repository, 42, state="resolved")
+
+    # Get information about issue 1
+    bitbucket.get_issue(workspace, repository, 1)
+
+    # Delete issue 123
+    bitbucket.delete_issue(workspace, repository, 123)

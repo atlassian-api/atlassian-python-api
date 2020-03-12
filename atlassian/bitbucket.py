@@ -2457,3 +2457,65 @@ class Bitbucket(AtlassianRestAPI):
             data["state"] = state
         url = "/rest/api/1.0/tasks/{taskId}".format(taskId=task_id)
         return self.put(url, data=data)
+
+    def get_issues(self, workspace, repository, number=10, sort_by="-id",
+                   query=None):
+        """
+        Get information about the issues tracked in the given repository. By
+        default, the issues are sorted by ID in descending order.
+        :param number: Number of issues to fetch
+        :param sort_by: optional key to sort available issues for
+        :param query: optional query to filter available issues for. See
+          https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering
+          for an overview
+        """
+        resource = "repositories/{workspace}/{repository}/issues".format(
+            workspace=workspace, repository=repository)
+
+        params = {"pagelen": number, "sort": sort_by}
+        if query is not None:
+            params["q"] = query
+
+        return self.get(self.resource_url(resource), params=params)
+
+    def create_issue(self, workspace, repository, title, description="",
+                     kind="bug", priority="major"):
+        """
+        Create a new issue in the issue tracker of the given repository.
+        :param kind: one of: bug, enhancement, proposal, task
+        :param priority: one of: trivial, minor, major, critical, blocker
+        """
+        resource = "repositories/{workspace}/{repository}/issues".format(
+            workspace=workspace, repository=repository)
+        data = {
+            "title": title,
+            "kind": kind,
+            "priority": priority,
+            "content": {"raw": description},
+        }
+        return self.post(self.resource_url(resource), data=data)
+
+    def get_issue(self, workspace, repository, id):
+        """
+        Get the issue specified by ``id``.
+        """
+        resource = "repositories/{workspace}/{repository}/issues/{id}".format(
+            workspace=workspace, repository=repository, id=id)
+        return self.get(self.resource_url(resource))
+
+    def update_issue(self, workspace, repository, id, **fields):
+        """
+        Update the ``fields`` of the issue specified by ``id``.
+        Consult the official API documentation for valid fields.
+        """
+        resource = "repositories/{workspace}/{repository}/issues/{id}".format(
+            workspace=workspace, repository=repository, id=id)
+        return self.put(self.resource_url(resource), data=fields)
+
+    def delete_issue(self, workspace, repository, id):
+        """
+        Delete the issue specified by ``id``.
+        """
+        resource = "repositories/{workspace}/{repository}/issues/{id}".format(
+            workspace=workspace, repository=repository, id=id)
+        return self.delete(self.resource_url(resource))
