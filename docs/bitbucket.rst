@@ -280,3 +280,6 @@ Pipelines management
 
     # Trigger specific Pipeline on a specific revision of the master branch
     bitbucket.trigger_pipeline(workspace, repository, revision="<40-char hash>", name="style-check")
+
+    # Get specific Pipeline by UUID
+    bitbucket.get_pipeline(workspace, repository, "{7d6c327d-6336-4721-bfeb-c24caf25045c}")

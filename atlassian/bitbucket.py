@@ -2273,6 +2273,15 @@ class Bitbucket(AtlassianRestAPI):
                         params={"pagelen": number, "sort": sort_by},
                         trailing=True)
 
+    def get_pipeline(self, workspace, repository, uuid):
+        """
+        Get information about the pipeline specified by ``uuid``.
+        :param uuid: Pipeline identifier (with surrounding {}; NOT the build number)
+        """
+        resource = "repositories/{workspace}/{repository}/pipelines/{uuid}".format(
+            workspace=workspace, repository=repository, uuid=uuid)
+        return self.get(self.resource_url(resource))
+
     def trigger_pipeline(self, workspace, repository, branch="master", revision=None,
                          name=None):
         """
