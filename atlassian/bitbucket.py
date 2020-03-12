@@ -2267,10 +2267,10 @@ class Bitbucket(AtlassianRestAPI):
         :param :sort_by: optional key to sort available pipelines for
         :return: information in form {"values": [...]}
         """
-        version = "2.0" if self.cloud else "1.0"
-        url = "rest/api/{version}/repositories/{workspace}/{repository}/pipelines/".format(
-            version=version, workspace=workspace, repository=repository)
-        return self.get(url, params={"pagelen": number, "sort": sort_by},
+        resource = "repositories/{workspace}/{repository}/pipelines/".format(
+            workspace=workspace, repository=repository)
+        return self.get(self.resource_url(resource),
+                        params={"pagelen": number, "sort": sort_by},
                         trailing=True)
 
     def trigger_pipeline(self, workspace, repository, branch="master", revision=None,
@@ -2284,9 +2284,8 @@ class Bitbucket(AtlassianRestAPI):
         3. Specific pipeline (additionally specify ``name``)
         :return: the initiated pipeline; or error information
         """
-        version = "2.0" if self.cloud else "1.0"
-        url = "rest/api/{version}/repositories/{workspace}/{repository}/pipelines/".format(
-            version=version, workspace=workspace, repository=repository)
+        resource = "repositories/{workspace}/{repository}/pipelines/".format(
+            workspace=workspace, repository=repository)
 
         data = {
             "target": {
@@ -2308,4 +2307,4 @@ class Bitbucket(AtlassianRestAPI):
                 "pattern": name,
             }
 
-        return self.post(url, data=data, trailing=True)
+        return self.post(self.resource_url(resource), data=data, trailing=True)
