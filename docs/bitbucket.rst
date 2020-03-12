@@ -283,3 +283,6 @@ Pipelines management
 
     # Get specific Pipeline by UUID
     bitbucket.get_pipeline(workspace, repository, "{7d6c327d-6336-4721-bfeb-c24caf25045c}")
+
+    # Stop specific Pipeline by UUID
+    bitbucket.stop_pipeline(workspace, repository, "{7d6c327d-6336-4721-bfeb-c24caf25045c}")

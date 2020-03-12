@@ -2317,3 +2317,14 @@ class Bitbucket(AtlassianRestAPI):
             }
 
         return self.post(self.resource_url(resource), data=data, trailing=True)
+
+    def stop_pipeline(self, workspace, repository, uuid):
+        """
+        Stop the pipeline specified by ``uuid``.
+        :param uuid: Pipeline identifier (with surrounding {}; NOT the build number)
+
+        See the documentation for the meaning of response status codes.
+        """
+        resource = "repositories/{workspace}/{repository}/pipelines/{uuid}/stopPipeline".format(
+            workspace=workspace, repository=repository, uuid=uuid)
+        return self.post(self.resource_url(resource))
