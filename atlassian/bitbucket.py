@@ -2328,3 +2328,34 @@ class Bitbucket(AtlassianRestAPI):
         resource = "repositories/{workspace}/{repository}/pipelines/{uuid}/stopPipeline".format(
             workspace=workspace, repository=repository, uuid=uuid)
         return self.post(self.resource_url(resource))
+
+    def get_pipeline_steps(self, workspace, repository, uuid):
+        """
+        Get information about the steps of the pipeline specified by ``uuid``.
+        :param uuid: Pipeline identifier (with surrounding {}; NOT the build number)
+        """
+        resource = "repositories/{workspace}/{repository}/pipelines/{uuid}/steps/".format(
+            workspace=workspace, repository=repository, uuid=uuid)
+        return self.get(self.resource_url(resource), trailing=True)
+
+    def get_pipeline_step(self, workspace, repository, pipeline_uuid, step_uuid):
+        """
+        Get information about a step of a pipeline, specified by respective UUIDs.
+        :param pipeline_uuid: Pipeline identifier (with surrounding {}; NOT the build number)
+        :param step_uuid: Step identifier (with surrounding {})
+        """
+        resource = "repositories/{w}/{r}/pipelines/{p}/steps/{s}".format(
+            w=workspace, r=repository, p=pipeline_uuid, s=step_uuid)
+        return self.get(self.resource_url(resource))
+
+    def get_pipeline_step_log(self, workspace, repository, pipeline_uuid, step_uuid):
+        """
+        Get log of a step of a pipeline, specified by respective UUIDs.
+        :param pipeline_uuid: Pipeline identifier (with surrounding {}; NOT the build number)
+        :param step_uuid: Step identifier (with surrounding {})
+        :return: byte string log
+        """
+        resource = "repositories/{w}/{r}/pipelines/{p}/steps/{s}/log".format(
+            w=workspace, r=repository, p=pipeline_uuid, s=step_uuid)
+        headers = {"Accept": "application/octet-stream"}
+        return self.get(self.resource_url(resource), headers=headers, not_json_response=True)

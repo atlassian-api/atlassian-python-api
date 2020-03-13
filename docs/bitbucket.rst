@@ -286,3 +286,12 @@ Pipelines management
 
     # Stop specific Pipeline by UUID
     bitbucket.stop_pipeline(workspace, repository, "{7d6c327d-6336-4721-bfeb-c24caf25045c}")
+
+    # Get steps of Pipeline specified by UUID
+    bitbucket.get_pipeline_steps(workspace, repository, "{7d6c327d-6336-4721-bfeb-c24caf25045c}")
+
+    # Get step of Pipeline specified by UUIDs
+    bitbucket.get_pipeline_step(workspace, repository, "{7d6c327d-6336-4721-bfeb-c24caf25045c}", "{56d2d8af-6526-4813-a22c-733ec6ecabf3}")
+
+    # Get log of step of Pipeline specified by UUIDs
+    bitbucket.get_pipeline_step_log(workspace, repository, "{7d6c327d-6336-4721-bfeb-c24caf25045c}", "{56d2d8af-6526-4813-a22c-733ec6ecabf3}")
