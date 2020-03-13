@@ -2458,25 +2458,39 @@ class Bitbucket(AtlassianRestAPI):
         url = "/rest/api/1.0/tasks/{taskId}".format(taskId=task_id)
         return self.put(url, data=data)
 
-    def get_issues(self, workspace, repository, number=10, sort_by="-id",
-                   query=None):
+    def get_issues(self, workspace, repository, sort_by=None, query=None):
         """
         Get information about the issues tracked in the given repository. By
         default, the issues are sorted by ID in descending order.
-        :param number: Number of issues to fetch
         :param sort_by: optional key to sort available issues for
         :param query: optional query to filter available issues for. See
           https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering
           for an overview
+
+        :return: List of issues (direct, i.e. without the 'values' key)
         """
         resource = "repositories/{workspace}/{repository}/issues".format(
             workspace=workspace, repository=repository)
 
-        params = {"pagelen": number, "sort": sort_by}
+        params = {}
+        if sort_by is not None:
+            params["sort"] = sort_by
         if query is not None:
             params["q"] = query
 
-        return self.get(self.resource_url(resource), params=params)
+        response = self.get(self.resource_url(resource), params=params)
+        issues = response.get("values", [])
+
+        while True:
+            next_page = response.get("next")
+            if next_page is None:
+                break
+
+            # Strip the base url - it's added when constructing the request
+            response = self.get(next_page.replace(self.url, ""))
+            issues.extend(response.get("values", []))
+
+        return issues
 
     def create_issue(self, workspace, repository, title, description="",
                      kind="bug", priority="major"):

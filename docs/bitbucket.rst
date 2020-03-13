@@ -301,8 +301,11 @@ Manage issues
 
 .. code-block:: python
 
-    # Get the latest issues of the issue tracker
+    # Get all tracked issues
     bitbucket.get_issues(workspace, repository)
+
+    # Get all unassigned issues and sort them by priority
+    bitbucket.get_issues(workspace, repository, sort_by="priority", query='assignee = null')
 
     # Create a new issue
     bitbucket.create_issue(workspace, repository, "The title", "The description")
