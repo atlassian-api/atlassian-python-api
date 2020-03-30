@@ -2257,3 +2257,34 @@ class Bitbucket(AtlassianRestAPI):
         else:
             url = "rest/api/2.0/admin/banner"
         return self.delete(url)
+
+    def get_tasks(self, project, repository, pull_request_id):
+        """
+        Get all tasks for the pull request
+        :param project:
+        :param repository:
+        :param pull_request_id: the ID of the pull request within the repository
+        :return:
+        """  
+        url = "/rest/api/latest/projects/{projectKey}/repos/{repositorySlug}/pull-requests/{pullRequestId}/tasks".format(
+            projectKey=project,
+            repositorySlug=repository,
+            pullRequestId=pull_request_id)
+        return self.get(url)
+
+    def add_task(self, anchor, text):
+        """
+        Add task to the comment
+        :param anchor: id of the comment, 
+        :param text: task text
+        :return:
+        """ 
+        url = "/rest/api/latest/tasks"
+        params = {
+            "anchor": {
+                "id": anchor,
+                "type": "COMMENT"
+            }, 
+            "text": text
+        }
+        return self.post(url, data=params)
