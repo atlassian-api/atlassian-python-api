@@ -2265,8 +2265,10 @@ class Bitbucket(AtlassianRestAPI):
         :param repository:
         :param pull_request_id: the ID of the pull request within the repository
         :return:
-        """  
-        url = "/rest/api/latest/projects/{projectKey}/repos/{repositorySlug}/pull-requests/{pullRequestId}/tasks".format(
+        """
+        if self.cloud:
+            raise Exception("Not supported in Bitbucket Cloud")
+        url = "/rest/api/1.0/projects/{projectKey}/repos/{repositorySlug}/pull-requests/{pullRequestId}/tasks".format(
             projectKey=project,
             repositorySlug=repository,
             pullRequestId=pull_request_id)
@@ -2278,8 +2280,10 @@ class Bitbucket(AtlassianRestAPI):
         :param anchor: ID of the comment, 
         :param text: task text
         :return:
-        """ 
-        url = "/rest/api/latest/tasks"
+        """
+        if self.cloud:
+            raise Exception("Not supported in Bitbucket Cloud")
+        url = "/rest/api/1.0/tasks"
         data = {
             "anchor": {
                 "id": anchor,
@@ -2294,8 +2298,10 @@ class Bitbucket(AtlassianRestAPI):
         Get task information by ID
         :param task_id:
         :return:
-        """ 
-        url = "/rest/api/latest/tasks/{taskId}".format(taskId=task_id)
+        """
+        if self.cloud:
+            raise Exception("Not supported in Bitbucket Cloud")
+        url = "/rest/api/1.0/tasks/{taskId}".format(taskId=task_id)
         return self.get(url)
 
     def delete_task(self, task_id):
@@ -2303,8 +2309,10 @@ class Bitbucket(AtlassianRestAPI):
         Delete task by ID
         :param task_id:
         :return:
-        """ 
-        url = "/rest/api/latest/tasks/{taskId}".format(taskId=task_id)
+        """
+        if self.cloud:
+            raise Exception("Not supported in Bitbucket Cloud")
+        url = "/rest/api/1.0/tasks/{taskId}".format(taskId=task_id)
         return self.delete(url)
 
     def update_task(self, task_id, text=None, state=None):
@@ -2314,11 +2322,13 @@ class Bitbucket(AtlassianRestAPI):
         :param text: 
         :param state: OPEN, RESOLVED
         :return:
-        """ 
+        """
+        if self.cloud:
+            raise Exception("Not supported in Bitbucket Cloud")
         data = {"id": task_id}
         if text:
             data["text"] = text
         if state:
             data["state"] = state
-        url = "/rest/api/latest/tasks/{taskId}".format(taskId=task_id)
+        url = "/rest/api/1.0/tasks/{taskId}".format(taskId=task_id)
         return self.put(url, data=data)
