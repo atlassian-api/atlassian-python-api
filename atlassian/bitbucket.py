@@ -2275,16 +2275,50 @@ class Bitbucket(AtlassianRestAPI):
     def add_task(self, anchor, text):
         """
         Add task to the comment
-        :param anchor: id of the comment, 
+        :param anchor: ID of the comment, 
         :param text: task text
         :return:
         """ 
         url = "/rest/api/latest/tasks"
-        params = {
+        data = {
             "anchor": {
                 "id": anchor,
                 "type": "COMMENT"
             }, 
             "text": text
         }
-        return self.post(url, data=params)
+        return self.post(url, data=data)
+
+    def get_task(self, task_id):
+        """
+        Get task information by ID
+        :param task_id:
+        :return:
+        """ 
+        url = "/rest/api/latest/tasks/{taskId}".format(taskId=task_id)
+        return self.get(url)
+
+    def delete_task(self, task_id):
+        """
+        Delete task by ID
+        :param task_id:
+        :return:
+        """ 
+        url = "/rest/api/latest/tasks/{taskId}".format(taskId=task_id)
+        return self.delete(url)
+
+    def update_task(self, task_id, text=None, state=None):
+        """
+        Update task by ID. It is possible to update state and/or text of the task
+        :param task_id:
+        :param text: 
+        :param state: OPEN, RESOLVED
+        :return:
+        """ 
+        data = {"id": task_id}
+        if text:
+            data["text"] = text
+        if state:
+            data["state"] = state
+        url = "/rest/api/latest/tasks/{taskId}".format(taskId=task_id)
+        return self.put(url, data=data)
