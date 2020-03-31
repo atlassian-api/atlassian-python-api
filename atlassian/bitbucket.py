@@ -843,6 +843,29 @@ class Bitbucket(AtlassianRestAPI):
             commits_list += (response or {}).get('values')
         return commits_list
 
+    def get_pull_requests_participants(self, project, repository, pull_request_id):
+        """
+        Get all participants of a pull request
+        :param project:
+        :param repository:
+        :param pull_request_id:
+        :return:
+        """
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/participants'.format(
+            project=project,
+            repository=repository,
+            pullRequestId=pull_request_id)
+        params = {'start': 0}
+        response = self.get(url, params=params)
+        if 'values' not in response:
+            return []
+        participant_list = (response or {}).get('values')
+        while not response.get('isLastPage'):
+            params['start'] = response.get('nextPageStart')
+            response = self.get(url, params=params)
+            participant_list += (response or {}).get('values')
+        return participant_list
+
     def open_pull_request(self, source_project, source_repo, dest_project, dest_repo, source_branch, destination_branch,
                           title, description, reviewers=None):
         """
