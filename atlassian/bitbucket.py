@@ -843,6 +843,29 @@ class Bitbucket(AtlassianRestAPI):
             commits_list += (response or {}).get('values')
         return commits_list
 
+    def get_pull_requests_participants(self, project, repository, pull_request_id):
+        """
+        Get all participants of a pull request
+        :param project:
+        :param repository:
+        :param pull_request_id:
+        :return:
+        """
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/participants'.format(
+            project=project,
+            repository=repository,
+            pullRequestId=pull_request_id)
+        params = {'start': 0}
+        response = self.get(url, params=params)
+        if 'values' not in response:
+            return []
+        participant_list = (response or {}).get('values')
+        while not response.get('isLastPage'):
+            params['start'] = response.get('nextPageStart')
+            response = self.get(url, params=params)
+            participant_list += (response or {}).get('values')
+        return participant_list
+
     def open_pull_request(self, source_project, source_repo, dest_project, dest_repo, source_branch, destination_branch,
                           title, description, reviewers=None):
         """
@@ -2359,3 +2382,78 @@ class Bitbucket(AtlassianRestAPI):
             w=workspace, r=repository, p=pipeline_uuid, s=step_uuid)
         headers = {"Accept": "application/octet-stream"}
         return self.get(self.resource_url(resource), headers=headers, not_json_response=True)
+
+    def get_tasks(self, project, repository, pull_request_id):
+        """
+        Get all tasks for the pull request
+        :param project:
+        :param repository:
+        :param pull_request_id: the ID of the pull request within the repository
+        :return:
+        """
+        if self.cloud:
+            raise Exception("Not supported in Bitbucket Cloud")
+        url = "/rest/api/1.0/projects/{projectKey}/repos/{repositorySlug}/pull-requests/{pullRequestId}/tasks".format(
+            projectKey=project,
+            repositorySlug=repository,
+            pullRequestId=pull_request_id)
+        return self.get(url)
+
+    def add_task(self, anchor, text):
+        """
+        Add task to the comment
+        :param anchor: ID of the comment, 
+        :param text: task text
+        :return:
+        """
+        if self.cloud:
+            raise Exception("Not supported in Bitbucket Cloud")
+        url = "/rest/api/1.0/tasks"
+        data = {
+            "anchor": {
+                "id": anchor,
+                "type": "COMMENT"
+            }, 
+            "text": text
+        }
+        return self.post(url, data=data)
+
+    def get_task(self, task_id):
+        """
+        Get task information by ID
+        :param task_id:
+        :return:
+        """
+        if self.cloud:
+            raise Exception("Not supported in Bitbucket Cloud")
+        url = "/rest/api/1.0/tasks/{taskId}".format(taskId=task_id)
+        return self.get(url)
+
+    def delete_task(self, task_id):
+        """
+        Delete task by ID
+        :param task_id:
+        :return:
+        """
+        if self.cloud:
+            raise Exception("Not supported in Bitbucket Cloud")
+        url = "/rest/api/1.0/tasks/{taskId}".format(taskId=task_id)
+        return self.delete(url)
+
+    def update_task(self, task_id, text=None, state=None):
+        """
+        Update task by ID. It is possible to update state and/or text of the task
+        :param task_id:
+        :param text: 
+        :param state: OPEN, RESOLVED
+        :return:
+        """
+        if self.cloud:
+            raise Exception("Not supported in Bitbucket Cloud")
+        data = {"id": task_id}
+        if text:
+            data["text"] = text
+        if state:
+            data["state"] = state
+        url = "/rest/api/1.0/tasks/{taskId}".format(taskId=task_id)
+        return self.put(url, data=data)
