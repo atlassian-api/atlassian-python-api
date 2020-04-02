@@ -395,7 +395,7 @@ class Confluence(AtlassianRestAPI):
         return self.delete(url, params=params)
 
     def create_page(self, space, title, body, parent_id=None, type='page',
-                    representation='storage'):
+                    representation='storage', editor=None):
         """
         Create page from scratch
         :param space:
@@ -404,6 +404,7 @@ class Confluence(AtlassianRestAPI):
         :param parent_id:
         :param type:
         :param representation: OPTIONAL: either Confluence 'storage' or 'wiki' markup format
+        :param editor: OPTIONAL: v2 to be created in the new editor
         :return:
         """
         log.info('Creating {type} "{space}" -> "{title}"'.format(space=space, title=title, type=type))
@@ -415,6 +416,8 @@ class Confluence(AtlassianRestAPI):
             'body': self._create_body(body, representation)}
         if parent_id:
             data['ancestors'] = [{'type': type, 'id': parent_id}]
+        if editor=="v2":
+            data['metadata'] = {'properties':{'editor': {'value': 'v2'}}}
         return self.post(url, data=data)
 
     def move_page(self, space_key, page_id, target_id=None, target_title=None, position="append"):
