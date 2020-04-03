@@ -2281,6 +2281,108 @@ class Bitbucket(AtlassianRestAPI):
             url = "rest/api/2.0/admin/banner"
         return self.delete(url)
 
+    def get_pipelines(self, workspace, repository, number=10,
+                      sort_by="-created_on"):
+        """
+        Get information about latest pipelines runs.
+
+        :param number: number of pipelines to fetch
+        :param :sort_by: optional key to sort available pipelines for
+        :return: information in form {"values": [...]}
+        """
+        resource = "repositories/{workspace}/{repository}/pipelines/".format(
+            workspace=workspace, repository=repository)
+        return self.get(self.resource_url(resource),
+                        params={"pagelen": number, "sort": sort_by},
+                        trailing=True)
+
+    def get_pipeline(self, workspace, repository, uuid):
+        """
+        Get information about the pipeline specified by ``uuid``.
+        :param uuid: Pipeline identifier (with surrounding {}; NOT the build number)
+        """
+        resource = "repositories/{workspace}/{repository}/pipelines/{uuid}".format(
+            workspace=workspace, repository=repository, uuid=uuid)
+        return self.get(self.resource_url(resource))
+
+    def trigger_pipeline(self, workspace, repository, branch="master", revision=None,
+                         name=None):
+        """
+        Trigger a new pipeline. The following options are possible (1 and 2
+        trigger the pipeline that the branch is associated with in the Pipelines
+        configuration):
+        1. Latest revision of a branch (specify ``branch``)
+        2. Specific revision on a branch (additionally specify ``revision``)
+        3. Specific pipeline (additionally specify ``name``)
+        :return: the initiated pipeline; or error information
+        """
+        resource = "repositories/{workspace}/{repository}/pipelines/".format(
+            workspace=workspace, repository=repository)
+
+        data = {
+            "target": {
+                "ref_type": "branch", 
+                "type": "pipeline_ref_target", 
+                "ref_name": branch,
+            },
+        }
+        if revision:
+            data["target"]["commit"] = {
+                "type": "commit",
+                "hash": revision,
+            }
+        if name:
+            if not revision:
+                raise ValueError("Missing revision")
+            data["target"]["selector"] = {
+                "type": "custom",
+                "pattern": name,
+            }
+
+        return self.post(self.resource_url(resource), data=data, trailing=True)
+
+    def stop_pipeline(self, workspace, repository, uuid):
+        """
+        Stop the pipeline specified by ``uuid``.
+        :param uuid: Pipeline identifier (with surrounding {}; NOT the build number)
+
+        See the documentation for the meaning of response status codes.
+        """
+        resource = "repositories/{workspace}/{repository}/pipelines/{uuid}/stopPipeline".format(
+            workspace=workspace, repository=repository, uuid=uuid)
+        return self.post(self.resource_url(resource))
+
+    def get_pipeline_steps(self, workspace, repository, uuid):
+        """
+        Get information about the steps of the pipeline specified by ``uuid``.
+        :param uuid: Pipeline identifier (with surrounding {}; NOT the build number)
+        """
+        resource = "repositories/{workspace}/{repository}/pipelines/{uuid}/steps/".format(
+            workspace=workspace, repository=repository, uuid=uuid)
+        return self.get(self.resource_url(resource), trailing=True)
+
+    def get_pipeline_step(self, workspace, repository, pipeline_uuid, step_uuid):
+        """
+        Get information about a step of a pipeline, specified by respective UUIDs.
+        :param pipeline_uuid: Pipeline identifier (with surrounding {}; NOT the build number)
+        :param step_uuid: Step identifier (with surrounding {})
+        """
+        resource = "repositories/{w}/{r}/pipelines/{p}/steps/{s}".format(
+            w=workspace, r=repository, p=pipeline_uuid, s=step_uuid)
+        return self.get(self.resource_url(resource))
+
+    def get_pipeline_step_log(self, workspace, repository, pipeline_uuid, step_uuid):
+        """
+        Get log of a step of a pipeline, specified by respective UUIDs.
+        :param pipeline_uuid: Pipeline identifier (with surrounding {}; NOT the build number)
+        :param step_uuid: Step identifier (with surrounding {})
+        :return: byte string log
+        """
+        resource = "repositories/{w}/{r}/pipelines/{p}/steps/{s}/log".format(
+            w=workspace, r=repository, p=pipeline_uuid, s=step_uuid)
+        headers = {"Accept": "application/octet-stream"}
+        return self.get(self.resource_url(resource), headers=headers, not_json_response=True)
+
     def get_tasks(self, project, repository, pull_request_id):
         """
         Get all tasks for the pull request
