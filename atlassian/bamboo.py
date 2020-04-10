@@ -33,7 +33,7 @@ class Bamboo(AtlassianRestAPI):
         :return: generator with the contents of response[elements_key][element_key]
         """
         start_index = 0
-        params['start-index'] = start_index
+        params["start-index"] = start_index
         response = self.get(path, data, flags, params, headers)
         if self.advanced_mode:
             try:
@@ -46,12 +46,12 @@ class Bamboo(AtlassianRestAPI):
             results = response[elements_key]
             size = 0
             # Check if we still can get results
-            if size > max_results or results['size'] == 0:
+            if size > max_results or results["size"] == 0:
                 return
             for r in results[element_key]:
                 size += 1
                 yield r
-            start_index += results['max-result']
+            start_index += results["max-result"]
         except TypeError:
             logging.error("Broken response: {}".format(response))
             yield response
@@ -59,7 +59,7 @@ class Bamboo(AtlassianRestAPI):
     def base_list_call(self, resource, expand, favourite, clover_enabled, max_results, label=None, start_index=0,
                        **kwargs):
         flags = []
-        params = {'max-results': max_results}
+        params = {"max-results": max_results}
         if expand:
             params['expand'] = expand
         if favourite:

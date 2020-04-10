@@ -70,7 +70,7 @@ Page actions
 .. code-block:: python
 
     # Create page from scratch
-    confluence.create_page(space, title, body, parent_id=None, type='page', representation='storage')
+    confluence.create_page(space, title, body, parent_id=None, type='page', representation='storage', editor='v2')
 
     # This method removes a page, if it has recursive flag, method removes including child pages
     confluence.remove_page(page_id, status=None, recursive=False)

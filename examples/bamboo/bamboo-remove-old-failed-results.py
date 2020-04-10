@@ -1,18 +1,21 @@
 from atlassian import Bamboo
+from datetime import datetime
+from datetime import timedelta
 import logging
 
 """
-That example shows how to clean up Bamboo incomplete or Unknown build results
+That example shows how to clean up Bamboo old failed build results
 """
 
 logging.basicConfig(level=logging.ERROR)
 
-REMOVE = True
-STATUS_CLEANED_RESULTS = ['Incomplete', 'Unknown']
+DRY_RUN = False
+STATUS_CLEANED_RESULTS = ["Failed"]
 EXCLUDED_PROJECTS = ["EXCLUDE_PROJECT"]
 BAMBOO_LOGIN = "admin"
 BAMBOO_PASS = "password"
 BAMBOO_URL = "https://bamboo.example.com"
+OLDER_DAYS = 360
 
 
 def get_all_projects():
@@ -28,15 +31,20 @@ def get_branches_from_plan(plan_key):
 
 
 def get_results_from_branch(plan_key):
-    return [x for x in bamboo.results(plan_key, expand='results.result', max_results=100, include_all_states=True)]
+    return [x for x in bamboo.results(plan_key, expand='results.result')]
 
 
 def remove_build_result(build_key, status):
-    result = bamboo.build_result(build_key=build_key)
-    if result.get("buildState") == status:
-        print("Removing build result - {}".format(build_key))
-        if REMOVE:
-            bamboo.delete_build_result(build_key=build_key)
+    build_value = bamboo.build_result(build_key=build_key)
+    build_complete_time = build_value.get("buildCompletedTime") or None
+    if not build_complete_time:
+        return
+    datetime_obj = datetime.strptime(build_complete_time.split('+')[0] + "000", '%Y-%m-%dT%H:%M:%S.%f')
+    if datetime.now() > datetime_obj + timedelta(days=OLDER_DAYS):
+        if build_value.get("buildState") == status:
+            print("Removing build result - {}".format(build_key))
+            if not DRY_RUN:
+                bamboo.delete_build_result(build_key=build_key)
 
 
 def project_review(plans):

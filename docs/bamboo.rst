@@ -60,19 +60,19 @@ Build results
 
     # Get build results (Scalable from a single result to all build results)
     results(project_key=None, plan_key=None, job_key=None, build_number=None, expand=None, favourite=False,
-                clover_enabled=False, issue_key=None, label=None, start_index=0, max_results=25, include_all_states=False)
+            clover_enabled=False, issue_key=None, label=None, start_index=0, max_results=25, include_all_states=False)
     
     # Get latest build results
     latest_results(expand=None, favourite=False, clover_enabled=False, label=None, issue_key=None,
-                       start_index=0, max_results=25, include_all_states=False)
+                   start_index=0, max_results=25, include_all_states=False)
     
     # Get latest build results for the project
     project_latest_results(project_key, expand=None, favourite=False, clover_enabled=False, label=None,
-                               issue_key=None, start_index=0, max_results=25, include_all_states=False)
+                           issue_key=None, start_index=0, max_results=25, include_all_states=False)
     
     # Get build results for a single plan
     plan_results(project_key, plan_key, expand=None, favourite=False, clover_enabled=False, label=None,
-                     issue_key=None, start_index=0, max_results=25, include_all_states=False)
+                 issue_key=None, start_index=0, max_results=25, include_all_states=False)
 
     # Get a single build result
     build_result(build_key, expand=None, include_all_states=False)
@@ -107,9 +107,9 @@ Comments & Labels
     delete_label(project_key, plan_key, build_number, label)
 
 Deployments
--------------
+-----------
 
-.. code-block:: python   
+.. code-block:: python
 
     # Get deployment projects
     deployment_projects()
@@ -128,7 +128,7 @@ Users & Groups
 
 .. code-block:: python
 
-    # Get users in global permissons
+    # Get users in global permissions
     get_users_in_global_permissions(start=0, limit=25)
 
     # Get Groups
@@ -151,8 +151,6 @@ Users & Groups
 
     # Get users without Group
     get_users_not_in_group(group_name, filter_users='', start=0, limit=25)
-
-
 
 Other actions
 -------------

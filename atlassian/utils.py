@@ -5,7 +5,7 @@ import re
 log = logging.getLogger(__name__)
 
 
-def is_email(string):
+def is_email(element):
     """
     >>> is_email('username@example.com')
     True
@@ -15,11 +15,7 @@ def is_email(string):
     True
     """
     email_regex = r'^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]*$'
-
-    if isinstance(string, str) and not re.match(email_regex, string):
-        return False
-    else:
-        return True
+    return re.match(email_regex, str(element))
 
 
 def html_email(email, title=None):
@@ -77,7 +73,7 @@ def html_table_header_row(data):
     return html + '</tr>'
 
 
-def html_row_with_ordered_headers(data, headers):
+def html_row_with_ordered_headers(data, col_headers, row_header=None):
     """
     >>> headers = ['administrators', 'key', 'leader', 'project']
     >>> data = {'key': 'DEMO', 'project': 'Demonstration',
@@ -99,7 +95,9 @@ def html_row_with_ordered_headers(data, headers):
     """
     html = '\n\t<tr>'
 
-    for header in headers:
+    if row_header:
+        html += '<th>{}</th>'.format(row_header.replace('_', ' ').title())
+    for header in col_headers:
         element = data[header]
 
         if isinstance(element, list):
@@ -170,6 +168,50 @@ def html_table_from_dict(data, ordering):
 
     for row in data:
         html += html_row_with_ordered_headers(row, ordering)
+
+    return html + '\n</tbody></table>'
+
+
+def html_table_from_nested_dict(data, ordering):
+    """
+    >>> ordering = ['manager', 'admin', 'employee_count']
+    >>>     data = {
+        'project_A': {'manager': 'John', 'admin': 'admin1@example.com', 'employee_count': '4'},
+        'project_B': {'manager': 'Jane', 'admin': 'admin2@example.com', 'employee_count': '7'}
+    }
+    >>> html_table_from_nested_dict(data, ordering)
+    <table>
+        <tbody>
+            <tr>
+                <th></th>
+                <th>Manager</th>
+                <th>Admin</th>
+                <th>Employee Count</th>
+            </tr>
+            <tr>
+                <th>Project A</th>
+                <td>John</td>
+                <td><a href="mailto:admin1@example.com">admin1@example.com</a></td>
+                <td>4</td>
+            </tr>
+            <tr>
+                <th>Project B</th>
+                <td>Jane</td>
+                <td><a href="mailto:admin2@example.com">admin2@example.com</a></td>
+                <td>7</td>
+            </tr>
+        </tbody>
+    </table>
+    """
+
+    html = '<table><tbody>'
+    # Add an empty first cell for the row header column
+    header_row = ['']
+    header_row.extend(ordering)
+    html += html_table_header_row(header_row)
+
+    for row_header, row in data.items():
+        html += html_row_with_ordered_headers(row, ordering, row_header)
 
     return html + '\n</tbody></table>'
 

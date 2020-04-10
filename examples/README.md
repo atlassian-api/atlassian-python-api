@@ -8,4 +8,5 @@ There are simple rules each example should follow:
 * **Do not store** any credentials in VCS
 * Do not use any additional dependencies except the python build-in's
 * Follow the PEP-8 and format your code. 
-JetBrains built-in formatter is perfectly fine and used a lot at this library
+
+JetBrains PyCharm built-in formatter is perfectly fine and used a lot at this library

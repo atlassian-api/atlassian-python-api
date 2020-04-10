@@ -2,6 +2,9 @@
 from atlassian import Bamboo
 import argparse
 
+"""
+    How to create the plan branch
+"""
 bamboo = Bamboo(url="https://", username="", password="")
 
 

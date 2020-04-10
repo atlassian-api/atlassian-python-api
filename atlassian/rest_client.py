@@ -130,7 +130,8 @@ class AtlassianRestAPI(object):
         :param trailing: bool
         :return:
         """
-        self.log_curl_debug(method=method, path=path, headers=headers, data=data, trailing=None)
+        self.log_curl_debug(method=method, path=path, headers=headers,
+                            data=data, trailing=trailing)
         url = self.url_joiner(self.url, path, trailing)
         if params or flags:
             url += '?'
