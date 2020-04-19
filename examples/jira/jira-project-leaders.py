@@ -8,15 +8,15 @@ jira = Jira(
     password='admin')
 
 EMAIL_SUBJECT = quote('Jira access to project {project_key}')
-EMAIL_BODY = quote('''Proszę o dostęp do projektu {project_key} w Jirze.
+EMAIL_BODY = quote("""I am asking for access to the {project_key} project in Jira.
 
-Aby nadać mi odpowiednie uprawnienia przypisz mnie do roli na stronie:
+To give me the appropriate permissions, assign me to a role on the page:
 http://localhost:8080/plugins/servlet/project-config/{project_key}/roles
 
 Role:
-Users - dostęp tylko do odczytu + komentowanie
-Developers - praca na zadaniach, edycja itp.
-Admin - Zmiana konfiguracji oraz możliwość startowania sprintów''')
+Users - read-only access + commenting
+Developers - work on tasks, editing, etc.
+Admin - Change of configuration and the possibility of starting sprints""")
 
 MAILTO = '<a href="mailto:{lead_email}?subject={email_subject}&body={email_body}">{lead_name}</a>'
 

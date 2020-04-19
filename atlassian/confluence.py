@@ -1231,7 +1231,7 @@ class Confluence(AtlassianRestAPI):
         json_data = data
 
         try:
-            reponse = self.post(path=url, data=json_data)
+            response = self.post(path=url, data=json_data)
         except HTTPError as e:
             if e.response.status_code == 400:
                 raise ApiValueError(

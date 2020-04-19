@@ -2321,8 +2321,8 @@ class Bitbucket(AtlassianRestAPI):
 
         data = {
             "target": {
-                "ref_type": "branch", 
-                "type": "pipeline_ref_target", 
+                "ref_type": "branch",
+                "type": "pipeline_ref_target",
                 "ref_name": branch,
             },
         }
@@ -2413,7 +2413,7 @@ class Bitbucket(AtlassianRestAPI):
             "anchor": {
                 "id": anchor,
                 "type": "COMMENT"
-            }, 
+            },
             "text": text
         }
         return self.post(url, data=data)

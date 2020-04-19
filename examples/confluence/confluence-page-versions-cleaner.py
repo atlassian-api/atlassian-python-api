@@ -29,7 +29,7 @@ def get_all_page_ids_from_space(space):
     limit = 500
     flag = True
     step = 0
-    page_ids = []
+    content_ids = []
 
     while flag:
         values = confluence.get_all_pages_from_space(space=space, start=limit * step, limit=limit)
@@ -40,9 +40,9 @@ def get_all_page_ids_from_space(space):
         else:
             for value in values:
                 print("Retrieve page with title: " + value['title'])
-                page_ids.append((value['id']))
-    print("Found in space {} pages {}".format(space, len(page_ids)))
-    return page_ids
+                content_ids.append((value['id']))
+    print("Found in space {} pages {}".format(space, len(content_ids)))
+    return content_ids
 
 
 def get_all_spaces():
