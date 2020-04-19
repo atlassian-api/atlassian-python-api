@@ -1060,6 +1060,14 @@ class Confluence(AtlassianRestAPI):
             params["expand"] = expand
         return self.get(url, params=params)
 
+    def get_home_page_of_space(self, space_key):
+        """
+        Get information about a space through space key
+        :param space_key: The unique space key name
+        :return: Returns homepage
+        """
+        return self.get_space(space_key, expand="homepage").get("homepage")
+
     def create_space(self, space_key, space_name):
         """
         Create space
