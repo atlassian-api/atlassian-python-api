@@ -843,9 +843,31 @@ class Bitbucket(AtlassianRestAPI):
             commits_list += (response or {}).get('values')
         return commits_list
 
+    def get_pull_requests_participants(self, project, repository, pull_request_id):
+        """
+        Get all participants of a pull request
+        :param project:
+        :param repository:
+        :param pull_request_id:
+        :return:
+        """
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/participants'.format(
+            project=project,
+            repository=repository,
+            pullRequestId=pull_request_id)
+        params = {'start': 0}
+        response = self.get(url, params=params)
+        if 'values' not in response:
+            return []
+        participant_list = (response or {}).get('values')
+        while not response.get('isLastPage'):
+            params['start'] = response.get('nextPageStart')
+            response = self.get(url, params=params)
+            participant_list += (response or {}).get('values')
+        return participant_list
+
     def open_pull_request(self, source_project, source_repo, dest_project, dest_repo, source_branch, destination_branch,
-                          title,
-                          description):
+                          title, description, reviewers=None):
         """
         Create a new pull request between two branches.
         The branches may be in the same repository, or different ones.
@@ -859,6 +881,7 @@ class Bitbucket(AtlassianRestAPI):
         :param destination_branch: where the PR is being merged into
         :param title: the title of the PR
         :param description: the description of what the PR does
+        :param reviewers: the list of reviewers or a single reviewer of the PR
         :return:
         """
         body = {
@@ -883,8 +906,25 @@ class Bitbucket(AtlassianRestAPI):
                         'key': dest_project
                     }
                 }
-            }
+            },
+            'reviewers': []
         }
+
+        def add_reviewer(reviewer):
+            entry = {
+                'user': {
+                    'name': reviewer
+                }
+            }
+            body['reviewers'].append(entry)
+
+        if reviewers is not None:
+            if isinstance(reviewers, str):
+                add_reviewer(reviewers)
+            elif isinstance(reviewers, list):
+                for reviewer in reviewers:
+                    add_reviewer(reviewer)
+
         return self.create_pull_request(dest_project, dest_repo, body)
 
     def create_pull_request(self, project_key, repository, data):
@@ -901,6 +941,25 @@ class Bitbucket(AtlassianRestAPI):
             url = 'rest/api/2.0/projects/{projectKey}/repos/{repository}/pull-requests'.format(projectKey=project_key,
                                                                                                repository=repository)
         return self.post(url, data=data)
+
+    def delete_pull_request(self, project, repository, pull_request_id, pull_request_version):
+        """
+        Delete a pull request.
+
+        :param project: the project key
+        :param repository: the repository slug
+        :param pull_request_id: the ID of the pull request within the repository
+        :param pull_request_version: the version of the pull request
+        :return:
+        """
+        if not self.cloud:
+            url = 'rest/api/1.0/projects/{projectKey}/repos/{repositorySlug}/pull-requests/{pullRequestId}'.format(
+                projectKey=project, repositorySlug=repository, pullRequestId=pull_request_id)
+        else:
+            url = 'rest/api/2.0/projects/{projectKey}/repos/{repositorySlug}/pull-requests/{pullRequestId}'.format(
+                projectKey=project, repositorySlug=repository, pullRequestId=pull_request_id)
+        data = {'version': pull_request_version}
+        return self.delete(url, data=data)
 
     def decline_pull_request(self, project_key, repository, pr_id, pr_version):
         """
@@ -2221,3 +2280,256 @@ class Bitbucket(AtlassianRestAPI):
         else:
             url = "rest/api/2.0/admin/banner"
         return self.delete(url)
+
+    def get_pipelines(self, workspace, repository, number=10,
+                      sort_by="-created_on"):
+        """
+        Get information about latest pipelines runs.
+
+        :param number: number of pipelines to fetch
+        :param :sort_by: optional key to sort available pipelines for
+        :return: information in form {"values": [...]}
+        """
+        resource = "repositories/{workspace}/{repository}/pipelines/".format(
+            workspace=workspace, repository=repository)
+        return self.get(self.resource_url(resource),
+                        params={"pagelen": number, "sort": sort_by},
+                        trailing=True)
+
+    def get_pipeline(self, workspace, repository, uuid):
+        """
+        Get information about the pipeline specified by ``uuid``.
+        :param uuid: Pipeline identifier (with surrounding {}; NOT the build number)
+        """
+        resource = "repositories/{workspace}/{repository}/pipelines/{uuid}".format(
+            workspace=workspace, repository=repository, uuid=uuid)
+        return self.get(self.resource_url(resource))
+
+    def trigger_pipeline(self, workspace, repository, branch="master", revision=None,
+                         name=None):
+        """
+        Trigger a new pipeline. The following options are possible (1 and 2
+        trigger the pipeline that the branch is associated with in the Pipelines
+        configuration):
+        1. Latest revision of a branch (specify ``branch``)
+        2. Specific revision on a branch (additionally specify ``revision``)
+        3. Specific pipeline (additionally specify ``name``)
+        :return: the initiated pipeline; or error information
+        """
+        resource = "repositories/{workspace}/{repository}/pipelines/".format(
+            workspace=workspace, repository=repository)
+
+        data = {
+            "target": {
+                "ref_type": "branch", 
+                "type": "pipeline_ref_target", 
+                "ref_name": branch,
+            },
+        }
+        if revision:
+            data["target"]["commit"] = {
+                "type": "commit",
+                "hash": revision,
+            }
+        if name:
+            if not revision:
+                raise ValueError("Missing revision")
+            data["target"]["selector"] = {
+                "type": "custom",
+                "pattern": name,
+            }
+
+        return self.post(self.resource_url(resource), data=data, trailing=True)
+
+    def stop_pipeline(self, workspace, repository, uuid):
+        """
+        Stop the pipeline specified by ``uuid``.
+        :param uuid: Pipeline identifier (with surrounding {}; NOT the build number)
+
+        See the documentation for the meaning of response status codes.
+        """
+        resource = "repositories/{workspace}/{repository}/pipelines/{uuid}/stopPipeline".format(
+            workspace=workspace, repository=repository, uuid=uuid)
+        return self.post(self.resource_url(resource))
+
+    def get_pipeline_steps(self, workspace, repository, uuid):
+        """
+        Get information about the steps of the pipeline specified by ``uuid``.
+        :param uuid: Pipeline identifier (with surrounding {}; NOT the build number)
+        """
+        resource = "repositories/{workspace}/{repository}/pipelines/{uuid}/steps/".format(
+            workspace=workspace, repository=repository, uuid=uuid)
+        return self.get(self.resource_url(resource), trailing=True)
+
+    def get_pipeline_step(self, workspace, repository, pipeline_uuid, step_uuid):
+        """
+        Get information about a step of a pipeline, specified by respective UUIDs.
+        :param pipeline_uuid: Pipeline identifier (with surrounding {}; NOT the build number)
+        :param step_uuid: Step identifier (with surrounding {})
+        """
+        resource = "repositories/{w}/{r}/pipelines/{p}/steps/{s}".format(
+            w=workspace, r=repository, p=pipeline_uuid, s=step_uuid)
+        return self.get(self.resource_url(resource))
+
+    def get_pipeline_step_log(self, workspace, repository, pipeline_uuid, step_uuid):
+        """
+        Get log of a step of a pipeline, specified by respective UUIDs.
+        :param pipeline_uuid: Pipeline identifier (with surrounding {}; NOT the build number)
+        :param step_uuid: Step identifier (with surrounding {})
+        :return: byte string log
+        """
+        resource = "repositories/{w}/{r}/pipelines/{p}/steps/{s}/log".format(
+            w=workspace, r=repository, p=pipeline_uuid, s=step_uuid)
+        headers = {"Accept": "application/octet-stream"}
+        return self.get(self.resource_url(resource), headers=headers, not_json_response=True)
+
+    def get_tasks(self, project, repository, pull_request_id):
+        """
+        Get all tasks for the pull request
+        :param project:
+        :param repository:
+        :param pull_request_id: the ID of the pull request within the repository
+        :return:
+        """
+        if self.cloud:
+            raise Exception("Not supported in Bitbucket Cloud")
+        url = "/rest/api/1.0/projects/{projectKey}/repos/{repositorySlug}/pull-requests/{pullRequestId}/tasks".format(
+            projectKey=project,
+            repositorySlug=repository,
+            pullRequestId=pull_request_id)
+        return self.get(url)
+
+    def add_task(self, anchor, text):
+        """
+        Add task to the comment
+        :param anchor: ID of the comment, 
+        :param text: task text
+        :return:
+        """
+        if self.cloud:
+            raise Exception("Not supported in Bitbucket Cloud")
+        url = "/rest/api/1.0/tasks"
+        data = {
+            "anchor": {
+                "id": anchor,
+                "type": "COMMENT"
+            }, 
+            "text": text
+        }
+        return self.post(url, data=data)
+
+    def get_task(self, task_id):
+        """
+        Get task information by ID
+        :param task_id:
+        :return:
+        """
+        if self.cloud:
+            raise Exception("Not supported in Bitbucket Cloud")
+        url = "/rest/api/1.0/tasks/{taskId}".format(taskId=task_id)
+        return self.get(url)
+
+    def delete_task(self, task_id):
+        """
+        Delete task by ID
+        :param task_id:
+        :return:
+        """
+        if self.cloud:
+            raise Exception("Not supported in Bitbucket Cloud")
+        url = "/rest/api/1.0/tasks/{taskId}".format(taskId=task_id)
+        return self.delete(url)
+
+    def update_task(self, task_id, text=None, state=None):
+        """
+        Update task by ID. It is possible to update state and/or text of the task
+        :param task_id:
+        :param text: 
+        :param state: OPEN, RESOLVED
+        :return:
+        """
+        if self.cloud:
+            raise Exception("Not supported in Bitbucket Cloud")
+        data = {"id": task_id}
+        if text:
+            data["text"] = text
+        if state:
+            data["state"] = state
+        url = "/rest/api/1.0/tasks/{taskId}".format(taskId=task_id)
+        return self.put(url, data=data)
+
+    def get_issues(self, workspace, repository, sort_by=None, query=None):
+        """
+        Get information about the issues tracked in the given repository. By
+        default, the issues are sorted by ID in descending order.
+        :param sort_by: optional key to sort available issues for
+        :param query: optional query to filter available issues for. See
+          https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering
+          for an overview
+
+        :return: List of issues (direct, i.e. without the 'values' key)
+        """
+        resource = "repositories/{workspace}/{repository}/issues".format(
+            workspace=workspace, repository=repository)
+
+        params = {}
+        if sort_by is not None:
+            params["sort"] = sort_by
+        if query is not None:
+            params["q"] = query
+
+        response = self.get(self.resource_url(resource), params=params)
+        issues = response.get("values", [])
+
+        while True:
+            next_page = response.get("next")
+            if next_page is None:
+                break
+
+            # Strip the base url - it's added when constructing the request
+            response = self.get(next_page.replace(self.url, ""))
+            issues.extend(response.get("values", []))
+
+        return issues
+
+    def create_issue(self, workspace, repository, title, description="",
+                     kind="bug", priority="major"):
+        """
+        Create a new issue in the issue tracker of the given repository.
+        :param kind: one of: bug, enhancement, proposal, task
+        :param priority: one of: trivial, minor, major, critical, blocker
+        """
+        resource = "repositories/{workspace}/{repository}/issues".format(
+            workspace=workspace, repository=repository)
+        data = {
+            "title": title,
+            "kind": kind,
+            "priority": priority,
+            "content": {"raw": description},
+        }
+        return self.post(self.resource_url(resource), data=data)
+
+    def get_issue(self, workspace, repository, id):
+        """
+        Get the issue specified by ``id``.
+        """
+        resource = "repositories/{workspace}/{repository}/issues/{id}".format(
+            workspace=workspace, repository=repository, id=id)
+        return self.get(self.resource_url(resource))
+
+    def update_issue(self, workspace, repository, id, **fields):
+        """
+        Update the ``fields`` of the issue specified by ``id``.
+        Consult the official API documentation for valid fields.
+        """
+        resource = "repositories/{workspace}/{repository}/issues/{id}".format(
+            workspace=workspace, repository=repository, id=id)
+        return self.put(self.resource_url(resource), data=fields)
+
+    def delete_issue(self, workspace, repository, id):
+        """
+        Delete the issue specified by ``id``.
+        """
+        resource = "repositories/{workspace}/{repository}/issues/{id}".format(
+            workspace=workspace, repository=repository, id=id)
+        return self.delete(self.resource_url(resource))

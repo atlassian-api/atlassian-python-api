@@ -1,8 +1,7 @@
-from var import config
 from atlassian import Bamboo
-import logging
 from datetime import datetime
 from datetime import timedelta
+import logging
 
 """
 Example shows how to clean up expired build results for specific label.
@@ -11,9 +10,9 @@ You can remove, after changing value for DRY_RUN variable
 """
 
 logging.basicConfig(level=logging.ERROR)
-BAMBOO_URL = config.BAMBOO_URL
-BAMBOO_LOGIN = config.JIRA_LOGIN
-BAMBOO_PASSWORD = config.JIRA_PASSWORD
+BAMBOO_LOGIN = "admin"
+BAMBOO_PASSWORD = "password"
+BAMBOO_URL = "https://bamboo.example.com"
 
 DRY_RUN = True
 LABEL = "cores_found"
@@ -24,8 +23,8 @@ def get_all_projects():
     return [x['key'] for x in bamboo.projects(max_results=10000)]
 
 
-def get_plans_from_project(project):
-    return [x['key'] for x in bamboo.project_plans(project, max_results=1000)]
+def get_plans_from_project(project_key):
+    return [x['key'] for x in bamboo.project_plans(project_key, max_results=1000)]
 
 
 if __name__ == '__main__':

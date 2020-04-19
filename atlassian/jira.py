@@ -90,16 +90,30 @@ class Jira(AtlassianRestAPI):
         url = 'sr/jira.issueviews:searchrequest-csv-all-fields/temp/SearchRequest.csv'
         return self.get(url, params=params, not_json_response=True, headers={'Accept': 'application/csv'})
 
-    def user(self, username, expand=None):
+    def user(self, username=None, key=None, expand=None):
         """
         Returns a user. This resource cannot be accessed anonymously.
+        You can use only one parameter: username or key
+
         :param username:
+        :param key: if username and key are different
         :param expand: Can be 'groups,applicationRoles'
         :return:
         """
-        params = {'username': username}
+        params = {}
+
+        if username and not key:
+            params = {'username': username}
+        elif not username and key:
+            params = {'key': key}
+        elif username and key:
+            return 'You cannot specify both the username and the key parameters'
+        elif not username and not key:
+            return 'You must specify at least one parameter: username or key'
+
         if expand:
             params['expand'] = expand
+
         return self.get('rest/api/2/user', params=params)
 
     def is_active_user(self, username):
