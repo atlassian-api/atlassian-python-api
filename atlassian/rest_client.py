@@ -158,7 +158,7 @@ class AtlassianRestAPI(object):
         if self.advanced_mode:
             return response
 
-        log.debug(f'HTTP: {method} {path} -> {response.status_code} {response.reason}')
+        log.debug("HTTP: {} {} -> {} {}".format(method, path, response.status_code, response.reason))
         response.raise_for_status()
         return response
 

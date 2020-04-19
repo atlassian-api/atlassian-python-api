@@ -79,7 +79,7 @@ class Confluence(AtlassianRestAPI):
                 raise ApiError(
                     "There is no content with the given id, "
                     "or the calling user does not have permission to view the content"
-                ) from e
+                )(e)
 
             raise
 
@@ -169,7 +169,7 @@ class Confluence(AtlassianRestAPI):
             if e.response.status_code == 404:
                 raise ApiPermissionError(
                     "The calling user does not have permission to view the content"
-                ) from e
+                )(e)
 
             raise
         try:
@@ -212,7 +212,7 @@ class Confluence(AtlassianRestAPI):
                 raise ApiError(
                     "There is no content with the given id, "
                     "or the calling user does not have permission to view the content"
-                ) from e
+                )(e)
 
             raise
 
@@ -247,7 +247,7 @@ class Confluence(AtlassianRestAPI):
                 raise ApiError(
                     "There is no content with the given id, "
                     "or the calling user does not have permission to view the content"
-                ) from e
+                )(e)
 
             raise
 
@@ -285,7 +285,7 @@ class Confluence(AtlassianRestAPI):
                 raise ApiError(
                     "There is no content with the given id, "
                     "or the calling user does not have permission to view the content"
-                ) from e
+                )(e)
 
             raise
 
@@ -306,7 +306,7 @@ class Confluence(AtlassianRestAPI):
             if e.response.status_code == 404:
                 raise ApiPermissionError(
                     "The calling user does not have permission to view the content"
-                ) from e
+                )(e)
 
             raise
 
@@ -335,7 +335,7 @@ class Confluence(AtlassianRestAPI):
             response = self.get(url, params=params)
         except HTTPError as e:
             if e.response.status_code == 400:
-                raise ApiValueError("The CQL is invalid or missing") from e
+                raise ApiValueError("The CQL is invalid or missing")(e)
 
             raise
 
@@ -379,7 +379,7 @@ class Confluence(AtlassianRestAPI):
             if e.response.status_code == 404:
                 raise ApiPermissionError(
                     "The calling user does not have permission to view the content"
-                ) from e
+                )(e)
 
             raise
 
@@ -436,7 +436,7 @@ class Confluence(AtlassianRestAPI):
             if e.response.status_code == 404:
                 raise ApiPermissionError(
                     "The calling user does not have permission to view the content"
-                ) from e
+                )(e)
 
             raise
 
@@ -486,11 +486,11 @@ class Confluence(AtlassianRestAPI):
                 raise ApiError(
                     "There is no content with the given id, or the calling "
                     "user does not have permission to trash or purge the content"
-                ) from e
+                )(e)
             if e.response.status_code == 409:
                 raise ApiConflictError(
                     "There is a stale data object conflict when trying to delete a draft"
-                ) from e
+                )(e)
 
             raise
 
@@ -521,11 +521,11 @@ class Confluence(AtlassianRestAPI):
                 raise ApiError(
                     "There is no content with the given id, or the calling "
                     "user does not have permission to trash or purge the content"
-                ) from e
+                )(e)
             if e.response.status_code == 409:
                 raise ApiConflictError(
                     "There is a stale data object conflict when trying to delete a draft"
-                ) from e
+                )(e)
 
             raise
 
@@ -561,7 +561,7 @@ class Confluence(AtlassianRestAPI):
             if e.response.status_code == 404:
                 raise ApiPermissionError(
                     "The calling user does not have permission to view the content"
-                ) from e
+                )(e)
 
             raise
 
@@ -621,7 +621,7 @@ class Confluence(AtlassianRestAPI):
             if e.response.status_code == 404:
                 raise ApiPermissionError(
                     "The calling user does not have permission to view the content"
-                ) from e
+                )(e)
 
             raise
 
@@ -675,14 +675,14 @@ class Confluence(AtlassianRestAPI):
                     raise ApiError(
                         "Attachments are disabled or the calling user does "
                         "not have permission to add attachments to this content"
-                    ) from e
+                    )(e)
                 if e.response.status_code == 404:
                     # Raise ApiError as the documented reason is ambiguous
                     raise ApiError(
                         "The requested content is not found, the user does not have "
                         "permission to view it, or the attachments exceeds the maximum "
                         "configured attachment size"
-                    ) from e
+                    )(e)
 
                 raise
 
@@ -812,7 +812,7 @@ class Confluence(AtlassianRestAPI):
                 raise ApiError(
                     "There is no content with the given id, "
                     "or the calling user does not have permission to view the content"
-                ) from e
+                )(e)
 
             raise
 
@@ -837,7 +837,7 @@ class Confluence(AtlassianRestAPI):
                 raise ApiError(
                     "There is no content with the given id, "
                     "or the calling user does not have permission to view the content"
-                ) from e
+                )(e)
 
             raise
 
@@ -861,13 +861,13 @@ class Confluence(AtlassianRestAPI):
                 raise ApiPermissionError(
                     "The user has view permission, "
                     "but no edit permission to the content"
-                ) from e
+                )(e)
             if e.response.status_code == 404:
                 # Raise ApiError as the documented reason is ambiguous
                 raise ApiError(
                     "The content or label doesn't exist, "
                     "or the calling user doesn't have view permission to the content"
-                ) from e
+                )(e)
 
             raise
 
@@ -883,7 +883,7 @@ class Confluence(AtlassianRestAPI):
                 raise ApiError(
                     "There is no content with the given id, "
                     "or the calling user does not have permission to view the content"
-                ) from e
+                )(e)
 
             raise
 
@@ -1062,11 +1062,11 @@ class Confluence(AtlassianRestAPI):
                         "No space or no content type, or setup a wrong version "
                         "type set to content, or status param is not draft and "
                         "status content is current"
-                    ) from e
+                    )(e)
                 if e.response.status_code == 404:
                     raise ApiNotFoundError(
                         "Can not find draft with current content"
-                    ) from e
+                    )(e)
 
                 raise
 
@@ -1121,11 +1121,11 @@ class Confluence(AtlassianRestAPI):
                         "No space or no content type, or setup a wrong version "
                         "type set to content, or status param is not draft and "
                         "status content is current"
-                    ) from e
+                    )(e)
                 if e.response.status_code == 404:
                     raise ApiNotFoundError(
                         "Can not find draft with current content"
-                    ) from e
+                    )(e)
 
                 raise
 
@@ -1231,21 +1231,21 @@ class Confluence(AtlassianRestAPI):
         json_data = data
 
         try:
-            reponse = self.post(path=url, data=json_data)
+            response = self.post(path=url, data=json_data)
         except HTTPError as e:
             if e.response.status_code == 400:
                 raise ApiValueError(
                     "The given property has a different content id to the one in the "
                     "path, or the content already has a value with the given key, or "
                     "the value is missing, or the value is too long"
-                ) from e
+                )(e)
             if e.response.status_code == 403:
                 raise ApiPermissionError(
                     "The user does not have permission to "
                     "edit the content with the given id"
-                ) from e
+                )(e)
             if e.response.status_code == 413:
-                raise ApiValueError("The value is too long") from e
+                raise ApiValueError("The value is too long")(e)
 
             raise
 
@@ -1268,7 +1268,7 @@ class Confluence(AtlassianRestAPI):
                 raise ApiError(
                     "There is no content with the given id, "
                     "or the calling user does not have permission to view the content"
-                ) from e
+                )(e)
 
             raise
 
@@ -1293,7 +1293,7 @@ class Confluence(AtlassianRestAPI):
                     "There is no content with the given id, or no property with the "
                     "given key, or the calling user does not have permission to view "
                     "the content"
-                ) from e
+                )(e)
 
             raise
 
@@ -1315,7 +1315,7 @@ class Confluence(AtlassianRestAPI):
                 raise ApiError(
                     "There is no content with the given id, "
                     "or the calling user does not have permission to view the content"
-                ) from e
+                )(e)
 
             raise
 
@@ -1335,7 +1335,7 @@ class Confluence(AtlassianRestAPI):
             if e.response.status_code == 404:
                 raise ApiPermissionError(
                     "The calling user does not have permission to view the content"
-                ) from e
+                )(e)
 
             raise
 
@@ -1373,7 +1373,7 @@ class Confluence(AtlassianRestAPI):
             if e.response.status_code == 403:
                 raise ApiPermissionError(
                     "The calling user does not have permission to view groups"
-                ) from e
+                )(e)
 
             raise
 
@@ -1401,7 +1401,7 @@ class Confluence(AtlassianRestAPI):
             if e.response.status_code == 403:
                 raise ApiPermissionError(
                     "The calling user does not have permission to view users"
-                ) from e
+                )(e)
 
             raise
 
@@ -1426,11 +1426,17 @@ class Confluence(AtlassianRestAPI):
                 raise ApiError(
                     "There is no space with the given key, "
                     "or the calling user does not have permission to view the space"
-                ) from e
-
+                )(e)
             raise
-
         return response
+
+    def get_home_page_of_space(self, space_key):
+        """
+        Get information about a space through space key
+        :param space_key: The unique space key name
+        :return: Returns homepage
+        """
+        return self.get_space(space_key, expand="homepage").get("homepage")
 
     def create_space(self, space_key, space_name):
         """
@@ -1461,7 +1467,7 @@ class Confluence(AtlassianRestAPI):
                 raise ApiError(
                     "There is no space with the given key, "
                     "or the calling user does not have permission to delete it"
-                ) from e
+                )(e)
 
             raise
 
@@ -1481,7 +1487,7 @@ class Confluence(AtlassianRestAPI):
                 raise ApiError(
                     "There is no space with the given key, "
                     "or the calling user does not have permission to view the space"
-                ) from e
+                )(e)
 
             raise
 
@@ -1506,11 +1512,11 @@ class Confluence(AtlassianRestAPI):
             if e.response.status_code == 403:
                 raise ApiPermissionError(
                     "The calling user does not have permission to view users"
-                ) from e
+                )(e)
             if e.response.status_code == 404:
                 raise ApiNotFoundError(
                     "The user with the given username or userkey does not exist"
-                ) from e
+                )(e)
 
             raise
 
@@ -1535,11 +1541,11 @@ class Confluence(AtlassianRestAPI):
             if e.response.status_code == 403:
                 raise ApiPermissionError(
                     "The calling user does not have permission to view users"
-                ) from e
+                )(e)
             if e.response.status_code == 404:
                 raise ApiNotFoundError(
                     "The user with the given username or userkey does not exist"
-                ) from e
+                )(e)
 
             raise
 
@@ -1579,7 +1585,7 @@ class Confluence(AtlassianRestAPI):
             response = self.get('rest/api/search', params=params)
         except HTTPError as e:
             if e.response.status_code == 400:
-                raise ApiValueError("The query cannot be parsed") from e
+                raise ApiValueError("The query cannot be parsed")(e)
 
             raise
 
@@ -1634,7 +1640,7 @@ class Confluence(AtlassianRestAPI):
             response = self.get(url, {})
         except HTTPError as e:
             if e.response.status_code == 400:
-                raise ApiValueError("The CQL is invalid or missing") from e
+                raise ApiValueError("The CQL is invalid or missing")(e)
 
             raise
 
@@ -1705,7 +1711,7 @@ class Confluence(AtlassianRestAPI):
             if e.response.status_code == 403:
                 raise ApiPermissionError(
                     "The calling user does not have permission to use Confluence"
-                ) from e
+                )(e)
 
             raise
 
@@ -1772,7 +1778,7 @@ class Confluence(AtlassianRestAPI):
                 raise ApiError(
                     "There is no task with the given key, "
                     "or the calling user does not have permission to view it"
-                ) from e
+                )(e)
 
             raise
 
