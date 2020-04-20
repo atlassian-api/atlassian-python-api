@@ -17,6 +17,7 @@ LAST_COMMIT_CONDITION_IN_DAYS = 75
 ATLASSIAN_USER = "gonchik.tsymzhitov"
 ATLASSIAN_PASSWORD = "password"
 JIRA_URL = "http://localhost:8080"
+STASH_URL = "http://localhost:5999"
 
 logging.basicConfig(level=logging.ERROR)
 jira = Jira(
@@ -25,7 +26,7 @@ jira = Jira(
     password=ATLASSIAN_PASSWORD)
 
 stash = Stash(
-    url=config.STASH_URL,
+    url=STASH_URL,
     username=ATLASSIAN_USER,
     password=ATLASSIAN_PASSWORD
 )

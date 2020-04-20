@@ -154,45 +154,12 @@ class AtlassianRestAPI(object):
             proxies=self.proxies
         )
         response.encoding = 'utf-8'
+
         if self.advanced_mode:
-            self.response = response
             return response
-        try:
-            if response.text:
-                response_content = response.json()
-            else:
-                response_content = response.content
-        except ValueError:
-            response_content = response.content
-        if response.status_code == 200:
-            log.debug('Received: {0}\n {1}'.format(response.status_code, response_content))
-        elif response.status_code == 201:
-            log.debug('Received: {0}\n "Created" response'.format(response.status_code))
-        elif response.status_code == 204:
-            log.debug('Received: {0}\n "No Content" response'.format(response.status_code))
-        elif response.status_code == 400:
-            log.error('Received: {0}\n Bad request \n {1}'.format(response.status_code, response_content))
-        elif response.status_code == 401:
-            log.error('Received: {0}\n "UNAUTHORIZED" response'.format(response.status_code))
-        elif response.status_code == 404:
-            log.error('Received: {0}\n Not Found'.format(response.status_code))
-        elif response.status_code == 403:
-            log.error('Received: {0}\n Forbidden. Please, check permissions'.format(response.status_code))
-        elif response.status_code == 405:
-            log.error('Received: {0}\n Method not allowed'.format(response.status_code))
-        elif response.status_code == 409:
-            log.error('Received: {0}\n Conflict \n {1}'.format(response.status_code, response_content))
-        elif response.status_code == 413:
-            log.error('Received: {0}\n Request entity too large'.format(response.status_code))
-        else:
-            log.debug('Received: {0}\n {1}'.format(response.status_code, response))
-            self.log_curl_debug(method=method, path=path, headers=headers, data=data, level=logging.DEBUG)
-            log.error(response_content)
-            try:
-                response.raise_for_status()
-            except requests.exceptions.HTTPError as err:
-                log.error("HTTP Error occurred")
-                log.error('Response is: {content}'.format(content=err.response.content))
+
+        log.debug("HTTP: {} {} -> {} {}".format(method, path, response.status_code, response.reason))
+        response.raise_for_status()
         return response
 
     def get(self, path, data=None, flags=None, params=None, headers=None, not_json_response=None, trailing=None):
