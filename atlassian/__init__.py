@@ -4,7 +4,6 @@ from .bitbucket import Bitbucket as Stash
 from .confluence import Confluence
 from .crowd import Crowd
 from .jira import Jira
-from .jira8 import Jira8
 from .marketplace import MarketPlace
 from .portfolio import Portfolio
 from .service_desk import ServiceDesk
@@ -18,6 +17,5 @@ __all__ = [
     'Stash',
     'Crowd',
     'ServiceDesk',
-    'MarketPlace',
-    'Jira8'
+    'MarketPlace'
 ]
