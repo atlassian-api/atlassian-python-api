@@ -2,6 +2,7 @@
 import logging
 
 from .rest_client import AtlassianRestAPI
+from requests.exceptions import HTTPError
 
 log = logging.getLogger(__name__)
 
@@ -2633,5 +2634,58 @@ class Bitbucket(AtlassianRestAPI):
         """
         resource = "repositories/{workspace}/{repository}/branch-restrictions/{id}".format(
             workspace=workspace, repository=repository, id=id)
+
+        return self.delete(self.resource_url(resource))
+
+    
+    def get_default_reviewers(self, workspace, repository, number=10, page=1):
+        """
+        Get all default reviewers for the repository.
+        """
+        resource = "repositories/{workspace}/{repository}/default-reviewers".format(
+            workspace=workspace, repository=repository)
+        params = {"pagelen": number, "page": page}
+        
+        return self.get(self.resource_url(resource), params=params)
+
+    def add_default_reviewer(self, workspace, repository, user):
+        """
+        Add user as default reviewer to the repository.
+        Can safely be called multiple times with the same user, only adds once.
+
+        :param user: The username or account UUID to add as default_reviewer.
+        """
+        resource = "repositories/{workspace}/{repository}/default-reviewers/{user}".format(
+            workspace=workspace, repository=repository, user=user)
+
+        # the mention_id parameter is undocumented but if missed, leads to 400 statuses
+        return self.put(self.resource_url(resource), data={"mention_id": user})
+
+    def is_default_reviewer(self, workspace, repository, user):
+        """
+        Check if the user is a default reviewer of the repository.
+        
+        :param user: The username or account UUID to check.
+        :return: True if present, False if not.
+        """
+        resource = "repositories/{workspace}/{repository}/default-reviewers/{user}".format(
+            workspace=workspace, repository=repository, user=user)
+
+        try:
+            self.get(self.resource_url(resource))
+            return True
+        except HTTPError as httpErr:
+            if httpErr.response.status_code == 404:
+                return False
+            raise httpErr
+
+    def delete_default_reviewer(self, workspace, repository, user):
+        """
+        Remove user as default reviewer from the repository.
+        
+        :param user: The username or account UUID to delete as default reviewer.
+        """
+        resource = "repositories/{workspace}/{repository}/default-reviewers/{user}".format(
+            workspace=workspace, repository=repository, user=user)
 
         return self.delete(self.resource_url(resource))
