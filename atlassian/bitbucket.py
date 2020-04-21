@@ -2533,3 +2533,105 @@ class Bitbucket(AtlassianRestAPI):
         resource = "repositories/{workspace}/{repository}/issues/{id}".format(
             workspace=workspace, repository=repository, id=id)
         return self.delete(self.resource_url(resource))
+
+    def get_repositories(self, workspace, role=None, query=None, sort=None, number=10, page=1):
+        """
+        Get all repositories in a workspace.
+        
+        :param role: Filters the result based on the authenticated user's role on each repository.
+                      One of: member, contributor, admin, owner
+        :param query: Query string to narrow down the response.
+        :param sort: Field by which the results should be sorted.
+        """
+        resource = "repositories/{workspace}".format(workspace=workspace)
+        
+        params = {
+            "pagelen": number,
+            "page": page
+            }
+        if not role is None:
+            params["role"] = role
+        if not query is None:
+            params["query"] = query
+        if not sort is None:
+            params["sort"] = sort
+        
+        return self.get(self.resource_url(resource), params=params)
+
+    def get_branch_restrictions(self, workspace, repository, kind=None, pattern=None, number=10, page=1):
+        """
+        Get all branch permissions.
+        """
+        resource = "repositories/{workspace}/{repository}/branch-restrictions".format(
+            workspace=workspace, repository=repository)
+        params = {"pagelen": number, "page": page}
+        if not kind is None:
+            params["kind"] = kind
+        if not pattern is None:
+            params["pattern"] = pattern
+
+        return self.get(self.resource_url(resource), params=params)
+
+    def add_branch_restriction(self, workspace, repository, kind, branch_match_kind="glob",
+                                branch_pattern = "*", branch_type = None,
+                                users = None, groups = None, value = None):
+        """
+        Add a new branch restriction.
+
+        :param kind: One of require_tasks_to_be_completed, force, restrict_merges,
+                      enforce_merge_checks, require_approvals_to_merge, delete,
+                      require_all_dependencies_merged, push, require_passing_builds_to_merge,
+                      reset_pullrequest_approvals_on_change, require_default_reviewer_approvals_to_merge
+        :param branch_match_kind: branching_model or glob, if branching_model use
+                      param branch_type otherwise branch_pattern.
+        :param branch_pattern: A glob specifying the branch this restriction should
+                      apply to (supports * as wildcard).
+        :param branch_type: The branch type specifies the branches this restriction
+                      should apply to. One of: feature, bugfix, release, hotfix, development, production.
+        :param users: List of user objects that are excluded from the restriction. Minimal: {"username": "<username>"}
+        :param groups: List of group objects that are excluded from the restriction. Minimal: {"owner": {"username": "<teamname>"}, "slug": "<groupslug>"}
+        """
+        resource = "repositories/{workspace}/{repository}/branch-restrictions".format(
+            workspace=workspace, repository=repository)
+
+        if branch_match_kind == "branching_model":
+            branch_pattern = ""
+
+        data = {
+            "kind": kind,
+            "branch_match_kind": branch_match_kind,
+            "pattern": branch_pattern,
+        }
+
+        if branch_match_kind == "branching_model":
+            data["branch_type"] = branch_type
+
+        if not users is None:
+            data["users"] = users
+
+        if not groups is None:
+            data["groups"] = groups
+
+        if not value is None:
+            data["value"] = value
+
+        return self.post(self.resource_url(resource), data=data)
+
+    def update_branch_restriction(self, workspace, repository, id, **fields):
+        """
+        Update an existing branch restriction identified by ``id``.
+        Consult the official API documentation for valid fields.
+        """
+        resource = "repositories/{workspace}/{repository}/branch-restrictions/{id}".format(
+            workspace=workspace, repository=repository, id=id)
+
+        return self.put(self.resource_url(resource), data=fields)
+
+    def delete_branch_restriction(self, workspace, repository, id):
+        """
+        Delete an existing branch restriction identified by ``id``.
+        """
+        resource = "repositories/{workspace}/{repository}/branch-restrictions/{id}".format(
+            workspace=workspace, repository=repository, id=id)
+
+        return self.delete(self.resource_url(resource))
