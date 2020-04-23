@@ -1076,6 +1076,21 @@ class Jira(AtlassianRestAPI):
             data['visibility'] = visibility
         return self.post(url, data=data)
 
+    def issue_edit_comment(self, issue_key, comment_id, comment, visibility=None):
+        """
+        Updates an existing comment
+        :param issue_key: str
+        :param comment_id: int
+        :param comment: str
+        :param visibility: OPTIONAL
+        :return:
+        """
+        url = 'rest/api/2/issue/{}/comment/{}'.format(issue_key, comment_id)
+        data = {'body': comment}
+        if visibility:
+            data['visibility'] = visibility
+        return self.put(url, data=data)
+
     # Attachments
     def get_attachment(self, attachment_id):
         """
