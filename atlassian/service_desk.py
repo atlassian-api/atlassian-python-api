@@ -623,3 +623,29 @@ class ServiceDesk(AtlassianRestAPI):
                 'upm-token']
         url = 'rest/plugins/1.0/?token={upm_token}'.format(upm_token=upm_token)
         return self.post(url, files=files, headers=self.no_check_headers)
+    
+    def jql(self, jql, fields='*all', start=0, limit=None, expand=None):
+        """
+        Get issues from jql search result with all related fields
+        :param jql:
+        :param fields: list of fields, for example: ['priority', 'summary', 'customfield_10007']
+        :param start: OPTIONAL: The start point of the collection to return. Default: 0.
+        :param limit: OPTIONAL: The limit of the number of issues to return, this may be restricted by
+                fixed system limits. Default by built-in method: 50
+        :param expand: OPTIONAL: expand the search result
+        :return:
+        """
+        params = {}
+        if start is not None:
+            params['startAt'] = int(start)
+        if limit is not None:
+            params['maxResults'] = int(limit)
+        if fields is not None:
+            if isinstance(fields, (list, tuple, set)):
+                fields = ','.join(fields)
+            params['fields'] = fields
+        if jql is not None:
+            params['jql'] = jql
+        if expand is not None:
+            params['expand'] = expand
+        return self.get('rest/api/2/search', params=params)
