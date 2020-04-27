@@ -1243,11 +1243,23 @@ class Jira(AtlassianRestAPI):
     def issue_transition(self, issue_key, status):
         return self.set_issue_status(issue_key, status)
 
-    def set_issue_status(self, issue_key, status_name):
+    def set_issue_status(self, issue_key, status_name, fields=None):
+        """
+        Setting status by status_name. fields defaults to None for transitions without mandatory fields.
+        If there are mandatary fields for the transition, these can be set using a dict.
+        Example:
+            jira.set_issue_status('MY-123','Resolved',{'myfield': 'myvalue'})
+        :param issue_key: str
+        :param status_name: str
+        :param fields: dict, optional
+        """
         url = 'rest/api/2/issue/{issue_key}/transitions'.format(issue_key=issue_key)
         transition_id = self.get_transition_id_to_status_name(issue_key, status_name)
-        return self.post(url, data={'transition': {'id': transition_id}})
-
+        data={'transition': {'id': transition_id}}
+        if fields != None:
+            data['fields'] = fields
+        return self.post(url, data=data)
+            
     def set_issue_status_by_transition_id(self, issue_key, transition_id):
         """
         Setting status by transition_id
