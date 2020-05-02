@@ -732,8 +732,10 @@ class Bitbucket(AtlassianRestAPI):
             url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests'.format(project=project,
                                                                                             repository=repository)
         else:
-            url = 'rest/api/2.0/projects/{project}/repos/{repository}/pull-requests'.format(project=project,
-                                                                                            repository=repository)
+            url = self.resource_url(
+                'repositories/{project}/{repository}/pullrequests'.format(
+                    project=project, repository=repository))
+
         params = {}
         if state:
             params['state'] = state
@@ -745,15 +747,29 @@ class Bitbucket(AtlassianRestAPI):
             params['order'] = order
         if at:
             params['at'] = at
+
         response = self.get(url, params=params)
         if 'values' not in response:
             return []
-        pr_list = (response or {}).get('values')
-        while not response.get('isLastPage'):
-            start = response.get('nextPageStart')
-            params['start'] = start
-            response = self.get(url, params=params)
-            pr_list += (response or {}).get('values')
+        pr_list = (response or {}).get('values', [])
+
+        if self.cloud:
+            while True:
+                next_page = response.get("next")
+                if next_page is None:
+                    break
+
+                # Strip the base url - it's added when constructing the request
+                response = self.get(next_page.replace(self.url, ""))
+                pr_list.extend(response.get("values", []))
+
+        else:
+            while not response.get('isLastPage'):
+                start = response.get('nextPageStart')
+                params['start'] = start
+                response = self.get(url, params=params)
+                pr_list += (response or {}).get('values')
+
         return pr_list
 
     def get_pull_requests_activities(self, project, repository, pull_request_id, start=0):
@@ -938,8 +954,9 @@ class Bitbucket(AtlassianRestAPI):
             url = 'rest/api/1.0/projects/{projectKey}/repos/{repository}/pull-requests'.format(projectKey=project_key,
                                                                                                repository=repository)
         else:
-            url = 'rest/api/2.0/projects/{projectKey}/repos/{repository}/pull-requests'.format(projectKey=project_key,
-                                                                                               repository=repository)
+            url = self.resource_url(
+                'repositories/{projectKey}/{repository}/pullrequests'.format(
+                    projectKey=project_key, repository=repository))
         return self.post(url, data=data)
 
     def delete_pull_request(self, project, repository, pull_request_id, pull_request_version):
@@ -976,10 +993,12 @@ class Bitbucket(AtlassianRestAPI):
         if not self.cloud:
             url = 'rest/api/1.0/projects/{project_key}/repos/{repository}/pull-requests/{pr_id}/decline'.format(
                 project_key=project_key, repository=repository, pr_id=pr_id)
+            params = {'version': pr_version}
         else:
-            url = 'rest/api/2.0/projects/{project_key}/repos/{repository}/pull-requests/{pr_id}/decline'.format(
-                project_key=project_key, repository=repository, pr_id=pr_id)
-        params = {'version': pr_version}
+            url = self.resource_url(
+                'repositories/{project_key}/{repository}/pullrequests/{pr_id}/decline'.format(
+                    project_key=project_key, repository=repository, pr_id=pr_id))
+            params = {}
 
         return self.post(url, params=params)
 
@@ -1020,10 +1039,12 @@ class Bitbucket(AtlassianRestAPI):
         if not self.cloud:
             url = 'rest/api/1.0/projects/{project_key}/repos/{repository}/pull-requests/{pr_id}/merge'.format(
                 project_key=project_key, repository=repository, pr_id=pr_id)
+            params = {'version': pr_version}
         else:
-            url = 'rest/api/2.0/projects/{project_key}/repos/{repository}/pull-requests/{pr_id}/merge'.format(
-                project_key=project_key, repository=repository, pr_id=pr_id)
-        params = {'version': pr_version}
+            url = self.resource_url(
+                'repositories/{project_key}/{repository}/pullrequests/{pr_id}/merge'.format(
+                    project_key=project_key, repository=repository, pr_id=pr_id))
+            params = {}
 
         return self.post(url, params=params)
 
@@ -1151,8 +1172,9 @@ class Bitbucket(AtlassianRestAPI):
             url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}'.format(
                 project=project, repository=repository, pullRequestId=pull_request_id)
         else:
-            url = 'rest/api/2.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}'.format(
-                project=project, repository=repository, pullRequestId=pull_request_id)
+            url = self.resource_url(
+                'repositories/{project}/{repository}/pullrequests/{pullRequestId}'.format(
+                    project=project, repository=repository, pullRequestId=pull_request_id))
         return self.get(url)
 
     def get_pullrequest(self, *args, **kwargs):
