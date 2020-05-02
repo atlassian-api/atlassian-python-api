@@ -87,14 +87,13 @@ class AtlassianRestAPI(object):
         """
         self._session.headers.update({key: value})
 
-    def log_curl_debug(self, method, path, data=None, headers=None, trailing=None, level=logging.DEBUG):
+    def log_curl_debug(self, method, url, data=None, headers=None, level=logging.DEBUG):
         """
 
         :param method:
-        :param path:
+        :param url:
         :param data:
         :param headers:
-        :param trailing: bool flag for trailing /
         :param level:
         :return:
         """
@@ -103,7 +102,7 @@ class AtlassianRestAPI(object):
             method=method,
             headers=' -H '.join(["'{0}: {1}'".format(key, value) for key, value in headers.items()]),
             data='' if not data else "--data '{0}'".format(json.dumps(data)),
-            url='{0}'.format(self.url_joiner(self.url, path=path, trailing=trailing)))
+            url=url)
         log.log(level=level, msg=message)
 
     def resource_url(self, resource):
@@ -130,8 +129,6 @@ class AtlassianRestAPI(object):
         :param trailing: bool
         :return:
         """
-        self.log_curl_debug(method=method, path=path, headers=headers,
-                            data=data, trailing=trailing)
         url = self.url_joiner(self.url, path, trailing)
         if params or flags:
             url += '?'
@@ -141,6 +138,8 @@ class AtlassianRestAPI(object):
             url += ('&' if params else '') + '&'.join(flags or [])
         if files is None:
             data = None if not data else json.dumps(data)
+        self.log_curl_debug(method=method, url=url, headers=headers,
+                            data=data)
 
         headers = headers or self.default_headers
         response = self._session.request(
