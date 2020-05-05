@@ -1463,6 +1463,14 @@ class Jira(AtlassianRestAPI):
         url = 'rest/api/2/role'
         return self.get(url)
 
+    def get_plugins_info(self):
+        """
+        Provide plugins info
+        :return a json of installed plugins
+        """
+        url = "rest/plugins/1.0/"
+        return self.get(url, headers=self.no_check_headers)
+
     def upload_plugin(self, plugin_path):
         """
         Provide plugin path for upload into Jira e.g. useful for auto deploy
