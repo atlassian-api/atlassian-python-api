@@ -554,6 +554,8 @@ class Jira(AtlassianRestAPI):
         params = {}
 
         if fields is not None:
+            if isinstance(fields, (list, tuple, set)):
+                fields = ','.join(fields)
             params['fields'] = fields
         if properties is not None:
             params['properties'] = properties
