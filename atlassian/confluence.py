@@ -574,7 +574,7 @@ class Confluence(AtlassianRestAPI):
         :param page_id:
         :param target_title:
         :param target_id:
-        :param position: topLevel or append , above
+        :param position: topLevel or append , above, below
         :return:
         """
         url = "/pages/movepage.action"
@@ -585,7 +585,7 @@ class Confluence(AtlassianRestAPI):
             params["targetId"] = target_id
         if position:
             params["position"] = position
-        return self.get(url, params=params, headers=self.no_check_headers)
+        return self.post(url, params=params, headers=self.no_check_headers)
 
     def get_all_spaces(self, start=0, limit=500, expand=None):
         """

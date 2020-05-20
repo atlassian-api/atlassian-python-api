@@ -2,6 +2,7 @@
 import logging
 
 from .rest_client import AtlassianRestAPI
+from requests.exceptions import HTTPError
 
 log = logging.getLogger(__name__)
 
@@ -732,8 +733,10 @@ class Bitbucket(AtlassianRestAPI):
             url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests'.format(project=project,
                                                                                             repository=repository)
         else:
-            url = 'rest/api/2.0/projects/{project}/repos/{repository}/pull-requests'.format(project=project,
-                                                                                            repository=repository)
+            url = self.resource_url(
+                'repositories/{project}/{repository}/pullrequests'.format(
+                    project=project, repository=repository))
+
         params = {}
         if state:
             params['state'] = state
@@ -745,15 +748,29 @@ class Bitbucket(AtlassianRestAPI):
             params['order'] = order
         if at:
             params['at'] = at
+
         response = self.get(url, params=params)
         if 'values' not in response:
             return []
-        pr_list = (response or {}).get('values')
-        while not response.get('isLastPage'):
-            start = response.get('nextPageStart')
-            params['start'] = start
-            response = self.get(url, params=params)
-            pr_list += (response or {}).get('values')
+        pr_list = (response or {}).get('values', [])
+
+        if self.cloud:
+            while True:
+                next_page = response.get("next")
+                if next_page is None:
+                    break
+
+                # Strip the base url - it's added when constructing the request
+                response = self.get(next_page.replace(self.url, ""))
+                pr_list.extend(response.get("values", []))
+
+        else:
+            while not response.get('isLastPage'):
+                start = response.get('nextPageStart')
+                params['start'] = start
+                response = self.get(url, params=params)
+                pr_list += (response or {}).get('values')
+
         return pr_list
 
     def get_pull_requests_activities(self, project, repository, pull_request_id, start=0):
@@ -938,8 +955,9 @@ class Bitbucket(AtlassianRestAPI):
             url = 'rest/api/1.0/projects/{projectKey}/repos/{repository}/pull-requests'.format(projectKey=project_key,
                                                                                                repository=repository)
         else:
-            url = 'rest/api/2.0/projects/{projectKey}/repos/{repository}/pull-requests'.format(projectKey=project_key,
-                                                                                               repository=repository)
+            url = self.resource_url(
+                'repositories/{projectKey}/{repository}/pullrequests'.format(
+                    projectKey=project_key, repository=repository))
         return self.post(url, data=data)
 
     def delete_pull_request(self, project, repository, pull_request_id, pull_request_version):
@@ -976,10 +994,12 @@ class Bitbucket(AtlassianRestAPI):
         if not self.cloud:
             url = 'rest/api/1.0/projects/{project_key}/repos/{repository}/pull-requests/{pr_id}/decline'.format(
                 project_key=project_key, repository=repository, pr_id=pr_id)
+            params = {'version': pr_version}
         else:
-            url = 'rest/api/2.0/projects/{project_key}/repos/{repository}/pull-requests/{pr_id}/decline'.format(
-                project_key=project_key, repository=repository, pr_id=pr_id)
-        params = {'version': pr_version}
+            url = self.resource_url(
+                'repositories/{project_key}/{repository}/pullrequests/{pr_id}/decline'.format(
+                    project_key=project_key, repository=repository, pr_id=pr_id))
+            params = {}
 
         return self.post(url, params=params)
 
@@ -1020,10 +1040,12 @@ class Bitbucket(AtlassianRestAPI):
         if not self.cloud:
             url = 'rest/api/1.0/projects/{project_key}/repos/{repository}/pull-requests/{pr_id}/merge'.format(
                 project_key=project_key, repository=repository, pr_id=pr_id)
+            params = {'version': pr_version}
         else:
-            url = 'rest/api/2.0/projects/{project_key}/repos/{repository}/pull-requests/{pr_id}/merge'.format(
-                project_key=project_key, repository=repository, pr_id=pr_id)
-        params = {'version': pr_version}
+            url = self.resource_url(
+                'repositories/{project_key}/{repository}/pullrequests/{pr_id}/merge'.format(
+                    project_key=project_key, repository=repository, pr_id=pr_id))
+            params = {}
 
         return self.post(url, params=params)
 
@@ -1151,8 +1173,9 @@ class Bitbucket(AtlassianRestAPI):
             url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}'.format(
                 project=project, repository=repository, pullRequestId=pull_request_id)
         else:
-            url = 'rest/api/2.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}'.format(
-                project=project, repository=repository, pullRequestId=pull_request_id)
+            url = self.resource_url(
+                'repositories/{project}/{repository}/pullrequests/{pullRequestId}'.format(
+                    project=project, repository=repository, pullRequestId=pull_request_id))
         return self.get(url)
 
     def get_pullrequest(self, *args, **kwargs):
@@ -2532,4 +2555,159 @@ class Bitbucket(AtlassianRestAPI):
         """
         resource = "repositories/{workspace}/{repository}/issues/{id}".format(
             workspace=workspace, repository=repository, id=id)
+        return self.delete(self.resource_url(resource))
+
+    def get_repositories(self, workspace, role=None, query=None, sort=None, number=10, page=1):
+        """
+        Get all repositories in a workspace.
+        
+        :param role: Filters the result based on the authenticated user's role on each repository.
+                      One of: member, contributor, admin, owner
+        :param query: Query string to narrow down the response.
+        :param sort: Field by which the results should be sorted.
+        """
+        resource = "repositories/{workspace}".format(workspace=workspace)
+        
+        params = {
+            "pagelen": number,
+            "page": page
+            }
+        if not role is None:
+            params["role"] = role
+        if not query is None:
+            params["query"] = query
+        if not sort is None:
+            params["sort"] = sort
+        
+        return self.get(self.resource_url(resource), params=params)
+
+    def get_branch_restrictions(self, workspace, repository, kind=None, pattern=None, number=10, page=1):
+        """
+        Get all branch permissions.
+        """
+        resource = "repositories/{workspace}/{repository}/branch-restrictions".format(
+            workspace=workspace, repository=repository)
+        params = {"pagelen": number, "page": page}
+        if not kind is None:
+            params["kind"] = kind
+        if not pattern is None:
+            params["pattern"] = pattern
+
+        return self.get(self.resource_url(resource), params=params)
+
+    def add_branch_restriction(self, workspace, repository, kind, branch_match_kind="glob",
+                                branch_pattern = "*", branch_type = None,
+                                users = None, groups = None, value = None):
+        """
+        Add a new branch restriction.
+
+        :param kind: One of require_tasks_to_be_completed, force, restrict_merges,
+                      enforce_merge_checks, require_approvals_to_merge, delete,
+                      require_all_dependencies_merged, push, require_passing_builds_to_merge,
+                      reset_pullrequest_approvals_on_change, require_default_reviewer_approvals_to_merge
+        :param branch_match_kind: branching_model or glob, if branching_model use
+                      param branch_type otherwise branch_pattern.
+        :param branch_pattern: A glob specifying the branch this restriction should
+                      apply to (supports * as wildcard).
+        :param branch_type: The branch type specifies the branches this restriction
+                      should apply to. One of: feature, bugfix, release, hotfix, development, production.
+        :param users: List of user objects that are excluded from the restriction. Minimal: {"username": "<username>"}
+        :param groups: List of group objects that are excluded from the restriction. Minimal: {"owner": {"username": "<teamname>"}, "slug": "<groupslug>"}
+        """
+        resource = "repositories/{workspace}/{repository}/branch-restrictions".format(
+            workspace=workspace, repository=repository)
+
+        if branch_match_kind == "branching_model":
+            branch_pattern = ""
+
+        data = {
+            "kind": kind,
+            "branch_match_kind": branch_match_kind,
+            "pattern": branch_pattern,
+        }
+
+        if branch_match_kind == "branching_model":
+            data["branch_type"] = branch_type
+
+        if not users is None:
+            data["users"] = users
+
+        if not groups is None:
+            data["groups"] = groups
+
+        if not value is None:
+            data["value"] = value
+
+        return self.post(self.resource_url(resource), data=data)
+
+    def update_branch_restriction(self, workspace, repository, id, **fields):
+        """
+        Update an existing branch restriction identified by ``id``.
+        Consult the official API documentation for valid fields.
+        """
+        resource = "repositories/{workspace}/{repository}/branch-restrictions/{id}".format(
+            workspace=workspace, repository=repository, id=id)
+
+        return self.put(self.resource_url(resource), data=fields)
+
+    def delete_branch_restriction(self, workspace, repository, id):
+        """
+        Delete an existing branch restriction identified by ``id``.
+        """
+        resource = "repositories/{workspace}/{repository}/branch-restrictions/{id}".format(
+            workspace=workspace, repository=repository, id=id)
+
+        return self.delete(self.resource_url(resource))
+
+    
+    def get_default_reviewers(self, workspace, repository, number=10, page=1):
+        """
+        Get all default reviewers for the repository.
+        """
+        resource = "repositories/{workspace}/{repository}/default-reviewers".format(
+            workspace=workspace, repository=repository)
+        params = {"pagelen": number, "page": page}
+        
+        return self.get(self.resource_url(resource), params=params)
+
+    def add_default_reviewer(self, workspace, repository, user):
+        """
+        Add user as default reviewer to the repository.
+        Can safely be called multiple times with the same user, only adds once.
+
+        :param user: The username or account UUID to add as default_reviewer.
+        """
+        resource = "repositories/{workspace}/{repository}/default-reviewers/{user}".format(
+            workspace=workspace, repository=repository, user=user)
+
+        # the mention_id parameter is undocumented but if missed, leads to 400 statuses
+        return self.put(self.resource_url(resource), data={"mention_id": user})
+
+    def is_default_reviewer(self, workspace, repository, user):
+        """
+        Check if the user is a default reviewer of the repository.
+        
+        :param user: The username or account UUID to check.
+        :return: True if present, False if not.
+        """
+        resource = "repositories/{workspace}/{repository}/default-reviewers/{user}".format(
+            workspace=workspace, repository=repository, user=user)
+
+        try:
+            self.get(self.resource_url(resource))
+            return True
+        except HTTPError as httpErr:
+            if httpErr.response.status_code == 404:
+                return False
+            raise httpErr
+
+    def delete_default_reviewer(self, workspace, repository, user):
+        """
+        Remove user as default reviewer from the repository.
+        
+        :param user: The username or account UUID to delete as default reviewer.
+        """
+        resource = "repositories/{workspace}/{repository}/default-reviewers/{user}".format(
+            workspace=workspace, repository=repository, user=user)
+
         return self.delete(self.resource_url(resource))

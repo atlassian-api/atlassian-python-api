@@ -184,7 +184,7 @@ Manage issues
     jira.issue_transition(issue_key, status)
 
     # Set issue status
-    jira.set_issue_status(issue_key, status_name)
+    jira.set_issue_status(issue_key, status_name, fields=None)
 
     # Set issue status by transition_id
     jira.set_issue_status_by_transition_id(issue_key, transition_id)
