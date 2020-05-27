@@ -47,6 +47,9 @@ Manage repositories
     # Get single repository
     bitbucket.get_repo(project_key, repository_slug)
 
+    # Get labels for a single repository
+    bitbucket.get_repo_labels(project_key, repository_slug)
+
     # Disable branching model
     bitbucket.disable_branching_model(project_key, repo_key)
 
