@@ -153,9 +153,6 @@ Manage issues
     # Get existing custom fields or find by filter
     get_custom_fields(self, search=None, start=1, limit=50):
 
-    # Rename sprint
-    jira.rename_sprint(sprint_id, name, start_date, end_date)
-
     # Check issue exists
     jira.issue_exists(issue_key)
 
@@ -203,6 +200,19 @@ Manage issues
 
     # Delete Issue Links
     jira.delete_issue_remote_link_by_id(issue_key, link_id)
+
+
+Manage Boards
+-------------
+
+.. code-block:: python
+
+    # Create sprint
+    jira.jira.create_sprint(sprint_name, origin_board_id,  start_datetime, end_datetime, goal)
+
+    # Rename sprint
+    jira.rename_sprint(sprint_id, name, start_date, end_date)
+
 
 Attachments actions
 -------------------
