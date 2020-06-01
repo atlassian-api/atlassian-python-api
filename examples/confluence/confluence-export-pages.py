@@ -20,5 +20,5 @@ if __name__ == '__main__':
     label = "super-important"
     pages = confluence.get_all_pages_by_label(label=label, start=0, limit=10)
     for page in pages:
-        response = confluence.get_page_as_pdf(page[id])
+        response = confluence.get_page_as_pdf(page['id'])
         save_file(content=response, title=page['title'])
