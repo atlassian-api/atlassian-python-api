@@ -470,6 +470,16 @@ class Jira(AtlassianRestAPI):
             params[actor_type] = actor
         return self.delete(url, params=params)
 
+    def add_user_into_project_role(self, project_key, role_id, user_name):
+        """
+
+        :param project_key:
+        :param role_id:
+        :param user_name:
+        :return:
+        """
+        return self.add_project_actor_in_role(project_key, role_id, user_name, 'atlassian-user-role-actor')
+
     def add_project_actor_in_role(self, project_key, role_id, actor, actor_type):
         """
 
@@ -1255,11 +1265,11 @@ class Jira(AtlassianRestAPI):
         """
         url = 'rest/api/2/issue/{issue_key}/transitions'.format(issue_key=issue_key)
         transition_id = self.get_transition_id_to_status_name(issue_key, status_name)
-        data={'transition': {'id': transition_id}}
+        data = {'transition': {'id': transition_id}}
         if fields != None:
             data['fields'] = fields
         return self.post(url, data=data)
-            
+
     def set_issue_status_by_transition_id(self, issue_key, transition_id):
         """
         Setting status by transition_id
