@@ -147,6 +147,38 @@ Or reuse cookie file:
         url='http://localhost:8080',
         cookie=cookie_dict)
 
+To authenticate to the Atlassian Cloud APIs:
+
+.. code-block:: python
+
+    # Obtain an API token from: https://id.atlassian.com/manage-profile/security/api-tokens
+
+    jira = Jira(
+        url='https://your-domain.atlassian.net',
+        username=jira_username,
+        password=jira_api_token,
+        cloud=True)
+
+    confluence = Confluence(
+        url='https://your-domain.atlassian.net',
+        username=jira_username,
+        password=jira_api_token,
+        cloud=True)
+
+    bitbucket = Bitbucket(
+        url='https://your-domain.atlassian.net',
+        username=jira_username,
+        password=jira_api_token,
+        cloud=True)
+
+    service_desk = ServiceDesk(
+        url='https://your-domain.atlassian.net',
+        username=jira_username,
+        password=jira_api_token,
+        cloud=True)
+
+
+
 .. toctree::
    :maxdepth: 2
 

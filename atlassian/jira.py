@@ -564,6 +564,8 @@ class Jira(AtlassianRestAPI):
         params = {}
 
         if fields is not None:
+            if isinstance(fields, (list, tuple, set)):
+                fields = ','.join(fields)
             params['fields'] = fields
         if properties is not None:
             params['properties'] = properties
@@ -2424,6 +2426,33 @@ class Jira(AtlassianRestAPI):
         """
         url = 'rest/agile/1.0/board/{board_id}/properties'.format(board_id=board_id)
         return self.get(url)
+
+    def create_sprint(self, name, board_id, start_date=None, end_date=None, goal=None):
+        """
+        Create a sprint within a board.
+        ! User requires `Manage Sprints` permission for relevant boards.
+
+        :param name: str: Name for the Sprint to be created
+        :param board_id: int: The ID for the Board in which the Sprint will be created
+        :param start_date: str: The Start Date for Sprint in isoformat
+                            example value is "2015-04-11T15:22:00.000+10:00"
+        :param end_date: str: The End Date for Sprint in isoformat
+                            example value is "2015-04-20T01:22:00.000+10:00"
+        :param goal: str: Goal Text for setting for the Sprint
+        :return: Dictionary of response received from the API
+
+        https://docs.atlassian.com/jira-software/REST/8.9.0/#agile/1.0/sprint
+        isoformat can be created with datetime.datetime.isoformat()
+        """
+        url = '/rest/agile/1.0/sprint'
+        data = dict(name=name, originBoardId=board_id)
+        if start_date:
+            data['startDate'] = start_date
+        if end_date:
+            data['endDate'] = end_date
+        if goal:
+            data['goal'] = goal
+        return self.post(url, data=data)
 
     def get_all_sprint(self, board_id, state=None, start=0, limit=50):
         """

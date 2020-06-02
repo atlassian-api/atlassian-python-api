@@ -2,6 +2,7 @@
 import logging
 
 from .rest_client import AtlassianRestAPI
+from requests.exceptions import HTTPError
 
 log = logging.getLogger(__name__)
 
@@ -527,6 +528,20 @@ class Bitbucket(AtlassianRestAPI):
         else:
             url = 'rest/api/2.0/projects/{project}/repos/{repository}' \
                 .format(project=project_key, repository=repository_slug)
+        return self.get(url)
+
+    def get_repo_labels(self, project_key, repository_slug):
+        """
+        Get labels for a specific repository from a project. This operates based on slug not name which may
+        be confusing to some users.
+        :param project_key: Key of the project you wish to look in.
+        :param repository_slug: url-compatible repository identifier
+        :return: Dictionary of request response
+        """
+        if self.cloud:
+            raise Exception("Not supported in Bitbucket Cloud")
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/labels' \
+            .format(project=project_key, repository=repository_slug)
         return self.get(url)
 
     def repo_all_list(self, project_key):
@@ -2655,5 +2670,58 @@ class Bitbucket(AtlassianRestAPI):
         """
         resource = "repositories/{workspace}/{repository}/branch-restrictions/{id}".format(
             workspace=workspace, repository=repository, id=id)
+
+        return self.delete(self.resource_url(resource))
+
+    
+    def get_default_reviewers(self, workspace, repository, number=10, page=1):
+        """
+        Get all default reviewers for the repository.
+        """
+        resource = "repositories/{workspace}/{repository}/default-reviewers".format(
+            workspace=workspace, repository=repository)
+        params = {"pagelen": number, "page": page}
+        
+        return self.get(self.resource_url(resource), params=params)
+
+    def add_default_reviewer(self, workspace, repository, user):
+        """
+        Add user as default reviewer to the repository.
+        Can safely be called multiple times with the same user, only adds once.
+
+        :param user: The username or account UUID to add as default_reviewer.
+        """
+        resource = "repositories/{workspace}/{repository}/default-reviewers/{user}".format(
+            workspace=workspace, repository=repository, user=user)
+
+        # the mention_id parameter is undocumented but if missed, leads to 400 statuses
+        return self.put(self.resource_url(resource), data={"mention_id": user})
+
+    def is_default_reviewer(self, workspace, repository, user):
+        """
+        Check if the user is a default reviewer of the repository.
+        
+        :param user: The username or account UUID to check.
+        :return: True if present, False if not.
+        """
+        resource = "repositories/{workspace}/{repository}/default-reviewers/{user}".format(
+            workspace=workspace, repository=repository, user=user)
+
+        try:
+            self.get(self.resource_url(resource))
+            return True
+        except HTTPError as httpErr:
+            if httpErr.response.status_code == 404:
+                return False
+            raise httpErr
+
+    def delete_default_reviewer(self, workspace, repository, user):
+        """
+        Remove user as default reviewer from the repository.
+        
+        :param user: The username or account UUID to delete as default reviewer.
+        """
+        resource = "repositories/{workspace}/{repository}/default-reviewers/{user}".format(
+            workspace=workspace, repository=repository, user=user)
 
         return self.delete(self.resource_url(resource))
