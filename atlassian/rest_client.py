@@ -198,6 +198,9 @@ class AtlassianRestAPI(object):
         except ValueError:
             log.debug('Received response with no content')
             return None
+        except Exception as e:
+            log.error(e)
+            return None
 
     def put(self, path, data=None, headers=None, files=None, trailing=None, params=None):
         response = self.request('PUT', path=path, data=data, headers=headers, files=files, params=params,
@@ -208,6 +211,9 @@ class AtlassianRestAPI(object):
             return response.json()
         except ValueError:
             log.debug('Received response with no content')
+            return None
+        except Exception as e:
+            log.error(e)
             return None
 
     def delete(self, path, data=None, headers=None, params=None, trailing=None):
@@ -224,4 +230,7 @@ class AtlassianRestAPI(object):
             return response.json()
         except ValueError:
             log.debug('Received response with no content')
+            return None
+        except Exception as e:
+            log.error(e)
             return None
