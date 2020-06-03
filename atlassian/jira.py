@@ -1216,8 +1216,12 @@ class Jira(AtlassianRestAPI):
         return self.delete(url)
 
     def get_issue_transitions(self, issue_key):
-        return [{'name': transition['name'], 'id': int(transition['id']), 'to': transition['to']['name']}
-                for transition in (self.get_issue_transitions_full(issue_key) or {}).get('transitions')]
+        if self.advanced_mode:
+            return [{'name': transition['name'], 'id': int(transition['id']), 'to': transition['to']['name']}
+                    for transition in (self.get_issue_transitions_full(issue_key).json() or {}).get('transitions')]
+        else:
+            return [{'name': transition['name'], 'id': int(transition['id']), 'to': transition['to']['name']}
+                    for transition in (self.get_issue_transitions_full(issue_key) or {}).get('transitions')]
 
     def get_issue_transitions_full(self, issue_key, transition_id=None, expand=None):
         """
