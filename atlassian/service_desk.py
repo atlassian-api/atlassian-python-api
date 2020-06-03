@@ -15,7 +15,7 @@ class ServiceDesk(AtlassianRestAPI):
     def get_info(self):
         """ Get info about Service Desk app """
 
-        return self.get('rest/servicedeskapi/info', headers=self.experimental_headers, )
+        return self.get('rest/servicedeskapi/info', headers=self.experimental_headers)
 
     def get_service_desks(self):
         """
@@ -24,7 +24,11 @@ class ServiceDesk(AtlassianRestAPI):
 
         :return: Service Desks
         """
-        return (self.get('rest/servicedeskapi/servicedesk', headers=self.experimental_headers) or {}).get('values')
+        service_desks_list = self.get('rest/servicedeskapi/servicedesk', headers=self.experimental_headers)
+        if self.advanced_mode:
+            return service_desks_list
+        else:
+            return (service_desks_list or {}).get('values')
 
     def get_service_desk_by_id(self, service_desk_id):
         """
