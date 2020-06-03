@@ -1948,6 +1948,19 @@ class Confluence(AtlassianRestAPI):
         data = {'name': username}
         return self.post(url, params=params, data=data)
 
+    def get_space_permissions(self, space_key):
+        """
+        The JSON-RPC APIs for Confluence are provided here to help you browse and discover APIs you have access to.
+        JSON-RPC APIs operate differently than REST APIs.
+        To learn more about how to use these APIs,
+        please refer to the Confluence JSON-RPC documentation on Atlassian Developers.
+        """
+        if self.api_version == 'cloud':
+            return self.get_space(space_key=space_key, expand="permissions")
+        url = 'rpc/json-rpc/confluenceservice-v2'
+        data = {"jsonrpc": "2.0", "method": "getSpacePermissionSets", "id": 7, "params": [space_key]}
+        return self.post(url, data=data).get("result") or {}
+
     def get_subtree_of_content_ids(self, page_id):
         """
         Get sub tree of page ids

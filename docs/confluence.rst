@@ -162,6 +162,9 @@ Get spaces info
     # Get information about a space through space key
     confluence.get_space(space_key, expand='description.plain,homepage')
 
+    # Get Space permissions set based on json-rpc call
+    confluence.get_space_permissions(space_key)
+
 Users and Groups
 ----------------
 
