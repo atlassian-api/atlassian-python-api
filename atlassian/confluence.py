@@ -108,8 +108,13 @@ class Confluence(AtlassianRestAPI):
         :type page_id: str
         :return:
         """
-        parent_content_id = ((self.get_page_by_id(page_id=page_id, expand='ancestors').get('ancestors') or {})[-1].get(
-            'id') or None)
+        parent_content_id = None
+        try:
+            parent_content_id = (
+                        (self.get_page_by_id(page_id=page_id, expand='ancestors').get('ancestors') or {})[-1].get(
+                            'id') or None)
+        except Exception as e:
+            log.error(e)
         return parent_content_id
 
     def get_page_space(self, page_id):
@@ -1186,7 +1191,7 @@ class Confluence(AtlassianRestAPI):
 
         if self.page_exists(space, title):
             page_id = self.get_page_id(space, title)
-            parent_id = self.get_parent_content_id(page_id)
+            parent_id = parent_id if parent_id is not None else self.get_parent_content_id(page_id)
             result = self.update_page(parent_id=parent_id, page_id=page_id, title=title, body=body,
                                       representation=representation, minor_edit=minor_edit,
                                       version_comment=version_comment)
