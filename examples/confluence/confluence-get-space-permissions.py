@@ -1,6 +1,6 @@
 # coding=utf-8
 from atlassian import Confluence
-from var import config
+#from var import config
 import logging
 from pprint import pprint
 
@@ -16,4 +16,5 @@ confluence = Confluence(
     password=CONFLUENCE_PASSWORD,
     timeout=180)
 
+confluence.allow_redirects = False
 pprint(confluence.get_space_permissions("DOC"))

@@ -188,8 +188,7 @@ class Confluence(AtlassianRestAPI):
         :param page_id: Content ID
         :param status: (str) list of Content statuses to filter results on. Default value: [current]
         :param version: (int)
-        :param expand: OPTIONAL: A comma separated list of properties to expand on the content.
-                       Default value: history,space,version
+        :param expand: OPTIONAL: Default value: history,space,version
                        We can also specify some extensions such as extensions.inlineProperties
                        (for getting inline comment-specific properties) or extensions.resolution
                        for the resolution status of each comment in the results
