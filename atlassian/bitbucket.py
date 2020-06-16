@@ -533,7 +533,7 @@ class Bitbucket(AtlassianRestAPI):
     def get_repo_labels(self, project_key, repository_slug):
         """
         Get labels for a specific repository from a project. This operates based on slug not name which may
-        be confusing to some users.
+        be confusing to some users. (BitBucket Server only)
         :param project_key: Key of the project you wish to look in.
         :param repository_slug: url-compatible repository identifier
         :return: Dictionary of request response
@@ -543,6 +543,22 @@ class Bitbucket(AtlassianRestAPI):
         url = 'rest/api/1.0/projects/{project}/repos/{repository}/labels' \
             .format(project=project_key, repository=repository_slug)
         return self.get(url)
+
+    def set_repo_label(self, project_key, repository_slug, label_name):
+        """
+        Sets a label on a repository. (BitBucket Server only)
+        The authenticated user must have REPO_ADMIN permission for the specified repository to call this resource.
+        :param project_key: Key of the project you wish to look in.
+        :param repository_slug: url-compatible repository identifier
+        :param label_name: label name to apply
+        :return:
+        """
+        data = {'name': label_name}
+        if self.cloud:
+            raise Exception("Not supported in Bitbucket Cloud")
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/labels' \
+            .format(project=project_key, repository=repository_slug)
+        return self.post(url, data=data)
 
     def repo_all_list(self, project_key):
         """
