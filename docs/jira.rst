@@ -134,6 +134,12 @@ Manage projects
     # Use only_levels=True for get the only levels entries
     jira.get_project_issue_security_scheme(project_id_or_key, only_levels=False)
 
+    # Resource for associating notification schemes and projects.
+    # Gets a notification scheme associated with the project.
+    # Follow the documentation of /notificationscheme/{id} resource for all details about returned value.
+    # Use 'expand' to get details (default is None)  possible values are notificationSchemeEvents,user,group,projectRole,field,all
+    jira.get_priority_scheme_of_project(project_key_or_id, expand=None)
+
 
 Manage issues
 -------------

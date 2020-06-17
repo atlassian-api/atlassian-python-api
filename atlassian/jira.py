@@ -1749,6 +1749,21 @@ class Jira(AtlassianRestAPI):
         data = {"id": priority_scheme_id}
         return self.put(url, data=data)
 
+    def get_priority_scheme_of_project(self, project_key_or_id, expand=None):
+        """
+        Resource for associating notification schemes and projects.
+        Gets a notification scheme associated with the project.
+        Follow the documentation of /notificationscheme/{id} resource for all details about returned value.
+        :param project_key_or_id:
+        :param expand: notificationSchemeEvents,user,group,projectRole,field,all
+        :return:
+        """
+        params = {}
+        if expand:
+            params["expand"] = expand
+        url = "rest/api/2/project/{}/notificationscheme".format(project_key_or_id)
+        return self.get(url, params=params)
+
     # Application properties
     def get_property(self, key=None, permission_level=None, key_filter=None):
         """
