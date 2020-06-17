@@ -281,6 +281,12 @@ class Jira(AtlassianRestAPI):
 
         return self.post(path=url, data=data, headers=headers)
 
+    def invalidate_websudo(self):
+        """
+        This method invalidates the any current WebSudo session.
+        """
+        return self.delete("rest/auth/1/websudo")
+
     def user_find_by_user_string(self, username, start=0, limit=50, include_inactive_users=False,
                                  include_active_users=True):
         """
