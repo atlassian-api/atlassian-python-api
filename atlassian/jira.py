@@ -1034,8 +1034,15 @@ class Jira(AtlassianRestAPI):
         """
         Creates an issue or a sub-task from a JSON representation
         :param fields: JSON data
+                mandatory keys are issuetype, summary and project
         :param update_history: bool (if true then the user's project history is updated)
         :return:
+            example:
+                fields = dict(summary='Into The Night',
+                              project = dict(key='APA'),
+                              issuetype = dict(name='Story')
+                              )
+                jira.create_issue(fields=fields)
         """
         url = 'rest/api/2/issue'
         data = {'fields': fields}
@@ -2477,6 +2484,24 @@ class Jira(AtlassianRestAPI):
             data['endDate'] = end_date
         if goal:
             data['goal'] = goal
+        return self.post(url, data=data)
+
+    def add_issues_to_sprint(self, sprint_id, issues):
+        """
+        Adding Issue(s) to Sprint
+        :param sprint_id: int/str:  The ID for the Sprint.
+                                    Sprint to be Active or Open only.
+                                    eg.  104
+        :param issues:       list:  List of Issue Keys
+                                    eg. ['APA-1', 'APA-2']
+        :return: Dictionary of response received from the API
+
+        https://docs.atlassian.com/jira-software/REST/8.9.0/#agile/1.0/sprint-moveIssuesToSprint
+        """
+        if not isinstance(issues, list):
+            raise ValueError("`issues` param should be List of Issue Keys")
+        url = '/rest/agile/1.0/sprint/{sprint_id}/issue'.format(sprint_id=sprint_id)
+        data = dict(issues=issues)
         return self.post(url, data=data)
 
     def get_all_sprint(self, board_id, state=None, start=0, limit=50):
