@@ -219,6 +219,9 @@ Manage Boards
     # Rename sprint
     jira.rename_sprint(sprint_id, name, start_date, end_date)
 
+    # Add/Move Issues to sprint
+    jira.add_issues_to_sprint(sprint_id, issues_list)
+
 
 Attachments actions
 -------------------
