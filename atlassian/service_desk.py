@@ -81,7 +81,7 @@ class ServiceDesk(AtlassianRestAPI):
 
         :param service_desk_id: str
         :param request_type_id: str
-        :param values_dict: str
+        :param values_dict: dict
         :param raise_on_behalf_of: str
         :param request_participants: list
         :return: New request
@@ -99,7 +99,7 @@ class ServiceDesk(AtlassianRestAPI):
         if request_participants:
             data["requestParticipants"] = request_participants
 
-        return self.post('rest/servicedeskapi/request', data=data, headers=self.experimental_headers)
+        return self.post('rest/servicedeskapi/request', json=data, headers=self.experimental_headers)
 
     def get_customer_request_status(self, issue_id_or_key):
         """
