@@ -1964,7 +1964,12 @@ class Confluence(AtlassianRestAPI):
         :return: Current permissions of space
         """
         url = 'rest/api/space/{}/permission'.format(space_key)
-        data = {"id": 2154, "subject": {"type": subject_type, "identifier": subject_id }, "operation": {"key": operation_key, "target": operation_target}, "_links": {}}
+        data = {
+            'id': 2154,
+            'subject': {'type': subject_type, 'identifier': subject_id},
+            'operation': {'key': operation_key, 'target': operation_target},
+            '_links': {}
+        }
 
         return self.post(url, data=data, headers=self.experimental_headers)
 
