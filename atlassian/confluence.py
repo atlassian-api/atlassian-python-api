@@ -1952,6 +1952,26 @@ class Confluence(AtlassianRestAPI):
         data = {'name': username}
         return self.post(url, params=params, data=data)
 
+    def add_space_permissions(self, space_key, subject_type, subject_id, operation_key, operation_target):
+        """
+        Add permissions to a space
+
+        :param space_key: str
+        :param subject_type: str
+        :param subject_id: str
+        :param operation_key: str
+        :param operation_target: str
+        :return: Current permissions of space
+        """
+        url = 'rest/api/space/{}/permission'.format(space_key)
+        data = {
+            'subject': {'type': subject_type, 'identifier': subject_id},
+            'operation': {'key': operation_key, 'target': operation_target},
+            '_links': {}
+        }
+
+        return self.post(url, data=data, headers=self.experimental_headers)
+
     def get_space_permissions(self, space_key):
         """
         The JSON-RPC APIs for Confluence are provided here to help you browse and discover APIs you have access to.
