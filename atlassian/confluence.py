@@ -111,8 +111,8 @@ class Confluence(AtlassianRestAPI):
         parent_content_id = None
         try:
             parent_content_id = (
-                        (self.get_page_by_id(page_id=page_id, expand='ancestors').get('ancestors') or {})[-1].get(
-                            'id') or None)
+                    (self.get_page_by_id(page_id=page_id, expand='ancestors').get('ancestors') or {})[-1].get(
+                        'id') or None)
         except Exception as e:
             log.error(e)
         return parent_content_id
@@ -1938,6 +1938,15 @@ class Confluence(AtlassianRestAPI):
         """
         url = 'rest/user-profile/1.0/{}/avatar/default'.format(user_key)
         return self.get(url)
+
+    def add_user(self, email, fullname, username, password):
+        """
+        That method related to creating user via json rpc for Confluence Server
+        """
+        params = {"email": email, "fullname": fullname, "name": username}
+        url = 'rpc/json-rpc/confluenceservice-v2'
+        data = {"jsonrpc": "2.0", "method": "addUser", "params": [params, password]}
+        self.post(url, data=data)
 
     def add_user_to_group(self, username, group_name):
         """
