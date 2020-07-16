@@ -111,8 +111,8 @@ class Confluence(AtlassianRestAPI):
         parent_content_id = None
         try:
             parent_content_id = (
-                        (self.get_page_by_id(page_id=page_id, expand='ancestors').get('ancestors') or {})[-1].get(
-                            'id') or None)
+                (self.get_page_by_id(page_id=page_id, expand='ancestors').get('ancestors') or {})[-1].get(
+                    'id') or None)
         except Exception as e:
             log.error(e)
         return parent_content_id
@@ -1255,6 +1255,44 @@ class Confluence(AtlassianRestAPI):
 
         return response
 
+    def update_page_property(self, page_id, data):
+        """
+        Update the page (content) property.
+        Use json data or independent keys
+        :param page_id: content_id format
+        :data: property data in json format
+        :return:
+        """
+        url = 'rest/api/content/{page_id}/property/{key}'.format(page_id=page_id, key=data.get("key"))
+        try:
+            response = self.put(path=url, data=data)
+        except HTTPError as e:
+            if e.response.status_code == 400:
+                raise ApiValueError(
+                    "The given property has a different content id to the one in the "
+                    "path, or the content already has a value with the given key, or "
+                    "the value is missing, or the value is too long",
+                    reason=e)
+            if e.response.status_code == 403:
+                raise ApiPermissionError(
+                    "The user does not have permission to "
+                    "edit the content with the given id",
+                    reason=e)
+            if e.response.status_code == 404:
+                raise ApiNotFoundError(
+                    "There is no content with the given id, or no property with the given key, "
+                    "or if the calling user does not have permission to view the content.",
+                    reason=e
+                )
+            if e.response.status_code == 409:
+                raise ApiConflictError(
+                    "The given version is does not match the expected "
+                    "target version of the updated property", reason=e)
+            if e.response.status_code == 413:
+                raise ApiValueError("The value is too long", reason=e)
+            raise
+        return response
+
     def delete_page_property(self, page_id, page_property):
         """
         Delete the page (content) property e.g. delete key of hash
@@ -1287,7 +1325,6 @@ class Confluence(AtlassianRestAPI):
         """
         url = 'rest/api/content/{page_id}/property/{key}'.format(page_id=page_id,
                                                                  key=str(page_property_key))
-
         try:
             response = self.get(path=url)
         except HTTPError as e:
