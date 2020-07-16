@@ -38,6 +38,9 @@ Here's a short example of how to create a Confluence page:
 
     print(status)
 
+(Note that for Confluence Cloud, some API calls are different, so you'll 
+want to add cloud=True to the Confluence() connection.)
+
 And here's another example of how to get issues from Jira using JQL Query:
 
 .. code-block:: python

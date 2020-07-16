@@ -28,6 +28,8 @@ class AtlassianRestAPI(object):
                 and '/wiki' not in url \
                 and self.__class__.__name__ in 'Confluence':
             url = self.url_joiner(url, '/wiki')
+        if (cloud == True):
+            api_version = 'cloud'
         self.url = url
         self.username = username
         self.password = password
