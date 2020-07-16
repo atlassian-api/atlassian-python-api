@@ -1976,6 +1976,15 @@ class Confluence(AtlassianRestAPI):
         url = 'rest/user-profile/1.0/{}/avatar/default'.format(user_key)
         return self.get(url)
 
+    def add_user(self, email, fullname, username, password):
+        """
+        That method related to creating user via json rpc for Confluence Server
+        """
+        params = {"email": email, "fullname": fullname, "name": username}
+        url = 'rpc/json-rpc/confluenceservice-v2'
+        data = {"jsonrpc": "2.0", "method": "addUser", "params": [params, password]}
+        self.post(url, data=data)
+
     def add_user_to_group(self, username, group_name):
         """
         Add given user to a group
