@@ -536,6 +536,28 @@ class Jira(AtlassianRestAPI):
             url = 'rest/api/2/project/{0}/permissionscheme?expand={1}'.format(project_id_or_key, expand)
 
         return self.get(url)
+    def get_notification_schemes(self):
+        """
+        Returns a paginated list of notification schemes
+        """
+        url = '/rest/api/2/notificationscheme'
+        return self.get(url)
+
+    def get_notification_scheme(self, notification_scheme_id, expand=None):
+        """
+        Returns a full representation of the notification scheme for the given id.
+        Use 'expand' to get details
+
+        :param notification_scheme_id: Id of scheme u wanna work with
+        :param expand: str
+        :return: full representation of the notification scheme for the given id
+        """
+        if expand is None:
+            url = '/rest/api/2/notificationscheme/{}'.format(notification_scheme_id)
+        else:
+            url = '/rest/api/2/notificationscheme/{0}?expand={1}'.format(notification_scheme_id, expand)
+        return self.get(url)
+
 
     def create_issue_type(self, name, description='', type='standard'):
         """
