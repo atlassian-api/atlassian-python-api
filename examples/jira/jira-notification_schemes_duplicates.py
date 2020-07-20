@@ -45,7 +45,6 @@ for notificationschemes_id in notificationschemes_ids['values']:
         for notificationType in scheme['notifications']:
             notificationTypes.append(notificationType['notificationType'])
             notificationscheme_dict[scheme['event']['name']] = notificationTypes
-
     all_notificationschemes_dict[notificationschemes['name']] = notificationscheme_dict
 
 for i in range(len(names)):
