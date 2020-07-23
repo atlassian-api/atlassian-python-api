@@ -117,6 +117,21 @@ class Confluence(AtlassianRestAPI):
             log.error(e)
         return parent_content_id
 
+    def get_parent_content_title(self, page_id):
+        """
+        Provide parent content title from page id
+        :type page_id: str
+        :return:
+        """
+        parent_content_title = None
+        try:
+            parent_content_title = (
+                        (self.get_page_by_id(page_id=page_id, expand='ancestors').get('ancestors') or {})[-1].get(
+                            'title') or None)
+        except Exception as e:
+            log.error(e)
+        return parent_content_title
+
     def get_page_space(self, page_id):
         """
         Provide space key from content id
