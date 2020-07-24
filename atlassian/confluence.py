@@ -85,6 +85,33 @@ class Confluence(AtlassianRestAPI):
 
         return response.get('results')
 
+    def get_child_title_list(self, page_id, type='page', start=None, limit=None):
+        """
+        Find a list of Child title
+        :param page_id: A string containing the id of the type content container.
+        :param type:
+        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
+        :param limit: OPTIONAL: how many items should be returned after the start index. Default: Site limit 200.
+        :return:
+        """
+        child_page = self.get_page_child_by_type(page_id, type, start, limit)
+        child_title_list = [child['title'] for child in child_page]
+        return child_title_list
+
+    def get_child_id_list(self, page_id, type='page', start=None, limit=None):
+        """
+        Find a list of Child id
+        :param page_id: A string containing the id of the type content container.
+        :param type:
+        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
+        :param limit: OPTIONAL: how many items should be returned after the start index. Default: Site limit 200.
+        :return:
+        """
+        child_page = self.get_page_child_by_type(page_id, type, start, limit)
+        child_id_list = [child['id'] for child in child_page]
+        return child_id_list
+
+
     def get_child_pages(self, page_id):
         """
         Get child pages for the provided page_id
