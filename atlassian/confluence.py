@@ -83,7 +83,7 @@ class Confluence(AtlassianRestAPI):
 
             raise
 
-        return response.get('results')
+        return response
 
     def get_child_title_list(self, page_id, type='page', start=None, limit=None):
         """
