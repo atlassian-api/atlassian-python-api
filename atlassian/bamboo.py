@@ -101,7 +101,8 @@ class Bamboo(AtlassianRestAPI):
                                    elements_key='plans', element_key='plan')
 
     def plans(self, expand=None, favourite=False, clover_enabled=False, start_index=0, max_results=25):
-        return self.base_list_call("plan", expand, favourite, clover_enabled, start_index, max_results,
+        return self.base_list_call("plan", expand=expand, favourite=favourite,
+                                   clover_enabled=clover_enabled, start_index=start_index, max_results=max_results,
                                    elements_key='plans', element_key='plan')
 
     def plan_directory_info(self, plan_key):
