@@ -531,7 +531,7 @@ class Jira(AtlassianRestAPI):
         :return: data of project permission scheme
         """
         url = 'rest/api/2/project/{}/permissionscheme'.format(project_id_or_key)
-        params={}
+        params = {}
         if expand:
             params['expand'] = expand
         return self.get(url, params=params)
@@ -1305,7 +1305,7 @@ class Jira(AtlassianRestAPI):
         url = 'rest/api/2/issue/{issue_key}/transitions'.format(issue_key=issue_key)
         transition_id = self.get_transition_id_to_status_name(issue_key, status_name)
         data = {'transition': {'id': transition_id}}
-        if fields != None:
+        if fields is not None:
             data['fields'] = fields
         return self.post(url, data=data)
 
@@ -1757,15 +1757,20 @@ class Jira(AtlassianRestAPI):
 
     # api/2/project/{projectKeyOrId}/priorityscheme
     # Resource for associating priority schemes and projects.
-    def get_priority_scheme_of_project(self, project_key_or_id):
+    def get_priority_scheme_of_project(self, project_key_or_id, expand=None):
         """
         Gets a full representation of a priority scheme in JSON format used by specified project.
+        Resource for associating priority scheme schemes and projects.
         User must be global administrator or project administrator.
         :param project_key_or_id:
+        :param expand: notificationSchemeEvents,user,group,projectRole,field,all
         :return:
         """
-        url = 'rest/api/2/project/{}/priorityscheme'.format(project_key_or_id)
-        return self.get(url)
+        params = {}
+        if expand:
+            params["expand"] = expand
+        url = "rest/api/2/project/{}/priorityscheme".format(project_key_or_id)
+        return self.get(url, params=params)
 
     def assign_priority_scheme_for_project(self, project_key_or_id, priority_scheme_id):
         """
@@ -1781,19 +1786,6 @@ class Jira(AtlassianRestAPI):
         url = "rest/api/2/project/{projectKeyOrId}/priorityscheme".format(projectKeyOrId=project_key_or_id)
         data = {"id": priority_scheme_id}
         return self.put(url, data=data)
-
-    def get_priority_scheme_of_project(self, project_key_or_id, expand=None):
-        """
-        Resource for associating priority scheme schemes and projects.
-        :param project_key_or_id:
-        :param expand: notificationSchemeEvents,user,group,projectRole,field,all
-        :return:
-        """
-        params = {}
-        if expand:
-            params["expand"] = expand
-        url = "rest/api/2/project/{}/priorityscheme".format(project_key_or_id)
-        return self.get(url, params=params)
 
     # Application properties
     def get_property(self, key=None, permission_level=None, key_filter=None):

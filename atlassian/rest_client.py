@@ -137,6 +137,7 @@ class AtlassianRestAPI(object):
             url += urlencode(params or {})
         if flags:
             url += ('&' if params else '') + '&'.join(flags or [])
+        json_dump = None
         if files is None:
             data = None if not data else json.dumps(data)
             json_dump = None if not json else json.dumps(json)
@@ -192,7 +193,7 @@ class AtlassianRestAPI(object):
                 return response.text
 
     def post(self, path, data=None, json=None, headers=None, files=None, params=None, trailing=None):
-        response = self.request('POST', path=path, data=data, json=None, headers=headers, files=files, params=params,
+        response = self.request('POST', path=path, data=data, json=json, headers=headers, files=files, params=params,
                                 trailing=trailing)
         if self.advanced_mode:
             return response

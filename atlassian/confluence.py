@@ -111,7 +111,6 @@ class Confluence(AtlassianRestAPI):
         child_id_list = [child['id'] for child in child_page]
         return child_id_list
 
-
     def get_child_pages(self, page_id):
         """
         Get child pages for the provided page_id

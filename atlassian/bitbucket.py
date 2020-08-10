@@ -2597,18 +2597,18 @@ class Bitbucket(AtlassianRestAPI):
         :param sort: Field by which the results should be sorted.
         """
         resource = "repositories/{workspace}".format(workspace=workspace)
-        
+
         params = {
             "pagelen": number,
             "page": page
-            }
-        if not role is None:
+        }
+        if role is not None:
             params["role"] = role
-        if not query is None:
+        if query is not None:
             params["query"] = query
-        if not sort is None:
+        if sort is not None:
             params["sort"] = sort
-        
+
         return self.get(self.resource_url(resource), params=params)
 
     def get_branch_restrictions(self, workspace, repository, kind=None, pattern=None, number=10, page=1):
@@ -2618,16 +2618,15 @@ class Bitbucket(AtlassianRestAPI):
         resource = "repositories/{workspace}/{repository}/branch-restrictions".format(
             workspace=workspace, repository=repository)
         params = {"pagelen": number, "page": page}
-        if not kind is None:
+        if kind is not None:
             params["kind"] = kind
-        if not pattern is None:
+        if pattern is not None:
             params["pattern"] = pattern
 
         return self.get(self.resource_url(resource), params=params)
 
     def add_branch_restriction(self, workspace, repository, kind, branch_match_kind="glob",
-                                branch_pattern = "*", branch_type = None,
-                                users = None, groups = None, value = None):
+                               branch_pattern="*", branch_type=None, users=None, groups=None, value=None):
         """
         Add a new branch restriction.
 
@@ -2661,13 +2660,13 @@ class Bitbucket(AtlassianRestAPI):
         if branch_match_kind == "branching_model":
             data["branch_type"] = branch_type
 
-        if not users is None:
+        if users is not None:
             data["users"] = users
 
-        if not groups is None:
+        if groups is not None:
             data["groups"] = groups
 
-        if not value is None:
+        if value is not None:
             data["value"] = value
 
         return self.post(self.resource_url(resource), data=data)
@@ -2691,7 +2690,6 @@ class Bitbucket(AtlassianRestAPI):
 
         return self.delete(self.resource_url(resource))
 
-    
     def get_default_reviewers(self, workspace, repository, number=10, page=1):
         """
         Get all default reviewers for the repository.
@@ -2699,7 +2697,7 @@ class Bitbucket(AtlassianRestAPI):
         resource = "repositories/{workspace}/{repository}/default-reviewers".format(
             workspace=workspace, repository=repository)
         params = {"pagelen": number, "page": page}
-        
+
         return self.get(self.resource_url(resource), params=params)
 
     def add_default_reviewer(self, workspace, repository, user):
