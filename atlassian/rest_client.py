@@ -1,8 +1,7 @@
 # coding=utf-8
-import json
 import logging
-
 import requests
+from json import dumps
 from oauthlib.oauth1 import SIGNATURE_RSA
 from requests_oauthlib import OAuth1
 from six.moves.urllib.parse import urlencode
@@ -101,7 +100,7 @@ class AtlassianRestAPI(object):
         message = "curl --silent -X {method} -H {headers} {data} '{url}'".format(
             method=method,
             headers=' -H '.join(["'{0}: {1}'".format(key, value) for key, value in headers.items()]),
-            data='' if not data else "--data '{0}'".format(json.dumps(data)),
+            data='' if not data else "--data '{0}'".format(dumps(data)),
             url=url)
         log.log(level=level, msg=message)
 
@@ -139,8 +138,8 @@ class AtlassianRestAPI(object):
             url += ('&' if params else '') + '&'.join(flags or [])
         json_dump = None
         if files is None:
-            data = None if not data else json.dumps(data)
-            json_dump = None if not json else json.dumps(json)
+            data = None if not data else dumps(data)
+            json_dump = None if not json else dumps(json)
         self.log_curl_debug(method=method, url=url, headers=headers,
                             data=data if data else json_dump)
 
