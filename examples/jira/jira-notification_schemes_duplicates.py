@@ -1,5 +1,4 @@
 from atlassian import Jira
-import requests
 
 jira = Jira(
     url='http://localhost:8090',
@@ -25,6 +24,7 @@ def compare_dicts(dict1, dict2):
         print('(Different: ', hint[0])
 
     return True
+
 
 notificationscheme_dict = {}
 all_notificationschemes_dict = {}

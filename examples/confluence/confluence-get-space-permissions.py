@@ -1,12 +1,11 @@
 # coding=utf-8
 from atlassian import Confluence
-#from var import config
 import logging
 from pprint import pprint
 
-CONFLUENCE_URL = config.CONFLUENCE_URL
-CONFLUENCE_LOGIN = config.CONFLUENCE_LOGIN
-CONFLUENCE_PASSWORD = config.CONFLUENCE_PASSWORD
+CONFLUENCE_URL = "http://conlfuence.example.com"
+CONFLUENCE_LOGIN = "gonchik.tsymzhitov"
+CONFLUENCE_PASSWORD = "************"
 
 logging.basicConfig(level=logging.DEBUG)
 

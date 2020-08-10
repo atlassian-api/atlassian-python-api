@@ -2641,8 +2641,10 @@ class Bitbucket(AtlassianRestAPI):
                       apply to (supports * as wildcard).
         :param branch_type: The branch type specifies the branches this restriction
                       should apply to. One of: feature, bugfix, release, hotfix, development, production.
-        :param users: List of user objects that are excluded from the restriction. Minimal: {"username": "<username>"}
-        :param groups: List of group objects that are excluded from the restriction. Minimal: {"owner": {"username": "<teamname>"}, "slug": "<groupslug>"}
+        :param users: List of user objects that are excluded from the restriction.
+                        Minimal: {"username": "<username>"}
+        :param groups: List of group objects that are excluded from the restriction.
+                        Minimal: {"owner": {"username": "<teamname>"}, "slug": "<groupslug>"}
         """
         resource = "repositories/{workspace}/{repository}/branch-restrictions".format(
             workspace=workspace, repository=repository)
