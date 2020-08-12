@@ -1512,6 +1512,43 @@ class Confluence(AtlassianRestAPI):
             raise
         return response
 
+    def get_space_content(self, space_key, depth="all", start=0, limit=500, content_type=None, expand="body.storage"):
+        """
+        Get space content.
+        You can specify which type of content want to recieve, or get all content types. 
+        Use expand to get specific content properties or page
+        :param space_key: The unique space key name
+        :param depth: OPTIONAL: all|root
+                                Gets all space pages or only root pages
+        :param start: OPTIONAL: The start point of the collection to return. Default: 0.
+        :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
+                                fixed system limits. Default: 500
+        :param expand: OPTIONAL: by default expands page body in confluence storage format. 
+                                 See atlassian documentation for more information. 
+        :return: Returns the space along with its ID
+        """
+
+        content_type = "{}".format("/" + content_type if content_type else "")
+        url = 'rest/api/space/{space_key}/content{content_type}'.format(space_key=space_key, content_type=content_type)
+        params = {
+            "depth": depth,
+            "start": start,
+            "limit": limit,
+        }
+        if expand:
+            params["expand"] = expand
+        try:
+            response = self.get(url, params=params)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                # Raise ApiError as the documented reason is ambiguous
+                raise ApiError(
+                    "There is no space with the given key, "
+                    "or the calling user does not have permission to view the space",
+                    reason=e)
+            raise
+        return response
+
     def get_home_page_of_space(self, space_key):
         """
         Get information about a space through space key
