@@ -117,14 +117,18 @@ class Bamboo(AtlassianRestAPI):
         resource = 'planDirectoryInfo/{}'.format(plan_key)
         return self.get(self.resource_url(resource))
 
-    def get_plan(self, plan_key):
+    def get_plan(self, plan_key, expand=None):
         """
         Get plan information.
         :param plan_key:
+        :param expand: optional
         :return:
         """
+        params = {}
+        if expand:
+            params["expand"] = expand
         resource = 'rest/api/latest/plan/{}'.format(plan_key)
-        return self.get(resource)
+        return self.get(resource, params=params)
 
     def delete_plan(self, plan_key):
         """
