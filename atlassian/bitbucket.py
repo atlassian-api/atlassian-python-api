@@ -957,10 +957,10 @@ class Bitbucket(AtlassianRestAPI):
             'reviewers': []
         }
 
-        def add_reviewer(reviewer):
+        def add_reviewer(reviewer_name):
             entry = {
                 'user': {
-                    'name': reviewer
+                    'name': reviewer_name
                 }
             }
             body['reviewers'].append(entry)
