@@ -133,19 +133,19 @@ Or reuse cookie file:
 
     jira = Jira(
         url='http://localhost:8080',
-        cookie=cookie_dict)
+        cookies=cookie_dict)
 
     confluence = Confluence(
         url='http://localhost:8090',
-        cookie=cookie_dict)
+        cookies=cookie_dict)
 
     bitbucket = Bitbucket(
         url='http://localhost:7990',
-        cookie=cookie_dict)
+        cookies=cookie_dict)
 
     service_desk = ServiceDesk(
         url='http://localhost:8080',
-        cookie=cookie_dict)
+        cookies=cookie_dict)
 
 To authenticate to the Atlassian Cloud APIs:
 
