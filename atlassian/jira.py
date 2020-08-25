@@ -1,7 +1,17 @@
 # coding=utf-8
 import logging
 import re
+
+from requests import HTTPError
+
 from .rest_client import AtlassianRestAPI
+from .errors import (
+    ApiError,
+    ApiNotFoundError,
+    ApiPermissionError,
+    ApiValueError,
+    ApiConflictError
+)
 
 log = logging.getLogger(__name__)
 
@@ -1730,11 +1740,26 @@ class Jira(AtlassianRestAPI):
         :return: list
         """
         url = 'rest/api/2/project/{}/issuesecuritylevelscheme'.format(project_id_or_key)
-
-        if only_levels is True:
-            return self.get(url).get('levels')
-        else:
-            return self.get(url)
+        response = None
+        try:
+            response = self.get(url)
+        except HTTPError as e:
+            if e.response.status_code == 401:
+                raise ApiPermissionError(
+                    "Returned if the user is not logged in.",
+                    reason=e)
+            elif e.response.status_code == 403:
+                raise ApiPermissionError(
+                    "Returned if the project is visible for calling user, but the user doesn't have administrative permissions",
+                    reason=e)
+            elif e.response.status_code == 404:
+                raise ApiNotFoundError(
+                    "Returned if the project does not exist, or is not visible to the calling user",
+                    reason=e)
+            raise
+        if only_levels is True and response:
+            return response.get('levels') or None
+        return response
 
     # Priority Schemes
     def get_all_priority_schemes(self, start=0, limit=100, expand=None):

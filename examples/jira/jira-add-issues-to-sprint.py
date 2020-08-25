@@ -9,7 +9,5 @@ jira = Jira(
     username='admin',
     password='admin')
 
-resp = jira.add_issues_to_sprint(
-                                    sprint_id=sprint_id,
-                                    issues=issues_lst
-                                )
+resp = jira.add_issues_to_sprint(sprint_id=sprint_id,
+                                 issues=issues_lst)
