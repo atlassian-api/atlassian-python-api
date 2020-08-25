@@ -7,6 +7,18 @@ log = logging.getLogger(__name__)
 
 
 class Jira(AtlassianRestAPI):
+
+    def get_server_info(self, do_health_check=False):
+        """
+        Returns general information about the current Jira server.
+        with health checks or not.
+        """
+        if do_health_check:
+            check = True
+        else:
+            check = False
+        return self.get('rest/api/2/serverInfo', params={"doHealthCheck": check})
+
     def reindex_status(self):
         return self.get('rest/api/2/reindex')
 
