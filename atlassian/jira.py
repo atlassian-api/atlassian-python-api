@@ -715,6 +715,14 @@ class Jira(AtlassianRestAPI):
             data['description'] = description
         return self.post(url, data=data)
 
+    def get_all_screens(self):
+        """
+        Get all available screens from Jira
+        :return: list of json elements of screen with field id, name. description
+        """
+        url = 'rest/api/2/screens'
+        return self.get(url)
+
     def get_all_available_screen_fields(self, screen_id):
         """
         Get all available fields by screen id
