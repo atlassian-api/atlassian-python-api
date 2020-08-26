@@ -77,6 +77,8 @@ All methods based on docs from: https://developer.atlassian.com/docs/
     - https://developer.atlassian.com/platform/marketplace/rest
 * Crowd:
     - https://developer.atlassian.com/server/crowd/crowd-rest-apis/
+* Xray:
+    - https://docs.getxray.app/display/XRAY/REST+API
 * Others:
     - https://developer.atlassian.com/server/jira/platform/oauth/
     - https://confluence.atlassian.com/cloud/api-tokens-938839638.html
