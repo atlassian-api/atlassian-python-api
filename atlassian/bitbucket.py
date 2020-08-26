@@ -1736,6 +1736,26 @@ class Bitbucket(AtlassianRestAPI):
             body['project'] = {'key': project}
         return self.post(url, data=body)
 
+    def get_users_info(self, user_filter=None, start=0, limit=25):
+        """
+        The authenticated user must have the LICENSED_USER permission to call this resource.
+        :param user_filter: if specified only users with usernames, display name or email addresses
+            containing the supplied string will be returned
+        :param limit:
+        :param start:
+        :return:
+        """
+        params = {}
+        if limit:
+            params['limit'] = limit
+        if start:
+            params['start'] = start
+        if user_filter:
+            params['filter'] = user_filter
+
+        url = "rest/api/1.0/admin/users"
+        return self.get(url, params=params)
+
     def get_current_license(self):
         """
         Retrieves details about the current license, as well as the current status of the system with
