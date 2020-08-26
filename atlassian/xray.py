@@ -122,7 +122,7 @@ class Xray(AtlassianRestAPI):
         :param test_key: Test key (eg. 'TEST-001').
         :param step: Test Step name (eg. 'Example step').
         :param data: Test Step data (eg. 'Example data').
-        :param results: Test Step results (eg. 'Example results').
+        :param result: Test Step results (eg. 'Example results').
         :return: 
         """
         create = {'step': step, 'data': data, 'result': result, 'attachments': []}
@@ -137,7 +137,7 @@ class Xray(AtlassianRestAPI):
         :param test_step_id: ID of the test step.
         :param step: Test Step name (eg. 'Example step').
         :param data: Test Step data (eg. 'Example data').
-        :param results: Test Step results (eg. 'Example results').
+        :param result: Test Step results (eg. 'Example results').
         :return:
         """
         update = {'step': step, 'data': data, 'result': result, 'attachments': {'add': [], 'remove': []}}
@@ -164,14 +164,18 @@ class Xray(AtlassianRestAPI):
         url = 'rest/raven/1.0/api/precondition/{0}/test'.format(precondition_key)
         return self.get(url)
 
-    def update_precondition(self, precondition_key, add=[], remove=[]):
+    def update_precondition(self, precondition_key, add=None, remove=None):
         """
         Associate tests with the given pre-condition.
         :param precondition_key: Precondition key (eg. 'TEST-001').
-        :param add: OPTIONAL List of Test Keys to associate with the pre-condition (eg. ['TEST-002', 'TEST-003'])
-        :param add: OPTIONAL List of Test Keys no longer associate with the pre-condition (eg. ['TEST-004', 'TEST-005'])
+        :param add: OPTIONAL List of Test Keys to associate with the pre-condition (eg. ['TEST-2', 'TEST-3'])
+        :param remove: OPTIONAL List of Test Keys no longer associate with the pre-condition (eg. ['TEST-4', 'TEST-5'])
         :return:
         """
+        if remove is None:
+            remove = []
+        if add is None:
+            add = []
         update = {'add': add, 'remove': remove}
         url = 'rest/raven/1.0/api/precondition/{0}/test'.format(precondition_key)
         return self.post(url, update)
@@ -196,14 +200,18 @@ class Xray(AtlassianRestAPI):
         url = 'rest/raven/1.0/api/testset/{0}/test'.format(test_set_key)
         return self.get(url)
 
-    def update_test_set(self, test_set_key, add=[], remove=[]):
+    def update_test_set(self, test_set_key, add=None, remove=None):
         """
         Associate tests with the given test set.
         :param test_set_key: Test set key (eg. 'SET-001').
         :param add: OPTIONAL List of Test Keys to associate with the test set (eg. ['TEST-002', 'TEST-003'])
-        :param add: OPTIONAL List of Test Keys no longer associate with the test set (eg. ['TEST-004', 'TEST-005'])
+        :param remove: OPTIONAL List of Test Keys no longer associate with the test set (eg. ['TEST-004', 'TEST-005'])
         :return:
         """
+        if add is None:
+            add = []
+        if remove is None:
+            remove = []
         update = {'add': add, 'remove': remove}
         url = 'rest/raven/1.0/api/testset/{0}/test'.format(test_set_key)
         return self.post(url, update)
@@ -228,14 +236,18 @@ class Xray(AtlassianRestAPI):
         url = 'rest/raven/1.0/api/testplan/{0}/test'.format(test_plan_key)
         return self.get(url)
 
-    def update_test_plan(self, test_plan_key, add=[], remove=[]):
+    def update_test_plan(self, test_plan_key, add=None, remove=None):
         """
         Associate tests with the given test plan.
         :param test_plan_key: Test plan key (eg. 'PLAN-001').
         :param add: OPTIONAL List of Test Keys to associate with the test plan (eg. ['TEST-002', 'TEST-003'])
-        :param add: OPTIONAL List of Test Keys no longer associate with the test plan (eg. ['TEST-004', 'TEST-005'])
+        :param remove: OPTIONAL List of Test Keys no longer associate with the test plan (eg. ['TEST-004', 'TEST-005'])
         :return:
         """
+        if add is None:
+            add = []
+        if remove is None:
+            remove = []
         update = {'add': add, 'remove': remove}
         url = 'rest/raven/1.0/api/testplan/{0}/test'.format(test_plan_key)
         return self.post(url, update)
@@ -260,14 +272,18 @@ class Xray(AtlassianRestAPI):
         url = 'rest/raven/1.0/api/testexec/{0}/test'.format(test_exec_key)
         return self.get(url)
 
-    def update_test_execution(self, test_exec_key, add=[], remove=[]):
+    def update_test_execution(self, test_exec_key, add=None, remove=None):
         """
         Associate tests with the given test execution.
         :param test_exec_key: Test execution key (eg. 'EXEC-001').
-        :param add: OPTIONAL List of Test Keys to associate with the test execution (eg. ['TEST-002', 'TEST-003'])
-        :param add: OPTIONAL List of Test Keys no longer associate with the test execution (eg. ['TEST-004', 'TEST-005'])
+        :param add: OPTIONAL List of Test Keys to associate with the test execution (eg. ['TEST-2', 'TEST-3'])
+        :param remove: OPTIONAL List of Test Keys no longer associate with the test execution (eg. ['TEST-4', 'TEST-5'])
         :return:
         """
+        if add is None:
+            add = []
+        if remove is None:
+            remove = []
         update = {'add': add, 'remove': remove}
         url = 'rest/raven/1.0/api/testexec/{0}/test'.format(test_exec_key)
         return self.post(url, update)
@@ -325,7 +341,7 @@ class Xray(AtlassianRestAPI):
         """
         Update the status for the given test run.
         :param test_run_id: ID of the test run (eg. 100).
-        :param assignee: Assignee id (eg. 'PASS')
+        :param status: Status id (eg. 'PASS')
         :return: 
         """
         update = {'status': status}
@@ -341,7 +357,7 @@ class Xray(AtlassianRestAPI):
         url = 'rest/raven/1.0/api/testrun/{0}/defect'.format(test_run_id)
         return self.get(url)
 
-    def update_test_run_defects(self, test_run_id, add=[], remove=[]):
+    def update_test_run_defects(self, test_run_id, add=None, remove=None):
         """
         Update the defects associated with the given test run.
         :param test_run_id: ID of the test run (eg. 100).
@@ -349,6 +365,10 @@ class Xray(AtlassianRestAPI):
         :param remove: OPTIONAL List of defects which no longer need to be associated to the test run (eg. ['BUG-003'])
         :return: 
         """
+        if add is None:
+            add = []
+        if remove is None:
+            remove = []
         update = {'defects': {'add': add, 'remove': remove}}
         url = 'rest/raven/1.0/api/testrun/{0}'.format(test_run_id)
         return self.put(url, update)

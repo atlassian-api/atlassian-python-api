@@ -1750,7 +1750,7 @@ class Jira(AtlassianRestAPI):
                     reason=e)
             elif e.response.status_code == 403:
                 raise ApiPermissionError(
-                    "Returned if the project is visible for calling user, but the user doesn't have administrative permissions",
+                    "User doesn't have administrative permissions",
                     reason=e)
             elif e.response.status_code == 404:
                 raise ApiNotFoundError(
