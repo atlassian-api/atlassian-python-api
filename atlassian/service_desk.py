@@ -432,10 +432,7 @@ class ServiceDesk(AtlassianRestAPI):
         url = 'rest/servicedeskapi/servicedesk/{}/attachTemporaryFile'.format(service_desk_id)
 
         with open(filename, 'rb') as file:
-            headers = {
-                        'X-Atlassian-Token': 'no-check',
-                        'X-ExperimentalApi': 'opt-in'}
-            result = self.post(path=url, headers=headers,
+            result = self.post(path=url, headers=self.experimental_headers_general,
                                files={'file': file}).get('temporaryAttachments')
             temp_attachment_id = result[0].get('temporaryAttachmentId')
 

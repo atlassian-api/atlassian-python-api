@@ -18,6 +18,7 @@ class AtlassianRestAPI(object):
     form_token_headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
                           'X-Atlassian-Token': 'no-check'}
     no_check_headers = {'X-Atlassian-Token': 'no-check'}
+    experimental_headers_general = {'X-Atlassian-Token': 'no-check', 'X-ExperimentalApi': 'opt-in'}
     response = None
 
     def __init__(self, url, username=None, password=None, timeout=60, api_root='rest/api', api_version='latest',
