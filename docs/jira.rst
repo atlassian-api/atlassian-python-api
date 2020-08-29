@@ -116,7 +116,7 @@ Manage projects
     jira.get_project_issues_count(project)
 
     # Get all project issues
-    jira.get_all_project_issues(project, fields='*all')
+    jira.get_all_project_issues(project, fields='*all', start=100, limit=500)
 
     # Get all assignable users for project
     jira.get_all_assignable_users_for_project(project_key, start=0, limit=50)
