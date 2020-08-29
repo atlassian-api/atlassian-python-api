@@ -520,7 +520,7 @@ class Jira(AtlassianRestAPI):
 
     #######################################################################################################
     # Issue
-    # Reference: Returns a list of all dashboards, optionally filtering them.
+    # Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/issue
     #######################################################################################################
     def issue(self, key, fields='*all'):
         return self.get('rest/api/2/issue/{0}?fields={1}'.format(key, fields))
@@ -738,6 +738,10 @@ class Jira(AtlassianRestAPI):
         url = 'sr/jira.issueviews:searchrequest-csv-all-fields/temp/SearchRequest.csv'
         return self.get(url, params=params, not_json_response=True, headers={'Accept': 'application/csv'})
 
+    #######################################################################################################
+    # User
+    # Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/user
+    #######################################################################################################
     def user(self, username=None, key=None, expand=None):
         """
         Returns a user. This resource cannot be accessed anonymously.
