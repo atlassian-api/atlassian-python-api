@@ -1168,9 +1168,9 @@ class Jira(AtlassianRestAPI):
         jql = 'project = "{project}" '.format(project=project)
         return self.jql(jql, fields='*none')['total']
 
-    def get_all_project_issues(self, project, fields='*all'):
+    def get_all_project_issues(self, project, fields='*all', start=0, limit=None):
         jql = 'project = {project} ORDER BY key'.format(project=project)
-        return self.jql(jql, fields=fields)['issues']
+        return self.jql(jql, fields=fields, start=start, limit=limit)['issues']
 
     def get_all_assignable_users_for_project(self, project_key, start=0, limit=50):
         """
