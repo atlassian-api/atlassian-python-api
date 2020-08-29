@@ -310,6 +310,7 @@ class Jira(AtlassianRestAPI):
     # Custom Field
     # Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/customFieldOption
     #            https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/customFields
+    #            https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/field
     #######################################################################################################
     def get_custom_field_option(self, option_id):
         """
@@ -338,9 +339,33 @@ class Jira(AtlassianRestAPI):
             params['maxResults'] = limit
         return self.get(url, params=params)
 
+    def get_all_fields(self):
+        """
+        Returns a list of all fields, both System and Custom
+        :return: application/jsonContains a full representation of all visible fields in JSON.
+        """
+        url = 'rest/api/2/field'
+        return self.get(url)
+
+    def create_custom_field(self, name, type, search_key=None, description=None):
+        """
+        Creates a custom field with the given name and type
+        :param name: str
+        :param type: str, like 'com.atlassian.jira.plugin.system.customfieldtypes:textfield'
+        :param search_key: str, like above
+        :param description: str
+        """
+        url = 'rest/api/2/field'
+        data = {'name': name, 'type': type}
+        if search_key:
+            data['search_key'] = search_key
+        if description:
+            data['description'] = description
+        return self.post(url, data=data)
+
     #######################################################################################################
     # Dashboards
-    # Reference: Returns a list of all dashboards, optionally filtering them.
+    # Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/dashboard
     #######################################################################################################
     def get_dashboards(self, filter='', start=0, limit=10):
         """
@@ -366,6 +391,245 @@ class Jira(AtlassianRestAPI):
             params['maxResults'] = limit
         url = 'rest/api/2/dashboard'
         return self.get(url, params=params)
+
+    #######################################################################################################
+    # Filters. Resource for searches
+    # Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/filter
+    #######################################################################################################
+    def create_filter(self, name, jql, description=None, favourite=False):
+        """
+        :param name: str
+        :param jql: str
+        :param description: str, Optional. Empty string by default
+        :param favourite: bool, Optional. False by default
+        """
+        data = {'jql': jql, 'name': name, 'description': description if description else '',
+                'favourite': 'true' if favourite else 'false'}
+        url = 'rest/api/2/filter'
+        return self.post(url, data=data)
+
+    #######################################################################################################
+    # Group.
+    # Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/group
+    #            https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/groups
+    #######################################################################################################
+    def get_groups(self, query=None, exclude=None, limit=20):
+        """
+        REST endpoint for searching groups in a group picker
+        Returns groups with substrings matching a given query. This is mainly for use with the group picker,
+        so the returned groups contain html to be used as picker suggestions. The groups are also wrapped
+        in a single response object that also contains a header for use in the picker,
+        specifically Showing X of Y matching groups.
+        The number of groups returned is limited by the system property "jira.ajax.autocomplete.limit"
+        The groups will be unique and sorted.
+        :param query: str
+        :param exclude: str
+        :param limit: int
+        :return: Returned even if no groups match the given substring
+        """
+        url = 'rest/api/2/groups/picker'
+        params = {}
+        if query:
+            params['query'] = query
+        else:
+            params['query'] = ''
+        if exclude:
+            params['exclude'] = exclude
+        if limit:
+            params['maxResults'] = limit
+        return self.get(url, params=params)
+
+    def create_group(self, name):
+        """
+        Create a group by given group parameter
+
+        :param name: str
+        :return: New group params
+        """
+        url = 'rest/api/2/group'
+        data = {'name': name}
+
+        return self.post(url, data=data)
+
+    def remove_group(self, name, swap_group=None):
+        """
+        Delete a group by given group parameter
+        If you delete a group and content is restricted to that group, the content will be hidden from all users
+        To prevent this, use this parameter to specify a different group to transfer the restrictions
+        (comments and worklogs only) to
+
+        :param name: str
+        :param swap_group: str
+        :return:
+        """
+        log.warning('Removing group...')
+        url = 'rest/api/2/group'
+        if swap_group is not None:
+            params = {'groupname': name, 'swapGroup': swap_group}
+        else:
+            params = {'groupname': name}
+
+        return self.delete(url, params=params)
+
+    def get_all_users_from_group(self, group, include_inactive_users=False, start=0, limit=50):
+        """
+        Just wrapping method user group members
+        :param group:
+        :param include_inactive_users:
+        :param start: OPTIONAL: The start point of the collection to return. Default: 0.
+        :param limit: OPTIONAL: The limit of the number of users to return, this may be restricted by
+                fixed system limits. Default by built-in method: 50
+        :return:
+        """
+        url = 'rest/api/2/group/member'
+        params = {}
+        if group:
+            params['groupname'] = group
+        params['includeInactiveUsers'] = include_inactive_users
+        params['startAt'] = start
+        params['maxResults'] = limit
+        return self.get(url, params=params)
+
+    def add_user_to_group(self, username, group_name):
+        """
+        Add given user to a group
+
+        :param username: str
+        :param group_name: str
+        :return: Current state of the group
+        """
+        url = 'rest/api/2/group/user'
+        params = {'groupname': group_name}
+        data = {'name': username}
+
+        return self.post(url, params=params, data=data)
+
+    def remove_user_from_group(self, username, group_name):
+        """
+        Remove given user from a group
+
+        :param username: str
+        :param group_name: str
+        :return:
+        """
+        log.warning('Removing user from a group...')
+        url = 'rest/api/2/group/user'
+        params = {'groupname': group_name, 'username': username}
+
+        return self.delete(url, params=params)
+
+    #######################################################################################################
+    # Issue
+    # Reference: Returns a list of all dashboards, optionally filtering them.
+    #######################################################################################################
+    def issue(self, key, fields='*all'):
+        return self.get('rest/api/2/issue/{0}?fields={1}'.format(key, fields))
+
+    def get_issue(self, issue_id_or_key, fields=None, properties=None, update_history=True):
+        """
+        Returns a full representation of the issue for the given issue key
+        By default, all fields are returned in this get-issue resource
+
+        :param issue_id_or_key: str
+        :param fields: str
+        :param properties: str
+        :param update_history: bool
+        :return: issue
+        """
+        url = 'rest/api/2/issue/{}'.format(issue_id_or_key)
+        params = {}
+
+        if fields is not None:
+            if isinstance(fields, (list, tuple, set)):
+                fields = ','.join(fields)
+            params['fields'] = fields
+        if properties is not None:
+            params['properties'] = properties
+        if update_history is True:
+            params['updateHistory'] = 'true'
+        if update_history is False:
+            params['updateHistory'] = 'false'
+
+        return self.get(url, params=params)
+
+    def bulk_issue(self, issue_list, fields='*all'):
+        """
+        :param fields:
+        :param list issue_list:
+        :return:
+        """
+        jira_issue_regex = re.compile(r'[A-Z]{1,10}-\d+')
+        missing_issues = list()
+        matched_issue_keys = list()
+        for key in issue_list:
+            if re.match(jira_issue_regex, key):
+                matched_issue_keys.append(key)
+        jql = 'key in ({})'.format(', '.join(set(matched_issue_keys)))
+        query_result = self.jql(jql, fields=fields)
+        if 'errorMessages' in query_result.keys():
+            for message in query_result['errorMessages']:
+                for key in issue_list:
+                    if key in message:
+                        missing_issues.append(key)
+                        issue_list.remove(key)
+            query_result, missing_issues = self.bulk_issue(issue_list, fields)
+        return query_result, missing_issues
+
+    def get_issue_changelog(self, issue_key):
+        """
+        Get issue related change log
+        :param issue_key:
+        :return:
+        """
+        url = 'rest/api/2/issue/{}?expand=changelog'.format(issue_key)
+        return (self.get(url) or {}).get('changelog')
+
+    def issue_add_json_worklog(self, key, worklog):
+        """
+
+        :param key:
+        :param worklog:
+        :return:
+        """
+        url = 'rest/api/2/issue/{}/worklog'.format(key)
+        return self.post(url, data=worklog)
+
+    def issue_worklog(self, key, started, time_sec, comment=None):
+        """
+        :param key:
+        :param time_sec: int: second
+        :param started:
+        :param comment:
+        :return:
+        """
+        data = {
+            "started": started,
+            "timeSpentSeconds": time_sec
+        }
+        if comment:
+            data['comment'] = comment
+        return self.issue_add_json_worklog(key=key, worklog=data)
+
+    def issue_get_worklog(self, issue_id_or_key):
+        """
+        Returns all work logs for an issue.
+        Note: Work logs won't be returned if the Log work field is hidden for the project.
+        :param issue_id_or_key:
+        :return:
+        """
+        url = "rest/api/2/issue/{issueIdOrKey}/worklog".format(issueIdOrKey=issue_id_or_key)
+        return self.get(url)
+
+    def issue_field_value(self, key, field):
+        issue = self.get('rest/api/2/issue/{0}?fields={1}'.format(key, field))
+        return issue['fields'][field]
+
+    def issue_fields(self, key):
+        issue = self.get('rest/api/2/issue/{0}'.format(key))
+        return issue['fields']
+
+    def update_issue_field(self, key, fields='*all'):
+        return self.put('rest/api/2/issue/{0}'.format(key), data={'fields': fields})
 
     def add_attachment(self, issue_key, filename):
         """
@@ -938,131 +1202,6 @@ class Jira(AtlassianRestAPI):
         }
         return self.post('rest/api/2/issuetype', data=data)
 
-    def issue(self, key, fields='*all'):
-        return self.get('rest/api/2/issue/{0}?fields={1}'.format(key, fields))
-
-    def get_issue(self, issue_id_or_key, fields=None, properties=None, update_history=True):
-        """
-        Returns a full representation of the issue for the given issue key
-        By default, all fields are returned in this get-issue resource
-
-        :param issue_id_or_key: str
-        :param fields: str
-        :param properties: str
-        :param update_history: bool
-        :return: issue
-        """
-        url = 'rest/api/2/issue/{}'.format(issue_id_or_key)
-        params = {}
-
-        if fields is not None:
-            if isinstance(fields, (list, tuple, set)):
-                fields = ','.join(fields)
-            params['fields'] = fields
-        if properties is not None:
-            params['properties'] = properties
-        if update_history is True:
-            params['updateHistory'] = 'true'
-        if update_history is False:
-            params['updateHistory'] = 'false'
-
-        return self.get(url, params=params)
-
-    def bulk_issue(self, issue_list, fields='*all'):
-        """
-        :param fields:
-        :param list issue_list:
-        :return:
-        """
-        jira_issue_regex = re.compile(r'[A-Z]{1,10}-\d+')
-        missing_issues = list()
-        matched_issue_keys = list()
-        for key in issue_list:
-            if re.match(jira_issue_regex, key):
-                matched_issue_keys.append(key)
-        jql = 'key in ({})'.format(', '.join(set(matched_issue_keys)))
-        query_result = self.jql(jql, fields=fields)
-        if 'errorMessages' in query_result.keys():
-            for message in query_result['errorMessages']:
-                for key in issue_list:
-                    if key in message:
-                        missing_issues.append(key)
-                        issue_list.remove(key)
-            query_result, missing_issues = self.bulk_issue(issue_list, fields)
-        return query_result, missing_issues
-
-    def get_issue_changelog(self, issue_key):
-        """
-        Get issue related change log
-        :param issue_key:
-        :return:
-        """
-        url = 'rest/api/2/issue/{}?expand=changelog'.format(issue_key)
-        return (self.get(url) or {}).get('changelog')
-
-    def issue_add_json_worklog(self, key, worklog):
-        """
-
-        :param key:
-        :param worklog:
-        :return:
-        """
-        url = 'rest/api/2/issue/{}/worklog'.format(key)
-        return self.post(url, data=worklog)
-
-    def issue_worklog(self, key, started, time_sec, comment=None):
-        """
-        :param key:
-        :param time_sec: int: second
-        :param started:
-        :param comment:
-        :return:
-        """
-        data = {
-            "started": started,
-            "timeSpentSeconds": time_sec
-        }
-        if comment:
-            data['comment'] = comment
-        return self.issue_add_json_worklog(key=key, worklog=data)
-
-    def issue_get_worklog(self, issue_id_or_key):
-        """
-        Returns all work logs for an issue.
-        Note: Work logs won't be returned if the Log work field is hidden for the project.
-        :param issue_id_or_key:
-        :return:
-        """
-        url = "rest/api/2/issue/{issueIdOrKey}/worklog".format(issueIdOrKey=issue_id_or_key)
-        return self.get(url)
-
-    def issue_field_value(self, key, field):
-        issue = self.get('rest/api/2/issue/{0}?fields={1}'.format(key, field))
-        return issue['fields'][field]
-
-    def issue_fields(self, key):
-        issue = self.get('rest/api/2/issue/{0}'.format(key))
-        return issue['fields']
-
-    def update_issue_field(self, key, fields='*all'):
-        return self.put('rest/api/2/issue/{0}'.format(key), data={'fields': fields})
-
-    def create_custom_field(self, name, type, search_key=None, description=None):
-        """
-        Creates a custom field with the given name and type
-        :param name: str
-        :param type: str, like 'com.atlassian.jira.plugin.system.customfieldtypes:textfield'
-        :param search_key: str, like above
-        :param description: str
-        """
-        url = 'rest/api/2/field'
-        data = {'name': name, 'type': type}
-        if search_key:
-            data['search_key'] = search_key
-        if description:
-            data['description'] = description
-        return self.post(url, data=data)
-
     def get_all_screens(self):
         """
         Get all available screens from Jira
@@ -1122,14 +1261,6 @@ class Jira(AtlassianRestAPI):
         """
         url = 'rest/api/2/issue/{issue_key}?fields=labels'.format(issue_key=issue_key)
         return (self.get(url) or {}).get('fields').get('labels')
-
-    def get_all_fields(self):
-        """
-        Returns a list of all fields, both System and Custom
-        :return: application/jsonContains a full representation of all visible fields in JSON.
-        """
-        url = 'rest/api/2/field'
-        return self.get(url)
 
     def get_all_custom_fields(self):
         """
@@ -1204,111 +1335,6 @@ class Jira(AtlassianRestAPI):
         if username:
             url += '&username={username}'.format(username=username)
         return self.get(url)
-
-    def get_groups(self, query=None, exclude=None, limit=20):
-        """
-        REST endpoint for searching groups in a group picker
-        Returns groups with substrings matching a given query. This is mainly for use with the group picker,
-        so the returned groups contain html to be used as picker suggestions. The groups are also wrapped
-        in a single response object that also contains a header for use in the picker,
-        specifically Showing X of Y matching groups.
-        The number of groups returned is limited by the system property "jira.ajax.autocomplete.limit"
-        The groups will be unique and sorted.
-        :param query: str
-        :param exclude: str
-        :param limit: int
-        :return: Returned even if no groups match the given substring
-        """
-        url = 'rest/api/2/groups/picker'
-        params = {}
-        if query:
-            params['query'] = query
-        else:
-            params['query'] = ''
-        if exclude:
-            params['exclude'] = exclude
-        if limit:
-            params['maxResults'] = limit
-        return self.get(url, params=params)
-
-    def create_group(self, name):
-        """
-        Create a group by given group parameter
-
-        :param name: str
-        :return: New group params
-        """
-        url = 'rest/api/2/group'
-        data = {'name': name}
-
-        return self.post(url, data=data)
-
-    def remove_group(self, name, swap_group=None):
-        """
-        Delete a group by given group parameter
-        If you delete a group and content is restricted to that group, the content will be hidden from all users
-        To prevent this, use this parameter to specify a different group to transfer the restrictions
-        (comments and worklogs only) to
-
-        :param name: str
-        :param swap_group: str
-        :return:
-        """
-        log.warning('Removing group...')
-        url = 'rest/api/2/group'
-        if swap_group is not None:
-            params = {'groupname': name, 'swapGroup': swap_group}
-        else:
-            params = {'groupname': name}
-
-        return self.delete(url, params=params)
-
-    def get_all_users_from_group(self, group, include_inactive_users=False, start=0, limit=50):
-        """
-        Just wrapping method user group members
-        :param group:
-        :param include_inactive_users:
-        :param start: OPTIONAL: The start point of the collection to return. Default: 0.
-        :param limit: OPTIONAL: The limit of the number of users to return, this may be restricted by
-                fixed system limits. Default by built-in method: 50
-        :return:
-        """
-        url = 'rest/api/2/group/member'
-        params = {}
-        if group:
-            params['groupname'] = group
-        params['includeInactiveUsers'] = include_inactive_users
-        params['startAt'] = start
-        params['maxResults'] = limit
-        return self.get(url, params=params)
-
-    def add_user_to_group(self, username, group_name):
-        """
-        Add given user to a group
-
-        :param username: str
-        :param group_name: str
-        :return: Current state of the group
-        """
-        url = 'rest/api/2/group/user'
-        params = {'groupname': group_name}
-        data = {'name': username}
-
-        return self.post(url, params=params, data=data)
-
-    def remove_user_from_group(self, username, group_name):
-        """
-        Remove given user from a group
-
-        :param username: str
-        :param group_name: str
-        :return:
-        """
-        log.warning('Removing user from a group...')
-        url = 'rest/api/2/group/user'
-        params = {'groupname': group_name, 'username': username}
-
-        return self.delete(url, params=params)
 
     def issue_exists(self, issue_key):
         original_value = self.advanced_mode
@@ -1758,18 +1784,6 @@ class Jira(AtlassianRestAPI):
         """
         url = 'rest/api/2/issueLink/{}'.format(link_id)
         return self.get(url)
-
-    def create_filter(self, name, jql, description=None, favourite=False):
-        """
-        :param name: str
-        :param jql: str
-        :param description: str, Optional. Empty string by default
-        :param favourite: bool, Optional. False by default
-        """
-        data = {'jql': jql, 'name': name, 'description': description if description else '',
-                'favourite': 'true' if favourite else 'false'}
-        url = 'rest/api/2/filter'
-        return self.post(url, data=data)
 
     def get_resolution_by_id(self, resolution_id):
         """
