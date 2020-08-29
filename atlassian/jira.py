@@ -18,6 +18,368 @@ log = logging.getLogger(__name__)
 
 class Jira(AtlassianRestAPI):
 
+    #######################################################################################################
+    # Provide permission information for the current user.
+    # Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2
+    #######################################################################################################
+    def get_permissions(self, project_id=None, project_key=None, issue_id=None, issue_key=None):
+        """
+        Returns all permissions in the system and whether the currently logged in user has them.
+        You can optionally provide a specific context
+        to get permissions for (projectKey OR projectId OR issueKey OR issueId)
+        When no context supplied the project related permissions will return true
+        if the user has that permission in ANY project
+        If a project context is provided, project related permissions will return true
+        if the user has the permissions in the specified project.
+        For permissions that are determined using issue data (e.g Current Assignee), true will be returned
+        if the user meets the permission criteria in ANY issue in that project If an issue context is provided,
+        it will return whether or not the user has each permission in that specific issue
+        NB: The above means that for issue-level permissions (EDIT_ISSUE for example),
+        hasPermission may be true when no context is provided, or when a project context is provided,
+        but may be false for any given (or all) issues. This would occur (for example)
+        if Reporters were given the EDIT_ISSUE permission.
+        This is because any user could be a reporter,
+        except in the context of a concrete issue, where the reporter is known.
+
+        Global permissions will still be returned for all scopes.
+
+        Prior to version 6.4 this service returned project permissions with keys corresponding to
+        com.atlassian.jira.security.Permissions.Permission constants.
+        Since 6.4 those keys are considered deprecated and this service returns system project permission keys
+        corresponding to constants defined in com.atlassian.jira.permission.ProjectPermissions.
+        Permissions with legacy keys are still also returned for backwards compatibility,
+        they are marked with an attribute deprecatedKey=true.
+        The attribute is missing for project permissions with the current keys.
+
+        :param project_id: (str)  id of project to scope returned permissions for.
+        :param project_key: (str) key of project to scope returned permissions for.
+        :param issue_id: (str)  key of the issue to scope returned permissions for.
+        :param issue_key: (str) id of the issue to scope returned permissions for.
+        :return:
+        """
+        url = 'rest/api/2/mypermissions'
+        params = {}
+
+        if project_id:
+            params['projectId'] = project_id
+        if project_key:
+            params['projectKey'] = project_key
+        if issue_id:
+            params['issueId'] = issue_id
+        if issue_key:
+            params['issueKey'] = issue_key
+
+        return self.get(url, params=params)
+
+    def get_all_permissions(self):
+        """
+        Returns all permissions that are present in the Jira instance -
+        Global, Project and the global ones added by plugins
+        :return: All permissions
+        """
+        url = 'rest/api/2/permissions'
+        return self.get(url)
+
+    #######################################################################################################
+    # Application properties
+    # Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/application-properties
+    #######################################################################################################
+    def get_property(self, key=None, permission_level=None, key_filter=None):
+        """
+        Returns an application property
+        :param key: str
+        :param permission_level: str
+        :param key_filter: str
+        :return: list or item
+        """
+        url = 'rest/api/2/application-properties'
+        params = {}
+
+        if key:
+            params['key'] = key
+        if permission_level:
+            params['permissionLevel'] = permission_level
+        if key_filter:
+            params['keyFilter'] = key_filter
+
+        return self.get(url, params=params)
+
+    def set_property(self, property_id, value):
+        """
+        Modify an application property via PUT. The "value" field present in the PUT will override the existing value.
+        :param property_id:
+        :param value:
+        :return:
+        """
+        url = 'rest/api/2/application-properties/{}'.format(property_id)
+        data = {'id': property_id, 'value': value}
+
+        return self.put(url, data=data)
+
+    def get_advanced_settings(self):
+        """
+        Returns the properties that are displayed on the "General Configuration > Advanced Settings" page
+        :return:
+        """
+        url = 'rest/api/2/application-properties/advanced-settings'
+
+        return self.get(url)
+
+    #######################################################################################################
+    # Application roles. Provides REST access to JIRA's Application Roles.
+    # Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/applicationrole
+    #######################################################################################################
+    def get_all_application_roles(self):
+        """
+        Returns all ApplicationRoles in the system
+        :return:
+        """
+        url = 'rest/api/2/applicationrole'
+        return self.get(url) or {}
+
+    def get_application_role(self, role_key):
+        """
+        Returns the ApplicationRole with passed key if it exists
+        :param role_key: str
+        :return:
+        """
+        url = 'rest/api/2/applicationrole/{}'.format(role_key)
+        return self.get(url) or {}
+
+    #######################################################################################################
+    # Attachments
+    # Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/attachment
+    #######################################################################################################
+    def get_attachment(self, attachment_id):
+        """
+        Returns the meta-data for an attachment, including the URI of the actual attached file
+        :param attachment_id: int
+        :return:
+        """
+        url = 'rest/api/2/attachment/{}'.format(attachment_id)
+        return self.get(url)
+
+    def remove_attachment(self, attachment_id):
+        """
+        Remove an attachment from an issue
+        :param attachment_id: int
+        :return: if success, return None
+        """
+        url = 'rest/api/2/attachment/{}'.format(attachment_id)
+        return self.delete(url)
+
+    def get_attachment_meta(self):
+        """
+        Returns the meta information for an attachments,
+        specifically if they are enabled and the maximum upload size allowed
+        :return:
+        """
+        url = 'rest/api/2/attachment/meta'
+        return self.get(url)
+
+    #######################################################################################################
+    # Audit Records. Resource representing the auditing records
+    # Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/auditing
+    #######################################################################################################
+    def get_audit_records(self, offset=None, limit=None, filter=None, from_date=None, to_date=None):
+        """
+        Returns auditing records filtered using provided parameters
+        :param offset: the number of record from which search starts
+        :param limit: maximum number of returned results (if is limit is <= 0 or > 1000,
+                      it will be set do default value: 1000)
+        :param filter:	string = text query; each record that will be returned
+                        must contain the provided text in one of its fields
+        :param from_date: string	 - timestamp in past; 'from' must be less or equal 'to',
+                             otherwise the result set will be empty only records that
+                             where created in the same moment or after the 'from' timestamp will be provided in response
+        :param to_date: string	- timestamp in past; 'from' must be less or equal 'to',
+                              otherwise the result set will be empty only records that
+                              where created in the same moment or earlier than the 'to'
+                              timestamp will be provided in response
+        :return:
+        """
+        params = {}
+        if offset:
+            params["offset"] = offset
+        if limit:
+            params["limit"] = limit
+        if filter:
+            params["filter"] = filter
+        if from_date:
+            params["from"] = from_date
+        if to_date:
+            params["to"] = to_date
+        url = "rest/api/2/auditing/record"
+        return self.get(url, params=params) or {}
+
+    def post_audit_record(self, audit_record):
+        """
+        Store a record in Audit Log
+        :param audit_record: json with compat https://docs.atlassian.com/jira/REST/schema/audit-record#
+        :return:
+        """
+        url = "rest/api/2/auditing/record"
+        return self.post(url, data=audit_record)
+
+    #######################################################################################################
+    # Avatar
+    # Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/avatar
+    #######################################################################################################
+    def get_all_system_avatars(self, avatar_type='user'):
+        """
+        Returns all system avatars of the given type.
+        :param avatar_type:
+        :return: Returns a map containing a list of system avatars.
+                 A map is returned to be consistent with the shape of the project/KEY/avatars REST end point.
+        """
+        url = 'rest/api/2/avatar/{type}/system'.format(type=avatar_type)
+        return self.get(url)
+
+    #######################################################################################################
+    # Cluster. (Available for DC) It gives possibility to manage old node in cluster.
+    # Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/cluster
+    #######################################################################################################
+    def get_cluster_all_nodes(self):
+        url = 'rest/api/2/cluster/nodes'
+        return self.get(url)
+
+    #######################################################################################################
+    # ZDU (Zero Downtime upgrade) module. (Available for DC)
+    # Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/cluster/zdu
+    #######################################################################################################
+    def get_cluster_zdu_state(self):
+        url = 'rest/api/2/cluster/zdu/state'
+        return self.get(url)
+
+    #######################################################################################################
+    # Comments properties
+    # Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/comment/{commentId}/properties
+    #######################################################################################################
+    def get_comment_properties_keys(self, comment_id):
+        """
+        Returns the keys of all properties for the comment identified by the key or by the id.
+        :param comment_id:
+        :return:
+        """
+        url = 'rest/api/2/comment/{commentId}/properties'.format(commentId=comment_id)
+        return self.get(url)
+
+    #######################################################################################################
+    # Component
+    # Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/component
+    #######################################################################################################
+    def component(self, component_id):
+        return self.get('rest/api/2/component/{component_id}'.format(component_id=component_id))
+
+    def get_component_related_issues(self, component_id):
+        """
+        Returns counts of issues related to this component.
+        :param component_id:
+        :return:
+        """
+        url = 'rest/api/2/component/{component_id}/relatedIssueCounts'.format(component_id=component_id)
+        return self.get(url)
+
+    def create_component(self, component):
+        log.warning('Creating component "{name}"'.format(name=component['name']))
+        url = 'rest/api/2/component/'
+        return self.post(url, data=component)
+
+    def delete_component(self, component_id):
+        log.warning('Deleting component "{component_id}"'.format(component_id=component_id))
+        return self.delete('rest/api/2/component/{component_id}'.format(component_id=component_id))
+
+    def update_component_lead(self, component_id, lead):
+        data = {'id': component_id, 'leadUserName': lead}
+        return self.put('rest/api/2/component/{component_id}'.format(component_id=component_id), data=data)
+
+    #######################################################################################################
+    # Configurations of Jira
+    # Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/configuration
+    #######################################################################################################
+    def get_configurations_of_jira(self):
+        """
+        Returns the information if the optional features in JIRA are enabled or disabled.
+        If the time tracking is enabled, it also returns the detailed information about time tracking configuration.
+        :return:
+        """
+        url = 'rest/api/2/configuration'
+        return self.get(url)
+
+    #######################################################################################################
+    # Custom Field
+    # Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/customFieldOption
+    #            https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/customFields
+    #######################################################################################################
+    def get_custom_field_option(self, option_id):
+        """
+        Returns a full representation of the Custom Field Option that has the given id.
+        :param option_id:
+        :return:
+        """
+        url = 'rest/api/2/customFieldOption/{id}'.format(id=option_id)
+        return self.get(url)
+
+    def get_custom_fields(self, search=None, start=1, limit=50):
+        """
+        Get custom fields. Evaluated on 7.12
+        :param search: str
+        :param start: long Default: 1
+        :param limit: int Default: 50
+        :return:
+        """
+        url = 'rest/api/2/customFields'
+        params = {}
+        if search:
+            params['search'] = search
+        if start:
+            params['startAt'] = start
+        if limit:
+            params['maxResults'] = limit
+        return self.get(url, params=params)
+
+    #######################################################################################################
+    # Dashboards
+    # Reference: Returns a list of all dashboards, optionally filtering them.
+    #######################################################################################################
+    def get_dashboards(self, filter='', start=0, limit=10):
+        """
+        Returns a list of all dashboards, optionally filtering them.
+        :param filter: OPTIONAL: an optional filter that is applied to the list of dashboards.
+                                Valid values include "favourite" for returning only favourite dashboards,
+                                and "my" for returning dashboards that are owned by the calling user.
+        :param start: the index of the first dashboard to return (0-based). must be 0 or a multiple of maxResults
+        :param limit: a hint as to the the maximum number of dashboards to return in each call.
+                      Note that the JIRA server reserves the right to impose a maxResults limit that is lower
+                      than the value that a client provides, dues to lack or resources or any other condition.
+                      When this happens, your results will be truncated.
+                      Callers should always check the returned maxResults to determine
+                      the value that is effectively being used.
+        :return:
+        """
+        params = {}
+        if filter:
+            params['filter'] = filter
+        if start:
+            params['startAt'] = start
+        if limit:
+            params['maxResults'] = limit
+        url = 'rest/api/2/dashboard'
+        return self.get(url, params=params)
+
+    def add_attachment(self, issue_key, filename):
+        """
+        Add attachment to Issue
+        :param issue_key: str
+        :param filename: str, name, if file in current directory or full path to file
+        """
+        log.warning('Adding attachment...')
+        headers = {'X-Atlassian-Token': 'no-check'}
+        url = 'rest/api/2/issue/{}/attachments'.format(issue_key)
+        with open(filename, 'rb') as attachment:
+            files = {'file': attachment}
+            return self.post(url, headers=headers, files=files)
+
     def get_server_info(self, do_health_check=False):
         """
         Returns general information about the current Jira server.
@@ -358,24 +720,6 @@ class Jira(AtlassianRestAPI):
         }
         return self.post('rest/api/2/user/application', params=params) is None
 
-    # Application roles
-    def get_all_application_roles(self):
-        """
-        Returns all ApplicationRoles in the system
-        :return:
-        """
-        url = 'rest/api/2/applicationrole'
-        return self.get(url) or {}
-
-    def get_application_role(self, role_key):
-        """
-        Returns the ApplicationRole with passed key if it exists
-        :param role_key: str
-        :return:
-        """
-        url = 'rest/api/2/applicationrole/{}'.format(role_key)
-        return self.get(url) or {}
-
     def projects(self, included_archived=None):
         """Returns all projects which are visible for the currently logged in user.
         If no user is logged in, it returns the list of projects that are visible when using anonymous access.
@@ -702,24 +1046,6 @@ class Jira(AtlassianRestAPI):
 
     def update_issue_field(self, key, fields='*all'):
         return self.put('rest/api/2/issue/{0}'.format(key), data={'fields': fields})
-
-    def get_custom_fields(self, search=None, start=1, limit=50):
-        """
-        Get custom fields. Evaluated on 7.12
-        :param search: str
-        :param start: long Default: 1
-        :param limit: int Default: 50
-        :return:
-        """
-        url = 'rest/api/2/customFields'
-        params = {}
-        if search:
-            params['search'] = search
-        if start:
-            params['startAt'] = start
-        if limit:
-            params['maxResults'] = limit
-        return self.get(url, params=params)
 
     def create_custom_field(self, name, type, search_key=None, description=None):
         """
@@ -1166,47 +1492,6 @@ class Jira(AtlassianRestAPI):
             data['visibility'] = visibility
         return self.put(url, data=data)
 
-    # Attachments
-    def get_attachment(self, attachment_id):
-        """
-        Returns the meta-data for an attachment, including the URI of the actual attached file
-        :param attachment_id: int
-        :return:
-        """
-        url = 'rest/api/2/attachment/{}'.format(attachment_id)
-        return self.get(url)
-
-    def remove_attachment(self, attachment_id):
-        """
-        Remove an attachment from an issue
-        :param attachment_id: int
-        :return: if success, return None
-        """
-        url = 'rest/api/2/attachment/{}'.format(attachment_id)
-        return self.delete(url)
-
-    def get_attachment_meta(self):
-        """
-        Returns the meta information for an attachments,
-        specifically if they are enabled and the maximum upload size allowed
-        :return:
-        """
-        url = 'rest/api/2/attachment/meta'
-        return self.get(url)
-
-    def add_attachment(self, issue_key, filename):
-        """
-        Add attachment to Issue
-        :param issue_key: str
-        :param filename: str, name, if file in current directory or full path to file
-        """
-        log.warning('Adding attachment...')
-        headers = {'X-Atlassian-Token': 'no-check'}
-        url = 'rest/api/2/issue/{}/attachments'.format(issue_key)
-        with open(filename, 'rb') as attachment:
-            files = {'file': attachment}
-            return self.post(url, headers=headers, files=files)
-
     def get_issue_remotelinks(self, issue_key, global_id=None, internal_id=None):
         """
         Compatibility naming method with get_issue_remote_links()
@@ -1486,31 +1771,6 @@ class Jira(AtlassianRestAPI):
         url = 'rest/api/2/filter'
         return self.post(url, data=data)
 
-    def component(self, component_id):
-        return self.get('rest/api/2/component/{component_id}'.format(component_id=component_id))
-
-    def get_component_related_issues(self, component_id):
-        """
-        Returns counts of issues related to this component.
-        :param component_id:
-        :return:
-        """
-        url = 'rest/api/2/component/{component_id}/relatedIssueCounts'.format(component_id=component_id)
-        return self.get(url)
-
-    def create_component(self, component):
-        log.warning('Creating component "{name}"'.format(name=component['name']))
-        url = 'rest/api/2/component/'
-        return self.post(url, data=component)
-
-    def delete_component(self, component_id):
-        log.warning('Deleting component "{component_id}"'.format(component_id=component_id))
-        return self.delete('rest/api/2/component/{component_id}'.format(component_id=component_id))
-
-    def update_component_lead(self, component_id, lead):
-        data = {'id': component_id, 'leadUserName': lead}
-        return self.put('rest/api/2/component/{component_id}'.format(component_id=component_id), data=data)
-
     def get_resolution_by_id(self, resolution_id):
         """
         Get Resolution info by id
@@ -1608,42 +1868,6 @@ class Jira(AtlassianRestAPI):
         }
         url = 'rest/plugins/latest/safe-mode'
         return self.request(method='GET', path=url, headers=headers)
-
-    # API/2 Get permissions
-    def get_permissions(self, project_id=None, project_key=None, issue_id=None, issue_key=None):
-        """
-        Returns all permissions in the system and whether the currently logged in user has them.
-        You can optionally provide a specific context
-        to get permissions for (projectKey OR projectId OR issueKey OR issueId)
-
-        :param project_id: str
-        :param project_key: str
-        :param issue_id: str
-        :param issue_key: str
-        :return:
-        """
-        url = 'rest/api/2/mypermissions'
-        params = {}
-
-        if project_id:
-            params['projectId'] = project_id
-        if project_key:
-            params['projectKey'] = project_key
-        if issue_id:
-            params['issueId'] = issue_id
-        if issue_key:
-            params['issueKey'] = issue_key
-
-        return self.get(url, params=params)
-
-    def get_all_permissions(self):
-        """
-        Returns all permissions that are present in the Jira instance -
-        Global, Project and the global ones added by plugins
-        :return: All permissions
-        """
-        url = 'rest/api/2/permissions'
-        return self.get(url)
 
     def get_all_permissionschemes(self, expand=None):
         """
@@ -1831,43 +2055,6 @@ class Jira(AtlassianRestAPI):
         url = "rest/api/2/project/{projectKeyOrId}/priorityscheme".format(projectKeyOrId=project_key_or_id)
         data = {"id": priority_scheme_id}
         return self.put(url, data=data)
-
-    # Application properties
-    def get_property(self, key=None, permission_level=None, key_filter=None):
-        """
-        Returns an application property
-
-        :param key: str
-        :param permission_level: str
-        :param key_filter: str
-        :return: list or item
-        """
-        url = 'rest/api/2/application-properties'
-        params = {}
-
-        if key:
-            params['key'] = key
-        if permission_level:
-            params['permissionLevel'] = permission_level
-        if key_filter:
-            params['keyFilter'] = key_filter
-
-        return self.get(url, params=params)
-
-    def set_property(self, property_id, value):
-        url = 'rest/api/2/application-properties/{}'.format(property_id)
-        data = {'id': property_id, 'value': value}
-
-        return self.put(url, data=data)
-
-    def get_advanced_settings(self):
-        """
-        Returns the properties that are displayed on the "General Configuration > Advanced Settings" page
-        :return:
-        """
-        url = 'rest/api/2/application-properties/advanced-settings'
-
-        return self.get(url)
 
     """
     #######################################################################
@@ -2690,44 +2877,3 @@ class Jira(AtlassianRestAPI):
             # check as support tools
             response = self.get('rest/supportHealthCheck/1.0/check/')
         return response
-
-    # Audit Records
-    def get_audit_records(self, offset=None, limit=None, filter=None, from_date=None, to_date=None):
-        """
-        Returns auditing records filtered using provided parameters
-        :param offset: the number of record from which search starts
-        :param limit: maximum number of returned results (if is limit is <= 0 or > 1000,
-                      it will be set do default value: 1000)
-        :param filter:	string = text query; each record that will be returned
-                        must contain the provided text in one of its fields
-        :param from_date: string	 - timestamp in past; 'from' must be less or equal 'to',
-                             otherwise the result set will be empty only records that
-                             where created in the same moment or after the 'from' timestamp will be provided in response
-        :param to_date: string	- timestamp in past; 'from' must be less or equal 'to',
-                              otherwise the result set will be empty only records that
-                              where created in the same moment or earlier than the 'to'
-                              timestamp will be provided in response
-        :return:
-        """
-        params = {}
-        if offset:
-            params["offset"] = offset
-        if limit:
-            params["limit"] = limit
-        if filter:
-            params["filter"] = filter
-        if from_date:
-            params["from"] = from_date
-        if to_date:
-            params["to"] = to_date
-        url = "rest/api/2/auditing/record"
-        return self.get(url, params=params) or {}
-
-    def post_audit_record(self, audit_record):
-        """
-        Store a record in Audit Log
-        :param audit_record: json with compat https://docs.atlassian.com/jira/REST/schema/audit-record#
-        :return:
-        """
-        url = "rest/api/2/auditing/record"
-        return self.post(url, data=audit_record)
