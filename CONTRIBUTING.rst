@@ -32,6 +32,29 @@ Mandatory conditions
 
 Please follow the code style in the docs.
 
+
+Before you raise a PR
+---------------------
+
+Create the **Commit Header** with the relevant Service Name pre-fixed, examples below,
+
+* Jira: review user module           :heavy_check_mark:
+* [JIRA] Issues Move to Sprint       :heavy_check_mark:
+* Confluence: update_page_property method     :heavy_check_mark:
+
+An example of a commit message header,
+
+* Addition of parameters for start & limit in the function of `get_all_project_issues`      :x:
+
+could be better written as,
+
+* [JIRA] Project Issues parameter addition for start and limit      :heavy_check_mark:
+
+with the commit body have a detail about where/what changes introduced.
+
+This will help the reviewer or log-viewers to better identify what a particular commit is for.
+
+
 Using your changes before they’re live
 --------------------------------------
 
