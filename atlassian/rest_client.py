@@ -18,6 +18,8 @@ class AtlassianRestAPI(object):
     form_token_headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
                           'X-Atlassian-Token': 'no-check'}
     no_check_headers = {'X-Atlassian-Token': 'no-check'}
+    safe_mode_headers = {'X-Atlassian-Token': 'nocheck',
+                         'Content-Type': 'application/vnd.atl.plugins.safe.mode.flag+json'}
     experimental_headers_general = {'X-Atlassian-Token': 'no-check', 'X-ExperimentalApi': 'opt-in'}
     response = None
 

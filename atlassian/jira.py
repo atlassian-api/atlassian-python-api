@@ -638,11 +638,10 @@ class Jira(AtlassianRestAPI):
         :param filename: str, name, if file in current directory or full path to file
         """
         log.warning('Adding attachment...')
-        headers = {'X-Atlassian-Token': 'no-check'}
         url = 'rest/api/2/issue/{}/attachments'.format(issue_key)
         with open(filename, 'rb') as attachment:
             files = {'file': attachment}
-            return self.post(url, headers=headers, files=files)
+            return self.post(url, headers=self.no_check_headers, files=files)
 
     def get_server_info(self, do_health_check=False):
         """
@@ -872,7 +871,6 @@ class Jira(AtlassianRestAPI):
     def user_get_websudo(self):
         """ Get web sudo cookies using normal http request"""
         url = 'secure/admin/WebSudoAuthenticate.jspa'
-        headers = self.form_token_headers
         data = {
             'webSudoPassword': self.password,
             'webSudoIsPost': 'false',
@@ -886,7 +884,7 @@ class Jira(AtlassianRestAPI):
         if atl_token:
             data['atl_token'] = atl_token
 
-        return self.post(path=url, data=data, headers=headers)
+        return self.post(path=url, data=data, headers=self.form_token_headers)
 
     def invalidate_websudo(self):
         """
@@ -1843,12 +1841,8 @@ class Jira(AtlassianRestAPI):
         return self.delete(url)
 
     def check_plugin_manager_status(self):
-        headers = {
-            'X-Atlassian-Token': 'nocheck',
-            'Content-Type': 'application/vnd.atl.plugins.safe.mode.flag+json'
-        }
         url = 'rest/plugins/latest/safe-mode'
-        return self.request(method='GET', path=url, headers=headers)
+        return self.request(method='GET', path=url, headers=self.safe_mode_headers)
 
     def get_all_permissionschemes(self, expand=None):
         """
