@@ -655,51 +655,6 @@ class Jira(AtlassianRestAPI):
             check = False
         return self.get('rest/api/2/serverInfo', params={"doHealthCheck": check})
 
-    def reindex_status(self):
-        return self.get('rest/api/2/reindex')
-
-    def reindex(self, comments=True, change_history=True, worklogs=True):
-        """
-        Reindex the Jira instance
-        Kicks off a reindex. Need Admin permissions to perform this reindex.
-        :param comments: Indicates that comments should also be reindexed. Not relevant for foreground reindex,
-        where comments are always reindexed.
-        :param change_history: Indicates that changeHistory should also be reindexed.
-        Not relevant for foreground reindex, where changeHistory is always reindexed.
-        :param worklogs: Indicates that changeHistory should also be reindexed.
-        Not relevant for foreground reindex, where changeHistory is always reindexed.
-        :return:
-        """
-        params = {}
-        if not comments:
-            params['indexComments'] = comments
-        if not change_history:
-            params['indexChangeHistory'] = change_history
-        if not worklogs:
-            params['indexWorklogs'] = worklogs
-        return self.post('rest/api/2/reindex', params=params)
-
-    def reindex_with_type(self, indexing_type="BACKGROUND_PREFERRED"):
-        """
-        Reindex the Jira instance
-        Type of re-indexing available:
-        FOREGROUND - runs a lock/full reindexing
-        BACKGROUND - runs a background reindexing.
-                   If Jira fails to finish the background reindexing, respond with 409 Conflict (error message).
-        BACKGROUND_PREFERRED  - If possible do a background reindexing.
-                   If it's not possible (due to an inconsistent index), do a foreground reindexing.
-        :param indexing_type: OPTIONAL: The default value for the type is BACKGROUND_PREFFERED
-        :return:
-        """
-        return self.post('rest/api/2/reindex?type={}'.format(indexing_type))
-
-    def reindex_project(self, project_key):
-        return self.post('secure/admin/IndexProject.jspa', data='confirmed=true&key={}'.format(project_key),
-                         headers=self.form_token_headers)
-
-    def reindex_issue(self, list_of_):
-        pass
-
     def jql(self, jql, fields='*all', start=0, limit=None, expand=None):
         """
         Get issues from jql search result with all related fields
@@ -1671,6 +1626,61 @@ class Jira(AtlassianRestAPI):
         url = 'rest/api/2/issue/{issue_key}?fields=status'.format(issue_key=issue_key)
         return (self.get(url) or {}).get('fields').get('status').get('id')
 
+    #######################################################################################################
+    # The Link Issue Resource provides functionality to manage issue links.
+    # Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/issueLink
+    #######################################################################################################
+    def create_issue_link(self, data):
+        """
+        Creates an issue link between two issues.
+        The user requires the link issue permission for the issue which will be linked to another issue.
+        The specified link type in the request is used to create the link and will create a link from
+        the first issue to the second issue using the outward description. It also create a link from
+        the second issue to the first issue using the inward description of the issue link type.
+        It will add the supplied comment to the first issue. The comment can have a restriction who can view it.
+        If group is specified, only users of this group can view this comment, if roleLevel is specified only users
+        who have the specified role can view this comment.
+        The user who creates the issue link needs to belong to the specified group or have the specified role.
+        :param data: i.e.
+        {
+            "type": {"name": "Duplicate" },
+            "inwardIssue": { "key": "HSP-1"},
+            "outwardIssue": {"key": "MKY-1"},
+            "comment": { "body": "Linked related issue!",
+                         "visibility": { "type": "group", "value": "jira-software-users" }
+            }
+        }
+        :return:
+        """
+        log.info(
+            'Linking issue {inward} and {outward}'.format(inward=data['inwardIssue'], outward=data['outwardIssue']))
+        url = 'rest/api/2/issueLink'
+        return self.post(url, data=data)
+
+    def get_issue_link(self, link_id):
+        """
+        Returns an issue link with the specified id.
+        :param link_id: the issue link id.
+        :return:
+        """
+        url = 'rest/api/2/issueLink/{}'.format(link_id)
+        return self.get(url)
+
+    def remove_issue_link(self, link_id):
+        """
+        Deletes an issue link with the specified id.
+        To be able to delete an issue link you must be able to view both issues
+        and must have the link issue permission for at least one of the issues.
+        :param link_id: the issue link id.
+        :return:
+        """
+        url = 'rest/api/2/issueLink/{}'.format(link_id)
+        return self.delete(url)
+
+    #######################################################################################################
+    # Rest resource to retrieve a list of issue link types.
+    # Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/issueLinkType
+    #######################################################################################################
     def get_issue_link_types(self):
         """Returns a list of available issue link types,
         if issue linking is enabled.
@@ -1741,53 +1751,6 @@ class Jira(AtlassianRestAPI):
         """
         url = 'rest/api/2/issueLinkType/{issueLinkTypeId}'.format(issueLinkTypeId=issue_link_type_id)
         return self.put(url, data=data)
-
-    def create_issue_link(self, data):
-        """
-        Creates an issue link between two issues.
-        The user requires the link issue permission for the issue which will be linked to another issue.
-        The specified link type in the request is used to create the link and will create a link from
-        the first issue to the second issue using the outward description. It also create a link from
-        the second issue to the first issue using the inward description of the issue link type.
-        It will add the supplied comment to the first issue. The comment can have a restriction who can view it.
-        If group is specified, only users of this group can view this comment, if roleLevel is specified only users
-        who have the specified role can view this comment.
-        The user who creates the issue link needs to belong to the specified group or have the specified role.
-        :param data: i.e.
-        {
-            "type": {"name": "Duplicate" },
-            "inwardIssue": { "key": "HSP-1"},
-            "outwardIssue": {"key": "MKY-1"},
-            "comment": { "body": "Linked related issue!",
-                         "visibility": { "type": "group", "value": "jira-software-users" }
-            }
-        }
-        :return:
-        """
-        log.info(
-            'Linking issue {inward} and {outward}'.format(inward=data['inwardIssue'], outward=data['outwardIssue']))
-        url = 'rest/api/2/issueLink'
-        return self.post(url, data=data)
-
-    def remove_issue_link(self, link_id):
-        """
-        Deletes an issue link with the specified id.
-        To be able to delete an issue link you must be able to view both issues
-        and must have the link issue permission for at least one of the issues.
-        :param link_id: the issue link id.
-        :return:
-        """
-        url = 'rest/api/2/issueLink/{}'.format(link_id)
-        return self.delete(url)
-
-    def get_issue_link(self, link_id):
-        """
-        Returns an issue link with the specified id.
-        :param link_id: the issue link id.
-        :return:
-        """
-        url = 'rest/api/2/issueLink/{}'.format(link_id)
-        return self.get(url)
 
     def get_resolution_by_id(self, resolution_id):
         """
@@ -1941,6 +1904,12 @@ class Jira(AtlassianRestAPI):
 
         return self.post(url, data=new_permission)
 
+    #######################################################################################################
+    # REST resource that allows to view security schemes defined in the product.
+    # Resource for managing priority schemes.
+    # Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/issuesecurityschemes
+    #            https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/priorityschemes
+    #######################################################################################################
     def get_issue_security_schemes(self):
         """
         Returns all issue security schemes that are defined
@@ -2003,7 +1972,6 @@ class Jira(AtlassianRestAPI):
             return response.get('levels') or None
         return response
 
-    # Priority Schemes
     def get_all_priority_schemes(self, start=0, limit=100, expand=None):
         """
         Returns all priority schemes.
@@ -2042,8 +2010,11 @@ class Jira(AtlassianRestAPI):
         """
         return self.post(path="rest/api/2/priorityschemes", data=data)
 
-    # api/2/project/{projectKeyOrId}/priorityscheme
+    #######################################################################################################
     # Resource for associating priority schemes and projects.
+    # Reference:
+    # https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/project/{projectKeyOrId}/priorityscheme
+    #######################################################################################################
     def get_priority_scheme_of_project(self, project_key_or_id, expand=None):
         """
         Gets a full representation of a priority scheme in JSON format used by specified project.
@@ -2074,12 +2045,128 @@ class Jira(AtlassianRestAPI):
         data = {"id": priority_scheme_id}
         return self.put(url, data=data)
 
-    """
-    #######################################################################
-    #                   Tempo Account REST API implements                 #
-    #######################################################################
-    """
+    #######################################################################################################
+    # Provide security level information of the given project for the current user.
+    # Reference:
+    # https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/project/{projectKeyOrId}/securitylevel
+    #######################################################################################################
+    def get_security_level_for_project(self, project_key_or_id):
+        """
+        Returns all security levels for the project that the current logged in user has access to.
+        If the user does not have the Set Issue Security permission, the list will be empty.
+        :param project_key_or_id:
+        :return: Returns a list of all security levels in a project for which the current user has access.
+        """
+        url = 'rest/api/2/project/{projectKeyOrId}/securitylevel'.format(projectKeyOrId=project_key_or_id)
+        return self.get(url)
 
+    #######################################################################################################
+    # Provide project type
+    # Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/project/type
+    #######################################################################################################
+    def get_all_project_types(self):
+        """
+        Returns all the project types defined on the Jira instance,
+        not taking into account whether the license to use those project types is valid or not.
+        :return: Returns a list with all the project types defined on the Jira instance.
+        """
+        url = 'rest/api/2/project/type'
+        return self.get(url)
+
+    #######################################################################################################
+    # Provide project categories
+    # Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/projectCategory
+    #######################################################################################################
+    def get_all_project_categories(self):
+        """
+        Returns all project categories
+        :return: Returns a list of project categories.
+        """
+        url = 'rest/api/2/projectCategory'
+        return self.get(url)
+
+    #######################################################################################################
+    # Project validates
+    # Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/projectvalidate
+    #######################################################################################################
+    def get_project_validated_key(self, key):
+        """
+        Validates a project key.
+        :param key: the project key
+        :return:
+        """
+        params = {'key': key}
+        url = 'rest/api/2/projectvalidate/key'
+        return self.get(url, params=params)
+
+    #######################################################################################################
+    # REST resource for starting/stopping/querying indexing.
+    # Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/reindex
+    #######################################################################################################
+    def reindex(self, comments=True, change_history=True, worklogs=True, indexing_type="BACKGROUND_PREFERRED"):
+        """
+        Reindex the Jira instance
+        Kicks off a reindex. Need Admin permissions to perform this reindex.
+        Type of re-indexing available:
+        FOREGROUND - runs a lock/full reindexing
+        BACKGROUND - runs a background reindexing.
+                   If Jira fails to finish the background reindexing, respond with 409 Conflict (error message).
+        BACKGROUND_PREFERRED  - If possible do a background reindexing.
+                   If it's not possible (due to an inconsistent index), do a foreground reindexing.
+        :param comments: Indicates that comments should also be reindexed. Not relevant for foreground reindex,
+        where comments are always reindexed.
+        :param change_history: Indicates that changeHistory should also be reindexed.
+        Not relevant for foreground reindex, where changeHistory is always reindexed.
+        :param worklogs: Indicates that changeHistory should also be reindexed.
+        Not relevant for foreground reindex, where changeHistory is always reindexed.
+        :param indexing_type: OPTIONAL: The default value for the type is BACKGROUND_PREFFERED
+        :return:
+        """
+        params = {}
+        if not comments:
+            params['indexComments'] = comments
+        if not change_history:
+            params['indexChangeHistory'] = change_history
+        if not worklogs:
+            params['indexWorklogs'] = worklogs
+        if not indexing_type:
+            params['type'] = indexing_type
+        return self.post('rest/api/2/reindex', params=params)
+
+    def reindex_with_type(self, indexing_type="BACKGROUND_PREFERRED"):
+        """
+        Reindex the Jira instance
+        Type of re-indexing available:
+        FOREGROUND - runs a lock/full reindexing
+        BACKGROUND - runs a background reindexing.
+                   If Jira fails to finish the background reindexing, respond with 409 Conflict (error message).
+        BACKGROUND_PREFERRED  - If possible do a background reindexing.
+                   If it's not possible (due to an inconsistent index), do a foreground reindexing.
+        :param indexing_type: OPTIONAL: The default value for the type is BACKGROUND_PREFFERED
+        :return:
+        """
+        return self.reindex(indexing_type=indexing_type)
+
+    def reindex_status(self):
+        """
+        Returns information on the system reindexes.
+        If a reindex is currently taking place then information about this reindex is returned.
+        If there is no active index task, then returns information about the latest reindex task run,
+        otherwise returns a 404 indicating that no reindex has taken place.
+        :return:
+        """
+        return self.get('rest/api/2/reindex')
+
+    def reindex_project(self, project_key):
+        return self.post('secure/admin/IndexProject.jspa', data='confirmed=true&key={}'.format(project_key),
+                         headers=self.form_token_headers)
+
+    def reindex_issue(self, list_of_):
+        pass
+
+    #######################################################################
+    #                   Tempo Account REST API implements
+    #######################################################################
     def tempo_account_get_accounts(self, skip_archived=None, expand=None):
         """
         Get all Accounts that the logged in user has permission to browse.
@@ -2602,12 +2689,9 @@ class Jira(AtlassianRestAPI):
     def tempo_teams_get_memberships_for_member(self, username):
         return self.get('rest/tempo-teams/2/user/{}/memberships'.format(username))
 
-    """
     #######################################################################
-    #   Agile(Formerly Greenhopper) REST API implements                  #
+    #   Agile(Formerly Greenhopper) REST API implements
     #######################################################################
-    """
-
     def get_all_agile_boards(self, board_name=None, project_key=None, board_type=None, start=0, limit=50):
         """
         Returns all boards. This only includes boards that the user has permission to view.
