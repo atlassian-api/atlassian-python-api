@@ -631,6 +631,15 @@ class Jira(AtlassianRestAPI):
     def update_issue_field(self, key, fields='*all'):
         return self.put('rest/api/2/issue/{0}'.format(key), data={'fields': fields})
 
+    def get_issue_labels(self, issue_key):
+        """
+        Get issue labels.
+        :param issue_key:
+        :return:
+        """
+        url = 'rest/api/2/issue/{issue_key}?fields=labels'.format(issue_key=issue_key)
+        return (self.get(url) or {}).get('fields').get('labels')
+
     def add_attachment(self, issue_key, filename):
         """
         Add attachment to Issue
@@ -643,6 +652,324 @@ class Jira(AtlassianRestAPI):
             files = {'file': attachment}
             return self.post(url, headers=self.no_check_headers, files=files)
 
+    def issue_exists(self, issue_key):
+        original_value = self.advanced_mode
+        self.advanced_mode = True
+        try:
+            resp = self.issue(issue_key, fields="*none")
+            if resp.status_code == 404:
+                log.info(
+                    'Issue "{issue_key}" does not exists'.format(issue_key=issue_key)
+                )
+                return False
+            resp.raise_for_status()
+            log.info('Issue "{issue_key}" exists'.format(issue_key=issue_key))
+            return True
+        finally:
+            self.advanced_mode = original_value
+
+    def issue_deleted(self, issue_key):
+        exists = self.issue_exists(issue_key)
+        if exists:
+            log.info('Issue "{issue_key}" is not deleted'.format(issue_key=issue_key))
+        else:
+            log.info('Issue "{issue_key}" is deleted'.format(issue_key=issue_key))
+        return not exists
+
+    def delete_issue(self, issue_id_or_key, delete_subtasks=True):
+        """
+        Delete an issue
+        If the issue has subtasks you must set the parameter delete_subtasks = True to delete the issue
+        You cannot delete an issue without its subtasks also being deleted
+        :param issue_id_or_key:
+        :param delete_subtasks:
+        :return:
+        """
+        url = 'rest/api/2/issue/{}'.format(issue_id_or_key)
+        params = {}
+
+        if delete_subtasks is True:
+            params['deleteSubtasks'] = 'true'
+        else:
+            params['deleteSubtasks'] = 'false'
+
+        log.warning('Removing issue {}...'.format(issue_id_or_key))
+
+        return self.delete(url, params=params)
+
+    # @todo merge with edit_issue method
+    def issue_update(self, issue_key, fields):
+        log.warning('Updating issue "{issue_key}" with "{fields}"'.format(issue_key=issue_key, fields=fields))
+        url = 'rest/api/2/issue/{0}'.format(issue_key)
+        return self.put(url, data={'fields': fields})
+
+    def edit_issue(self, issue_id_or_key, fields, notify_users=True):
+        """
+        Edits an issue from a JSON representation
+        The issue can either be updated by setting explicit the field
+        value(s) or by using an operation to change the field value
+
+        :param issue_id_or_key: str
+        :param fields: JSON
+        :param notify_users: bool
+        :return:
+        """
+        url = 'rest/api/2/issue/{}'.format(issue_id_or_key)
+        params = {}
+        data = {'update': fields}
+
+        if notify_users is True:
+            params['notifyUsers'] = 'true'
+        else:
+            params['notifyUsers'] = 'false'
+        return self.put(url, data=data, params=params)
+
+    def issue_add_watcher(self, issue_key, user):
+        """
+        Start watching issue
+        :param issue_key:
+        :param user:
+        :return:
+        """
+        log.warning('Adding user {user} to "{issue_key}" watchers'.format(issue_key=issue_key, user=user))
+        data = user
+        return self.post('rest/api/2/issue/{issue_key}/watchers'.format(issue_key=issue_key), data=data)
+
+    def assign_issue(self, issue, assignee=None):
+        """Assign an issue to a user. None will set it to unassigned. -1 will set it to Automatic.
+        :param issue: the issue ID or key to assign
+        :type issue: int or str
+        :param assignee: the user to assign the issue to
+        :type assignee: str
+        :rtype: bool
+        """
+        url = 'rest/api/2/issue/{issue}/assignee'.format(issue=issue)
+        data = {'name': assignee}
+
+        return self.put(url, data=data)
+
+    def create_issue(self, fields, update_history=False):
+        """
+        Creates an issue or a sub-task from a JSON representation
+        :param fields: JSON data
+                mandatory keys are issuetype, summary and project
+        :param update_history: bool (if true then the user's project history is updated)
+        :return:
+            example:
+                fields = dict(summary='Into The Night',
+                              project = dict(key='APA'),
+                              issuetype = dict(name='Story')
+                              )
+                jira.create_issue(fields=fields)
+        """
+        url = 'rest/api/2/issue'
+        data = {'fields': fields}
+        params = {}
+
+        if update_history is True:
+            params['updateHistory'] = 'true'
+        else:
+            params['updateHistory'] = 'false'
+        return self.post(url, params=params, data=data)
+
+    def create_issues(self, list_of_issues_data):
+        """
+        Creates issues or sub-tasks from a JSON representation
+        Creates many issues in one bulk operation
+        :param list_of_issues_data: list of JSON data
+        :return:
+        """
+        url = 'rest/api/2/issue/bulk'
+        data = {'issueUpdates': list_of_issues_data}
+        return self.post(url, data=data)
+
+    # @todo refactor and merge with create_issue method
+    def issue_create(self, fields):
+        log.warning('Creating issue "{summary}"'.format(summary=fields['summary']))
+        url = 'rest/api/2/issue'
+        return self.post(url, data={'fields': fields})
+
+    def issue_create_or_update(self, fields):
+        issue_key = fields.get('issuekey', None)
+
+        if not issue_key or not self.issue_exists(issue_key):
+            log.info('IssueKey is not provided or does not exists in destination. Will attempt to create an issue')
+            fields.pop("issuekey", None)
+            return self.issue_create(fields)
+
+        if self.issue_deleted(issue_key):
+            log.warning('Issue "{issue_key}" deleted, skipping'.format(issue_key=issue_key))
+            return None
+
+        log.info('Issue "{issue_key}" exists, will update'.format(issue_key=issue_key))
+        fields.pop("issuekey", None)
+        return self.issue_update(issue_key, fields)
+
+    def issue_add_comment(self, issue_key, comment, visibility=None):
+        """
+        Add comment into Jira issue
+        :param issue_key:
+        :param comment:
+        :param visibility: OPTIONAL
+        :return:
+        """
+        url = 'rest/api/2/issue/{issueIdOrKey}/comment'.format(issueIdOrKey=issue_key)
+        data = {'body': comment}
+        if visibility:
+            data['visibility'] = visibility
+        return self.post(url, data=data)
+
+    def issue_edit_comment(self, issue_key, comment_id, comment, visibility=None):
+        """
+        Updates an existing comment
+        :param issue_key: str
+        :param comment_id: int
+        :param comment: str
+        :param visibility: OPTIONAL
+        :return:
+        """
+        url = 'rest/api/2/issue/{}/comment/{}'.format(issue_key, comment_id)
+        data = {'body': comment}
+        if visibility:
+            data['visibility'] = visibility
+        return self.put(url, data=data)
+
+    def get_issue_remotelinks(self, issue_key, global_id=None, internal_id=None):
+        """
+        Compatibility naming method with get_issue_remote_links()
+        """
+        return self.get_issue_remote_links(issue_key, global_id, internal_id)
+
+    def get_issue_remote_links(self, issue_key, global_id=None, internal_id=None):
+        """
+        Finding all Remote Links on an issue, also with filtering by Global ID and internal ID
+        :param issue_key:
+        :param global_id: str
+        :param internal_id: str
+        :return:
+        """
+        url = 'rest/api/2/issue/{issue_key}/remotelink'.format(issue_key=issue_key)
+        params = {}
+        if global_id:
+            params['globalId'] = global_id
+        if internal_id:
+            url += '/' + internal_id
+        return self.get(url, params=params)
+
+    def create_or_update_issue_remote_links(self, issue_key, link_url, title, global_id=None, relationship=None):
+        """
+        Add Remote Link to Issue, update url if global_id is passed
+        :param issue_key: str
+        :param link_url: str
+        :param title: str
+        :param global_id: str, OPTIONAL:
+        :param relationship: str, OPTIONAL: Default by built-in method: 'Web Link'
+        """
+        url = 'rest/api/2/issue/{issue_key}/remotelink'.format(issue_key=issue_key)
+        data = {'object': {'url': link_url, 'title': title}}
+        if global_id:
+            data['globalId'] = global_id
+        if relationship:
+            data['relationship'] = relationship
+        return self.post(url, data=data)
+
+    def get_issue_remote_link_by_id(self, issue_key, link_id):
+        url = 'rest/api/2/issue/{issue_key}/remotelink/{link_id}'.format(issue_key=issue_key, link_id=link_id)
+        return self.get(url)
+
+    def update_issue_remote_link_by_id(self, issue_key, link_id, url, title, global_id=None, relationship=None):
+        """
+        Update existing Remote Link on Issue
+        :param issue_key: str
+        :param link_id: str
+        :param url: str
+        :param title: str
+        :param global_id: str, OPTIONAL:
+        :param relationship: str, Optional. Default by built-in method: 'Web Link'
+
+        """
+        data = {'object': {'url': url, 'title': title}}
+        if global_id:
+            data['globalId'] = global_id
+        if relationship:
+            data['relationship'] = relationship
+        url = 'rest/api/2/issue/{issue_key}/remotelink/{link_id}'.format(issue_key=issue_key, link_id=link_id)
+        return self.put(url, data=data)
+
+    def delete_issue_remote_link_by_id(self, issue_key, link_id):
+        """
+        Deletes Remote Link on Issue
+        :param issue_key: str
+        :param link_id: str
+        """
+        url = 'rest/api/2/issue/{issue_key}/remotelink/{link_id}'.format(issue_key=issue_key, link_id=link_id)
+        return self.delete(url)
+
+    def get_issue_transitions(self, issue_key):
+        if self.advanced_mode:
+            return [{'name': transition['name'], 'id': int(transition['id']), 'to': transition['to']['name']}
+                    for transition in (self.get_issue_transitions_full(issue_key).json() or {}).get('transitions')]
+        else:
+            return [{'name': transition['name'], 'id': int(transition['id']), 'to': transition['to']['name']}
+                    for transition in (self.get_issue_transitions_full(issue_key) or {}).get('transitions')]
+
+    def issue_transition(self, issue_key, status):
+        return self.set_issue_status(issue_key, status)
+
+    def set_issue_status(self, issue_key, status_name, fields=None):
+        """
+        Setting status by status_name. fields defaults to None for transitions without mandatory fields.
+        If there are mandatary fields for the transition, these can be set using a dict.
+        Example:
+            jira.set_issue_status('MY-123','Resolved',{'myfield': 'myvalue'})
+        :param issue_key: str
+        :param status_name: str
+        :param fields: dict, optional
+        """
+        url = 'rest/api/2/issue/{issue_key}/transitions'.format(issue_key=issue_key)
+        transition_id = self.get_transition_id_to_status_name(issue_key, status_name)
+        data = {'transition': {'id': transition_id}}
+        if fields is not None:
+            data['fields'] = fields
+        return self.post(url, data=data)
+
+    def set_issue_status_by_transition_id(self, issue_key, transition_id):
+        """
+        Setting status by transition_id
+        :param issue_key: str
+        :param transition_id: int
+        """
+        url = 'rest/api/2/issue/{issue_key}/transitions'.format(issue_key=issue_key)
+        return self.post(url, data={'transition': {'id': transition_id}})
+
+    def get_issue_status(self, issue_key):
+        url = 'rest/api/2/issue/{issue_key}?fields=status'.format(issue_key=issue_key)
+        return (((self.get(url) or {}).get('fields') or {}).get('status') or {}).get('name') or {}
+
+    def get_issue_status_id(self, issue_key):
+        url = 'rest/api/2/issue/{issue_key}?fields=status'.format(issue_key=issue_key)
+        return (self.get(url) or {}).get('fields').get('status').get('id')
+
+    def get_issue_transitions_full(self, issue_key, transition_id=None, expand=None):
+        """
+        Get a list of the transitions possible for this issue by the current user,
+        along with fields that are required and their types.
+        Fields will only be returned if expand = 'transitions.fields'.
+        The fields in the metadata correspond to the fields in the transition screen for that transition.
+        Fields not in the screen will not be in the metadata.
+        :param issue_key: str
+        :param transition_id: str
+        :param expand: str
+        :return:
+        """
+        url = 'rest/api/2/issue/{issue_key}/transitions'.format(issue_key=issue_key)
+        params = {}
+        if transition_id:
+            params['transitionId'] = transition_id
+        if expand:
+            params['expand'] = expand
+        return self.get(url, params=params)
+
     def get_server_info(self, do_health_check=False):
         """
         Returns general information about the current Jira server.
@@ -653,44 +980,6 @@ class Jira(AtlassianRestAPI):
         else:
             check = False
         return self.get('rest/api/2/serverInfo', params={"doHealthCheck": check})
-
-    def jql(self, jql, fields='*all', start=0, limit=None, expand=None):
-        """
-        Get issues from jql search result with all related fields
-        :param jql:
-        :param fields: list of fields, for example: ['priority', 'summary', 'customfield_10007']
-        :param start: OPTIONAL: The start point of the collection to return. Default: 0.
-        :param limit: OPTIONAL: The limit of the number of issues to return, this may be restricted by
-                fixed system limits. Default by built-in method: 50
-        :param expand: OPTIONAL: expand the search result
-        :return:
-        """
-        params = {}
-        if start is not None:
-            params['startAt'] = int(start)
-        if limit is not None:
-            params['maxResults'] = int(limit)
-        if fields is not None:
-            if isinstance(fields, (list, tuple, set)):
-                fields = ','.join(fields)
-            params['fields'] = fields
-        if jql is not None:
-            params['jql'] = jql
-        if expand is not None:
-            params['expand'] = expand
-        return self.get('rest/api/2/search', params=params)
-
-    def csv(self, jql, limit=1000):
-        """
-        Get issues from jql search result with all related fields
-        :param jql: JQL query
-        :param limit: max results in the output file
-        :return: CSV file
-        """
-        params = {'tempMax': limit,
-                  'jqlQuery': jql}
-        url = 'sr/jira.issueviews:searchrequest-csv-all-fields/temp/SearchRequest.csv'
-        return self.get(url, params=params, not_json_response=True, headers={'Accept': 'application/csv'})
 
     #######################################################################################################
     # User
@@ -1159,66 +1448,6 @@ class Jira(AtlassianRestAPI):
         }
         return self.post('rest/api/2/issuetype', data=data)
 
-    def get_all_screens(self):
-        """
-        Get all available screens from Jira
-        :return: list of json elements of screen with field id, name. description
-        """
-        url = 'rest/api/2/screens'
-        return self.get(url)
-
-    def get_all_available_screen_fields(self, screen_id):
-        """
-        Get all available fields by screen id
-        :param screen_id:
-        :return:
-        """
-        url = 'rest/api/2/screens/{}/availableFields'.format(screen_id)
-        return self.get(url)
-
-    def get_screen_tabs(self, screen_id):
-        """
-        Get tabs for the screen id
-        :param screen_id:
-        :return:
-        """
-        url = 'rest/api/2/screens/{}/tabs'.format(screen_id)
-        return self.get(url)
-
-    def get_screen_tab_fields(self, screen_id, tab_id):
-        """
-        Get fields by the tab id and the screen id
-        :param tab_id:
-        :param screen_id:
-        :return:
-        """
-        url = 'rest/api/2/screens/{}/tabs/{}/fields'.format(screen_id, tab_id)
-        return self.get(url)
-
-    def get_all_screen_fields(self, screen_id):
-        """
-        Get all fields by screen id
-        :param screen_id:
-        :return:
-        """
-        screen_tabs = self.get_screen_tabs(screen_id)
-        fields = []
-        for screen_tab in screen_tabs:
-            tab_id = screen_tab['id']
-            if tab_id:
-                tab_fields = self.get_screen_tab_fields(screen_id=screen_id, tab_id=tab_id)
-                fields = fields + tab_fields
-        return fields
-
-    def get_issue_labels(self, issue_key):
-        """
-        Get issue labels.
-        :param issue_key:
-        :return:
-        """
-        url = 'rest/api/2/issue/{issue_key}?fields=labels'.format(issue_key=issue_key)
-        return (self.get(url) or {}).get('fields').get('labels')
-
     def get_all_custom_fields(self):
         """
         Returns a list of all custom fields
@@ -1293,287 +1522,6 @@ class Jira(AtlassianRestAPI):
             url += '&username={username}'.format(username=username)
         return self.get(url)
 
-    def issue_exists(self, issue_key):
-        original_value = self.advanced_mode
-        self.advanced_mode = True
-        try:
-            resp = self.issue(issue_key, fields="*none")
-            if resp.status_code == 404:
-                log.info(
-                    'Issue "{issue_key}" does not exists'.format(issue_key=issue_key)
-                )
-                return False
-            resp.raise_for_status()
-            log.info('Issue "{issue_key}" exists'.format(issue_key=issue_key))
-            return True
-        finally:
-            self.advanced_mode = original_value
-
-    def issue_deleted(self, issue_key):
-        exists = self.issue_exists(issue_key)
-        if exists:
-            log.info('Issue "{issue_key}" is not deleted'.format(issue_key=issue_key))
-        else:
-            log.info('Issue "{issue_key}" is deleted'.format(issue_key=issue_key))
-        return not exists
-
-    def delete_issue(self, issue_id_or_key, delete_subtasks=True):
-        """
-        Delete an issue
-        If the issue has subtasks you must set the parameter delete_subtasks = True to delete the issue
-        You cannot delete an issue without its subtasks also being deleted
-        :param issue_id_or_key:
-        :param delete_subtasks:
-        :return:
-        """
-        url = 'rest/api/2/issue/{}'.format(issue_id_or_key)
-        params = {}
-
-        if delete_subtasks is True:
-            params['deleteSubtasks'] = 'true'
-        else:
-            params['deleteSubtasks'] = 'false'
-
-        log.warning('Removing issue {}...'.format(issue_id_or_key))
-
-        return self.delete(url, params=params)
-
-    # @todo merge with edit_issue method
-    def issue_update(self, issue_key, fields):
-        log.warning('Updating issue "{issue_key}" with "{fields}"'.format(issue_key=issue_key, fields=fields))
-        url = 'rest/api/2/issue/{0}'.format(issue_key)
-        return self.put(url, data={'fields': fields})
-
-    def edit_issue(self, issue_id_or_key, fields, notify_users=True):
-        """
-        Edits an issue from a JSON representation
-        The issue can either be updated by setting explicit the field
-        value(s) or by using an operation to change the field value
-
-        :param issue_id_or_key: str
-        :param fields: JSON
-        :param notify_users: bool
-        :return:
-        """
-        url = 'rest/api/2/issue/{}'.format(issue_id_or_key)
-        params = {}
-        data = {'update': fields}
-
-        if notify_users is True:
-            params['notifyUsers'] = 'true'
-        else:
-            params['notifyUsers'] = 'false'
-        return self.put(url, data=data, params=params)
-
-    def issue_add_watcher(self, issue_key, user):
-        """
-        Start watching issue
-        :param issue_key:
-        :param user:
-        :return:
-        """
-        log.warning('Adding user {user} to "{issue_key}" watchers'.format(issue_key=issue_key, user=user))
-        data = user
-        return self.post('rest/api/2/issue/{issue_key}/watchers'.format(issue_key=issue_key), data=data)
-
-    def assign_issue(self, issue, assignee=None):
-        """Assign an issue to a user. None will set it to unassigned. -1 will set it to Automatic.
-        :param issue: the issue ID or key to assign
-        :type issue: int or str
-        :param assignee: the user to assign the issue to
-        :type assignee: str
-        :rtype: bool
-        """
-        url = 'rest/api/2/issue/{issue}/assignee'.format(issue=issue)
-        data = {'name': assignee}
-
-        return self.put(url, data=data)
-
-    def create_issue(self, fields, update_history=False):
-        """
-        Creates an issue or a sub-task from a JSON representation
-        :param fields: JSON data
-                mandatory keys are issuetype, summary and project
-        :param update_history: bool (if true then the user's project history is updated)
-        :return:
-            example:
-                fields = dict(summary='Into The Night',
-                              project = dict(key='APA'),
-                              issuetype = dict(name='Story')
-                              )
-                jira.create_issue(fields=fields)
-        """
-        url = 'rest/api/2/issue'
-        data = {'fields': fields}
-        params = {}
-
-        if update_history is True:
-            params['updateHistory'] = 'true'
-        else:
-            params['updateHistory'] = 'false'
-        return self.post(url, params=params, data=data)
-
-    def create_issues(self, list_of_issues_data):
-        """
-        Creates issues or sub-tasks from a JSON representation
-        Creates many issues in one bulk operation
-        :param list_of_issues_data: list of JSON data
-        :return:
-        """
-        url = 'rest/api/2/issue/bulk'
-        data = {'issueUpdates': list_of_issues_data}
-        return self.post(url, data=data)
-
-    # @todo refactor and merge with create_issue method
-    def issue_create(self, fields):
-        log.warning('Creating issue "{summary}"'.format(summary=fields['summary']))
-        url = 'rest/api/2/issue'
-        return self.post(url, data={'fields': fields})
-
-    def issue_create_or_update(self, fields):
-        issue_key = fields.get('issuekey', None)
-
-        if not issue_key or not self.issue_exists(issue_key):
-            log.info('IssueKey is not provided or does not exists in destination. Will attempt to create an issue')
-            fields.pop("issuekey", None)
-            return self.issue_create(fields)
-
-        if self.issue_deleted(issue_key):
-            log.warning('Issue "{issue_key}" deleted, skipping'.format(issue_key=issue_key))
-            return None
-
-        log.info('Issue "{issue_key}" exists, will update'.format(issue_key=issue_key))
-        fields.pop("issuekey", None)
-        return self.issue_update(issue_key, fields)
-
-    def issue_add_comment(self, issue_key, comment, visibility=None):
-        """
-        Add comment into Jira issue
-        :param issue_key:
-        :param comment:
-        :param visibility: OPTIONAL
-        :return:
-        """
-        url = 'rest/api/2/issue/{issueIdOrKey}/comment'.format(issueIdOrKey=issue_key)
-        data = {'body': comment}
-        if visibility:
-            data['visibility'] = visibility
-        return self.post(url, data=data)
-
-    def issue_edit_comment(self, issue_key, comment_id, comment, visibility=None):
-        """
-        Updates an existing comment
-        :param issue_key: str
-        :param comment_id: int
-        :param comment: str
-        :param visibility: OPTIONAL
-        :return:
-        """
-        url = 'rest/api/2/issue/{}/comment/{}'.format(issue_key, comment_id)
-        data = {'body': comment}
-        if visibility:
-            data['visibility'] = visibility
-        return self.put(url, data=data)
-
-    def get_issue_remotelinks(self, issue_key, global_id=None, internal_id=None):
-        """
-        Compatibility naming method with get_issue_remote_links()
-        """
-        return self.get_issue_remote_links(issue_key, global_id, internal_id)
-
-    def get_issue_remote_links(self, issue_key, global_id=None, internal_id=None):
-        """
-        Finding all Remote Links on an issue, also with filtering by Global ID and internal ID
-        :param issue_key:
-        :param global_id: str
-        :param internal_id: str
-        :return:
-        """
-        url = 'rest/api/2/issue/{issue_key}/remotelink'.format(issue_key=issue_key)
-        params = {}
-        if global_id:
-            params['globalId'] = global_id
-        if internal_id:
-            url += '/' + internal_id
-        return self.get(url, params=params)
-
-    def create_or_update_issue_remote_links(self, issue_key, link_url, title, global_id=None, relationship=None):
-        """
-        Add Remote Link to Issue, update url if global_id is passed
-        :param issue_key: str
-        :param link_url: str
-        :param title: str
-        :param global_id: str, OPTIONAL:
-        :param relationship: str, OPTIONAL: Default by built-in method: 'Web Link'
-        """
-        url = 'rest/api/2/issue/{issue_key}/remotelink'.format(issue_key=issue_key)
-        data = {'object': {'url': link_url, 'title': title}}
-        if global_id:
-            data['globalId'] = global_id
-        if relationship:
-            data['relationship'] = relationship
-        return self.post(url, data=data)
-
-    def get_issue_remote_link_by_id(self, issue_key, link_id):
-        url = 'rest/api/2/issue/{issue_key}/remotelink/{link_id}'.format(issue_key=issue_key, link_id=link_id)
-        return self.get(url)
-
-    def update_issue_remote_link_by_id(self, issue_key, link_id, url, title, global_id=None, relationship=None):
-        """
-        Update existing Remote Link on Issue
-        :param issue_key: str
-        :param link_id: str
-        :param url: str
-        :param title: str
-        :param global_id: str, OPTIONAL:
-        :param relationship: str, Optional. Default by built-in method: 'Web Link'
-
-        """
-        data = {'object': {'url': url, 'title': title}}
-        if global_id:
-            data['globalId'] = global_id
-        if relationship:
-            data['relationship'] = relationship
-        url = 'rest/api/2/issue/{issue_key}/remotelink/{link_id}'.format(issue_key=issue_key, link_id=link_id)
-        return self.put(url, data=data)
-
-    def delete_issue_remote_link_by_id(self, issue_key, link_id):
-        """
-        Deletes Remote Link on Issue
-        :param issue_key: str
-        :param link_id: str
-        """
-        url = 'rest/api/2/issue/{issue_key}/remotelink/{link_id}'.format(issue_key=issue_key, link_id=link_id)
-        return self.delete(url)
-
-    def get_issue_transitions(self, issue_key):
-        if self.advanced_mode:
-            return [{'name': transition['name'], 'id': int(transition['id']), 'to': transition['to']['name']}
-                    for transition in (self.get_issue_transitions_full(issue_key).json() or {}).get('transitions')]
-        else:
-            return [{'name': transition['name'], 'id': int(transition['id']), 'to': transition['to']['name']}
-                    for transition in (self.get_issue_transitions_full(issue_key) or {}).get('transitions')]
-
-    def get_issue_transitions_full(self, issue_key, transition_id=None, expand=None):
-        """
-        Get a list of the transitions possible for this issue by the current user,
-        along with fields that are required and their types.
-        Fields will only be returned if expand = 'transitions.fields'.
-        The fields in the metadata correspond to the fields in the transition screen for that transition.
-        Fields not in the screen will not be in the metadata.
-        :param issue_key: str
-        :param transition_id: str
-        :param expand: str
-        :return:
-        """
-        url = 'rest/api/2/issue/{issue_key}/transitions'.format(issue_key=issue_key)
-        params = {}
-        if transition_id:
-            params['transitionId'] = transition_id
-        if expand:
-            params['expand'] = expand
-        return self.get(url, params=params)
-
     def get_status_id_from_name(self, status_name):
         url = 'rest/api/2/status/{name}'.format(name=status_name)
         return int((self.get(url) or {}).get('id'))
@@ -1586,43 +1534,6 @@ class Jira(AtlassianRestAPI):
         for transition in self.get_issue_transitions(issue_key):
             if status_name.lower() == transition['to'].lower():
                 return int(transition['id'])
-
-    def issue_transition(self, issue_key, status):
-        return self.set_issue_status(issue_key, status)
-
-    def set_issue_status(self, issue_key, status_name, fields=None):
-        """
-        Setting status by status_name. fields defaults to None for transitions without mandatory fields.
-        If there are mandatary fields for the transition, these can be set using a dict.
-        Example:
-            jira.set_issue_status('MY-123','Resolved',{'myfield': 'myvalue'})
-        :param issue_key: str
-        :param status_name: str
-        :param fields: dict, optional
-        """
-        url = 'rest/api/2/issue/{issue_key}/transitions'.format(issue_key=issue_key)
-        transition_id = self.get_transition_id_to_status_name(issue_key, status_name)
-        data = {'transition': {'id': transition_id}}
-        if fields is not None:
-            data['fields'] = fields
-        return self.post(url, data=data)
-
-    def set_issue_status_by_transition_id(self, issue_key, transition_id):
-        """
-        Setting status by transition_id
-        :param issue_key: str
-        :param transition_id: int
-        """
-        url = 'rest/api/2/issue/{issue_key}/transitions'.format(issue_key=issue_key)
-        return self.post(url, data={'transition': {'id': transition_id}})
-
-    def get_issue_status(self, issue_key):
-        url = 'rest/api/2/issue/{issue_key}?fields=status'.format(issue_key=issue_key)
-        return (((self.get(url) or {}).get('fields') or {}).get('status') or {}).get('name') or {}
-
-    def get_issue_status_id(self, issue_key):
-        url = 'rest/api/2/issue/{issue_key}?fields=status'.format(issue_key=issue_key)
-        return (self.get(url) or {}).get('fields').get('status').get('id')
 
     #######################################################################################################
     # The Link Issue Resource provides functionality to manage issue links.
@@ -1750,6 +1661,18 @@ class Jira(AtlassianRestAPI):
         url = 'rest/api/2/issueLinkType/{issueLinkTypeId}'.format(issueLinkTypeId=issue_link_type_id)
         return self.put(url, data=data)
 
+    #######################################################################################################
+    # Resolution
+    # Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/resolution
+    #######################################################################################################
+    def get_all_resolutions(self):
+        """
+        Returns a list of all resolutions.
+        :return:
+        """
+        url = 'rest/api/2/resolution'
+        return self.get(url)
+
     def get_resolution_by_id(self, resolution_id):
         """
         Get Resolution info by id
@@ -1758,6 +1681,115 @@ class Jira(AtlassianRestAPI):
         """
         url = 'rest/api/2/resolution/{}'.format(resolution_id)
         return self.get(url)
+
+    #######################################################################################################
+    # Role
+    # Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/role
+    #######################################################################################################
+    def get_all_global_project_roles(self):
+        """
+        Get all the ProjectRoles available in Jira. Currently this list is global.
+        :return:
+        """
+        url = 'rest/api/2/role'
+        return self.get(url)
+
+    #######################################################################################################
+    # Screens
+    # Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/screens
+    #######################################################################################################
+    def get_all_screens(self):
+        """
+        Get all available screens from Jira
+        :return: list of json elements of screen with field id, name. description
+        """
+        url = 'rest/api/2/screens'
+        return self.get(url)
+
+    def get_all_available_screen_fields(self, screen_id):
+        """
+        Get all available fields by screen id
+        :param screen_id:
+        :return:
+        """
+        url = 'rest/api/2/screens/{}/availableFields'.format(screen_id)
+        return self.get(url)
+
+    def get_screen_tabs(self, screen_id):
+        """
+        Get tabs for the screen id
+        :param screen_id:
+        :return:
+        """
+        url = 'rest/api/2/screens/{}/tabs'.format(screen_id)
+        return self.get(url)
+
+    def get_screen_tab_fields(self, screen_id, tab_id):
+        """
+        Get fields by the tab id and the screen id
+        :param tab_id:
+        :param screen_id:
+        :return:
+        """
+        url = 'rest/api/2/screens/{}/tabs/{}/fields'.format(screen_id, tab_id)
+        return self.get(url)
+
+    def get_all_screen_fields(self, screen_id):
+        """
+        Get all fields by screen id
+        :param screen_id:
+        :return:
+        """
+        screen_tabs = self.get_screen_tabs(screen_id)
+        fields = []
+        for screen_tab in screen_tabs:
+            tab_id = screen_tab['id']
+            if tab_id:
+                tab_fields = self.get_screen_tab_fields(screen_id=screen_id, tab_id=tab_id)
+                fields = fields + tab_fields
+        return fields
+
+    #######################################################################################################
+    # Search
+    # Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/search
+    #######################################################################################################
+    def jql(self, jql, fields='*all', start=0, limit=None, expand=None):
+        """
+        Get issues from jql search result with all related fields
+        :param jql:
+        :param fields: list of fields, for example: ['priority', 'summary', 'customfield_10007']
+        :param start: OPTIONAL: The start point of the collection to return. Default: 0.
+        :param limit: OPTIONAL: The limit of the number of issues to return, this may be restricted by
+                fixed system limits. Default by built-in method: 50
+        :param expand: OPTIONAL: expand the search result
+        :return:
+        """
+        params = {}
+        if start is not None:
+            params['startAt'] = int(start)
+        if limit is not None:
+            params['maxResults'] = int(limit)
+        if fields is not None:
+            if isinstance(fields, (list, tuple, set)):
+                fields = ','.join(fields)
+            params['fields'] = fields
+        if jql is not None:
+            params['jql'] = jql
+        if expand is not None:
+            params['expand'] = expand
+        return self.get('rest/api/2/search', params=params)
+
+    def csv(self, jql, limit=1000):
+        """
+        Get issues from jql search result with all related fields
+        :param jql: JQL query
+        :param limit: max results in the output file
+        :return: CSV file
+        """
+        params = {'tempMax': limit,
+                  'jqlQuery': jql}
+        url = 'sr/jira.issueviews:searchrequest-csv-all-fields/temp/SearchRequest.csv'
+        return self.get(url, params=params, not_json_response=True, headers={'Accept': 'application/csv'})
 
     def get_priority_by_id(self, priority_id):
         """
@@ -1784,28 +1816,12 @@ class Jira(AtlassianRestAPI):
         url = 'rest/api/2/status'
         return self.get(url)
 
-    def get_all_resolutions(self):
-        """
-        Returns a list of all resolutions.
-        :return:
-        """
-        url = 'rest/api/2/resolution'
-        return self.get(url)
-
     def get_all_priorities(self):
         """
         Returns a list of all priorities.
         :return:
         """
         url = 'rest/api/2/priority'
-        return self.get(url)
-
-    def get_all_global_project_roles(self):
-        """
-        Get all the ProjectRoles available in Jira. Currently this list is global.
-        :return:
-        """
-        url = 'rest/api/2/role'
         return self.get(url)
 
     def get_plugins_info(self):
@@ -2685,6 +2701,7 @@ class Jira(AtlassianRestAPI):
 
     #######################################################################
     #   Agile(Formerly Greenhopper) REST API implements
+    #   Resource: https://docs.atlassian.com/jira-software/REST/7.3.1/
     #######################################################################
     def get_all_agile_boards(self, board_name=None, project_key=None, board_type=None, start=0, limit=50):
         """
