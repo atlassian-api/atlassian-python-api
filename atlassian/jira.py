@@ -970,17 +970,6 @@ class Jira(AtlassianRestAPI):
             params['expand'] = expand
         return self.get(url, params=params)
 
-    def get_server_info(self, do_health_check=False):
-        """
-        Returns general information about the current Jira server.
-        with health checks or not.
-        """
-        if do_health_check:
-            check = True
-        else:
-            check = False
-        return self.get('rest/api/2/serverInfo', params={"doHealthCheck": check})
-
     #######################################################################################################
     # User
     # Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/user
@@ -1230,6 +1219,13 @@ class Jira(AtlassianRestAPI):
         }
         return self.post('rest/api/2/user/application', params=params) is None
 
+    #######################################################################################################
+    # Projects
+    # Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/project
+    #######################################################################################################
+    def get_all_projects(self, included_archived=None):
+        return self.projects(included_archived)
+
     def projects(self, included_archived=None):
         """Returns all projects which are visible for the currently logged in user.
         If no user is logged in, it returns the list of projects that are visible when using anonymous access.
@@ -1241,11 +1237,28 @@ class Jira(AtlassianRestAPI):
             params['includeArchived'] = included_archived
         return self.get('rest/api/2/project')
 
-    def get_all_projects(self, included_archived=None):
-        return self.projects(included_archived)
-
-    def project(self, key):
-        return self.get('rest/api/2/project/{0}'.format(key))
+    def create_project_from_raw_json(self, json):
+        """
+        Creates a new project.
+            {
+                "key": "EX",
+                "name": "Example",
+                "projectTypeKey": "business",
+                "projectTemplateKey": "com.atlassian.jira-core-project-templates:jira-core-project-management",
+                "description": "Example Project description",
+                "lead": "Charlie",
+                "url": "http://atlassian.com",
+                "assigneeType": "PROJECT_LEAD",
+                "avatarId": 10200,
+                "issueSecurityScheme": 10001,
+                "permissionScheme": 10011,
+                "notificationScheme": 10021,
+                "categoryId": 10120
+            }
+        :param json:
+        :return:
+        """
+        return self.post(json=json)
 
     def delete_project(self, key):
         """
@@ -1254,6 +1267,22 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         return self.delete('rest/api/2/project/{0}'.format(key))
+
+    def project(self, key, expand=None):
+        params = {}
+        if expand:
+            params['expand'] = expand
+        return self.get('rest/api/2/project/{0}'.format(key), params=params)
+
+    def get_project(self, key, expand):
+        """
+            Contains a full representation of a project in JSON format.
+            All project keys associated with the project will only be returned if expand=projectKeys.
+        :param key:
+        :param expand:
+        :return:
+        """
+        return self.project(key=key, expand=expand)
 
     def get_project_components(self, key):
         """
@@ -2177,6 +2206,17 @@ class Jira(AtlassianRestAPI):
 
     def reindex_issue(self, list_of_):
         pass
+
+    def get_server_info(self, do_health_check=False):
+        """
+        Returns general information about the current Jira server.
+        with health checks or not.
+        """
+        if do_health_check:
+            check = True
+        else:
+            check = False
+        return self.get('rest/api/2/serverInfo', params={"doHealthCheck": check})
 
     #######################################################################
     #                   Tempo Account REST API implements
