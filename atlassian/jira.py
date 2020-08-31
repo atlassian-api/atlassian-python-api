@@ -1791,13 +1791,25 @@ class Jira(AtlassianRestAPI):
         url = 'sr/jira.issueviews:searchrequest-csv-all-fields/temp/SearchRequest.csv'
         return self.get(url, params=params, not_json_response=True, headers={'Accept': 'application/csv'})
 
+    #######################################################################################################
+    # Priority
+    # Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/priority
+    #######################################################################################################
+    def get_all_priorities(self):
+        """
+        Returns a list of all priorities.
+        :return:
+        """
+        url = 'rest/api/2/priority'
+        return self.get(url)
+
     def get_priority_by_id(self, priority_id):
         """
         Get Priority info by id
         :param priority_id:
         :return:
         """
-        url = 'rest/api/2/resolution/{}'.format(priority_id)
+        url = 'rest/api/2/priority/{}'.format(priority_id)
         return self.get(url)
 
     def get_all_workflows(self):
@@ -1814,14 +1826,6 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         url = 'rest/api/2/status'
-        return self.get(url)
-
-    def get_all_priorities(self):
-        """
-        Returns a list of all priorities.
-        :return:
-        """
-        url = 'rest/api/2/priority'
         return self.get(url)
 
     def get_plugins_info(self):
