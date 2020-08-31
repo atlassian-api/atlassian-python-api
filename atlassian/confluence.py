@@ -634,7 +634,7 @@ class Confluence(AtlassianRestAPI):
 
     def get_template_by_id(self, template_id):
         """
-        Get user template by id. Experimental api
+        Get user template by id. Experimental API
         Use case is get template body and create page from that
         """
         url = 'rest/experimental/template/{template_id}'.format(template_id=template_id)
@@ -655,7 +655,8 @@ class Confluence(AtlassianRestAPI):
 
     def get_all_templates_from_space(self, space, start=0, limit=20, expand=None):
         """
-        Get all users templates from space
+        https://docs.atlassian.com/atlassian-confluence/1000.73.0/com/atlassian/confluence/plugins/restapi/resources/TemplateResource.html
+        Get all users templates from space. Experimental API
         :param space: Space Key
         :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
         :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
