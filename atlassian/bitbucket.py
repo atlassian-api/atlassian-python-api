@@ -10,6 +10,12 @@ log = logging.getLogger(__name__)
 class Bitbucket(AtlassianRestAPI):
     bulk_headers = {"Content-Type": "application/vnd.atl.bitbucket.bulk+json"}
 
+    def __init__(self, *args, **kwargs):
+        super(Bitbucket, self).__init__(*args, **kwargs)
+        url = kwargs.pop('url', False)
+        if url and 'bitbucket.org' in url:
+            self.cloud = True
+
     def project_list(self, limit=None):
         """
         Provide the project list
