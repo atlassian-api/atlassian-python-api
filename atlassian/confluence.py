@@ -632,6 +632,62 @@ class Confluence(AtlassianRestAPI):
             params["position"] = position
         return self.post(url, params=params, headers=self.no_check_headers)
 
+    def get_template_by_id(self, template_id):
+        """
+        Get user template by id. Experimental API
+        Use case is get template body and create page from that
+        """
+        url = 'rest/experimental/template/{template_id}'.format(template_id=template_id)
+
+        try:
+            response = self.get(url)
+        except HTTPError as e:
+            if e.response.status_code == 403:
+                # Raise ApiError as the documented reason is ambiguous
+                raise ApiError(
+                    "There is no content with the given id, "
+                    "or the calling user does not have permission to view the content",
+                    reason=e)
+
+            raise
+
+        return response
+
+    def get_all_templates_from_space(self, space, start=0, limit=20, expand=None):
+        """
+        https://docs.atlassian.com/atlassian-confluence/1000.73.0/com/atlassian/confluence/plugins/restapi/resources/TemplateResource.html
+        Get all users templates from space. Experimental API
+        :param space: Space Key
+        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
+        :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
+                            fixed system limits. Default: 20
+        :param expand: OPTIONAL: expand e.g. body
+
+        """
+        url = 'rest/experimental/template/page'
+        params = {}
+        if space:
+            params['spaceKey'] = space
+        if start:
+            params['start'] = start
+        if limit:
+            params['limit'] = limit
+        if expand:
+            params['expand'] = expand
+
+        try:
+            response = self.get(url, params=params)
+        except HTTPError as e:
+            if e.response.status_code == 403:
+                raise ApiPermissionError(
+                    "The calling user does not have permission to view the content",
+                    reason=e)
+
+            raise
+
+        return response.get('results')
+
+
     def get_all_spaces(self, start=0, limit=500, expand=None):
         """
         Get all spaces with provided limit
