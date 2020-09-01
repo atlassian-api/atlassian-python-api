@@ -2180,7 +2180,7 @@ class Confluence(AtlassianRestAPI):
                 output.extend([p for p in child_subtree])
         return set(output)
 
-    def set_inlinetasks_checkbox(self, page_id, task_id, status):
+    def set_inline_tasks_checkbox(self, page_id, task_id, status):
         """
         Set inline task element value
         status is CHECKED or UNCHECKED

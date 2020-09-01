@@ -223,5 +223,5 @@ Other actions
     confluence.is_page_content_is_already_updated(page_id, body)
 
     # Add inline task setting checkbox method
-    confluence.set_inlinetasks_checkbox(page_id, task_id, status)
+    confluence.set_inline_tasks_checkbox(page_id, task_id, status)
 
