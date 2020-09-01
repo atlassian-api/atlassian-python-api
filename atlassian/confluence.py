@@ -2179,3 +2179,25 @@ class Confluence(AtlassianRestAPI):
             if child_subtree:
                 output.extend([p for p in child_subtree])
         return set(output)
+
+    def set_inlinetasks_checkbox(self, page_id, task_id, status):
+        """
+        Set inline task element value
+        status is CHECKED or UNCHECKED
+        :return:
+        """
+        url = "/rest/inlinetasks/1/task/{page_id}/{task_id}/".format(page_id=page_id, task_id=task_id)
+        data = {"status": status, "trigger": "VIEW_PAGE"}
+        try:
+            response = self.post(url, json=data)
+            if response.status_code == 200:
+                return True
+            else:
+                return False
+        except HTTPError as e:
+            if e.response.status_code != 200:
+                raise ApiError(
+                    "Param cannot be empty",
+                    reason=e)
+                raise
+
