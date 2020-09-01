@@ -137,8 +137,8 @@ class Confluence(AtlassianRestAPI):
         parent_content_id = None
         try:
             parent_content_id = (
-                (self.get_page_by_id(page_id=page_id, expand='ancestors').get('ancestors') or {})[-1].get(
-                    'id') or None)
+                    (self.get_page_by_id(page_id=page_id, expand='ancestors').get('ancestors') or {})[-1].get(
+                        'id') or None)
         except Exception as e:
             log.error(e)
         return parent_content_id
@@ -152,8 +152,8 @@ class Confluence(AtlassianRestAPI):
         parent_content_title = None
         try:
             parent_content_title = (
-                        (self.get_page_by_id(page_id=page_id, expand='ancestors').get('ancestors') or {})[-1].get(
-                            'title') or None)
+                    (self.get_page_by_id(page_id=page_id, expand='ancestors').get('ancestors') or {})[-1].get(
+                        'title') or None)
         except Exception as e:
             log.error(e)
         return parent_content_title
@@ -653,10 +653,43 @@ class Confluence(AtlassianRestAPI):
 
         return response
 
+    def get_all_blueprints_from_space(self, space, start=0, limit=20, expand=None):
+        """
+        Get all users blue prints from space. Experimental API
+        :param space: Space Key
+        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
+        :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
+                            fixed system limits. Default: 20
+        :param expand: OPTIONAL: expand e.g. body
+
+        """
+        url = 'rest/experimental/template/blueprint'
+        params = {}
+        if space:
+            params['spaceKey'] = space
+        if start:
+            params['start'] = start
+        if limit:
+            params['limit'] = limit
+        if expand:
+            params['expand'] = expand
+
+        try:
+            response = self.get(url, params=params)
+        except HTTPError as e:
+            if e.response.status_code == 403:
+                raise ApiPermissionError(
+                    "The calling user does not have permission to view the content",
+                    reason=e)
+
+            raise
+
+        return response.get('results') or []
+
     def get_all_templates_from_space(self, space, start=0, limit=20, expand=None):
         """
-        https://docs.atlassian.com/atlassian-confluence/1000.73.0/com/atlassian/confluence/plugins/restapi/resources/TemplateResource.html
         Get all users templates from space. Experimental API
+        ref: https://docs.atlassian.com/atlassian-confluence/1000.73.0/com/atlassian/confluence/plugins/restapi/resources/TemplateResource.html
         :param space: Space Key
         :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
         :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
@@ -685,8 +718,7 @@ class Confluence(AtlassianRestAPI):
 
             raise
 
-        return response.get('results')
-
+        return response.get('results') or []
 
     def get_all_spaces(self, start=0, limit=500, expand=None):
         """
