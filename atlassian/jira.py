@@ -1841,6 +1841,10 @@ class Jira(AtlassianRestAPI):
         url = 'rest/api/2/priority/{}'.format(priority_id)
         return self.get(url)
 
+    #######################################################################################################
+    # Workflow
+    # Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/workflow
+    #######################################################################################################
     def get_all_workflows(self):
         """
         Provide all workflows for application admin
