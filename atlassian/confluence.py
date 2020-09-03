@@ -1143,7 +1143,7 @@ class Confluence(AtlassianRestAPI):
                                 minor_edit=minor_edit,
                                 version_comment=version_comment)
 
-    def update_page(self, page_id, title, body, parent_id=None, type='page', representation='storage',
+    def update_page(self, page_id, title, body=None, parent_id=None, type='page', representation='storage',
                     minor_edit=False, version_comment=None):
         """
         Update page if already exist
@@ -1160,50 +1160,51 @@ class Confluence(AtlassianRestAPI):
         """
         log.info('Updating {type} "{title}"'.format(title=title, type=type))
 
-        if self.is_page_content_is_already_updated(page_id, body, title):
+        if body is not None and self.is_page_content_is_already_updated(page_id, body, title):
             return self.get_page_by_id(page_id)
-        else:
-            try:
-                if self.advanced_mode:
-                    version = self.history(page_id).json()['lastUpdated']['number'] + 1
-                else:
-                    version = self.history(page_id)['lastUpdated']['number'] + 1
-            except (IndexError, TypeError) as e:
-                log.error("Can't find '{title}' {type}!".format(title=title, type=type))
-                log.debug(e)
-                return None
 
-            data = {
-                'id': page_id,
-                'type': type,
-                'title': title,
-                'body': self._create_body(body, representation),
-                'version': {'number': version,
-                            'minorEdit': minor_edit}
-            }
+        try:
+            if self.advanced_mode:
+                version = self.history(page_id).json()['lastUpdated']['number'] + 1
+            else:
+                version = self.history(page_id)['lastUpdated']['number'] + 1
+        except (IndexError, TypeError) as e:
+            log.error("Can't find '{title}' {type}!".format(title=title, type=type))
+            log.debug(e)
+            return None
 
-            if parent_id:
-                data['ancestors'] = [{'type': 'page', 'id': parent_id}]
-            if version_comment:
-                data['version']['message'] = version_comment
+        data = {
+            'id': page_id,
+            'type': type,
+            'title': title,
+            'version': {'number': version,
+                        'minorEdit': minor_edit}
+        }
+        if body is not None:
+            data['body'] = self._create_body(body, representation)
 
-            try:
-                response = self.put('rest/api/content/{0}'.format(page_id), data=data)
-            except HTTPError as e:
-                if e.response.status_code == 400:
-                    raise ApiValueError(
-                        "No space or no content type, or setup a wrong version "
-                        "type set to content, or status param is not draft and "
-                        "status content is current",
-                        reason=e)
-                if e.response.status_code == 404:
-                    raise ApiNotFoundError(
-                        "Can not find draft with current content",
-                        reason=e)
+        if parent_id:
+            data['ancestors'] = [{'type': 'page', 'id': parent_id}]
+        if version_comment:
+            data['version']['message'] = version_comment
 
-                raise
+        try:
+            response = self.put('rest/api/content/{0}'.format(page_id), data=data)
+        except HTTPError as e:
+            if e.response.status_code == 400:
+                raise ApiValueError(
+                    "No space or no content type, or setup a wrong version "
+                    "type set to content, or status param is not draft and "
+                    "status content is current",
+                    reason=e)
+            if e.response.status_code == 404:
+                raise ApiNotFoundError(
+                    "Can not find draft with current content",
+                    reason=e)
 
-            return response
+            raise
+
+        return response
 
     def _insert_to_existing_page(self, page_id, title, insert_body, parent_id=None, type='page',
                                  representation='storage',
@@ -1603,7 +1604,7 @@ class Confluence(AtlassianRestAPI):
     def get_space_content(self, space_key, depth="all", start=0, limit=500, content_type=None, expand="body.storage"):
         """
         Get space content.
-        You can specify which type of content want to recieve, or get all content types. 
+        You can specify which type of content want to recieve, or get all content types.
         Use expand to get specific content properties or page
         :param space_key: The unique space key name
         :param depth: OPTIONAL: all|root
@@ -1611,8 +1612,8 @@ class Confluence(AtlassianRestAPI):
         :param start: OPTIONAL: The start point of the collection to return. Default: 0.
         :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
                                 fixed system limits. Default: 500
-        :param expand: OPTIONAL: by default expands page body in confluence storage format. 
-                                 See atlassian documentation for more information. 
+        :param expand: OPTIONAL: by default expands page body in confluence storage format.
+                                 See atlassian documentation for more information.
         :return: Returns the space along with its ID
         """
 
@@ -2232,4 +2233,3 @@ class Confluence(AtlassianRestAPI):
                     "Param cannot be empty",
                     reason=e)
                 raise
-
