@@ -79,14 +79,18 @@ References
 
 All methods based on docs from: https://developer.atlassian.com/docs/
 
-* `Jira Server`_
-* `Jira Cloud`_
-* `Confluence Server`_
-* `Confluence Cloud`_
-* `Jira Service Desk Server`_
-* `Jira Service Desk Cloud`_
-* `Portfolio for Jira`_
-* `Portfolio for Jira Teams`_
+* Jira
+    - `Jira Server`_
+    - `Jira Cloud`_
+* Jira Service Desk
+    - `Jira Service Desk Server`_
+    - `Jira Service Desk Cloud`_
+* Confluence
+    - `Confluence Server`_
+    - `Confluence Cloud`_
+* Advanced Roadmaps (formerly Portfolio for Jira)
+    - `Portfolio for Jira`_
+    - `Portfolio for Jira Teams`_
 *  Bitbucket:
     - https://developer.atlassian.com/server/bitbucket/reference/rest-api/
     - https://developer.atlassian.com/server/bitbucket/how-tos/command-line-rest/
