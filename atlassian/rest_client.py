@@ -54,6 +54,12 @@ class AtlassianRestAPI(object):
         elif cookies is not None:
             self._session.cookies.update(cookies)
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_):
+        self.close()
+
     def _create_basic_session(self, username, password):
         self._session.auth = (username, password)
 
@@ -89,6 +95,17 @@ class AtlassianRestAPI(object):
         """
         self._session.headers.update({key: value})
 
+    @staticmethod
+    def _response_handler(response):
+        try:
+            return response.json()
+        except ValueError:
+            log.debug('Received response with no content')
+            return None
+        except Exception as e:
+            log.error(e)
+            return None
+
     def log_curl_debug(self, method, url, data=None, headers=None, level=logging.DEBUG):
         """
 
@@ -116,6 +133,9 @@ class AtlassianRestAPI(object):
         if trailing:
             url_link += '/'
         return url_link
+
+    def close(self):
+        return self._session.close()
 
     def request(self, method='GET', path='/', data=None, json=None, flags=None, params=None, headers=None,
                 files=None, trailing=None):
@@ -199,28 +219,15 @@ class AtlassianRestAPI(object):
                                 trailing=trailing)
         if self.advanced_mode:
             return response
-        try:
-            return response.json()
-        except ValueError:
-            log.debug('Received response with no content')
-            return None
-        except Exception as e:
-            log.error(e)
-            return None
+        return self._response_handler(response)
 
     def put(self, path, data=None, headers=None, files=None, trailing=None, params=None):
         response = self.request('PUT', path=path, data=data, headers=headers, files=files, params=params,
                                 trailing=trailing)
         if self.advanced_mode:
             return response
-        try:
-            return response.json()
-        except ValueError:
-            log.debug('Received response with no content')
-            return None
-        except Exception as e:
-            log.error(e)
-            return None
+        return self._response_handler(response)
+
 
     def delete(self, path, data=None, headers=None, params=None, trailing=None):
         """
@@ -232,11 +239,4 @@ class AtlassianRestAPI(object):
         response = self.request('DELETE', path=path, data=data, headers=headers, params=params, trailing=trailing)
         if self.advanced_mode:
             return response
-        try:
-            return response.json()
-        except ValueError:
-            log.debug('Received response with no content')
-            return None
-        except Exception as e:
-            log.error(e)
-            return None
+        return self._response_handler(response)
