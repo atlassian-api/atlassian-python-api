@@ -30,6 +30,17 @@ class Confluence(AtlassianRestAPI):
         ".svg": "image/svg+xml"
     }
 
+    def __init__(self, **kwargs):
+        if ('url' in kwargs
+            and kwargs['url']
+            and ('atlassian.net' in kwargs['url'] or 'jira.com' in kwargs['url'])
+            and ('/wiki' not in kwargs['url']) ):
+            kwargs['url'] = AtlassianRestAPI.url_joiner(kwargs['url'], '/wiki')
+            if not 'cloud' in kwargs:
+                kwargs['cloud'] = True
+        super(Confluence, self).__init__(**kwargs)
+
+
     @staticmethod
     def _create_body(body, representation):
         if representation not in ['editor', 'export_view', 'view', 'storage', 'wiki']:
