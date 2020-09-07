@@ -598,7 +598,7 @@ class Jira(AtlassianRestAPI):
         """
         :param key:
         :param time_sec: int: second
-        :param started:
+        :param started: str: format ``%Y-%m-%dT%H:%M:%S.000+0000%z``
         :param comment:
         :return:
         """
