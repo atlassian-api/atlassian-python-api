@@ -14,6 +14,7 @@ class Bitbucket(AtlassianRestAPI):
         super(Bitbucket, self).__init__(*args, **kwargs)
         url = kwargs.pop('url', False)
         if url and 'bitbucket.org' in url:
+            self.cloud = True  # Kept for backward compatibility it until change all dependent methods
             self.api_version = "2.0"
         else:
             self.api_version = "1.0"
