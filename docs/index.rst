@@ -22,6 +22,7 @@ Add a connection:
     from atlassian import Confluence
     from atlassian import Bitbucket
     from atlassian import ServiceDesk
+    from atlassian import Xray
 
     jira = Jira(
         url='http://localhost:8080',
@@ -39,6 +40,11 @@ Add a connection:
         password='admin')
 
     service_desk = ServiceDesk(
+        url='http://localhost:8080',
+        username='admin',
+        password='admin')
+
+    xray = Xray(
         url='http://localhost:8080',
         username='admin',
         password='admin')
@@ -55,6 +61,7 @@ Add a connection using key/cert based authentication:
     from atlassian import Confluence
     from atlassian import Bitbucket
     from atlassian import ServiceDesk
+    from atlassian import Xray
 
     jira = Jira(
         url='http://localhost:8080',
@@ -72,6 +79,11 @@ Add a connection using key/cert based authentication:
         cert='/path/to/cert')
 
     service_desk = ServiceDesk(
+        url='http://localhost:8080',
+        key='/path/to/key',
+        cert='/path/to/cert')
+
+    xray = Xray(
         url='http://localhost:8080',
         key='/path/to/key',
         cert='/path/to/cert')
@@ -102,6 +114,10 @@ Alternatively OAuth can be used:
         url='http://localhost:8080',
         oauth=oauth_dict)
 
+    xray = Xray(
+        url='http://localhost:8080',
+        oauth=oauth_dict)
+
 Or Kerberos *(installation with kerberos extra necessary)*:
 
 .. code-block:: python
@@ -124,6 +140,10 @@ Or Kerberos *(installation with kerberos extra necessary)*:
         url='http://localhost:8080',
         kerberos=kerberos_service)
 
+    xray = Xray(
+        url='http://localhost:8080',
+        kerberos=kerberos_service)
+
 Or reuse cookie file:
 
 .. code-block:: python
@@ -133,19 +153,23 @@ Or reuse cookie file:
 
     jira = Jira(
         url='http://localhost:8080',
-        cookie=cookie_dict)
+        cookies=cookie_dict)
 
     confluence = Confluence(
         url='http://localhost:8090',
-        cookie=cookie_dict)
+        cookies=cookie_dict)
 
     bitbucket = Bitbucket(
         url='http://localhost:7990',
-        cookie=cookie_dict)
+        cookies=cookie_dict)
 
     service_desk = ServiceDesk(
         url='http://localhost:8080',
-        cookie=cookie_dict)
+        cookies=cookie_dict)
+
+    xray = Xray(
+        url='http://localhost:8080',
+        cookies=cookie_dict)
 
 To authenticate to the Atlassian Cloud APIs:
 
@@ -177,8 +201,6 @@ To authenticate to the Atlassian Cloud APIs:
         password=jira_api_token,
         cloud=True)
 
-
-
 .. toctree::
    :maxdepth: 2
 
@@ -187,6 +209,7 @@ To authenticate to the Atlassian Cloud APIs:
    bitbucket
    bamboo
    service_desk
+   xray
 
 .. |Build Status| image:: https://travis-ci.org/atlassian-api/atlassian-python-api.svg?branch=master
    :target: https://pypi.python.org/pypi/atlassian-python-api

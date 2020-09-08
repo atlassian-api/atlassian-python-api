@@ -65,7 +65,6 @@ def is_can_removed_branch(branch_candidate):
         return False
 
     # check issues statuses
-    exclude = False
     issues_in_metadata = branch_candidate.get('metadata').get(branch_related_issues)
     for issue in issues_in_metadata:
         if jira.get_issue_status(issue.get('key')) not in ACCEPTED_ISSUE_STATUSES:

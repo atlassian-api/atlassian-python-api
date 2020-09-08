@@ -10,6 +10,12 @@ log = logging.getLogger(__name__)
 class Bitbucket(AtlassianRestAPI):
     bulk_headers = {"Content-Type": "application/vnd.atl.bitbucket.bulk+json"}
 
+    def __init__(self, *args, **kwargs):
+        super(Bitbucket, self).__init__(*args, **kwargs)
+        url = kwargs.pop('url', False)
+        if url and 'bitbucket.org' in url:
+            self.cloud = True
+
     def project_list(self, limit=None):
         """
         Provide the project list
@@ -957,10 +963,10 @@ class Bitbucket(AtlassianRestAPI):
             'reviewers': []
         }
 
-        def add_reviewer(reviewer):
+        def add_reviewer(reviewer_name):
             entry = {
                 'user': {
-                    'name': reviewer
+                    'name': reviewer_name
                 }
             }
             body['reviewers'].append(entry)
@@ -1735,6 +1741,26 @@ class Bitbucket(AtlassianRestAPI):
         if new_repository is not None:
             body['project'] = {'key': project}
         return self.post(url, data=body)
+
+    def get_users_info(self, user_filter=None, start=0, limit=25):
+        """
+        The authenticated user must have the LICENSED_USER permission to call this resource.
+        :param user_filter: if specified only users with usernames, display name or email addresses
+            containing the supplied string will be returned
+        :param limit:
+        :param start:
+        :return:
+        """
+        params = {}
+        if limit:
+            params['limit'] = limit
+        if start:
+            params['start'] = start
+        if user_filter:
+            params['filter'] = user_filter
+
+        url = "rest/api/1.0/admin/users"
+        return self.get(url, params=params)
 
     def get_current_license(self):
         """

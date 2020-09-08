@@ -81,6 +81,20 @@ Example to get your requests:
     data = sd.get_my_customer_requests()
     print(data)
 
+Using Xray (Test Management tool for Jira):
+
+.. code-block:: python
+
+    from atlassian import Xray
+
+    xr = Xray(
+           url='http://localhost:7990',
+            username='admin',
+            password='admin')
+    
+    data = xr.get_tests('TEST-001')
+    print(data)
+
 If you want to see the response in pretty print format JSON. Feel free for use construction like:
 
 .. code-block:: python

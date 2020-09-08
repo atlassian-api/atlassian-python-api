@@ -137,8 +137,8 @@ class Confluence(AtlassianRestAPI):
         parent_content_id = None
         try:
             parent_content_id = (
-                (self.get_page_by_id(page_id=page_id, expand='ancestors').get('ancestors') or {})[-1].get(
-                    'id') or None)
+                    (self.get_page_by_id(page_id=page_id, expand='ancestors').get('ancestors') or {})[-1].get(
+                        'id') or None)
         except Exception as e:
             log.error(e)
         return parent_content_id
@@ -152,8 +152,8 @@ class Confluence(AtlassianRestAPI):
         parent_content_title = None
         try:
             parent_content_title = (
-                        (self.get_page_by_id(page_id=page_id, expand='ancestors').get('ancestors') or {})[-1].get(
-                            'title') or None)
+                    (self.get_page_by_id(page_id=page_id, expand='ancestors').get('ancestors') or {})[-1].get(
+                        'title') or None)
         except Exception as e:
             log.error(e)
         return parent_content_title
@@ -632,6 +632,94 @@ class Confluence(AtlassianRestAPI):
             params["position"] = position
         return self.post(url, params=params, headers=self.no_check_headers)
 
+    def get_template_by_id(self, template_id):
+        """
+        Get user template by id. Experimental API
+        Use case is get template body and create page from that
+        """
+        url = 'rest/experimental/template/{template_id}'.format(template_id=template_id)
+
+        try:
+            response = self.get(url)
+        except HTTPError as e:
+            if e.response.status_code == 403:
+                # Raise ApiError as the documented reason is ambiguous
+                raise ApiError(
+                    "There is no content with the given id, "
+                    "or the calling user does not have permission to view the content",
+                    reason=e)
+
+            raise
+
+        return response
+
+    def get_all_blueprints_from_space(self, space, start=0, limit=20, expand=None):
+        """
+        Get all users blue prints from space. Experimental API
+        :param space: Space Key
+        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
+        :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
+                            fixed system limits. Default: 20
+        :param expand: OPTIONAL: expand e.g. body
+
+        """
+        url = 'rest/experimental/template/blueprint'
+        params = {}
+        if space:
+            params['spaceKey'] = space
+        if start:
+            params['start'] = start
+        if limit:
+            params['limit'] = limit
+        if expand:
+            params['expand'] = expand
+
+        try:
+            response = self.get(url, params=params)
+        except HTTPError as e:
+            if e.response.status_code == 403:
+                raise ApiPermissionError(
+                    "The calling user does not have permission to view the content",
+                    reason=e)
+
+            raise
+
+        return response.get('results') or []
+
+    def get_all_templates_from_space(self, space, start=0, limit=20, expand=None):
+        """
+        Get all users templates from space. Experimental API
+        ref: https://docs.atlassian.com/atlassian-confluence/1000.73.0/com/atlassian/confluence/plugins/restapi/resources/TemplateResource.html
+        :param space: Space Key
+        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
+        :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
+                            fixed system limits. Default: 20
+        :param expand: OPTIONAL: expand e.g. body
+
+        """
+        url = 'rest/experimental/template/page'
+        params = {}
+        if space:
+            params['spaceKey'] = space
+        if start:
+            params['start'] = start
+        if limit:
+            params['limit'] = limit
+        if expand:
+            params['expand'] = expand
+
+        try:
+            response = self.get(url, params=params)
+        except HTTPError as e:
+            if e.response.status_code == 403:
+                raise ApiPermissionError(
+                    "The calling user does not have permission to view the content",
+                    reason=e)
+
+            raise
+
+        return response.get('results') or []
+
     def get_all_spaces(self, start=0, limit=500, expand=None):
         """
         Get all spaces with provided limit
@@ -1055,7 +1143,7 @@ class Confluence(AtlassianRestAPI):
                                 minor_edit=minor_edit,
                                 version_comment=version_comment)
 
-    def update_page(self, page_id, title, body, parent_id=None, type='page', representation='storage',
+    def update_page(self, page_id, title, body=None, parent_id=None, type='page', representation='storage',
                     minor_edit=False, version_comment=None):
         """
         Update page if already exist
@@ -1072,50 +1160,51 @@ class Confluence(AtlassianRestAPI):
         """
         log.info('Updating {type} "{title}"'.format(title=title, type=type))
 
-        if self.is_page_content_is_already_updated(page_id, body, title):
+        if body is not None and self.is_page_content_is_already_updated(page_id, body, title):
             return self.get_page_by_id(page_id)
-        else:
-            try:
-                if self.advanced_mode:
-                    version = self.history(page_id).json()['lastUpdated']['number'] + 1
-                else:
-                    version = self.history(page_id)['lastUpdated']['number'] + 1
-            except (IndexError, TypeError) as e:
-                log.error("Can't find '{title}' {type}!".format(title=title, type=type))
-                log.debug(e)
-                return None
 
-            data = {
-                'id': page_id,
-                'type': type,
-                'title': title,
-                'body': self._create_body(body, representation),
-                'version': {'number': version,
-                            'minorEdit': minor_edit}
-            }
+        try:
+            if self.advanced_mode:
+                version = self.history(page_id).json()['lastUpdated']['number'] + 1
+            else:
+                version = self.history(page_id)['lastUpdated']['number'] + 1
+        except (IndexError, TypeError) as e:
+            log.error("Can't find '{title}' {type}!".format(title=title, type=type))
+            log.debug(e)
+            return None
 
-            if parent_id:
-                data['ancestors'] = [{'type': 'page', 'id': parent_id}]
-            if version_comment:
-                data['version']['message'] = version_comment
+        data = {
+            'id': page_id,
+            'type': type,
+            'title': title,
+            'version': {'number': version,
+                        'minorEdit': minor_edit}
+        }
+        if body is not None:
+            data['body'] = self._create_body(body, representation)
 
-            try:
-                response = self.put('rest/api/content/{0}'.format(page_id), data=data)
-            except HTTPError as e:
-                if e.response.status_code == 400:
-                    raise ApiValueError(
-                        "No space or no content type, or setup a wrong version "
-                        "type set to content, or status param is not draft and "
-                        "status content is current",
-                        reason=e)
-                if e.response.status_code == 404:
-                    raise ApiNotFoundError(
-                        "Can not find draft with current content",
-                        reason=e)
+        if parent_id:
+            data['ancestors'] = [{'type': 'page', 'id': parent_id}]
+        if version_comment:
+            data['version']['message'] = version_comment
 
-                raise
+        try:
+            response = self.put('rest/api/content/{0}'.format(page_id), data=data)
+        except HTTPError as e:
+            if e.response.status_code == 400:
+                raise ApiValueError(
+                    "No space or no content type, or setup a wrong version "
+                    "type set to content, or status param is not draft and "
+                    "status content is current",
+                    reason=e)
+            if e.response.status_code == 404:
+                raise ApiNotFoundError(
+                    "Can not find draft with current content",
+                    reason=e)
 
-            return response
+            raise
+
+        return response
 
     def _insert_to_existing_page(self, page_id, title, insert_body, parent_id=None, type='page',
                                  representation='storage',
@@ -1515,7 +1604,7 @@ class Confluence(AtlassianRestAPI):
     def get_space_content(self, space_key, depth="all", start=0, limit=500, content_type=None, expand="body.storage"):
         """
         Get space content.
-        You can specify which type of content want to recieve, or get all content types. 
+        You can specify which type of content want to recieve, or get all content types.
         Use expand to get specific content properties or page
         :param space_key: The unique space key name
         :param depth: OPTIONAL: all|root
@@ -1523,8 +1612,8 @@ class Confluence(AtlassianRestAPI):
         :param start: OPTIONAL: The start point of the collection to return. Default: 0.
         :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
                                 fixed system limits. Default: 500
-        :param expand: OPTIONAL: by default expands page body in confluence storage format. 
-                                 See atlassian documentation for more information. 
+        :param expand: OPTIONAL: by default expands page body in confluence storage format.
+                                 See atlassian documentation for more information.
         :return: Returns the space along with its ID
         """
 
@@ -2123,3 +2212,24 @@ class Confluence(AtlassianRestAPI):
             if child_subtree:
                 output.extend([p for p in child_subtree])
         return set(output)
+
+    def set_inline_tasks_checkbox(self, page_id, task_id, status):
+        """
+        Set inline task element value
+        status is CHECKED or UNCHECKED
+        :return:
+        """
+        url = "/rest/inlinetasks/1/task/{page_id}/{task_id}/".format(page_id=page_id, task_id=task_id)
+        data = {"status": status, "trigger": "VIEW_PAGE"}
+        try:
+            response = self.post(url, json=data)
+            if response.status_code == 200:
+                return True
+            else:
+                return False
+        except HTTPError as e:
+            if e.response.status_code != 200:
+                raise ApiError(
+                    "Param cannot be empty",
+                    reason=e)
+                raise
