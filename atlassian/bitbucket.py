@@ -14,7 +14,9 @@ class Bitbucket(AtlassianRestAPI):
         super(Bitbucket, self).__init__(*args, **kwargs)
         url = kwargs.pop('url', False)
         if url and 'bitbucket.org' in url:
-            self.cloud = True
+            self.api_version = "2.0"
+        else:
+            self.api_version = "1.0"
 
     def project_list(self, limit=None):
         """
@@ -22,12 +24,14 @@ class Bitbucket(AtlassianRestAPI):
         :param limit: OPTIONAL 25 is default
         :return:
         """
+        resource = self.resource_url('projects')
         params = {}
         if limit:
             params['limit'] = limit
-        if not self.cloud:
-            return (self.get('rest/api/1.0/projects', params=params) or {}).get('values')
-        return (self.get('rest/api/2.0/projects', params=params) or {}).get('values')
+        response = self.get(resource, params=params)
+        if self.advanced_mode:
+            return response
+        return response.get("values", [])
 
     def project(self, key):
         """
@@ -35,11 +39,8 @@ class Bitbucket(AtlassianRestAPI):
         :param key:
         :return:
         """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{0}'.format(key)
-        else:
-            url = 'rest/api/2.0/projects/{0}'.format(key)
-        return self.get(url) or {}
+        resource = self.resource_url('projects/{0}'.format(key))
+        return self.get(resource)
 
     def create_project(self, key, name, description=""):
         """
@@ -49,15 +50,12 @@ class Bitbucket(AtlassianRestAPI):
         :param description:
         :return:
         """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects'
-        else:
-            url = 'rest/api/2.0/projects'
+        resource = self.resource_url('projects')
         data = {"key": key,
                 "name": name,
                 "description": description
                 }
-        return self.post(url, data=data)
+        return self.post(resource, data=data)
 
     def update_project(self, key, **params):
         """
@@ -65,17 +63,18 @@ class Bitbucket(AtlassianRestAPI):
         :param key:
         :return:
         """
+        switch = self.advanced_mode
+        self.advanced_mode = False
+        resource = self.resource_url('projects/{0}'.format(key))
         data = self.project(key)
         if 'errors' not in data:
             data.update(params)
-            if not self.cloud:
-                url = 'rest/api/1.0/projects/{0}'.format(key)
-            else:
-                url = 'rest/api/2.0/projects/{0}'.format(key)
-            return self.put(url, data=data)
+            response = self.put(resource, data=data)
         else:
             log.debug('Failed to update project: {0}: Unable to read project'.format(key))
-            return None
+            response = None
+        self.advanced_mode = switch
+        return response
 
     def project_avatar(self, key, content_type='image/png'):
         """
@@ -84,15 +83,12 @@ class Bitbucket(AtlassianRestAPI):
         :param key:
         :return:
         """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{0}/avatar.png'.format(key)
-        else:
-            url = 'rest/api/2.0/projects/{0}/avatar.png'.format(key)
+        resource = self.resource_url('projects/{0}/avatar.png'.format(key))
         headers = dict(self.default_headers)
         headers['Accept'] = content_type
         headers['X-Atlassian-Token'] = 'no-check'
 
-        return self.get(url, not_json_response=True, headers=headers) or {}
+        return self.get(resource, not_json_response=True, headers=headers)
 
     def set_project_avatar(self, key, icon, content_type='image/png'):
         """
@@ -102,13 +98,10 @@ class Bitbucket(AtlassianRestAPI):
         :param content_type:
         :return:
         """
+        resource = self.resource_url('projects/{0}/avatar.png'.format(key))
         headers = {'X-Atlassian-Token': 'no-check'}
         files = {'avatar': ("avatar.png", icon, content_type)}
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{0}/avatar.png'.format(key)
-        else:
-            url = 'rest/api/2.0/projects/{0}/avatar.png'.format(key)
-        return self.post(url, files=files, headers=headers) or {}
+        return self.post(resource, files=files, headers=headers)
 
     def project_users(self, key, limit=99999, filter_str=None):
         """
@@ -119,16 +112,16 @@ class Bitbucket(AtlassianRestAPI):
         :param filter_str:  OPTIONAL: users filter string
         :return:
         """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{key}/permissions/users'.format(key=key)
-        else:
-            url = 'rest/api/2.0/projects/{key}/permissions/users'.format(key=key)
+        resource = self.resource_url('projects/{key}/permissions/users'.format(key=key))
         params = {}
         if limit:
             params['limit'] = limit
         if filter_str:
             params['filter'] = filter_str
-        return (self.get(url, params=params) or {}).get('values')
+        response = self.get(resource, params=params)
+        if self.advanced_mode:
+            return response
+        return response.get('values')
 
     def project_keys(self, key, limit=99999, filter_str=None):
         """
@@ -139,16 +132,16 @@ class Bitbucket(AtlassianRestAPI):
         :param filter_str:  OPTIONAL: users filter string
         :return:
         """
-        if not self.cloud:
-            url = 'rest/keys/1.0/projects/{key}/ssh'.format(key=key)
-        else:
-            url = 'rest/keys/2.0/projects/{key}/ssh'.format(key=key)
+        resource = self.resource_url('projects/{key}/ssh'.format(key=key))
         params = {}
         if limit:
             params['limit'] = limit
         if filter_str:
             params['filter'] = filter_str
-        return (self.get(url, params=params) or {}).get('values')
+        response = self.get(resource, params=params)
+        if self.advanced_mode:
+            return response
+        return response.get('values')
 
     def repo_users(self, project_key, repo_key, limit=99999, filter_str=None):
         """
@@ -160,18 +153,17 @@ class Bitbucket(AtlassianRestAPI):
         :param filter_str:  OPTIONAL: Users filter string
         :return:
         """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/users'.format(
-                project_key=project_key, repo_key=repo_key)
-        else:
-            url = 'rest/api/2.0/projects/{project_key}/repos/{repo_key}/permissions/users'.format(
-                project_key=project_key, repo_key=repo_key)
+        resource = self.resource_url('projects/{project_key}/repos/{repo_key}/permissions/users'.format(
+            project_key=project_key, repo_key=repo_key))
         params = {}
         if limit:
             params['limit'] = limit
         if filter_str:
             params['filter'] = filter_str
-        return (self.get(url, params=params) or {}).get('values')
+        response = self.get(resource, params=params)
+        if self.advanced_mode:
+            return response
+        return response.get('values')
 
     def repo_keys(self, project_key, repo_key, limit=99999, filter_str=None):
         """
@@ -183,18 +175,17 @@ class Bitbucket(AtlassianRestAPI):
         :param filter_str:  OPTIONAL: users filter string
         :return:
         """
-        if not self.cloud:
-            url = 'rest/keys/1.0/projects/{project_key}/repos/{repo_key}/ssh'.format(project_key=project_key,
-                                                                                     repo_key=repo_key)
-        else:
-            url = 'rest/keys/2.0/projects/{project_key}/repos/{repo_key}/ssh'.format(project_key=project_key,
-                                                                                     repo_key=repo_key)
+        resource = self.resource_url('projects/{project_key}/repos/{repo_key}/ssh'.format(project_key=project_key,
+                                                                                          repo_key=repo_key))
         params = {}
         if limit:
             params['limit'] = limit
         if filter_str:
             params['filter'] = filter_str
-        return (self.get(url, params=params) or {}).get('values')
+        response = self.get(resource, params=params)
+        if self.advanced_mode:
+            return response
+        return response.get('values')
 
     def project_users_with_administrator_permissions(self, key):
         """
@@ -202,11 +193,14 @@ class Bitbucket(AtlassianRestAPI):
         :param key: project key
         :return: project administrators
         """
+        switch = self.advanced_mode
+        self.advanced_mode = False
         project_administrators = [user['user'] for user in self.project_users(key)
                                   if user['permission'] == 'PROJECT_ADMIN']
         for group in self.project_groups_with_administrator_permissions(key):
             for user in self.group_members(group):
                 project_administrators.append(user)
+        self.advanced_mode = switch
         return project_administrators
 
     def project_grant_user_permissions(self, project_key, username, permission):
@@ -217,13 +211,9 @@ class Bitbucket(AtlassianRestAPI):
         :param permission: the project permissions available are 'PROJECT_ADMIN', 'PROJECT_WRITE' and 'PROJECT_READ'
         :return:
         """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project_key}/permissions/users?permission={permission}&name={username}' \
-                .format(project_key=project_key, permission=permission, username=username)
-        else:
-            url = 'rest/api/2.0/projects/{project_key}/permissions/users?permission={permission}&name={username}' \
-                .format(project_key=project_key, permission=permission, username=username)
-        return self.put(url)
+        resource = self.resource_url('projects/{project_key}/permissions/users?permission={permission}&name={username}'
+                                     .format(project_key=project_key, permission=permission, username=username))
+        return self.put(resource)
 
     def project_remove_user_permissions(self, project_key, username):
         """
@@ -235,13 +225,9 @@ class Bitbucket(AtlassianRestAPI):
         :param username: user name to be granted
         :return:
         """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project_key}/permissions/users?name={username}'.format(
-                project_key=project_key, username=username)
-        else:
-            url = 'rest/api/2.0/projects/{project_key}/permissions/users?name={username}'.format(
-                project_key=project_key, username=username)
-        return self.delete(url)
+        resource = self.resource_url('projects/{project_key}/permissions/users?name={username}'
+                                     .format(project_key=project_key, username=username))
+        return self.delete(resource)
 
     def project_grant_group_permissions(self, project_key, group_name, permission):
         """
@@ -251,13 +237,9 @@ class Bitbucket(AtlassianRestAPI):
         :param permission: the project permissions available are 'PROJECT_ADMIN', 'PROJECT_WRITE' and 'PROJECT_READ'
         :return:
         """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project_key}/permissions/groups?permission={permission}&name={group_name}' \
-                .format(project_key=project_key, permission=permission, group_name=group_name)
-        else:
-            url = 'rest/api/2.0/projects/{project_key}/permissions/groups?permission={permission}&name={group_name}' \
-                .format(project_key=project_key, permission=permission, group_name=group_name)
-        return self.put(url)
+        resource = self.resource_url('projects/{project_key}/permissions/groups?permission={permission}&name={group_name}'
+                                     .format(project_key=project_key, permission=permission, group_name=group_name))
+        return self.put(resource)
 
     def project_remove_group_permissions(self, project_key, groupname):
         """
@@ -270,13 +252,9 @@ class Bitbucket(AtlassianRestAPI):
         :param groupname: group to be granted
         :return:
         """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project_key}/permissions/groups?name={group_name}'.format(
-                project_key=project_key, group_name=groupname)
-        else:
-            url = 'rest/api/2.0/projects/{project_key}/permissions/groups?name={group_name}'.format(
-                project_key=project_key, group_name=groupname)
-        return self.delete(url)
+        resource = self.resource_url('projects/{project_key}/permissions/groups?name={group_name}'.format(
+            project_key=project_key, group_name=groupname))
+        return self.delete(resource)
 
     def repo_grant_user_permissions(self, project_key, repo_key, username, permission):
         """
@@ -289,13 +267,9 @@ class Bitbucket(AtlassianRestAPI):
         """
         params = {'permission': permission,
                   'name': username}
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/users' \
-                .format(project_key=project_key, repo_key=repo_key)
-        else:
-            url = 'rest/api/2.0/projects/{project_key}/repos/{repo_key}/permissions/users' \
-                .format(project_key=project_key, repo_key=repo_key)
-        return self.put(url, params=params)
+        resource = self.resource_url('projects/{project_key}/repos/{repo_key}/permissions/users'
+                                     .format(project_key=project_key, repo_key=repo_key))
+        return self.put(resource, params=params)
 
     def repo_remove_user_permissions(self, project_key, repo_key, username):
         """
@@ -310,13 +284,9 @@ class Bitbucket(AtlassianRestAPI):
         :return:
         """
         params = {'name': username}
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/users' \
-                .format(project_key=project_key, repo_key=repo_key)
-        else:
-            url = 'rest/api/2.0/projects/{project_key}/repos/{repo_key}/permissions/users' \
-                .format(project_key=project_key, repo_key=repo_key)
-        return self.delete(url, params=params)
+        resource = self.resource_url('projects/{project_key}/repos/{repo_key}/permissions/users'
+                                     .format(project_key=project_key, repo_key=repo_key))
+        return self.delete(resource, params=params)
 
     def repo_grant_group_permissions(self, project_key, repo_key, groupname, permission):
         """
@@ -2618,7 +2588,7 @@ class Bitbucket(AtlassianRestAPI):
     def get_repositories(self, workspace, role=None, query=None, sort=None, number=10, page=1):
         """
         Get all repositories in a workspace.
-        
+
         :param role: Filters the result based on the authenticated user's role on each repository.
                       One of: member, contributor, admin, owner
         :param query: Query string to narrow down the response.
@@ -2744,7 +2714,7 @@ class Bitbucket(AtlassianRestAPI):
     def is_default_reviewer(self, workspace, repository, user):
         """
         Check if the user is a default reviewer of the repository.
-        
+
         :param user: The username or account UUID to check.
         :return: True if present, False if not.
         """
@@ -2762,7 +2732,7 @@ class Bitbucket(AtlassianRestAPI):
     def delete_default_reviewer(self, workspace, repository, user):
         """
         Remove user as default reviewer from the repository.
-        
+
         :param user: The username or account UUID to delete as default reviewer.
         """
         resource = "repositories/{workspace}/{repository}/default-reviewers/{user}".format(

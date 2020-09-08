@@ -201,15 +201,15 @@ class AtlassianRestAPI(object):
         """
         response = self.request('GET', path=path, flags=flags, params=params, data=data, headers=headers,
                                 trailing=trailing)
-        if self.advanced_mode:
-            return response
         if not_json_response:
             return response.content
+        if self.advanced_mode:
+            return response
         else:
             if not response.text:
                 return None
             try:
-                return response.json()
+                return response.json() or {}
             except Exception as e:
                 log.error(e)
                 return response.text
