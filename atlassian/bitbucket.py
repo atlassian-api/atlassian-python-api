@@ -859,6 +859,8 @@ class Bitbucket(AtlassianRestAPI):
                 pullRequestId=pull_request_id)
         params = {'start': 0}
         response = self.get(url, params=params)
+        if self.advanced_mode:
+            return response
         if 'values' not in response:
             return []
         changes_list = (response or {}).get('values')
