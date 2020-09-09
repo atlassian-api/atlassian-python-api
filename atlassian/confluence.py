@@ -30,15 +30,13 @@ class Confluence(AtlassianRestAPI):
         ".svg": "image/svg+xml"
     }
 
-    def __init__(self, **kwargs):
-        if ('url' in kwargs
-            and kwargs['url']
-            and ('atlassian.net' in kwargs['url'] or 'jira.com' in kwargs['url'])
-            and ('/wiki' not in kwargs['url']) ):
-            kwargs['url'] = AtlassianRestAPI.url_joiner(kwargs['url'], '/wiki')
+    def __init__(self, url, *args, **kwargs):
+        if (('atlassian.net' in url or 'jira.com' in url)
+            and ('/wiki' not in url) ):
+            url = AtlassianRestAPI.url_joiner(url, '/wiki')
             if not 'cloud' in kwargs:
                 kwargs['cloud'] = True
-        super(Confluence, self).__init__(**kwargs)
+        super(Confluence, self).__init__(url, *args, **kwargs)
 
 
     @staticmethod
