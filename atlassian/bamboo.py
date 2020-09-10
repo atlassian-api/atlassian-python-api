@@ -80,12 +80,13 @@ class Bamboo(AtlassianRestAPI):
     """ Projects & Plans """
 
     def projects(self, expand=None, favourite=False, clover_enabled=False, max_results=25):
-        return self.base_list_call('project', expand, favourite, clover_enabled, max_results,
-                                   elements_key='projects', element_key='project')
+        return self.base_list_call('project', expand=expand, favourite=favourite, clover_enabled=clover_enabled,
+                                   max_results=max_results, elements_key='projects', element_key='project')
 
     def project(self, project_key, expand=None, favourite=False, clover_enabled=False):
         resource = 'project/{}'.format(project_key)
-        return self.base_list_call(resource, expand, favourite, clover_enabled, start_index=0, max_results=25)
+        return self.base_list_call(resource=resource, expand=expand, favourite=favourite,
+                                   clover_enabled=clover_enabled, start_index=0, max_results=25)
 
     def project_plans(self, project_key, start_index=0, max_results=25):
         """
@@ -101,7 +102,8 @@ class Bamboo(AtlassianRestAPI):
                                    elements_key='plans', element_key='plan')
 
     def plans(self, expand=None, favourite=False, clover_enabled=False, start_index=0, max_results=25):
-        return self.base_list_call("plan", expand, favourite, clover_enabled, start_index, max_results,
+        return self.base_list_call("plan", expand=expand, favourite=favourite,
+                                   clover_enabled=clover_enabled, start_index=start_index, max_results=max_results,
                                    elements_key='plans', element_key='plan')
 
     def plan_directory_info(self, plan_key):
@@ -115,14 +117,18 @@ class Bamboo(AtlassianRestAPI):
         resource = 'planDirectoryInfo/{}'.format(plan_key)
         return self.get(self.resource_url(resource))
 
-    def get_plan(self, plan_key):
+    def get_plan(self, plan_key, expand=None):
         """
         Get plan information.
         :param plan_key:
+        :param expand: optional
         :return:
         """
+        params = {}
+        if expand:
+            params["expand"] = expand
         resource = 'rest/api/latest/plan/{}'.format(plan_key)
-        return self.get(resource)
+        return self.get(resource, params=params)
 
     def delete_plan(self, plan_key):
         """

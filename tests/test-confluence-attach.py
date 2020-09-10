@@ -22,7 +22,6 @@ class TestConfluenceAttach(unittest.TestCase):
 
     def test_confluence_attach_file_1(self):
         credentials = None
-
         try:
             with open(self.secret_file) as json_file:
                 credentials = json.load(json_file)

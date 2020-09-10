@@ -10,6 +10,12 @@ log = logging.getLogger(__name__)
 class Bitbucket(AtlassianRestAPI):
     bulk_headers = {"Content-Type": "application/vnd.atl.bitbucket.bulk+json"}
 
+    def __init__(self, url, *args, **kwargs):
+        if (not 'cloud' in kwargs
+            and ('bitbucket.org' in url) ):
+            kwargs['cloud'] = True
+        super(Bitbucket, self).__init__(url, *args, **kwargs)
+
     def project_list(self, limit=None):
         """
         Provide the project list
@@ -530,6 +536,36 @@ class Bitbucket(AtlassianRestAPI):
                 .format(project=project_key, repository=repository_slug)
         return self.get(url)
 
+    def get_repo_labels(self, project_key, repository_slug):
+        """
+        Get labels for a specific repository from a project. This operates based on slug not name which may
+        be confusing to some users. (BitBucket Server only)
+        :param project_key: Key of the project you wish to look in.
+        :param repository_slug: url-compatible repository identifier
+        :return: Dictionary of request response
+        """
+        if self.cloud:
+            raise Exception("Not supported in Bitbucket Cloud")
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/labels' \
+            .format(project=project_key, repository=repository_slug)
+        return self.get(url)
+
+    def set_repo_label(self, project_key, repository_slug, label_name):
+        """
+        Sets a label on a repository. (BitBucket Server only)
+        The authenticated user must have REPO_ADMIN permission for the specified repository to call this resource.
+        :param project_key: Key of the project you wish to look in.
+        :param repository_slug: url-compatible repository identifier
+        :param label_name: label name to apply
+        :return:
+        """
+        data = {'name': label_name}
+        if self.cloud:
+            raise Exception("Not supported in Bitbucket Cloud")
+        url = 'rest/api/1.0/projects/{project}/repos/{repository}/labels' \
+            .format(project=project_key, repository=repository_slug)
+        return self.post(url, data=data)
+
     def repo_all_list(self, project_key):
         """
         Get all repositories list from project
@@ -823,6 +859,8 @@ class Bitbucket(AtlassianRestAPI):
                 pullRequestId=pull_request_id)
         params = {'start': 0}
         response = self.get(url, params=params)
+        if self.advanced_mode:
+            return response
         if 'values' not in response:
             return []
         changes_list = (response or {}).get('values')
@@ -927,10 +965,10 @@ class Bitbucket(AtlassianRestAPI):
             'reviewers': []
         }
 
-        def add_reviewer(reviewer):
+        def add_reviewer(reviewer_name):
             entry = {
                 'user': {
-                    'name': reviewer
+                    'name': reviewer_name
                 }
             }
             body['reviewers'].append(entry)
@@ -1705,6 +1743,26 @@ class Bitbucket(AtlassianRestAPI):
         if new_repository is not None:
             body['project'] = {'key': project}
         return self.post(url, data=body)
+
+    def get_users_info(self, user_filter=None, start=0, limit=25):
+        """
+        The authenticated user must have the LICENSED_USER permission to call this resource.
+        :param user_filter: if specified only users with usernames, display name or email addresses
+            containing the supplied string will be returned
+        :param limit:
+        :param start:
+        :return:
+        """
+        params = {}
+        if limit:
+            params['limit'] = limit
+        if start:
+            params['start'] = start
+        if user_filter:
+            params['filter'] = user_filter
+
+        url = "rest/api/1.0/admin/users"
+        return self.get(url, params=params)
 
     def get_current_license(self):
         """
@@ -2567,18 +2625,18 @@ class Bitbucket(AtlassianRestAPI):
         :param sort: Field by which the results should be sorted.
         """
         resource = "repositories/{workspace}".format(workspace=workspace)
-        
+
         params = {
             "pagelen": number,
             "page": page
-            }
-        if not role is None:
+        }
+        if role is not None:
             params["role"] = role
-        if not query is None:
+        if query is not None:
             params["query"] = query
-        if not sort is None:
+        if sort is not None:
             params["sort"] = sort
-        
+
         return self.get(self.resource_url(resource), params=params)
 
     def get_branch_restrictions(self, workspace, repository, kind=None, pattern=None, number=10, page=1):
@@ -2588,16 +2646,15 @@ class Bitbucket(AtlassianRestAPI):
         resource = "repositories/{workspace}/{repository}/branch-restrictions".format(
             workspace=workspace, repository=repository)
         params = {"pagelen": number, "page": page}
-        if not kind is None:
+        if kind is not None:
             params["kind"] = kind
-        if not pattern is None:
+        if pattern is not None:
             params["pattern"] = pattern
 
         return self.get(self.resource_url(resource), params=params)
 
     def add_branch_restriction(self, workspace, repository, kind, branch_match_kind="glob",
-                                branch_pattern = "*", branch_type = None,
-                                users = None, groups = None, value = None):
+                               branch_pattern="*", branch_type=None, users=None, groups=None, value=None):
         """
         Add a new branch restriction.
 
@@ -2611,8 +2668,10 @@ class Bitbucket(AtlassianRestAPI):
                       apply to (supports * as wildcard).
         :param branch_type: The branch type specifies the branches this restriction
                       should apply to. One of: feature, bugfix, release, hotfix, development, production.
-        :param users: List of user objects that are excluded from the restriction. Minimal: {"username": "<username>"}
-        :param groups: List of group objects that are excluded from the restriction. Minimal: {"owner": {"username": "<teamname>"}, "slug": "<groupslug>"}
+        :param users: List of user objects that are excluded from the restriction.
+                        Minimal: {"username": "<username>"}
+        :param groups: List of group objects that are excluded from the restriction.
+                        Minimal: {"owner": {"username": "<teamname>"}, "slug": "<groupslug>"}
         """
         resource = "repositories/{workspace}/{repository}/branch-restrictions".format(
             workspace=workspace, repository=repository)
@@ -2629,13 +2688,13 @@ class Bitbucket(AtlassianRestAPI):
         if branch_match_kind == "branching_model":
             data["branch_type"] = branch_type
 
-        if not users is None:
+        if users is not None:
             data["users"] = users
 
-        if not groups is None:
+        if groups is not None:
             data["groups"] = groups
 
-        if not value is None:
+        if value is not None:
             data["value"] = value
 
         return self.post(self.resource_url(resource), data=data)
@@ -2659,7 +2718,6 @@ class Bitbucket(AtlassianRestAPI):
 
         return self.delete(self.resource_url(resource))
 
-    
     def get_default_reviewers(self, workspace, repository, number=10, page=1):
         """
         Get all default reviewers for the repository.
@@ -2667,7 +2725,7 @@ class Bitbucket(AtlassianRestAPI):
         resource = "repositories/{workspace}/{repository}/default-reviewers".format(
             workspace=workspace, repository=repository)
         params = {"pagelen": number, "page": page}
-        
+
         return self.get(self.resource_url(resource), params=params)
 
     def add_default_reviewer(self, workspace, repository, user):

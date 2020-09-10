@@ -2,7 +2,9 @@
 
 
 class ApiError(Exception):
-    pass
+    def __init__(self, *args, **kwargs):
+        self.reason = kwargs.get("reason")
+        super(ApiError, self).__init__(*args)
 
 
 class ApiNotFoundError(ApiError):

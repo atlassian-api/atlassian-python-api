@@ -116,7 +116,7 @@ Manage projects
     jira.get_project_issues_count(project)
 
     # Get all project issues
-    jira.get_all_project_issues(project, fields='*all')
+    jira.get_all_project_issues(project, fields='*all', start=100, limit=500)
 
     # Get all assignable users for project
     jira.get_all_assignable_users_for_project(project_key, start=0, limit=50)
@@ -133,6 +133,12 @@ Manage projects
     # user has the administrative permission.
     # Use only_levels=True for get the only levels entries
     jira.get_project_issue_security_scheme(project_id_or_key, only_levels=False)
+
+    # Resource for associating notification schemes and projects.
+    # Gets a notification scheme associated with the project.
+    # Follow the documentation of /notificationscheme/{id} resource for all details about returned value.
+    # Use 'expand' to get details (default is None)  possible values are notificationSchemeEvents,user,group,projectRole,field,all
+    jira.get_priority_scheme_of_project(project_key_or_id, expand=None)
 
 
 Manage issues
@@ -152,9 +158,6 @@ Manage issues
 
     # Get existing custom fields or find by filter
     get_custom_fields(self, search=None, start=1, limit=50):
-
-    # Rename sprint
-    jira.rename_sprint(sprint_id, name, start_date, end_date)
 
     # Check issue exists
     jira.issue_exists(issue_key)
@@ -203,6 +206,22 @@ Manage issues
 
     # Delete Issue Links
     jira.delete_issue_remote_link_by_id(issue_key, link_id)
+
+
+Manage Boards
+-------------
+
+.. code-block:: python
+
+    # Create sprint
+    jira.jira.create_sprint(sprint_name, origin_board_id,  start_datetime, end_datetime, goal)
+
+    # Rename sprint
+    jira.rename_sprint(sprint_id, name, start_date, end_date)
+
+    # Add/Move Issues to sprint
+    jira.add_issues_to_sprint(sprint_id, issues_list)
+
 
 Attachments actions
 -------------------

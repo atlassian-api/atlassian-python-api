@@ -162,6 +162,12 @@ Get spaces info
     # Get information about a space through space key
     confluence.get_space(space_key, expand='description.plain,homepage')
 
+    # Get space content (configuring by the expand property)
+    confluence.get_space_content(space_key, depth="all", start=0, limit=500, content_type=None, expand="body.storage")
+
+    # Get Space permissions set based on json-rpc call
+    confluence.get_space_permissions(space_key)
+
 Users and Groups
 ----------------
 
@@ -215,4 +221,7 @@ Other actions
 
     # Compare content and check is already updated or not
     confluence.is_page_content_is_already_updated(page_id, body)
+
+    # Add inline task setting checkbox method
+    confluence.set_inline_tasks_checkbox(page_id, task_id, status)
 

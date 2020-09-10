@@ -1,5 +1,5 @@
 # coding: utf8
-from atlassian import Jira, Confluence, Bitbucket, Bamboo, Crowd, ServiceDesk
+from atlassian import Jira, Confluence, Bitbucket, Bamboo, Crowd, ServiceDesk, Xray
 import os
 
 BAMBOO_URL = os.environ.get('BAMBOO_URL', 'http://localhost:8085')
@@ -7,6 +7,7 @@ JIRA_URL = os.environ.get('BAMBOO_URL', 'http://localhost:8080')
 CONFLUENCE_URL = os.environ.get('BAMBOO_URL', 'http://localhost:8090')
 STASH_URL = os.environ.get('BAMBOO_URL', 'http://localhost:7990')
 SERVICE_DESK_URL = os.environ.get('SERVICE_DESK_URL', 'http://localhost:8080')
+XRAY_URL = os.environ.get('XRAY_URL', 'http://localhost:8080')
 
 CROWD_URL = os.environ.get('CROWD_URL', 'http://localhost:8095/crowd')
 CROWD_APPLICATION = os.environ.get('CROWD_APPLICATION', 'bamboo')
@@ -55,6 +56,13 @@ class TestBasic(object):
     def test_init_service_desk(self):
         service_desk = ServiceDesk(
             url=SERVICE_DESK_URL,
+            username=ATLASSIAN_USER,
+            password=ATLASSIAN_PASSWORD
+        )
+
+    def test_init_xray(self):
+        xray = Xray(
+            url=XRAY_URL,
             username=ATLASSIAN_USER,
             password=ATLASSIAN_PASSWORD
         )

@@ -32,6 +32,29 @@ Mandatory conditions
 
 Please follow the code style in the docs.
 
+
+Before you raise a PR
+---------------------
+
+Create the **Commit Header** with the relevant Service Name pre-fixed, examples below,
+
+* Jira: review user module           :heavy_check_mark:
+* [JIRA] Issues Move to Sprint       :heavy_check_mark:
+* Confluence: update_page_property method     :heavy_check_mark:
+
+An example of a commit message header,
+
+* Addition of parameters for start & limit in the function of `get_all_project_issues`      :x:
+
+could be better written as,
+
+* [JIRA] Project Issues parameter addition for start and limit      :heavy_check_mark:
+
+with the commit body have a detail about where/what changes introduced.
+
+This will help the reviewer or log-viewers to better identify what a particular commit is for.
+
+
 Using your changes before they’re live
 --------------------------------------
 
@@ -56,14 +79,18 @@ References
 
 All methods based on docs from: https://developer.atlassian.com/docs/
 
-* `Jira Server`_
-* `Jira Cloud`_
-* `Confluence Server`_
-* `Confluence Cloud`_
-* `Jira Service Desk Server`_
-* `Jira Service Desk Cloud`_
-* `Portfolio for Jira`_
-* `Portfolio for Jira Teams`_
+* Jira
+    - `Jira Server`_
+    - `Jira Cloud`_
+* Jira Service Desk
+    - `Jira Service Desk Server`_
+    - `Jira Service Desk Cloud`_
+* Confluence
+    - `Confluence Server`_
+    - `Confluence Cloud`_
+* Advanced Roadmaps (formerly Portfolio for Jira)
+    - `Portfolio for Jira`_
+    - `Portfolio for Jira Teams`_
 *  Bitbucket:
     - https://developer.atlassian.com/server/bitbucket/reference/rest-api/
     - https://developer.atlassian.com/server/bitbucket/how-tos/command-line-rest/
@@ -77,6 +104,8 @@ All methods based on docs from: https://developer.atlassian.com/docs/
     - https://developer.atlassian.com/platform/marketplace/rest
 * Crowd:
     - https://developer.atlassian.com/server/crowd/crowd-rest-apis/
+* Xray:
+    - https://docs.getxray.app/display/XRAY/REST+API
 * Others:
     - https://developer.atlassian.com/server/jira/platform/oauth/
     - https://confluence.atlassian.com/cloud/api-tokens-938839638.html

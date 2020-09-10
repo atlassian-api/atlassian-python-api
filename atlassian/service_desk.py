@@ -15,7 +15,7 @@ class ServiceDesk(AtlassianRestAPI):
     def get_info(self):
         """ Get info about Service Desk app """
 
-        return self.get('rest/servicedeskapi/info', headers=self.experimental_headers, )
+        return self.get('rest/servicedeskapi/info', headers=self.experimental_headers)
 
     def get_service_desks(self):
         """
@@ -24,7 +24,11 @@ class ServiceDesk(AtlassianRestAPI):
 
         :return: Service Desks
         """
-        return (self.get('rest/servicedeskapi/servicedesk', headers=self.experimental_headers) or {}).get('values')
+        service_desks_list = self.get('rest/servicedeskapi/servicedesk', headers=self.experimental_headers)
+        if self.advanced_mode:
+            return service_desks_list
+        else:
+            return (service_desks_list or {}).get('values')
 
     def get_service_desk_by_id(self, service_desk_id):
         """
@@ -77,7 +81,7 @@ class ServiceDesk(AtlassianRestAPI):
 
         :param service_desk_id: str
         :param request_type_id: str
-        :param values_dict: str
+        :param values_dict: str/dict
         :param raise_on_behalf_of: str
         :param request_participants: list
         :return: New request
@@ -95,7 +99,16 @@ class ServiceDesk(AtlassianRestAPI):
         if request_participants:
             data["requestParticipants"] = request_participants
 
-        return self.post('rest/servicedeskapi/request', data=data, headers=self.experimental_headers)
+        param_map = {
+            "headers": self.experimental_headers
+        }
+
+        if isinstance(values_dict, dict):
+            param_map["json"] = data
+        elif isinstance(values_dict, str):
+            param_map["data"] = data
+
+        return self.post('rest/servicedeskapi/request', **param_map)
 
     def get_customer_request_status(self, issue_id_or_key):
         """
@@ -419,7 +432,7 @@ class ServiceDesk(AtlassianRestAPI):
         url = 'rest/servicedeskapi/servicedesk/{}/attachTemporaryFile'.format(service_desk_id)
 
         with open(filename, 'rb') as file:
-            result = self.post(path=url, headers=self.experimental_headers,
+            result = self.post(path=url, headers=self.experimental_headers_general,
                                files={'file': file}).get('temporaryAttachments')
             temp_attachment_id = result[0].get('temporaryAttachmentId')
 
