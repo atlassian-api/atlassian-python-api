@@ -243,6 +243,24 @@ class Jira(AtlassianRestAPI):
         url = 'rest/api/2/cluster/nodes'
         return self.get(url)
 
+    def delete_cluster_node(self, node_id):
+        """
+        Delete the node from the cluster if state of node is OFFLINE
+        :param node_id: str
+        :return:
+        """
+        url = 'rest/api/2/cluster/node/{}'.format(node_id)
+        return self.delete(url)
+
+    def set_node_to_offline(self, node_id):
+        """
+        Change the node's state to offline if the node is reporting as active, but is not alive
+        :param node_id: str
+        :return:
+        """
+        url = 'rest/api/2/cluster/node/{}/offline'.format(node_id)
+        return self.put(url)
+
     #######################################################################################################
     # ZDU (Zero Downtime upgrade) module. (Available for DC)
     # Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/cluster/zdu
@@ -598,7 +616,7 @@ class Jira(AtlassianRestAPI):
         """
         :param key:
         :param time_sec: int: second
-        :param started:
+        :param started: str: format ``%Y-%m-%dT%H:%M:%S.000+0000%z``
         :param comment:
         :return:
         """

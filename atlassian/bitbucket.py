@@ -10,11 +10,11 @@ log = logging.getLogger(__name__)
 class Bitbucket(AtlassianRestAPI):
     bulk_headers = {"Content-Type": "application/vnd.atl.bitbucket.bulk+json"}
 
-    def __init__(self, *args, **kwargs):
-        super(Bitbucket, self).__init__(*args, **kwargs)
-        url = kwargs.pop('url', False)
-        if url and 'bitbucket.org' in url:
-            self.cloud = True
+    def __init__(self, url, *args, **kwargs):
+        if (not 'cloud' in kwargs
+            and ('bitbucket.org' in url) ):
+            kwargs['cloud'] = True
+        super(Bitbucket, self).__init__(url, *args, **kwargs)
 
     def project_list(self, limit=None):
         """
@@ -859,6 +859,8 @@ class Bitbucket(AtlassianRestAPI):
                 pullRequestId=pull_request_id)
         params = {'start': 0}
         response = self.get(url, params=params)
+        if self.advanced_mode:
+            return response
         if 'values' not in response:
             return []
         changes_list = (response or {}).get('values')
