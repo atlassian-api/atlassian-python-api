@@ -3,6 +3,11 @@ Atlassian Python API wrapper
 ============================
 |Build Status| |PyPI version| |PyPI - Downloads| |License| |Codacy Badge| |Docs|
 
+What is it?
+___________
+This package is used to provide a **simple** python interface for interacting with Atlassian products (Server, Data Center and Cloud).
+It is based on the official public Rest API documentation and private methods (+ xml+rpc, raw http request).
+
 Documentation
 -------------
 
@@ -10,11 +15,24 @@ Documentation
 
 .. _Documentation: https://atlassian-python-api.readthedocs.io
 
-Install
--------
+How to Install?
+---------------
+
+From PyPI
+
 .. code-block:: console
 
    $ pip install atlassian-python-api
+
+From Source
+
+- Git clone repository
+- Use `pip install -r requirements.txt` to install the required packages
+- or `pipenv install && pipenv install --dev`
+
+How to contribute?
+------------------
+Please, click here `Contribution Guidelines for this project`_
 
 Examples
 --------
