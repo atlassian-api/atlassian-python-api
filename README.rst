@@ -5,7 +5,8 @@ Atlassian Python API wrapper
 
 What is it?
 ___________
-This package is used to provide a **simple** python interface for interacting with Atlassian products (Server, Data Center and Cloud).
+This package is used to provide a **simple** python interface for interacting with Atlassian products
+(Server, Data Center and Cloud) and apps from ecosystem (Portfolio, XRay).
 It is based on the official public Rest API documentation and private methods (+ xml+rpc, raw http request).
 
 Documentation
@@ -37,7 +38,7 @@ Please, click here `Contribution Guidelines for this project`_
 
 Examples
 ________
-**More examples in ``examples/`` directory.**
+More **examples** in **``examples/``** directory.
 
 Here's a short example of how to create a Confluence page:
 
