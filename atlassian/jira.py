@@ -636,6 +636,23 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         url = "rest/api/2/issue/{issueIdOrKey}/worklog".format(issueIdOrKey=issue_id_or_key)
+
+        return self.get(url)
+
+    def issue_archive(self, issue_id_or_key, notify_users=False):
+        """
+        Archives an issue.
+        :param issue_id_or_key: Issue id or issue key
+        :param notify_users: send the email with notification that the issue was updated to users that watch it.
+                            Admin or project admin permissions are required to disable the notification.
+        :return:
+        """
+        params = {}
+        if notify_users:
+            params['notifyUsers'] = "true"
+        else:
+            params['notifyUsers'] = "false"
+        url = "rest/api/2/issue/{issueIdOrKey}/archive".format(issueIdOrKey=issue_id_or_key)
         return self.get(url)
 
     def issue_field_value(self, key, field):
@@ -1431,18 +1448,125 @@ class Jira(AtlassianRestAPI):
     def update_project(self, project_key, data, expand=None):
         """
         Updates a project.
+        Only non null values sent in JSON will be updated in the project.
+        Values available for the assigneeType field are: "PROJECT_LEAD" and "UNASSIGNED".
         Update project: /rest/api/2/project/{projectIdOrKey}
 
         :param project_key: project key of project that needs to be updated
         :param data: dictionary containing the data to be updated
         :param expand: the parameters to expand
         """
+        url = 'rest/api/2/project/{projectIdOrKey}'.format(projectIdOrKey=project_key)
+        params = {}
         if expand:
-            url = 'rest/api/2/project/{projectIdOrKey}?expand={expand}'.format(projectIdOrKey=project_key,
-                                                                               expand=expand)
-        else:
-            url = 'rest/api/2/project/{projectIdOrKey}'.format(projectIdOrKey=project_key)
-        return self.put(url, data)
+            params['expand'] = expand
+        return self.put(url, data, params=params)
+
+    def update_project_category_for_project(self, project_key, new_project_category_id, expand=None):
+        """
+        Updates a project.
+        Update project: /rest/api/2/project/{projectIdOrKey}
+
+        :param project_key: project key of project that needs to be updated
+        :param new_project_category_id:
+        :param expand: the parameters to expand
+        """
+        data = {'categoryId': new_project_category_id}
+        return self.update_project(project_key, data, expand=expand)
+
+    #######################################################################################################
+    # Resource for associating notification schemes and projects
+    # Reference:
+    #   https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/project/{projectKeyOrId}/notificationscheme
+    #######################################################################################################
+    def get_notification_scheme_for_project(self, project_id_or_key):
+        """
+        Gets a notification scheme associated with the project.
+        Follow the documentation of /notificationscheme/{id} resource for all details about returned value.
+        :param project_id_or_key:
+        :return:
+        """
+        url = 'rest/api/2/project/{}/notificationscheme'.format(project_id_or_key)
+        return self.get(url)
+
+    def assign_project_notification_scheme(self, project_key, new_notification_scheme=""):
+        """
+        Updates a project.
+        Update project: /rest/api/2/project/{projectIdOrKey}
+
+        :param project_key: project key of project that needs to be updated
+        :param new_notification_scheme:
+        """
+        data = {'notificationScheme': new_notification_scheme}
+        return self.update_project(project_key, data)
+
+    def get_notification_schemes(self):
+        """
+        Returns a paginated list of notification schemes
+        """
+        url = 'rest/api/2/notificationscheme'
+        return self.get(url)
+
+    def get_all_notification_schemes(self):
+        """
+        Returns a paginated list of notification schemes
+        """
+        return self.get_notification_schemes().get("values") or []
+
+    def get_notification_scheme(self, notification_scheme_id, expand=None):
+        """
+        Returns a full representation of the notification scheme for the given id.
+        Use 'expand' to get details
+        Returns a full representation of the notification scheme for the given id. This resource will return a notification scheme containing a list of events and recipient configured to receive notifications for these events. Consumer should allow events without recipients to appear in response. User accessing the data is required to have permissions to administer at least one project associated with the requested notification scheme.
+        Notification recipients can be:
+
+            current assignee - the value of the notificationType is CurrentAssignee
+            issue reporter - the value of the notificationType is Reporter
+            current user - the value of the notificationType is CurrentUser
+            project lead - the value of the notificationType is ProjectLead
+            component lead - the value of the notificationType is ComponentLead
+            all watchers - the value of the notification type is AllWatchers
+            configured user - the value of the notification type is User. Parameter will contain key of the user.
+                Information about the user will be provided if user expand parameter is used.
+            configured group - the value of the notification type is Group. Parameter will contain name of the group.
+                Information about the group will be provided if group expand parameter is used.
+            configured email address - the value of the notification type is EmailAddress, additionally
+                information about the email will be provided.
+            users or users in groups in the configured custom fields - the value of the notification type
+                is UserCustomField or GroupCustomField. Parameter will contain id of the custom field.
+                Information about the field will be provided if field expand parameter is used.
+            configured project role - the value of the notification type is ProjectRole.
+                Parameter will contain project role id.
+                Information about the project role will be provided if projectRole expand parameter is used.
+        Please see the example for reference.
+        The events can be JIRA system events or events configured by administrator.
+        In case of the system events, data about theirs ids, names and descriptions is provided.
+        In case of custom events, the template event is included as well.
+        :param notification_scheme_id: Id of scheme u wanna work with
+        :param expand: str
+        :return: full representation of the notification scheme for the given id
+        """
+        url = 'rest/api/2/notificationscheme/{}'.format(notification_scheme_id)
+        params = {}
+        if expand:
+            params['expand'] = expand
+        return self.get(url, params=params)
+
+    #######################################################################################################
+    # Resource for associating permission schemes and projects.
+    # Reference:
+    #   https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/project/{projectKeyOrId}/permissionscheme
+    #######################################################################################################
+    def assign_project_permission_scheme(self, project_id_or_key, permission_scheme_id):
+        """
+        Assigns a permission scheme with a project.
+        :param project_id_or_key:
+        :param permission_scheme_id:
+        :return:
+        """
+        url = 'rest/api/2/project/{}/permissionscheme'.format(project_id_or_key)
+        data = {"id": permission_scheme_id}
+        return self.put(url, data=data)
 
     def get_project_permission_scheme(self, project_id_or_key, expand=None):
         """
@@ -1454,27 +1578,6 @@ class Jira(AtlassianRestAPI):
         :return: data of project permission scheme
         """
         url = 'rest/api/2/project/{}/permissionscheme'.format(project_id_or_key)
-        params = {}
-        if expand:
-            params['expand'] = expand
-        return self.get(url, params=params)
-
-    def get_notification_schemes(self):
-        """
-        Returns a paginated list of notification schemes
-        """
-        url = 'rest/api/2/notificationscheme'
-        return self.get(url)
-
-    def get_notification_scheme(self, notification_scheme_id, expand=None):
-        """
-        Returns a full representation of the notification scheme for the given id.
-        Use 'expand' to get details
-        :param notification_scheme_id: Id of scheme u wanna work with
-        :param expand: str
-        :return: full representation of the notification scheme for the given id
-        """
-        url = 'rest/api/2/notificationscheme/{}'.format(notification_scheme_id)
         params = {}
         if expand:
             params['expand'] = expand
