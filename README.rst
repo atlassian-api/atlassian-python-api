@@ -9,14 +9,14 @@ This package is used to provide a **simple** python interface for interacting wi
 It is based on the official public Rest API documentation and private methods (+ xml+rpc, raw http request).
 
 Documentation
--------------
+_____________
 
 `Documentation`_
 
 .. _Documentation: https://atlassian-python-api.readthedocs.io
 
 How to Install?
----------------
+_______________
 
 From PyPI
 
@@ -31,11 +31,12 @@ From Source
 - or `pipenv install && pipenv install --dev`
 
 How to contribute?
-------------------
+__________________
 Please, click here `Contribution Guidelines for this project`_
 
+
 Examples
---------
+________
 **More examples in ``examples/`` directory.**
 
 Here's a short example of how to create a Confluence page:
@@ -123,7 +124,7 @@ If you want to see the response in pretty print format JSON. Feel free for use c
     pprint(response)
 
 Development and Deployment (For contributors)
----------------------------------------------
+_____________________________________________
 First of all, I am happy for any PR requests.
 Let's fork and provide your changes :)
 See the `Contribution Guidelines for this project`_ for details on how to make changes to this library.
@@ -149,14 +150,17 @@ See the `Contribution Guidelines for this project`_ for details on how to make c
 
 
 Credits
--------
+_______
 In addition to all the contributors we would like to thank these vendors:
 
 * Atlassian_ for developing such a powerful ecosystem.
 * JetBrains_ for providing us with free licenses of PyCharm_
+* Microsoft_ for providing us with free licenses of VSCode_
 * Travis_ for hosting our continuous integration
 
 .. _Atlassian: https://www.atlassian.com/
 .. _JetBrains: http://www.jetbrains.com
 .. _PyCharm: http://www.jetbrains.com/pycharm/
 .. _Travis: https://travis-ci.org/
+.. _Microsoft: https://github.com/Microsoft/vscode/
+.. _VSCode: https://code.visualstudio.com/
