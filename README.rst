@@ -1,7 +1,7 @@
 ============================
 Atlassian Python API wrapper
 ============================
-|Build Status| |PyPI version| |PyPI - Downloads| |License| |Codacy Badge| |Docs|
+|Build Status| |PyPI version| |PyPI - Downloads| |License| |Codacy Badge| |Docs| |Discord|
 
 What is it?
 ___________
@@ -148,6 +148,9 @@ See the `Contribution Guidelines for this project`_ for details on how to make c
 .. |Docs| image:: https://readthedocs.org/projects/atlassian-python-api/badge/?version=latest
    :target: https://atlassian-python-api.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
+.. |Discord| image:: https://img.shields.io/discord/756142204761669743.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2
+   :alt: Discord Chat
+   :target: https://discord.gg/FCJsvqh
 
 
 Credits
