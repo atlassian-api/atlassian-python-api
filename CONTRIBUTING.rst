@@ -32,6 +32,13 @@ Mandatory conditions
 
 Please follow the code style in the docs.
 
+Connect on Chat for any queries
+---------------------------------
+
+Please message on chat-group link present in `README.rst`_ badge for any queries.
+
+.. _README.rst: README.rst
+
 
 Before you raise a PR
 ---------------------
