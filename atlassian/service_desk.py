@@ -394,7 +394,7 @@ class ServiceDesk(AtlassianRestAPI):
         return self.delete(url, headers=self.experimental_headers, data=data)
 
     # Attachments actions
-    def create_attachment(self, service_desk_id, issue_id_or_key, filename,
+    def create_attachment(self, service_desk_id, issue_id_or_key, filenames,
                           public=True, comment=None):
         """
         Add attachment as a comment.
@@ -408,18 +408,22 @@ class ServiceDesk(AtlassianRestAPI):
 
         :param service_desk_id: str
         :param issue_id_or_key: str
-        :param filename: str, name, if file in current directory or full path to file
+        :param filenames: Union(List[str], str), name, if file in current directory or full path to file
         :param public: OPTIONAL: bool (default is True)
         :param comment: OPTIONAL: str (default is None)
         :return: Request info
         """
-        log.warning('Creating attachment...')
-
         # Create temporary attachment
-        temp_attachment_id = self.attach_temporary_file(service_desk_id, filename)
+        temp_attachment_ids = []
+        if not isinstance(filenames,  list):
+            filenames = [filenames]
+
+        for filename in filenames:
+            temp_attachment_id = self.attach_temporary_file(service_desk_id, filename)
+            temp_attachment_ids.append(temp_attachment_id)
 
         # Add attachments
-        return self.add_attachment(issue_id_or_key, temp_attachment_id, public, comment)
+        return self.add_attachment(issue_id_or_key, temp_attachment_ids, public, comment)
 
     def attach_temporary_file(self, service_desk_id, filename):
         """
@@ -438,18 +442,17 @@ class ServiceDesk(AtlassianRestAPI):
 
             return temp_attachment_id
 
-    def add_attachment(self, issue_id_or_key, temp_attachment_id, public=True, comment=None):
+    def add_attachment(self, issue_id_or_key, temp_attachment_ids, public=True, comment=None):
         """
         Adds temporary attachment to customer request using attach_temporary_file function
 
         :param issue_id_or_key: str
-        :param temp_attachment_id: str, ID from result attach_temporary_file function
+        :param temp_attachment_ids: List[str], ID from result attach_temporary_file function
         :param public: bool (default is True)
         :param comment: str (default is None)
         :return:
         """
-        log.warning('Adding attachment')
-        data = {'temporaryAttachmentIds': [temp_attachment_id],
+        data = {'temporaryAttachmentIds': temp_attachment_ids,
                 'public': public,
                 'additionalComment': {'body': comment}}
         url = 'rest/servicedeskapi/request/{}/attachment'.format(issue_id_or_key)
