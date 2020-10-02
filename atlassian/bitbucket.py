@@ -14,193 +14,429 @@ class Bitbucket(AtlassianRestAPI):
         if (not 'cloud' in kwargs
                 and ('bitbucket.org' in url)):
             kwargs['cloud'] = True
+        if not 'api_version' in kwargs:
+            kwargs['api_version'] = '2.0' if 'cloud' in kwargs and kwargs['cloud'] else '1.0'
         super(Bitbucket, self).__init__(url, *args, **kwargs)
 
-    def project_list(self, limit=None):
+    def _get_paged(self, url, params):
         """
-        Provide the project list
-        :param limit: OPTIONAL 25 is default
+        Use for get all methods
+        :param url:
+        :param params:
         :return:
         """
+        response = self.get(url, params=params)
+        if self.advanced_mode:
+            return self.get(url, params=params)
+
+        if 'values' not in response:
+            return []
+        values = (response or {}).get('values', [])
+        limit = params.get('limit')
+        if self.cloud:
+            while True:
+                next_page = response.get("next")
+                if next_page is None:
+                    break
+                if limit is not None:
+                    params['limit'] = limit - len(values)
+                    if params['limit'] < 0:
+                        break
+
+                # Strip the base url - it's added when constructing the request
+                response = self.get(next_page.replace(self.url, ""))
+                values += (response or {}).get('values', [])
+
+        else:
+            while not response.get('isLastPage'):
+                if limit is not None:
+                    params['limit'] = limit - len(values)
+                    if params['limit'] < 0:
+                        break
+                params['start'] = response.get('nextPageStart')
+                response = self.get(url, params=params)
+                values += (response or {}).get('values', [])
+
+        return values
+
+    def markup_preview(self, data):
+        """
+        Preview generated HTML for the given markdown content.
+        Only authenticated users may call this resource.
+        :param data:
+        :return:
+        """
+
+        url = self.resource_url('markup/preview')
+        return self.post(url, data=data)
+
+    ################################################################################################
+    # Administrativ functions
+    ################################################################################################
+
+    def _url_admin(self, api_version=None):
+        return self.resource_url('admin', api_version=api_version)
+
+    def group_members(self, group, start=0, limit=None):
+        """
+        Get group of members
+        :param group: The group name to query
+
+        :return: A list of group members
+        """
+
+        url = '{}/groups/more-members'.format(self._url_admin)
+        params = {}
+        if start:
+            params['start'] = start
+        if limit:
+            params['limit'] = limit
+        if group:
+            params['context'] = group
+        return self._get_paged(url, params=params)
+
+    def all_project_administrators(self):
+        """
+        Get the list of project administrators
+
+        :return: A generator object containing a map with the project_key, project_name and project_administrators
+        """
+        for project in self.project_list():
+            log.info('Processing project: {0} - {1}'.format(project.get('key'), project.get('name')))
+            yield {
+                'project_key': project.get('key'),
+                'project_name': project.get('name'),
+                'project_administrators': [{'email': x['emailAddress'], 'name': x['displayName']}
+                                           for x in self.project_users_with_administrator_permissions(project['key'])]}
+
+    def reindex(self):
+        """
+        Rebuild the bundled Elasticsearch indexes for Bitbucket Server
+        :return:
+        """
+        url = self.resource_url('sync', api_root='indexing', api_version='latest')
+        return self.post(url)
+
+    def check_reindexing_status(self):
+        """
+        Check reindexing status
+        :return:
+        """
+        url = self.resource_url('status', api_root='indexing', api_version='latest')
+        return self.get(url)
+
+    def get_users(self, user_filter=None):
+        """
+        Get list of bitbucket users.
+        Use 'user_filter' for get specific users.
+        :user_filter: str
+        """
+        url = self.resource_url('users', api_version='1.0')
+        params = {}
+        if user_filter:
+            params['filter'] = user_filter
+        return self.get(url, params=params)
+
+    def get_users_info(self, user_filter=None, start=0, limit=25):
+        """
+        The authenticated user must have the LICENSED_USER permission to call this resource.
+        :param user_filter: if specified only users with usernames, display name or email addresses
+            containing the supplied string will be returned
+        :param limit:
+        :param start:
+        :return:
+        """
+        url = '{}/users'.format(self._url_admin(api_version='1.0'))
         params = {}
         if limit:
             params['limit'] = limit
-        if not self.cloud:
-            return (self.get('rest/api/1.0/projects', params=params) or {}).get('values')
-        return (self.get('rest/api/2.0/projects', params=params) or {}).get('values')
+        if start:
+            params['start'] = start
+        if user_filter:
+            params['filter'] = user_filter
+        return self._get_paged(url, params=params)
 
-    def project(self, key):
+    def get_current_license(self):
         """
-        Provide project info
-        :param key:
+        Retrieves details about the current license, as well as the current status of the system with
+        regards to the installed license. The status includes the current number of users applied
+        toward the license limit, as well as any status messages about the license (warnings about expiry
+        or user counts exceeding license limits).
+        The authenticated user must have ADMIN permission. Unauthenticated users, and non-administrators,
+        are not permitted to access license details.
         :return:
         """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{0}'.format(key)
-        else:
-            url = 'rest/api/2.0/projects/{0}'.format(key)
-        return self.get(url) or {}
+        url = '{}/license'.format(self._url_admin())
+        return self.get(url)
+
+    def _url_mail_server(self):
+        return '{}/mail-server'.format(self._url_admin())
+
+    def get_mail_configuration(self):
+        """
+        Retrieves the current mail configuration.
+        The authenticated user must have the SYS_ADMIN permission to call this resource.
+        :return:
+        """
+        url = self._url_mail_server()
+        return self.get(url)
+
+    def _url_mail_server_sender_address(self):
+        return '{}/sender-address'.format(self._url_mail_server())
+
+    def get_mail_sender_address(self):
+        """
+        Retrieves the server email address
+        :return:
+        """
+        url = self._url_mail_server_sender_address()
+        return self.get(url)
+
+    def remove_mail_sender_address(self):
+        """
+        Clears the server email address.
+        The authenticated user must have the ADMIN permission to call this resource.
+        :return:
+        """
+        url = self._url_mail_server_sender_address()
+        return self.delete(url)
+
+    def get_ssh_settings(self):
+        """
+        Retrieve ssh settings for user
+        :return:
+        """
+        url = self.resource_url('settings')
+        return self.get(url)
+
+    def health_check(self):
+        """
+        Get health status
+        https://confluence.atlassian.com/jirakb/how-to-retrieve-health-check-results-using-rest-api-867195158.html
+        :return:
+        """
+        # check as Troubleshooting & Support Tools Plugin
+        response = self.get('rest/troubleshooting/1.0/check/')
+        if not response:
+            # check as support tools
+            response = self.get('rest/supportHealthCheck/1.0/check/')
+        return response
+
+    def get_associated_build_statuses(self, commit):
+        """
+        To get the build statuses associated with a commit.
+        :commit: str- commit id
+        :return:
+        """
+        url = self.resource_url('commits/{commitId}'.format(commitId=commit), api_root='build-status')
+        return self.get(url)
+
+    def _url_announcement_banner(self):
+        return '{}/banner'.format(self._url_admin())
+
+    def get_announcement_banner(self):
+        """
+        Gets the announcement banner, if one exists and is available to the user
+        :return:
+        """
+        url = self._url_announcement_banner()
+        return self.get(url)
+
+    def set_announcement_banner(self, body):
+        """
+        Sets the announcement banner with the provided JSON.
+        Only users authenticated as Admins may call this resource
+        :param body
+            {
+                "id": "https://docs.atlassian.com/jira/REST/schema/rest-announcement-banner#",
+                "title": "Rest Announcement Banner",
+                "type": "object"
+            }
+        :return:
+        """
+        url = self._url_announcement_banner()
+        return self.put(url, data=body)
+
+    def delete_announcement_banner(self):
+        """
+        Gets the announcement banner, if one exists and is available to the user
+        :return:
+        """
+        url = self._url_announcement_banner()
+        return self.delete(url)
+
+    def upload_plugin(self, plugin_path):
+        """
+        Provide plugin path for upload into BitBucket e.g. useful for auto deploy
+        :param plugin_path:
+        :return:
+        """
+        upm_token = \
+            self.request(method='GET', path='rest/plugins/1.0/', headers=self.no_check_headers, trailing=True).headers[
+                'upm-token']
+        url = 'rest/plugins/1.0/?token={}'.format(upm_token)
+        files = {
+            'plugin': open(plugin_path, 'rb')
+        }
+        return self.post(url, files=files, headers=self.no_check_headers)
+
+    ################################################################################################
+    # Functions related to projects
+    ################################################################################################
+
+    def _url_projects(self, api_root=None, api_version=None):
+        return self.resource_url('projects', api_root, api_version)
+
+    def project_list(self, start=0, limit=None):
+        """
+        Provide the project list
+
+        :return: A list of projects
+        """
+        url = self._url_projects()
+        params = {}
+        if start:
+            params['start'] = start
+        if limit:
+            params['limit'] = limit
+        return self._get_paged(url, params=params)
 
     def create_project(self, key, name, description=""):
         """
         Create project
-        :param key:
-        :param name:
-        :param description:
-        :return:
+        :param key: The project key
+        :param name: The project name
+        :param description: The project description
+
+        :return: The value of the post request.
         """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects'
-        else:
-            url = 'rest/api/2.0/projects'
+        url = self._url_projects()
         data = {"key": key,
                 "name": name,
                 "description": description
                 }
         return self.post(url, data=data)
 
+    ################################################################################################
+    # Functions related to a specific project
+    ################################################################################################
+
+    def _url_project(self, project, api_root=None, api_version=None):
+        return '{}/{}'.format(self._url_projects(api_root, api_version), project)
+
+    def project(self, key):
+        """
+        Provide project info
+        :param key: The project key
+        :return:
+        """
+        url = self._url_project(key)
+        return self.get(url) or {}
+
     def update_project(self, key, **params):
         """
         Update project
-        :param key:
-        :return:
+        :param key: The project key
+
+        :return: None if the project does not exist, else the value of the put request.
         """
         data = self.project(key)
-        if 'errors' not in data:
-            data.update(params)
-            if not self.cloud:
-                url = 'rest/api/1.0/projects/{0}'.format(key)
-            else:
-                url = 'rest/api/2.0/projects/{0}'.format(key)
-            return self.put(url, data=data)
-        else:
+        if 'errors' in data:
             log.debug('Failed to update project: {0}: Unable to read project'.format(key))
             return None
+        else:
+            data.update(params)
+            url = self._url_project(key)
+            return self.put(url, data=data)
+
+    def _url_project_avatar(self, project):
+        return '{}/avatar.png'.format(self._url_project(project))
+
+    def project_summary(self, key):
+        """
+        Get a project summary
+        :param key: The project key
+
+        :return: Map with the project information
+        """
+        return {
+            'key': key,
+            'data': self.project(key),
+            'users': self.project_users(key),
+            'groups': self.project_groups(key),
+            'avatar': self.project_avatar(key)}
 
     def project_avatar(self, key, content_type='image/png'):
         """
         Get project avatar
-        :param content_type:
-        :param key:
-        :return:
+        :param key: The project key
+        :param content_type: The content type to get
+
+        :return: Value of get request
         """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{0}/avatar.png'.format(key)
-        else:
-            url = 'rest/api/2.0/projects/{0}/avatar.png'.format(key)
+        url = self._url_project_avatar(key)
         headers = dict(self.default_headers)
         headers['Accept'] = content_type
         headers['X-Atlassian-Token'] = 'no-check'
 
-        return self.get(url, not_json_response=True, headers=headers) or {}
+        return self.get(url, not_json_response=True, headers=headers)
 
     def set_project_avatar(self, key, icon, content_type='image/png'):
         """
         Set project avatar
-        :param key: A Project key
-        :param icon:
-        :param content_type:
-        :return:
+        :param key: The Project key
+        :param icon: The icon file
+        :param content_type: The content type of icon
+
+        :return: Value of post request
         """
+        url = self._url_project_avatar(key)
         headers = {'X-Atlassian-Token': 'no-check'}
         files = {'avatar': ("avatar.png", icon, content_type)}
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{0}/avatar.png'.format(key)
-        else:
-            url = 'rest/api/2.0/projects/{0}/avatar.png'.format(key)
-        return self.post(url, files=files, headers=headers) or {}
+        return self.post(url, files=files, headers=headers)
 
-    def project_users(self, key, limit=99999, filter_str=None):
-        """
-        Get users who has permission in project
-        :param key:
-        :param limit: OPTIONAL: The limit of the number of users to return, this may be restricted by
-                            fixed system limits. Default by built-in method: 99999
-        :param filter_str:  OPTIONAL: users filter string
-        :return:
-        """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{key}/permissions/users'.format(key=key)
-        else:
-            url = 'rest/api/2.0/projects/{key}/permissions/users'.format(key=key)
-        params = {}
-        if limit:
-            params['limit'] = limit
-        if filter_str:
-            params['filter'] = filter_str
-        return (self.get(url, params=params) or {}).get('values')
-
-    def project_keys(self, key, limit=99999, filter_str=None):
+    def project_keys(self, key, start=0, limit=None, filter_str=None):
         """
         Get SSH access keys added to the project
-        :param key:
-        :param limit: OPTIONAL: The limit of the number of users to return, this may be restricted by
-                            fixed system limits. Default by built-in method: 99999
+        :param key: The project key
         :param filter_str:  OPTIONAL: users filter string
-        :return:
+        :return: The list of SSH access keys
         """
-        if not self.cloud:
-            url = 'rest/keys/1.0/projects/{key}/ssh'.format(key=key)
-        else:
-            url = 'rest/keys/2.0/projects/{key}/ssh'.format(key=key)
+        url = '{}/ssh'.format(self._url_project(key, api_root='keys'))
         params = {}
+        if start:
+            params['start'] = start
         if limit:
             params['limit'] = limit
         if filter_str:
             params['filter'] = filter_str
-        return (self.get(url, params=params) or {}).get('values')
+        return self._get_paged(url, params=params)
 
-    def repo_users(self, project_key, repo_key, limit=99999, filter_str=None):
-        """
-        Get users who has permission in repository
-        :param project_key:
-        :param repo_key:
-        :param limit: OPTIONAL: The limit of the number of users to return, this may be restricted by
-                            fixed system limits. Default by built-in method: 99999
-        :param filter_str:  OPTIONAL: Users filter string
-        :return:
-        """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/users'.format(
-                project_key=project_key, repo_key=repo_key)
-        else:
-            url = 'rest/api/2.0/projects/{project_key}/repos/{repo_key}/permissions/users'.format(
-                project_key=project_key, repo_key=repo_key)
-        params = {}
-        if limit:
-            params['limit'] = limit
-        if filter_str:
-            params['filter'] = filter_str
-        return (self.get(url, params=params) or {}).get('values')
+    def _url_project_users(self, project):
+        return '{}/permissions/users'.format(self._url_project(project))
 
-    def repo_keys(self, project_key, repo_key, limit=99999, filter_str=None):
+    def project_users(self, key, start=0, limit=None, filter_str=None):
         """
-        Get SSH access keys added to the repository
-        :param project_key:
-        :param repo_key:
-        :param limit: OPTIONAL: The limit of the number of users to return, this may be restricted by
-                            fixed system limits. Default by built-in method: 99999
+        Get users who has permission in project
+        :param key: The project key
         :param filter_str:  OPTIONAL: users filter string
-        :return:
+        :return: The list of project users
         """
-        if not self.cloud:
-            url = 'rest/keys/1.0/projects/{project_key}/repos/{repo_key}/ssh'.format(project_key=project_key,
-                                                                                     repo_key=repo_key)
-        else:
-            url = 'rest/keys/2.0/projects/{project_key}/repos/{repo_key}/ssh'.format(project_key=project_key,
-                                                                                     repo_key=repo_key)
+        url = self._url_project_users(key)
         params = {}
+        if start:
+            params['start'] = start
         if limit:
             params['limit'] = limit
         if filter_str:
             params['filter'] = filter_str
-        return (self.get(url, params=params) or {}).get('values')
+        return self._get_paged(url, params=params)
 
     def project_users_with_administrator_permissions(self, key):
         """
         Get project administrators for project
-        :param key: project key
-        :return: project administrators
+        :param key: The project key
+        :return: List of project administrators
         """
         project_administrators = [user['user'] for user in self.project_users(key)
                                   if user['permission'] == 'PROJECT_ADMIN']
@@ -212,18 +448,15 @@ class Bitbucket(AtlassianRestAPI):
     def project_grant_user_permissions(self, project_key, username, permission):
         """
         Grant the specified project permission to an specific user
-        :param project_key: project key involved
+        :param project_key: The project key
         :param username: user name to be granted
         :param permission: the project permissions available are 'PROJECT_ADMIN', 'PROJECT_WRITE' and 'PROJECT_READ'
         :return:
         """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project_key}/permissions/users?permission={permission}&name={username}' \
-                .format(project_key=project_key, permission=permission, username=username)
-        else:
-            url = 'rest/api/2.0/projects/{project_key}/permissions/users?permission={permission}&name={username}' \
-                .format(project_key=project_key, permission=permission, username=username)
-        return self.put(url)
+        url = self._url_project_users(project_key)
+        params = {'permission': permission,
+                  'name': username}
+        return self.put(url, params=params)
 
     def project_remove_user_permissions(self, project_key, username):
         """
@@ -231,33 +464,46 @@ class Bitbucket(AtlassianRestAPI):
         The authenticated user must have PROJECT_ADMIN permission for
         the specified project or a higher global permission to call this resource.
         In addition, a user may not revoke their own project permissions if they do not have a higher global permission.
-        :param project_key: project key involved
+        :param project_key: The project key
         :param username: user name to be granted
         :return:
         """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project_key}/permissions/users?name={username}'.format(
-                project_key=project_key, username=username)
-        else:
-            url = 'rest/api/2.0/projects/{project_key}/permissions/users?name={username}'.format(
-                project_key=project_key, username=username)
-        return self.delete(url)
+        url = self._url_project_users(project_key)
+        params = {'name': username}
+        return self.delete(url, params=params)
+
+    def _url_project_groups(self, project):
+        return '{}/permissions/groups'.format(self._url_project(project))
+
+    def project_groups(self, key, start=0, limit=None, filter_str=None):
+        """
+        Get Project Groups
+        :param key: The project key
+        :param filter_str: OPTIONAL: group filter string
+        :return:
+        """
+        url = self._url_project_groups(key)
+        params = {}
+        if start:
+            params['start'] = start
+        if limit:
+            params['limit'] = limit
+        if filter_str:
+            params['filter'] = filter_str
+        return self._get_paged(url, params=params)
 
     def project_grant_group_permissions(self, project_key, group_name, permission):
         """
         Grant the specified project permission to an specific group
-        :param project_key: project key involved
+        :param project_key: The project key
         :param group_name: group to be granted
         :param permission: the project permissions available are 'PROJECT_ADMIN', 'PROJECT_WRITE' and 'PROJECT_READ'
         :return:
         """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project_key}/permissions/groups?permission={permission}&name={group_name}' \
-                .format(project_key=project_key, permission=permission, group_name=group_name)
-        else:
-            url = 'rest/api/2.0/projects/{project_key}/permissions/groups?permission={permission}&name={group_name}' \
-                .format(project_key=project_key, permission=permission, group_name=group_name)
-        return self.put(url)
+        url = self._url_project_groups(project_key)
+        params = {'permission': permission,
+                  'name': username}
+        return self.put(url, params=params)
 
     def project_remove_group_permissions(self, project_key, groupname):
         """
@@ -266,224 +512,129 @@ class Bitbucket(AtlassianRestAPI):
         or a higher global permission to call this resource.
         In addition, a user may not revoke a group's permissions
         if it will reduce their own permission level.
-        :param project_key: project key involved
+        :param project_key: The project key
         :param groupname: group to be granted
         :return:
         """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project_key}/permissions/groups?name={group_name}'.format(
-                project_key=project_key, group_name=groupname)
-        else:
-            url = 'rest/api/2.0/projects/{project_key}/permissions/groups?name={group_name}'.format(
-                project_key=project_key, group_name=groupname)
-        return self.delete(url)
-
-    def repo_grant_user_permissions(self, project_key, repo_key, username, permission):
-        """
-        Grant the specified repository permission to an specific user
-        :param project_key: project key involved
-        :param repo_key: repository key involved (slug)
-        :param username: user name to be granted
-        :param permission: the repository permissions available are 'REPO_ADMIN', 'REPO_WRITE' and 'REPO_READ'
-        :return:
-        """
-        params = {'permission': permission,
-                  'name': username}
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/users' \
-                .format(project_key=project_key, repo_key=repo_key)
-        else:
-            url = 'rest/api/2.0/projects/{project_key}/repos/{repo_key}/permissions/users' \
-                .format(project_key=project_key, repo_key=repo_key)
-        return self.put(url, params=params)
-
-    def repo_remove_user_permissions(self, project_key, repo_key, username):
-        """
-        Revoke all permissions for the specified repository for a user.
-        The authenticated user must have REPO_ADMIN permission for the specified repository
-        or a higher project or global permission to call this resource.
-        In addition, a user may not revoke their own repository permissions
-        if they do not have a higher project or global permission.
-        :param project_key: project key involved
-        :param repo_key: repository key involved (slug)
-        :param username: user name to be granted
-        :return:
-        """
-        params = {'name': username}
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/users' \
-                .format(project_key=project_key, repo_key=repo_key)
-        else:
-            url = 'rest/api/2.0/projects/{project_key}/repos/{repo_key}/permissions/users' \
-                .format(project_key=project_key, repo_key=repo_key)
-        return self.delete(url, params=params)
-
-    def repo_grant_group_permissions(self, project_key, repo_key, groupname, permission):
-        """
-        Grant the specified repository permission to an specific group
-        Promote or demote a group's permission level for the specified repository. Available repository permissions are:
-            REPO_READ
-            REPO_WRITE
-            REPO_ADMIN
-        See the Bitbucket Server documentation for a detailed explanation of what each permission entails.
-        The authenticated user must have REPO_ADMIN permission for the specified repository or a higher project
-        or global permission to call this resource.
-        In addition, a user may not demote a group's permission level
-        if their own permission level would be reduced as a result.
-        :param project_key: project key involved
-        :param repo_key: repository key involved (slug)
-        :param groupname: group to be granted
-        :param permission: the repository permissions available are 'REPO_ADMIN', 'REPO_WRITE' and 'REPO_READ'
-        :return:
-        """
-        params = {'permission': permission,
-                  'name': groupname}
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/groups' \
-                .format(project_key=project_key, repo_key=repo_key)
-        else:
-            url = 'rest/api/2.0/projects/{project_key}/repos/{repo_key}/permissions/groups' \
-                .format(project_key=project_key, repo_key=repo_key)
-        return self.put(url, params=params)
-
-    def repo_remove_group_permissions(self, project_key, repo_key, groupname, permission):
-        """
-        Revoke all permissions for the specified repository for a group.
-        The authenticated user must have REPO_ADMIN permission for the specified repository
-        or a higher project or global permission to call this resource.
-        In addition, a user may not revoke a group's permissions if it will reduce their own permission level.
-        :param project_key: project key involved
-        :param repo_key: repository key involved (slug)
-        :param groupname: group to be granted
-        :param permission: the repository permissions available are 'REPO_ADMIN', 'REPO_WRITE' and 'REPO_READ'
-        :return:
-        """
+        url = self._url_project_groups(project_key)
         params = {'name': groupname}
-        if permission:
-            params['permission'] = permission
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/groups' \
-                .format(project_key=project_key, repo_key=repo_key)
-        else:
-            url = 'rest/api/2.0/projects/{project_key}/repos/{repo_key}/permissions/groups' \
-                .format(project_key=project_key, repo_key=repo_key)
         return self.delete(url, params=params)
 
-    def project_groups(self, key, limit=99999, filter_str=None):
+    def _url_project_conditions(self, project_key):
+        return '{}/conditions'.format(self._url_project(project_key,
+                                                        api_root='default-reviewers',
+                                                        api_version='1.0'))
+
+    def get_project_conditions(self, project_key):
         """
-        Get Project Groups
-        :param key:
-        :param limit: OPTIONAL: The limit of the number of groups to return, this may be restricted by
-                            fixed system limits. Default by built-in method: 99999
-        :param filter_str: OPTIONAL: group filter string
+        Request type: GET
+        Return a page of defaults conditions with reviewers list that have been configured for this project.
+        For further information visit:
+            https://docs.atlassian.com/bitbucket-server/rest/5.16.0/bitbucket-default-reviewers-rest.html#idm52264904368
+        :projectKey: str
         :return:
         """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{key}/permissions/groups'.format(key=key)
-        else:
-            url = 'rest/api/2.0/projects/{key}/permissions/groups'.format(key=key)
-        params = {}
-        if limit:
-            params['limit'] = limit
-        if filter_str:
-            params['filter'] = filter_str
-        return (self.get(url, params=params) or {}).get('values')
+        url = self._url_project_conditions(project_key)
+        return self.get(url) or {}
 
-    def repo_groups(self, project_key, repo_key, limit=99999, filter_str=None):
+    def _url_project_condition(self, project_key, id_condition=None):
+        url = '{}/condition'.format(self._url_project(project_key,
+                                                      api_root='default-reviewers',
+                                                      api_version='1.0'))
+        if idCondition is not None:
+            url += '/{}'.format(idCondition)
+        return url
+
+    def get_project_condition(self, project_key, id_condition):
         """
-        Get repository Groups
-        :param project_key:
-        :param repo_key:
-        :param limit: OPTIONAL: The limit of the number of groups to return, this may be restricted by
-                            fixed system limits. Default by built-in method: 99999
-        :param filter_str: OPTIONAL: group filter string
+        Request type: GET
+        Return a specific condition with reviewers list that has been configured for this project.
+        For further information visit:
+            https://docs.atlassian.com/bitbucket-server/rest/5.16.0/bitbucket-default-reviewers-rest.html#idm52264901504
+        :projectKey: str - project key involved
+        :idCondition: int - condition id involved
         :return:
         """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project_key}/repos/{repo_key}/permissions/groups' \
-                .format(project_key=project_key, repo_key=repo_key)
-        else:
-            url = 'rest/api/2.0/projects/{project_key}/repos/{repo_key}/permissions/groups' \
-                .format(project_key=project_key, repo_key=repo_key)
-        params = {}
-        if limit:
-            params['limit'] = limit
-        if filter_str:
-            params['filter'] = filter_str
-        return (self.get(url, params=params) or {}).get('values')
+        url = self._url_project_condition(project_key, id_condition)
+        return self.get(url) or {}
 
-    def project_groups_with_administrator_permissions(self, key):
+    def create_project_condition(self, project_key, condition):
         """
-        Get groups with admin permissions
-        :param key:
+        Request type: POST
+        Create a new condition for this project.
+        For further information visit:
+            https://docs.atlassian.com/bitbucket-server/rest/5.16.0/bitbucket-default-reviewers-rest.html#idm52264893584
+        :projectKey: str- project key involved
+        :data: condition: dictionary object
+        :example condition: '{"sourceMatcher":
+                                {"id":"any",
+                                "type":{"id":"ANY_REF"}},
+                                "targetMatcher":{"id":"refs/heads/master","type":{"id":"BRANCH"}},
+                                "reviewers":[{"id": 12}],"requiredApprovals":"0"
+                            }'
         :return:
         """
-        return [group['group']['name'] for group in self.project_groups(key) if group['permission'] == 'PROJECT_ADMIN']
+        url = self._url_project_condition(project_key)
+        return self.post(url, data=condition) or {}
 
-    def project_summary(self, key):
-        return {
-            'key': key,
-            'data': self.project(key),
-            'users': self.project_users(key),
-            'groups': self.project_groups(key),
-            'avatar': self.project_avatar(key)}
-
-    def group_members(self, group, limit=99999):
+    def update_project_condition(self, project_key, condition, id_condition):
         """
-        Get group of members
-        :param group:
-        :param limit: OPTIONAL: The limit of the number of users to return, this may be restricted by
-                        fixed system limits. Default by built-in method: 99999
+        Request type: PUT
+        Update a new condition for this project.
+        For further information visit:
+            https://docs.atlassian.com/bitbucket-server/rest/5.16.0/bitbucket-default-reviewers-rest.html#idm52264927632
+        :projectKey: str- project key involved
+        :idCondition: int - condition id involved
+        :data: condition: dictionary object
+        :example condition: '{"sourceMatcher":
+                                {"id":"any",
+                                "type":{"id":"ANY_REF"}},
+                                "targetMatcher":{"id":"refs/heads/master","type":{"id":"BRANCH"}},
+                                "reviewers":[{"id": 12}],"requiredApprovals":"0"
+                            }'
         :return:
         """
-        if not self.cloud:
-            url = 'rest/api/1.0/admin/groups/more-members'
-        else:
-            url = 'rest/api/2.0/admin/groups/more-members'
-        params = {}
-        if limit:
-            params['limit'] = limit
-        if group:
-            params['context'] = group
-        return (self.get(url, params=params) or {}).get('values')
+        url = self._url_project_condition(project_key, id_condition)
+        return self.put(url, data=condition) or {}
 
-    def all_project_administrators(self):
+    def delete_project_condition(self, project_key, id_condition):
         """
-        Get the list of project administrators
+        Request type: DELETE
+        Delete a specific condition for this repository slug inside project.
+        For further information visit:
+            https://docs.atlassian.com/bitbucket-server/rest/5.16.0/bitbucket-default-reviewers-rest.html#idm52264896304
+        :projectKey: str- project key involved
+        :idCondition: int - condition id involved
         :return:
         """
-        for project in self.project_list():
-            log.info('Processing project: {0} - {1}'.format(project.get('key'), project.get('name')))
-            yield {
-                'project_key': project.get('key'),
-                'project_name': project.get('name'),
-                'project_administrators': [{'email': x['emailAddress'], 'name': x['displayName']}
-                                           for x in self.project_users_with_administrator_permissions(project['key'])]}
+        url = self._url_project_condition(project_key, id_condition)
+        return self.delete(url) or {}
 
-    def repo_list(self, project_key, start=None, limit=25):
+    def _url_repos(self, project, api_root=None, api_version=None):
+        return '{}/repos'.format(self._url_project(project, api_root, api_version))
+
+    def repo_list(self, project_key, start=0, limit=25):
         """
         Get repositories list from project
-        :param project_key:
-        :param start: OPTIONAL: The start of the
-        :param limit: OPTIONAL: The limit of the number of repositories to return, this may be restricted by
-                        fixed system limits. Default by built-in method: 25
+        :param project_key: The project key
+
         :return:
         """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{projectKey}/repos'.format(projectKey=project_key)
-        else:
-            url = 'rest/api/2.0/projects/{projectKey}/repos'.format(projectKey=project_key)
+        url = self._url_repos(project_key)
         params = {}
-        if limit:
-            params['limit'] = limit
         if start:
             params['start'] = start
-        response = self.get(url, params=params)
-        if response.get('isLastPage'):
-            log.info('This is a last page of the result')
-        else:
-            log.info('Next page start at {}'.format(response.get('nextPageStart')))
-        return (response or {}).get('values')
+        if limit:
+            params['limit'] = limit
+        return self._get_paged(url, params=params)
+
+    def repo_all_list(self, project_key):
+        """
+        Get all repositories list from project
+        :param project_key:
+        :return:
+        """
+        return self.repo_list(url, limit=None)
 
     def create_repo(self, project_key, repository, forkable=False, is_private=True):
         """Create a new repository.
@@ -508,10 +659,7 @@ class Bitbucket(AtlassianRestAPI):
             409 - application/json (errors)
         :rtype: requests.Response
         """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{projectKey}/repos'.format(projectKey=project_key)
-        else:
-            url = 'rest/api/2.0/projects/{projectKey}/repos'.format(projectKey=project_key)
+        url = self._url_repos(project_key)
         data = {
             "name": repository,
             "scmId": "git",
@@ -519,6 +667,36 @@ class Bitbucket(AtlassianRestAPI):
             "is_private": is_private
         }
         return self.post(url, data=data)
+
+    ################################################################################################
+    # Functions related to a specific repository
+    ################################################################################################
+
+    def _url_repo(self, project_key, repo, api_root=None, api_version=None):
+        return '{}/{}'.format(self._url_repos(project_key, api_root, api_version), repo)
+
+    def reindex_repo(self, project, repository):
+        """
+        Reindex repo
+        :param project:
+        :param repository:
+        :return:
+        """
+        url = '{urlRepo}/sync'.format(urlRepo=self._url_repo(project, repository, api_root='indexing', api_version='1.0'))
+        return self.post(url)
+
+    def reindex_repo_dev_panel(self, project, repository):
+        """
+        Reindex all of the Jira issues related to this repository, including branches and pull requests.
+        This automatically happens as part of an upgrade, and calling this manually should only be required
+        if something unforeseen happens and the index becomes out of sync.
+        The authenticated user must have REPO_ADMIN permission for the specified repository to call this resource.
+        :param project:
+        :param repository:
+        :return:
+        """
+        url = '{}/reindex'.format(self._url_repo(project, repository, api_root='jira-dev'))
+        return self.post(url)
 
     def get_repo(self, project_key, repository_slug):
         """
@@ -528,13 +706,180 @@ class Bitbucket(AtlassianRestAPI):
         :param repository_slug: url-compatible repository identifier
         :return: Dictionary of request response
         """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project}/repos/{repository}' \
-                .format(project=project_key, repository=repository_slug)
-        else:
-            url = 'rest/api/2.0/projects/{project}/repos/{repository}' \
-                .format(project=project_key, repository=repository_slug)
+        url = self._url_repo(project_key, repository_slug)
         return self.get(url)
+
+    def delete_repo(self, project_key, repository_slug):
+        """
+        Delete a specific repository from a project. This operates based on slug not name which may
+        be confusing to some users.
+        :param project_key: Key of the project you wish to look in.
+        :param repository_slug: url-compatible repository identifier
+        :return: Dictionary of request response
+        """
+        url = self._url_repo(project_key, repository_slug)
+        return self.delete(url)
+
+    def fork_repository(self, project, repository, new_repository):
+        """
+        Forks a repository within the same project.
+        :param project:
+        :param repository:
+        :param new_repository:
+        :return:
+        """
+        url = self._url_repo(project, repository)
+        body = {}
+        if new_repository is not None:
+            body['name'] = new_repository
+        if new_repository is not None:
+            body['project'] = {'key': project}
+        return self.post(url, data=body)
+
+    def repo_keys(self, project_key, repo_key, start=0, limit=None, filter_str=None):
+        """
+        Get SSH access keys added to the repository
+        :param project_key: The project key
+        :param repo_key: The repository key
+        :param filter_str:  OPTIONAL: users filter string
+        :return:
+        """
+        url = '{}/ssh'.format(self._url_repo(project_key, repo_key, api_root='keys'))
+        params = {}
+        if start:
+            params['start'] = start
+        if limit:
+            params['limit'] = limit
+        if filter_str:
+            params['filter'] = filter_str
+        return self._get_paged(url, params=params)
+
+    def _url_repo_users(self, project, repo):
+        return '{}/permissions/users'.format(self._url_repo(project, repo))
+
+    def repo_users(self, project_key, repo_key, start=0, limit=None, filter_str=None):
+        """
+        Get users who has permission in repository
+        :param project_key: The project key
+        :param repo_key: The repository key
+        :param filter_str:  OPTIONAL: Users filter string
+        :return:
+        """
+        url = self._url_repo_users(project_key, repo_key)
+        params = {}
+        if start:
+            params['start'] = start
+        if limit:
+            params['limit'] = limit
+        if filter_str:
+            params['filter'] = filter_str
+        return self._get_paged(url, params=params)
+
+    def repo_grant_user_permissions(self, project_key, repo_key, username, permission):
+        """
+        Grant the specified repository permission to an specific user
+        :param project_key: The project key
+        :param repo_key: The repository key (slug)
+        :param username: user name to be granted
+        :param permission: the repository permissions available are 'REPO_ADMIN', 'REPO_WRITE' and 'REPO_READ'
+        :return:
+        """
+        url = self._url_repo_users(project_key, repo_key)
+        params = {'permission': permission,
+                  'name': username}
+        return self.put(url, params=params)
+
+    def repo_remove_user_permissions(self, project_key, repo_key, username):
+        """
+        Revoke all permissions for the specified repository for a user.
+        The authenticated user must have REPO_ADMIN permission for the specified repository
+        or a higher project or global permission to call this resource.
+        In addition, a user may not revoke their own repository permissions
+        if they do not have a higher project or global permission.
+        :param project_key: The project key
+        :param repo_key: The repository key (slug)
+        :param username: user name to be granted
+        :return:
+        """
+        url = self._url_repo_users(project_key, repo_key)
+        params = {'name': username}
+        return self.delete(url, params=params)
+
+    def _url_repo_groups(self, project, repo):
+        return '{}/permissions/groups'.format(self._url_repo(project, repo))
+
+    def repo_groups(self, project_key, repo_key, start=0, limit=None, filter_str=None):
+        """
+        Get repository Groups
+        :param project_key: The project key
+        :param repo_key: The repository key
+        :param filter_str: OPTIONAL: group filter string
+        :return:
+        """
+        url = self._url_repo_groups(project_key, repo_key)
+        params = {}
+        if start:
+            params['start'] = start
+        if limit:
+            params['limit'] = limit
+        if filter_str:
+            params['filter'] = filter_str
+        return self._get_paged(url, params=params)
+
+    def project_groups_with_administrator_permissions(self, key):
+        """
+        Get groups with admin permissions
+        :param key:
+        :return:
+        """
+        return [group['group']['name'] for group in self.project_groups(key) if group['permission'] == 'PROJECT_ADMIN']
+
+    def repo_grant_group_permissions(self, project_key, repo_key, groupname, permission):
+        """
+        Grant the specified repository permission to an specific group
+        Promote or demote a group's permission level for the specified repository. Available repository permissions are:
+            REPO_READ
+            REPO_WRITE
+            REPO_ADMIN
+        See the Bitbucket Server documentation for a detailed explanation of what each permission entails.
+        The authenticated user must have REPO_ADMIN permission for the specified repository or a higher project
+        or global permission to call this resource.
+        In addition, a user may not demote a group's permission level
+        if their own permission level would be reduced as a result.
+        :param project_key: The project key
+        :param repo_key: The repository key (slug)
+        :param groupname: group to be granted
+        :param permission: the repository permissions available are 'REPO_ADMIN', 'REPO_WRITE' and 'REPO_READ'
+        :return:
+        """
+        url = self._url_repo_groups(project_key, repo_key)
+        params = {'permission': permission,
+                  'name': groupname}
+        return self.put(url, params=params)
+
+    def repo_remove_group_permissions(self, project_key, repo_key, groupname, permission):
+        """
+        Revoke all permissions for the specified repository for a group.
+        The authenticated user must have REPO_ADMIN permission for the specified repository
+        or a higher project or global permission to call this resource.
+        In addition, a user may not revoke a group's permissions if it will reduce their own permission level.
+        :param project_key: The project key
+        :param repo_key: The repository key (slug)
+        :param groupname: group to be granted
+        :param permission: the repository permissions available are 'REPO_ADMIN', 'REPO_WRITE' and 'REPO_READ'
+        :return:
+        """
+        url = self._url_repo_groups(project_key, repo_key)
+        params = {'name': groupname}
+        if permission:
+            params['permission'] = permission
+        return self.delete(url, params=params)
+
+    def _url_repo_labels(self, project_key, repository_slug):
+        if self.cloud:
+            raise Exception("Not supported in Bitbucket Cloud")
+
+        return '{}/labels'.format(self._url_repo(project_key, repository_slug))
 
     def get_repo_labels(self, project_key, repository_slug):
         """
@@ -544,10 +889,7 @@ class Bitbucket(AtlassianRestAPI):
         :param repository_slug: url-compatible repository identifier
         :return: Dictionary of request response
         """
-        if self.cloud:
-            raise Exception("Not supported in Bitbucket Cloud")
-        url = 'rest/api/1.0/projects/{project}/repos/{repository}/labels' \
-            .format(project=project_key, repository=repository_slug)
+        url = self._url_repo_labels(project_key, repository_slug)
         return self.get(url)
 
     def set_repo_label(self, project_key, repository_slug, label_name):
@@ -559,43 +901,14 @@ class Bitbucket(AtlassianRestAPI):
         :param label_name: label name to apply
         :return:
         """
+        url = self._url_repo_labels(project_key, repository_slug)
         data = {'name': label_name}
-        if self.cloud:
-            raise Exception("Not supported in Bitbucket Cloud")
-        url = 'rest/api/1.0/projects/{project}/repos/{repository}/labels' \
-            .format(project=project_key, repository=repository_slug)
         return self.post(url, data=data)
 
-    def repo_all_list(self, project_key):
-        """
-        Get all repositories list from project
-        :param project_key:
-        :return:
-        """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{projectKey}/repos'.format(projectKey=project_key)
-        else:
-            url = 'rest/api/2.0/projects/{projectKey}/repos'.format(projectKey=project_key)
-        params = {}
-        return self._get_paged(url, params)
+    def _url_repo_branches(self, project_key, repository, api_root=None):
+        return '{}/branches'.format(self._url_repo(project_key, repository, api_root=api_root))
 
-    def delete_repo(self, project_key, repository_slug):
-        """
-        Delete a specific repository from a project. This operates based on slug not name which may
-        be confusing to some users.
-        :param project_key: Key of the project you wish to look in.
-        :param repository_slug: url-compatible repository identifier
-        :return: Dictionary of request response
-        """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project}/repos/{repository}'.format(project=project_key,
-                                                                              repository=repository_slug)
-        else:
-            url = 'rest/api/2.0/projects/{project}/repos/{repository}'.format(project=project_key,
-                                                                              repository=repository_slug)
-        return self.delete(url)
-
-    def get_branches(self, project, repository, base=None, filter=None, start=0, limit=99999, details=True,
+    def get_branches(self, project, repository, base=None, filter=None, start=0, limit=None, details=True,
                      order_by='MODIFICATION'):
         """
         Retrieve the branches matching the supplied filterText param.
@@ -606,17 +919,12 @@ class Bitbucket(AtlassianRestAPI):
         :param base: base branch/tag to compare each branch to (for the metadata providers that uses that information)
         :param filter:
         :param limit: OPTIONAL: The limit of the number of branches to return, this may be restricted by
-                    fixed system limits. Default by built-in method: 99999
+                    fixed system limits. Default by built-in method: None
         :param details: whether to retrieve plugin-provided metadata about each branch
         :param order_by: OPTIONAL: ordering of refs either ALPHABETICAL (by name) or MODIFICATION (last updated)
         :return:
         """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project}/repos/{repository}/branches'.format(project=project,
-                                                                                       repository=repository)
-        else:
-            url = 'rest/api/2.0/projects/{project}/repos/{repository}/branches'.format(project=project,
-                                                                                       repository=repository)
+        url = self._url_repo_branches(project, repository)
         params = {}
         if start:
             params['start'] = start
@@ -629,43 +937,33 @@ class Bitbucket(AtlassianRestAPI):
         if order_by:
             params['orderBy'] = order_by
         params['details'] = details
-        response = self.get(url, params=params)
-        if not self.advanced_mode:
-            response = (response or {}).get('values')
-        return response
+        return self._get_paged(url, params=params)
+
+    def _url_repo_default_branche(self, project_key, repository):
+        return '{}/default'.format(self._url_repo_branches(project_key, repository))
 
     def get_default_branch(self, project, repository):
         """
         Get the default branch of the repository.
         The authenticated user must have REPO_READ permission for the specified repository to call this resource.
-        :param project:
-        :param repository:
+        :param project: The project key
+        :param repository: The repository key
         :return:
         """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project}/repos/{repository}/branches/default'.format(project=project,
-                                                                                               repository=repository)
-        else:
-            url = 'rest/api/2.0/projects/{project}/repos/{repository}/branches/default'.format(project=project,
-                                                                                               repository=repository)
+        url = self._url_repo_default_branche(project, repository)
         return self.get(url)
 
     def set_default_branch(self, project, repository, ref_branch_name):
         """
         Update the default branch of a repository.
         The authenticated user must have REPO_ADMIN permission for the specified repository to call this resource.
-        :param project: project key
-        :param repository: repo slug
+        :param project: The project key
+        :param repository: The repository key (slug)
         :param ref_branch_name: ref name like refs/heads/master
         :return:
         """
+        url = self._url_repo_default_branche(project, repository)
         data = {'id': ref_branch_name}
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project}/repos/{repository}/branches/default'.format(project=project,
-                                                                                               repository=repository)
-        else:
-            url = 'rest/api/2.0/projects/{project}/repos/{repository}/branches/default'.format(project=project,
-                                                                                               repository=repository)
         return self.put(url, data=data)
 
     def create_branch(self, project_key, repository, name, start_point, message=""):
@@ -689,12 +987,7 @@ class Bitbucket(AtlassianRestAPI):
             404 - application/json (errors)
         :rtype: requests.Response
         """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{projectKey}/repos/{repository}/branches'.format(projectKey=project_key,
-                                                                                          repository=repository)
-        else:
-            url = 'rest/api/2.0/projects/{projectKey}/repos/{repository}/branches'.format(projectKey=project_key,
-                                                                                          repository=repository)
+        url = self._url_repo_branches(project_key, repository)
         data = {
             "name": name,
             "startPoint": start_point,
@@ -712,14 +1005,93 @@ class Bitbucket(AtlassianRestAPI):
         :param end_point:
         :return:
         """
-        if not self.cloud:
-            url = 'rest/branch-utils/1.0/projects/{project}/repos/{repository}/branches'.format(project=project,
-                                                                                                repository=repository)
-        else:
-            url = 'rest/branch-utils/2.0/projects/{project}/repos/{repository}/branches'.format(project=project,
-                                                                                                repository=repository)
+        url = self._url_repo_branches(project_key, repository, api_root='branch-utils')
         data = {"name": str(name), "endPoint": str(end_point)}
         return self.delete(url, data=data)
+
+
+    def _url_repo_tags(self, project_key, repository):
+        if self.cloud:
+            return '{}/refs/tags'.format(self._url_repo(project_key, repository))
+        else:
+            return '{}/tags'.format(self._url_repo(project_key, repository))
+
+    def get_tags(self, project, repository, filter='', limit=1000, order_by=None, start=0):
+        """
+        Retrieve the tags matching the supplied filterText param.
+        The authenticated user must have REPO_READ permission for the context repository to call this resource.
+        :param project:
+        :param repository:
+        :param filter:
+        :param start:
+        :param limit: OPTIONAL: The limit of the number of tags to return, this may be restricted by
+                fixed system limits. Default by built-in method: 1000
+        :param order_by: OPTIONAL: ordering of refs either ALPHABETICAL (by name) or MODIFICATION (last updated)
+        :return:
+        """
+        url = self._url_repo_tags(project, repository)
+        params = {}
+        if start:
+            params['start'] = start
+        if limit:
+            params['limit'] = limit
+        if filter:
+            params['filterText'] = filter
+        if order_by:
+            params['orderBy'] = order_by
+        return self._get_paged(url, params=params)
+
+    def get_project_tags(self, project, repository, tag_name):
+        """
+        Retrieve a tag in the specified repository.
+        The authenticated user must have REPO_READ permission for the context repository to call this resource.
+        Search uri is api/1.0/projects/{projectKey}/repos/{repositorySlug}/tags/{name:.*}
+        :param project:
+        :param repository:
+        :param tag_name: OPTIONAL:
+        :return:
+        """
+        url = self._url_repo_tags(project, repository)
+        return self.get(url)
+
+    def set_tag(self, project, repository, tag_name, commit_revision, description=None):
+        """
+        Creates a tag using the information provided in the {@link RestCreateTagRequest request}
+        The authenticated user must have REPO_WRITE permission for the context repository to call this resource.
+        :param project:
+        :param repository:
+        :param tag_name:
+        :param commit_revision: commit hash
+        :param description: OPTIONAL:
+        :return:
+        """
+        url = self._url_repo_tags(project, repository)
+        body = {}
+        if tag_name is not None:
+            body['name'] = tag_name
+        if tag_name is not None:
+            body['startPoint'] = commit_revision
+        if tag_name is not None:
+            body['message'] = description
+        return self.post(url, data=body)
+
+    def _url_repo_tag(self, project_key, repository, tag):
+        return '{}/{}'.format(self._url_repo_tags(project_key, repository), tag)
+
+    def delete_tag(self, project, repository, tag_name):
+        """
+        Creates a tag using the information provided in the {@link RestCreateTagRequest request}
+        The authenticated user must have REPO_WRITE permission for the context repository to call this resource.
+        :param project:
+        :param repository:
+        :param tag_name:
+        :return:
+        """
+        url = self._url_repo_tag(project, repository, tag_name)
+        return self.delete(url)
+
+    def _url_pull_request_settings(self, project, repository):
+        return '{}/settings/pull-requests'.format(self._url_repo(project, repository))
 
     def get_pull_request_settings(self, project, repository):
         """
@@ -728,12 +1100,7 @@ class Bitbucket(AtlassianRestAPI):
         :param repository:
         :return:
         """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project}/repos/{repository}/settings/pull-requests' \
-                .format(project=project, repository=repository)
-        else:
-            url = 'rest/api/2.0/projects/{project}/repos/{repository}/settings/pull-requests' \
-                .format(project=project, repository=repository)
+        url = self._url_pull_request_settings(project, repository)
         return self.get(url)
 
     def set_pull_request_settings(self, project, repository, data):
@@ -744,13 +1111,15 @@ class Bitbucket(AtlassianRestAPI):
         :param data: json body
         :return:
         """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project}/repos/{repository}/settings/pull-requests' \
-                .format(project=project, repository=repository)
-        else:
-            url = 'rest/api/2.0/projects/{project}/repos/{repository}/settings/pull-requests' \
-                .format(project=project, repository=repository)
+        url = self._url_pull_request_settings(project, repository)
         return self.post(url, data=data)
+
+    def _url_pull_requests(self, project, repository):
+        if self.cloud:
+            return self.resource_url('repositories/{}/{}/pullrequests' \
+                                    .format(project, repository))
+        else:
+            return '{}/pull-requests'.format(self._url_repo(project, repository))
 
     def get_pull_requests(self, project, repository, state='OPEN', order='newest', limit=100, start=0, at=None):
         """
@@ -765,14 +1134,7 @@ class Bitbucket(AtlassianRestAPI):
         :param at:
         :return:
         """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests'.format(project=project,
-                                                                                            repository=repository)
-        else:
-            url = self.resource_url(
-                'repositories/{project}/{repository}/pullrequests'.format(
-                    project=project, repository=repository))
-
+        url = self._url_pull_requests(project, repository)
         params = {}
         if state:
             params['state'] = state
@@ -784,142 +1146,7 @@ class Bitbucket(AtlassianRestAPI):
             params['order'] = order
         if at:
             params['at'] = at
-
-        response = self.get(url, params=params)
-        if 'values' not in response:
-            return []
-        pr_list = (response or {}).get('values', [])
-
-        if self.cloud:
-            while True:
-                next_page = response.get("next")
-                if next_page is None:
-                    break
-
-                # Strip the base url - it's added when constructing the request
-                response = self.get(next_page.replace(self.url, ""))
-                pr_list.extend(response.get("values", []))
-
-        else:
-            while not response.get('isLastPage') and len(pr_list) < limit:
-                start = response.get('nextPageStart')
-                params['start'] = start
-                response = self.get(url, params=params)
-                pr_list += (response or {}).get('values')
-
-        return pr_list
-
-    def get_pull_requests_activities(self, project, repository, pull_request_id, start=0):
-        """
-        Get pull requests activities
-        :param project:
-        :param repository:
-        :param pull_request_id: the ID of the pull request within the repository
-        :param start:
-        :return:
-        """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/activities'.format(
-                project=project,
-                repository=repository,
-                pullRequestId=pull_request_id)
-        else:
-            url = 'rest/api/2.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/activities'.format(
-                project=project,
-                repository=repository,
-                pullRequestId=pull_request_id)
-        params = {'start': start}
-        response = self.get(url, params=params)
-        if 'values' not in response:
-            return []
-        activities_list = (response or {}).get('values')
-        while not response.get('isLastPage'):
-            params['start'] = response.get('nextPageStart')
-            response = self.get(url, params=params)
-            activities_list += (response or {}).get('values')
-        return activities_list
-
-    def get_pull_requests_changes(self, project, repository, pull_request_id):
-        """
-        Get pull requests changes
-        :param project:
-        :param repository:
-        :param pull_request_id: the ID of the pull request within the repository
-        :return:
-        """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/changes'.format(
-                project=project,
-                repository=repository,
-                pullRequestId=pull_request_id)
-        else:
-            url = 'rest/api/2.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/changes'.format(
-                project=project,
-                repository=repository,
-                pullRequestId=pull_request_id)
-        params = {'start': 0}
-        response = self.get(url, params=params)
-        if self.advanced_mode:
-            return response
-        if 'values' not in response:
-            return []
-        changes_list = (response or {}).get('values')
-        while not response.get('isLastPage'):
-            params['start'] = response.get('nextPageStart')
-            if params['start'] is None:
-                log.warning('Too many changes in pull request. Changes list is incomplete.')
-                break
-            response = self.get(url, params=params)
-            changes_list += (response or {}).get('values')
-        return changes_list
-
-    def get_pull_requests_commits(self, project, repository, pull_request_id):
-        """
-        Get pull requests commits
-        :param project:
-        :param repository:
-        :param pull_request_id: the ID of the pull request within the repository
-        :return:
-        """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/commits'.format(
-                project=project, repository=repository, pullRequestId=pull_request_id)
-        else:
-            url = 'rest/api/2.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/commits'.format(
-                project=project, repository=repository, pullRequestId=pull_request_id)
-        params = {'start': 0}
-        response = self.get(url, params=params)
-        if 'values' not in response:
-            return []
-        commits_list = (response or {}).get('values')
-        while not response.get('isLastPage'):
-            params['start'] = response.get('nextPageStart')
-            response = self.get(url, params=params)
-            commits_list += (response or {}).get('values')
-        return commits_list
-
-    def get_pull_requests_participants(self, project, repository, pull_request_id):
-        """
-        Get all participants of a pull request
-        :param project:
-        :param repository:
-        :param pull_request_id:
-        :return:
-        """
-        url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/participants'.format(
-            project=project,
-            repository=repository,
-            pullRequestId=pull_request_id)
-        params = {'start': 0}
-        response = self.get(url, params=params)
-        if 'values' not in response:
-            return []
-        participant_list = (response or {}).get('values')
-        while not response.get('isLastPage'):
-            params['start'] = response.get('nextPageStart')
-            response = self.get(url, params=params)
-            participant_list += (response or {}).get('values')
-        return participant_list
+        return self._get_paged(url, params=params)
 
     def open_pull_request(self, source_project, source_repo, dest_project, dest_repo, source_branch, destination_branch,
                           title, description, reviewers=None):
@@ -989,213 +1216,11 @@ class Bitbucket(AtlassianRestAPI):
         :param data: json body
         :return:
         """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{projectKey}/repos/{repository}/pull-requests'.format(projectKey=project_key,
-                                                                                               repository=repository)
-        else:
-            url = self.resource_url(
-                'repositories/{projectKey}/{repository}/pullrequests'.format(
-                    projectKey=project_key, repository=repository))
+        url = self._url_pull_requests(project_key, repository)
         return self.post(url, data=data)
 
-    def delete_pull_request(self, project, repository, pull_request_id, pull_request_version):
-        """
-        Delete a pull request.
-
-        :param project: the project key
-        :param repository: the repository slug
-        :param pull_request_id: the ID of the pull request within the repository
-        :param pull_request_version: the version of the pull request
-        :return:
-        """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{projectKey}/repos/{repositorySlug}/pull-requests/{pullRequestId}'.format(
-                projectKey=project, repositorySlug=repository, pullRequestId=pull_request_id)
-        else:
-            url = 'rest/api/2.0/projects/{projectKey}/repos/{repositorySlug}/pull-requests/{pullRequestId}'.format(
-                projectKey=project, repositorySlug=repository, pullRequestId=pull_request_id)
-        data = {'version': pull_request_version}
-        return self.delete(url, data=data)
-
-    def decline_pull_request(self, project_key, repository, pr_id, pr_version):
-        """
-        Decline a pull request.
-        The authenticated user must have REPO_READ permission for the repository 
-        that this pull request targets to call this resource.
-
-        :param project_key: PROJECT
-        :param repository: my_shiny_repo
-        :param pr_id: 2341
-        :param pr_version: 12
-        :return:
-        """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project_key}/repos/{repository}/pull-requests/{pr_id}/decline'.format(
-                project_key=project_key, repository=repository, pr_id=pr_id)
-            params = {'version': pr_version}
-        else:
-            url = self.resource_url(
-                'repositories/{project_key}/{repository}/pullrequests/{pr_id}/decline'.format(
-                    project_key=project_key, repository=repository, pr_id=pr_id))
-            params = {}
-
-        return self.post(url, params=params)
-
-    def is_pull_request_can_be_merged(self, project_key, repository, pr_id):
-        """
-        Test whether a pull request can be merged.
-        A pull request may not be merged if:
-        - there are conflicts that need to be manually resolved before merging; and/or
-        - one or more merge checks have vetoed the merge.
-        The authenticated user must have REPO_READ permission for the repository 
-        that this pull request targets to call this resource.
-
-        :param project_key: PROJECT
-        :param repository: my_shiny_repo
-        :param pr_id: 2341
-        :return:
-        """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project_key}/repos/{repository}/pull-requests/{pr_id}/merge'.format(
-                project_key=project_key, repository=repository, pr_id=pr_id)
-        else:
-            url = 'rest/api/2.0/projects/{project_key}/repos/{repository}/pull-requests/{pr_id}/merge'.format(
-                project_key=project_key, repository=repository, pr_id=pr_id)
-        return self.get(url)
-
-    def merge_pull_request(self, project_key, repository, pr_id, pr_version):
-        """
-        Merge pull request
-        The authenticated user must have REPO_READ permission for the repository 
-        that this pull request targets to call this resource.
-
-        :param pr_version:
-        :param project_key: PROJECT
-        :param repository: my_shiny_repo
-        :param pr_id: 2341
-        :return:
-        """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project_key}/repos/{repository}/pull-requests/{pr_id}/merge'.format(
-                project_key=project_key, repository=repository, pr_id=pr_id)
-            params = {'version': pr_version}
-        else:
-            url = self.resource_url(
-                'repositories/{project_key}/{repository}/pullrequests/{pr_id}/merge'.format(
-                    project_key=project_key, repository=repository, pr_id=pr_id))
-            params = {}
-
-        return self.post(url, params=params)
-
-    def reopen_pull_request(self, project_key, repository, pr_id, pr_version):
-        """
-        Re-open a declined pull request.
-        The authenticated user must have REPO_READ permission for the repository 
-        that this pull request targets to call this resource.
-
-        :param project_key: PROJECT
-        :param repository: my_shiny_repo
-        :param pr_id: 2341
-        :param pr_version: 12
-        :return:
-        """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project_key}/repos/{repository}/pull-requests/{pr_id}/reopen'.format(
-                project_key=project_key, repository=repository, pr_id=pr_id)
-        else:
-            url = 'rest/api/2.0/projects/{project_key}/repos/{repository}/pull-requests/{pr_id}/reopen'.format(
-                project_key=project_key, repository=repository, pr_id=pr_id)
-        params = {'version': pr_version}
-
-        return self.post(url, params=params)
-
-    def check_inbox_pull_requests_count(self):
-        if not self.cloud:
-            return self.get('rest/api/1.0/inbox/pull-requests/count')
-        return self.get('rest/api/2.0/inbox/pull-requests/count')
-
-    def check_inbox_pull_requests(self, start=0, limit=None, role=None):
-        """
-        Get pull request in your inbox
-        :param start:
-        :param limit:
-        :param role:
-        :return:
-        """
-        params = {'start': start}
-        if limit:
-            params['limit'] = limit
-        if role:
-            params['role'] = role
-        if not self.cloud:
-            url = 'rest/api/1.0/inbox/pull-requests'
-        else:
-            url = 'rest/api/2.0/inbox/pull-requests'
-        return self.get(url, params=params)
-
-    def add_pull_request_comment(self, project, repository, pull_request_id, text, parent_id=None):
-        """
-        Add comment into pull request
-        :param project:
-        :param repository:
-        :param pull_request_id: the ID of the pull request within the repository
-        :param text comment text
-        :param parent_id parent comment id
-
-        :return:
-        """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/comments'.format(
-                project=project, repository=repository, pullRequestId=pull_request_id)
-        else:
-            url = 'rest/api/2.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/comments'.format(
-                project=project, repository=repository, pullRequestId=pull_request_id)
-        body = {'text': text}
-        if parent_id:
-            body['parent'] = {'id': parent_id}
-        return self.post(url, data=body)
-
-    def get_pull_request_comment(self, project, repository, pull_request_id, comment_id):
-        """
-        Retrieves a pull request comment.
-        The authenticated user must have REPO_READ permission
-        for the repository that this pull request targets to call this resource.
-        :param project:
-        :param repository:
-        :param pull_request_id: the ID of the pull request within the repository
-        :param comment_id: the ID of the comment to retrieve
-        :return:
-        """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/comments/' \
-                  '{comment_id}'.format(project=project, repository=repository, pullRequestId=pull_request_id,
-                                        comment_id=comment_id)
-        else:
-            url = 'rest/api/2.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}/comments/' \
-                  '{comment_id}'.format(project=project, repository=repository, pullRequestId=pull_request_id,
-                                        comment_id=comment_id)
-        return self.get(url)
-
-    def update_pull_request_comment(self, project, repository, pull_request_id, comment_id, comment, comment_version):
-        """
-        Update the text of a comment.
-        Only the user who created a comment may update it.
-
-        Note: the supplied supplied JSON object must contain a version
-        that must match the server's version of the comment
-        or the update will fail.
-        """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project}/repos/{repo}/pull-requests/{pull_request}/comments/{comment_id}' \
-                .format(project=project, repo=repository, pull_request=pull_request_id, comment_id=comment_id)
-        else:
-            url = 'rest/api/2.0/projects/{project}/repos/{repo}/pull-requests/{pull_request}/comments/{comment_id}' \
-                .format(project=project, repo=repository, pull_request=pull_request_id, comment_id=comment_id)
-        payload = {
-            "version": comment_version,
-            "text": comment
-        }
-        return self.put(url, data=payload)
+    def _url_pull_request(self, project, repository, pull_request_id):
+        return '{}/{}'.format(self._url_pull_requests(project, repository), pull_request_id)
 
     def get_pull_request(self, project, repository, pull_request_id):
         """
@@ -1207,13 +1232,7 @@ class Bitbucket(AtlassianRestAPI):
         :param pull_request_id: the ID of the pull request within the repository
         :return:
         """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project}/repos/{repository}/pull-requests/{pullRequestId}'.format(
-                project=project, repository=repository, pullRequestId=pull_request_id)
-        else:
-            url = self.resource_url(
-                'repositories/{project}/{repository}/pullrequests/{pullRequestId}'.format(
-                    project=project, repository=repository, pullRequestId=pull_request_id))
+        url = self._url_pull_request(project, repository, pull_request_id)
         return self.get(url)
 
     def get_pullrequest(self, *args, **kwargs):
@@ -1221,6 +1240,88 @@ class Bitbucket(AtlassianRestAPI):
         Deprecated name since 1.15.1. Let's use the get_pull_request()
         """
         return self.get_pull_request(*args, **kwargs)
+
+    def delete_pull_request(self, project, repository, pull_request_id, pull_request_version):
+        """
+        Delete a pull request.
+
+        :param project: the project key
+        :param repository: the repository slug
+        :param pull_request_id: the ID of the pull request within the repository
+        :param pull_request_version: the version of the pull request
+        :return:
+        """
+        url = self._url_pull_request(project, repository, pull_request_id)
+        data = {'version': pull_request_version}
+        return self.delete(url, data=data)
+
+    def get_pull_requests_activities(self, project, repository, pull_request_id, start=0, limit=None):
+        """
+        Get pull requests activities
+        :param project:
+        :param repository:
+        :param pull_request_id: the ID of the pull request within the repository
+        :param start:
+        :return:
+        """
+        url = '{}/activities'.format(self._url_pull_request(project, repository, pull_request_id))
+        params = {}
+        if start:
+            params['start'] = start
+        if limit:
+            params['limit'] = limit
+        return self._get_paged(url, params)
+
+    def get_pull_requests_changes(self, project, repository, pull_request_id, start=0, limit=None):
+        """
+        Get pull requests changes
+        :param project:
+        :param repository:
+        :param pull_request_id: the ID of the pull request within the repository
+        :return:
+        """
+        url = '{}/changes'.format(self._url_pull_request(project, repository, pull_request_id))
+        params = {}
+        if start:
+            params['start'] = start
+        if limit:
+            params['limit'] = limit
+        return self._get_paged(url, params)
+
+    def get_pull_requests_commits(self, project, repository, pull_request_id, start=0, limit=None):
+        """
+        Get pull requests commits
+        :param project:
+        :param repository:
+        :param pull_request_id: the ID of the pull request within the repository
+        :return:
+        """
+        url = '{}/commits'.format(self._url_pull_request(project, repository, pull_request_id))
+        params = {}
+        if start:
+            params['start'] = start
+        if limit:
+            params['limit'] = limit
+        return self._get_paged(url, params)
+
+    def _url_pull_request_participants(self, project, repository, pull_request_id):
+        return '{}/participants'.format(self._url_pull_requests(project, repository, pull_request_id))
+
+    def get_pull_requests_participants(self, project, repository, pull_request_id, start=0, limit=None):
+        """
+        Get all participants of a pull request
+        :param project:
+        :param repository:
+        :param pull_request_id:
+        :return:
+        """
+        url = self._url_pull_request_participants(project, repository, pull_request_id)
+        params = {}
+        if start:
+            params['start'] = start
+        if limit:
+            params['limit'] = limit
+        return self._get_paged(url, params)
 
     def change_reviewed_status(self, project_key, repository_slug, pull_request_id, status, user_slug):
         """
@@ -1234,14 +1335,7 @@ class Bitbucket(AtlassianRestAPI):
         :param user_slug:
         :return:
         """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{projectKey}/repos/{repo}/pull-requests/{pull_request}/participants/' \
-                  '{userSlug}'.format(projectKey=project_key, repo=repository_slug, pull_request=pull_request_id,
-                                      userSlug=user_slug)
-        else:
-            url = 'rest/api/2.0/projects/{projectKey}/repos/{repo}/pull-requests/{pull_request}/participants/' \
-                  '{userSlug}'.format(projectKey=project_key, repo=repository_slug, pull_request=pull_request_id,
-                                      userSlug=user_slug)
+        url = '{}/{}}'.format(_url_pull_request_participants(project, repository, pull_request_id), user_slug)
         approved = True if status == "APPROVED" else False
         data = {
             "user": {
@@ -1252,105 +1346,225 @@ class Bitbucket(AtlassianRestAPI):
         }
         return self.put(url, data)
 
-    def get_tags(self, project, repository, filter='', limit=1000, order_by=None, start=0):
-        """
-        Retrieve the tags matching the supplied filterText param.
-        The authenticated user must have REPO_READ permission for the context repository to call this resource.
-        :param project:
-        :param repository:
-        :param filter:
-        :param start:
-        :param limit: OPTIONAL: The limit of the number of tags to return, this may be restricted by
-                fixed system limits. Default by built-in method: 1000
-        :param order_by: OPTIONAL: ordering of refs either ALPHABETICAL (by name) or MODIFICATION (last updated)
-        :return:
-        """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project}/repos/{repository}/tags'.format(project=project,
-                                                                                   repository=repository)
-        else:
-            url = 'rest/api/2.0/projects/{project}/repos/{repository}/tags'.format(project=project,
-                                                                                   repository=repository)
-        params = {}
-        if start:
-            params['start'] = start
-        if limit:
-            params['limit'] = limit
-        if filter:
-            params['filterText'] = filter
-        if order_by:
-            params['orderBy'] = order_by
-        result = self.get(url, params=params)
-        if result.get('isLastPage'):
-            log.info('This is a last page of the result')
-        else:
-            log.info('Next page start at {}'.format(result.get('nextPageStart')))
-        return (result or {}).get('values')
+    def _url_pull_request_comments(self, project, repository, pull_request_id):
+        url = '{}/comments'.format(self._url_pull_request(project, repository, pull_request_id))
 
-    def get_project_tags(self, project, repository, tag_name):
+    def add_pull_request_comment(self, project, repository, pull_request_id, text, parent_id=None):
         """
-        Retrieve a tag in the specified repository.
-        The authenticated user must have REPO_READ permission for the context repository to call this resource.
-        Search uri is api/1.0/projects/{projectKey}/repos/{repositorySlug}/tags/{name:.*}
+        Add comment into pull request
         :param project:
         :param repository:
-        :param tag_name: OPTIONAL:
-        :return:
-        """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project}/repos/{repository}/tags/{tag}'.format(project=project,
-                                                                                         repository=repository,
-                                                                                         tag=tag_name)
-        else:
-            url = 'rest/api/1.0/projects/{project}/repos/{repository}/tags/{tag}'.format(project=project,
-                                                                                         repository=repository,
-                                                                                         tag=tag_name)
-        return self.get(url)
+        :param pull_request_id: the ID of the pull request within the repository
+        :param text comment text
+        :param parent_id parent comment id
 
-    def set_tag(self, project, repository, tag_name, commit_revision, description=None):
-        """
-        Creates a tag using the information provided in the {@link RestCreateTagRequest request}
-        The authenticated user must have REPO_WRITE permission for the context repository to call this resource.
-        :param project:
-        :param repository:
-        :param tag_name:
-        :param commit_revision: commit hash
-        :param description: OPTIONAL:
         :return:
         """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project}/repos/{repository}/tags'.format(project=project,
-                                                                                   repository=repository)
-        else:
-            url = 'rest/api/2.0/projects/{project}/repos/{repository}/tags'.format(project=project,
-                                                                                   repository=repository)
-        body = {}
-        if tag_name is not None:
-            body['name'] = tag_name
-        if tag_name is not None:
-            body['startPoint'] = commit_revision
-        if tag_name is not None:
-            body['message'] = description
+        url = self._url_pull_request_comments(project, repository, pull_request_id)
+        body = {'text': text}
+        if parent_id:
+            body['parent'] = {'id': parent_id}
         return self.post(url, data=body)
 
-    def delete_tag(self, project, repository, tag_name):
+    def _url_pull_request_comment(self, project, repository, pull_request_id, comment_id):
+        url = '{}/{}'.format(self._url_pull_request(project, repository, pull_request_id), comment_id)
+
+    def get_pull_request_comment(self, project, repository, pull_request_id, comment_id):
         """
-        Creates a tag using the information provided in the {@link RestCreateTagRequest request}
-        The authenticated user must have REPO_WRITE permission for the context repository to call this resource.
+        Retrieves a pull request comment.
+        The authenticated user must have REPO_READ permission
+        for the repository that this pull request targets to call this resource.
         :param project:
         :param repository:
-        :param tag_name:
+        :param pull_request_id: the ID of the pull request within the repository
+        :param comment_id: the ID of the comment to retrieve
         :return:
         """
+        url = self._url_pull_request_comment(project, repository, pull_request_id, comment_id)
+        return self.get(url)
+
+    def update_pull_request_comment(self, project, repository, pull_request_id, comment_id, comment, comment_version):
+        """
+        Update the text of a comment.
+        Only the user who created a comment may update it.
+
+        Note: the supplied supplied JSON object must contain a version
+        that must match the server's version of the comment
+        or the update will fail.
+        """
+        url = self._url_pull_request_comment(project, repository, pull_request_id, comment_id)
+        data = {
+            "version": comment_version,
+            "text": comment
+        }
+        return self.put(url, data=data)
+
+    def decline_pull_request(self, project_key, repository, pr_id, pr_version):
+        """
+        Decline a pull request.
+        The authenticated user must have REPO_READ permission for the repository
+        that this pull request targets to call this resource.
+
+        :param project_key: PROJECT
+        :param repository: my_shiny_repo
+        :param pr_id: 2341
+        :param pr_version: 12
+        :return:
+        """
+        url = self._url_pull_request(project_key, repository, pr_id)
+        params = {}
         if not self.cloud:
-            url = 'rest/git/1.0/projects/{project}/repos/{repository}/tags/{tag}'.format(project=project,
-                                                                                         repository=repository,
-                                                                                         tag=tag_name)
-        else:
-            url = 'rest/git/2.0/projects/{project}/repos/{repository}/tags/{tag}'.format(project=project,
-                                                                                         repository=repository,
-                                                                                         tag=tag_name)
+            params['version'] = pr_version
+        return self.post(url, params=params)
+
+    def get_tasks(self, project, repository, pull_request_id):
+        """
+        Get all tasks for the pull request
+        :param project:
+        :param repository:
+        :param pull_request_id: the ID of the pull request within the repository
+        :return:
+        """
+        if self.cloud:
+            raise Exception("Not supported in Bitbucket Cloud")
+        url = '{}/tasks'.format(self._url_pull_request(project, repository, pull_request_id))
+        return self.get(url)
+
+    def _url_tasks(self):
+        if self.cloud:
+            raise Exception("Not supported in Bitbucket Cloud")
+        return self.resource_url('tasks')
+
+    def add_task(self, anchor, text):
+        """
+        Add task to the comment
+        :param anchor: ID of the comment,
+        :param text: task text
+        :return:
+        """
+        url = self._url_tasks()
+        data = {
+            "anchor": {
+                "id": anchor,
+                "type": "COMMENT"
+            },
+            "text": text
+        }
+        return self.post(url, data=data)
+
+    def _url_task(self, task_id):
+        return "{}/{}".format(self._url_tasks(), task_id)
+
+    def get_task(self, task_id):
+        """
+        Get task information by ID
+        :param task_id:
+        :return:
+        """
+        url = self._url_task(task_id)
+        return self.get(url)
+
+    def delete_task(self, task_id):
+        """
+        Delete task by ID
+        :param task_id:
+        :return:
+        """
+        url = self._url_task(task_id)
         return self.delete(url)
+
+    def update_task(self, task_id, text=None, state=None):
+        """
+        Update task by ID. It is possible to update state and/or text of the task
+        :param task_id:
+        :param text:
+        :param state: OPEN, RESOLVED
+        :return:
+        """
+        url = self._url_task(task_id)
+        data = {"id": task_id}
+        if text:
+            data["text"] = text
+        if state:
+            data["state"] = state
+        return self.put(url, data=data)
+
+    def is_pull_request_can_be_merged(self, project_key, repository, pr_id):
+        """
+        Test whether a pull request can be merged.
+        A pull request may not be merged if:
+        - there are conflicts that need to be manually resolved before merging; and/or
+        - one or more merge checks have vetoed the merge.
+        The authenticated user must have REPO_READ permission for the repository
+        that this pull request targets to call this resource.
+
+        :param project_key: PROJECT
+        :param repository: my_shiny_repo
+        :param pr_id: 2341
+        :return:
+        """
+        url = '{}/merge'.format(self._url_pull_request(project, repository, pull_request_id))
+        return self.get(url)
+
+    def merge_pull_request(self, project_key, repository, pr_id, pr_version):
+        """
+        Merge pull request
+        The authenticated user must have REPO_READ permission for the repository
+        that this pull request targets to call this resource.
+
+        :param pr_version:
+        :param project_key: PROJECT
+        :param repository: my_shiny_repo
+        :param pr_id: 2341
+        :return:
+        """
+        url = '{}/merge'.format(self._url_pull_request(project, repository, pull_request_id))
+        params = {}
+        if not self.cloud:
+            params['version'] = pr_version
+        return self.post(url, params=params)
+
+    def reopen_pull_request(self, project_key, repository, pr_id, pr_version):
+        """
+        Re-open a declined pull request.
+        The authenticated user must have REPO_READ permission for the repository
+        that this pull request targets to call this resource.
+
+        :param project_key: PROJECT
+        :param repository: my_shiny_repo
+        :param pr_id: 2341
+        :param pr_version: 12
+        :return:
+        """
+        url = '{}/reopen'.format(self._url_pull_request(project, repository, pull_request_id))
+        params = {'version': pr_version}
+        return self.post(url, params=params)
+
+    def _url_inbox_pull_requests(self):
+        return 'inbox/pull-requests'
+
+    def check_inbox_pull_requests_count(self):
+        url = '{}/count'.format(self._url_inbox_pull_requests())
+        return self.get(url)
+
+    def check_inbox_pull_requests(self, start=0, limit=None, role=None):
+        """
+        Get pull request in your inbox
+        :param start:
+        :param limit:
+        :param role:
+        :return:
+        """
+        url = self._url_inbox_pull_requests()
+        params = {'start': start}
+        if limit:
+            params['limit'] = limit
+        if role:
+            params['role'] = role
+        return self.get(url, params=params)
+
+    def _url_repo_compare(self, project, repository):
+        url = '{}/compare'.format(self._url_repo(project, repository))
 
     def get_diff(self, project, repository, path, hash_oldest, hash_newest):
         """
@@ -1364,14 +1578,7 @@ class Bitbucket(AtlassianRestAPI):
         :param hash_newest: the target commit (can be a partial/full commit ID or qualified/unqualified ref name)
         :return:
         """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project}/repos/{repository}/compare/diff/{path}'.format(project=project,
-                                                                                                  repository=repository,
-                                                                                                  path=path)
-        else:
-            url = 'rest/api/2.0/projects/{project}/repos/{repository}/compare/diff/{path}'.format(project=project,
-                                                                                                  repository=repository,
-                                                                                                  path=path)
+        url = '{}/diff/{}'.format(self._url_repo_compare(project, repository), path)
         params = {}
         if hash_oldest:
             params['from'] = hash_oldest
@@ -1379,9 +1586,12 @@ class Bitbucket(AtlassianRestAPI):
             params['to'] = hash_newest
         return (self.get(url, params=params) or {}).get('diffs')
 
+    def _url_commits(self, project, repository):
+        return '{}/commits'.format(self._url_repo(project, repository))
+
     def get_commits(self, project, repository, hash_oldest=None, hash_newest=None, follow_renames=False,
                     ignore_missing=False, merges="include", with_counts=False,
-                    avatar_size=None, avatar_scheme=None, limit=99999):
+                    avatar_size=None, avatar_scheme=None, limit=None):
         """
         Get commit list from repo
         :param project:
@@ -1395,15 +1605,10 @@ class Bitbucket(AtlassianRestAPI):
         :param avatar_size: OPTIONAL: if present the service adds avatar URLs for commit authors.
         :param avatar_scheme: OPTIONAL: the desired scheme for the avatar URL
         :param limit: OPTIONAL: The limit of the number of commits to return, this may be restricted by
-               fixed system limits. Default by built-in method: 99999
+               fixed system limits. Default by built-in method: None
         :return:
         """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project}/repos/{repository}/commits'.format(project=project,
-                                                                                      repository=repository)
-        else:
-            url = 'rest/api/2.0/projects/{project}/repos/{repository}/commits'.format(project=project,
-                                                                                      repository=repository)
+        url = self._url_commits(project, repository)
         params = {"merges": merges}
         if hash_oldest:
             params['since'] = hash_oldest
@@ -1423,6 +1628,32 @@ class Bitbucket(AtlassianRestAPI):
             params['limit'] = limit
         return (self.get(url, params=params) or {}).get('values')
 
+    def get_changelog(self, project, repository, ref_from, ref_to, start=0, limit=None):
+        """
+        Get change log between 2 refs
+        :param project:
+        :param repository:
+        :param ref_from:
+        :param ref_to:
+        :param limit: OPTIONAL: The limit of the number of changes to return, this may be restricted by
+                fixed system limits. Default by built-in method: None
+        :return:
+        """
+        url = self._url_commits(project, repository)
+        params = {}
+        if ref_from:
+            params['from'] = ref_from
+        if ref_to:
+            params['to'] = ref_to
+        if start:
+            params['start'] = start
+        if limit:
+            params['limit'] = limit
+        return self._get_paged(url, params=params)
+
+    def _url_commit(self, project, repository, commitId):
+        return '{}/{}'.format(self._url_commits(project, repository), commitId=commitId)
+
     def get_commit_info(self, project, repository, commit, path=None):
         """
         Retrieve a single commit identified by its ID>. In general, that ID is a SHA1.
@@ -1438,55 +1669,63 @@ class Bitbucket(AtlassianRestAPI):
         :return:
         """
 
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project}/repos/{repository}/commits/{commitId}'.format(project=project,
-                                                                                                 repository=repository,
-                                                                                                 commitId=commit)
-        else:
-            url = 'rest/api/2.0/projects/{project}/repos/{repository}/commits/{commitId}'.format(project=project,
-                                                                                                 repository=repository,
-                                                                                                 commitId=commit)
+        url = self._url_commit(project, repository, commit)
         params = {}
         if path:
             params['path'] = path
         return self.get(url, params=params)
 
     def get_pull_requests_contain_commit(self, project, repository, commit):
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project}/repos/{repository}/commits/{commitId}/pull-requests'.format(
-                project=project, repository=repository, commitId=commit)
-        else:
-            url = 'rest/api/2.0/projects/{project}/repos/{repository}/commits/{commitId}/pull-requests'.format(
-                project=project, repository=repository, commitId=commit)
+        url = self._url_commit(project, repository, commit)
         return (self.get(url) or {}).get('values')
 
-    def get_changelog(self, project, repository, ref_from, ref_to, limit=99999):
-        """
-        Get change log between 2 refs
-        :param project:
-        :param repository:
-        :param ref_from:
-        :param ref_to:
-        :param limit: OPTIONAL: The limit of the number of changes to return, this may be restricted by
-                fixed system limits. Default by built-in method: 99999
-        :return:
-        """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project}/repos/{repository}/compare/commits'.format(project=project,
-                                                                                              repository=repository)
-        else:
-            url = 'rest/api/2.0/projects/{project}/repos/{repository}/compare/commits'.format(project=project,
-                                                                                              repository=repository)
-        params = {}
-        if ref_from:
-            params['from'] = ref_from
-        if ref_to:
-            params['to'] = ref_to
-        if limit:
-            params['limit'] = limit
-        return (self.get(url, params=params) or {}).get('values')
+    def _url_code_insights_report(self, project_key, repository_slug, commit_id, report_key):
+        return '{}/reports/{}'.format(self._url_commit(project_key, repository_slug, commit_id), report_key)
 
-    def get_file_list(self, project, repository, query=None, limit=100000):
+    def get_code_insights_report(self, project_key, repository_slug, commit_id, report_key):
+        """
+        Retrieve the specified code-insights report.
+        :projectKey: str
+        :repositorySlug: str
+        :commitId: str
+        :report_key: str
+        """
+        url = self._url_code_insights_report(project_key, repository_slug, commit_id, report_key)
+        return self.get(url)
+
+    def delete_code_insights_report(self, project_key, repository_slug, commit_id, report_key):
+        """
+        Delete a report for the given commit. Also deletes any annotations associated with this report.
+        :projectKey: str
+        :repositorySlug: str
+        :commitId: str
+        :report_key: str
+        """
+        url = self._url_code_insights_report(project_key, repository_slug, commit_id, report_key)
+        return self.delete(url)
+
+    def create_code_insights_report(self, project_key, repository_slug, commit_id, report_key, report_title,
+                                    **report_params):
+        """
+        Create a new insight report, or replace the existing one
+        if a report already exists for the given repository, commit, and report key.
+        A request to replace an existing report will be rejected
+        if the authenticated user was not the creator of the specified report.
+        For further information visit:
+        https://docs.atlassian.com/bitbucket-server/rest/6.6.1/bitbucket-code-insights-rest.html
+        :projectKey: str
+        :repositorySlug: str
+        :commitId: str
+        :report_key: str
+        :report_title: str
+        :report_params:
+        """
+        url = self._url_code_insights_report(project_key, repository_slug, commit_id, report_key)
+        data = {"title": report_title}
+        data.update(report_params)
+        return self.put(url, data=data)
+
+    def get_file_list(self, project, repository, query=None, start=0, limit=None):
         """
         Retrieve a page of files from particular directory of a repository.
         The search is done recursively, so all files from any sub-directory of the specified directory will be returned.
@@ -1498,18 +1737,15 @@ class Bitbucket(AtlassianRestAPI):
         :param limit: OPTIONAL
         :return:
         """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project}/repos/{repository}/files'.format(project=project,
-                                                                                    repository=repository)
-        else:
-            url = 'rest/api/2.0/projects/{project}/repos/{repository}/files'.format(project=project,
-                                                                                    repository=repository)
+        url = '{}/files'.format(self._url_repo(project, repository))
         params = {}
         if query:
             params['at'] = query
+        if start:
+            params['start'] = start
         if limit:
             params['limit'] = limit
-        return (self.get(url, params=params) or {}).get('values')
+        return self._get_paged(url, params=params)
 
     def get_content_of_file(self, project, repository, filename, at=None, markup=None):
         """
@@ -1524,16 +1760,26 @@ class Bitbucket(AtlassianRestAPI):
                         the content is streamed without markup
         :return:
         """
-        headers = self.form_token_headers
-        url = 'projects/{project}/repos/{repository}/raw/{filename}/'.format(project=project,
-                                                                             repository=repository,
-                                                                             filename=filename)
+        url = '{}/raw/{}'.format(self._url_repo(project, repository), filename)
         params = {}
         if at is not None:
             params['at'] = at
         if markup is not None:
             params['markup'] = markup
+        headers = self.form_token_headers
         return self.get(url, params=params, not_json_response=True, headers=headers)
+
+    def _url_branches_permissions(self, project, repository=None):
+        if repository is None:
+            return '{}/restrictions/{}'.format(self._url_project(project,
+                                                                 api_root='branch-permissions',
+                                                                 api_version='2.0'),
+                                               permission_id)
+        else:
+            return '{}/restrictions/{}'.format(self._url_repo(project, repository,
+                                                              api_root='branch-permissions',
+                                                              api_version='2.0'),
+                                               permission_id)
 
     def get_branches_permissions(self, project, repository=None, start=0, limit=25):
         """
@@ -1544,12 +1790,7 @@ class Bitbucket(AtlassianRestAPI):
         :param limit:
         :return:
         """
-        if repository is not None:
-            url = 'rest/branch-permissions/2.0/projects/{project}/repos/{repository}/restrictions'.format(
-                project=project,
-                repository=repository)
-        else:
-            url = 'rest/branch-permissions/2.0/projects/{project}/restrictions'.format(project=project)
+        url = self._url_branches_permissions(project, repository)
         params = {}
         if limit:
             params['limit'] = limit
@@ -1562,7 +1803,7 @@ class Bitbucket(AtlassianRestAPI):
                                  except_access_keys=None, start=0, limit=25):
         """
         Create a restriction for the supplied branch or set of branches to be applied to the given repository.
-        Allows creating multiple restrictions at once. 
+        Allows creating multiple restrictions at once.
         To use multiple restrictions you should format payload manually -
         see the bitbucket-branch-restrictions.py example.
         Reference: https://docs.atlassian.com/bitbucket-server/rest/6.8.0/bitbucket-ref-restriction-rest.html
@@ -1579,6 +1820,7 @@ class Bitbucket(AtlassianRestAPI):
         :param limit:
         :return:
         """
+        url = self._url_branches_permissions(project, repository)
         if except_users is None:
             except_users = []
         if except_groups is None:
@@ -1586,15 +1828,6 @@ class Bitbucket(AtlassianRestAPI):
         if except_access_keys is None:
             except_access_keys = []
         headers = self.default_headers
-        if repository:
-            url = "rest/branch-permissions/2.0/projects/{project_key}/repos/{repository}/restrictions".format(
-                project_key=project_key,
-                repository=repository
-            )
-        else:
-            url = "rest/branch-permissions/2.0/projects/{project_key}/restrictions".format(
-                project_key=project_key
-            )
         if multiple_permissions:
             headers = self.bulk_headers
             restriction = multiple_permissions
@@ -1620,49 +1853,27 @@ class Bitbucket(AtlassianRestAPI):
     def delete_branch_permission(self, project_key, permission_id, repository=None):
         """
         Deletes a restriction as specified by a restriction id.
-        The authenticated user must have REPO_ADMIN permission or higher to call this resource. 
+        The authenticated user must have REPO_ADMIN permission or higher to call this resource.
 
         :param project_key:
         :param repository:
         :param permission_id:
         :return:
         """
-
-        if repository:
-            url = "rest/branch-permissions/2.0/projects/{project_key}/repos/{repository}/restrictions/{id}".format(
-                project_key=project_key,
-                repository=repository,
-                id=permission_id
-            )
-        else:
-            url = "rest/branch-permissions/2.0/projects/{project_key}/restrictions/{id}".format(
-                project_key=project_key,
-                id=permission_id
-            )
+        url = self._url_branches_permissions(project, repository)
         return self.delete(url)
 
     def get_branch_permission(self, project_key, permission_id, repository=None):
         """
         Returns a restriction as specified by a restriction id.
-        The authenticated user must have REPO_ADMIN permission or higher to call this resource. 
+        The authenticated user must have REPO_ADMIN permission or higher to call this resource.
 
         :param project_key:
         :param repository:
         :param permission_id:
         :return:
         """
-
-        if repository:
-            url = "rest/branch-permissions/2.0/projects/{project_key}/repos/{repository}/restrictions/{id}".format(
-                project_key=project_key,
-                repository=repository,
-                id=permission_id
-            )
-        else:
-            url = "rest/branch-permissions/2.0/projects/{project_key}/restrictions/{id}".format(
-                project_key=project_key,
-                id=permission_id
-            )
+        url = self._url_branches_permissions(project, repository)
         return self.get(url)
 
     def all_branches_permissions(self, project, repository=None):
@@ -1672,172 +1883,12 @@ class Bitbucket(AtlassianRestAPI):
         :param repository:
         :return:
         """
-        start = 0
-        branches_permissions = []
-        response = self.get_branches_permissions(project=project, repository=repository, start=start)
-        branches_permissions += response.get('values')
-        while not response.get('isLastPage'):
-            start = response.get('nextPageStart')
-            response = self.get_branches_permissions(project=project, repository=repository, start=start)
-            branches_permissions += response.get('values')
-        return branches_permissions
+        url = self._url_branches_permissions(project, repository)
+        return self._get_paged(url)
 
-    def reindex(self):
-        """
-        Rebuild the bundled Elasticsearch indexes for Bitbucket Server
-        :return:
-        """
-        url = 'rest/indexing/latest/sync'
-        return self.post(url)
-
-    def reindex_repo(self, project, repository):
-        """
-        Reindex repo
-        :param project:
-        :param repository:
-        :return:
-        """
-        url = 'rest/indexing/1.0/projects/{projectKey}/repos/{repositorySlug}/sync'.format(projectKey=project,
-                                                                                           repositorySlug=repository)
-        return self.post(url)
-
-    def reindex_repo_dev_panel(self, project, repository):
-        """
-        Reindex all of the Jira issues related to this repository, including branches and pull requests.
-        This automatically happens as part of an upgrade, and calling this manually should only be required
-        if something unforeseen happens and the index becomes out of sync.
-        The authenticated user must have REPO_ADMIN permission for the specified repository to call this resource.
-        :param project:
-        :param repository:
-        :return:
-        """
-        url = 'rest/jira-dev/1.0/projects/{projectKey}/repos/{repositorySlug}/reindex'.format(projectKey=project,
-                                                                                              repositorySlug=repository)
-        return self.post(url)
-
-    def check_reindexing_status(self):
-        """
-        Check reindexing status
-        :return:
-        """
-        url = 'rest/indexing/latest/status'
-        return self.get(url)
-
-    def fork_repository(self, project, repository, new_repository):
-        """
-        Forks a repository within the same project.
-        :param project:
-        :param repository:
-        :param new_repository:
-        :return:
-        """
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project}/repos/{repository}'.format(project=project,
-                                                                              repository=repository)
-        else:
-            url = 'rest/api/2.0/projects/{project}/repos/{repository}'.format(project=project,
-                                                                              repository=repository)
-        body = {}
-        if new_repository is not None:
-            body['name'] = new_repository
-        if new_repository is not None:
-            body['project'] = {'key': project}
-        return self.post(url, data=body)
-
-    def get_users_info(self, user_filter=None, start=0, limit=25):
-        """
-        The authenticated user must have the LICENSED_USER permission to call this resource.
-        :param user_filter: if specified only users with usernames, display name or email addresses
-            containing the supplied string will be returned
-        :param limit:
-        :param start:
-        :return:
-        """
-        params = {}
-        if limit:
-            params['limit'] = limit
-        if start:
-            params['start'] = start
-        if user_filter:
-            params['filter'] = user_filter
-
-        url = "rest/api/1.0/admin/users"
-        return self.get(url, params=params)
-
-    def get_current_license(self):
-        """
-        Retrieves details about the current license, as well as the current status of the system with
-        regards to the installed license. The status includes the current number of users applied
-        toward the license limit, as well as any status messages about the license (warnings about expiry
-        or user counts exceeding license limits).
-        The authenticated user must have ADMIN permission. Unauthenticated users, and non-administrators,
-        are not permitted to access license details.
-        :return:
-        """
-        if not self.cloud:
-            url = 'rest/api/1.0/admin/license'
-        else:
-            url = 'rest/api/2.0/admin/license'
-        return self.get(url)
-
-    def get_mail_configuration(self):
-        """
-        Retrieves the current mail configuration.
-        The authenticated user must have the SYS_ADMIN permission to call this resource.
-        :return:
-        """
-        if not self.cloud:
-            url = 'rest/api/1.0/admin/mail-server'
-        else:
-            url = 'rest/api/2.0/admin/mail-server'
-        return self.get(url)
-
-    def get_mail_sender_address(self):
-        """
-        Retrieves the server email address
-        :return:
-        """
-        if not self.cloud:
-            url = 'rest/api/1.0/admin/mail-server/sender-address'
-        else:
-            url = 'rest/api/2.0/admin/mail-server/sender-address'
-        return self.get(url)
-
-    def remove_mail_sender_address(self):
-        """
-        Clears the server email address.
-        The authenticated user must have the ADMIN permission to call this resource.
-        :return:
-        """
-        if not self.cloud:
-            url = 'rest/api/1.0/admin/mail-server/sender-address'
-        else:
-            url = 'rest/api/2.0/admin/mail-server/sender-address'
-        return self.delete(url)
-
-    def get_ssh_settings(self):
-        """
-        Retrieve ssh settings for user
-        :return:
-        """
-        if not self.cloud:
-            url = 'rest/ssh/1.0/settings'
-        else:
-            url = 'rest/ssh/2.0/settings'
-        return self.get(url)
-
-    def health_check(self):
-        """
-        Get health status
-        https://confluence.atlassian.com/jirakb/how-to-retrieve-health-check-results-using-rest-api-867195158.html
-        :return:
-        """
-        # check as Troubleshooting & Support Tools Plugin
-        response = self.get('rest/troubleshooting/1.0/check/')
-        if not response:
-            # check as support tools
-            response = self.get('rest/supportHealthCheck/1.0/check/')
-        return response
+    def _url_branching_model(self, project, repository):
+        return self.resource_url('{}/branchmodel/configuration'.format(self._url_repo(project, repository)),
+                                 api_root='branch-utils', api_version='1.0')
 
     def get_branching_model(self, project, repository):
         """
@@ -1846,9 +1897,7 @@ class Bitbucket(AtlassianRestAPI):
         :param repository:
         :return:
         """
-        url = 'rest/branch-utils/1.0/projects/{project}/repos/{repository}/branchmodel/configuration'.format(
-            project=project,
-            repository=repository)
+        url = self._url_branching_model(project, repository)
         return self.get(url)
 
     def set_branching_model(self, project, repository, data):
@@ -1859,9 +1908,7 @@ class Bitbucket(AtlassianRestAPI):
         :param data:
         :return:
         """
-        url = 'rest/branch-utils/1.0/projects/{project}/repos/{repository}/branchmodel/configuration'.format(
-            project=project,
-            repository=repository)
+        url = self._url_branching_model(project, repository)
         return self.put(url, data=data)
 
     def enable_branching_model(self, project, repository):
@@ -1899,37 +1946,10 @@ class Bitbucket(AtlassianRestAPI):
         :param repository:
         :return:
         """
-        url = 'rest/branch-utils/1.0/projects/{project}/repos/{repository}/branchmodel/configuration'.format(
-            project=project,
-            repository=repository)
-        return self.delete(url)
+        return self.delete(self._url_branching_model(project, repository))
 
-    def markup_preview(self, data):
-        """
-        Preview generated HTML for the given markdown content.
-        Only authenticated users may call this resource.
-        :param data:
-        :return:
-        """
-
-        if not self.cloud:
-            return self.post('rest/api/1.0/markup/preview', data=data)
-        return self.post('rest/api/2.0/markup/preview', data=data)
-
-    def upload_plugin(self, plugin_path):
-        """
-        Provide plugin path for upload into Jira e.g. useful for auto deploy
-        :param plugin_path:
-        :return:
-        """
-        files = {
-            'plugin': open(plugin_path, 'rb')
-        }
-        upm_token = \
-            self.request(method='GET', path='rest/plugins/1.0/', headers=self.no_check_headers, trailing=True).headers[
-                'upm-token']
-        url = 'rest/plugins/1.0/?token={upm_token}'.format(upm_token=upm_token)
-        return self.post(url, files=files, headers=self.no_check_headers)
+    def _url_file(self, project, repository, filename):
+        return '{}/browse/{}'.format(self._url_repo(project, repository), filename)
 
     def upload_file(self, project, repository, content, message, branch, filename):
         """
@@ -1942,18 +1962,12 @@ class Bitbucket(AtlassianRestAPI):
         :param filename
         :return:
         """
+        url = self._url_file(project, repository, filename)
         data = {
             "content": content,
             "message": message,
             "branch": branch
         }
-
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project}/repos/{repository}/browse/{filename}'.format(
-                project=project, repository=repository, filename=filename)
-        else:
-            url = 'rest/api/2.0/projects/{project}/repos/{repository}/browse/{filename}'.format(
-                project=project, repository=repository, filename=filename)
         return self.put(url, files=data)
 
     def update_file(self, project, repository, content, message, branch, filename, source_commit_id):
@@ -1968,68 +1982,14 @@ class Bitbucket(AtlassianRestAPI):
         :param source_commit_id:
         :return:
         """
+        url = self._url_file(project, repository, filename)
         data = {
             "content": content,
             "message": message,
             "branch": branch,
             "sourceCommitId": source_commit_id
         }
-        if not self.cloud:
-            url = 'rest/api/1.0/projects/{project}/repos/{repository}/browse/{filename}'.format(
-                project=project, repository=repository, filename=filename)
-        else:
-            url = 'rest/api/2.0/projects/{project}/repos/{repository}/browse/{filename}'.format(
-                project=project, repository=repository, filename=filename)
         return self.put(url, files=data)
-
-    def get_code_insights_report(self, project_key, repository_slug, commit_id, report_key):
-        """
-        Retrieve the specified code-insights report.
-        :projectKey: str
-        :repositorySlug: str
-        :commitId: str
-        :report_key: str
-        """
-        url = "rest/insights/1.0/projects/{projectKey}/repos/{repositorySlug}/commits/{commitId}/reports/{key}".format(
-            projectKey=project_key, repositorySlug=repository_slug, commitId=commit_id, key=report_key
-        )
-        return self.get(url)
-
-    def delete_code_insights_report(self, project_key, repository_slug, commit_id, report_key):
-        """
-        Delete a report for the given commit. Also deletes any annotations associated with this report.
-        :projectKey: str
-        :repositorySlug: str
-        :commitId: str
-        :report_key: str
-        """
-        url = "rest/insights/1.0/projects/{projectKey}/repos/{repositorySlug}/commits/{commitId}/reports/{key}".format(
-            projectKey=project_key, repositorySlug=repository_slug, commitId=commit_id, key=report_key
-        )
-        return self.delete(url)
-
-    def create_code_insights_report(self, project_key, repository_slug, commit_id, report_key, report_title,
-                                    **report_params):
-        """
-        Create a new insight report, or replace the existing one
-        if a report already exists for the given repository, commit, and report key.
-        A request to replace an existing report will be rejected
-        if the authenticated user was not the creator of the specified report.
-        For further information visit:
-        https://docs.atlassian.com/bitbucket-server/rest/6.6.1/bitbucket-code-insights-rest.html
-        :projectKey: str
-        :repositorySlug: str
-        :commitId: str
-        :report_key: str
-        :report_title: str
-        :report_params:
-        """
-        url = "rest/insights/1.0/projects/{projectKey}/repos/{repositorySlug}/commits/{commitId}/reports/{key}".format(
-            projectKey=project_key, repositorySlug=repository_slug, commitId=commit_id, key=report_key
-        )
-        data = {"title": report_title}
-        data.update(report_params)
-        return self.put(url, data=data)
 
     def search_code(self, team, search_query, page=1, limit=10):
         """
@@ -2037,10 +1997,7 @@ class Bitbucket(AtlassianRestAPI):
         :team: str
         :search_query: str
         """
-        endpoint = 'rest/api/1.0'
-        if self.cloud:
-            endpoint = 'rest/api/2.0'
-        url = "{endpoint}/teams/{team}/search/code".format(endpoint=endpoint, team=team)
+        url = self.resource_url('teams/{team}/search/code'.format(team=team))
         return self.get(url, params={'search_query': search_query, 'page': page, 'pagelen': limit})
 
     def get_lfs_repo_status(self, project_key, repo):
@@ -2049,120 +2006,10 @@ class Bitbucket(AtlassianRestAPI):
             repositorySlug=repo)
         return self.get(url)
 
-    def get_users(self, user_filter=None):
-        """
-        Get list of bitbucket users. 
-        Use 'user_filter' for get specific users.
-        :user_filter: str
-        """
-        url = "rest/api/1.0/users"
-        params = {}
-        if user_filter:
-            params['filter'] = user_filter
-        return self.get(url, params=params)
-
-    def _get_paged(self, url, params):
-        """
-        Use for get all methods
-        :param url:
-        :param params:
-        :return:
-        """
-        params['start'] = 0
-        response = self.get(url, params=params)
-        if 'values' not in response:
-            return []
-        values = response.get('values')
-        while not response.get('isLastPage'):
-            params['start'] = response.get('nextPageStart')
-            response = self.get(url, params=params)
-            values += response.get('values')
-        return values
-
-    def get_project_conditions(self, project_key):
-        """
-        Request type: GET
-        Return a page of defaults conditions with reviewers list that have been configured for this project.
-        For further information visit:
-            https://docs.atlassian.com/bitbucket-server/rest/5.16.0/bitbucket-default-reviewers-rest.html#idm52264904368
-        :projectKey: str
-        :return:
-        """
-        url = 'rest/default-reviewers/1.0/projects/{projectKey}/conditions'.format(
-            projectKey=project_key)
-        return self.get(url) or {}
-
-    def get_project_condition(self, project_key, id_condition):
-        """
-        Request type: GET
-        Return a specific condition with reviewers list that has been configured for this project.
-        For further information visit:
-            https://docs.atlassian.com/bitbucket-server/rest/5.16.0/bitbucket-default-reviewers-rest.html#idm52264901504
-        :projectKey: str - project key involved
-        :idCondition: int - condition id involved
-        :return:
-        """
-        url = 'rest/default-reviewers/1.0/projects/{projectKey}/conditions/{idCondition}'.format(
-            projectKey=project_key,
-            idCondition=id_condition)
-        return self.get(url) or {}
-
-    def create_project_condition(self, project_key, condition):
-        """
-        Request type: POST
-        Create a new condition for this project.
-        For further information visit:
-            https://docs.atlassian.com/bitbucket-server/rest/5.16.0/bitbucket-default-reviewers-rest.html#idm52264893584
-        :projectKey: str- project key involved
-        :data: condition: dictionary object
-        :example condition: '{"sourceMatcher":
-                                {"id":"any",
-                                "type":{"id":"ANY_REF"}},
-                                "targetMatcher":{"id":"refs/heads/master","type":{"id":"BRANCH"}},
-                                "reviewers":[{"id": 12}],"requiredApprovals":"0"
-                            }'
-        :return:
-        """
-        url = 'rest/default-reviewers/1.0/projects/{projectKey}/condition'.format(
-            projectKey=project_key)
-        return self.post(url, data=condition) or {}
-
-    def update_project_condition(self, project_key, condition, id_condition):
-        """
-        Request type: PUT
-        Update a new condition for this project.
-        For further information visit:
-            https://docs.atlassian.com/bitbucket-server/rest/5.16.0/bitbucket-default-reviewers-rest.html#idm52264927632
-        :projectKey: str- project key involved
-        :idCondition: int - condition id involved
-        :data: condition: dictionary object
-        :example condition: '{"sourceMatcher":
-                                {"id":"any",
-                                "type":{"id":"ANY_REF"}},
-                                "targetMatcher":{"id":"refs/heads/master","type":{"id":"BRANCH"}},
-                                "reviewers":[{"id": 12}],"requiredApprovals":"0"
-                            }'
-        :return:
-        """
-        url = 'rest/default-reviewers/1.0/projects/{projectKey}/condition/{idCondition}'.format(
-            projectKey=project_key,
-            idCondition=id_condition)
-        return self.put(url, data=condition) or {}
-
-    def delete_project_condition(self, project_key, id_condition):
-        """
-        Request type: DELETE
-        Delete a specific condition for this repository slug inside project.
-        For further information visit:
-            https://docs.atlassian.com/bitbucket-server/rest/5.16.0/bitbucket-default-reviewers-rest.html#idm52264896304
-        :projectKey: str- project key involved
-        :idCondition: int - condition id involved
-        :return:
-        """
-        url = 'rest/default-reviewers/1.0/projects/{projectKey}/condition/{idCondition}'.format(
-            projectKey=project_key,
-            idCondition=id_condition)
-        return self.delete(url) or {}
+    def _url_repo_conditions(self, project_key, repo_key):
+        return '{}/conditions'.format(self._url_repo(project_key, repo_key,
+                                                     api_root='default-reviewers',
+                                                     api_version='1.0'))
 
     def get_repo_conditions(self, project_key, repo_key):
         """
@@ -2175,9 +2022,7 @@ class Bitbucket(AtlassianRestAPI):
         :repoKey: str - repo key involved
         :return:
         """
-        url = 'rest/default-reviewers/1.0/projects/{projectKey}/repos/{repoKey}/conditions'.format(
-            projectKey=project_key,
-            repoKey=repo_key)
+        url = self._url_repo_conditions(project_key, repo_key)
         return self.get(url) or {}
 
     def get_repo_project_conditions(self, project_key, repo_key):
@@ -2191,15 +2036,10 @@ class Bitbucket(AtlassianRestAPI):
         :repoKey: str - repo key involved
         :return:
         """
-        type_repo = 'REPOSITORY'
-        url = 'rest/default-reviewers/1.0/projects/{projectKey}/repos/{repoKey}/conditions'.format(
-            projectKey=project_key,
-            repoKey=repo_key)
-
-        response = (self.get(url) or {})
+        response = self.get_repo_conditions(project_key, repo_key)
         count = 0
         for condition in response:
-            if condition['scope']['type'] == type_repo:
+            if condition['scope']['type'] == 'REPOSITORY':
                 del response[count]
             count += 1
         return response
@@ -2215,18 +2055,19 @@ class Bitbucket(AtlassianRestAPI):
         :repoKey: str - repo key involved
         :return:
         """
-        type_proyect = 'PROJECT'
-        url = 'rest/default-reviewers/1.0/projects/{projectKey}/repos/{repoKey}/conditions'.format(
-            projectKey=project_key,
-            repoKey=repo_key)
-
-        response = (self.get(url) or {})
+        response = self.get_repo_conditions(project_key, repo_key)
         count = 0
         for condition in response:
-            if condition['scope']['type'] == type_proyect:
+            if condition['scope']['type'] == 'PROJECT':
                 del response[count]
             count += 1
         return response
+
+    def _url_repo_condition(self, project_key, repo_key, id_condition):
+        return '{}/condition/{}'.format(self._url_repo(project_key, repo_key,
+                                                       api_root='default-reviewers',
+                                                       api_version='1.0'),
+                                        id_condition)
 
     def get_repo_condition(self, project_key, repo_key, id_condition):
         """
@@ -2240,10 +2081,7 @@ class Bitbucket(AtlassianRestAPI):
         :idCondition: int - condition id involved
         :return:
         """
-        url = 'rest/default-reviewers/1.0/projects/{projectKey}/repos/{repoKey}/conditions/{idCondition}'.format(
-            projectKey=project_key,
-            repoKey=repo_key,
-            idCondition=id_condition)
+        url = self._url_repo_condition(project_key, repo_key, id_condition)
         return self.get(url) or {}
 
     def create_repo_condition(self, project_key, repo_key, condition):
@@ -2263,9 +2101,7 @@ class Bitbucket(AtlassianRestAPI):
                             }'
         :return:
         """
-        url = 'rest/default-reviewers/1.0/projects/{projectKey}/repos/{repoKey}/condition'.format(
-            projectKey=project_key,
-            repoKey=repo_key)
+        url = self._url_repo_condition(project_key, repo_key)
         return self.post(url, data=condition) or {}
 
     def update_repo_condition(self, project_key, repo_key, condition, id_condition):
@@ -2286,10 +2122,7 @@ class Bitbucket(AtlassianRestAPI):
                             }'
         :return:
         """
-        url = 'rest/default-reviewers/1.0/projects/{projectKey}/repos/{repoKey}/condition/{idCondition}'.format(
-            projectKey=project_key,
-            repoKey=repo_key,
-            idCondition=id_condition)
+        url = self._url_repo_condition(project_key, repo_key, id_condition)
         return self.put(url, data=condition) or {}
 
     def delete_repo_condition(self, project_key, repo_key, id_condition):
@@ -2303,64 +2136,11 @@ class Bitbucket(AtlassianRestAPI):
         :idCondition: int - condition id involved
         :return:
         """
-        url = 'rest/default-reviewers/1.0/projects/{projectKey}/repos/{repoKey}/condition/{idCondition}'.format(
-            projectKey=project_key,
-            repoKey=repo_key,
-            idCondition=id_condition)
+        url = self._url_repo_condition(project_key, repo_key, id_condition)
         return self.delete(url) or {}
 
-    def get_associated_build_statuses(self, commit):
-        """
-        To get the build statuses associated with a commit.
-        :commit: str- commit id
-        :return:
-        """
-        if not self.cloud:
-            url = '/rest/build-status/1.0/commits/{commitId}'.format(commitId=commit)
-        else:
-            url = '/rest/build-status/2.0/commits/{commitId}'.format(commitId=commit)
-
-        return self.get(url)
-
-    def get_announcement_banner(self):
-        """
-        Gets the announcement banner, if one exists and is available to the user
-        :return:
-        """
-        if not self.cloud:
-            url = "rest/api/1.0/admin/banner"
-        else:
-            url = "rest/api/2.0/admin/banner"
-        return self.get(url)
-
-    def set_announcement_banner(self, body):
-        """
-        Sets the announcement banner with the provided JSON.
-        Only users authenticated as Admins may call this resource
-        :param body
-            {
-                "id": "https://docs.atlassian.com/jira/REST/schema/rest-announcement-banner#",
-                "title": "Rest Announcement Banner",
-                "type": "object"
-            }
-        :return:
-        """
-        if not self.cloud:
-            url = "rest/api/1.0/admin/banner"
-        else:
-            url = "rest/api/2.0/admin/banner"
-        return self.put(url, data=body)
-
-    def delete_announcement_banner(self):
-        """
-        Gets the announcement banner, if one exists and is available to the user
-        :return:
-        """
-        if not self.cloud:
-            url = "rest/api/1.0/admin/banner"
-        else:
-            url = "rest/api/2.0/admin/banner"
-        return self.delete(url)
+    def _url_pipelines(self, workspace, repository):
+        return self.resource_url('repositories/{}/{}/pipelines'.format(workspace, repository))
 
     def get_pipelines(self, workspace, repository, number=10,
                       sort_by="-created_on"):
@@ -2371,20 +2151,10 @@ class Bitbucket(AtlassianRestAPI):
         :param :sort_by: optional key to sort available pipelines for
         :return: information in form {"values": [...]}
         """
-        resource = "repositories/{workspace}/{repository}/pipelines/".format(
-            workspace=workspace, repository=repository)
-        return self.get(self.resource_url(resource),
+        url = self._url_pipelines(workspace, repository)
+        return self.get(url,
                         params={"pagelen": number, "sort": sort_by},
                         trailing=True)
-
-    def get_pipeline(self, workspace, repository, uuid):
-        """
-        Get information about the pipeline specified by ``uuid``.
-        :param uuid: Pipeline identifier (with surrounding {}; NOT the build number)
-        """
-        resource = "repositories/{workspace}/{repository}/pipelines/{uuid}".format(
-            workspace=workspace, repository=repository, uuid=uuid)
-        return self.get(self.resource_url(resource))
 
     def trigger_pipeline(self, workspace, repository, branch="master", revision=None,
                          name=None):
@@ -2397,9 +2167,7 @@ class Bitbucket(AtlassianRestAPI):
         3. Specific pipeline (additionally specify ``name``)
         :return: the initiated pipeline; or error information
         """
-        resource = "repositories/{workspace}/{repository}/pipelines/".format(
-            workspace=workspace, repository=repository)
-
+        url = self._url_pipelines(workspace, repository)
         data = {
             "target": {
                 "ref_type": "branch",
@@ -2420,7 +2188,18 @@ class Bitbucket(AtlassianRestAPI):
                 "pattern": name,
             }
 
-        return self.post(self.resource_url(resource), data=data, trailing=True)
+        return self.post(url, data=data, trailing=True)
+
+    def _url_pipeline(self, workspace, repository, uuid):
+        return '{urlPipelines}/{uuid}'.format(urlPipelines=self._url_pipelines(workspace, repository), uuid=uuid)
+
+    def get_pipeline(self, workspace, repository, uuid):
+        """
+        Get information about the pipeline specified by ``uuid``.
+        :param uuid: Pipeline identifier (with surrounding {}; NOT the build number)
+        """
+        url = self._url_pipeline(workspace, repository, uuid)
+        return self.get(url)
 
     def stop_pipeline(self, workspace, repository, uuid):
         """
@@ -2429,18 +2208,22 @@ class Bitbucket(AtlassianRestAPI):
 
         See the documentation for the meaning of response status codes.
         """
-        resource = "repositories/{workspace}/{repository}/pipelines/{uuid}/stopPipeline".format(
-            workspace=workspace, repository=repository, uuid=uuid)
-        return self.post(self.resource_url(resource))
+        url = '{}/stopPipeline'.format(self._url_pipeline(workspace, repository, uuid))
+        return self.post(url)
+
+    def _url_pipeline_steps(self, workspace, repository, uuid):
+        return '{}/steps'.format(self._url_pipeline(workspace, repository, uuid))
 
     def get_pipeline_steps(self, workspace, repository, uuid):
         """
         Get information about the steps of the pipeline specified by ``uuid``.
         :param uuid: Pipeline identifier (with surrounding {}; NOT the build number)
         """
-        resource = "repositories/{workspace}/{repository}/pipelines/{uuid}/steps/".format(
-            workspace=workspace, repository=repository, uuid=uuid)
-        return self.get(self.resource_url(resource), trailing=True)
+        url = self._url_pipeline_steps(workspace, repository, uuid)
+        return self.get(url, trailing=True)
+
+    def _url_pipeline_step(self, workspace, repository, pipeline_uuid, step_uuid):
+        return '{}/{}'.format(self._url_pipeline_steps(workspace, repository, pipeline_uuid), step_uuid)
 
     def get_pipeline_step(self, workspace, repository, pipeline_uuid, step_uuid):
         """
@@ -2448,9 +2231,8 @@ class Bitbucket(AtlassianRestAPI):
         :param pipeline_uuid: Pipeline identifier (with surrounding {}; NOT the build number)
         :param step_uuid: Step identifier (with surrounding {})
         """
-        resource = "repositories/{w}/{r}/pipelines/{p}/steps/{s}".format(
-            w=workspace, r=repository, p=pipeline_uuid, s=step_uuid)
-        return self.get(self.resource_url(resource))
+        url = self._url_pipeline_step(workspace, repository, pipeline_uuid, step_uuid)
+        return self.get(url)
 
     def get_pipeline_step_log(self, workspace, repository, pipeline_uuid, step_uuid):
         """
@@ -2459,85 +2241,12 @@ class Bitbucket(AtlassianRestAPI):
         :param step_uuid: Step identifier (with surrounding {})
         :return: byte string log
         """
-        resource = "repositories/{w}/{r}/pipelines/{p}/steps/{s}/log".format(
-            w=workspace, r=repository, p=pipeline_uuid, s=step_uuid)
+        url = '{}/log'.format(self._url_pipeline_step(workspace, repository, pipeline_uuid, step_uuid))
         headers = {"Accept": "application/octet-stream"}
-        return self.get(self.resource_url(resource), headers=headers, not_json_response=True)
+        return self.get(url, headers=headers, not_json_response=True)
 
-    def get_tasks(self, project, repository, pull_request_id):
-        """
-        Get all tasks for the pull request
-        :param project:
-        :param repository:
-        :param pull_request_id: the ID of the pull request within the repository
-        :return:
-        """
-        if self.cloud:
-            raise Exception("Not supported in Bitbucket Cloud")
-        url = "/rest/api/1.0/projects/{projectKey}/repos/{repositorySlug}/pull-requests/{pullRequestId}/tasks".format(
-            projectKey=project,
-            repositorySlug=repository,
-            pullRequestId=pull_request_id)
-        return self.get(url)
-
-    def add_task(self, anchor, text):
-        """
-        Add task to the comment
-        :param anchor: ID of the comment, 
-        :param text: task text
-        :return:
-        """
-        if self.cloud:
-            raise Exception("Not supported in Bitbucket Cloud")
-        url = "/rest/api/1.0/tasks"
-        data = {
-            "anchor": {
-                "id": anchor,
-                "type": "COMMENT"
-            },
-            "text": text
-        }
-        return self.post(url, data=data)
-
-    def get_task(self, task_id):
-        """
-        Get task information by ID
-        :param task_id:
-        :return:
-        """
-        if self.cloud:
-            raise Exception("Not supported in Bitbucket Cloud")
-        url = "/rest/api/1.0/tasks/{taskId}".format(taskId=task_id)
-        return self.get(url)
-
-    def delete_task(self, task_id):
-        """
-        Delete task by ID
-        :param task_id:
-        :return:
-        """
-        if self.cloud:
-            raise Exception("Not supported in Bitbucket Cloud")
-        url = "/rest/api/1.0/tasks/{taskId}".format(taskId=task_id)
-        return self.delete(url)
-
-    def update_task(self, task_id, text=None, state=None):
-        """
-        Update task by ID. It is possible to update state and/or text of the task
-        :param task_id:
-        :param text: 
-        :param state: OPEN, RESOLVED
-        :return:
-        """
-        if self.cloud:
-            raise Exception("Not supported in Bitbucket Cloud")
-        data = {"id": task_id}
-        if text:
-            data["text"] = text
-        if state:
-            data["state"] = state
-        url = "/rest/api/1.0/tasks/{taskId}".format(taskId=task_id)
-        return self.put(url, data=data)
+    def _url_issues(self, workspace, repository):
+        return self.resource_url('repositories/{}/{}/issues'.format(workspace, repository))
 
     def get_issues(self, workspace, repository, sort_by=None, query=None):
         """
@@ -2550,28 +2259,8 @@ class Bitbucket(AtlassianRestAPI):
 
         :return: List of issues (direct, i.e. without the 'values' key)
         """
-        resource = "repositories/{workspace}/{repository}/issues".format(
-            workspace=workspace, repository=repository)
-
-        params = {}
-        if sort_by is not None:
-            params["sort"] = sort_by
-        if query is not None:
-            params["q"] = query
-
-        response = self.get(self.resource_url(resource), params=params)
-        issues = response.get("values", [])
-
-        while True:
-            next_page = response.get("next")
-            if next_page is None:
-                break
-
-            # Strip the base url - it's added when constructing the request
-            response = self.get(next_page.replace(self.url, ""))
-            issues.extend(response.get("values", []))
-
-        return issues
+        url = self._url_issues(workspace, repository)
+        return self._get_paged(url, params=params)
 
     def create_issue(self, workspace, repository, title, description="",
                      kind="bug", priority="major"):
@@ -2580,52 +2269,53 @@ class Bitbucket(AtlassianRestAPI):
         :param kind: one of: bug, enhancement, proposal, task
         :param priority: one of: trivial, minor, major, critical, blocker
         """
-        resource = "repositories/{workspace}/{repository}/issues".format(
-            workspace=workspace, repository=repository)
+        url = self._url_issues(workspace, repository)
         data = {
             "title": title,
             "kind": kind,
             "priority": priority,
             "content": {"raw": description},
         }
-        return self.post(self.resource_url(resource), data=data)
+        return self.post(url, data=data)
+
+    def _url_issue(self, workspace, repository, issue):
+        return '{}/{}'.format(self._url_issues(workspace, repository), issue)
 
     def get_issue(self, workspace, repository, id):
         """
         Get the issue specified by ``id``.
         """
-        resource = "repositories/{workspace}/{repository}/issues/{id}".format(
-            workspace=workspace, repository=repository, id=id)
-        return self.get(self.resource_url(resource))
+        url = self._url_issue(self, workspace, repository, id)
+        return self.get(url)
 
     def update_issue(self, workspace, repository, id, **fields):
         """
         Update the ``fields`` of the issue specified by ``id``.
         Consult the official API documentation for valid fields.
         """
-        resource = "repositories/{workspace}/{repository}/issues/{id}".format(
-            workspace=workspace, repository=repository, id=id)
-        return self.put(self.resource_url(resource), data=fields)
+        url = self._url_issue(self, workspace, repository, id)
+        return self.put(url, data=fields)
 
     def delete_issue(self, workspace, repository, id):
         """
         Delete the issue specified by ``id``.
         """
-        resource = "repositories/{workspace}/{repository}/issues/{id}".format(
-            workspace=workspace, repository=repository, id=id)
-        return self.delete(self.resource_url(resource))
+        url = self._url_issue(self, workspace, repository, id)
+        return self.delete(url)
+
+    def _url_repositories(self, workspace):
+        return self.ressource_url("repositories/{}".format(workspace))
 
     def get_repositories(self, workspace, role=None, query=None, sort=None, number=10, page=1):
         """
         Get all repositories in a workspace.
-        
+
         :param role: Filters the result based on the authenticated user's role on each repository.
                       One of: member, contributor, admin, owner
         :param query: Query string to narrow down the response.
         :param sort: Field by which the results should be sorted.
         """
-        resource = "repositories/{workspace}".format(workspace=workspace)
-
+        url = self._url_repositories(workspace)
         params = {
             "pagelen": number,
             "page": page
@@ -2637,21 +2327,23 @@ class Bitbucket(AtlassianRestAPI):
         if sort is not None:
             params["sort"] = sort
 
-        return self.get(self.resource_url(resource), params=params)
+        return self.get(url, params=params)
+
+    def _url_branch_restrictions(self, workspace, repository):
+        return self.ressource_url("repositories/{}/{}/branch-restrictions".format(workspace, repository))
 
     def get_branch_restrictions(self, workspace, repository, kind=None, pattern=None, number=10, page=1):
         """
         Get all branch permissions.
         """
-        resource = "repositories/{workspace}/{repository}/branch-restrictions".format(
-            workspace=workspace, repository=repository)
+        url = self._url_branch_restrictions(workspace, repository)
         params = {"pagelen": number, "page": page}
         if kind is not None:
             params["kind"] = kind
         if pattern is not None:
             params["pattern"] = pattern
 
-        return self.get(self.resource_url(resource), params=params)
+        return self.get(url, params=params)
 
     def add_branch_restriction(self, workspace, repository, kind, branch_match_kind="glob",
                                branch_pattern="*", branch_type=None, users=None, groups=None, value=None):
@@ -2673,8 +2365,7 @@ class Bitbucket(AtlassianRestAPI):
         :param groups: List of group objects that are excluded from the restriction.
                         Minimal: {"owner": {"username": "<teamname>"}, "slug": "<groupslug>"}
         """
-        resource = "repositories/{workspace}/{repository}/branch-restrictions".format(
-            workspace=workspace, repository=repository)
+        url = self._url_branch_restrictions(workspace, repository)
 
         if branch_match_kind == "branching_model":
             branch_pattern = ""
@@ -2697,36 +2388,40 @@ class Bitbucket(AtlassianRestAPI):
         if value is not None:
             data["value"] = value
 
-        return self.post(self.resource_url(resource), data=data)
+        return self.post(url, data=data)
+
+    def _url_branch_restriction(self, workspace, repository, id):
+        return self.ressource_url("repositories/{}/{}/branch-restrictions/{}".format(workspace, repository, id))
 
     def update_branch_restriction(self, workspace, repository, id, **fields):
         """
         Update an existing branch restriction identified by ``id``.
         Consult the official API documentation for valid fields.
         """
-        resource = "repositories/{workspace}/{repository}/branch-restrictions/{id}".format(
-            workspace=workspace, repository=repository, id=id)
-
-        return self.put(self.resource_url(resource), data=fields)
+        url = self._url_branch_restriction(workspace, repository, id)
+        return self.put(url, data=fields)
 
     def delete_branch_restriction(self, workspace, repository, id):
         """
         Delete an existing branch restriction identified by ``id``.
         """
-        resource = "repositories/{workspace}/{repository}/branch-restrictions/{id}".format(
-            workspace=workspace, repository=repository, id=id)
+        url = self._url_branch_restriction(workspace, repository, id)
+        return self.delete(url)
 
-        return self.delete(self.resource_url(resource))
+    def _url_default_reviewers(self, workspace, repository):
+        return self.ressource_url("repositories/{}/{}/default-reviewers".format(workspace, repository))
 
     def get_default_reviewers(self, workspace, repository, number=10, page=1):
         """
         Get all default reviewers for the repository.
         """
-        resource = "repositories/{workspace}/{repository}/default-reviewers".format(
-            workspace=workspace, repository=repository)
+        url = self._url_default_reviewers(workspace, repository)
         params = {"pagelen": number, "page": page}
 
-        return self.get(self.resource_url(resource), params=params)
+        return self.get(url, params=params)
+
+    def _url_default_reviewer(self, workspace, repository, user):
+        return self.ressource_url("repositories/{}/{}/default-reviewers/{}".format(workspace, repository, user))
 
     def add_default_reviewer(self, workspace, repository, user):
         """
@@ -2735,24 +2430,22 @@ class Bitbucket(AtlassianRestAPI):
 
         :param user: The username or account UUID to add as default_reviewer.
         """
-        resource = "repositories/{workspace}/{repository}/default-reviewers/{user}".format(
-            workspace=workspace, repository=repository, user=user)
+        url = self._url_default_reviewer(workspace, repository, user)
 
         # the mention_id parameter is undocumented but if missed, leads to 400 statuses
-        return self.put(self.resource_url(resource), data={"mention_id": user})
+        return self.put(surl, data={"mention_id": user})
 
     def is_default_reviewer(self, workspace, repository, user):
         """
         Check if the user is a default reviewer of the repository.
-        
+
         :param user: The username or account UUID to check.
         :return: True if present, False if not.
         """
-        resource = "repositories/{workspace}/{repository}/default-reviewers/{user}".format(
-            workspace=workspace, repository=repository, user=user)
+        url = self._url_default_reviewer(workspace, repository, user)
 
         try:
-            self.get(self.resource_url(resource))
+            self.get(url)
             return True
         except HTTPError as httpErr:
             if httpErr.response.status_code == 404:
@@ -2762,10 +2455,8 @@ class Bitbucket(AtlassianRestAPI):
     def delete_default_reviewer(self, workspace, repository, user):
         """
         Remove user as default reviewer from the repository.
-        
+
         :param user: The username or account UUID to delete as default reviewer.
         """
-        resource = "repositories/{workspace}/{repository}/default-reviewers/{user}".format(
-            workspace=workspace, repository=repository, user=user)
-
-        return self.delete(self.resource_url(resource))
+        url = self._url_default_reviewer(workspace, repository, user)
+        return self.delete(url)

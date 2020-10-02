@@ -120,8 +120,12 @@ class AtlassianRestAPI(object):
             url=url)
         log.log(level=level, msg=message)
 
-    def resource_url(self, resource):
-        return '/'.join([self.api_root, self.api_version, resource])
+    def resource_url(self, resource, api_root, api_version):
+        if api_root is None:
+            api_root = self.api_root
+        if api_version is None:
+            api_version = self.api_version
+        return '/'.join([api_root, api_version, resource])
 
     @staticmethod
     def url_joiner(url, path, trailing=None):
