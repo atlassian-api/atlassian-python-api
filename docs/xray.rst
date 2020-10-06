@@ -75,7 +75,7 @@ Manage Test sets
 .. code-block:: python
 
     # Retrieve the tests associated with the given test set
-    xray.get_tests_with_test_set('SET-001')
+    xray.get_tests_with_test_set('SET-001', page=1, limit=10)
 
     # Associate tests with the given test set
     xray.update_test_set('SET-001',add=['TEST-001','TEST-002'], remove=['TEST-003'])
@@ -103,7 +103,7 @@ Manage Test Executions
 .. code-block:: python
 
     # Retrieve the tests associated with the given test execution
-    xray.get_tests_with_test_execution('EXEC-001')
+    xray.get_tests_with_test_execution('EXEC-001', detailed=True, page=1, limit=10)
 
     # Associate tests with the given test execution
     xray.update_test_execution('EXEC-001', add=['TEST-001', 'TEST-002'], remove=['TEST-003'])
