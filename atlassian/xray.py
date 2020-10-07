@@ -168,8 +168,8 @@ class Xray(AtlassianRestAPI):
         """
         Associate tests with the given pre-condition.
         :param precondition_key: Precondition key (eg. 'TEST-001').
-        :param add: OPTIONAL List of Test Keys to associate with the pre-condition (eg. ['TEST-2', 'TEST-3'])
-        :param remove: OPTIONAL List of Test Keys no longer associate with the pre-condition (eg. ['TEST-4', 'TEST-5'])
+        :param add: OPTIONAL: List of Test Keys to associate with the pre-condition (eg. ['TEST-2', 'TEST-3'])
+        :param remove: OPTIONAL: List of Test Keys no longer associate with the pre-condition (eg. ['TEST-4', 'TEST-5'])
         :return:
         """
         if remove is None:
@@ -191,21 +191,30 @@ class Xray(AtlassianRestAPI):
         return self.delete(url)
 
     # Test Set API
-    def get_tests_with_test_set(self, test_set_key):
+    def get_tests_with_test_set(self, test_set_key, limit=None, page=None):
         """
         Retrieve the tests associated with the given test set.
         :param test_set_key: Test set key (eg. 'SET-001').
+        :param limit: OPTIONAL: Limits the number of results per page.
+        :param page: OPTIONAL: Number of the page to be returned.
         :return: Return a list of the test associated with the test set.
         """
         url = 'rest/raven/1.0/api/testset/{0}/test'.format(test_set_key)
-        return self.get(url)
+        params = {}
+
+        if limit:
+            params['limit'] = limit
+        if page:
+            params['page'] = page
+
+        return self.get(url, params=params)
 
     def update_test_set(self, test_set_key, add=None, remove=None):
         """
         Associate tests with the given test set.
         :param test_set_key: Test set key (eg. 'SET-001').
-        :param add: OPTIONAL List of Test Keys to associate with the test set (eg. ['TEST-002', 'TEST-003'])
-        :param remove: OPTIONAL List of Test Keys no longer associate with the test set (eg. ['TEST-004', 'TEST-005'])
+        :param add: OPTIONAL: List of Test Keys to associate with the test set (eg. ['TEST-002', 'TEST-003'])
+        :param remove: OPTIONAL: List of Test Keys no longer associate with the test set (eg. ['TEST-004', 'TEST-005'])
         :return:
         """
         if add is None:
@@ -240,8 +249,8 @@ class Xray(AtlassianRestAPI):
         """
         Associate tests with the given test plan.
         :param test_plan_key: Test plan key (eg. 'PLAN-001').
-        :param add: OPTIONAL List of Test Keys to associate with the test plan (eg. ['TEST-002', 'TEST-003'])
-        :param remove: OPTIONAL List of Test Keys no longer associate with the test plan (eg. ['TEST-004', 'TEST-005'])
+        :param add: OPTIONAL: List of Test Keys to associate with the test plan (eg. ['TEST-002', 'TEST-003'])
+        :param remove: OPTIONAL: List of Test Keys no longer associate with the test plan (eg. ['TEST-004', 'TEST-005'])
         :return:
         """
         if add is None:
@@ -263,21 +272,33 @@ class Xray(AtlassianRestAPI):
         return self.delete(url)
 
     # Test Executions API
-    def get_tests_with_test_execution(self, test_exec_key):
+    def get_tests_with_test_execution(self, test_exec_key, detailed=False, limit=None, page=None):
         """
         Retrieve the tests associated with the given test execution.
         :param test_exec_key: Test execution key (eg. 'EXEC-001').
+        :param detailed: OPTIONAL: (bool) Retrieve detailed information about the testrun
+        :param limit: OPTIONAL: Limits the number of results per page.
+        :param page: OPTIONAL: Number of the page to be returned.
         :return: Return a list of the test associated with the test execution.
         """
         url = 'rest/raven/1.0/api/testexec/{0}/test'.format(test_exec_key)
-        return self.get(url)
+        params = {}
+
+        if detailed:
+            params['detailed'] = detailed
+        if limit:
+            params['limit'] = limit
+        if page:
+            params['page'] = page
+
+        return self.get(url, params=params)
 
     def update_test_execution(self, test_exec_key, add=None, remove=None):
         """
         Associate tests with the given test execution.
         :param test_exec_key: Test execution key (eg. 'EXEC-001').
-        :param add: OPTIONAL List of Test Keys to associate with the test execution (eg. ['TEST-2', 'TEST-3'])
-        :param remove: OPTIONAL List of Test Keys no longer associate with the test execution (eg. ['TEST-4', 'TEST-5'])
+        :param add: OPTIONAL: List of Test Keys to associate with the test execution (eg. ['TEST-2', 'TEST-3'])
+        :param remove: OPTIONAL: List of Test Keys no longer associate with the test execution (eg. ['TEST-4', 'TEST-5'])
         :return:
         """
         if add is None:
@@ -361,8 +382,8 @@ class Xray(AtlassianRestAPI):
         """
         Update the defects associated with the given test run.
         :param test_run_id: ID of the test run (eg. 100).
-        :param add: OPTIONAL List of defects to associate to the test run (eg. ['BUG-001', 'BUG-002'])
-        :param remove: OPTIONAL List of defects which no longer need to be associated to the test run (eg. ['BUG-003'])
+        :param add: OPTIONAL: List of defects to associate to the test run (eg. ['BUG-001', 'BUG-002'])
+        :param remove: OPTIONAL: List of defects which no longer need to be associated to the test run (eg. ['BUG-003'])
         :return: 
         """
         if add is None:
