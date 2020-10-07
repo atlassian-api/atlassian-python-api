@@ -177,6 +177,24 @@ class Jira(AtlassianRestAPI):
         url = 'rest/api/2/attachment/meta'
         return self.get(url)
 
+    def get_attachment_expand_human(self, attachment_id):
+        """
+        Returns the information for an expandable attachment in human-readable format
+        :param attachment_id: int
+        :return:
+        """
+        url = 'rest/api/2/attachment/{}/expand/human'.format(attachment_id)
+        return self.get(url)
+
+    def get_attachment_expand_raw(self, attachment_id):
+        """
+        Returns the information for an expandable attachment in raw format
+        :param attachment_id: int
+        :return:
+        """
+        url = 'rest/api/2/attachment/{}/expand/raw'.format(attachment_id)
+        return self.get(url)
+
     #######################################################################################################
     # Audit Records. Resource representing the auditing records
     # Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/auditing
@@ -281,6 +299,38 @@ class Jira(AtlassianRestAPI):
         """
         url = 'rest/api/2/comment/{commentId}/properties'.format(commentId=comment_id)
         return self.get(url)
+
+    def get_comment_property(self, comment_id, property_key):
+        """
+        Returns the value a property for a comment
+        :param comment_id: int
+        :param property_key: str
+        :return:
+        """
+        url = 'rest/api/2/comment/{commentId}/properties/{propertyKey}'.format(commentId=comment_id, propertyKey=property_key)
+        return self.get(url, data=data)
+
+    def set_comment_property(self, comment_id, property_key, value_property):
+        """
+        Returns the keys of all properties for the comment identified by the key or by the id.
+        :param comment_id: int
+        :param property_key: str
+        :param value_property: object
+        :return:
+        """
+        url = 'rest/api/2/comment/{commentId}/properties/{propertyKey}'.format(commentId=comment_id, propertyKey=property_key)
+        data = {'value': value_property}
+        return self.put(url, data=data)
+
+    def delete_comment_property(self, comment_id, property_key):
+        """
+        Deletes a property for a comment
+        :param comment_id: int
+        :param property_key: str
+        :return:
+        """
+        url = 'rest/api/2/comment/{commentId}/properties/{propertyKey}'.format(commentId=comment_id, propertyKey=property_key)
+        return self.delete(url)
 
     #######################################################################################################
     # Component
@@ -425,6 +475,24 @@ class Jira(AtlassianRestAPI):
                 'favourite': 'true' if favourite else 'false'}
         url = 'rest/api/2/filter'
         return self.post(url, data=data)
+
+    def get_filter(self, filter_id):
+        """
+        Returns a full representation of a filter that has the given id.
+        :param filter_id:
+        :return:
+        """
+        url = 'rest/api/2/filter/{id}'.format(id=filter_id)
+        return self.get(url)
+
+    def delete_filter(self, filter_id):
+        """
+        Deletes a filter that has the given id.
+        :param filter_id:
+        :return:
+        """
+        url = 'rest/api/2/filter/{id}'.format(id=filter_id)
+        return self.delete(url)
 
     #######################################################################################################
     # Group.
