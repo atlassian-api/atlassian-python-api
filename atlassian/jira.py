@@ -1073,6 +1073,37 @@ class Jira(AtlassianRestAPI):
             params['expand'] = expand
         return self.get(url, params=params)
 
+    def get_updated_worklogs(self, since, expand=None):
+        """
+        Returns a list of IDs and update timestamps for worklogs updated after a date and time.
+        :param since: The date and time, as a UNIX timestamp in milliseconds, after which updated worklogs are returned.
+        :param expand: Use expand to include additional information about worklogs in the response. This parameter accepts properties that returns the properties of each worklog.
+        """
+        url = 'rest/api/3/worklog/updated'
+        params = {}
+        if since:
+            params['since'] = str(int(since*1000))
+        if expand:
+            params['expand'] = expand
+            
+        return self.get(url, params=params)
+
+    def get_worklogs(self, ids, expand=None):
+        """
+        Returns worklog details for a list of worklog IDs.
+        :param expand: Use expand to include additional information about worklogs in the response. This parameter accepts properties that returns the properties of each worklog.
+        :param ids: REQUIRED A list of worklog IDs.
+        """
+
+        url = 'rest/api/3/worklog/list'
+        params = {}
+        if expand:
+            params['expand'] = expand
+        data = {
+            'ids': ids
+        }
+        return self.post(url, params=params, data=data)
+
     #######################################################################################################
     # User
     # Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/user
@@ -1746,6 +1777,30 @@ class Jira(AtlassianRestAPI):
 
     def get_status_for_project(self, project_key):
         url = 'rest/api/2/project/{name}/statuses'.format(name=project_key)
+        return self.get(url)
+
+    def get_all_time_tracking_providers(self):
+        """
+        Returns all time tracking providers. By default, Jira only has one time tracking provider: JIRA provided time tracking. However, you can install other time tracking providers via apps from the Atlassian Marketplace.
+        """
+        
+        url = 'rest/api/3/configuration/timetracking/list'
+        return self.get(url)
+
+    def get_selected_time_tracking_provider(self):
+        """
+        Returns the time tracking provider that is currently selected. Note that if time tracking is disabled, then a successful but empty response is returned.
+        """
+
+        url = 'rest/api/3/configuration/timetracking'
+        return self.get(url)
+
+    def get_time_tracking_settings(self):
+        """
+        Returns the time tracking settings. This includes settings such as the time format, default time unit, and others.
+        """
+        
+        url = 'rest/api/3/configuration/timetracking/options'
         return self.get(url)
 
     def get_transition_id_to_status_name(self, issue_key, status_name):
