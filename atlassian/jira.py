@@ -2042,6 +2042,30 @@ class Jira(AtlassianRestAPI):
         url = 'rest/api/2/workflow'
         return self.get(url)
 
+    def get_workflows_paginated(self, startAt=None, maxResults=None, workflowName=None, expand=None):
+        """
+        Provide all workflows paginated (see https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-workflows/#api-rest-api-2-workflow-search-get)
+        :param startAt: OPTIONAL The index of the first item to return in a page of results (page offset).
+        :param maxResults: OPTIONAL The maximum number of items to return per page.
+        :param workflowName: OPTIONAL The name of a workflow to return.
+        :param: expand: OPTIONAL Use expand to include additional information in the response. This parameter accepts a comma-separated list. Expand options include: (transitions, transitions.rules, statuses, statuses.properties)
+        :return:
+        """
+        url = 'rest/api/2/workflow/search'
+
+        params = {}
+        if startAt:
+            params['startAt'] = startAt
+        if maxResults:
+            params['maxResults'] = maxResults
+        if workflowName:
+            params['workflowName'] = workflowName
+        if expand:
+            params['expand'] = expand
+
+        return self.get(url, params=params)
+
+
     def get_all_statuses(self):
         """
         Returns a list of all statuses
