@@ -4,6 +4,10 @@ import re
 
 from requests import HTTPError
 
+from .constants import (
+        CSV_PATH_ALL_FIELDS,
+        CSV_PATH_CURRENT_FIELDS
+)
 from .rest_client import AtlassianRestAPI
 from .errors import (
     ApiError,
@@ -2052,16 +2056,20 @@ class Jira(AtlassianRestAPI):
             params['expand'] = expand
         return self.get('rest/api/2/search', params=params)
 
-    def csv(self, jql, limit=1000):
+    def csv(self, jql, limit=1000, all_fields=True):
         """
-        Get issues from jql search result with all related fields
+            Get issues from jql search result with ALL or CURRENT fields
+            default will be to return all fields
         :param jql: JQL query
         :param limit: max results in the output file
+        :param all_fields: To return all fields or current fields only
         :return: CSV file
         """
-        params = {'tempMax': limit,
-                  'jqlQuery': jql}
-        url = 'sr/jira.issueviews:searchrequest-csv-all-fields/temp/SearchRequest.csv'
+        params = {'jqlQuery': jql,
+                  'tempMax': limit}
+        url = CSV_PATH_ALL_FIELDS
+        if not all_fields:
+            url = CSV_PATH_CURRENT_FIELDS
         return self.get(url, params=params, not_json_response=True, headers={'Accept': 'application/csv'})
 
     #######################################################################################################
