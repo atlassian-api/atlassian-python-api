@@ -1304,7 +1304,7 @@ class Jira(AtlassianRestAPI):
             params['expand'] = expand
         return self.get('rest/api/2/project/{}/versions'.format(key), params=params)
 
-    def get_project_versions_paginated(self, key, start=None, limit=None, order_by=None, expand=None, params=None):
+    def get_project_versions_paginated(self, key, start=None, limit=None, order_by=None, expand=None, query=None, status=None):
         """
         Returns all versions for the specified project. Results are paginated.
         Results can be ordered by the following fields:
@@ -1317,11 +1317,11 @@ class Jira(AtlassianRestAPI):
         :param limit: how many results on the page should be included. Defaults to 50.
         :param order_by: ordering of the results.
         :param expand: the parameters to expand
-        :param params: additional parameters
+        :param query: Filter the results using a literal string. Versions with matching name or description are returned (case insensitive).
+        :param status: A list of status values used to filter the results by version status. This parameter accepts a comma-separated list. The status values are released, unreleased, and archived..
         :return:
         """
-        if params is None:
-            params = {}
+        params = {}
         if start is not None:
             params['startAt'] = int(start)
         if limit is not None:
@@ -1330,6 +1330,10 @@ class Jira(AtlassianRestAPI):
             params['orderBy'] = order_by
         if expand is not None:
             params['expand'] = expand
+        if query is not None:
+            params['query'] = query
+        if status in ['released', 'unreleased', 'archived']:
+            params['status'] = status
         return self.get('rest/api/2/project/{}/version'.format(key), params=params)
 
     def add_version(self, project_key, project_id, version, is_archived=False, is_released=False):
