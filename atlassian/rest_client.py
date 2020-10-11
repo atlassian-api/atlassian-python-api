@@ -224,7 +224,6 @@ class AtlassianRestAPI(object):
             return response
         return self._response_handler(response)
 
-
     def delete(self, path, data=None, headers=None, params=None, trailing=None):
         """
         Deletes resources at given paths.

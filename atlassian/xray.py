@@ -59,7 +59,7 @@ class Xray(AtlassianRestAPI):
         """
         url = 'rest/raven/1.0/api/test/{0}/preconditions'.format(test_key)
         return self.get(url)
-        
+
     def get_test_sets(self, test_key):
         """
         Retrieve test sets associated with a test.
@@ -368,7 +368,7 @@ class Xray(AtlassianRestAPI):
         update = {'status': status}
         url = 'rest/raven/1.0/api/testrun/{0}'.format(test_run_id)
         return self.put(url, update)
-    
+
     def get_test_run_defects(self, test_run_id):
         """
         Retrieve the defects for the given test run.

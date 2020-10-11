@@ -12,7 +12,7 @@ class Bitbucket(AtlassianRestAPI):
 
     def __init__(self, url, *args, **kwargs):
         if (not 'cloud' in kwargs
-            and ('bitbucket.org' in url) ):
+                and ('bitbucket.org' in url)):
             kwargs['cloud'] = True
         super(Bitbucket, self).__init__(url, *args, **kwargs)
 

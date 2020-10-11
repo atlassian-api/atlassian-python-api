@@ -32,12 +32,11 @@ class Confluence(AtlassianRestAPI):
 
     def __init__(self, url, *args, **kwargs):
         if (('atlassian.net' in url or 'jira.com' in url)
-            and ('/wiki' not in url) ):
+                and ('/wiki' not in url)):
             url = AtlassianRestAPI.url_joiner(url, '/wiki')
             if not 'cloud' in kwargs:
                 kwargs['cloud'] = True
         super(Confluence, self).__init__(url, *args, **kwargs)
-
 
     @staticmethod
     def _create_body(body, representation):

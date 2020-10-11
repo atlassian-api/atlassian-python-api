@@ -307,7 +307,8 @@ class Jira(AtlassianRestAPI):
         :param property_key: str
         :return:
         """
-        url = 'rest/api/2/comment/{commentId}/properties/{propertyKey}'.format(commentId=comment_id, propertyKey=property_key)
+        url = 'rest/api/2/comment/{commentId}/properties/{propertyKey}'.format(commentId=comment_id,
+                                                                               propertyKey=property_key)
         return self.get(url, data=data)
 
     def set_comment_property(self, comment_id, property_key, value_property):
@@ -318,7 +319,8 @@ class Jira(AtlassianRestAPI):
         :param value_property: object
         :return:
         """
-        url = 'rest/api/2/comment/{commentId}/properties/{propertyKey}'.format(commentId=comment_id, propertyKey=property_key)
+        url = 'rest/api/2/comment/{commentId}/properties/{propertyKey}'.format(commentId=comment_id,
+                                                                               propertyKey=property_key)
         data = {'value': value_property}
         return self.put(url, data=data)
 
@@ -329,7 +331,8 @@ class Jira(AtlassianRestAPI):
         :param property_key: str
         :return:
         """
-        url = 'rest/api/2/comment/{commentId}/properties/{propertyKey}'.format(commentId=comment_id, propertyKey=property_key)
+        url = 'rest/api/2/comment/{commentId}/properties/{propertyKey}'.format(commentId=comment_id,
+                                                                               propertyKey=property_key)
         return self.delete(url)
 
     #######################################################################################################
@@ -1082,10 +1085,10 @@ class Jira(AtlassianRestAPI):
         url = 'rest/api/3/worklog/updated'
         params = {}
         if since:
-            params['since'] = str(int(since*1000))
+            params['since'] = str(int(since * 1000))
         if expand:
             params['expand'] = expand
-            
+
         return self.get(url, params=params)
 
     def get_worklogs(self, ids, expand=None):
@@ -1392,7 +1395,7 @@ class Jira(AtlassianRestAPI):
         :param json:
         :return:
         """
-        return self.post(json=json)
+        return self.post('rest/api/2/project', json=json)
 
     def delete_project(self, key):
         """
@@ -1438,7 +1441,8 @@ class Jira(AtlassianRestAPI):
             params['expand'] = expand
         return self.get('rest/api/2/project/{}/versions'.format(key), params=params)
 
-    def get_project_versions_paginated(self, key, start=None, limit=None, order_by=None, expand=None, query=None, status=None):
+    def get_project_versions_paginated(self, key, start=None, limit=None, order_by=None, expand=None, query=None,
+                                       status=None):
         """
         Returns all versions for the specified project. Results are paginated.
         Results can be ordered by the following fields:
@@ -1789,7 +1793,7 @@ class Jira(AtlassianRestAPI):
         """
         Returns all time tracking providers. By default, Jira only has one time tracking provider: JIRA provided time tracking. However, you can install other time tracking providers via apps from the Atlassian Marketplace.
         """
-        
+
         url = 'rest/api/3/configuration/timetracking/list'
         return self.get(url)
 
@@ -1805,7 +1809,7 @@ class Jira(AtlassianRestAPI):
         """
         Returns the time tracking settings. This includes settings such as the time format, default time unit, and others.
         """
-        
+
         url = 'rest/api/3/configuration/timetracking/options'
         return self.get(url)
 
@@ -2125,7 +2129,6 @@ class Jira(AtlassianRestAPI):
             params['expand'] = expand
 
         return self.get(url, params=params)
-
 
     def get_all_statuses(self):
         """
