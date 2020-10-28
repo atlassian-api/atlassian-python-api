@@ -156,11 +156,11 @@ class AtlassianRestAPI(object):
             api_root = self.api_root
         if api_version is None:
             api_version = self.api_version
-        return "/".join([api_root, api_version, resource])
+        return "/".join(s.strip("/") for s in [api_root, api_version, resource] if s is not None)
 
     @staticmethod
     def url_joiner(url, path, trailing=None):
-        url_link = "/".join(s.strip("/") for s in [url, path])
+        url_link = "/".join(s.strip("/") for s in [url, path] if s is not None)
         if trailing:
             url_link += "/"
         return url_link
@@ -179,6 +179,7 @@ class AtlassianRestAPI(object):
         headers=None,
         files=None,
         trailing=None,
+        absolute=False
     ):
         """
 
@@ -191,15 +192,17 @@ class AtlassianRestAPI(object):
         :param headers:
         :param files:
         :param trailing: bool
+        :param absolute: bool, OPTIONAL: Do not prefix url, url is absolute
         :return:
         """
-        url = self.url_joiner(self.url, path, trailing)
-        if params or flags:
+        url = self.url_joiner(None if absolute else self.url, path, trailing)
+        params_already_in_url = True if "?" in url else False
+        if (params or flags) and not params_already_in_url:
             url += "?"
         if params:
             url += urlencode(params or {})
         if flags:
-            url += ("&" if params else "") + "&".join(flags or [])
+            url += ("&" if params or params_already_in_url else "") + "&".join(flags or [])
         json_dump = None
         if files is None:
             data = None if not data else dumps(data)
@@ -207,7 +210,6 @@ class AtlassianRestAPI(object):
         self.log_curl_debug(
             method=method, url=url, headers=headers, data=data if data else json_dump
         )
-
         headers = headers or self.default_headers
         response = self._session.request(
             method=method,
@@ -222,14 +224,15 @@ class AtlassianRestAPI(object):
         )
         response.encoding = "utf-8"
 
-        if self.advanced_mode:
-            return response
-
         log.debug(
             "HTTP: {} {} -> {} {}".format(
                 method, path, response.status_code, response.reason
             )
         )
+
+        if self.advanced_mode:
+            return response
+
         response.raise_for_status()
         return response
 
@@ -242,6 +245,8 @@ class AtlassianRestAPI(object):
         headers=None,
         not_json_response=None,
         trailing=None,
+        absolute=False,
+        advanced_mode=False,
     ):
         """
         Get request based on the python-requests module. You can override headers, and also, get not json response
@@ -252,6 +257,8 @@ class AtlassianRestAPI(object):
         :param headers:
         :param not_json_response: OPTIONAL: For get content from raw requests packet
         :param trailing: OPTIONAL: for wrap slash symbol in the end of string
+        :param absolute: bool, OPTIONAL: Do not prefix url, url is absolute
+        :param advanced_mode: bool, OPTIONAL: Return the raw response
         :return:
         """
         response = self.request(
@@ -262,8 +269,9 @@ class AtlassianRestAPI(object):
             data=data,
             headers=headers,
             trailing=trailing,
+            absolute=absolute,
         )
-        if self.advanced_mode:
+        if self.advanced_mode or advanced_mode:
             return response
         if not_json_response:
             return response.content
@@ -285,6 +293,7 @@ class AtlassianRestAPI(object):
         files=None,
         params=None,
         trailing=None,
+        absolute=False,
     ):
         response = self.request(
             "POST",
@@ -295,13 +304,14 @@ class AtlassianRestAPI(object):
             files=files,
             params=params,
             trailing=trailing,
+            absolute=absolute,
         )
         if self.advanced_mode:
             return response
         return self._response_handler(response)
 
     def put(
-        self, path, data=None, headers=None, files=None, trailing=None, params=None
+        self, path, data=None, headers=None, files=None, trailing=None, params=None, absolute=False
     ):
         response = self.request(
             "PUT",
@@ -311,12 +321,13 @@ class AtlassianRestAPI(object):
             files=files,
             params=params,
             trailing=trailing,
+            absolute=absolute,
         )
         if self.advanced_mode:
             return response
         return self._response_handler(response)
 
-    def delete(self, path, data=None, headers=None, params=None, trailing=None):
+    def delete(self, path, data=None, headers=None, params=None, trailing=None, absolute=False):
         """
         Deletes resources at given paths.
         :rtype: dict
@@ -330,6 +341,7 @@ class AtlassianRestAPI(object):
             headers=headers,
             params=params,
             trailing=trailing,
+            absolute=absolute,
         )
         if self.advanced_mode:
             return response
