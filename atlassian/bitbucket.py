@@ -15,6 +15,8 @@ class Bitbucket(AtlassianRestAPI):
             kwargs['cloud'] = True
         if not 'api_version' in kwargs:
             kwargs['api_version'] = '2.0' if 'cloud' in kwargs and kwargs['cloud'] else '1.0'
+        if 'cloud' in kwargs:
+            kwargs['api_root'] = '' if 'api.bitbucket.org' in url else 'api'
         super(Bitbucket, self).__init__(url, *args, **kwargs)
 
     def _get_paged(self, url, params):
