@@ -120,7 +120,7 @@ class AtlassianRestAPI(object):
             url=url)
         log.log(level=level, msg=message)
 
-    def resource_url(self, resource, api_root, api_version):
+    def resource_url(self, resource, api_root=None, api_version=None):
         if api_root is None:
             api_root = self.api_root
         if api_version is None:
