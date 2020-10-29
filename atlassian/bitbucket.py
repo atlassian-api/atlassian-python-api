@@ -2304,7 +2304,7 @@ class Bitbucket(AtlassianRestAPI):
         return self.delete(url)
 
     def _url_repositories(self, workspace):
-        return self.ressource_url("repositories/{}".format(workspace))
+        return self.resource_url("repositories/{}".format(workspace))
 
     def get_repositories(self, workspace, role=None, query=None, sort=None, number=10, page=1):
         """
@@ -2330,7 +2330,7 @@ class Bitbucket(AtlassianRestAPI):
         return self.get(url, params=params)
 
     def _url_branch_restrictions(self, workspace, repository):
-        return self.ressource_url("repositories/{}/{}/branch-restrictions".format(workspace, repository))
+        return self.resource_url("repositories/{}/{}/branch-restrictions".format(workspace, repository))
 
     def get_branch_restrictions(self, workspace, repository, kind=None, pattern=None, number=10, page=1):
         """
@@ -2391,7 +2391,7 @@ class Bitbucket(AtlassianRestAPI):
         return self.post(url, data=data)
 
     def _url_branch_restriction(self, workspace, repository, id):
-        return self.ressource_url("repositories/{}/{}/branch-restrictions/{}".format(workspace, repository, id))
+        return self.resource_url("repositories/{}/{}/branch-restrictions/{}".format(workspace, repository, id))
 
     def update_branch_restriction(self, workspace, repository, id, **fields):
         """
@@ -2409,7 +2409,7 @@ class Bitbucket(AtlassianRestAPI):
         return self.delete(url)
 
     def _url_default_reviewers(self, workspace, repository):
-        return self.ressource_url("repositories/{}/{}/default-reviewers".format(workspace, repository))
+        return self.resource_url("repositories/{}/{}/default-reviewers".format(workspace, repository))
 
     def get_default_reviewers(self, workspace, repository, number=10, page=1):
         """
@@ -2421,7 +2421,7 @@ class Bitbucket(AtlassianRestAPI):
         return self.get(url, params=params)
 
     def _url_default_reviewer(self, workspace, repository, user):
-        return self.ressource_url("repositories/{}/{}/default-reviewers/{}".format(workspace, repository, user))
+        return self.resource_url("repositories/{}/{}/default-reviewers/{}".format(workspace, repository, user))
 
     def add_default_reviewer(self, workspace, repository, user):
         """
