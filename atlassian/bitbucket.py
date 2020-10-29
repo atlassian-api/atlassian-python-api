@@ -11,8 +11,7 @@ class Bitbucket(AtlassianRestAPI):
     bulk_headers = {"Content-Type": "application/vnd.atl.bitbucket.bulk+json"}
 
     def __init__(self, url, *args, **kwargs):
-        if (not 'cloud' in kwargs
-                and ('bitbucket.org' in url)):
+        if not 'cloud' in kwargs and ('bitbucket.org' in url):
             kwargs['cloud'] = True
         if not 'api_version' in kwargs:
             kwargs['api_version'] = '2.0' if 'cloud' in kwargs and kwargs['cloud'] else '1.0'
@@ -682,7 +681,8 @@ class Bitbucket(AtlassianRestAPI):
         :param repository:
         :return:
         """
-        url = '{urlRepo}/sync'.format(urlRepo=self._url_repo(project, repository, api_root='indexing', api_version='1.0'))
+        url = '{urlRepo}/sync'.format(
+            urlRepo=self._url_repo(project, repository, api_root='indexing', api_version='1.0'))
         return self.post(url)
 
     def reindex_repo_dev_panel(self, project, repository):
@@ -1009,7 +1009,6 @@ class Bitbucket(AtlassianRestAPI):
         data = {"name": str(name), "endPoint": str(end_point)}
         return self.delete(url, data=data)
 
-
     def _url_repo_tags(self, project_key, repository):
         if self.cloud:
             return '{}/refs/tags'.format(self._url_repo(project_key, repository))
@@ -1117,7 +1116,7 @@ class Bitbucket(AtlassianRestAPI):
     def _url_pull_requests(self, project, repository):
         if self.cloud:
             return self.resource_url('repositories/{}/{}/pullrequests' \
-                                    .format(project, repository))
+                                     .format(project, repository))
         else:
             return '{}/pull-requests'.format(self._url_repo(project, repository))
 
