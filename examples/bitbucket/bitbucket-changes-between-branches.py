@@ -7,8 +7,8 @@ bitbucket = Bitbucket(
     password='admin')
 
 changelog = bitbucket.get_changelog(
-    project='DEMO',
-    repository='example-repository',
+    project_key='DEMO',
+    repository_slug='example-repository',
     ref_from='develop',
     ref_to='master')
 
