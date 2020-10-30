@@ -1122,7 +1122,8 @@ class Bitbucket(AtlassianRestAPI):
         else:
             return '{}/pull-requests'.format(self._url_repo(project_key, repository_slug))
 
-    def get_pull_requests(self, project_key, repository_slug, state='OPEN', order='newest', limit=100, start=0, at=None):
+    def get_pull_requests(self, project_key, repository_slug, state='OPEN', order='newest', limit=100, start=0,
+                          at=None):
         """
         Get pull requests
         :param project_key:
@@ -1338,7 +1339,8 @@ class Bitbucket(AtlassianRestAPI):
         :param user_slug:
         :return:
         """
-        url = '{}/{}'.format(self._url_pull_request_participants(project_key, repository_slug, pull_request_id), user_slug)
+        url = '{}/{}'.format(self._url_pull_request_participants(project_key, repository_slug, pull_request_id),
+                             user_slug)
         approved = True if status == "APPROVED" else False
         data = {
             "user": {
@@ -1387,7 +1389,8 @@ class Bitbucket(AtlassianRestAPI):
         url = self._url_pull_request_comment(project_key, repository_slug, pull_request_id, comment_id)
         return self.get(url)
 
-    def update_pull_request_comment(self, project_key, repository_slug, pull_request_id, comment_id, comment, comment_version):
+    def update_pull_request_comment(self, project_key, repository_slug, pull_request_id, comment_id, comment,
+                                    comment_version):
         """
         Update the text of a comment.
         Only the user who created a comment may update it.
@@ -1780,7 +1783,6 @@ class Bitbucket(AtlassianRestAPI):
             base = self._url_repo(project_key, repository_slug, api_root='branch-permissions', api_version='2.0')
 
         return '{}/restrictions/{}'.format(base, '' if permission_id is None else str(permission_id))
-
 
     def get_branches_permissions(self, project_key, permission_id, repository_slug=None, start=0, limit=25):
         """
