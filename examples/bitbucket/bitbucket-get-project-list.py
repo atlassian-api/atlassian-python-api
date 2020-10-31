@@ -1,6 +1,7 @@
 # coding=utf-8
-from atlassian import Bitbucket
 from pprint import pprint
+
+from atlassian import Bitbucket
 
 bitbucket = Bitbucket(
     url='http://localhost:7990',

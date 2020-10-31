@@ -1,6 +1,7 @@
 # coding=utf-8
-from atlassian import Jira
 from pprint import pprint
+
+from atlassian import Jira
 
 """ How to get server info with health check"""
 

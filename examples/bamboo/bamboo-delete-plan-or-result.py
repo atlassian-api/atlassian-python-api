@@ -1,6 +1,7 @@
 # coding=utf-8
-from atlassian import Bamboo
 import os
+
+from atlassian import Bamboo
 
 BAMBOO_URL = os.environ.get('BAMBOO_URL', 'http://localhost:8085')
 ATLASSIAN_USER = os.environ.get('ATLASSIAN_USER', 'admin')

@@ -96,7 +96,7 @@ class Bamboo(AtlassianRestAPI):
         :param max_results:
         :return: Generator with plans
         """
-        resource = 'project/{}'.format(project_key, max_results=max_results)
+        resource = 'project/{}'.format(project_key)
         return self.base_list_call(resource, expand='plans', favourite=False,
                                    clover_enabled=False, start_index=start_index, max_results=max_results,
                                    elements_key='plans', element_key='plan')
@@ -108,8 +108,8 @@ class Bamboo(AtlassianRestAPI):
 
     def plan_directory_info(self, plan_key):
         """
-        Returns information about the directories where artifacts, build logs, and build results will be stored. 
-        Disabled by default. 
+        Returns information about the directories where artifacts, build logs, and build results will be stored.
+        Disabled by default.
         See https://confluence.atlassian.com/display/BAMBOO/Plan+directory+information+REST+API for more information.
         :param plan_key:
         :return:
@@ -183,8 +183,8 @@ class Bamboo(AtlassianRestAPI):
     def get_branch_info(self, plan_key, branch_name):
         """
         Get information about a plan branch
-        :param plan_key: 
-        :param branch_name: 
+        :param plan_key:
+        :param branch_name:
         :return:
         """
         resource = 'plan/{plan_key}/branch/{branch_name}'.format(plan_key=plan_key, branch_name=branch_name)
@@ -192,9 +192,9 @@ class Bamboo(AtlassianRestAPI):
 
     def create_branch(self, plan_key, branch_name, vcs_branch=None, enabled=False, cleanup_enabled=False):
         """
-        Method for creating branch for a specified plan. 
-        You can use vcsBranch query param to define which vcsBranch should newly created branch use. 
-        If not specified it will not override vcsBranch from the main plan. 
+        Method for creating branch for a specified plan.
+        You can use vcsBranch query param to define which vcsBranch should newly created branch use.
+        If not specified it will not override vcsBranch from the main plan.
 
         :param plan_key: str TST-BLD
         :param branch_name: str new-shiny-branch
@@ -370,13 +370,13 @@ class Bamboo(AtlassianRestAPI):
 
     def execute_build(self, plan_key, stage=None, execute_all_stages=True, custom_revision=None, **bamboo_variables):
         """
-        Fire build execution for specified plan. 
+        Fire build execution for specified plan.
         !IMPORTANT! NOTE: for some reason, this method always execute all stages
         :param plan_key: str TST-BLD
         :param stage: str stage-name
         :param execute_all_stages: bool
         :param custom_revision: str revisionName
-        :param bamboo_variables: dict {variable=value} 
+        :param bamboo_variables: dict {variable=value}
         :return: POST request
         """
         resource = 'queue/{plan_key}'.format(plan_key=plan_key)
@@ -395,7 +395,7 @@ class Bamboo(AtlassianRestAPI):
 
     def stop_build(self, plan_key):
         """
-        Stop the build which is in progress at the moment. 
+        Stop the build which is in progress at the moment.
         :param plan_key: str TST-BLD
         :return: GET request
         """
@@ -603,7 +603,7 @@ class Bamboo(AtlassianRestAPI):
 
     def get_custom_expiry(self, limit=25):
         """
-        Get list of all plans where user has admin permission and which override global expiry settings. 
+        Get list of all plans where user has admin permission and which override global expiry settings.
         If global expiry is not enabled it returns empty response.
         :param limit:
         """

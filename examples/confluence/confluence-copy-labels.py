@@ -1,7 +1,8 @@
-from atlassian import Confluence
-from os import environ
-import logging
 import argparse
+import logging
+from os import environ
+
+from atlassian import Confluence
 
 """
 This example related to the syncing labels between 2 spaces

@@ -1,8 +1,7 @@
-from atlassian import Bitbucket
-from pprint import pprint
-from datetime import datetime
-import argparse
 import logging
+from datetime import datetime
+
+from atlassian import Bitbucket
 
 """
     That example shows how to make a report of bitbucket usage

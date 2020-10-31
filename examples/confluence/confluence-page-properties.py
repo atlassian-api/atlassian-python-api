@@ -22,7 +22,6 @@ print(confluence.set_page_property(242793586, data))
 print("GET")
 print(confluence.get_page_property(242793586, "newprp"))
 
-
 # Update page property
 data = {
     "key": "newprp",

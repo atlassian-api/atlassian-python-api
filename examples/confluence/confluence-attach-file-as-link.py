@@ -1,8 +1,8 @@
 # coding=utf-8
-from atlassian import Confluence
-from datetime import datetime
 import logging
+from datetime import datetime
 
+from atlassian import Confluence
 
 confluence = Confluence(
     url='http://localhost:8090',

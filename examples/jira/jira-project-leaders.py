@@ -1,5 +1,6 @@
 # coding=utf-8
 from urllib.parse import quote
+
 from atlassian import Jira
 
 jira = Jira(
@@ -23,9 +24,8 @@ MAILTO = '<a href="mailto:{lead_email}?subject={email_subject}&body={email_body}
 print('|| Project Key || Project Name || Ask for Access ||')
 
 for project in jira.project_leaders():
-    print('| {project_key} | {project_name} | {lead_name} <{lead_email}> |'.format(project_key=project['project_key'],
-                                                                                   project_name=project['project_name'],
-                                                                                   email_subject=EMAIL_SUBJECT,
-                                                                                   email_body=EMAIL_BODY,
-                                                                                   lead_name=project['lead_name'],
-                                                                                   lead_email=project['lead_email']))
+    print('| {project_key} | {project_name} | {lead_email_link} |'.format(project_key=project['project_key'],
+                                                                          project_name=project['project_name'],
+                                                                          lead_email_link=MAILTO.format(
+                                                                              lead_name=project['lead_name'],
+                                                                              lead_email=project['lead_email'])))

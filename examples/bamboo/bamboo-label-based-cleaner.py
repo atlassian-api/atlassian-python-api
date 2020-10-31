@@ -1,11 +1,12 @@
-from atlassian import Bamboo
+import logging
 from datetime import datetime
 from datetime import timedelta
-import logging
+
+from atlassian import Bamboo
 
 """
 Example shows how to clean up expired build results for specific label.
-Feel free to modify OLDER_DAYS and LABEL parameters. 
+Feel free to modify OLDER_DAYS and LABEL parameters.
 You can remove, after changing value for DRY_RUN variable
 """
 

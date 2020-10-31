@@ -1,8 +1,9 @@
 # coding=utf-8
-from atlassian import Jira
-from atlassian import Stash
 import logging
 import time
+
+from atlassian import Jira
+from atlassian import Stash
 
 """
 Clean branches for closed issues

@@ -1,8 +1,8 @@
 # coding=utf-8
-from atlassian import Confluence
 import logging
 from pprint import pprint
 
+from atlassian import Confluence
 
 CONFLUENCE_URL = "http://conlfuence.example.com"
 CONFLUENCE_LOGIN = "gonchik.tsymzhitov"

@@ -1,6 +1,7 @@
 # coding: utf8
-from atlassian import Jira, Confluence, Bitbucket, Bamboo, Crowd, ServiceDesk, Xray
 import os
+
+from atlassian import Jira, Confluence, Bitbucket, Bamboo, Crowd, ServiceDesk, Xray
 
 BAMBOO_URL = os.environ.get('BAMBOO_URL', 'http://localhost:8085')
 JIRA_URL = os.environ.get('BAMBOO_URL', 'http://localhost:8080')
@@ -20,48 +21,48 @@ ATLASSIAN_PASSWORD = os.environ.get('ATLASSIAN_PASSWORD', 'admin')
 class TestBasic(object):
 
     def test_init_jira(self):
-        jira = Jira(
+        Jira(
             url=JIRA_URL,
             username=ATLASSIAN_USER,
             password=ATLASSIAN_PASSWORD
         )
 
     def test_init_confluence(self):
-        confluence = Confluence(
+        Confluence(
             url=CONFLUENCE_URL,
             username=ATLASSIAN_USER,
             password=ATLASSIAN_PASSWORD
         )
 
     def test_init_bitbucket(self):
-        bitbucket = Bitbucket(
+        Bitbucket(
             url=STASH_URL,
             username=ATLASSIAN_USER,
             password=ATLASSIAN_PASSWORD
         )
 
     def test_init_bamboo(self):
-        bamboo = Bamboo(
+        Bamboo(
             url=BAMBOO_URL,
             username=ATLASSIAN_USER,
             password=ATLASSIAN_PASSWORD
         )
 
     def test_init_crowd(self):
-        crowd = Crowd(
+        Crowd(
             url=CROWD_URL,
             username=CROWD_APPLICATION,
             password=CROWD_APPLICATION_PASSWORD)
 
     def test_init_service_desk(self):
-        service_desk = ServiceDesk(
+        ServiceDesk(
             url=SERVICE_DESK_URL,
             username=ATLASSIAN_USER,
             password=ATLASSIAN_PASSWORD
         )
 
     def test_init_xray(self):
-        xray = Xray(
+        Xray(
             url=XRAY_URL,
             username=ATLASSIAN_USER,
             password=ATLASSIAN_PASSWORD

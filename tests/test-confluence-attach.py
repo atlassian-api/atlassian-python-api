@@ -1,8 +1,9 @@
 # coding=utf-8
-import tempfile
 import json
 import os
+import tempfile
 import unittest
+
 from atlassian import Confluence
 
 
@@ -17,7 +18,7 @@ class TestConfluenceAttach(unittest.TestCase):
           "host" : "https://localhost:8080",
           "username" : "john_doe",
           "password" : "12345678"
-        }        
+        }
     '''
 
     def test_confluence_attach_file_1(self):

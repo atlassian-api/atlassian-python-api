@@ -1,6 +1,7 @@
 # coding=utf-8
-from atlassian import Bamboo
 import argparse
+
+from atlassian import Bamboo
 
 """
     How to create the plan branch

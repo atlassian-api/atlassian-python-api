@@ -1,5 +1,6 @@
-from atlassian import Jira
 import logging
+
+from atlassian import Jira
 
 logging.basicConfig(level=logging.ERROR)
 

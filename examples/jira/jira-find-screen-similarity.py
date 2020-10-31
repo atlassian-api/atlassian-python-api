@@ -1,5 +1,6 @@
-from atlassian import Jira
 import logging
+
+from atlassian import Jira
 
 """
     That example shows how to find the same screen fields based on fields number or hash of orders.

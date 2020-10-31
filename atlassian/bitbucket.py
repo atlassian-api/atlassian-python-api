@@ -1,8 +1,9 @@
 # coding=utf-8
 import logging
 
-from .rest_client import AtlassianRestAPI
 from requests.exceptions import HTTPError
+
+from .rest_client import AtlassianRestAPI
 
 log = logging.getLogger(__name__)
 
@@ -11,9 +12,9 @@ class Bitbucket(AtlassianRestAPI):
     bulk_headers = {"Content-Type": "application/vnd.atl.bitbucket.bulk+json"}
 
     def __init__(self, url, *args, **kwargs):
-        if not 'cloud' in kwargs and ('bitbucket.org' in url):
+        if 'cloud' not in kwargs and ('bitbucket.org' in url):
             kwargs['cloud'] = True
-        if not 'api_version' in kwargs:
+        if 'api_version' not in kwargs:
             kwargs['api_version'] = '2.0' if 'cloud' in kwargs and kwargs['cloud'] else '1.0'
         if 'cloud' in kwargs:
             kwargs['api_root'] = '' if 'api.bitbucket.org' in url else 'api'

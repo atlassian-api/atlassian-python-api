@@ -8,7 +8,6 @@ confluence = Confluence(
     username='admin',
     password='admin')
 
-
 if confluence.reindex_get_status().get('finished'):
     print("Start reindex")
     confluence.reindex()

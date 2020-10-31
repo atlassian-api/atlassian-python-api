@@ -2,7 +2,7 @@
 from atlassian import Confluence
 
 """
-This example shows how to clean page versions for subtree of pages 
+This example shows how to clean page versions for subtree of pages
 """
 
 CONFLUENCE_URL = "confluence.example.com"

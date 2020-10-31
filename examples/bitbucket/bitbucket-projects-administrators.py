@@ -1,7 +1,7 @@
 # coding=utf-8
 import logging
-from atlassian import Bitbucket
 
+from atlassian import Bitbucket
 
 logging.basicConfig(level=logging.DEBUG, format='[%(asctime).19s] [%(levelname)s] %(message)s')
 logging.getLogger('requests').setLevel(logging.WARNING)

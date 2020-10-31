@@ -4,14 +4,11 @@ import re
 
 from requests import HTTPError
 
-from .rest_client import AtlassianRestAPI
 from .errors import (
-    ApiError,
     ApiNotFoundError,
-    ApiPermissionError,
-    ApiValueError,
-    ApiConflictError
+    ApiPermissionError
 )
+from .rest_client import AtlassianRestAPI
 
 log = logging.getLogger(__name__)
 
@@ -309,7 +306,7 @@ class Jira(AtlassianRestAPI):
         """
         url = 'rest/api/2/comment/{commentId}/properties/{propertyKey}'.format(commentId=comment_id,
                                                                                propertyKey=property_key)
-        return self.get(url, data=data)
+        return self.get(url)
 
     def set_comment_property(self, comment_id, property_key, value_property):
         """
@@ -1080,7 +1077,8 @@ class Jira(AtlassianRestAPI):
         """
         Returns a list of IDs and update timestamps for worklogs updated after a date and time.
         :param since: The date and time, as a UNIX timestamp in milliseconds, after which updated worklogs are returned.
-        :param expand: Use expand to include additional information about worklogs in the response. This parameter accepts properties that returns the properties of each worklog.
+        :param expand: Use expand to include additional information about worklogs in the response.
+            This parameter accepts properties that returns the properties of each worklog.
         """
         url = 'rest/api/3/worklog/updated'
         params = {}
@@ -1094,7 +1092,8 @@ class Jira(AtlassianRestAPI):
     def get_worklogs(self, ids, expand=None):
         """
         Returns worklog details for a list of worklog IDs.
-        :param expand: Use expand to include additional information about worklogs in the response. This parameter accepts properties that returns the properties of each worklog.
+        :param expand: Use expand to include additional information about worklogs in the response.
+            This parameter accepts properties that returns the properties of each worklog.
         :param ids: REQUIRED A list of worklog IDs.
         """
 
@@ -1455,8 +1454,10 @@ class Jira(AtlassianRestAPI):
         :param limit: how many results on the page should be included. Defaults to 50.
         :param order_by: ordering of the results.
         :param expand: the parameters to expand
-        :param query: Filter the results using a literal string. Versions with matching name or description are returned (case insensitive).
-        :param status: A list of status values used to filter the results by version status. This parameter accepts a comma-separated list. The status values are released, unreleased, and archived..
+        :param query: Filter the results using a literal string. Versions with matching name or description
+            are returned (case insensitive).
+        :param status: A list of status values used to filter the results by version status.
+            This parameter accepts a comma-separated list. The status values are released, unreleased, and archived.
         :return:
         """
         params = {}
@@ -1626,7 +1627,11 @@ class Jira(AtlassianRestAPI):
         """
         Returns a full representation of the notification scheme for the given id.
         Use 'expand' to get details
-        Returns a full representation of the notification scheme for the given id. This resource will return a notification scheme containing a list of events and recipient configured to receive notifications for these events. Consumer should allow events without recipients to appear in response. User accessing the data is required to have permissions to administer at least one project associated with the requested notification scheme.
+        Returns a full representation of the notification scheme for the given id. This resource will return a
+        notification scheme containing a list of events and recipient configured to receive notifications for these
+        events. Consumer should allow events without recipients to appear in response. User accessing the data is
+        required to have permissions to administer at least one project associated with the requested notification
+        scheme.
         Notification recipients can be:
 
             current assignee - the value of the notificationType is CurrentAssignee
@@ -1791,7 +1796,8 @@ class Jira(AtlassianRestAPI):
 
     def get_all_time_tracking_providers(self):
         """
-        Returns all time tracking providers. By default, Jira only has one time tracking provider: JIRA provided time tracking. However, you can install other time tracking providers via apps from the Atlassian Marketplace.
+        Returns all time tracking providers. By default, Jira only has one time tracking provider: JIRA provided time
+        tracking. However, you can install other time tracking providers via apps from the Atlassian Marketplace.
         """
 
         url = 'rest/api/3/configuration/timetracking/list'
@@ -1799,7 +1805,8 @@ class Jira(AtlassianRestAPI):
 
     def get_selected_time_tracking_provider(self):
         """
-        Returns the time tracking provider that is currently selected. Note that if time tracking is disabled, then a successful but empty response is returned.
+        Returns the time tracking provider that is currently selected. Note that if time tracking is disabled,
+        then a successful but empty response is returned.
         """
 
         url = 'rest/api/3/configuration/timetracking'
@@ -1807,7 +1814,8 @@ class Jira(AtlassianRestAPI):
 
     def get_time_tracking_settings(self):
         """
-        Returns the time tracking settings. This includes settings such as the time format, default time unit, and others.
+        Returns the time tracking settings. This includes settings such as the time format, default time unit,
+        and others.
         """
 
         url = 'rest/api/3/configuration/timetracking/options'
@@ -2109,11 +2117,13 @@ class Jira(AtlassianRestAPI):
 
     def get_workflows_paginated(self, startAt=None, maxResults=None, workflowName=None, expand=None):
         """
-        Provide all workflows paginated (see https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-workflows/#api-rest-api-2-workflow-search-get)
+        Provide all workflows paginated (see https://developer.atlassian.com/cloud/jira/platform/rest/v2/\
+api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param startAt: OPTIONAL The index of the first item to return in a page of results (page offset).
         :param maxResults: OPTIONAL The maximum number of items to return per page.
         :param workflowName: OPTIONAL The name of a workflow to return.
-        :param: expand: OPTIONAL Use expand to include additional information in the response. This parameter accepts a comma-separated list. Expand options include: (transitions, transitions.rules, statuses, statuses.properties)
+        :param: expand: OPTIONAL Use expand to include additional information in the response. This parameter accepts a
+            comma-separated list. Expand options include: transitions, transitions.rules, statuses, statuses.properties
         :return:
         """
         url = 'rest/api/2/workflow/search'

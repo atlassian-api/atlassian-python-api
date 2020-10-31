@@ -34,7 +34,7 @@ class Confluence(AtlassianRestAPI):
         if (('atlassian.net' in url or 'jira.com' in url)
                 and ('/wiki' not in url)):
             url = AtlassianRestAPI.url_joiner(url, '/wiki')
-            if not 'cloud' in kwargs:
+            if 'cloud' not in kwargs:
                 kwargs['cloud'] = True
         super(Confluence, self).__init__(url, *args, **kwargs)
 
@@ -145,8 +145,8 @@ class Confluence(AtlassianRestAPI):
         parent_content_id = None
         try:
             parent_content_id = (
-                    (self.get_page_by_id(page_id=page_id, expand='ancestors').get('ancestors') or {})[-1].get(
-                        'id') or None)
+                (self.get_page_by_id(page_id=page_id, expand='ancestors').get('ancestors') or {})[-1].get(
+                    'id') or None)
         except Exception as e:
             log.error(e)
         return parent_content_id
@@ -160,8 +160,8 @@ class Confluence(AtlassianRestAPI):
         parent_content_title = None
         try:
             parent_content_title = (
-                    (self.get_page_by_id(page_id=page_id, expand='ancestors').get('ancestors') or {})[-1].get(
-                        'title') or None)
+                (self.get_page_by_id(page_id=page_id, expand='ancestors').get('ancestors') or {})[-1].get(
+                    'title') or None)
         except Exception as e:
             log.error(e)
         return parent_content_title
@@ -697,7 +697,8 @@ class Confluence(AtlassianRestAPI):
     def get_all_templates_from_space(self, space, start=0, limit=20, expand=None):
         """
         Get all users templates from space. Experimental API
-        ref: https://docs.atlassian.com/atlassian-confluence/1000.73.0/com/atlassian/confluence/plugins/restapi/resources/TemplateResource.html
+        ref: https://docs.atlassian.com/atlassian-confluence/1000.73.0/com/atlassian/confluence/plugins/restapi\
+/resources/TemplateResource.html
         :param space: Space Key
         :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
         :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
@@ -943,7 +944,7 @@ class Confluence(AtlassianRestAPI):
             params['filename'] = filename
         if media_type:
             params['mediaType'] = media_type
-        url = 'rest/api/content/{id}/child/attachment'.format(id=page_id, params=params)
+        url = 'rest/api/content/{id}/child/attachment'.format(id=page_id)
 
         try:
             response = self.get(url, params=params)

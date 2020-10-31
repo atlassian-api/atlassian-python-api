@@ -1,6 +1,7 @@
 # coding=utf-8
-from atlassian import Bamboo
 import os
+
+from atlassian import Bamboo
 
 BAMBOO_URL = os.environ.get('BAMBOO_URL', 'http://localhost:8085')
 ATLASSIAN_USER = os.environ.get('ATLASSIAN_USER', 'admin')
@@ -10,7 +11,6 @@ bamboo = Bamboo(
     url=BAMBOO_URL,
     username=ATLASSIAN_USER,
     password=ATLASSIAN_PASSWORD)
-
 
 # Methods in plural (projects, plans, results...) return a generator that iterates through
 # all results without the need of dealing need with pagination
@@ -37,10 +37,3 @@ for branch in bamboo.plan_branches('PROJ-SP2'):
 print(bamboo.project('FOO'))
 
 print(bamboo.build_result('FOO-BAR-1'))
-
-
-
-
-
-
-

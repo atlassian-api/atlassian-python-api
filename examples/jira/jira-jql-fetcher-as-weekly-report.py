@@ -1,7 +1,7 @@
-from atlassian import Jira
-import pprint
 import argparse
 import logging
+
+from atlassian import Jira
 
 logging.basicConfig(level=logging.ERROR)
 

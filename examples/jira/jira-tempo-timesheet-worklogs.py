@@ -1,7 +1,8 @@
 # coding=utf-8
-from atlassian import Jira
-from pprint import pprint
 import logging
+from pprint import pprint
+
+from atlassian import Jira
 
 jira = Jira(
     url='http://localhost:8080',

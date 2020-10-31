@@ -123,7 +123,7 @@ class Xray(AtlassianRestAPI):
         :param step: Test Step name (eg. 'Example step').
         :param data: Test Step data (eg. 'Example data').
         :param result: Test Step results (eg. 'Example results').
-        :return: 
+        :return:
         """
         create = {'step': step, 'data': data, 'result': result, 'attachments': []}
         url = 'rest/raven/1.0/api/test/{0}/step'.format(test_key)
@@ -298,7 +298,8 @@ class Xray(AtlassianRestAPI):
         Associate tests with the given test execution.
         :param test_exec_key: Test execution key (eg. 'EXEC-001').
         :param add: OPTIONAL: List of Test Keys to associate with the test execution (eg. ['TEST-2', 'TEST-3'])
-        :param remove: OPTIONAL: List of Test Keys no longer associate with the test execution (eg. ['TEST-4', 'TEST-5'])
+        :param remove: OPTIONAL:
+            List of Test Keys no longer associate with the test execution (eg. ['TEST-4', 'TEST-5'])
         :return:
         """
         if add is None:
@@ -343,7 +344,7 @@ class Xray(AtlassianRestAPI):
         Update the assignee for the given test run.
         :param test_run_id: ID of the test run (eg. 100).
         :param assignee: Assignee id (eg. 'bob')
-        :return: 
+        :return:
         """
         update = {'assignee': assignee}
         url = 'rest/raven/1.0/api/testrun/{0}'.format(test_run_id)
@@ -363,7 +364,7 @@ class Xray(AtlassianRestAPI):
         Update the status for the given test run.
         :param test_run_id: ID of the test run (eg. 100).
         :param status: Status id (eg. 'PASS')
-        :return: 
+        :return:
         """
         update = {'status': status}
         url = 'rest/raven/1.0/api/testrun/{0}'.format(test_run_id)
@@ -384,7 +385,7 @@ class Xray(AtlassianRestAPI):
         :param test_run_id: ID of the test run (eg. 100).
         :param add: OPTIONAL: List of defects to associate to the test run (eg. ['BUG-001', 'BUG-002'])
         :param remove: OPTIONAL: List of defects which no longer need to be associated to the test run (eg. ['BUG-003'])
-        :return: 
+        :return:
         """
         if add is None:
             add = []
@@ -408,7 +409,7 @@ class Xray(AtlassianRestAPI):
         Update the comment for the given test run.
         :param test_run_id: ID of the test run (eg. 100).
         :param comment: Comment (eg. 'Test needs to be reworked')
-        :return: 
+        :return:
         """
         update = {'comment': comment}
         url = 'rest/raven/1.0/api/testrun/{0}'.format(test_run_id)

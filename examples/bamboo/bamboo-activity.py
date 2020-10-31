@@ -1,6 +1,7 @@
 # coding=utf-8
-from atlassian import Bamboo
 import os
+
+from atlassian import Bamboo
 
 """
     Example for check exist activity and agent status

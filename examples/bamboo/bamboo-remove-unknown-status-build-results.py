@@ -1,5 +1,6 @@
-from atlassian import Bamboo
 import logging
+
+from atlassian import Bamboo
 
 """
 That example shows how to clean up Bamboo incomplete or Unknown build results

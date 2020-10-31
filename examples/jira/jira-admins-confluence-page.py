@@ -1,5 +1,6 @@
 # coding=utf-8
 import logging
+
 from atlassian import Confluence
 from atlassian import Jira
 
@@ -24,7 +25,6 @@ html = ["""<table>
                     <th>Leader</th>
                     <th>Email</th>
                 </tr>"""]
-
 
 for data in jira.project_leaders():
     log.info('{project_key} leader is {lead_name} <{lead_email}>'.format(**data))

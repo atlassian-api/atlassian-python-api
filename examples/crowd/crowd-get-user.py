@@ -1,7 +1,8 @@
 # coding=utf-8
-from atlassian import Crowd
-import os
 import logging
+import os
+
+from atlassian import Crowd
 
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)

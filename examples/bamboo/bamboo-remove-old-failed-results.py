@@ -1,7 +1,8 @@
-from atlassian import Bamboo
+import logging
 from datetime import datetime
 from datetime import timedelta
-import logging
+
+from atlassian import Bamboo
 
 """
 That example shows how to clean up Bamboo old failed build results

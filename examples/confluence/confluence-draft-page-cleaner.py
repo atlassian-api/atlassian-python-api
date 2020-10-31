@@ -1,6 +1,7 @@
 # coding=utf-8
-from atlassian import Confluence
 import datetime
+
+from atlassian import Confluence
 
 """This example shows how to remove old draft pages (it is configure by DRAFT_DAYS variable) for all spaces"""
 

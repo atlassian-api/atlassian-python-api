@@ -1,8 +1,9 @@
 # coding=utf-8
 import argparse
-from os import environ
-from atlassian import Jira
 import logging
+from os import environ
+
+from atlassian import Jira
 
 
 def get_project_category_object(project_category_name="DEPRECATED"):

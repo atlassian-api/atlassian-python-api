@@ -1,7 +1,8 @@
 # coding=utf-8
 import logging
-import requests
 from json import dumps
+
+import requests
 from oauthlib.oauth1 import SIGNATURE_RSA
 from requests_oauthlib import OAuth1
 from six.moves.urllib.parse import urlencode
