@@ -138,7 +138,8 @@ Page actions
     confluence.has_unknown_attachment_error(page_id)
 
     # Export page as PDF
-    # api_version needs to be set to 'cloud' when exporting from Confluence Cloud. 
+    # api_version needs to be set to 'cloud' when exporting from Confluence Cloud
+    .
     confluence.export_page(page_id)
 
     # Set a label on the page

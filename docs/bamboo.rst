@@ -52,7 +52,7 @@ Branches
 
     # Get VCS Branches
     get_vcs_branches(plan_key, max_results=25)
-    
+
 Build results
 -------------
 
@@ -61,15 +61,15 @@ Build results
     # Get build results (Scalable from a single result to all build results)
     results(project_key=None, plan_key=None, job_key=None, build_number=None, expand=None, favourite=False,
             clover_enabled=False, issue_key=None, label=None, start_index=0, max_results=25, include_all_states=False)
-    
+
     # Get latest build results
     latest_results(expand=None, favourite=False, clover_enabled=False, label=None, issue_key=None,
                    start_index=0, max_results=25, include_all_states=False)
-    
+
     # Get latest build results for the project
     project_latest_results(project_key, expand=None, favourite=False, clover_enabled=False, label=None,
                            issue_key=None, start_index=0, max_results=25, include_all_states=False)
-    
+
     # Get build results for a single plan
     plan_results(project_key, plan_key, expand=None, favourite=False, clover_enabled=False, label=None,
                  issue_key=None, start_index=0, max_results=25, include_all_states=False)
@@ -133,7 +133,7 @@ Users & Groups
 
     # Get Groups
     get_groups(start=0, limit=25)
-    
+
     # Create Group
     create_group(group_name)
 

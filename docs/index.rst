@@ -5,7 +5,7 @@
 
 Welcome to Atlassian Python API's documentation!
 ================================================
-|Build Status| |PyPI version| |PyPI - Downloads| |License| |Codacy Badge| |Docs|
+|Build Status| |PyPI version| |PyPI Downloads| |License| |Codacy Badge| |Docs|
 
 Getting started
 ---------------
@@ -48,8 +48,7 @@ Add a connection:
         url='http://localhost:8080',
         username='admin',
         password='admin')
-        
-        
+
 Key/Cert Based authentication
 -----------------------------
 
@@ -223,8 +222,8 @@ To authenticate to the Atlassian Cloud APIs:
 .. |Codacy Badge| image:: https://api.codacy.com/project/badge/Grade/c822908f507544fe98ae37b25518ae3d
    :target: https://www.codacy.com/project/gonchik/atlassian-python-api/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=AstroMatt/atlassian-python-api&amp;utm_campaign=Badge_Grade_Dashboard
    :alt: Codacy Badge
-.. |PyPI - Downloads| image:: https://pepy.tech/badge/atlassian-python-api/month
-   :alt: PyPI - Downloads
+.. |PyPI Downloads| image:: https://pepy.tech/badge/atlassian-python-api/month
+   :alt: PyPI Downloads
 .. |Docs| image:: https://readthedocs.org/projects/atlassian-python-api/badge/?version=latest
    :target: https://atlassian-python-api.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
