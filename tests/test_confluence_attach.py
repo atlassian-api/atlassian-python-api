@@ -22,7 +22,6 @@ class TestConfluenceAttach(unittest.TestCase):
     '''
 
     def test_confluence_attach_file_1(self):
-        credentials = None
         try:
             with open(self.secret_file) as json_file:
                 credentials = json.load(json_file)
@@ -63,8 +62,6 @@ class TestConfluenceAttach(unittest.TestCase):
         os.remove(filename)
 
     def test_confluence_attach_file_2(self):
-        credentials = None
-
         try:
             with open(self.secret_file) as json_file:
                 credentials = json.load(json_file)
@@ -109,8 +106,6 @@ class TestConfluenceAttach(unittest.TestCase):
         os.remove(filename)
 
     def test_confluence_attach_content(self):
-        credentials = None
-
         try:
             with open(self.secret_file) as json_file:
                 credentials = json.load(json_file)

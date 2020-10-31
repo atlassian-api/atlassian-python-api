@@ -18,7 +18,7 @@ ATLASSIAN_USER = os.environ.get('ATLASSIAN_USER', 'admin')
 ATLASSIAN_PASSWORD = os.environ.get('ATLASSIAN_PASSWORD', 'admin')
 
 
-class TestBasic(object):
+class TestBasic:
 
     def test_init_jira(self):
         Jira(
