@@ -93,7 +93,7 @@ if __name__ == '__main__':
                 last_date_commit = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(committer_time_stamp))
                 if is_can_removed_branch(branch):
                     if not DRY_RUN:
-                        stash.delete_branch(project=PROJECT_KEY, repository=repository, name=display_id,
+                        stash.delete_branch(project_key=PROJECT_KEY, repository_slug=repository, name=display_id,
                                             end_point=branch['latestCommit'])
                     log.write("{},{},{}\n".format(display_id, last_date_commit, True))
             step += 1

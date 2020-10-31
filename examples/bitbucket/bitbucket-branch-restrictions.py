@@ -16,7 +16,7 @@ single_permission = bitbucket.set_branches_permissions(
     matcher_type="branch",  # lowercase matcher type
     matcher_value="master",
     permission_type="no-deletes",
-    repository="repository_name",
+    repository_slug="repository_name",
     except_users=["user1", "user2"]
 )
 print(single_permission)
@@ -74,7 +74,7 @@ multiple_permissions = bitbucket.set_branches_permissions(
     matcher_type="branch",
     matcher_value="master",
     permission_type="no-deletes",
-    repository="repository_name",
+    repository_slug="repository_name",
     except_users=["user1", "user2"]
 )
 print(multiple_permissions)

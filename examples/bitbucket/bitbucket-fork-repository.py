@@ -7,8 +7,8 @@ bitbucket = Bitbucket(
     password='admin')
 
 data = bitbucket.fork_repository(
-    project='DEMO',
-    repository='example-repository',
-    new_repository='forked-repository')
+    project_key='DEMO',
+    repository_slug='example-repository',
+    new_repository_slug='forked-repository')
 
 print(data)
