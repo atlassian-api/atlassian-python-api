@@ -21,6 +21,7 @@ class TestConfluenceAttach(unittest.TestCase):
         }
     '''
 
+    @unittest.skipIf(not os.path.exists("../credentials.secret"), "credentials.secret missing, skipping test")
     def test_confluence_attach_file_1(self):
         try:
             with open(self.secret_file) as json_file:
@@ -61,6 +62,7 @@ class TestConfluenceAttach(unittest.TestCase):
         os.close(fd)
         os.remove(filename)
 
+    @unittest.skipIf(not os.path.exists("../credentials.secret"), "credentials.secret missing, skipping test")
     def test_confluence_attach_file_2(self):
         try:
             with open(self.secret_file) as json_file:
@@ -105,6 +107,7 @@ class TestConfluenceAttach(unittest.TestCase):
         os.close(fd)
         os.remove(filename)
 
+    @unittest.skipIf(not os.path.exists("../credentials.secret"), "credentials.secret missing, skipping test")
     def test_confluence_attach_content(self):
         try:
             with open(self.secret_file) as json_file:
