@@ -1354,6 +1354,7 @@ class Bitbucket(AtlassianRestAPI):
 
     def _url_pull_request_comments(self, project_key, repository_slug, pull_request_id):
         url = '{}/comments'.format(self._url_pull_request(project_key, repository_slug, pull_request_id))
+        return url
 
     def add_pull_request_comment(self, project_key, repository_slug, pull_request_id, text, parent_id=None):
         """
@@ -1573,6 +1574,7 @@ class Bitbucket(AtlassianRestAPI):
 
     def _url_repo_compare(self, project_key, repository_slug):
         url = '{}/compare'.format(self._url_repo(project_key, repository_slug))
+        return url
 
     def get_diff(self, project_key, repository_slug, path, hash_oldest, hash_newest):
         """
