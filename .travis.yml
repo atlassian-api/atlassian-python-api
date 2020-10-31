@@ -6,10 +6,12 @@ python:
   - "3.6"
   - "3.7"
   - "3.8"
-  - "3.9-dev"
+  - "3.9"
+  - "3.10-dev"
 
 matrix:
   allow_failures:
+    - python: "3.10-dev"
 
 install: pip install tox-travis
 before_script:
