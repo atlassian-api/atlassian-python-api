@@ -1,7 +1,8 @@
 # coding=utf-8
 import logging
-import requests
 from json import dumps
+
+import requests
 from oauthlib.oauth1 import SIGNATURE_RSA
 from requests_oauthlib import OAuth1
 from six.moves.urllib.parse import urlencode
@@ -12,20 +13,44 @@ log = get_default_logger(__name__)
 
 
 class AtlassianRestAPI(object):
-    default_headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
-    experimental_headers = {'Content-Type': 'application/json', 'Accept': 'application/json',
-                            'X-ExperimentalApi': 'opt-in'}
-    form_token_headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                          'X-Atlassian-Token': 'no-check'}
-    no_check_headers = {'X-Atlassian-Token': 'no-check'}
-    safe_mode_headers = {'X-Atlassian-Token': 'nocheck',
-                         'Content-Type': 'application/vnd.atl.plugins.safe.mode.flag+json'}
-    experimental_headers_general = {'X-Atlassian-Token': 'no-check', 'X-ExperimentalApi': 'opt-in'}
+    default_headers = {"Content-Type": "application/json", "Accept": "application/json"}
+    experimental_headers = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "X-ExperimentalApi": "opt-in",
+    }
+    form_token_headers = {
+        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+        "X-Atlassian-Token": "no-check",
+    }
+    no_check_headers = {"X-Atlassian-Token": "no-check"}
+    safe_mode_headers = {
+        "X-Atlassian-Token": "nocheck",
+        "Content-Type": "application/vnd.atl.plugins.safe.mode.flag+json",
+    }
+    experimental_headers_general = {
+        "X-Atlassian-Token": "no-check",
+        "X-ExperimentalApi": "opt-in",
+    }
     response = None
 
-    def __init__(self, url, username=None, password=None, timeout=60, api_root='rest/api', api_version='latest',
-                 verify_ssl=True, session=None, oauth=None, cookies=None, advanced_mode=None, kerberos=None,
-                 cloud=False, proxies=None):
+    def __init__(
+        self,
+        url,
+        username=None,
+        password=None,
+        timeout=60,
+        api_root="rest/api",
+        api_version="latest",
+        verify_ssl=True,
+        session=None,
+        oauth=None,
+        cookies=None,
+        advanced_mode=None,
+        kerberos=None,
+        cloud=False,
+        proxies=None,
+    ):
         self.url = url
         self.username = username
         self.password = password
@@ -70,16 +95,19 @@ class AtlassianRestAPI(object):
                 raise ImportError("No kerberos implementation available")
         __, krb_context = kerb.authGSSClientInit(kerberos_service)
         kerb.authGSSClientStep(krb_context, "")
-        auth_header = ("Negotiate " + kerb.authGSSClientResponse(krb_context))
+        auth_header = "Negotiate " + kerb.authGSSClientResponse(krb_context)
         self._update_header("Authorization", auth_header)
         response = self._session.get(self.url, verify=self.verify_ssl)
         response.raise_for_status()
 
     def _create_oauth_session(self, oauth_dict):
-        oauth = OAuth1(oauth_dict['consumer_key'],
-                       rsa_key=oauth_dict['key_cert'], signature_method=SIGNATURE_RSA,
-                       resource_owner_key=oauth_dict['access_token'],
-                       resource_owner_secret=oauth_dict['access_token_secret'])
+        oauth = OAuth1(
+            oauth_dict["consumer_key"],
+            rsa_key=oauth_dict["key_cert"],
+            signature_method=SIGNATURE_RSA,
+            resource_owner_key=oauth_dict["access_token"],
+            resource_owner_secret=oauth_dict["access_token_secret"],
+        )
         self._session.auth = oauth
 
     def _update_header(self, key, value):
@@ -96,7 +124,7 @@ class AtlassianRestAPI(object):
         try:
             return response.json()
         except ValueError:
-            log.debug('Received response with no content')
+            log.debug("Received response with no content")
             return None
         except Exception as e:
             log.error(e)
@@ -115,9 +143,12 @@ class AtlassianRestAPI(object):
         headers = headers or self.default_headers
         message = "curl --silent -X {method} -H {headers} {data} '{url}'".format(
             method=method,
-            headers=' -H '.join(["'{0}: {1}'".format(key, value) for key, value in headers.items()]),
-            data='' if not data else "--data '{0}'".format(dumps(data)),
-            url=url)
+            headers=" -H ".join(
+                ["'{0}: {1}'".format(key, value) for key, value in headers.items()]
+            ),
+            data="" if not data else "--data '{0}'".format(dumps(data)),
+            url=url,
+        )
         log.log(level=level, msg=message)
 
     def resource_url(self, resource, api_root=None, api_version=None):
@@ -125,20 +156,30 @@ class AtlassianRestAPI(object):
             api_root = self.api_root
         if api_version is None:
             api_version = self.api_version
-        return '/'.join([api_root, api_version, resource])
+        return "/".join([api_root, api_version, resource])
 
     @staticmethod
     def url_joiner(url, path, trailing=None):
-        url_link = '/'.join(s.strip('/') for s in [url, path])
+        url_link = "/".join(s.strip("/") for s in [url, path])
         if trailing:
-            url_link += '/'
+            url_link += "/"
         return url_link
 
     def close(self):
         return self._session.close()
 
-    def request(self, method='GET', path='/', data=None, json=None, flags=None, params=None, headers=None,
-                files=None, trailing=None):
+    def request(
+        self,
+        method="GET",
+        path="/",
+        data=None,
+        json=None,
+        flags=None,
+        params=None,
+        headers=None,
+        files=None,
+        trailing=None,
+    ):
         """
 
         :param method:
@@ -154,17 +195,18 @@ class AtlassianRestAPI(object):
         """
         url = self.url_joiner(self.url, path, trailing)
         if params or flags:
-            url += '?'
+            url += "?"
         if params:
             url += urlencode(params or {})
         if flags:
-            url += ('&' if params else '') + '&'.join(flags or [])
+            url += ("&" if params else "") + "&".join(flags or [])
         json_dump = None
         if files is None:
             data = None if not data else dumps(data)
             json_dump = None if not json else dumps(json)
-        self.log_curl_debug(method=method, url=url, headers=headers,
-                            data=data if data else json_dump)
+        self.log_curl_debug(
+            method=method, url=url, headers=headers, data=data if data else json_dump
+        )
 
         headers = headers or self.default_headers
         response = self._session.request(
@@ -176,18 +218,31 @@ class AtlassianRestAPI(object):
             timeout=self.timeout,
             verify=self.verify_ssl,
             files=files,
-            proxies=self.proxies
+            proxies=self.proxies,
         )
-        response.encoding = 'utf-8'
+        response.encoding = "utf-8"
 
         if self.advanced_mode:
             return response
 
-        log.debug("HTTP: {} {} -> {} {}".format(method, path, response.status_code, response.reason))
+        log.debug(
+            "HTTP: {} {} -> {} {}".format(
+                method, path, response.status_code, response.reason
+            )
+        )
         response.raise_for_status()
         return response
 
-    def get(self, path, data=None, flags=None, params=None, headers=None, not_json_response=None, trailing=None):
+    def get(
+        self,
+        path,
+        data=None,
+        flags=None,
+        params=None,
+        headers=None,
+        not_json_response=None,
+        trailing=None,
+    ):
         """
         Get request based on the python-requests module. You can override headers, and also, get not json response
         :param path:
@@ -199,8 +254,15 @@ class AtlassianRestAPI(object):
         :param trailing: OPTIONAL: for wrap slash symbol in the end of string
         :return:
         """
-        response = self.request('GET', path=path, flags=flags, params=params, data=data, headers=headers,
-                                trailing=trailing)
+        response = self.request(
+            "GET",
+            path=path,
+            flags=flags,
+            params=params,
+            data=data,
+            headers=headers,
+            trailing=trailing,
+        )
         if self.advanced_mode:
             return response
         if not_json_response:
@@ -214,16 +276,42 @@ class AtlassianRestAPI(object):
                 log.error(e)
                 return response.text
 
-    def post(self, path, data=None, json=None, headers=None, files=None, params=None, trailing=None):
-        response = self.request('POST', path=path, data=data, json=json, headers=headers, files=files, params=params,
-                                trailing=trailing)
+    def post(
+        self,
+        path,
+        data=None,
+        json=None,
+        headers=None,
+        files=None,
+        params=None,
+        trailing=None,
+    ):
+        response = self.request(
+            "POST",
+            path=path,
+            data=data,
+            json=json,
+            headers=headers,
+            files=files,
+            params=params,
+            trailing=trailing,
+        )
         if self.advanced_mode:
             return response
         return self._response_handler(response)
 
-    def put(self, path, data=None, headers=None, files=None, trailing=None, params=None):
-        response = self.request('PUT', path=path, data=data, headers=headers, files=files, params=params,
-                                trailing=trailing)
+    def put(
+        self, path, data=None, headers=None, files=None, trailing=None, params=None
+    ):
+        response = self.request(
+            "PUT",
+            path=path,
+            data=data,
+            headers=headers,
+            files=files,
+            params=params,
+            trailing=trailing,
+        )
         if self.advanced_mode:
             return response
         return self._response_handler(response)
@@ -235,7 +323,14 @@ class AtlassianRestAPI(object):
         :return: Empty dictionary to have consistent interface.
         Some of Atlassian REST resources don't return any content.
         """
-        response = self.request('DELETE', path=path, data=data, headers=headers, params=params, trailing=trailing)
+        response = self.request(
+            "DELETE",
+            path=path,
+            data=data,
+            headers=headers,
+            params=params,
+            trailing=trailing,
+        )
         if self.advanced_mode:
             return response
         return self._response_handler(response)

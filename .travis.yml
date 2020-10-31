@@ -1,20 +1,20 @@
 language: python
 python:
-    - "2.7"
-    - "3.3"
-    - "3.4"
-    - "3.5"
-    - "3.6"
-    - "3.7"
-    - "3.8"
-    - "3.9-dev"
+  - "2.7"
+  - "3.4"
+  - "3.5"
+  - "3.6"
+  - "3.7"
+  - "3.8"
+  - "3.9"
+  - "3.10-dev"
 
 matrix:
   allow_failures:
-    - python: "3.3"
+    - python: "3.10-dev"
 
-install: pip install tox
-before_script: 
-    - .travis/bump_version ./ minor > atlassian/VERSION
+install: pip install tox-travis
+before_script:
+  - .travis/bump_version ./ minor > atlassian/VERSION
 script:
-    - tox
+  - tox

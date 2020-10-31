@@ -141,7 +141,6 @@ Manage projects
     # Use 'expand' to get details (default is None)  possible values are notificationSchemeEvents,user,group,projectRole,field,all
     jira.get_priority_scheme_of_project(project_key_or_id, expand=None)
 
-
 Manage issues
 -------------
 
@@ -208,7 +207,6 @@ Manage issues
     # Delete Issue Links
     jira.delete_issue_remote_link_by_id(issue_key, link_id)
 
-
 Manage Boards
 -------------
 
@@ -222,7 +220,6 @@ Manage Boards
 
     # Add/Move Issues to sprint
     jira.add_issues_to_sprint(sprint_id, issues_list)
-
 
 Attachments actions
 -------------------
@@ -269,7 +266,6 @@ Issue link types
                     "inward": "Duplicated by",
                     "outward": "Duplicates"
                 }
-
     """
 
     # Get issue link type by id
