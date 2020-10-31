@@ -5,11 +5,11 @@ from pprint import pprint
 from atlassian import Jira
 
 jira = Jira(
-    url='http://localhost:8080',
-    username='admin',
-    password='admin',
+    url="http://localhost:8080",
+    username="admin",
+    password="admin",
     # You can use it without advanced mode.
-    advanced_mode=True
+    advanced_mode=True,
 )
 
 logging.basicConfig(level=logging.DEBUG)

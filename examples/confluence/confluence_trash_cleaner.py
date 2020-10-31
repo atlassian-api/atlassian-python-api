@@ -3,10 +3,7 @@ from atlassian import Confluence
 
 """This example shows how to remove page by page from trash for all spaces"""
 
-confluence = Confluence(
-    url='http://localhost:8090',
-    username='admin',
-    password='admin')
+confluence = Confluence(url="http://localhost:8090", username="admin", password="admin")
 
 
 def clean_pages_from_space(space_key, limit=500):
@@ -18,15 +15,19 @@ def clean_pages_from_space(space_key, limit=500):
     """
     flag = True
     while flag:
-        values = confluence.get_all_pages_from_space_trash(space=space_key, start=0, limit=limit, content_type='page')
+        values = confluence.get_all_pages_from_space_trash(
+            space=space_key, start=0, limit=limit, content_type="page"
+        )
         if not values or len(values) == 0:
             flag = False
             print("For space {} trash is empty".format(space_key))
         else:
-            print("Found in space {} pages as trashed {}".format(space_key, len(values)))
+            print(
+                "Found in space {} pages as trashed {}".format(space_key, len(values))
+            )
             for value in values:
-                print("Removing page with title: " + value['title'])
-                confluence.remove_page_from_trash(value['id'])
+                print("Removing page with title: " + value["title"])
+                confluence.remove_page_from_trash(value["id"])
 
 
 def clean_blog_posts_from_space(space_key, limit=500):
@@ -38,13 +39,16 @@ def clean_blog_posts_from_space(space_key, limit=500):
     """
     flag = True
     while flag:
-        values = confluence.get_all_pages_from_space_trash(space=space_key, start=0, limit=limit,
-                                                           content_type='blogpost')
+        values = confluence.get_all_pages_from_space_trash(
+            space=space_key, start=0, limit=limit, content_type="blogpost"
+        )
         if values and len(values) > 0:
-            print("Found in space {} pages as trashed {}".format(space_key, len(values)))
+            print(
+                "Found in space {} pages as trashed {}".format(space_key, len(values))
+            )
             for value in values:
-                print("Removing page with title: " + value['title'])
-                confluence.remove_page_from_trash(value['id'])
+                print("Removing page with title: " + value["title"])
+                confluence.remove_page_from_trash(value["id"])
         else:
             flag = False
             print("For space {} trash is empty".format(space_key))
@@ -63,13 +67,13 @@ def clean_all_trash_pages_from_all_spaces():
         if space_lists and len(space_lists) != 0:
             i += 1
             for space_list in space_lists:
-                print("Start review the space with key = " + space_list['key'])
-                clean_pages_from_space(space_key=space_list['key'])
-                clean_blog_posts_from_space(space_key=space_list['key'])
+                print("Start review the space with key = " + space_list["key"])
+                clean_pages_from_space(space_key=space_list["key"])
+                clean_blog_posts_from_space(space_key=space_list["key"])
         else:
             flag = False
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     clean_all_trash_pages_from_all_spaces()

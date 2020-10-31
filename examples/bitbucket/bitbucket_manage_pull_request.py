@@ -1,10 +1,7 @@
 # coding=utf-8
 from atlassian import Bitbucket
 
-bitbucket = Bitbucket(
-    url='http://localhost:7990',
-    username='admin',
-    password='admin')
+bitbucket = Bitbucket(url="http://localhost:7990", username="admin", password="admin")
 pr_id = 12345
 
 pr = bitbucket.get_pullrequest("project_name", "repository_name", pr_id)
@@ -21,7 +18,9 @@ print("Reopen: {}".format(response))
 ver = response.json().get("version")
 print("PR version: {}".format(ver))
 
-response = bitbucket.is_pull_request_can_be_merged("project_name", "repository_name", pr_id)
+response = bitbucket.is_pull_request_can_be_merged(
+    "project_name", "repository_name", pr_id
+)
 print("Reopen: {}".format(response))
 print("PR version: {}".format(ver))
 

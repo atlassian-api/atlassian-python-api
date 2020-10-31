@@ -9,16 +9,24 @@ REMAINED_PAGE_HISTORY_COUNT = 1
 
 def page_version_remover(content_id, remained_page_numbers):
     response = confluence.get_content_history(content_id)
-    if not response or not response.get('latest'):
+    if not response or not response.get("latest"):
         return
-    latest_version_count = int(response.get('lastUpdated').get('number'))
+    latest_version_count = int(response.get("lastUpdated").get("number"))
     if len(response) > 0 and latest_version_count > remained_page_numbers:
-        print("Number of {} latest version {}".format(
-            confluence.url_joiner(confluence.url, "/pages/viewpage.action?pageId=" + content_id), latest_version_count))
-        for version_page_counter in range(1, (latest_version_count - remained_page_numbers + 1), 1):
+        print(
+            "Number of {} latest version {}".format(
+                confluence.url_joiner(
+                    confluence.url, "/pages/viewpage.action?pageId=" + content_id
+                ),
+                latest_version_count,
+            )
+        )
+        for version_page_counter in range(
+            1, (latest_version_count - remained_page_numbers + 1), 1
+        ):
             confluence.remove_content_history(content_id, 1)
     else:
-        print('Number of page history smaller than remained')
+        print("Number of page history smaller than remained")
 
 
 def get_all_page_ids_from_space(space):
@@ -32,15 +40,17 @@ def get_all_page_ids_from_space(space):
     content_ids = []
 
     while flag:
-        values = confluence.get_all_pages_from_space(space=space, start=limit * step, limit=limit)
+        values = confluence.get_all_pages_from_space(
+            space=space, start=limit * step, limit=limit
+        )
         step += 1
         if len(values) == 0:
             flag = False
             print("Did not find any pages, please, check permissions")
         else:
             for value in values:
-                print("Retrieve page with title: " + value['title'])
-                content_ids.append((value['id']))
+                print("Retrieve page with title: " + value["title"])
+                content_ids.append((value["id"]))
     print("Found in space {} pages {}".format(space, len(content_ids)))
     return content_ids
 
@@ -55,8 +65,8 @@ def get_all_spaces():
         if space_lists and len(space_lists) != 0:
             i += 1
             for space_list in space_lists:
-                print("Start review the space with key = " + space_list['key'])
-                space_key_list.append(space_list['key'])
+                print("Start review the space with key = " + space_list["key"])
+                space_key_list.append(space_list["key"])
         else:
             flag = False
 
@@ -68,12 +78,12 @@ def reduce_page_numbers(page_id, remained_page_history_count):
     return
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     confluence = Confluence(
         url=CONFLUENCE_URL,
         username=CONFLUENCE_LOGIN,
         password=CONFLUENCE_PASSWORD,
-        timeout=190
+        timeout=190,
     )
     space_keys = get_all_spaces()
     counter = 0
@@ -81,4 +91,6 @@ if __name__ == '__main__':
         print("Starting review space with key {}".format(space_key))
         page_ids = get_all_page_ids_from_space(space_key)
         for page_id in page_ids:
-            reduce_page_numbers(page_id=page_id, remained_page_history_count=REMAINED_PAGE_HISTORY_COUNT)
+            reduce_page_numbers(
+                page_id=page_id, remained_page_history_count=REMAINED_PAGE_HISTORY_COUNT
+            )

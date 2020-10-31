@@ -14,7 +14,8 @@ confluence = Confluence(
     url=CONFLUENCE_URL,
     username=CONFLUENCE_LOGIN,
     password=CONFLUENCE_PASSWORD,
-    timeout=180)
+    timeout=180,
+)
 
 confluence.allow_redirects = False
 pprint(confluence.get_space_permissions("DOC"))

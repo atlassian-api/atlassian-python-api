@@ -6,10 +6,8 @@ For all possible arguments and values please visit:
 https://docs.atlassian.com/bitbucket-server/rest/latest/bitbucket-ref-restriction-rest.html
 """
 bitbucket = Bitbucket(
-    url='http://localhost:7990',
-    username='admin',
-    password='admin',
-    advanced_mode=True)  # For more simple response handling
+    url="http://localhost:7990", username="admin", password="admin", advanced_mode=True
+)  # For more simple response handling
 
 single_permission = bitbucket.set_branches_permissions(
     "PROJECT_KEY",
@@ -17,7 +15,7 @@ single_permission = bitbucket.set_branches_permissions(
     matcher_value="master",
     permission_type="no-deletes",
     repository_slug="repository_name",
-    except_users=["user1", "user2"]
+    except_users=["user1", "user2"],
 )
 print(single_permission)
 pid = single_permission.json().get("id")
@@ -34,39 +32,27 @@ multiplpe_permissions_payload = [
         "matcher": {
             "id": "master",
             "displayId": "master",
-            "type": {
-                "id": "BRANCH",
-                "name": "Branch"
-            },
-            "active": True
+            "type": {"id": "BRANCH", "name": "Branch"},
+            "active": True,
         },
         "users": [
             "user1",
         ],
-        "groups": [
-
-        ],
-        "accessKeys": []
+        "groups": [],
+        "accessKeys": [],
     },
     {
         "type": "pull-request-only",
         "matcher": {
             "id": "refs/tags/**",
             "displayId": "refs/tags/**",
-            "type": {
-                "id": "PATTERN",
-                "name": "Pattern"
-            },
-            "active": True
+            "type": {"id": "PATTERN", "name": "Pattern"},
+            "active": True,
         },
-        "users": [
-            "user2"
-        ],
-        "groups": [
-
-        ],
-        "accessKeys": []
-    }
+        "users": ["user2"],
+        "groups": [],
+        "accessKeys": [],
+    },
 ]
 multiple_permissions = bitbucket.set_branches_permissions(
     "PROJECT_KEY",
@@ -75,6 +61,6 @@ multiple_permissions = bitbucket.set_branches_permissions(
     matcher_value="master",
     permission_type="no-deletes",
     repository_slug="repository_name",
-    except_users=["user1", "user2"]
+    except_users=["user1", "user2"],
 )
 print(multiple_permissions)

@@ -2,15 +2,14 @@
 from atlassian import Jira
 
 jira = Jira(
-    url="https://jira.example.com/",
-    username='gonchik.tsymzhitov',
-    password='admin')
+    url="https://jira.example.com/", username="gonchik.tsymzhitov", password="admin"
+)
 
-jira.issue_create(fields={
-    'project': {'key': 'TEST'},
-    'issuetype': {
-        "name": "Task"
-    },
-    'summary': 'test rest',
-    'description': 'rest rest',
-})
+jira.issue_create(
+    fields={
+        "project": {"key": "TEST"},
+        "issuetype": {"name": "Task"},
+        "summary": "test rest",
+        "description": "rest rest",
+    }
+)

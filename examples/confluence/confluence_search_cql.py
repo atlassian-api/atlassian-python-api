@@ -5,10 +5,7 @@ from atlassian import Confluence
    More detail documentation located here https://developer.atlassian.com/server/confluence/advanced-searching-using-cql
 """
 
-confluence = Confluence(
-    url='http://localhost:8090',
-    username='admin',
-    password='admin')
+confluence = Confluence(url="http://localhost:8090", username="admin", password="admin")
 
 WORD = "componentname"
 
@@ -21,7 +18,7 @@ def search_word(word):
     """
     cql = "siteSearch ~ {} order by created".format(word)
     answers = confluence.cql(cql)
-    for answer in answers.get('results'):
+    for answer in answers.get("results"):
         print(answer)
 
 
@@ -33,11 +30,11 @@ def search_word_in_space(space, word):
     :return: json answer
     """
     cql = "space.key={} and (text ~ {})".format(space, word)
-    answers = confluence.cql(cql, expand='space,body.view')
-    for answer in answers.get('results'):
+    answers = confluence.cql(cql, expand="space,body.view")
+    for answer in answers.get("results"):
         print(answer)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     search_word(word=WORD)
     search_word_in_space(space="TST", word=WORD)

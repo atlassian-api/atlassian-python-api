@@ -2,9 +2,8 @@
 from atlassian import Jira
 
 jira = Jira(
-    url="http://localhost:8080/",
-    username="jira-administrator",
-    password="admin")
+    url="http://localhost:8080/", username="jira-administrator", password="admin"
+)
 
 components = ["Data Base", "HTML", "JavaScript"]
 
@@ -20,4 +19,4 @@ for i in jira.get_all_projects(included_archived=None):
             print("Creating in project {} ".format(i["key"]))
             comp = {"project": i["key"], "name": j}
             jira.create_component(comp)
-            print("{} - component created ".format(comp.get('name')))
+            print("{} - component created ".format(comp.get("name")))

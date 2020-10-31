@@ -3,14 +3,11 @@ import os
 
 from atlassian import Bamboo
 
-BAMBOO_URL = os.environ.get('BAMBOO_URL', 'http://localhost:8085')
-ATLASSIAN_USER = os.environ.get('ATLASSIAN_USER', 'admin')
-ATLASSIAN_PASSWORD = os.environ.get('ATLASSIAN_PASSWORD', 'admin')
+BAMBOO_URL = os.environ.get("BAMBOO_URL", "http://localhost:8085")
+ATLASSIAN_USER = os.environ.get("ATLASSIAN_USER", "admin")
+ATLASSIAN_PASSWORD = os.environ.get("ATLASSIAN_PASSWORD", "admin")
 
-bamboo = Bamboo(
-    url=BAMBOO_URL,
-    username=ATLASSIAN_USER,
-    password=ATLASSIAN_PASSWORD)
+bamboo = Bamboo(url=BAMBOO_URL, username=ATLASSIAN_USER, password=ATLASSIAN_PASSWORD)
 
 # Methods in plural (projects, plans, results...) return a generator that iterates through
 # all results without the need of dealing need with pagination
@@ -19,7 +16,7 @@ bamboo = Bamboo(
 #    print(project)
 
 
-for branch in bamboo.plan_branches('PROJ-SP2'):
+for branch in bamboo.plan_branches("PROJ-SP2"):
     print(branch)
 
 # for result in bamboo.latest_results():
@@ -34,6 +31,6 @@ for branch in bamboo.plan_branches('PROJ-SP2'):
 
 # Methods in singular (project, plan, result...) return a single dictionary
 
-print(bamboo.project('FOO'))
+print(bamboo.project("FOO"))
 
-print(bamboo.build_result('FOO-BAR-1'))
+print(bamboo.build_result("FOO-BAR-1"))

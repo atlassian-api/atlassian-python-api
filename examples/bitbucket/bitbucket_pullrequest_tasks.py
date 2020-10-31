@@ -1,10 +1,7 @@
 # coding=utf-8
 from atlassian import Bitbucket
 
-bitbucket = Bitbucket(
-    url='http://localhost:7990',
-    username='admin',
-    password='admin')
+bitbucket = Bitbucket(url="http://localhost:7990", username="admin", password="admin")
 
 # Get all tasks for a pull-request by pull_request_id
 data = bitbucket.get_tasks("project_name", "repository_name", "pull_request_id")

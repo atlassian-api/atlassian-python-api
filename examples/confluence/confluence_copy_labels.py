@@ -15,7 +15,7 @@ confluence = Confluence(
     url=CONFLUENCE_URL,
     username=CONFLUENCE_LOGIN,
     password=CONFLUENCE_PASSWORD,
-    timeout=185
+    timeout=185,
 )
 
 
@@ -44,17 +44,24 @@ def sync_labels_pages(pages, destination_space):
     return
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     # Setting the logging level. INFO|ERROR|DEBUG are the most common.
     logging.basicConfig(level=logging.INFO)
     # Initialize argparse module with some program name and additional information
     parser = argparse.ArgumentParser(
         prog="confluence_copy_labes_between_spaces",
-        description="Simple execution for sync labels between 2 spaces"
+        description="Simple execution for sync labels between 2 spaces",
     )
-    parser.add_argument("--source", dest="source", default="SOURCESPACE", help="Just Source Space")
-    parser.add_argument("--destination", dest="destination", default="DESTINATIONSPACE", help="Just Destination Space")
+    parser.add_argument(
+        "--source", dest="source", default="SOURCESPACE", help="Just Source Space"
+    )
+    parser.add_argument(
+        "--destination",
+        dest="destination",
+        default="DESTINATIONSPACE",
+        help="Just Destination Space",
+    )
     parser.add_argument("--dry-run", dest="dry_run", action="store_true")
     args = parser.parse_args()
     SOURCE_SPACE = args.source
@@ -66,9 +73,13 @@ if __name__ == '__main__':
     flag = True
     step = 0
     while flag:
-        values = confluence.get_all_pages_from_space(SOURCE_SPACE, step * limit, limit=limit,
-                                                     status="current",
-                                                     content_type="page")
+        values = confluence.get_all_pages_from_space(
+            SOURCE_SPACE,
+            step * limit,
+            limit=limit,
+            status="current",
+            content_type="page",
+        )
         step += 1
         if len(values) == 0:
             flag = False

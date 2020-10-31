@@ -12,12 +12,14 @@ class Bitbucket(AtlassianRestAPI):
     bulk_headers = {"Content-Type": "application/vnd.atl.bitbucket.bulk+json"}
 
     def __init__(self, url, *args, **kwargs):
-        if 'cloud' not in kwargs and ('bitbucket.org' in url):
-            kwargs['cloud'] = True
-        if 'api_version' not in kwargs:
-            kwargs['api_version'] = '2.0' if 'cloud' in kwargs and kwargs['cloud'] else '1.0'
-        if 'cloud' in kwargs:
-            kwargs['api_root'] = '' if 'api.bitbucket.org' in url else 'api'
+        if "cloud" not in kwargs and ("bitbucket.org" in url):
+            kwargs["cloud"] = True
+        if "api_version" not in kwargs:
+            kwargs["api_version"] = (
+                "2.0" if "cloud" in kwargs and kwargs["cloud"] else "1.0"
+            )
+        if "cloud" in kwargs:
+            kwargs["api_root"] = "" if "api.bitbucket.org" in url else "api"
         super(Bitbucket, self).__init__(url, *args, **kwargs)
 
     def _get_paged(self, url, params):
@@ -31,33 +33,33 @@ class Bitbucket(AtlassianRestAPI):
         if self.advanced_mode:
             return self.get(url, params=params)
 
-        if 'values' not in response:
+        if "values" not in response:
             return []
-        values = (response or {}).get('values', [])
-        limit = params.get('limit')
+        values = (response or {}).get("values", [])
+        limit = params.get("limit")
         if self.cloud:
             while True:
                 next_page = response.get("next")
                 if next_page is None:
                     break
                 if limit is not None:
-                    params['limit'] = limit - len(values)
-                    if params['limit'] < 0:
+                    params["limit"] = limit - len(values)
+                    if params["limit"] < 0:
                         break
 
                 # Strip the base url - it's added when constructing the request
                 response = self.get(next_page.replace(self.url, ""))
-                values += (response or {}).get('values', [])
+                values += (response or {}).get("values", [])
 
         else:
-            while not response.get('isLastPage'):
+            while not response.get("isLastPage"):
                 if limit is not None:
-                    params['limit'] = limit - len(values)
-                    if params['limit'] < 0:
+                    params["limit"] = limit - len(values)
+                    if params["limit"] < 0:
                         break
-                params['start'] = response.get('nextPageStart')
+                params["start"] = response.get("nextPageStart")
                 response = self.get(url, params=params)
-                values += (response or {}).get('values', [])
+                values += (response or {}).get("values", [])
 
         return values
 
@@ -69,7 +71,7 @@ class Bitbucket(AtlassianRestAPI):
         :return:
         """
 
-        url = self.resource_url('markup/preview')
+        url = self.resource_url("markup/preview")
         return self.post(url, data=data)
 
     ################################################################################################
@@ -77,7 +79,7 @@ class Bitbucket(AtlassianRestAPI):
     ################################################################################################
 
     def _url_admin(self, api_version=None):
-        return self.resource_url('admin', api_version=api_version)
+        return self.resource_url("admin", api_version=api_version)
 
     def group_members(self, group, start=0, limit=None):
         """
@@ -87,14 +89,14 @@ class Bitbucket(AtlassianRestAPI):
         :return: A list of group members
         """
 
-        url = '{}/groups/more-members'.format(self._url_admin)
+        url = "{}/groups/more-members".format(self._url_admin)
         params = {}
         if start:
-            params['start'] = start
+            params["start"] = start
         if limit:
-            params['limit'] = limit
+            params["limit"] = limit
         if group:
-            params['context'] = group
+            params["context"] = group
         return self._get_paged(url, params=params)
 
     def all_project_administrators(self):
@@ -104,19 +106,28 @@ class Bitbucket(AtlassianRestAPI):
         :return: A generator object containing a map with the project_key, project_name and project_administrators
         """
         for project in self.project_list():
-            log.info('Processing project: {0} - {1}'.format(project.get('key'), project.get('name')))
+            log.info(
+                "Processing project: {0} - {1}".format(
+                    project.get("key"), project.get("name")
+                )
+            )
             yield {
-                'project_key': project.get('key'),
-                'project_name': project.get('name'),
-                'project_administrators': [{'email': x['emailAddress'], 'name': x['displayName']}
-                                           for x in self.project_users_with_administrator_permissions(project['key'])]}
+                "project_key": project.get("key"),
+                "project_name": project.get("name"),
+                "project_administrators": [
+                    {"email": x["emailAddress"], "name": x["displayName"]}
+                    for x in self.project_users_with_administrator_permissions(
+                        project["key"]
+                    )
+                ],
+            }
 
     def reindex(self):
         """
         Rebuild the bundled Elasticsearch indexes for Bitbucket Server
         :return:
         """
-        url = self.resource_url('sync', api_root='indexing', api_version='latest')
+        url = self.resource_url("sync", api_root="indexing", api_version="latest")
         return self.post(url)
 
     def check_reindexing_status(self):
@@ -124,7 +135,7 @@ class Bitbucket(AtlassianRestAPI):
         Check reindexing status
         :return:
         """
-        url = self.resource_url('status', api_root='indexing', api_version='latest')
+        url = self.resource_url("status", api_root="indexing", api_version="latest")
         return self.get(url)
 
     def get_users(self, user_filter=None):
@@ -133,10 +144,10 @@ class Bitbucket(AtlassianRestAPI):
         Use 'user_filter' for get specific users.
         :user_filter: str
         """
-        url = self.resource_url('users', api_version='1.0')
+        url = self.resource_url("users", api_version="1.0")
         params = {}
         if user_filter:
-            params['filter'] = user_filter
+            params["filter"] = user_filter
         return self.get(url, params=params)
 
     def get_users_info(self, user_filter=None, start=0, limit=25):
@@ -148,14 +159,14 @@ class Bitbucket(AtlassianRestAPI):
         :param start:
         :return:
         """
-        url = '{}/users'.format(self._url_admin(api_version='1.0'))
+        url = "{}/users".format(self._url_admin(api_version="1.0"))
         params = {}
         if limit:
-            params['limit'] = limit
+            params["limit"] = limit
         if start:
-            params['start'] = start
+            params["start"] = start
         if user_filter:
-            params['filter'] = user_filter
+            params["filter"] = user_filter
         return self._get_paged(url, params=params)
 
     def get_current_license(self):
@@ -168,11 +179,11 @@ class Bitbucket(AtlassianRestAPI):
         are not permitted to access license details.
         :return:
         """
-        url = '{}/license'.format(self._url_admin())
+        url = "{}/license".format(self._url_admin())
         return self.get(url)
 
     def _url_mail_server(self):
-        return '{}/mail-server'.format(self._url_admin())
+        return "{}/mail-server".format(self._url_admin())
 
     def get_mail_configuration(self):
         """
@@ -184,7 +195,7 @@ class Bitbucket(AtlassianRestAPI):
         return self.get(url)
 
     def _url_mail_server_sender_address(self):
-        return '{}/sender-address'.format(self._url_mail_server())
+        return "{}/sender-address".format(self._url_mail_server())
 
     def get_mail_sender_address(self):
         """
@@ -208,7 +219,7 @@ class Bitbucket(AtlassianRestAPI):
         Retrieve ssh settings for user
         :return:
         """
-        url = self.resource_url('settings')
+        url = self.resource_url("settings")
         return self.get(url)
 
     def health_check(self):
@@ -218,10 +229,10 @@ class Bitbucket(AtlassianRestAPI):
         :return:
         """
         # check as Troubleshooting & Support Tools Plugin
-        response = self.get('rest/troubleshooting/1.0/check/')
+        response = self.get("rest/troubleshooting/1.0/check/")
         if not response:
             # check as support tools
-            response = self.get('rest/supportHealthCheck/1.0/check/')
+            response = self.get("rest/supportHealthCheck/1.0/check/")
         return response
 
     def get_associated_build_statuses(self, commit):
@@ -230,11 +241,13 @@ class Bitbucket(AtlassianRestAPI):
         :commit: str- commit id
         :return:
         """
-        url = self.resource_url('commits/{commitId}'.format(commitId=commit), api_root='build-status')
+        url = self.resource_url(
+            "commits/{commitId}".format(commitId=commit), api_root="build-status"
+        )
         return self.get(url)
 
     def _url_announcement_banner(self):
-        return '{}/banner'.format(self._url_admin())
+        return "{}/banner".format(self._url_admin())
 
     def get_announcement_banner(self):
         """
@@ -273,13 +286,14 @@ class Bitbucket(AtlassianRestAPI):
         :param plugin_path:
         :return:
         """
-        upm_token = \
-            self.request(method='GET', path='rest/plugins/1.0/', headers=self.no_check_headers, trailing=True).headers[
-                'upm-token']
-        url = 'rest/plugins/1.0/?token={}'.format(upm_token)
-        files = {
-            'plugin': open(plugin_path, 'rb')
-        }
+        upm_token = self.request(
+            method="GET",
+            path="rest/plugins/1.0/",
+            headers=self.no_check_headers,
+            trailing=True,
+        ).headers["upm-token"]
+        url = "rest/plugins/1.0/?token={}".format(upm_token)
+        files = {"plugin": open(plugin_path, "rb")}
         return self.post(url, files=files, headers=self.no_check_headers)
 
     ################################################################################################
@@ -287,7 +301,7 @@ class Bitbucket(AtlassianRestAPI):
     ################################################################################################
 
     def _url_projects(self, api_root=None, api_version=None):
-        return self.resource_url('projects', api_root, api_version)
+        return self.resource_url("projects", api_root, api_version)
 
     def project_list(self, start=0, limit=None):
         """
@@ -298,9 +312,9 @@ class Bitbucket(AtlassianRestAPI):
         url = self._url_projects()
         params = {}
         if start:
-            params['start'] = start
+            params["start"] = start
         if limit:
-            params['limit'] = limit
+            params["limit"] = limit
         return self._get_paged(url, params=params)
 
     def create_project(self, key, name, description=""):
@@ -313,10 +327,7 @@ class Bitbucket(AtlassianRestAPI):
         :return: The value of the post request.
         """
         url = self._url_projects()
-        data = {"key": key,
-                "name": name,
-                "description": description
-                }
+        data = {"key": key, "name": name, "description": description}
         return self.post(url, data=data)
 
     ################################################################################################
@@ -324,7 +335,7 @@ class Bitbucket(AtlassianRestAPI):
     ################################################################################################
 
     def _url_project(self, project_key, api_root=None, api_version=None):
-        return '{}/{}'.format(self._url_projects(api_root, api_version), project_key)
+        return "{}/{}".format(self._url_projects(api_root, api_version), project_key)
 
     def project(self, key):
         """
@@ -343,8 +354,10 @@ class Bitbucket(AtlassianRestAPI):
         :return: None if the project does not exist, else the value of the put request.
         """
         data = self.project(key)
-        if 'errors' in data:
-            log.debug('Failed to update project: {0}: Unable to read project'.format(key))
+        if "errors" in data:
+            log.debug(
+                "Failed to update project: {0}: Unable to read project".format(key)
+            )
             return None
         else:
             data.update(params)
@@ -352,7 +365,7 @@ class Bitbucket(AtlassianRestAPI):
             return self.put(url, data=data)
 
     def _url_project_avatar(self, project_key):
-        return '{}/avatar.png'.format(self._url_project(project_key))
+        return "{}/avatar.png".format(self._url_project(project_key))
 
     def project_summary(self, key):
         """
@@ -362,13 +375,14 @@ class Bitbucket(AtlassianRestAPI):
         :return: Map with the project information
         """
         return {
-            'key': key,
-            'data': self.project(key),
-            'users': self.project_users(key),
-            'groups': self.project_groups(key),
-            'avatar': self.project_avatar(key)}
+            "key": key,
+            "data": self.project(key),
+            "users": self.project_users(key),
+            "groups": self.project_groups(key),
+            "avatar": self.project_avatar(key),
+        }
 
-    def project_avatar(self, key, content_type='image/png'):
+    def project_avatar(self, key, content_type="image/png"):
         """
         Get project avatar
         :param key: The project key
@@ -378,12 +392,12 @@ class Bitbucket(AtlassianRestAPI):
         """
         url = self._url_project_avatar(key)
         headers = dict(self.default_headers)
-        headers['Accept'] = content_type
-        headers['X-Atlassian-Token'] = 'no-check'
+        headers["Accept"] = content_type
+        headers["X-Atlassian-Token"] = "no-check"
 
         return self.get(url, not_json_response=True, headers=headers)
 
-    def set_project_avatar(self, key, icon, content_type='image/png'):
+    def set_project_avatar(self, key, icon, content_type="image/png"):
         """
         Set project avatar
         :param key: The Project key
@@ -393,8 +407,8 @@ class Bitbucket(AtlassianRestAPI):
         :return: Value of post request
         """
         url = self._url_project_avatar(key)
-        headers = {'X-Atlassian-Token': 'no-check'}
-        files = {'avatar': ("avatar.png", icon, content_type)}
+        headers = {"X-Atlassian-Token": "no-check"}
+        files = {"avatar": ("avatar.png", icon, content_type)}
         return self.post(url, files=files, headers=headers)
 
     def project_keys(self, key, start=0, limit=None, filter_str=None):
@@ -404,18 +418,18 @@ class Bitbucket(AtlassianRestAPI):
         :param filter_str:  OPTIONAL: users filter string
         :return: The list of SSH access keys
         """
-        url = '{}/ssh'.format(self._url_project(key, api_root='keys'))
+        url = "{}/ssh".format(self._url_project(key, api_root="keys"))
         params = {}
         if start:
-            params['start'] = start
+            params["start"] = start
         if limit:
-            params['limit'] = limit
+            params["limit"] = limit
         if filter_str:
-            params['filter'] = filter_str
+            params["filter"] = filter_str
         return self._get_paged(url, params=params)
 
     def _url_project_users(self, project_key):
-        return '{}/permissions/users'.format(self._url_project(project_key))
+        return "{}/permissions/users".format(self._url_project(project_key))
 
     def project_users(self, key, start=0, limit=None, filter_str=None):
         """
@@ -427,11 +441,11 @@ class Bitbucket(AtlassianRestAPI):
         url = self._url_project_users(key)
         params = {}
         if start:
-            params['start'] = start
+            params["start"] = start
         if limit:
-            params['limit'] = limit
+            params["limit"] = limit
         if filter_str:
-            params['filter'] = filter_str
+            params["filter"] = filter_str
         return self._get_paged(url, params=params)
 
     def project_users_with_administrator_permissions(self, key):
@@ -440,8 +454,11 @@ class Bitbucket(AtlassianRestAPI):
         :param key: The project key
         :return: List of project administrators
         """
-        project_administrators = [user['user'] for user in self.project_users(key)
-                                  if user['permission'] == 'PROJECT_ADMIN']
+        project_administrators = [
+            user["user"]
+            for user in self.project_users(key)
+            if user["permission"] == "PROJECT_ADMIN"
+        ]
         for group in self.project_groups_with_administrator_permissions(key):
             for user in self.group_members(group):
                 project_administrators.append(user)
@@ -456,8 +473,7 @@ class Bitbucket(AtlassianRestAPI):
         :return:
         """
         url = self._url_project_users(project_key)
-        params = {'permission': permission,
-                  'name': username}
+        params = {"permission": permission, "name": username}
         return self.put(url, params=params)
 
     def project_remove_user_permissions(self, project_key, username):
@@ -471,11 +487,11 @@ class Bitbucket(AtlassianRestAPI):
         :return:
         """
         url = self._url_project_users(project_key)
-        params = {'name': username}
+        params = {"name": username}
         return self.delete(url, params=params)
 
     def _url_project_groups(self, project_key):
-        return '{}/permissions/groups'.format(self._url_project(project_key))
+        return "{}/permissions/groups".format(self._url_project(project_key))
 
     def project_groups(self, key, start=0, limit=None, filter_str=None):
         """
@@ -487,11 +503,11 @@ class Bitbucket(AtlassianRestAPI):
         url = self._url_project_groups(key)
         params = {}
         if start:
-            params['start'] = start
+            params["start"] = start
         if limit:
-            params['limit'] = limit
+            params["limit"] = limit
         if filter_str:
-            params['filter'] = filter_str
+            params["filter"] = filter_str
         return self._get_paged(url, params=params)
 
     def project_grant_group_permissions(self, project_key, group_name, permission):
@@ -503,8 +519,7 @@ class Bitbucket(AtlassianRestAPI):
         :return:
         """
         url = self._url_project_groups(project_key)
-        params = {'permission': permission,
-                  'name': group_name}
+        params = {"permission": permission, "name": group_name}
         return self.put(url, params=params)
 
     def project_remove_group_permissions(self, project_key, groupname):
@@ -519,13 +534,15 @@ class Bitbucket(AtlassianRestAPI):
         :return:
         """
         url = self._url_project_groups(project_key)
-        params = {'name': groupname}
+        params = {"name": groupname}
         return self.delete(url, params=params)
 
     def _url_project_conditions(self, project_key):
-        return '{}/conditions'.format(self._url_project(project_key,
-                                                        api_root='default-reviewers',
-                                                        api_version='1.0'))
+        return "{}/conditions".format(
+            self._url_project(
+                project_key, api_root="default-reviewers", api_version="1.0"
+            )
+        )
 
     def get_project_conditions(self, project_key):
         """
@@ -540,11 +557,13 @@ class Bitbucket(AtlassianRestAPI):
         return self.get(url) or {}
 
     def _url_project_condition(self, project_key, id_condition=None):
-        url = '{}/condition'.format(self._url_project(project_key,
-                                                      api_root='default-reviewers',
-                                                      api_version='1.0'))
+        url = "{}/condition".format(
+            self._url_project(
+                project_key, api_root="default-reviewers", api_version="1.0"
+            )
+        )
         if id_condition is not None:
-            url += '/{}'.format(id_condition)
+            url += "/{}".format(id_condition)
         return url
 
     def get_project_condition(self, project_key, id_condition):
@@ -613,7 +632,7 @@ class Bitbucket(AtlassianRestAPI):
         return self.delete(url) or {}
 
     def _url_repos(self, project_key, api_root=None, api_version=None):
-        return '{}/repos'.format(self._url_project(project_key, api_root, api_version))
+        return "{}/repos".format(self._url_project(project_key, api_root, api_version))
 
     def repo_list(self, project_key, start=0, limit=25):
         """
@@ -625,9 +644,9 @@ class Bitbucket(AtlassianRestAPI):
         url = self._url_repos(project_key)
         params = {}
         if start:
-            params['start'] = start
+            params["start"] = start
         if limit:
-            params['limit'] = limit
+            params["limit"] = limit
         return self._get_paged(url, params=params)
 
     def repo_all_list(self, project_key):
@@ -639,7 +658,9 @@ class Bitbucket(AtlassianRestAPI):
         url = self._url_repos(project_key)
         return self.repo_list(url, limit=None)
 
-    def create_repo(self, project_key, repository_slug, forkable=False, is_private=True):
+    def create_repo(
+        self, project_key, repository_slug, forkable=False, is_private=True
+    ):
         """Create a new repository.
 
         Requires an existing project in which this repository will be created. The only parameters which will be used
@@ -667,7 +688,7 @@ class Bitbucket(AtlassianRestAPI):
             "name": repository_slug,
             "scmId": "git",
             "forkable": forkable,
-            "is_private": is_private
+            "is_private": is_private,
         }
         return self.post(url, data=data)
 
@@ -676,7 +697,7 @@ class Bitbucket(AtlassianRestAPI):
     ################################################################################################
 
     def _url_repo(self, project_key, repo, api_root=None, api_version=None):
-        return '{}/{}'.format(self._url_repos(project_key, api_root, api_version), repo)
+        return "{}/{}".format(self._url_repos(project_key, api_root, api_version), repo)
 
     def reindex_repo(self, project_key, repository_slug):
         """
@@ -685,8 +706,11 @@ class Bitbucket(AtlassianRestAPI):
         :param repository_slug:
         :return:
         """
-        url = '{urlRepo}/sync'.format(
-            urlRepo=self._url_repo(project_key, repository_slug, api_root='indexing', api_version='1.0'))
+        url = "{urlRepo}/sync".format(
+            urlRepo=self._url_repo(
+                project_key, repository_slug, api_root="indexing", api_version="1.0"
+            )
+        )
         return self.post(url)
 
     def reindex_repo_dev_panel(self, project_key, repository_slug):
@@ -699,7 +723,9 @@ class Bitbucket(AtlassianRestAPI):
         :param repository_slug:
         :return:
         """
-        url = '{}/reindex'.format(self._url_repo(project_key, repository_slug, api_root='jira-dev'))
+        url = "{}/reindex".format(
+            self._url_repo(project_key, repository_slug, api_root="jira-dev")
+        )
         return self.post(url)
 
     def get_repo(self, project_key, repository_slug):
@@ -735,9 +761,9 @@ class Bitbucket(AtlassianRestAPI):
         url = self._url_repo(project_key, repository_slug)
         body = {}
         if new_repository_slug is not None:
-            body['name'] = new_repository_slug
+            body["name"] = new_repository_slug
         if new_repository_slug is not None:
-            body['project'] = {'key': project_key}
+            body["project"] = {"key": project_key}
         return self.post(url, data=body)
 
     def repo_keys(self, project_key, repo_key, start=0, limit=None, filter_str=None):
@@ -748,18 +774,18 @@ class Bitbucket(AtlassianRestAPI):
         :param filter_str:  OPTIONAL: users filter string
         :return:
         """
-        url = '{}/ssh'.format(self._url_repo(project_key, repo_key, api_root='keys'))
+        url = "{}/ssh".format(self._url_repo(project_key, repo_key, api_root="keys"))
         params = {}
         if start:
-            params['start'] = start
+            params["start"] = start
         if limit:
-            params['limit'] = limit
+            params["limit"] = limit
         if filter_str:
-            params['filter'] = filter_str
+            params["filter"] = filter_str
         return self._get_paged(url, params=params)
 
     def _url_repo_users(self, project_key, repo):
-        return '{}/permissions/users'.format(self._url_repo(project_key, repo))
+        return "{}/permissions/users".format(self._url_repo(project_key, repo))
 
     def repo_users(self, project_key, repo_key, start=0, limit=None, filter_str=None):
         """
@@ -772,11 +798,11 @@ class Bitbucket(AtlassianRestAPI):
         url = self._url_repo_users(project_key, repo_key)
         params = {}
         if start:
-            params['start'] = start
+            params["start"] = start
         if limit:
-            params['limit'] = limit
+            params["limit"] = limit
         if filter_str:
-            params['filter'] = filter_str
+            params["filter"] = filter_str
         return self._get_paged(url, params=params)
 
     def repo_grant_user_permissions(self, project_key, repo_key, username, permission):
@@ -789,8 +815,7 @@ class Bitbucket(AtlassianRestAPI):
         :return:
         """
         url = self._url_repo_users(project_key, repo_key)
-        params = {'permission': permission,
-                  'name': username}
+        params = {"permission": permission, "name": username}
         return self.put(url, params=params)
 
     def repo_remove_user_permissions(self, project_key, repo_key, username):
@@ -806,11 +831,11 @@ class Bitbucket(AtlassianRestAPI):
         :return:
         """
         url = self._url_repo_users(project_key, repo_key)
-        params = {'name': username}
+        params = {"name": username}
         return self.delete(url, params=params)
 
     def _url_repo_groups(self, project_key, repo):
-        return '{}/permissions/groups'.format(self._url_repo(project_key, repo))
+        return "{}/permissions/groups".format(self._url_repo(project_key, repo))
 
     def repo_groups(self, project_key, repo_key, start=0, limit=None, filter_str=None):
         """
@@ -823,11 +848,11 @@ class Bitbucket(AtlassianRestAPI):
         url = self._url_repo_groups(project_key, repo_key)
         params = {}
         if start:
-            params['start'] = start
+            params["start"] = start
         if limit:
-            params['limit'] = limit
+            params["limit"] = limit
         if filter_str:
-            params['filter'] = filter_str
+            params["filter"] = filter_str
         return self._get_paged(url, params=params)
 
     def project_groups_with_administrator_permissions(self, key):
@@ -836,9 +861,15 @@ class Bitbucket(AtlassianRestAPI):
         :param key:
         :return:
         """
-        return [group['group']['name'] for group in self.project_groups(key) if group['permission'] == 'PROJECT_ADMIN']
+        return [
+            group["group"]["name"]
+            for group in self.project_groups(key)
+            if group["permission"] == "PROJECT_ADMIN"
+        ]
 
-    def repo_grant_group_permissions(self, project_key, repo_key, groupname, permission):
+    def repo_grant_group_permissions(
+        self, project_key, repo_key, groupname, permission
+    ):
         """
         Grant the specified repository permission to an specific group
         Promote or demote a group's permission level for the specified repository. Available repository permissions are:
@@ -857,11 +888,12 @@ class Bitbucket(AtlassianRestAPI):
         :return:
         """
         url = self._url_repo_groups(project_key, repo_key)
-        params = {'permission': permission,
-                  'name': groupname}
+        params = {"permission": permission, "name": groupname}
         return self.put(url, params=params)
 
-    def repo_remove_group_permissions(self, project_key, repo_key, groupname, permission):
+    def repo_remove_group_permissions(
+        self, project_key, repo_key, groupname, permission
+    ):
         """
         Revoke all permissions for the specified repository for a group.
         The authenticated user must have REPO_ADMIN permission for the specified repository
@@ -874,16 +906,16 @@ class Bitbucket(AtlassianRestAPI):
         :return:
         """
         url = self._url_repo_groups(project_key, repo_key)
-        params = {'name': groupname}
+        params = {"name": groupname}
         if permission:
-            params['permission'] = permission
+            params["permission"] = permission
         return self.delete(url, params=params)
 
     def _url_repo_labels(self, project_key, repository_slug):
         if self.cloud:
             raise Exception("Not supported in Bitbucket Cloud")
 
-        return '{}/labels'.format(self._url_repo(project_key, repository_slug))
+        return "{}/labels".format(self._url_repo(project_key, repository_slug))
 
     def get_repo_labels(self, project_key, repository_slug):
         """
@@ -906,14 +938,25 @@ class Bitbucket(AtlassianRestAPI):
         :return:
         """
         url = self._url_repo_labels(project_key, repository_slug)
-        data = {'name': label_name}
+        data = {"name": label_name}
         return self.post(url, data=data)
 
     def _url_repo_branches(self, project_key, repository_slug, api_root=None):
-        return '{}/branches'.format(self._url_repo(project_key, repository_slug, api_root=api_root))
+        return "{}/branches".format(
+            self._url_repo(project_key, repository_slug, api_root=api_root)
+        )
 
-    def get_branches(self, project_key, repository_slug, base=None, filter=None, start=0, limit=None, details=True,
-                     order_by='MODIFICATION'):
+    def get_branches(
+        self,
+        project_key,
+        repository_slug,
+        base=None,
+        filter=None,
+        start=0,
+        limit=None,
+        details=True,
+        order_by="MODIFICATION",
+    ):
         """
         Retrieve the branches matching the supplied filterText param.
         The authenticated user must have REPO_READ permission for the specified repository to call this resource.
@@ -931,20 +974,22 @@ class Bitbucket(AtlassianRestAPI):
         url = self._url_repo_branches(project_key, repository_slug)
         params = {}
         if start:
-            params['start'] = start
+            params["start"] = start
         if limit:
-            params['limit'] = limit
+            params["limit"] = limit
         if filter:
-            params['filterText'] = filter
+            params["filterText"] = filter
         if base:
-            params['base'] = base
+            params["base"] = base
         if order_by:
-            params['orderBy'] = order_by
-        params['details'] = details
+            params["orderBy"] = order_by
+        params["details"] = details
         return self._get_paged(url, params=params)
 
     def _url_repo_default_branche(self, project_key, repository_slug):
-        return '{}/default'.format(self._url_repo_branches(project_key, repository_slug))
+        return "{}/default".format(
+            self._url_repo_branches(project_key, repository_slug)
+        )
 
     def get_default_branch(self, project_key, repository_slug):
         """
@@ -967,10 +1012,12 @@ class Bitbucket(AtlassianRestAPI):
         :return:
         """
         url = self._url_repo_default_branche(project_key, repository_slug)
-        data = {'id': ref_branch_name}
+        data = {"id": ref_branch_name}
         return self.put(url, data=data)
 
-    def create_branch(self, project_key, repository_slug, name, start_point, message=""):
+    def create_branch(
+        self, project_key, repository_slug, name, start_point, message=""
+    ):
         """Creates a branch using the information provided in the request.
 
         The authenticated user must have REPO_WRITE permission for the context repository to call this resource.
@@ -992,11 +1039,7 @@ class Bitbucket(AtlassianRestAPI):
         :rtype: requests.Response
         """
         url = self._url_repo_branches(project_key, repository_slug)
-        data = {
-            "name": name,
-            "startPoint": start_point,
-            "message": message
-        }
+        data = {"name": name, "startPoint": start_point, "message": message}
         return self.post(url, data=data)
 
     def delete_branch(self, project_key, repository_slug, name, end_point):
@@ -1009,17 +1052,27 @@ class Bitbucket(AtlassianRestAPI):
         :param end_point:
         :return:
         """
-        url = self._url_repo_branches(project_key, repository_slug, api_root='branch-utils')
+        url = self._url_repo_branches(
+            project_key, repository_slug, api_root="branch-utils"
+        )
         data = {"name": str(name), "endPoint": str(end_point)}
         return self.delete(url, data=data)
 
     def _url_repo_tags(self, project_key, repository_slug):
         if self.cloud:
-            return '{}/refs/tags'.format(self._url_repo(project_key, repository_slug))
+            return "{}/refs/tags".format(self._url_repo(project_key, repository_slug))
         else:
-            return '{}/tags'.format(self._url_repo(project_key, repository_slug))
+            return "{}/tags".format(self._url_repo(project_key, repository_slug))
 
-    def get_tags(self, project_key, repository_slug, filter='', limit=1000, order_by=None, start=0):
+    def get_tags(
+        self,
+        project_key,
+        repository_slug,
+        filter="",
+        limit=1000,
+        order_by=None,
+        start=0,
+    ):
         """
         Retrieve the tags matching the supplied filterText param.
         The authenticated user must have REPO_READ permission for the context repository to call this resource.
@@ -1035,13 +1088,13 @@ class Bitbucket(AtlassianRestAPI):
         url = self._url_repo_tags(project_key, repository_slug)
         params = {}
         if start:
-            params['start'] = start
+            params["start"] = start
         if limit:
-            params['limit'] = limit
+            params["limit"] = limit
         if filter:
-            params['filterText'] = filter
+            params["filterText"] = filter
         if order_by:
-            params['orderBy'] = order_by
+            params["orderBy"] = order_by
         return self._get_paged(url, params=params)
 
     def get_project_tags(self, project_key, repository_slug, tag_name):
@@ -1057,7 +1110,9 @@ class Bitbucket(AtlassianRestAPI):
         url = self._url_repo_tags(project_key, repository_slug)
         return self.get(url)
 
-    def set_tag(self, project_key, repository_slug, tag_name, commit_revision, description=None):
+    def set_tag(
+        self, project_key, repository_slug, tag_name, commit_revision, description=None
+    ):
         """
         Creates a tag using the information provided in the {@link RestCreateTagRequest request}
         The authenticated user must have REPO_WRITE permission for the context repository to call this resource.
@@ -1071,15 +1126,15 @@ class Bitbucket(AtlassianRestAPI):
         url = self._url_repo_tags(project_key, repository_slug)
         body = {}
         if tag_name is not None:
-            body['name'] = tag_name
+            body["name"] = tag_name
         if tag_name is not None:
-            body['startPoint'] = commit_revision
+            body["startPoint"] = commit_revision
         if tag_name is not None:
-            body['message'] = description
+            body["message"] = description
         return self.post(url, data=body)
 
     def _url_repo_tag(self, project_key, repository_slug, tag):
-        return '{}/{}'.format(self._url_repo_tags(project_key, repository_slug), tag)
+        return "{}/{}".format(self._url_repo_tags(project_key, repository_slug), tag)
 
     def delete_tag(self, project_key, repository_slug, tag_name):
         """
@@ -1094,7 +1149,9 @@ class Bitbucket(AtlassianRestAPI):
         return self.delete(url)
 
     def _url_pull_request_settings(self, project_key, repository_slug):
-        return '{}/settings/pull-requests'.format(self._url_repo(project_key, repository_slug))
+        return "{}/settings/pull-requests".format(
+            self._url_repo(project_key, repository_slug)
+        )
 
     def get_pull_request_settings(self, project_key, repository_slug):
         """
@@ -1119,12 +1176,24 @@ class Bitbucket(AtlassianRestAPI):
 
     def _url_pull_requests(self, project_key, repository_slug):
         if self.cloud:
-            return self.resource_url('repositories/{}/{}/pullrequests'.format(project_key, repository_slug))
+            return self.resource_url(
+                "repositories/{}/{}/pullrequests".format(project_key, repository_slug)
+            )
         else:
-            return '{}/pull-requests'.format(self._url_repo(project_key, repository_slug))
+            return "{}/pull-requests".format(
+                self._url_repo(project_key, repository_slug)
+            )
 
-    def get_pull_requests(self, project_key, repository_slug, state='OPEN', order='newest', limit=100, start=0,
-                          at=None):
+    def get_pull_requests(
+        self,
+        project_key,
+        repository_slug,
+        state="OPEN",
+        order="newest",
+        limit=100,
+        start=0,
+        at=None,
+    ):
         """
         Get pull requests
         :param project_key:
@@ -1140,19 +1209,29 @@ class Bitbucket(AtlassianRestAPI):
         url = self._url_pull_requests(project_key, repository_slug)
         params = {}
         if state:
-            params['state'] = state
+            params["state"] = state
         if limit:
-            params['limit'] = limit
+            params["limit"] = limit
         if start:
-            params['start'] = start
+            params["start"] = start
         if order:
-            params['order'] = order
+            params["order"] = order
         if at:
-            params['at'] = at
+            params["at"] = at
         return self._get_paged(url, params=params)
 
-    def open_pull_request(self, source_project, source_repo, dest_project, dest_repo, source_branch, destination_branch,
-                          title, description, reviewers=None):
+    def open_pull_request(
+        self,
+        source_project,
+        source_repo,
+        dest_project,
+        dest_repo,
+        source_branch,
+        destination_branch,
+        title,
+        description,
+        reviewers=None,
+    ):
         """
         Create a new pull request between two branches.
         The branches may be in the same repository_slug, or different ones.
@@ -1170,38 +1249,30 @@ class Bitbucket(AtlassianRestAPI):
         :return:
         """
         body = {
-            'title': title,
-            'description': description,
-            'fromRef': {
-                'id': source_branch,
-                'repository': {
-                    'slug': source_repo,
-                    'name': source_repo,
-                    'project': {
-                        'key': source_project
-                    }
-                }
+            "title": title,
+            "description": description,
+            "fromRef": {
+                "id": source_branch,
+                "repository": {
+                    "slug": source_repo,
+                    "name": source_repo,
+                    "project": {"key": source_project},
+                },
             },
-            'toRef': {
-                'id': destination_branch,
-                'repository': {
-                    'slug': dest_repo,
-                    'name': dest_repo,
-                    'project': {
-                        'key': dest_project
-                    }
-                }
+            "toRef": {
+                "id": destination_branch,
+                "repository": {
+                    "slug": dest_repo,
+                    "name": dest_repo,
+                    "project": {"key": dest_project},
+                },
             },
-            'reviewers': []
+            "reviewers": [],
         }
 
         def add_reviewer(reviewer_name):
-            entry = {
-                'user': {
-                    'name': reviewer_name
-                }
-            }
-            body['reviewers'].append(entry)
+            entry = {"user": {"name": reviewer_name}}
+            body["reviewers"].append(entry)
 
         if reviewers is not None:
             if isinstance(reviewers, str):
@@ -1223,7 +1294,9 @@ class Bitbucket(AtlassianRestAPI):
         return self.post(url, data=data)
 
     def _url_pull_request(self, project_key, repository_slug, pull_request_id):
-        return '{}/{}'.format(self._url_pull_requests(project_key, repository_slug), pull_request_id)
+        return "{}/{}".format(
+            self._url_pull_requests(project_key, repository_slug), pull_request_id
+        )
 
     def get_pull_request(self, project_key, repository_slug, pull_request_id):
         """
@@ -1244,7 +1317,9 @@ class Bitbucket(AtlassianRestAPI):
         """
         return self.get_pull_request(*args, **kwargs)
 
-    def delete_pull_request(self, project_key, repository_slug, pull_request_id, pull_request_version):
+    def delete_pull_request(
+        self, project_key, repository_slug, pull_request_id, pull_request_version
+    ):
         """
         Delete a pull request.
 
@@ -1255,10 +1330,12 @@ class Bitbucket(AtlassianRestAPI):
         :return:
         """
         url = self._url_pull_request(project_key, repository_slug, pull_request_id)
-        data = {'version': pull_request_version}
+        data = {"version": pull_request_version}
         return self.delete(url, data=data)
 
-    def get_pull_requests_activities(self, project_key, repository_slug, pull_request_id, start=0, limit=None):
+    def get_pull_requests_activities(
+        self, project_key, repository_slug, pull_request_id, start=0, limit=None
+    ):
         """
         Get pull requests activities
         :param project_key:
@@ -1267,15 +1344,19 @@ class Bitbucket(AtlassianRestAPI):
         :param start:
         :return:
         """
-        url = '{}/activities'.format(self._url_pull_request(project_key, repository_slug, pull_request_id))
+        url = "{}/activities".format(
+            self._url_pull_request(project_key, repository_slug, pull_request_id)
+        )
         params = {}
         if start:
-            params['start'] = start
+            params["start"] = start
         if limit:
-            params['limit'] = limit
+            params["limit"] = limit
         return self._get_paged(url, params)
 
-    def get_pull_requests_changes(self, project_key, repository_slug, pull_request_id, start=0, limit=None):
+    def get_pull_requests_changes(
+        self, project_key, repository_slug, pull_request_id, start=0, limit=None
+    ):
         """
         Get pull requests changes
         :param project_key:
@@ -1283,15 +1364,19 @@ class Bitbucket(AtlassianRestAPI):
         :param pull_request_id: the ID of the pull request within the repository
         :return:
         """
-        url = '{}/changes'.format(self._url_pull_request(project_key, repository_slug, pull_request_id))
+        url = "{}/changes".format(
+            self._url_pull_request(project_key, repository_slug, pull_request_id)
+        )
         params = {}
         if start:
-            params['start'] = start
+            params["start"] = start
         if limit:
-            params['limit'] = limit
+            params["limit"] = limit
         return self._get_paged(url, params)
 
-    def get_pull_requests_commits(self, project_key, repository_slug, pull_request_id, start=0, limit=None):
+    def get_pull_requests_commits(
+        self, project_key, repository_slug, pull_request_id, start=0, limit=None
+    ):
         """
         Get pull requests commits
         :param project_key:
@@ -1301,18 +1386,26 @@ class Bitbucket(AtlassianRestAPI):
         :limit
         :return:
         """
-        url = '{}/commits'.format(self._url_pull_request(project_key, repository_slug, pull_request_id))
+        url = "{}/commits".format(
+            self._url_pull_request(project_key, repository_slug, pull_request_id)
+        )
         params = {}
         if start:
-            params['start'] = start
+            params["start"] = start
         if limit:
-            params['limit'] = limit
+            params["limit"] = limit
         return self._get_paged(url, params)
 
-    def _url_pull_request_participants(self, project_key, repository_slug, pull_request_id):
-        return '{}/{}/participants'.format(self._url_pull_requests(project_key, repository_slug), pull_request_id)
+    def _url_pull_request_participants(
+        self, project_key, repository_slug, pull_request_id
+    ):
+        return "{}/{}/participants".format(
+            self._url_pull_requests(project_key, repository_slug), pull_request_id
+        )
 
-    def get_pull_requests_participants(self, project_key, repository_slug, pull_request_id, start=0, limit=None):
+    def get_pull_requests_participants(
+        self, project_key, repository_slug, pull_request_id, start=0, limit=None
+    ):
         """
         Get all participants of a pull request
         :param project_key:
@@ -1320,15 +1413,19 @@ class Bitbucket(AtlassianRestAPI):
         :param pull_request_id:
         :return:
         """
-        url = self._url_pull_request_participants(project_key, repository_slug, pull_request_id)
+        url = self._url_pull_request_participants(
+            project_key, repository_slug, pull_request_id
+        )
         params = {}
         if start:
-            params['start'] = start
+            params["start"] = start
         if limit:
-            params['limit'] = limit
+            params["limit"] = limit
         return self._get_paged(url, params)
 
-    def change_reviewed_status(self, project_key, repository_slug, pull_request_id, status, user_slug):
+    def change_reviewed_status(
+        self, project_key, repository_slug, pull_request_id, status, user_slug
+    ):
         """
         Change the current user's status for a pull request.
         Implicitly adds the user as a participant if they are not already.
@@ -1340,23 +1437,25 @@ class Bitbucket(AtlassianRestAPI):
         :param user_slug:
         :return:
         """
-        url = '{}/{}'.format(self._url_pull_request_participants(project_key, repository_slug, pull_request_id),
-                             user_slug)
+        url = "{}/{}".format(
+            self._url_pull_request_participants(
+                project_key, repository_slug, pull_request_id
+            ),
+            user_slug,
+        )
         approved = True if status == "APPROVED" else False
-        data = {
-            "user": {
-                "name": user_slug
-            },
-            "approved": approved,
-            "status": status
-        }
+        data = {"user": {"name": user_slug}, "approved": approved, "status": status}
         return self.put(url, data)
 
     def _url_pull_request_comments(self, project_key, repository_slug, pull_request_id):
-        url = '{}/comments'.format(self._url_pull_request(project_key, repository_slug, pull_request_id))
+        url = "{}/comments".format(
+            self._url_pull_request(project_key, repository_slug, pull_request_id)
+        )
         return url
 
-    def add_pull_request_comment(self, project_key, repository_slug, pull_request_id, text, parent_id=None):
+    def add_pull_request_comment(
+        self, project_key, repository_slug, pull_request_id, text, parent_id=None
+    ):
         """
         Add comment into pull request
         :param project_key:
@@ -1367,17 +1466,26 @@ class Bitbucket(AtlassianRestAPI):
 
         :return:
         """
-        url = self._url_pull_request_comments(project_key, repository_slug, pull_request_id)
-        body = {'text': text}
+        url = self._url_pull_request_comments(
+            project_key, repository_slug, pull_request_id
+        )
+        body = {"text": text}
         if parent_id:
-            body['parent'] = {'id': parent_id}
+            body["parent"] = {"id": parent_id}
         return self.post(url, data=body)
 
-    def _url_pull_request_comment(self, project_key, repository_slug, pull_request_id, comment_id):
-        url = '{}/{}'.format(self._url_pull_request(project_key, repository_slug, pull_request_id), comment_id)
+    def _url_pull_request_comment(
+        self, project_key, repository_slug, pull_request_id, comment_id
+    ):
+        url = "{}/{}".format(
+            self._url_pull_request(project_key, repository_slug, pull_request_id),
+            comment_id,
+        )
         return url
 
-    def get_pull_request_comment(self, project_key, repository_slug, pull_request_id, comment_id):
+    def get_pull_request_comment(
+        self, project_key, repository_slug, pull_request_id, comment_id
+    ):
         """
         Retrieves a pull request comment.
         The authenticated user must have REPO_READ permission
@@ -1388,11 +1496,20 @@ class Bitbucket(AtlassianRestAPI):
         :param comment_id: the ID of the comment to retrieve
         :return:
         """
-        url = self._url_pull_request_comment(project_key, repository_slug, pull_request_id, comment_id)
+        url = self._url_pull_request_comment(
+            project_key, repository_slug, pull_request_id, comment_id
+        )
         return self.get(url)
 
-    def update_pull_request_comment(self, project_key, repository_slug, pull_request_id, comment_id, comment,
-                                    comment_version):
+    def update_pull_request_comment(
+        self,
+        project_key,
+        repository_slug,
+        pull_request_id,
+        comment_id,
+        comment,
+        comment_version,
+    ):
         """
         Update the text of a comment.
         Only the user who created a comment may update it.
@@ -1401,11 +1518,10 @@ class Bitbucket(AtlassianRestAPI):
         that must match the server's version of the comment
         or the update will fail.
         """
-        url = self._url_pull_request_comment(project_key, repository_slug, pull_request_id, comment_id)
-        data = {
-            "version": comment_version,
-            "text": comment
-        }
+        url = self._url_pull_request_comment(
+            project_key, repository_slug, pull_request_id, comment_id
+        )
+        data = {"version": comment_version, "text": comment}
         return self.put(url, data=data)
 
     def decline_pull_request(self, project_key, repository_slug, pr_id, pr_version):
@@ -1423,7 +1539,7 @@ class Bitbucket(AtlassianRestAPI):
         url = self._url_pull_request(project_key, repository_slug, pr_id)
         params = {}
         if not self.cloud:
-            params['version'] = pr_version
+            params["version"] = pr_version
         return self.post(url, params=params)
 
     def get_tasks(self, project_key, repository_slug, pull_request_id):
@@ -1436,13 +1552,15 @@ class Bitbucket(AtlassianRestAPI):
         """
         if self.cloud:
             raise Exception("Not supported in Bitbucket Cloud")
-        url = '{}/tasks'.format(self._url_pull_request(project_key, repository_slug, pull_request_id))
+        url = "{}/tasks".format(
+            self._url_pull_request(project_key, repository_slug, pull_request_id)
+        )
         return self.get(url)
 
     def _url_tasks(self):
         if self.cloud:
             raise Exception("Not supported in Bitbucket Cloud")
-        return self.resource_url('tasks')
+        return self.resource_url("tasks")
 
     def add_task(self, anchor, text):
         """
@@ -1452,13 +1570,7 @@ class Bitbucket(AtlassianRestAPI):
         :return:
         """
         url = self._url_tasks()
-        data = {
-            "anchor": {
-                "id": anchor,
-                "type": "COMMENT"
-            },
-            "text": text
-        }
+        data = {"anchor": {"id": anchor, "type": "COMMENT"}, "text": text}
         return self.post(url, data=data)
 
     def _url_task(self, task_id):
@@ -1512,7 +1624,9 @@ class Bitbucket(AtlassianRestAPI):
         :param pr_id: 2341
         :return:
         """
-        url = '{}/merge'.format(self._url_pull_request(project_key, repository_slug, pr_id))
+        url = "{}/merge".format(
+            self._url_pull_request(project_key, repository_slug, pr_id)
+        )
         return self.get(url)
 
     def merge_pull_request(self, project_key, repository_slug, pr_id, pr_version):
@@ -1527,10 +1641,12 @@ class Bitbucket(AtlassianRestAPI):
         :param pr_version:
         :return:
         """
-        url = '{}/merge'.format(self._url_pull_request(project_key, repository_slug, pr_id))
+        url = "{}/merge".format(
+            self._url_pull_request(project_key, repository_slug, pr_id)
+        )
         params = {}
         if not self.cloud:
-            params['version'] = pr_version
+            params["version"] = pr_version
         return self.post(url, params=params)
 
     def reopen_pull_request(self, project_key, repository_slug, pr_id, pr_version):
@@ -1545,15 +1661,17 @@ class Bitbucket(AtlassianRestAPI):
         :param pr_version: 12
         :return:
         """
-        url = '{}/reopen'.format(self._url_pull_request(project_key, repository_slug, pr_id))
-        params = {'version': pr_version}
+        url = "{}/reopen".format(
+            self._url_pull_request(project_key, repository_slug, pr_id)
+        )
+        params = {"version": pr_version}
         return self.post(url, params=params)
 
     def _url_inbox_pull_requests(self):
-        return 'inbox/pull-requests'
+        return "inbox/pull-requests"
 
     def check_inbox_pull_requests_count(self):
-        url = '{}/count'.format(self._url_inbox_pull_requests())
+        url = "{}/count".format(self._url_inbox_pull_requests())
         return self.get(url)
 
     def check_inbox_pull_requests(self, start=0, limit=None, role=None):
@@ -1565,15 +1683,15 @@ class Bitbucket(AtlassianRestAPI):
         :return:
         """
         url = self._url_inbox_pull_requests()
-        params = {'start': start}
+        params = {"start": start}
         if limit:
-            params['limit'] = limit
+            params["limit"] = limit
         if role:
-            params['role'] = role
+            params["role"] = role
         return self.get(url, params=params)
 
     def _url_repo_compare(self, project_key, repository_slug):
-        url = '{}/compare'.format(self._url_repo(project_key, repository_slug))
+        url = "{}/compare".format(self._url_repo(project_key, repository_slug))
         return url
 
     def get_diff(self, project_key, repository_slug, path, hash_oldest, hash_newest):
@@ -1588,20 +1706,33 @@ class Bitbucket(AtlassianRestAPI):
         :param hash_newest: the target commit (can be a partial/full commit ID or qualified/unqualified ref name)
         :return:
         """
-        url = '{}/diff/{}'.format(self._url_repo_compare(project_key, repository_slug), path)
+        url = "{}/diff/{}".format(
+            self._url_repo_compare(project_key, repository_slug), path
+        )
         params = {}
         if hash_oldest:
-            params['from'] = hash_oldest
+            params["from"] = hash_oldest
         if hash_newest:
-            params['to'] = hash_newest
-        return (self.get(url, params=params) or {}).get('diffs')
+            params["to"] = hash_newest
+        return (self.get(url, params=params) or {}).get("diffs")
 
     def _url_commits(self, project_key, repository_slug):
-        return '{}/commits'.format(self._url_repo(project_key, repository_slug))
+        return "{}/commits".format(self._url_repo(project_key, repository_slug))
 
-    def get_commits(self, project_key, repository_slug, hash_oldest=None, hash_newest=None, follow_renames=False,
-                    ignore_missing=False, merges="include", with_counts=False,
-                    avatar_size=None, avatar_scheme=None, limit=None):
+    def get_commits(
+        self,
+        project_key,
+        repository_slug,
+        hash_oldest=None,
+        hash_newest=None,
+        follow_renames=False,
+        ignore_missing=False,
+        merges="include",
+        with_counts=False,
+        avatar_size=None,
+        avatar_scheme=None,
+        limit=None,
+    ):
         """
         Get commit list from repo
         :param project_key:
@@ -1621,24 +1752,26 @@ class Bitbucket(AtlassianRestAPI):
         url = self._url_commits(project_key, repository_slug)
         params = {"merges": merges}
         if hash_oldest:
-            params['since'] = hash_oldest
+            params["since"] = hash_oldest
         if hash_newest:
-            params['until'] = hash_newest
+            params["until"] = hash_newest
         if follow_renames:
-            params['followRenames'] = follow_renames
+            params["followRenames"] = follow_renames
         if ignore_missing:
-            params['ignoreMissing'] = ignore_missing
+            params["ignoreMissing"] = ignore_missing
         if with_counts:
-            params['withCounts'] = with_counts
+            params["withCounts"] = with_counts
         if avatar_size:
-            params['avatarSize'] = avatar_size
+            params["avatarSize"] = avatar_size
         if avatar_scheme:
-            params['avatarScheme'] = avatar_scheme
+            params["avatarScheme"] = avatar_scheme
         if limit:
-            params['limit'] = limit
-        return (self.get(url, params=params) or {}).get('values')
+            params["limit"] = limit
+        return (self.get(url, params=params) or {}).get("values")
 
-    def get_changelog(self, project_key, repository_slug, ref_from, ref_to, start=0, limit=None):
+    def get_changelog(
+        self, project_key, repository_slug, ref_from, ref_to, start=0, limit=None
+    ):
         """
         Get change log between 2 refs
         :param project_key:
@@ -1652,17 +1785,19 @@ class Bitbucket(AtlassianRestAPI):
         url = self._url_commits(project_key, repository_slug)
         params = {}
         if ref_from:
-            params['from'] = ref_from
+            params["from"] = ref_from
         if ref_to:
-            params['to'] = ref_to
+            params["to"] = ref_to
         if start:
-            params['start'] = start
+            params["start"] = start
         if limit:
-            params['limit'] = limit
+            params["limit"] = limit
         return self._get_paged(url, params=params)
 
     def _url_commit(self, project_key, repository_slug, commit_id):
-        return '{}/{}'.format(self._url_commits(project_key, repository_slug), commit_id)
+        return "{}/{}".format(
+            self._url_commits(project_key, repository_slug), commit_id
+        )
 
     def get_commit_info(self, project_key, repository_slug, commit, path=None):
         """
@@ -1682,17 +1817,23 @@ class Bitbucket(AtlassianRestAPI):
         url = self._url_commit(project_key, repository_slug, commit)
         params = {}
         if path:
-            params['path'] = path
+            params["path"] = path
         return self.get(url, params=params)
 
     def get_pull_requests_contain_commit(self, project_key, repository_slug, commit):
         url = self._url_commit(project_key, repository_slug, commit)
-        return (self.get(url) or {}).get('values')
+        return (self.get(url) or {}).get("values")
 
-    def _url_code_insights_report(self, project_key, repository_slug, commit_id, report_key):
-        return '{}/reports/{}'.format(self._url_commit(project_key, repository_slug, commit_id), report_key)
+    def _url_code_insights_report(
+        self, project_key, repository_slug, commit_id, report_key
+    ):
+        return "{}/reports/{}".format(
+            self._url_commit(project_key, repository_slug, commit_id), report_key
+        )
 
-    def get_code_insights_report(self, project_key, repository_slug, commit_id, report_key):
+    def get_code_insights_report(
+        self, project_key, repository_slug, commit_id, report_key
+    ):
         """
         Retrieve the specified code-insights report.
         :projectKey: str
@@ -1700,10 +1841,14 @@ class Bitbucket(AtlassianRestAPI):
         :commitId: str
         :report_key: str
         """
-        url = self._url_code_insights_report(project_key, repository_slug, commit_id, report_key)
+        url = self._url_code_insights_report(
+            project_key, repository_slug, commit_id, report_key
+        )
         return self.get(url)
 
-    def delete_code_insights_report(self, project_key, repository_slug, commit_id, report_key):
+    def delete_code_insights_report(
+        self, project_key, repository_slug, commit_id, report_key
+    ):
         """
         Delete a report for the given commit. Also deletes any annotations associated with this report.
         :projectKey: str
@@ -1711,11 +1856,20 @@ class Bitbucket(AtlassianRestAPI):
         :commitId: str
         :report_key: str
         """
-        url = self._url_code_insights_report(project_key, repository_slug, commit_id, report_key)
+        url = self._url_code_insights_report(
+            project_key, repository_slug, commit_id, report_key
+        )
         return self.delete(url)
 
-    def create_code_insights_report(self, project_key, repository_slug, commit_id, report_key, report_title,
-                                    **report_params):
+    def create_code_insights_report(
+        self,
+        project_key,
+        repository_slug,
+        commit_id,
+        report_key,
+        report_title,
+        **report_params
+    ):
         """
         Create a new insight report, or replace the existing one
         if a report already exists for the given repository_slug, commit, and report key.
@@ -1730,12 +1884,16 @@ class Bitbucket(AtlassianRestAPI):
         :report_title: str
         :report_params:
         """
-        url = self._url_code_insights_report(project_key, repository_slug, commit_id, report_key)
+        url = self._url_code_insights_report(
+            project_key, repository_slug, commit_id, report_key
+        )
         data = {"title": report_title}
         data.update(report_params)
         return self.put(url, data=data)
 
-    def get_file_list(self, project_key, repository_slug, query=None, start=0, limit=None):
+    def get_file_list(
+        self, project_key, repository_slug, query=None, start=0, limit=None
+    ):
         """
         Retrieve a page of files from particular directory of a repository.
         The search is done recursively, so all files from any sub-directory of the specified directory will be returned.
@@ -1747,17 +1905,19 @@ class Bitbucket(AtlassianRestAPI):
         :param limit: OPTIONAL
         :return:
         """
-        url = '{}/files'.format(self._url_repo(project_key, repository_slug))
+        url = "{}/files".format(self._url_repo(project_key, repository_slug))
         params = {}
         if query:
-            params['at'] = query
+            params["at"] = query
         if start:
-            params['start'] = start
+            params["start"] = start
         if limit:
-            params['limit'] = limit
+            params["limit"] = limit
         return self._get_paged(url, params=params)
 
-    def get_content_of_file(self, project_key, repository_slug, filename, at=None, markup=None):
+    def get_content_of_file(
+        self, project_key, repository_slug, filename, at=None, markup=None
+    ):
         """
         Retrieve the raw content for a file path at a specified revision.
         The authenticated user must have REPO_READ permission for the specified repository to call this resource.
@@ -1765,29 +1925,41 @@ class Bitbucket(AtlassianRestAPI):
         :param repository_slug:
         :param filename:
         :param at: OPTIONAL ref string
-        :param markup: 	if present or "true", triggers the raw content to be markup-rendered and returned as HTML;
-                        otherwise, if not specified, or any value other than "true",
-                        the content is streamed without markup
+        :param markup: if present or "true", triggers the raw content to be markup-rendered and returned as HTML;
+            otherwise, if not specified, or any value other than "true" the content is streamed without markup.
         :return:
         """
-        url = '{}/raw/{}'.format(self._url_repo(project_key, repository_slug), filename)
+        url = "{}/raw/{}".format(self._url_repo(project_key, repository_slug), filename)
         params = {}
         if at is not None:
-            params['at'] = at
+            params["at"] = at
         if markup is not None:
-            params['markup'] = markup
+            params["markup"] = markup
         headers = self.form_token_headers
         return self.get(url, params=params, not_json_response=True, headers=headers)
 
-    def _url_branches_permissions(self, project_key, permission_id=None, repository_slug=None):
+    def _url_branches_permissions(
+        self, project_key, permission_id=None, repository_slug=None
+    ):
         if repository_slug is None:
-            base = self._url_project(project_key, api_root='branch-permissions', api_version='2.0')
+            base = self._url_project(
+                project_key, api_root="branch-permissions", api_version="2.0"
+            )
         else:
-            base = self._url_repo(project_key, repository_slug, api_root='branch-permissions', api_version='2.0')
+            base = self._url_repo(
+                project_key,
+                repository_slug,
+                api_root="branch-permissions",
+                api_version="2.0",
+            )
 
-        return '{}/restrictions/{}'.format(base, '' if permission_id is None else str(permission_id))
+        return "{}/restrictions/{}".format(
+            base, "" if permission_id is None else str(permission_id)
+        )
 
-    def get_branches_permissions(self, project_key, permission_id, repository_slug=None, start=0, limit=25):
+    def get_branches_permissions(
+        self, project_key, permission_id, repository_slug=None, start=0, limit=25
+    ):
         """
         Get branches permissions from a given repo
         :param project_key:
@@ -1797,17 +1969,30 @@ class Bitbucket(AtlassianRestAPI):
         :param limit:
         :return:
         """
-        url = self._url_branches_permissions(project_key, permission_id, repository_slug)
+        url = self._url_branches_permissions(
+            project_key, permission_id, repository_slug
+        )
         params = {}
         if limit:
-            params['limit'] = limit
+            params["limit"] = limit
         if start:
-            params['start'] = start
+            params["start"] = start
         return self.get(url, params=params)
 
-    def set_branches_permissions(self, project_key, multiple_permissions=False, matcher_type=None, matcher_value=None,
-                                 permission_type=None, repository_slug=None, except_users=None, except_groups=None,
-                                 except_access_keys=None, start=0, limit=25):
+    def set_branches_permissions(
+        self,
+        project_key,
+        multiple_permissions=False,
+        matcher_type=None,
+        matcher_value=None,
+        permission_type=None,
+        repository_slug=None,
+        except_users=None,
+        except_groups=None,
+        except_access_keys=None,
+        start=0,
+        limit=25,
+    ):
         """
         Create a restriction for the supplied branch or set of branches to be applied to the given repository.
         Allows creating multiple restrictions at once.
@@ -1827,7 +2012,9 @@ class Bitbucket(AtlassianRestAPI):
         :param limit:
         :return:
         """
-        url = self._url_branches_permissions(project_key=project_key, repository_slug=repository_slug)
+        url = self._url_branches_permissions(
+            project_key=project_key, repository_slug=repository_slug
+        )
         if except_users is None:
             except_users = []
         if except_groups is None:
@@ -1846,7 +2033,7 @@ class Bitbucket(AtlassianRestAPI):
                     "displayId": matcher_value,
                     "type": {
                         "id": matcher_type.upper(),
-                        "name": matcher_type.capitalize()
+                        "name": matcher_type.capitalize(),
                     },
                     "active": True,
                 },
@@ -1857,7 +2044,9 @@ class Bitbucket(AtlassianRestAPI):
         params = {"start": start, "limit": limit}
         return self.post(url, data=restriction, params=params, headers=headers)
 
-    def delete_branch_permission(self, project_key, permission_id, repository_slug=None):
+    def delete_branch_permission(
+        self, project_key, permission_id, repository_slug=None
+    ):
         """
         Deletes a restriction as specified by a restriction id.
         The authenticated user must have REPO_ADMIN permission or higher to call this resource.
@@ -1867,7 +2056,9 @@ class Bitbucket(AtlassianRestAPI):
         :param permission_id:
         :return:
         """
-        url = self._url_branches_permissions(project_key, permission_id, repository_slug)
+        url = self._url_branches_permissions(
+            project_key, permission_id, repository_slug
+        )
         return self.delete(url)
 
     def get_branch_permission(self, project_key, permission_id, repository_slug=None):
@@ -1880,10 +2071,14 @@ class Bitbucket(AtlassianRestAPI):
         :param permission_id:
         :return:
         """
-        url = self._url_branches_permissions(project_key, permission_id, repository_slug)
+        url = self._url_branches_permissions(
+            project_key, permission_id, repository_slug
+        )
         return self.get(url)
 
-    def all_branches_permissions(self, project_key, permission_id, repository_slug=None):
+    def all_branches_permissions(
+        self, project_key, permission_id, repository_slug=None
+    ):
         """
         Get branches permissions from a given repo
         :param project_key:
@@ -1891,13 +2086,20 @@ class Bitbucket(AtlassianRestAPI):
         :param repository_slug:
         :return:
         """
-        url = self._url_branches_permissions(project_key, permission_id, repository_slug)
+        url = self._url_branches_permissions(
+            project_key, permission_id, repository_slug
+        )
         params = {}
         return self._get_paged(url, params=params)
 
     def _url_branching_model(self, project_key, repository_slug):
-        return self.resource_url('{}/branchmodel/configuration'.format(self._url_repo(project_key, repository_slug)),
-                                 api_root='branch-utils', api_version='1.0')
+        return self.resource_url(
+            "{}/branchmodel/configuration".format(
+                self._url_repo(project_key, repository_slug)
+            ),
+            api_root="branch-utils",
+            api_version="1.0",
+        )
 
     def get_branching_model(self, project_key, repository_slug):
         """
@@ -1927,26 +2129,38 @@ class Bitbucket(AtlassianRestAPI):
         :param repository_slug:
         :return:
         """
-        default_model_data = {'development': {'refId': None, 'useDefault': True},
-                              'types': [{'displayName': 'Bugfix',
-                                         'enabled': True,
-                                         'id': 'BUGFIX',
-                                         'prefix': 'bugfix/'},
-                                        {'displayName': 'Feature',
-                                         'enabled': True,
-                                         'id': 'FEATURE',
-                                         'prefix': 'feature/'},
-                                        {'displayName': 'Hotfix',
-                                         'enabled': True,
-                                         'id': 'HOTFIX',
-                                         'prefix': 'hotfix/'},
-                                        {'displayName': 'Release',
-                                         'enabled': True,
-                                         'id': 'RELEASE',
-                                         'prefix': 'release/'}]}
-        return self.set_branching_model(project_key,
-                                        repository_slug,
-                                        default_model_data)
+        default_model_data = {
+            "development": {"refId": None, "useDefault": True},
+            "types": [
+                {
+                    "displayName": "Bugfix",
+                    "enabled": True,
+                    "id": "BUGFIX",
+                    "prefix": "bugfix/",
+                },
+                {
+                    "displayName": "Feature",
+                    "enabled": True,
+                    "id": "FEATURE",
+                    "prefix": "feature/",
+                },
+                {
+                    "displayName": "Hotfix",
+                    "enabled": True,
+                    "id": "HOTFIX",
+                    "prefix": "hotfix/",
+                },
+                {
+                    "displayName": "Release",
+                    "enabled": True,
+                    "id": "RELEASE",
+                    "prefix": "release/",
+                },
+            ],
+        }
+        return self.set_branching_model(
+            project_key, repository_slug, default_model_data
+        )
 
     def disable_branching_model(self, project_key, repository_slug):
         """
@@ -1958,9 +2172,13 @@ class Bitbucket(AtlassianRestAPI):
         return self.delete(self._url_branching_model(project_key, repository_slug))
 
     def _url_file(self, project_key, repository_slug, filename):
-        return '{}/browse/{}'.format(self._url_repo(project_key, repository_slug), filename)
+        return "{}/browse/{}".format(
+            self._url_repo(project_key, repository_slug), filename
+        )
 
-    def upload_file(self, project_key, repository_slug, content, message, branch, filename):
+    def upload_file(
+        self, project_key, repository_slug, content, message, branch, filename
+    ):
         """
         Upload new file for given branch.
         :param project_key:
@@ -1972,14 +2190,19 @@ class Bitbucket(AtlassianRestAPI):
         :return:
         """
         url = self._url_file(project_key, repository_slug, filename)
-        data = {
-            "content": content,
-            "message": message,
-            "branch": branch
-        }
+        data = {"content": content, "message": message, "branch": branch}
         return self.put(url, files=data)
 
-    def update_file(self, project_key, repository_slug, content, message, branch, filename, source_commit_id):
+    def update_file(
+        self,
+        project_key,
+        repository_slug,
+        content,
+        message,
+        branch,
+        filename,
+        source_commit_id,
+    ):
         """
         Update existing file for given branch.
         :param project_key:
@@ -1996,7 +2219,7 @@ class Bitbucket(AtlassianRestAPI):
             "content": content,
             "message": message,
             "branch": branch,
-            "sourceCommitId": source_commit_id
+            "sourceCommitId": source_commit_id,
         }
         return self.put(url, files=data)
 
@@ -2006,19 +2229,23 @@ class Bitbucket(AtlassianRestAPI):
         :team: str
         :search_query: str
         """
-        url = self.resource_url('teams/{team}/search/code'.format(team=team))
-        return self.get(url, params={'search_query': search_query, 'page': page, 'pagelen': limit})
+        url = self.resource_url("teams/{team}/search/code".format(team=team))
+        return self.get(
+            url, params={"search_query": search_query, "page": page, "pagelen": limit}
+        )
 
     def get_lfs_repo_status(self, project_key, repo):
-        url = 'rest/git-lfs/git-lfs/admin/projects/{projectKey}/repos/{repositorySlug}/enabled'.format(
-            projectKey=project_key,
-            repositorySlug=repo)
+        url = "rest/git-lfs/git-lfs/admin/projects/{projectKey}/repos/{repositorySlug}/enabled".format(
+            projectKey=project_key, repositorySlug=repo
+        )
         return self.get(url)
 
     def _url_repo_conditions(self, project_key, repo_key):
-        return '{}/conditions'.format(self._url_repo(project_key, repo_key,
-                                                     api_root='default-reviewers',
-                                                     api_version='1.0'))
+        return "{}/conditions".format(
+            self._url_repo(
+                project_key, repo_key, api_root="default-reviewers", api_version="1.0"
+            )
+        )
 
     def get_repo_conditions(self, project_key, repo_key):
         """
@@ -2048,7 +2275,7 @@ class Bitbucket(AtlassianRestAPI):
         response = self.get_repo_conditions(project_key, repo_key)
         count = 0
         for condition in response:
-            if condition['scope']['type'] == 'REPOSITORY':
+            if condition["scope"]["type"] == "REPOSITORY":
                 del response[count]
             count += 1
         return response
@@ -2067,16 +2294,18 @@ class Bitbucket(AtlassianRestAPI):
         response = self.get_repo_conditions(project_key, repo_key)
         count = 0
         for condition in response:
-            if condition['scope']['type'] == 'PROJECT':
+            if condition["scope"]["type"] == "PROJECT":
                 del response[count]
             count += 1
         return response
 
     def _url_repo_condition(self, project_key, repo_key, id_condition=None):
-        return '{}/condition/{}'.format(self._url_repo(project_key, repo_key,
-                                                       api_root='default-reviewers',
-                                                       api_version='1.0'),
-                                        '' if id_condition is None else str(id_condition))
+        return "{}/condition/{}".format(
+            self._url_repo(
+                project_key, repo_key, api_root="default-reviewers", api_version="1.0"
+            ),
+            "" if id_condition is None else str(id_condition),
+        )
 
     def get_repo_condition(self, project_key, repo_key, id_condition):
         """
@@ -2149,10 +2378,13 @@ class Bitbucket(AtlassianRestAPI):
         return self.delete(url) or {}
 
     def _url_pipelines(self, workspace, repository_slug):
-        return self.resource_url('repositories/{}/{}/pipelines'.format(workspace, repository_slug))
+        return self.resource_url(
+            "repositories/{}/{}/pipelines".format(workspace, repository_slug)
+        )
 
-    def get_pipelines(self, workspace, repository_slug, number=10,
-                      sort_by="-created_on"):
+    def get_pipelines(
+        self, workspace, repository_slug, number=10, sort_by="-created_on"
+    ):
         """
         Get information about latest pipelines runs.
 
@@ -2161,12 +2393,11 @@ class Bitbucket(AtlassianRestAPI):
         :return: information in form {"values": [...]}
         """
         url = self._url_pipelines(workspace, repository_slug)
-        return self.get(url,
-                        params={"pagelen": number, "sort": sort_by},
-                        trailing=True)
+        return self.get(url, params={"pagelen": number, "sort": sort_by}, trailing=True)
 
-    def trigger_pipeline(self, workspace, repository_slug, branch="master", revision=None,
-                         name=None):
+    def trigger_pipeline(
+        self, workspace, repository_slug, branch="master", revision=None, name=None
+    ):
         """
         Trigger a new pipeline. The following options are possible (1 and 2
         trigger the pipeline that the branch is associated with in the Pipelines
@@ -2200,7 +2431,9 @@ class Bitbucket(AtlassianRestAPI):
         return self.post(url, data=data, trailing=True)
 
     def _url_pipeline(self, workspace, repository_slug, uuid):
-        return '{urlPipelines}/{uuid}'.format(urlPipelines=self._url_pipelines(workspace, repository_slug), uuid=uuid)
+        return "{urlPipelines}/{uuid}".format(
+            urlPipelines=self._url_pipelines(workspace, repository_slug), uuid=uuid
+        )
 
     def get_pipeline(self, workspace, repository_slug, uuid):
         """
@@ -2217,11 +2450,13 @@ class Bitbucket(AtlassianRestAPI):
 
         See the documentation for the meaning of response status codes.
         """
-        url = '{}/stopPipeline'.format(self._url_pipeline(workspace, repository_slug, uuid))
+        url = "{}/stopPipeline".format(
+            self._url_pipeline(workspace, repository_slug, uuid)
+        )
         return self.post(url)
 
     def _url_pipeline_steps(self, workspace, repository_slug, uuid):
-        return '{}/steps'.format(self._url_pipeline(workspace, repository_slug, uuid))
+        return "{}/steps".format(self._url_pipeline(workspace, repository_slug, uuid))
 
     def get_pipeline_steps(self, workspace, repository_slug, uuid):
         """
@@ -2232,7 +2467,10 @@ class Bitbucket(AtlassianRestAPI):
         return self.get(url, trailing=True)
 
     def _url_pipeline_step(self, workspace, repository_slug, pipeline_uuid, step_uuid):
-        return '{}/{}'.format(self._url_pipeline_steps(workspace, repository_slug, pipeline_uuid), step_uuid)
+        return "{}/{}".format(
+            self._url_pipeline_steps(workspace, repository_slug, pipeline_uuid),
+            step_uuid,
+        )
 
     def get_pipeline_step(self, workspace, repository_slug, pipeline_uuid, step_uuid):
         """
@@ -2240,22 +2478,32 @@ class Bitbucket(AtlassianRestAPI):
         :param pipeline_uuid: Pipeline identifier (with surrounding {}; NOT the build number)
         :param step_uuid: Step identifier (with surrounding {})
         """
-        url = self._url_pipeline_step(workspace, repository_slug, pipeline_uuid, step_uuid)
+        url = self._url_pipeline_step(
+            workspace, repository_slug, pipeline_uuid, step_uuid
+        )
         return self.get(url)
 
-    def get_pipeline_step_log(self, workspace, repository_slug, pipeline_uuid, step_uuid):
+    def get_pipeline_step_log(
+        self, workspace, repository_slug, pipeline_uuid, step_uuid
+    ):
         """
         Get log of a step of a pipeline, specified by respective UUIDs.
         :param pipeline_uuid: Pipeline identifier (with surrounding {}; NOT the build number)
         :param step_uuid: Step identifier (with surrounding {})
         :return: byte string log
         """
-        url = '{}/log'.format(self._url_pipeline_step(workspace, repository_slug, pipeline_uuid, step_uuid))
+        url = "{}/log".format(
+            self._url_pipeline_step(
+                workspace, repository_slug, pipeline_uuid, step_uuid
+            )
+        )
         headers = {"Accept": "application/octet-stream"}
         return self.get(url, headers=headers, not_json_response=True)
 
     def _url_issues(self, workspace, repository_slug):
-        return self.resource_url('repositories/{}/{}/issues'.format(workspace, repository_slug))
+        return self.resource_url(
+            "repositories/{}/{}/issues".format(workspace, repository_slug)
+        )
 
     def get_issues(self, workspace, repository_slug, sort_by=None, query=None):
         """
@@ -2272,8 +2520,15 @@ class Bitbucket(AtlassianRestAPI):
         params = {"query": query, "sort": sort_by}
         return self._get_paged(url, params=params)
 
-    def create_issue(self, workspace, repository_slug, title, description="",
-                     kind="bug", priority="major"):
+    def create_issue(
+        self,
+        workspace,
+        repository_slug,
+        title,
+        description="",
+        kind="bug",
+        priority="major",
+    ):
         """
         Create a new issue in the issue tracker of the given repository.
         :param kind: one of: bug, enhancement, proposal, task
@@ -2289,7 +2544,7 @@ class Bitbucket(AtlassianRestAPI):
         return self.post(url, data=data)
 
     def _url_issue(self, workspace, repository_slug, issue_id):
-        return '{}/{}'.format(self._url_issues(workspace, repository_slug), issue_id)
+        return "{}/{}".format(self._url_issues(workspace, repository_slug), issue_id)
 
     def get_issue(self, workspace, repository_slug, issue_id):
         """
@@ -2316,7 +2571,9 @@ class Bitbucket(AtlassianRestAPI):
     def _url_repositories(self, workspace):
         return self.resource_url("repositories/{}".format(workspace))
 
-    def get_repositories(self, workspace, role=None, query=None, sort=None, number=10, page=1):
+    def get_repositories(
+        self, workspace, role=None, query=None, sort=None, number=10, page=1
+    ):
         """
         Get all repositories in a workspace.
 
@@ -2326,10 +2583,7 @@ class Bitbucket(AtlassianRestAPI):
         :param sort: Field by which the results should be sorted.
         """
         url = self._url_repositories(workspace)
-        params = {
-            "pagelen": number,
-            "page": page
-        }
+        params = {"pagelen": number, "page": page}
         if role is not None:
             params["role"] = role
         if query is not None:
@@ -2340,9 +2594,13 @@ class Bitbucket(AtlassianRestAPI):
         return self.get(url, params=params)
 
     def _url_branch_restrictions(self, workspace, repository_slug):
-        return self.resource_url("repositories/{}/{}/branch-restrictions".format(workspace, repository_slug))
+        return self.resource_url(
+            "repositories/{}/{}/branch-restrictions".format(workspace, repository_slug)
+        )
 
-    def get_branch_restrictions(self, workspace, repository_slug, kind=None, pattern=None, number=10, page=1):
+    def get_branch_restrictions(
+        self, workspace, repository_slug, kind=None, pattern=None, number=10, page=1
+    ):
         """
         Get all branch permissions.
         """
@@ -2355,8 +2613,18 @@ class Bitbucket(AtlassianRestAPI):
 
         return self.get(url, params=params)
 
-    def add_branch_restriction(self, workspace, repository_slug, kind, branch_match_kind="glob",
-                               branch_pattern="*", branch_type=None, users=None, groups=None, value=None):
+    def add_branch_restriction(
+        self,
+        workspace,
+        repository_slug,
+        kind,
+        branch_match_kind="glob",
+        branch_pattern="*",
+        branch_type=None,
+        users=None,
+        groups=None,
+        value=None,
+    ):
         """
         Add a new branch restriction.
 
@@ -2401,7 +2669,11 @@ class Bitbucket(AtlassianRestAPI):
         return self.post(url, data=data)
 
     def _url_branch_restriction(self, workspace, repository_slug, id):
-        return self.resource_url("repositories/{}/{}/branch-restrictions/{}".format(workspace, repository_slug, id))
+        return self.resource_url(
+            "repositories/{}/{}/branch-restrictions/{}".format(
+                workspace, repository_slug, id
+            )
+        )
 
     def update_branch_restriction(self, workspace, repository_slug, id, **fields):
         """
@@ -2419,7 +2691,9 @@ class Bitbucket(AtlassianRestAPI):
         return self.delete(url)
 
     def _url_default_reviewers(self, workspace, repository_slug):
-        return self.resource_url("repositories/{}/{}/default-reviewers".format(workspace, repository_slug))
+        return self.resource_url(
+            "repositories/{}/{}/default-reviewers".format(workspace, repository_slug)
+        )
 
     def get_default_reviewers(self, workspace, repository_slug, number=10, page=1):
         """
@@ -2431,7 +2705,11 @@ class Bitbucket(AtlassianRestAPI):
         return self.get(url, params=params)
 
     def _url_default_reviewer(self, workspace, repository_slug, user):
-        return self.resource_url("repositories/{}/{}/default-reviewers/{}".format(workspace, repository_slug, user))
+        return self.resource_url(
+            "repositories/{}/{}/default-reviewers/{}".format(
+                workspace, repository_slug, user
+            )
+        )
 
     def add_default_reviewer(self, workspace, repository_slug, user):
         """

@@ -5,9 +5,9 @@ from datetime import datetime
 from atlassian import Confluence
 
 confluence = Confluence(
-    url='http://localhost:8090',
-    username='admin',
-    password='admin',
+    url="http://localhost:8090",
+    username="admin",
+    password="admin",
 )
 
 logging.basicConfig(level=logging.DEBUG)
@@ -22,6 +22,8 @@ link = """<p>
   <ac:link>
     <ri:attachment ri:filename="{}"/>
   </ac:link>
-</p>""".format(filename)
+</p>""".format(
+    filename
+)
 
 confluence.append_page(123456789, "Page Title", link)

@@ -4,30 +4,28 @@ import logging
 from atlassian import Confluence
 from atlassian import Jira
 
-logging.basicConfig(level=logging.DEBUG, format='[%(asctime).19s] [%(levelname)s] %(message)s')
-logging.getLogger('requests').setLevel(logging.WARNING)
-log = logging.getLogger('jira-projects-administrators')
+logging.basicConfig(
+    level=logging.DEBUG, format="[%(asctime).19s] [%(levelname)s] %(message)s"
+)
+logging.getLogger("requests").setLevel(logging.WARNING)
+log = logging.getLogger("jira-projects-administrators")
 
-jira = Jira(
-    url='http://localhost:8080',
-    username='admin',
-    password='admin')
+jira = Jira(url="http://localhost:8080", username="admin", password="admin")
 
-confluence = Confluence(
-    url='http://localhost:8090',
-    username='admin',
-    password='admin')
+confluence = Confluence(url="http://localhost:8090", username="admin", password="admin")
 
-html = ["""<table>
+html = [
+    """<table>
                 <tr>
                     <th>Project Key</th>
                     <th>Project Name</th>
                     <th>Leader</th>
                     <th>Email</th>
-                </tr>"""]
+                </tr>"""
+]
 
 for data in jira.project_leaders():
-    log.info('{project_key} leader is {lead_name} <{lead_email}>'.format(**data))
+    log.info("{project_key} leader is {lead_name} <{lead_email}>".format(**data))
     row = """<tr>
                 <td>{project_key}</td>
                 <td>{project_name}</td>
@@ -36,12 +34,13 @@ for data in jira.project_leaders():
              </tr>"""
     html.append(row.format(**data))
 
-html.append('</table><p></p><p></p>')
+html.append("</table><p></p><p></p>")
 
 status = confluence.create_page(
-    space='DEMO',
-    parent_id=confluence.get_page_id('DEMO', 'demo'),
-    title='Jira Administrators',
-    body='\r\n'.join(html))
+    space="DEMO",
+    parent_id=confluence.get_page_id("DEMO", "demo"),
+    title="Jira Administrators",
+    body="\r\n".join(html),
+)
 
 print(status)

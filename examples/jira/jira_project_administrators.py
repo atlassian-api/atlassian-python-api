@@ -1,10 +1,7 @@
 # coding=utf-8
 from atlassian import Jira
 
-jira = Jira(
-    url='http://localhost:8080',
-    username='admin',
-    password='admin')
+jira = Jira(url="http://localhost:8080", username="admin", password="admin")
 
 html = """<table>
                 <tr>
@@ -20,8 +17,10 @@ for data in jira.project_leaders():
                     <td>{project_name}</td>
                     <td>{lead_name}</td>
                     <td><a href="mailto:{lead_email}">{lead_email}</a></td>
-                </tr>""".format(**data)
+                </tr>""".format(
+        **data
+    )
 
-html += '</table>'
+html += "</table>"
 
 print(html)

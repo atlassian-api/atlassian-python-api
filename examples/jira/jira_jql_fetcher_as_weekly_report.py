@@ -33,33 +33,45 @@ class ReportGenerator:
         while flag:
             values = []
             try:
-                response = self.jira.jql(jql, fields=['created', 'summary', 'status'], expand="changelog",
-                                         limit=limit,
-                                         start=step * limit)
-                values = response.get('issues') or []
+                response = self.jira.jql(
+                    jql,
+                    fields=["created", "summary", "status"],
+                    expand="changelog",
+                    limit=limit,
+                    start=step * limit,
+                )
+                values = response.get("issues") or []
             except ValueError:
                 values = []
             if values:
                 step += 1
                 for value in values:
-                    value['actor'] = self.jira.user(user).get("displayName")
+                    value["actor"] = self.jira.user(user).get("displayName")
                     self.cases.append(value)
             else:
                 flag = False
 
     def __get_changes_of_cases(self, histories):
         from datetime import datetime, timezone
+
         today = datetime.now(timezone.utc)
         output = ""
         for history in histories:
-            change_date = datetime.strptime(history.get("created"), '%Y-%m-%dT%H:%M:%S.%f%z')
+            change_date = datetime.strptime(
+                history.get("created"), "%Y-%m-%dT%H:%M:%S.%f%z"
+            )
             difference = today - change_date
             if difference.days > self.days:
                 continue
-            output = [history.get('author').get('name'), f"{change_date:%Y-%m-%d}"]  # person who did the change
+            output = [
+                history.get("author").get("name"),
+                f"{change_date:%Y-%m-%d}",
+            ]  # person who did the change
             changes = ["Listing all items that changed:"]
             for item in history.get("items"):
-                changes.append(f"{item['field']} - {item['fromString']}- {item['toString']}")
+                changes.append(
+                    f"{item['field']} - {item['fromString']}- {item['toString']}"
+                )
             output.append("\t".join(changes))
         return " - ".join(output)
 
@@ -77,8 +89,12 @@ class ReportGenerator:
         data = []
         for case in self.cases:
             print(f"Processing case #{number}")
-            output = [case.get("actor"), case.get("key"), case.get("fields").get("summary"),
-                      case.get("fields").get("status").get("name")]
+            output = [
+                case.get("actor"),
+                case.get("key"),
+                case.get("fields").get("summary"),
+                case.get("fields").get("status").get("name"),
+            ]
             histories = (case.get("changelog") or {}).get("histories") or []
             output.append('"' + self.__get_changes_of_cases(histories) + '"')
             line = delimiter.join(output)
@@ -112,7 +128,12 @@ def main():
     parser.add_argument("--url", type=str, action="store")
     parser.add_argument("--user", type=str, action="store")
     parser.add_argument("--password", type=str, action="store")
-    parser.add_argument('--user_file', type=str, action="store", description="user.txt with username in each line")
+    parser.add_argument(
+        "--user_file",
+        type=str,
+        action="store",
+        description="user.txt with username in each line",
+    )
     args = parser.parse_args()
     # validate jql method
     jira = Jira(url=args.url, username=args.user, password=args.password)
