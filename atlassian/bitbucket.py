@@ -655,8 +655,7 @@ class Bitbucket(AtlassianRestAPI):
         :param project_key:
         :return:
         """
-        url = self._url_repos(project_key)
-        return self.repo_list(url, limit=None)
+        return self.repo_list(project_key, limit=None)
 
     def create_repo(
         self, project_key, repository_slug, forkable=False, is_private=True
