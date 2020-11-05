@@ -1,1 +1,4 @@
 -r requirements.txt
+flake8
+pytest
+tox

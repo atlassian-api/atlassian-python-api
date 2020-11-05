@@ -6,14 +6,13 @@ from ..base import BitbucketCloudBase
 
 
 class DefaultReviewers(BitbucketCloudBase):
-
     def __init__(self, url, *args, **kwargs):
         super(DefaultReviewers, self).__init__(url, *args, **kwargs)
 
     def _get_object(self, data):
         if "errors" in data:
             return
-        return DefaultReviewer(data, **self._get_new_session_args())
+        return DefaultReviewer(data, **self._new_session_args)
 
     def add(self, user):
         """
@@ -72,9 +71,10 @@ class DefaultReviewers(BitbucketCloudBase):
 
 
 class DefaultReviewer(BitbucketCloudBase):
-
     def __init__(self, data, *args, **kwargs):
-        super(DefaultReviewer, self).__init__(None, *args, data=data, expected_type="user", **kwargs)
+        super(DefaultReviewer, self).__init__(
+            None, *args, data=data, expected_type="user", **kwargs
+        )
 
     @property
     def display_name(self):

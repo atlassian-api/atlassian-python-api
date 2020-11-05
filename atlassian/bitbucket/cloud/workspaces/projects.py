@@ -6,14 +6,13 @@ from ..repositories import ProjectRepositories
 
 
 class Projects(BitbucketCloudBase):
-
     def __init__(self, url, *args, **kwargs):
         super(Projects, self).__init__(url, *args, **kwargs)
 
     def _get_object(self, data):
         if "errors" in data:
             return
-        return Project(data, **self._get_new_session_args())
+        return Project(data, **self._new_session_args)
 
     def create(self, name, key, description, is_private=True, avatar=None):
         """
@@ -44,7 +43,7 @@ class Projects(BitbucketCloudBase):
             "name": name,
             "key": key,
             "description": description,
-            "is_private": is_private
+            "is_private": is_private,
         }
         return self._get_object(self.post(None, data=data))
 
@@ -69,7 +68,7 @@ class Projects(BitbucketCloudBase):
 
         return
 
-    def get(self, project, by='key'):
+    def get(self, project, by="key"):
         """
         Returns the requested project
 
@@ -78,28 +77,35 @@ class Projects(BitbucketCloudBase):
 
         :return: The requested Project object
         """
-        if by == 'key':
+        if by == "key":
             return self._get_object(super(Projects, self).get(project))
-        elif by == 'name':
+        elif by == "name":
             for p in self.each():
                 if p.name == project:
                     return p
         else:
-            ValueError("Unknown value '{}' for argument [by], expected 'key' or 'name'".format(by))
+            ValueError(
+                "Unknown value '{}' for argument [by], expected 'key' or 'name'".format(
+                    by
+                )
+            )
 
         raise Exception("Unknown project {} '{}'".format(by, project))
 
 
 class Project(BitbucketCloudBase):
-
     def __init__(self, data, *args, **kwargs):
-        super(Project, self).__init__(None, *args, data=data, expected_type="project", **kwargs)
+        super(Project, self).__init__(
+            None, *args, data=data, expected_type="project", **kwargs
+        )
         try:
             url = self.get_link("repositories")
         except KeyError:
             workspace = self.get_data("workspace")
-            url = '{}/?q=project.key="{}"'.format(workspace['links']['self'], workspace['slug'])
-        self.__repositories = ProjectRepositories(url, **self._get_new_session_args())
+            url = '{}/?q=project.key="{}"'.format(
+                workspace["links"]["self"], workspace["slug"]
+            )
+        self.__repositories = ProjectRepositories(url, **self._new_session_args)
 
     @property
     def repositories(self):

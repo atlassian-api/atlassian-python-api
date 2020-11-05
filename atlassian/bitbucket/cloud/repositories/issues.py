@@ -4,14 +4,13 @@ from ..base import BitbucketCloudBase
 
 
 class Issues(BitbucketCloudBase):
-
     def __init__(self, url, *args, **kwargs):
         super(Issues, self).__init__(url, *args, **kwargs)
 
     def _get_object(self, data):
         if "errors" in data:
             return
-        return Issue(data, **self._get_new_session_args())
+        return Issue(data, **self._new_session_args)
 
     def create(self, title, description, kind, priority):
         """
@@ -65,9 +64,10 @@ class Issues(BitbucketCloudBase):
 
 
 class Issue(BitbucketCloudBase):
-
     def __init__(self, data, *args, **kwargs):
-        super(Issue, self).__init__(None, *args, data=data, expected_type="issue", **kwargs)
+        super(Issue, self).__init__(
+            None, *args, data=data, expected_type="issue", **kwargs
+        )
 
     @property
     def id(self):
@@ -94,7 +94,7 @@ class Issue(BitbucketCloudBase):
         return self.get_data("kind")
 
     @kind.setter
-    def state(self, kind):
+    def kind(self, kind):
         return self.update(kind=kind)
 
     @property
@@ -102,7 +102,7 @@ class Issue(BitbucketCloudBase):
         return self.get_data("priority")
 
     @priority.setter
-    def state(self, priority):
+    def priority(self, priority):
         return self.update(priority=priority)
 
     @property

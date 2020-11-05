@@ -7,14 +7,13 @@ from ..repositories import WorkspaceRepositories
 
 
 class Workspaces(BitbucketCloudBase):
-
     def __init__(self, url, *args, **kwargs):
         super(Workspaces, self).__init__(url, *args, **kwargs)
 
     def _get_object(self, data):
         if "errors" in data:
             return
-        return Workspace(data, **self._get_new_session_args())
+        return Workspace(data, **self._new_session_args)
 
     def each(self, role=None, q=None, sort=None):
         """
@@ -58,11 +57,14 @@ class Workspaces(BitbucketCloudBase):
 
 
 class Workspace(BitbucketCloudBase):
-
     def __init__(self, data, *args, **kwargs):
-        super(Workspace, self).__init__(None, *args, data=data, expected_type="workspace", **kwargs)
-        self.__projects = Projects(self.get_link('projects'), **self._get_new_session_args())
-        self.__repositories = WorkspaceRepositories(self.get_link("repositories"), **self._get_new_session_args())
+        super(Workspace, self).__init__(
+            None, *args, data=data, expected_type="workspace", **kwargs
+        )
+        self.__projects = Projects(self.get_link("projects"), **self._new_session_args)
+        self.__repositories = WorkspaceRepositories(
+            self.get_link("repositories"), **self._new_session_args
+        )
 
     @property
     def projects(self):

@@ -1270,7 +1270,7 @@ class Bitbucket(BitbucketBase):
         url = self._url_pull_request(project_key, repository_slug, pull_request_id)
         return self.get(url)
 
-    @deprecated(version='1.15.1', reason="Use get_pull_request()")
+    @deprecated(version="1.15.1", reason="Use get_pull_request()")
     def get_pullrequest(self, *args, **kwargs):
         """
         Deprecated name since 1.15.1. Let's use the get_pull_request()
@@ -2336,7 +2336,10 @@ class Bitbucket(BitbucketBase):
         url = self._url_repo_condition(project_key, repo_key, id_condition)
         return self.delete(url) or {}
 
-    @deprecated(version='2.0.2', reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket")
+    @deprecated(
+        version="2.0.2",
+        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+    )
     def get_repositories(self, workspace, role=None, query=None, sort=None):
         """
         Get all repositories in a workspace.
@@ -2346,10 +2349,17 @@ class Bitbucket(BitbucketBase):
         :param query: Query string to narrow down the response.
         :param sort: Field by which the results should be sorted.
         """
-        return [r.data for r in Cloud(self.url, **self._get_new_session_args()).workspaces.get(workspace)
-                .repositories.each(role=role, q=query, sort=sort)]
+        return [
+            r.data
+            for r in Cloud(self.url, **self._new_session_args)
+            .workspaces.get(workspace)
+            .repositories.each(role=role, q=query, sort=sort)
+        ]
 
-    @deprecated(version='2.0.2', reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket")
+    @deprecated(
+        version="2.0.2",
+        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+    )
     def get_pipelines(
         self, workspace, repository_slug, number=10, sort_by="-created_on"
     ):
@@ -2361,15 +2371,22 @@ class Bitbucket(BitbucketBase):
         :return: List of pipeline data
         """
         values = []
-        for p in Cloud(self.url, **self._get_new_session_args()).workspaces.get(workspace) \
-                .repositories.get(repository_slug).pipelines.each(sort=sort_by):
+        for p in (
+            Cloud(self.url, **self._new_session_args)
+            .workspaces.get(workspace)
+            .repositories.get(repository_slug)
+            .pipelines.each(sort=sort_by)
+        ):
             values.append(p.data)
             if len(values) == number:
                 break
 
         return values
 
-    @deprecated(version='2.0.2', reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket")
+    @deprecated(
+        version="2.0.2",
+        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+    )
     def trigger_pipeline(
         self, workspace, repository_slug, branch="master", revision=None, name=None
     ):
@@ -2382,19 +2399,35 @@ class Bitbucket(BitbucketBase):
         3. Specific pipeline (additionally specify ``name``)
         :return: the initiated pipeline; or error information
         """
-        return Cloud(self.url, **self._get_new_session_args()).workspaces.get(workspace) \
-            .repositories.get(repository_slug).pipelines.trigger(branch=branch, commit=revision, pattern=name).data
+        return (
+            Cloud(self.url, **self._new_session_args)
+            .workspaces.get(workspace)
+            .repositories.get(repository_slug)
+            .pipelines.trigger(branch=branch, commit=revision, pattern=name)
+            .data
+        )
 
-    @deprecated(version='2.0.2', reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket")
+    @deprecated(
+        version="2.0.2",
+        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+    )
     def get_pipeline(self, workspace, repository_slug, uuid):
         """
         Get information about the pipeline specified by ``uuid``.
         :param uuid: Pipeline identifier (with surrounding {}; NOT the build number)
         """
-        return Cloud(self.url, **self._get_new_session_args()).workspaces.get(workspace) \
-            .repositories.get(repository_slug).pipelines.get(uuid).data
+        return (
+            Cloud(self.url, **self._new_session_args)
+            .workspaces.get(workspace)
+            .repositories.get(repository_slug)
+            .pipelines.get(uuid)
+            .data
+        )
 
-    @deprecated(version='2.0.2', reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket")
+    @deprecated(
+        version="2.0.2",
+        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+    )
     def stop_pipeline(self, workspace, repository_slug, uuid):
         """
         Stop the pipeline specified by ``uuid``.
@@ -2402,44 +2435,80 @@ class Bitbucket(BitbucketBase):
 
         See the documentation for the meaning of response status codes.
         """
-        return Cloud(self.url, **self._get_new_session_args()).workspaces.get(workspace) \
-            .repositories.get(repository_slug).pipelines.get(uuid).stop()
+        return (
+            Cloud(self.url, **self._new_session_args)
+            .workspaces.get(workspace)
+            .repositories.get(repository_slug)
+            .pipelines.get(uuid)
+            .stop()
+        )
 
-    @deprecated(version='2.0.2', reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket")
+    @deprecated(
+        version="2.0.2",
+        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+    )
     def get_pipeline_steps(self, workspace, repository_slug, uuid):
         """
         Get information about the steps of the pipeline specified by ``uuid``.
         :param uuid: Pipeline identifier (with surrounding {}; NOT the build number)
         """
         values = []
-        for s in Cloud(self.url, **self._get_new_session_args()).workspaces.get(workspace) \
-                .repositories.get(repository_slug).pipelines.get(uuid).steps():
+        for s in (
+            Cloud(self.url, **self._new_session_args)
+            .workspaces.get(workspace)
+            .repositories.get(repository_slug)
+            .pipelines.get(uuid)
+            .steps()
+        ):
             values.append(s.data)
 
         return values
 
-    @deprecated(version='2.0.2', reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket")
+    @deprecated(
+        version="2.0.2",
+        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+    )
     def get_pipeline_step(self, workspace, repository_slug, pipeline_uuid, step_uuid):
         """
         Get information about a step of a pipeline, specified by respective UUIDs.
         :param pipeline_uuid: Pipeline identifier (with surrounding {}; NOT the build number)
         :param step_uuid: Step identifier (with surrounding {})
         """
-        return Cloud(self.url, **self._get_new_session_args()).workspaces.get(workspace) \
-            .repositories.get(repository_slug).pipelines.get(pipeline_uuid).step(step_uuid).data
+        return (
+            Cloud(self.url, **self._new_session_args)
+            .workspaces.get(workspace)
+            .repositories.get(repository_slug)
+            .pipelines.get(pipeline_uuid)
+            .steps(step_uuid)
+            .data
+        )
 
-    @deprecated(version='2.0.2', reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket")
-    def get_pipeline_step_log(self, workspace, repository_slug, pipeline_uuid, step_uuid):
+    @deprecated(
+        version="2.0.2",
+        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+    )
+    def get_pipeline_step_log(
+        self, workspace, repository_slug, pipeline_uuid, step_uuid
+    ):
         """
         Get log of a step of a pipeline, specified by respective UUIDs.
         :param pipeline_uuid: Pipeline identifier (with surrounding {}; NOT the build number)
         :param step_uuid: Step identifier (with surrounding {})
         :return: byte string log
         """
-        return Cloud(self.url, **self._get_new_session_args()).workspaces.get(workspace) \
-            .repositories.get(repository_slug).pipelines.get(pipeline_uuid).step(step_uuid).log()
+        return (
+            Cloud(self.url, **self._new_session_args)
+            .workspaces.get(workspace)
+            .repositories.get(repository_slug)
+            .pipelines.get(pipeline_uuid)
+            .steps(step_uuid)
+            .log()
+        )
 
-    @deprecated(version='2.0.2', reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket")
+    @deprecated(
+        version="2.0.2",
+        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+    )
     def create_issue(
         self,
         workspace,
@@ -2454,15 +2523,20 @@ class Bitbucket(BitbucketBase):
         :param kind: one of: bug, enhancement, proposal, task
         :param priority: one of: trivial, minor, major, critical, blocker
         """
-        return Cloud(self.url, **self._get_new_session_args()).workspaces.get(workspace) \
-            .repositories.get(repository_slug).issues.create(
-                title=title,
-                description=description,
-                kind=kind,
-                priority=priority
-            ).data
+        return (
+            Cloud(self.url, **self._new_session_args)
+            .workspaces.get(workspace)
+            .repositories.get(repository_slug)
+            .issues.create(
+                title=title, description=description, kind=kind, priority=priority
+            )
+            .data
+        )
 
-    @deprecated(version='2.0.2', reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket")
+    @deprecated(
+        version="2.0.2",
+        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+    )
     def get_issues(self, workspace, repository_slug, sort_by=None, query=None):
         """
         Get information about the issues tracked in the given repository. By
@@ -2475,38 +2549,70 @@ class Bitbucket(BitbucketBase):
         :return: List of issues (direct, i.e. without the 'values' key)
         """
         values = []
-        for p in Cloud(self.url, **self._get_new_session_args()).workspaces.get(workspace) \
-                .repositories.get(repository_slug).issues.each(q=query, sort=sort_by):
+        for p in (
+            Cloud(self.url, **self._new_session_args)
+            .workspaces.get(workspace)
+            .repositories.get(repository_slug)
+            .issues.each(q=query, sort=sort_by)
+        ):
             values.append(p.data)
 
         return values
 
-    @deprecated(version='2.0.2', reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket")
+    @deprecated(
+        version="2.0.2",
+        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+    )
     def get_issue(self, workspace, repository_slug, id):
         """
         Get the issue specified by ``id``.
         """
-        return Cloud(self.url, **self._get_new_session_args()).workspaces.get(workspace) \
-            .repositories.get(repository_slug).issues.get(id).data
+        return (
+            Cloud(self.url, **self._new_session_args)
+            .workspaces.get(workspace)
+            .repositories.get(repository_slug)
+            .issues.get(id)
+            .data
+        )
 
-    @deprecated(version='2.0.2', reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket")
+    @deprecated(
+        version="2.0.2",
+        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+    )
     def update_issue(self, workspace, repository_slug, id, **fields):
         """
         Update the ``fields`` of the issue specified by ``id``.
         Consult the official API documentation for valid fields.
         """
-        return Cloud(self.url, **self._get_new_session_args()).workspaces.get(workspace) \
-            .repositories.get(repository_slug).issues.get(id).update(**fields).data
+        return (
+            Cloud(self.url, **self._new_session_args)
+            .workspaces.get(workspace)
+            .repositories.get(repository_slug)
+            .issues.get(id)
+            .update(**fields)
+            .data
+        )
 
-    @deprecated(version='2.0.2', reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket")
+    @deprecated(
+        version="2.0.2",
+        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+    )
     def delete_issue(self, workspace, repository_slug, id):
         """
         Delete the issue specified by ``id``.
         """
-        return Cloud(self.url, **self._get_new_session_args()).workspaces.get(workspace) \
-            .repositories.get(repository_slug).issues.get(id).delete()
+        return (
+            Cloud(self.url, **self._new_session_args)
+            .workspaces.get(workspace)
+            .repositories.get(repository_slug)
+            .issues.get(id)
+            .delete()
+        )
 
-    @deprecated(version='2.0.2', reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket")
+    @deprecated(
+        version="2.0.2",
+        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+    )
     def add_branch_restriction(
         self,
         workspace,
@@ -2537,18 +2643,26 @@ class Bitbucket(BitbucketBase):
         :param groups: List of group objects that are excluded from the restriction.
                         Minimal: {"owner": {"username": "<teamname>"}, "slug": "<groupslug>"}
         """
-        return Cloud(self.url, **self._get_new_session_args()).workspaces.get(workspace) \
-            .repositories.get(repository_slug).branch_restrictions.create(
+        return (
+            Cloud(self.url, **self._new_session_args)
+            .workspaces.get(workspace)
+            .repositories.get(repository_slug)
+            .branch_restrictions.create(
                 kind,
                 branch_match_kind=branch_match_kind,
                 branch_pattern=branch_pattern,
                 branch_type=branch_type,
                 users=users,
                 groups=groups,
-                value=value
-            ).data
+                value=value,
+            )
+            .data
+        )
 
-    @deprecated(version='2.0.2', reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket")
+    @deprecated(
+        version="2.0.2",
+        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+    )
     def get_branch_restrictions(
         self, workspace, repository_slug, kind=None, pattern=None, number=10
     ):
@@ -2556,32 +2670,56 @@ class Bitbucket(BitbucketBase):
         Get all branch permissions.
         """
         values = []
-        for p in Cloud(self.url, **self._get_new_session_args()).workspaces.get(workspace) \
-                .repositories.get(repository_slug).branch_restrictions.each(kind=kind, pattern=pattern):
+        for p in (
+            Cloud(self.url, **self._new_session_args)
+            .workspaces.get(workspace)
+            .repositories.get(repository_slug)
+            .branch_restrictions.each(kind=kind, pattern=pattern)
+        ):
             values.append(p.data)
             if len(values) == number:
                 break
 
         return values
 
-    @deprecated(version='2.0.2', reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket")
+    @deprecated(
+        version="2.0.2",
+        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+    )
     def update_branch_restriction(self, workspace, repository_slug, id, **fields):
         """
         Update an existing branch restriction identified by ``id``.
         Consult the official API documentation for valid fields.
         """
-        return Cloud(self.url, **self._get_new_session_args()).workspaces.get(workspace) \
-            .repositories.get(repository_slug).branch_restrictions.get(id).update(**fields).data
+        return (
+            Cloud(self.url, **self._new_session_args)
+            .workspaces.get(workspace)
+            .repositories.get(repository_slug)
+            .branch_restrictions.get(id)
+            .update(**fields)
+            .data
+        )
 
-    @deprecated(version='2.0.2', reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket")
+    @deprecated(
+        version="2.0.2",
+        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+    )
     def delete_branch_restriction(self, workspace, repository_slug, id):
         """
         Delete an existing branch restriction identified by ``id``.
         """
-        return Cloud(self.url, **self._get_new_session_args()).workspaces.get(workspace) \
-            .repositories.get(repository_slug).branch_restrictions.get(id).delete()
+        return (
+            Cloud(self.url, **self._new_session_args)
+            .workspaces.get(workspace)
+            .repositories.get(repository_slug)
+            .branch_restrictions.get(id)
+            .delete()
+        )
 
-    @deprecated(version='2.0.2', reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket")
+    @deprecated(
+        version="2.0.2",
+        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+    )
     def add_default_reviewer(self, workspace, repository_slug, user):
         """
         Add user as default reviewer to the repository.
@@ -2589,24 +2727,39 @@ class Bitbucket(BitbucketBase):
 
         :param user: The username or account UUID to add as default_reviewer.
         """
-        return Cloud(self.url, **self._get_new_session_args()).workspaces.get(workspace) \
-            .repositories.get(repository_slug).default_reviewers.add(user).data
+        return (
+            Cloud(self.url, **self._new_session_args)
+            .workspaces.get(workspace)
+            .repositories.get(repository_slug)
+            .default_reviewers.add(user)
+            .data
+        )
 
-    @deprecated(version='2.0.2', reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket")
+    @deprecated(
+        version="2.0.2",
+        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+    )
     def get_default_reviewers(self, workspace, repository_slug, number=10):
         """
         Get all default reviewers for the repository.
         """
         values = []
-        for p in Cloud(self.url, **self._get_new_session_args()).workspaces.get(workspace) \
-                .repositories.get(repository_slug).default_reviewers.each():
+        for p in (
+            Cloud(self.url, **self._new_session_args)
+            .workspaces.get(workspace)
+            .repositories.get(repository_slug)
+            .default_reviewers.each()
+        ):
             values.append(p.data)
             if len(values) == number:
                 break
 
         return values
 
-    @deprecated(version='2.0.2', reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket")
+    @deprecated(
+        version="2.0.2",
+        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+    )
     def is_default_reviewer(self, workspace, repository_slug, user):
         """
         Check if the user is a default reviewer of the repository.
@@ -2614,18 +2767,32 @@ class Bitbucket(BitbucketBase):
         :param user: The username or account UUID to check.
         :return: True if present, False if not.
         """
-        if Cloud(self.url, **self._get_new_session_args()).workspaces.get(workspace) \
-                .repositories.get(repository_slug).default_reviewers.get(user) is None:
+        if (
+            Cloud(self.url, **self._new_session_args)
+            .workspaces.get(workspace)
+            .repositories.get(repository_slug)
+            .default_reviewers.get(user)
+            is None
+        ):
             return False
 
         return True
 
-    @deprecated(version='2.0.2', reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket")
+    @deprecated(
+        version="2.0.2",
+        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+    )
     def delete_default_reviewer(self, workspace, repository_slug, user):
         """
         Remove user as default reviewer from the repository.
 
         :param user: The username or account UUID to delete as default reviewer.
         """
-        return Cloud(self.url, **self._get_new_session_args()).workspaces.get(workspace) \
-            .repositories.get(repository_slug).default_reviewers.get(user).delete().data
+        return (
+            Cloud(self.url, **self._new_session_args)
+            .workspaces.get(workspace)
+            .repositories.get(repository_slug)
+            .default_reviewers.get(user)
+            .delete()
+            .data
+        )

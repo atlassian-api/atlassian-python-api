@@ -16,6 +16,7 @@ Getting Started
 * Start up related product:
   - Standalone product atlas-run-standalone_
   - For cloud product, just do registration
+* Run the quality checks with `make qa` or if you have docker installed with `make docker-qa` 
 * Send pull request
 
 .. _Fork: https://help.github.com/articles/fork-a-repo/

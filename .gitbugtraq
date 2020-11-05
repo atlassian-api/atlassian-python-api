@@ -1,0 +1,5 @@
+# .gitbugtraq for Git GUIs (e.g. SmartGit) to show links to the Github issue tracker.
+[bugtraq]
+  url = https://github.com/atlassian-api/atlassian-python-api/issues/%BUGID%
+  loglinkregex = "#\\d+"
+  logregex = \\d+
