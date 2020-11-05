@@ -207,6 +207,13 @@ Manage issues
     # Delete Issue Links
     jira.delete_issue_remote_link_by_id(issue_key, link_id)
 
+<<<<<<< HEAD
+=======
+    # Export Issues to csv
+    jira.csv(jql, all_fields=False)
+
+
+>>>>>>> a0bfce195ff799e9616a34b131bdaadbb096ee9d
 Manage Boards
 -------------
 
