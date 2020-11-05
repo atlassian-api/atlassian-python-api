@@ -21,11 +21,11 @@ class Workspaces(BitbucketCloudBase):
         Returns a list of workspaces accessible by the authenticated user.
 
         :param role: string: Filters the workspaces based on the authenticated user"s role on each workspace.
-                             * **member**: returns a list of all the workspaces which the caller is a member of
+                             * member: returns a list of all the workspaces which the caller is a member of
                                at least one workspace group or repository
-                             * **collaborator**: returns a list of workspaces which the caller has write access
+                             * collaborator: returns a list of workspaces which the caller has write access
                                to at least one repository in the workspace
-                             * **owner**: returns a ^list of workspaces which the caller has administrator access
+                             * owner: returns a list of workspaces which the caller has administrator access
         :param q: string: Query string to narrow down the response.
                           See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
         :param sort: string: Name of a response property to sort results.
