@@ -11,14 +11,13 @@ log = logging.getLogger(__name__)
 
 
 class Jira(AtlassianRestAPI):
-
     """
     Provide permission information for the current user.
     Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2
     """
 
     def get_permissions(
-        self, project_id=None, project_key=None, issue_id=None, issue_key=None
+            self, project_id=None, project_key=None, issue_id=None, issue_key=None
     ):
         """
         Returns all permissions in the system and whether the currently logged in user has them.
@@ -201,7 +200,7 @@ class Jira(AtlassianRestAPI):
     """
 
     def get_audit_records(
-        self, offset=None, limit=None, filter=None, from_date=None, to_date=None
+            self, offset=None, limit=None, filter=None, from_date=None, to_date=None
     ):
         """
         Returns auditing records filtered using provided parameters
@@ -591,7 +590,7 @@ class Jira(AtlassianRestAPI):
         return self.delete(url, params=params)
 
     def get_all_users_from_group(
-        self, group, include_inactive_users=False, start=0, limit=50
+            self, group, include_inactive_users=False, start=0, limit=50
     ):
         """
         Just wrapping method user group members
@@ -648,7 +647,7 @@ class Jira(AtlassianRestAPI):
         return self.get("rest/api/2/issue/{0}?fields={1}".format(key, fields))
 
     def get_issue(
-        self, issue_id_or_key, fields=None, properties=None, update_history=True
+            self, issue_id_or_key, fields=None, properties=None, update_history=True
     ):
         """
         Returns a full representation of the issue for the given issue key
@@ -1014,7 +1013,7 @@ class Jira(AtlassianRestAPI):
         return self.get(url, params=params)
 
     def create_or_update_issue_remote_links(
-        self, issue_key, link_url, title, global_id=None, relationship=None
+            self, issue_key, link_url, title, global_id=None, relationship=None
     ):
         """
         Add Remote Link to Issue, update url if global_id is passed
@@ -1039,7 +1038,7 @@ class Jira(AtlassianRestAPI):
         return self.get(url)
 
     def update_issue_remote_link_by_id(
-        self, issue_key, link_id, url, title, global_id=None, relationship=None
+            self, issue_key, link_id, url, title, global_id=None, relationship=None
     ):
         """
         Update existing Remote Link on Issue
@@ -1081,7 +1080,7 @@ class Jira(AtlassianRestAPI):
                     "to": transition["to"]["name"],
                 }
                 for transition in (
-                    self.get_issue_transitions_full(issue_key).json() or {}
+                        self.get_issue_transitions_full(issue_key).json() or {}
                 ).get("transitions")
             ]
         else:
@@ -1092,7 +1091,7 @@ class Jira(AtlassianRestAPI):
                     "to": transition["to"]["name"],
                 }
                 for transition in (
-                    self.get_issue_transitions_full(issue_key) or {}
+                        self.get_issue_transitions_full(issue_key) or {}
                 ).get("transitions")
             ]
 
@@ -1264,7 +1263,7 @@ class Jira(AtlassianRestAPI):
         return self.user_update(username, data=data)
 
     def user_create(
-        self, username, email, display_name, password=None, notification=None
+            self, username, email, display_name, password=None, notification=None
     ):
         """
         Create a user in Jira
@@ -1361,10 +1360,10 @@ class Jira(AtlassianRestAPI):
         return self.user_deactivate(username)
 
     def user_disable_throw_rest_endpoint(
-        self,
-        username,
-        url="rest/scriptrunner/latest/custom/disableUser",
-        param="userName",
+            self,
+            username,
+            url="rest/scriptrunner/latest/custom/disableUser",
+            param="userName",
     ):
         """The disable method throw own rest enpoint"""
         url = "{}?{}={}".format(url, param, username)
@@ -1386,8 +1385,8 @@ class Jira(AtlassianRestAPI):
                 answer.split(
                     '<meta id="atlassian-token" name="atlassian-token" content="'
                 )[1]
-                .split("\n")[0]
-                .split('"')[0]
+                    .split("\n")[0]
+                    .split('"')[0]
             )
         if atl_token:
             data["atl_token"] = atl_token
@@ -1401,12 +1400,12 @@ class Jira(AtlassianRestAPI):
         return self.delete("rest/auth/1/websudo")
 
     def user_find_by_user_string(
-        self,
-        username,
-        start=0,
-        limit=50,
-        include_inactive_users=False,
-        include_active_users=True,
+            self,
+            username,
+            start=0,
+            limit=50,
+            include_inactive_users=False,
+            include_active_users=True,
     ):
         """
         Fuzzy search using username and display name
@@ -1542,14 +1541,14 @@ class Jira(AtlassianRestAPI):
         return self.get("rest/api/2/project/{}/versions".format(key), params=params)
 
     def get_project_versions_paginated(
-        self,
-        key,
-        start=None,
-        limit=None,
-        order_by=None,
-        expand=None,
-        query=None,
-        status=None,
+            self,
+            key,
+            start=None,
+            limit=None,
+            order_by=None,
+            expand=None,
+            query=None,
+            status=None,
     ):
         """
         Returns all versions for the specified project. Results are paginated.
@@ -1585,7 +1584,7 @@ class Jira(AtlassianRestAPI):
         return self.get("rest/api/2/project/{}/version".format(key), params=params)
 
     def add_version(
-        self, project_key, project_id, version, is_archived=False, is_released=False
+            self, project_key, project_id, version, is_archived=False, is_released=False
     ):
         """
         Add missing version to project
@@ -1694,7 +1693,7 @@ class Jira(AtlassianRestAPI):
         return self.put(url, data, params=params)
 
     def update_project_category_for_project(
-        self, project_key, new_project_category_id, expand=None
+            self, project_key, new_project_category_id, expand=None
     ):
         """
         Updates a project.
@@ -1724,7 +1723,7 @@ class Jira(AtlassianRestAPI):
         return self.get(url)
 
     def assign_project_notification_scheme(
-        self, project_key, new_notification_scheme=""
+            self, project_key, new_notification_scheme=""
     ):
         """
         Updates a project.
@@ -1892,7 +1891,7 @@ class Jira(AtlassianRestAPI):
         return self.get(url)
 
     def get_assignable_users_for_issue(
-        self, issue_key, username=None, start=0, limit=50
+            self, issue_key, username=None, start=0, limit=50
     ):
         """
         Provide assignable users for issue
@@ -2208,26 +2207,25 @@ class Jira(AtlassianRestAPI):
             params["expand"] = expand
         return self.get("rest/api/2/search", params=params)
 
-    def csv(self, jql, limit=1000):
+    def csv(self, jql, limit=1000, all_fields=True):
         """
-        Get issues from jql search result with all related fields
+            Get issues from jql search result with ALL or CURRENT fields
+            default will be to return all fields
         :param jql: JQL query
         :param limit: max results in the output file
+        :param all_fields: To return all fields or current fields only
         :return: CSV file
         """
-        params = {"tempMax": limit, "jqlQuery": jql}
-        url = "sr/jira.issueviews:searchrequest-csv-all-fields/temp/SearchRequest.csv"
-        return self.get(
-            url,
-            params=params,
-            not_json_response=True,
-            headers={"Accept": "application/csv"},
-        )
 
-    """
-    Priority
-    Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/priority
-    """
+        params = {"tempMax": limit, "jqlQuery": jql}
+        if all_fields:
+            url = 'sr/jira.issueviews:searchrequest-csv-all-fields/temp/SearchRequest.csv'
+        else:
+            url = 'sr/jira.issueviews:searchrequest-csv-current-fields/temp/SearchRequest.csv'
+        return self.get(url,
+                        params=params,
+                        not_json_response=True,
+                        headers={"Accept": "application/csv"}, )
 
     def get_all_priorities(self):
         """
@@ -2260,7 +2258,7 @@ class Jira(AtlassianRestAPI):
         return self.get(url)
 
     def get_workflows_paginated(
-        self, startAt=None, maxResults=None, workflowName=None, expand=None
+            self, startAt=None, maxResults=None, workflowName=None, expand=None
     ):
         """
         Provide all workflows paginated (see https://developer.atlassian.com/cloud/jira/platform/rest/v2/\
@@ -2599,11 +2597,11 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
     """
 
     def reindex(
-        self,
-        comments=True,
-        change_history=True,
-        worklogs=True,
-        indexing_type="BACKGROUND_PREFERRED",
+            self,
+            comments=True,
+            change_history=True,
+            worklogs=True,
+            indexing_type="BACKGROUND_PREFERRED",
     ):
         """
         Reindex the Jira instance
@@ -2708,7 +2706,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         return self.get(url)
 
     def tempo_account_associate_with_jira_project(
-        self, account_id, project_id, default_account=False, link_type="MANUAL"
+            self, account_id, project_id, default_account=False, link_type="MANUAL"
     ):
         """
         The AccountLinkBean for associate Account with project
@@ -2959,7 +2957,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         return self.get(url)
 
     def tempo_timesheets_get_team_utilization(
-        self, team_id, date_from, date_to=None, group_by=None
+            self, team_id, date_from, date_to=None, group_by=None
     ):
         """
         GEt team utulization. Response in json
@@ -2977,13 +2975,13 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         return self.get(url, params=params)
 
     def tempo_timesheets_get_worklogs(
-        self,
-        date_from=None,
-        date_to=None,
-        username=None,
-        project_key=None,
-        account_key=None,
-        team_id=None,
+            self,
+            date_from=None,
+            date_to=None,
+            username=None,
+            project_key=None,
+            account_key=None,
+            team_id=None,
     ):
         """
 
@@ -3051,7 +3049,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         return self.get(url)
 
     def tempo_timesheets_write_worklog(
-        self, worker, started, time_spend_in_seconds, issue_id, comment=None
+            self, worker, started, time_spend_in_seconds, issue_id, comment=None
     ):
         """
         Log work for user
@@ -3205,7 +3203,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         return self.delete(url)
 
     def tempo_teams_update_member_information(
-        self, team_id, member_id, membership_id, data
+            self, team_id, member_id, membership_id, data
     ):
         """
         Update team membership attribute info
@@ -3234,7 +3232,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
     #   Resource: https://docs.atlassian.com/jira-software/REST/7.3.1/
     #######################################################################
     def get_all_agile_boards(
-        self, board_name=None, project_key=None, board_type=None, start=0, limit=50
+            self, board_name=None, project_key=None, board_type=None, start=0, limit=50
     ):
         """
         Returns all boards. This only includes boards that the user has permission to view.
