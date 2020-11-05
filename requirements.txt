@@ -1,6 +1,6 @@
 deprecated
-six
 requests
+six
 oauthlib
 requests_oauthlib
 kerberos; platform_system!='Windows'
