@@ -1,6 +1,7 @@
 # coding=utf-8
 
-from atlassian.bitbucket import Bitbucket
+from textwrap import indent
+
 from atlassian.bitbucket.cloud import Cloud
 
 cloud = Cloud(url="http://localhost:7990", username="admin", password="admin")
@@ -38,10 +39,9 @@ for r in p.repositories.each():
                 print('         No log')
             else:
                 print('         Size of log: ' + size)
-                print(indent(log.decode("utf-8"),'            '))
-    for dr in  r.default_reviewers.each():
+                print(indent(log.decode("utf-8"), '            '))
+    for dr in r.default_reviewers.each():
         print("   Default reviewer " + dr['nickname'])
-    for br in  r.branch_restrictions.each():
+    for br in r.branch_restrictions.each():
         print("   Branch restriction ID " + str(br.id))
         print("      Kind " + br.kind)
-
