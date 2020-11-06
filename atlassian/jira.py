@@ -1384,9 +1384,7 @@ class Jira(AtlassianRestAPI):
             atl_token = (
                 answer.split(
                     '<meta id="atlassian-token" name="atlassian-token" content="'
-                )[1]
-                    .split("\n")[0]
-                    .split('"')[0]
+                )[1].split("\n")[0].split('"')[0]
             )
         if atl_token:
             data["atl_token"] = atl_token
