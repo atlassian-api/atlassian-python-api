@@ -70,6 +70,13 @@ class BitbucketBase(AtlassianRestAPI):
             api_version=self.api_version,
         )
 
+    def update(self, **kwargs):
+        """
+        Fields not present in the request body are ignored.
+        """
+        self.__data = super(BitbucketBase, self).put(None, data=kwargs)
+        return self
+
     @property
     def data(self):
         return copy.copy(self.__data)

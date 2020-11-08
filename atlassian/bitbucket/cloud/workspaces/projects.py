@@ -146,15 +146,8 @@ class Project(BitbucketCloudBase):
     def get_avatar(self):
         return self.get(self.get_link("avatar"), absolute=True)
 
-    def update(self, **kwargs):
-        """
-        Update the project
-        """
-        self.__data = super(Project, self).put(self.url, absolute=True, data=kwargs)
-        return self
-
     def delete(self):
         """
         Delete the project
         """
-        return super(Project, self).delete(self.url, absolute=True)
+        return super(Project, self).delete(None)

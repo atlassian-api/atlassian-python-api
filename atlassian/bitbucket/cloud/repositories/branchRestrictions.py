@@ -139,16 +139,11 @@ class BranchRestriction(BitbucketCloudBase):
     def value(self):
         return self.get_data("value")
 
-    def update(self, **kwargs):
-        """
-        Updates an existing branch restriction rule.
-        Fields not present in the request body are ignored.
-        """
-        self.__data = super(BranchRestriction, self).put(self.url, absolute=True, data=kwargs)
-        return self
-
     def delete(self):
         """
         Deletes the branch restriction
         """
-        return super(BranchRestriction, self).delete(self.url, absolute=True)
+        data = super(BranchRestriction, self).delete(None)
+        if "errors" in data:
+            return
+        return BranchRestriction(data, **self._new_session_args)

@@ -12,9 +12,7 @@ class Pipelines(BitbucketCloudBase):
     def _get_object(self, data):
         if "errors" in data:
             return
-        # Change the URL to be able to use endpoints below
-        data["links"]["self"]["href"] = self.url_joiner(self.url, data["uuid"])
-        return Pipeline(data, **self._new_session_args)
+        return Pipeline(self.url_joiner(self.url, data["uuid"]), data, **self._new_session_args)
 
     def each(self, q=None, sort=None):
         """
@@ -93,8 +91,8 @@ class Pipelines(BitbucketCloudBase):
 
 
 class Pipeline(BitbucketCloudBase):
-    def __init__(self, data, *args, **kwargs):
-        super(Pipeline, self).__init__(None, *args, data=data, expected_type="pipeline", **kwargs)
+    def __init__(self, url, data, *args, **kwargs):
+        super(Pipeline, self).__init__(url, *args, data=data, expected_type="pipeline", **kwargs)
 
     def _get_object(self, data):
         if "errors" in data:
@@ -205,7 +203,7 @@ class Step(BitbucketCloudBase):
         try:
             response = self.get("log", headers=headers, advanced_mode=True)
         except HTTPError as e:
-            # A 404 indicates that that specified user is not a default reviewer.
+            # A 404 indicates that no log is present.
             if not e.response.status_code == 404:
                 # Rethrow the exception
                 raise

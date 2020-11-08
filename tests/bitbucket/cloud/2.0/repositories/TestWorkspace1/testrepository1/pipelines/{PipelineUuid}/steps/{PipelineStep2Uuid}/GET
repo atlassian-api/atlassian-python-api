@@ -1,0 +1,64 @@
+responses[None] = {
+    "pipeline": {
+        "type": "pipeline",
+        "uuid": "{PipelineUuid}",
+    },
+    "run_number": 1,
+    "uuid": "{PipelineStep2Uuid}",
+    "maxTime": 120,
+    "image": {"name": "gcc:6.5"},
+    "started_on": "2020-11-10T20:22:55.969Z",
+    "script_commands": [
+        {"commandType": "user", "command": "make", "name": "make"},
+        {"commandType": "user", "command": "make test", "name": "make test"},
+    ],
+    "state": {
+        "type": "pipeline_step_state_completed",
+        "name": "COMPLETED",
+        "result": {
+            "type": "pipeline_step_state_completed_stopped",
+            "name": "STOPPED",
+        },
+    },
+    "trigger": {"type": "pipeline_step_trigger_automatic"},
+    "teardown_commands": [
+        {
+            "commandType": "system",
+            "action": "PROCESS_TEST_REPORTS",
+            "command": 'echo "Processing test reports"',
+            "name": "Process Test Reports",
+        }
+    ],
+    "build_seconds_used": 0,
+    "setup_commands": [
+        {"commandType": "user", "command": "umask 000", "name": "umask 000"},
+        {
+            "commandType": "user",
+            "command": "...",
+            "name": "...",
+        },
+        {
+            "commandType": "user",
+            "command": "git reset --hard 30c1b58a2341992fe6870756a8880d5006ddb18e",
+            "name": "git reset --hard 30c1b58a2341992fe6870756a8880d5006ddb18e",
+        },
+        {
+            "commandType": "user",
+            "command": "git config user.name bitbucket-pipelines",
+            "name": "git config user.name bitbucket-pipelines",
+        },
+        {
+            "commandType": "user",
+            "command": "git config user.email commits-noreply@bitbucket.org",
+            "name": "git config user.email commits-noreply@bitbucket.org",
+        },
+        {
+            "commandType": "user",
+            "command": "git config push.default current",
+            "name": "git config push.default current",
+        },
+    ],
+    "type": "pipeline_step",
+    "duration_in_seconds": 0,
+    "completed_on": "2020-11-10T20:22:55.969Z",
+}

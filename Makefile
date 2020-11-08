@@ -37,9 +37,10 @@ tox:
 	tox
 
 docker-qa: export TEST_OPTS := $(TEST_OPTS)
+docker-qa: export PYTHONDONTWRITEBYTECODE := 1
 
 docker-qa: | docker-qa-build
-	docker run --rm -e TEST_OPTS -v `pwd`:/atlassian-python-api $(QA_CONTAINER)
+	docker run --rm -e TEST_OPTS -e PYTHONDONTWRITEBYTECODE -v `pwd`:/atlassian-python-api $(QA_CONTAINER)
 
 docker-qa-build: Dockerfile.qa requirements.txt requirements-dev.txt
 	docker build \
