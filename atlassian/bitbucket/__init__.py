@@ -87,7 +87,7 @@ class Bitbucket(BitbucketBase):
         Rebuild the bundled Elasticsearch indexes for Bitbucket Server
         :return:
         """
-        url = self.resource_url("sync", api_root="indexing", api_version="latest")
+        url = self.resource_url("sync", api_root="rest/indexing", api_version="latest")
         return self.post(url)
 
     def check_reindexing_status(self):
@@ -95,7 +95,7 @@ class Bitbucket(BitbucketBase):
         Check reindexing status
         :return:
         """
-        url = self.resource_url("status", api_root="indexing", api_version="latest")
+        url = self.resource_url("status", api_root="rest/indexing", api_version="latest")
         return self.get(url)
 
     def get_users(self, user_filter=None):
@@ -179,7 +179,7 @@ class Bitbucket(BitbucketBase):
         Retrieve ssh settings for user
         :return:
         """
-        url = self.resource_url("settings")
+        url = self.resource_url("settings", api_root="rest/ssh")
         return self.get(url)
 
     def health_check(self):
@@ -202,7 +202,7 @@ class Bitbucket(BitbucketBase):
         :return:
         """
         url = self.resource_url(
-            "commits/{commitId}".format(commitId=commit), api_root="build-status"
+            "commits/{commitId}".format(commitId=commit), api_root="rest/build-status"
         )
         return self.get(url)
 
@@ -378,7 +378,7 @@ class Bitbucket(BitbucketBase):
         :param filter_str:  OPTIONAL: users filter string
         :return: The list of SSH access keys
         """
-        url = "{}/ssh".format(self._url_project(key, api_root="keys"))
+        url = "{}/ssh".format(self._url_project(key, api_root="rest/keys"))
         params = {}
         if start:
             params["start"] = start
@@ -500,7 +500,7 @@ class Bitbucket(BitbucketBase):
     def _url_project_conditions(self, project_key):
         return "{}/conditions".format(
             self._url_project(
-                project_key, api_root="default-reviewers", api_version="1.0"
+                project_key, api_root="rest/default-reviewers", api_version="1.0"
             )
         )
 
@@ -519,7 +519,7 @@ class Bitbucket(BitbucketBase):
     def _url_project_condition(self, project_key, id_condition=None):
         url = "{}/condition".format(
             self._url_project(
-                project_key, api_root="default-reviewers", api_version="1.0"
+                project_key, api_root="rest/default-reviewers", api_version="1.0"
             )
         )
         if id_condition is not None:
@@ -667,7 +667,7 @@ class Bitbucket(BitbucketBase):
         """
         url = "{urlRepo}/sync".format(
             urlRepo=self._url_repo(
-                project_key, repository_slug, api_root="indexing", api_version="1.0"
+                project_key, repository_slug, api_root="rest/indexing", api_version="1.0"
             )
         )
         return self.post(url)
@@ -683,7 +683,7 @@ class Bitbucket(BitbucketBase):
         :return:
         """
         url = "{}/reindex".format(
-            self._url_repo(project_key, repository_slug, api_root="jira-dev")
+            self._url_repo(project_key, repository_slug, api_root="rest/jira-dev")
         )
         return self.post(url)
 
@@ -733,7 +733,7 @@ class Bitbucket(BitbucketBase):
         :param filter_str:  OPTIONAL: users filter string
         :return:
         """
-        url = "{}/ssh".format(self._url_repo(project_key, repo_key, api_root="keys"))
+        url = "{}/ssh".format(self._url_repo(project_key, repo_key, api_root="rest/keys"))
         params = {}
         if start:
             params["start"] = start
@@ -1012,16 +1012,16 @@ class Bitbucket(BitbucketBase):
         :return:
         """
         url = self._url_repo_branches(
-            project_key, repository_slug, api_root="branch-utils"
+            project_key, repository_slug, api_root="rest/branch-utils"
         )
         data = {"name": str(name), "endPoint": str(end_point)}
         return self.delete(url, data=data)
 
-    def _url_repo_tags(self, project_key, repository_slug):
-        if Cloud:
-            return "{}/refs/tags".format(self._url_repo(project_key, repository_slug))
+    def _url_repo_tags(self, project_key, repository_slug, api_root=None):
+        if self.cloud:
+            return "{}/refs/tags".format(self._url_repo(project_key, repository_slug, api_root=api_root))
         else:
-            return "{}/tags".format(self._url_repo(project_key, repository_slug))
+            return "{}/tags".format(self._url_repo(project_key, repository_slug, api_root=api_root))
 
     def get_tags(
         self,
@@ -1092,9 +1092,6 @@ class Bitbucket(BitbucketBase):
             body["message"] = description
         return self.post(url, data=body)
 
-    def _url_repo_tag(self, project_key, repository_slug, tag):
-        return "{}/{}".format(self._url_repo_tags(project_key, repository_slug), tag)
-
     def delete_tag(self, project_key, repository_slug, tag_name):
         """
         Creates a tag using the information provided in the {@link RestCreateTagRequest request}
@@ -1104,7 +1101,8 @@ class Bitbucket(BitbucketBase):
         :param tag_name:
         :return:
         """
-        url = self._url_repo_tag(project_key, repository_slug, tag_name)
+        url = "{}/{}".format(self._url_repo_tags(project_key, repository_slug, api_root="rest/git"), tag_name)
+        (project_key, repository_slug, tag_name)
         return self.delete(url)
 
     def _url_pull_request_settings(self, project_key, repository_slug):
@@ -1676,8 +1674,8 @@ class Bitbucket(BitbucketBase):
             params["to"] = hash_newest
         return (self.get(url, params=params) or {}).get("diffs")
 
-    def _url_commits(self, project_key, repository_slug):
-        return "{}/commits".format(self._url_repo(project_key, repository_slug))
+    def _url_commits(self, project_key, repository_slug, api_root=None, api_version=None):
+        return "{}/commits".format(self._url_repo(project_key, repository_slug, api_root=api_root, api_version=api_version))
 
     def get_commits(
         self,
@@ -1754,9 +1752,9 @@ class Bitbucket(BitbucketBase):
             params["limit"] = limit
         return self._get_paged(url, params=params)
 
-    def _url_commit(self, project_key, repository_slug, commit_id):
+    def _url_commit(self, project_key, repository_slug, commit_id, api_root=None, api_version=None):
         return "{}/{}".format(
-            self._url_commits(project_key, repository_slug), commit_id
+            self._url_commits(project_key, repository_slug, api_root=api_root, api_version=api_version), commit_id
         )
 
     def get_commit_info(self, project_key, repository_slug, commit, path=None):
@@ -1788,7 +1786,7 @@ class Bitbucket(BitbucketBase):
         self, project_key, repository_slug, commit_id, report_key
     ):
         return "{}/reports/{}".format(
-            self._url_commit(project_key, repository_slug, commit_id), report_key
+            self._url_commit(project_key, repository_slug, commit_id, api_root="rest/insights", api_version="1.0"), report_key
         )
 
     def get_code_insights_report(
@@ -1903,13 +1901,13 @@ class Bitbucket(BitbucketBase):
     ):
         if repository_slug is None:
             base = self._url_project(
-                project_key, api_root="branch-permissions", api_version="2.0"
+                project_key, api_root="rest/branch-permissions", api_version="2.0"
             )
         else:
             base = self._url_repo(
                 project_key,
                 repository_slug,
-                api_root="branch-permissions",
+                api_root="rest/branch-permissions",
                 api_version="2.0",
             )
 
@@ -2056,7 +2054,7 @@ class Bitbucket(BitbucketBase):
             "{}/branchmodel/configuration".format(
                 self._url_repo(project_key, repository_slug)
             ),
-            api_root="branch-utils",
+            api_root="rest/branch-utils",
             api_version="1.0",
         )
 
@@ -2202,7 +2200,7 @@ class Bitbucket(BitbucketBase):
     def _url_repo_conditions(self, project_key, repo_key):
         return "{}/conditions".format(
             self._url_repo(
-                project_key, repo_key, api_root="default-reviewers", api_version="1.0"
+                project_key, repo_key, api_root="rest/default-reviewers", api_version="1.0"
             )
         )
 
@@ -2261,7 +2259,7 @@ class Bitbucket(BitbucketBase):
     def _url_repo_condition(self, project_key, repo_key, id_condition=None):
         return "{}/condition/{}".format(
             self._url_repo(
-                project_key, repo_key, api_root="default-reviewers", api_version="1.0"
+                project_key, repo_key, api_root="rest/default-reviewers", api_version="1.0"
             ),
             "" if id_condition is None else str(id_condition),
         )
