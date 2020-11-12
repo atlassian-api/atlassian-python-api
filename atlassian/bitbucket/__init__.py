@@ -1437,7 +1437,7 @@ class Bitbucket(BitbucketBase):
     def _url_pull_request_comment(
         self, project_key, repository_slug, pull_request_id, comment_id
     ):
-        url = "{}/{}".format(
+        url = "{}/comments/{}".format(
             self._url_pull_request(project_key, repository_slug, pull_request_id),
             comment_id,
         )
