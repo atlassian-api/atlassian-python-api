@@ -1436,7 +1436,7 @@ class Bitbucket(BitbucketBase):
         self, project_key, repository_slug, pull_request_id, comment_id
     ):
         url = "{}/{}".format(
-            self._url_pull_request(project_key, repository_slug, pull_request_id),
+            self._url_pull_request_comments(project_key, repository_slug, pull_request_id),
             comment_id,
         )
         return url
