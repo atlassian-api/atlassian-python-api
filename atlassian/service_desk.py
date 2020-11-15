@@ -84,12 +84,12 @@ class ServiceDesk(AtlassianRestAPI):
         return (response or {}).get("values")
 
     def create_customer_request(
-        self,
-        service_desk_id,
-        request_type_id,
-        values_dict,
-        raise_on_behalf_of=None,
-        request_participants=None,
+            self,
+            service_desk_id,
+            request_type_id,
+            values_dict,
+            raise_on_behalf_of=None,
+            request_participants=None,
     ):
         """
         Creating customer request
@@ -422,19 +422,41 @@ class ServiceDesk(AtlassianRestAPI):
         return self.delete(url, headers=self.experimental_headers, data=data)
 
     # Attachments actions
-    def create_attachment(
-        self, service_desk_id, issue_id_or_key, filename, public=True, comment=None
-    ):
+    def create_attachments(self, service_desk_id, issue_id_or_key, filenames, public=True, comment=None):
         """
         Add attachment as a comment.
-
         Setting attachment visibility is dependent on the user's permission. For example,
         Agents can create either public or internal attachments,
         while Unlicensed users can only create internal attachments,
         and Customers can only create public attachments.
-
         An additional comment may be provided which will be prepended to the attachments.
+        :param service_desk_id: str
+        :param issue_id_or_key: str
+        :param filenames: Union(List[str], str), name, if file in current directory or full path to file
+        :param public: OPTIONAL: bool (default is True)
+        :param comment: OPTIONAL: str (default is None)
+        :return: Request info
+        """
+        # Create temporary attachment
+        temp_attachment_ids = []
+        if not isinstance(filenames, list):
+            filenames = [filenames]
 
+        for filename in filenames:
+            temp_attachment_id = self.attach_temporary_file(service_desk_id, filename)
+            temp_attachment_ids.append(temp_attachment_id)
+
+        # Add attachments
+        return self.add_attachments(issue_id_or_key, temp_attachment_ids, public, comment)
+
+    def create_attachment(self, service_desk_id, issue_id_or_key, filename, public=True, comment=None):
+        """
+        Add attachment as a comment.
+        Setting attachment visibility is dependent on the user's permission. For example,
+        Agents can create either public or internal attachments,
+        while Unlicensed users can only create internal attachments,
+        and Customers can only create public attachments.
+        An additional comment may be provided which will be prepended to the attachments.
         :param service_desk_id: str
         :param issue_id_or_key: str
         :param filename: str, name, if file in current directory or full path to file
@@ -442,57 +464,52 @@ class ServiceDesk(AtlassianRestAPI):
         :param comment: OPTIONAL: str (default is None)
         :return: Request info
         """
-        log.warning("Creating attachment...")
-
-        # Create temporary attachment
-        temp_attachment_id = self.attach_temporary_file(service_desk_id, filename)
-
-        # Add attachments
-        return self.add_attachment(issue_id_or_key, temp_attachment_id, public, comment)
+        log.info('Creating attachment...')
+        return self.create_attachments(service_desk_id, issue_id_or_key, filename, public=public, comment=comment)
 
     def attach_temporary_file(self, service_desk_id, filename):
         """
         Create temporary attachment, which can later be converted into permanent attachment
-
         :param service_desk_id: str
         :param filename: str
         :return: Temporary Attachment ID
         """
-        url = "rest/servicedeskapi/servicedesk/{}/attachTemporaryFile".format(
-            service_desk_id
-        )
+        url = 'rest/servicedeskapi/servicedesk/{}/attachTemporaryFile'.format(service_desk_id)
 
-        with open(filename, "rb") as file:
-            result = self.post(
-                path=url,
-                headers=self.experimental_headers_general,
-                files={"file": file},
-            ).get("temporaryAttachments")
-            temp_attachment_id = result[0].get("temporaryAttachmentId")
+        with open(filename, 'rb') as file:
+            result = self.post(path=url, headers=self.experimental_headers,
+                               files={'file': file}).get('temporaryAttachments')
+            temp_attachment_id = result[0].get('temporaryAttachmentId')
 
             return temp_attachment_id
 
-    def add_attachment(
-        self, issue_id_or_key, temp_attachment_id, public=True, comment=None
-    ):
+    def add_attachments(self, issue_id_or_key, temp_attachment_ids, public=True, comment=None):
         """
         Adds temporary attachment to customer request using attach_temporary_file function
+        :param issue_id_or_key: str
+        :param temp_attachment_ids: List[str], ID from result attach_temporary_file function
+        :param public: bool (default is True)
+        :param comment: str (default is None)
+        :return:
+        """
+        data = {'temporaryAttachmentIds': temp_attachment_ids,
+                'public': public,
+                'additionalComment': {'body': comment}}
+        url = 'rest/servicedeskapi/request/{}/attachment'.format(issue_id_or_key)
 
+        return self.post(url, headers=self.experimental_headers, data=data)
+
+    def add_attachment(self, issue_id_or_key, temp_attachment_id, public=True, comment=None):
+        """
+        Adds temporary attachment to customer request using attach_temporary_file function
         :param issue_id_or_key: str
         :param temp_attachment_id: str, ID from result attach_temporary_file function
         :param public: bool (default is True)
         :param comment: str (default is None)
         :return:
         """
-        log.warning("Adding attachment")
-        data = {
-            "temporaryAttachmentIds": [temp_attachment_id],
-            "public": public,
-            "additionalComment": {"body": comment},
-        }
-        url = "rest/servicedeskapi/request/{}/attachment".format(issue_id_or_key)
-
-        return self.post(url, headers=self.experimental_headers, data=data)
+        log.info('Adding attachment')
+        return self.add_attachments(issue_id_or_key, [temp_attachment_id], public=public, comment=comment)
 
     # SLA actions
     def get_sla(self, issue_id_or_key, start=0, limit=50):
@@ -532,6 +549,7 @@ class ServiceDesk(AtlassianRestAPI):
         return self.get(url, headers=self.experimental_headers)
 
     # Approvals
+
     def get_approvals(self, issue_id_or_key, start=0, limit=50):
         """
         Get all approvals on a request, for a given request ID/Key
