@@ -1,10 +1,10 @@
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
 ARG PYTHON_VERSION
 
 RUN \
   apt update && \
-  apt-get install -y make gcc-5 libkrb5-dev python$PYTHON_VERSION python3-pip && \
+  apt-get install -y make gcc-8 libkrb5-dev python$PYTHON_VERSION python3-pip && \
   apt-get clean
 
 WORKDIR /atlassian-python-api
