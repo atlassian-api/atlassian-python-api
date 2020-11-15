@@ -46,7 +46,9 @@ class Xray(AtlassianRestAPI):
         :param test_environments: Test execution environments separated by ','.
         :return: Returns the exported test runs.
         """
-        env = "?testEnvironments={0}".format(",".join([re.escape(env) for env in test_environments]))
+        env = "?testEnvironments={0}".format(
+            ",".join([re.escape(env) for env in test_environments])
+        )
         url = "rest/raven/1.0/api/test/{0}/testruns{1}".format(test_key, env)
         return self.get(url)
 
@@ -191,7 +193,9 @@ class Xray(AtlassianRestAPI):
         :param test_key: Test Key which should no longer be associate with the pre-condition (eg. 'TEST-100')
         :return:
         """
-        url = "rest/raven/1.0/api/precondition/{0}/test/{1}".format(precondition_key, test_key)
+        url = "rest/raven/1.0/api/precondition/{0}/test/{1}".format(
+            precondition_key, test_key
+        )
         return self.delete(url)
 
     # Test Set API
@@ -276,7 +280,9 @@ class Xray(AtlassianRestAPI):
         return self.delete(url)
 
     # Test Executions API
-    def get_tests_with_test_execution(self, test_exec_key, detailed=False, limit=None, page=None):
+    def get_tests_with_test_execution(
+        self, test_exec_key, detailed=False, limit=None, page=None
+    ):
         """
         Retrieve the tests associated with the given test execution.
         :param test_exec_key: Test execution key (eg. 'EXEC-001').

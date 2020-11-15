@@ -28,7 +28,9 @@ def get_plans_from_project(proj):
 
 
 def get_branches_from_plan(plan_key):
-    return [x["id"] for x in bamboo.search_branches(plan_key, max_results=1000, start=0)]
+    return [
+        x["id"] for x in bamboo.search_branches(plan_key, max_results=1000, start=0)
+    ]
 
 
 def get_results_from_branch(plan_key):
@@ -40,7 +42,9 @@ def remove_build_result(build_key, status):
     build_complete_time = build_value.get("buildCompletedTime") or None
     if not build_complete_time:
         return
-    datetime_obj = datetime.strptime(build_complete_time.split("+")[0] + "000", "%Y-%m-%dT%H:%M:%S.%f")
+    datetime_obj = datetime.strptime(
+        build_complete_time.split("+")[0] + "000", "%Y-%m-%dT%H:%M:%S.%f"
+    )
     if datetime.now() > datetime_obj + timedelta(days=OLDER_DAYS):
         if build_value.get("buildState") == status:
             print("Removing build result - {}".format(build_key))
@@ -63,7 +67,9 @@ def project_review(plans):
 
 
 if __name__ == "__main__":
-    bamboo = Bamboo(url=BAMBOO_URL, username=BAMBOO_LOGIN, password=BAMBOO_PASS, timeout=180)
+    bamboo = Bamboo(
+        url=BAMBOO_URL, username=BAMBOO_LOGIN, password=BAMBOO_PASS, timeout=180
+    )
     projects = get_all_projects()
     for project in projects:
         if project in EXCLUDED_PROJECTS:

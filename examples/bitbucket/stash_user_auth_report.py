@@ -25,7 +25,9 @@ def report(limit=200, include_in_active=False):
         auth_date = user.get("lastAuthenticationTimestamp") or None
         if auth_date:
             auth_date = int(auth_date / 1000)
-            full_date = datetime.utcfromtimestamp(auth_date).strftime("%Y-%m-%d %H:%M:%S")
+            full_date = datetime.utcfromtimestamp(auth_date).strftime(
+                "%Y-%m-%d %H:%M:%S"
+            )
         else:
             full_date = None
         if include_in_active or user.get("active"):

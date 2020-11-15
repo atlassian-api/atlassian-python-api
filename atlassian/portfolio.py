@@ -68,19 +68,28 @@ class Portfolio(AtlassianRestAPI):
         return self.post(url, data={"limit": limit})
 
     def get_filters(self, query_string):
-        url = "rest/roadmap/1.0/system/filters.json?queryString={0}".format(query_string)
+        url = "rest/roadmap/1.0/system/filters.json?queryString={0}".format(
+            query_string
+        )
         return self.get(url)
 
     def get_dependencies(self, workitem_id, plan_version):
-        url = "rest/roadmap/1.0/workitems/{0}/dependencies.json?planVersion={1}".format(workitem_id, plan_version)
+        url = "rest/roadmap/1.0/workitems/{0}/dependencies.json?planVersion={1}".format(
+            workitem_id, plan_version
+        )
         return self.get(url)
 
     def get_stage_name(self, stage_id):
         all_stages = self.get_stages()["collection"]
-        return [stage["title"] for stage in all_stages if stage["id"] == str(stage_id)][0]
+        return [stage["title"] for stage in all_stages if stage["id"] == str(stage_id)][
+            0
+        ]
 
     def get_estimates_dict(self, estimates):
-        return {self.get_stage_name(stage["targetId"]): stage["value"] for stage in estimates["stages"]}
+        return {
+            self.get_stage_name(stage["targetId"]): stage["value"]
+            for stage in estimates["stages"]
+        }
 
     def import_workitem(self, data):
         url = "rest/roadmap/1.0/plans/bulk/{0}/workitems.json".format(self.plan_id)

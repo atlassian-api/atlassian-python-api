@@ -1,7 +1,9 @@
 # coding=utf-8
 from atlassian import Jira
 
-jira = Jira(url="http://localhost:8080/", username="jira-administrator", password="admin")
+jira = Jira(
+    url="http://localhost:8080/", username="jira-administrator", password="admin"
+)
 
 components = ["Data Base", "HTML", "JavaScript"]
 

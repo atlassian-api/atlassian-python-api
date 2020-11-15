@@ -29,7 +29,9 @@ def get_plans_from_project(project_key):
 
 
 if __name__ == "__main__":
-    bamboo = Bamboo(url=BAMBOO_URL, username=BAMBOO_LOGIN, password=BAMBOO_PASSWORD, timeout=180)
+    bamboo = Bamboo(
+        url=BAMBOO_URL, username=BAMBOO_LOGIN, password=BAMBOO_PASSWORD, timeout=180
+    )
     projects = get_all_projects()
     print("Start analyzing the {} projects".format(len(projects)))
     for project in projects:
@@ -39,7 +41,10 @@ if __name__ == "__main__":
         for plan in plans:
             print("Inspecting {} plan".format(plan))
             build_results = [
-                x for x in bamboo.results(plan_key=plan, label=LABEL, max_results=100, include_all_states=True)
+                x
+                for x in bamboo.results(
+                    plan_key=plan, label=LABEL, max_results=100, include_all_states=True
+                )
             ]
             for build in build_results:
                 build_key = build.get("buildResultKey") or None
@@ -48,7 +53,9 @@ if __name__ == "__main__":
                 build_complete_time = build_value.get("buildCompletedTime") or None
                 if not build_complete_time:
                     continue
-                datetimeObj = datetime.strptime(build_complete_time.split("+")[0] + "000", "%Y-%m-%dT%H:%M:%S.%f")
+                datetimeObj = datetime.strptime(
+                    build_complete_time.split("+")[0] + "000", "%Y-%m-%dT%H:%M:%S.%f"
+                )
                 if datetime.now() > datetimeObj + timedelta(days=OLDER_DAYS):
                     print(
                         "Build is old {} as build complete date {}".format(

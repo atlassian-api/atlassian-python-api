@@ -1,5 +1,4 @@
 -r requirements.txt
-flake9
+flake8
 pytest
-pylint
 tox

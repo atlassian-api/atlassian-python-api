@@ -16,8 +16,12 @@ if __name__ == "__main__":
     print("Response after set_tag method")
     print(response)
 
-    response = bitbucket.get_project_tags(project_key="INT", repository_slug="jira-plugins", tag_name="test1")
+    response = bitbucket.get_project_tags(
+        project_key="INT", repository_slug="jira-plugins", tag_name="test1"
+    )
     print("Retrieve tag")
     print(response)
     print("Remove tag")
-    bitbucket.delete_tag(project_key="INT", repository_slug="jira-plugins", tag_name="test1")
+    bitbucket.delete_tag(
+        project_key="INT", repository_slug="jira-plugins", tag_name="test1"
+    )

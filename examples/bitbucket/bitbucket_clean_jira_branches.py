@@ -26,9 +26,13 @@ stash = Stash(url=STASH_URL, username=ATLASSIAN_USER, password=ATLASSIAN_PASSWOR
 flag = True
 time_now = int(time.time()) * 1000
 delta_for_time_ms = LAST_COMMIT_CONDITION_IN_DAYS * 24 * 60 * 60 * 1000
-commit_info_key = "com.atlassian.bitbucket.server.bitbucket-branch:latest-commit-metadata"
+commit_info_key = (
+    "com.atlassian.bitbucket.server.bitbucket-branch:latest-commit-metadata"
+)
 out_going_pull_request = "com.atlassian.bitbucket.server.bitbucket-ref-metadata:outgoing-pull-request-metadata"
-branch_related_issues = "com.atlassian.bitbucket.server.bitbucket-jira:branch-list-jira-issues"
+branch_related_issues = (
+    "com.atlassian.bitbucket.server.bitbucket-jira:branch-list-jira-issues"
+)
 
 
 def is_can_removed_branch(branch_candidate):
@@ -41,8 +45,13 @@ def is_can_removed_branch(branch_candidate):
     if branch_candidate.get("isDefault"):
         print(branch.get("displayId") + " is default")
         return False
-    pull_request_info = (branch_candidate.get("metadata") or {}).get(out_going_pull_request) or {}
-    if pull_request_info.get("pullRequest") is not None or (pull_request_info.get("open") or 0) > 0:
+    pull_request_info = (branch_candidate.get("metadata") or {}).get(
+        out_going_pull_request
+    ) or {}
+    if (
+        pull_request_info.get("pullRequest") is not None
+        or (pull_request_info.get("open") or 0) > 0
+    ):
         print(branch.get("displayId") + " has open PR")
         return False
     # skip branches without pull request info
@@ -50,7 +59,9 @@ def is_can_removed_branch(branch_candidate):
         print(branch.get("displayId") + " without pull request info")
     #    return False
 
-    author_time_stamp = branch_candidate.get("metadata").get(commit_info_key).get("authorTimestamp")
+    author_time_stamp = (
+        branch_candidate.get("metadata").get(commit_info_key).get("authorTimestamp")
+    )
     # check latest commit info
     if time_now - author_time_stamp < delta_for_time_ms:
         print(branch.get("displayId") + " is too early to remove")
@@ -86,8 +97,15 @@ if __name__ == "__main__":
                 break
             for branch in branches:
                 display_id = branch["displayId"]
-                committer_time_stamp = branch.get("metadata").get(commit_info_key).get("committerTimestamp") / 1000
-                last_date_commit = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(committer_time_stamp))
+                committer_time_stamp = (
+                    branch.get("metadata")
+                    .get(commit_info_key)
+                    .get("committerTimestamp")
+                    / 1000
+                )
+                last_date_commit = time.strftime(
+                    "%Y-%m-%d %H:%M:%S", time.localtime(committer_time_stamp)
+                )
                 if is_can_removed_branch(branch):
                     if not DRY_RUN:
                         stash.delete_branch(

@@ -143,7 +143,9 @@ class AtlassianRestAPI(object):
         headers = headers or self.default_headers
         message = "curl --silent -X {method} -H {headers} {data} '{url}'".format(
             method=method,
-            headers=" -H ".join(["'{0}: {1}'".format(key, value) for key, value in headers.items()]),
+            headers=" -H ".join(
+                ["'{0}: {1}'".format(key, value) for key, value in headers.items()]
+            ),
             data="" if not data else "--data '{0}'".format(dumps(data)),
             url=url,
         )
@@ -154,7 +156,9 @@ class AtlassianRestAPI(object):
             api_root = self.api_root
         if api_version is None:
             api_version = self.api_version
-        return "/".join(s.strip("/") for s in [api_root, api_version, resource] if s is not None)
+        return "/".join(
+            s.strip("/") for s in [api_root, api_version, resource] if s is not None
+        )
 
     @staticmethod
     def url_joiner(url, path, trailing=None):
@@ -200,12 +204,16 @@ class AtlassianRestAPI(object):
         if params:
             url += urlencode(params or {})
         if flags:
-            url += ("&" if params or params_already_in_url else "") + "&".join(flags or [])
+            url += ("&" if params or params_already_in_url else "") + "&".join(
+                flags or []
+            )
         json_dump = None
         if files is None:
             data = None if not data else dumps(data)
             json_dump = None if not json else dumps(json)
-        self.log_curl_debug(method=method, url=url, headers=headers, data=data if data else json_dump)
+        self.log_curl_debug(
+            method=method, url=url, headers=headers, data=data if data else json_dump
+        )
         headers = headers or self.default_headers
         response = self._session.request(
             method=method,
@@ -220,7 +228,11 @@ class AtlassianRestAPI(object):
         )
         response.encoding = "utf-8"
 
-        log.debug("HTTP: {} {} -> {} {}".format(method, path, response.status_code, response.reason))
+        log.debug(
+            "HTTP: {} {} -> {} {}".format(
+                method, path, response.status_code, response.reason
+            )
+        )
 
         if self.advanced_mode:
             return response

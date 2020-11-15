@@ -21,7 +21,9 @@ class BitbucketBase(AtlassianRestAPI):
             expected_type = kwargs.pop("expected_type")
             if not self.get_data("type") == expected_type:
                 raise ValueError(
-                    "Expected type of data is [{}], got [{}].".format(expected_type, self.get_data("type"))
+                    "Expected type of data is [{}], got [{}].".format(
+                        expected_type, self.get_data("type")
+                    )
                 )
         if url is None:
             url = self.get_link("self")

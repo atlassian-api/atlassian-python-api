@@ -66,7 +66,15 @@ class Bamboo(AtlassianRestAPI):
             yield response
 
     def base_list_call(
-        self, resource, expand, favourite, clover_enabled, max_results, label=None, start_index=0, **kwargs
+        self,
+        resource,
+        expand,
+        favourite,
+        clover_enabled,
+        max_results,
+        label=None,
+        start_index=0,
+        **kwargs
     ):
         flags = []
         params = {"max-results": max_results}
@@ -93,7 +101,9 @@ class Bamboo(AtlassianRestAPI):
 
     """ Projects & Plans """
 
-    def projects(self, expand=None, favourite=False, clover_enabled=False, max_results=25):
+    def projects(
+        self, expand=None, favourite=False, clover_enabled=False, max_results=25
+    ):
         return self.base_list_call(
             "project",
             expand=expand,
@@ -207,7 +217,9 @@ class Bamboo(AtlassianRestAPI):
 
     """ Branches """
 
-    def search_branches(self, plan_key, include_default_branch=True, max_results=25, start=0):
+    def search_branches(
+        self, plan_key, include_default_branch=True, max_results=25, start=0
+    ):
         params = {
             "max-result": max_results,
             "start-index": start,
@@ -249,7 +261,9 @@ class Bamboo(AtlassianRestAPI):
         :param branch_name:
         :return:
         """
-        resource = "plan/{plan_key}/branch/{branch_name}".format(plan_key=plan_key, branch_name=branch_name)
+        resource = "plan/{plan_key}/branch/{branch_name}".format(
+            plan_key=plan_key, branch_name=branch_name
+        )
         return self.get(self.resource_url(resource))
 
     def create_branch(
@@ -272,7 +286,9 @@ class Bamboo(AtlassianRestAPI):
         :param cleanup_enabled: bool
         :return: PUT request
         """
-        resource = "plan/{plan_key}/branch/{branch_name}".format(plan_key=plan_key, branch_name=branch_name)
+        resource = "plan/{plan_key}/branch/{branch_name}".format(
+            plan_key=plan_key, branch_name=branch_name
+        )
         params = {}
         if vcs_branch:
             params = dict(
@@ -334,7 +350,9 @@ class Bamboo(AtlassianRestAPI):
         """
         resource = "result"
         if project_key and plan_key and job_key and build_number:
-            resource += "/{}-{}-{}/{}".format(project_key, plan_key, job_key, build_number)
+            resource += "/{}-{}-{}/{}".format(
+                project_key, plan_key, job_key, build_number
+            )
         elif project_key and plan_key and build_number:
             resource += "/{}-{}/{}".format(project_key, plan_key, build_number)
         elif project_key and plan_key:
@@ -471,7 +489,9 @@ class Bamboo(AtlassianRestAPI):
             include_all_states=include_all_states,
         )
 
-    def build_result(self, build_key, expand=None, include_all_states=False, start=0, max_results=25):
+    def build_result(
+        self, build_key, expand=None, include_all_states=False, start=0, max_results=25
+    ):
         """
         Returns details of a specific build result
         :param expand: expands build result details on request. Possible values are: artifacts, comments, labels,
@@ -496,7 +516,9 @@ class Bamboo(AtlassianRestAPI):
                 include_all_states=include_all_states,
             )
         except ValueError:
-            raise ValueError('The key "{}" does not correspond to a build result'.format(build_key))
+            raise ValueError(
+                'The key "{}" does not correspond to a build result'.format(build_key)
+            )
 
     def build_latest_result(self, plan_key, expand=None, include_all_states=False):
         """
@@ -519,7 +541,11 @@ class Bamboo(AtlassianRestAPI):
                 include_all_states=include_all_states,
             )
         except ValueError:
-            raise ValueError('The key "{}" does not correspond to the latest build result'.format(plan_key))
+            raise ValueError(
+                'The key "{}" does not correspond to the latest build result'.format(
+                    plan_key
+                )
+            )
 
     def delete_build_result(self, build_key):
         """
@@ -531,9 +557,18 @@ class Bamboo(AtlassianRestAPI):
         plan_key = "{}-{}".format(build_key[0], build_key[1])
         build_number = build_key[2]
         params = {"buildKey": plan_key, "buildNumber": build_number}
-        return self.post(custom_resource, params=params, headers=self.form_token_headers)
+        return self.post(
+            custom_resource, params=params, headers=self.form_token_headers
+        )
 
-    def execute_build(self, plan_key, stage=None, execute_all_stages=True, custom_revision=None, **bamboo_variables):
+    def execute_build(
+        self,
+        plan_key,
+        stage=None,
+        execute_all_stages=True,
+        custom_revision=None,
+        **bamboo_variables
+    ):
         """
         Fire build execution for specified plan.
         !IMPORTANT! NOTE: for some reason, this method always execute all stages
@@ -569,7 +604,9 @@ class Bamboo(AtlassianRestAPI):
 
     """ Comments & Labels """
 
-    def comments(self, project_key, plan_key, build_number, start_index=0, max_results=25):
+    def comments(
+        self, project_key, plan_key, build_number, start_index=0, max_results=25
+    ):
         resource = "result/{}-{}-{}/comment".format(project_key, plan_key, build_number)
         params = {"start-index": start_index, "max-results": max_results}
         return self.get(self.resource_url(resource), params=params)
@@ -582,7 +619,9 @@ class Bamboo(AtlassianRestAPI):
         }
         return self.post(self.resource_url(resource), data=comment_data)
 
-    def labels(self, project_key, plan_key, build_number, start_index=0, max_results=25):
+    def labels(
+        self, project_key, plan_key, build_number, start_index=0, max_results=25
+    ):
         resource = "result/{}-{}-{}/label".format(project_key, plan_key, build_number)
         params = {"start-index": start_index, "max-results": max_results}
         return self.get(self.resource_url(resource), params=params)
@@ -592,7 +631,9 @@ class Bamboo(AtlassianRestAPI):
         return self.post(self.resource_url(resource), data={"name": label})
 
     def delete_label(self, project_key, plan_key, build_number, label):
-        resource = "result/{}-{}-{}/label/{}".format(project_key, plan_key, build_number, label)
+        resource = "result/{}-{}-{}/label/{}".format(
+            project_key, plan_key, build_number, label
+        )
         return self.delete(self.resource_url(resource))
 
     def get_projects(self):
@@ -626,7 +667,9 @@ class Bamboo(AtlassianRestAPI):
         return self.get(self.resource_url(resource))
 
     def deployment_environment_results(self, env_id, expand=None, max_results=25):
-        resource = "deploy/environment/{environmentId}/results".format(environmentId=env_id)
+        resource = "deploy/environment/{environmentId}/results".format(
+            environmentId=env_id
+        )
         params = {"max-result": max_results, "start-index": 0}
         size = 1
         if expand:
@@ -643,7 +686,11 @@ class Bamboo(AtlassianRestAPI):
         Returns the current status of each deployment environment
         If no project id is provided, returns all projects.
         """
-        resource = "deploy/dashboard/{}".format(project_id) if project_id else "deploy/dashboard"
+        resource = (
+            "deploy/dashboard/{}".format(project_id)
+            if project_id
+            else "deploy/dashboard"
+        )
         return self.get(self.resource_url(resource))
 
     """ Users & Groups """

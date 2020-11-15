@@ -13,16 +13,24 @@ def get_all_users(group, include_inactive=True):
     :return:
     """
     start = 0
-    users = jira.get_all_users_from_group(group, include_inactive_users=include_inactive, start=start)
+    users = jira.get_all_users_from_group(
+        group, include_inactive_users=include_inactive, start=start
+    )
     processed_data = {
         "group_name": group,
         "total": users["total"],
-        "users": [{"name": user["name"], "active": user["active"]} for user in users["values"]],
+        "users": [
+            {"name": user["name"], "active": user["active"]} for user in users["values"]
+        ],
     }
     while "nextPage" in users:
         start += 50
-        users = jira.get_all_users_from_group(group, include_inactive_users=include_inactive, start=start)
-        user_list = [{"name": user["name"], "active": user["active"]} for user in users["values"]]
+        users = jira.get_all_users_from_group(
+            group, include_inactive_users=include_inactive, start=start
+        )
+        user_list = [
+            {"name": user["name"], "active": user["active"]} for user in users["values"]
+        ]
         processed_data["users"] = processed_data["users"] + user_list
 
     return processed_data
@@ -32,7 +40,9 @@ def sort_users_in_group(group):
     """
     Take group, sort users by the name and return group with sorted users
     """
-    group["users"] = [sorted_group for sorted_group in sorted(group["users"], key=lambda k: k["name"])]
+    group["users"] = [
+        sorted_group for sorted_group in sorted(group["users"], key=lambda k: k["name"])
+    ]
     return group
 
 
@@ -58,7 +68,9 @@ def get_inactive_users(groups):
         inactive_users = {
             "group_name": group["group_name"],
             "users": [
-                {"name": user["name"], "active": user["active"]} for user in group["users"] if not user["active"]
+                {"name": user["name"], "active": user["active"]}
+                for user in group["users"]
+                if not user["active"]
             ],
         }
         inactive_users_list.append(inactive_users)
@@ -74,7 +86,11 @@ def exclude_inactive_users(groups):
     """
     for group in groups:
         for user in group["users"]:
-            print("Trying to delete {} from group {}".format(user["name"], group["group_name"]))
+            print(
+                "Trying to delete {} from group {}".format(
+                    user["name"], group["group_name"]
+                )
+            )
             jira.remove_user_from_group(user["name"], group["group_name"])
     return True
 

@@ -6,7 +6,11 @@ jira = Jira(url="http://localhost:8090", username="admin", password="admin")
 def compare_dicts(dict1, dict2, print_diffs=False):
     count = 0
     hint = []
-    if len(dict1) != len(dict2) and len(dict1) != len(dict2) + 1 and len(dict2) != len(dict1) + 1:
+    if (
+        len(dict1) != len(dict2)
+        and len(dict1) != len(dict2) + 1
+        and len(dict2) != len(dict1) + 1
+    ):
         return False
 
     for key in dict1:
@@ -45,7 +49,9 @@ def review():
             for notificationType in scheme["notifications"]:
                 notification_types.append(notificationType["notificationType"])
                 notification_scheme_dict[scheme["event"]["name"]] = notification_types
-        all_notification_schemes_dict[notification_schemes["name"]] = notification_scheme_dict
+        all_notification_schemes_dict[
+            notification_schemes["name"]
+        ] = notification_scheme_dict
 
     show_diffs = False
     for i in range(len(names)):

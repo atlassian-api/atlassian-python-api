@@ -72,7 +72,9 @@ class DefaultReviewers(BitbucketCloudBase):
 
 class DefaultReviewer(BitbucketCloudBase):
     def __init__(self, data, *args, **kwargs):
-        super(DefaultReviewer, self).__init__(None, *args, data=data, expected_type="user", **kwargs)
+        super(DefaultReviewer, self).__init__(
+            None, *args, data=data, expected_type="user", **kwargs
+        )
 
     @property
     def display_name(self):

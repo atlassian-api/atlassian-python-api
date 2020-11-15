@@ -9,7 +9,9 @@ i = 0
 limit = 50
 result = []
 while flag:
-    response = confluence.get_group_members(group_name=group_name, start=i * limit, limit=limit)
+    response = confluence.get_group_members(
+        group_name=group_name, start=i * limit, limit=limit
+    )
     if response and len(response):
         i += 1
         result.append(response)

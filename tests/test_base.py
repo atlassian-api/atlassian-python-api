@@ -23,7 +23,9 @@ class TestBasic:
         Jira(url=JIRA_URL, username=ATLASSIAN_USER, password=ATLASSIAN_PASSWORD)
 
     def test_init_confluence(self):
-        Confluence(url=CONFLUENCE_URL, username=ATLASSIAN_USER, password=ATLASSIAN_PASSWORD)
+        Confluence(
+            url=CONFLUENCE_URL, username=ATLASSIAN_USER, password=ATLASSIAN_PASSWORD
+        )
 
     def test_init_bitbucket(self):
         Bitbucket(url=STASH_URL, username=ATLASSIAN_USER, password=ATLASSIAN_PASSWORD)
@@ -39,7 +41,9 @@ class TestBasic:
         )
 
     def test_init_service_desk(self):
-        ServiceDesk(url=SERVICE_DESK_URL, username=ATLASSIAN_USER, password=ATLASSIAN_PASSWORD)
+        ServiceDesk(
+            url=SERVICE_DESK_URL, username=ATLASSIAN_USER, password=ATLASSIAN_PASSWORD
+        )
 
     def test_init_xray(self):
         Xray(url=XRAY_URL, username=ATLASSIAN_USER, password=ATLASSIAN_PASSWORD)

@@ -3,7 +3,9 @@ from atlassian import Confluence
 
 """This example how to detect unknown-attachments errors"""
 
-confluence = Confluence(url="http://localhost:8090", username="admin", password="admin", timeout=185)
+confluence = Confluence(
+    url="http://localhost:8090", username="admin", password="admin", timeout=185
+)
 
 
 def get_all_pages_ids(space_key):
@@ -13,7 +15,9 @@ def get_all_pages_ids(space_key):
     flag = True
     step = 0
     while flag:
-        values = confluence.get_all_pages_from_space(space=space_key, start=step * limit, limit=limit)
+        values = confluence.get_all_pages_from_space(
+            space=space_key, start=step * limit, limit=limit
+        )
         step += 1
 
         if len(values) == 0:
