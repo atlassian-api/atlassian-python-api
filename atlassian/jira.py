@@ -759,6 +759,8 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         url = "rest/api/2/issue/{issue_key}?fields=labels".format(issue_key=issue_key)
+        if self.advanced_mode:
+            return self.get(url)
         return (self.get(url) or {}).get("fields").get("labels")
 
     def add_attachment(self, issue_key, filename):
