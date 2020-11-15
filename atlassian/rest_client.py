@@ -156,7 +156,9 @@ class AtlassianRestAPI(object):
             api_root = self.api_root
         if api_version is None:
             api_version = self.api_version
-        return "/".join(s.strip("/") for s in [api_root, api_version, resource] if s is not None)
+        return "/".join(
+            s.strip("/") for s in [api_root, api_version, resource] if s is not None
+        )
 
     @staticmethod
     def url_joiner(url, path, trailing=None):
@@ -179,7 +181,7 @@ class AtlassianRestAPI(object):
         headers=None,
         files=None,
         trailing=None,
-        absolute=False
+        absolute=False,
     ):
         """
 
@@ -202,7 +204,9 @@ class AtlassianRestAPI(object):
         if params:
             url += urlencode(params or {})
         if flags:
-            url += ("&" if params or params_already_in_url else "") + "&".join(flags or [])
+            url += ("&" if params or params_already_in_url else "") + "&".join(
+                flags or []
+            )
         json_dump = None
         if files is None:
             data = None if not data else dumps(data)
@@ -311,7 +315,14 @@ class AtlassianRestAPI(object):
         return self._response_handler(response)
 
     def put(
-        self, path, data=None, headers=None, files=None, trailing=None, params=None, absolute=False
+        self,
+        path,
+        data=None,
+        headers=None,
+        files=None,
+        trailing=None,
+        params=None,
+        absolute=False,
     ):
         response = self.request(
             "PUT",
@@ -327,7 +338,15 @@ class AtlassianRestAPI(object):
             return response
         return self._response_handler(response)
 
-    def delete(self, path, data=None, headers=None, params=None, trailing=None, absolute=False):
+    def delete(
+        self,
+        path,
+        data=None,
+        headers=None,
+        params=None,
+        trailing=None,
+        absolute=False,
+    ):
         """
         Deletes resources at given paths.
         :rtype: dict

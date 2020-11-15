@@ -26,7 +26,7 @@ for r in p.repositories.each():
         print("   Issue uuid " + str(i.id))
         print("      Title: " + i.title)
     index = 0
-    for pl in r.pipelines.each(sort='-created_on'):
+    for pl in r.pipelines.each(sort="-created_on"):
         index += 1
         if index == 5:
             print("   ...")
@@ -36,12 +36,12 @@ for r in p.repositories.each():
             print("      Step uuid " + s.uuid)
             size, log = s.log(start=0, end=20)
             if size is None:
-                print('         No log')
+                print("         No log")
             else:
-                print('         Size of log: ' + size)
-                print(indent(log.decode("utf-8"), '            '))
+                print("         Size of log: " + size)
+                print(indent(log.decode("utf-8"), "            "))
     for dr in r.default_reviewers.each():
-        print("   Default reviewer " + dr['nickname'])
+        print("   Default reviewer " + dr.nickname)
     for br in r.branch_restrictions.each():
         print("   Branch restriction ID " + str(br.id))
         print("      Kind " + br.kind)

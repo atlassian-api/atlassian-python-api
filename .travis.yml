@@ -17,4 +17,4 @@ install: pip install tox-travis
 before_script:
   - .travis/bump_version ./ minor > atlassian/VERSION
 script:
-  - tox
+  - make qa

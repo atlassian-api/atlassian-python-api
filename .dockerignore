@@ -1,0 +1,19 @@
+# ignore all by default
+*
+
+# explicitly allow certain code files, build files config files, and documentation
+!*.py
+!atlassian/**.py
+!docs/**.py
+!**.md
+!**.rst
+!*.txt
+!*.cfg
+!**/requirements.txt
+
+# explicitly allow tests
+!doc/examples
+!tests
+
+# always ignore these files
+**/*.pyc

@@ -8,18 +8,16 @@ from .pipelines import Pipelines
 
 
 class RepositoriesBase(BitbucketCloudBase):
-
     def __init__(self, url, *args, **kwargs):
         super(RepositoriesBase, self).__init__(url, *args, **kwargs)
 
     def _get_object(self, data):
         if "errors" in data:
             return
-        return Repository(data, **self._get_new_session_args())
+        return Repository(data, **self._new_session_args)
 
 
 class Repositories(RepositoriesBase):
-
     def __init__(self, url, *args, **kwargs):
         super(Repositories, self).__init__(url, *args, **kwargs)
 
@@ -64,7 +62,6 @@ class Repositories(RepositoriesBase):
 
 
 class WorkspaceRepositories(RepositoriesBase):
-
     def __init__(self, url, *args, **kwargs):
         super(WorkspaceRepositories, self).__init__(url, *args, **kwargs)
 
@@ -96,7 +93,7 @@ class WorkspaceRepositories(RepositoriesBase):
         for repository in self._get_paged(url, params):
             yield self._get_object(repository)
 
-    def get(self, repository, by='slug'):
+    def get(self, repository, by="slug"):
         """
         Returns the requested repository
 
@@ -105,20 +102,23 @@ class WorkspaceRepositories(RepositoriesBase):
 
         :return: The requested Repository object
         """
-        if by == 'slug':
+        if by == "slug":
             return self._get_object(super(WorkspaceRepositories, self).get(repository))
-        elif by == 'name':
+        elif by == "name":
             for r in self.each():
                 if r.name == repository:
                     return r
         else:
-            ValueError("Unknown value '{}' for argument [by], expected 'key' or 'name'".format(by))
+            ValueError(
+                "Unknown value '{}' for argument [by], expected 'key' or 'name'".format(
+                    by
+                )
+            )
 
         raise Exception("Unknown repository {} '{}'".format(by, repository))
 
 
 class ProjectRepositories(RepositoriesBase):
-
     def __init__(self, url, *args, **kwargs):
         super(ProjectRepositories, self).__init__(url, *args, **kwargs)
 
@@ -138,7 +138,7 @@ class ProjectRepositories(RepositoriesBase):
         for repository in self._get_paged(url, params):
             yield self._get_object(repository)
 
-    def get(self, repository, by='slug'):
+    def get(self, repository, by="slug"):
         """
         Returns the requested repository
 
@@ -147,28 +147,37 @@ class ProjectRepositories(RepositoriesBase):
 
         :return: The requested Repository object
         """
-        if by not in ('slug', 'name'):
-            ValueError("Unknown value '{}' for argument [by], expected 'slug' or 'name'".format(by))
+        if by not in ("slug", "name"):
+            ValueError(
+                "Unknown value '{}' for argument [by], expected 'slug' or 'name'".format(
+                    by
+                )
+            )
 
         for r in self.each():
-            if ((by == 'slug') and (r.slug == repository)) or ((by == 'name') and (r.name == repository)):
+            if ((by == "slug") and (r.slug == repository)) or (
+                (by == "name") and (r.name == repository)
+            ):
                 return r
 
         raise Exception("Unknown repository {} '{}'".format(by, repository))
 
 
 class Repository(BitbucketCloudBase):
-
     def __init__(self, data, *args, **kwargs):
-        super(Repository, self).__init__(None, *args, data=data, expected_type="repository", **kwargs)
+        super(Repository, self).__init__(
+            None, *args, data=data, expected_type="repository", **kwargs
+        )
         self.__branch_restrictions = BranchRestrictions(
-            "{}/branch-restrictions".format(self.url), **self._get_new_session_args()
+            "{}/branch-restrictions".format(self.url), **self._new_session_args
         )
         self.__default_reviewers = DefaultReviewers(
-            "{}/default-reviewers".format(self.url), **self._get_new_session_args()
+            "{}/default-reviewers".format(self.url), **self._new_session_args
         )
-        self.__issues = Issues("{}/issues".format(self.url), **self._get_new_session_args())
-        self.__pipelines = Pipelines("{}/pipelines".format(self.url), **self._get_new_session_args())
+        self.__issues = Issues("{}/issues".format(self.url), **self._new_session_args)
+        self.__pipelines = Pipelines(
+            "{}/pipelines".format(self.url), **self._new_session_args
+        )
 
     @property
     def branch_restrictions(self):

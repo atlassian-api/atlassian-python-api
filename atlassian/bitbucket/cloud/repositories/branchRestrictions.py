@@ -4,14 +4,13 @@ from ..base import BitbucketCloudBase
 
 
 class BranchRestrictions(BitbucketCloudBase):
-
     def __init__(self, url, *args, **kwargs):
         super(BranchRestrictions, self).__init__(url, *args, **kwargs)
 
     def _get_object(self, data):
         if "errors" in data:
             return
-        return BranchRestriction(data, **self._get_new_session_args())
+        return BranchRestriction(data, **self._new_session_args)
 
     def create(
         self,
@@ -21,7 +20,7 @@ class BranchRestrictions(BitbucketCloudBase):
         branch_type=None,
         users=None,
         groups=None,
-        value=None
+        value=None,
     ):
         """
         Add a new branch restriction.
@@ -105,9 +104,10 @@ class BranchRestrictions(BitbucketCloudBase):
 
 
 class BranchRestriction(BitbucketCloudBase):
-
     def __init__(self, data, *args, **kwargs):
-        super(BranchRestriction, self).__init__(None, *args, data=data, expected_type="branchrestriction", **kwargs)
+        super(BranchRestriction, self).__init__(
+            None, *args, data=data, expected_type="branchrestriction", **kwargs
+        )
 
     @property
     def id(self):
@@ -146,7 +146,9 @@ class BranchRestriction(BitbucketCloudBase):
         Updates an existing branch restriction rule.
         Fields not present in the request body are ignored.
         """
-        self.__data = super(BranchRestriction, self).put(self.url, absolute=True, data=kwargs)
+        self.__data = super(BranchRestriction, self).put(
+            self.url, absolute=True, data=kwargs
+        )
         return self
 
     def delete(self):

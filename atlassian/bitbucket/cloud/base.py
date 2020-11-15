@@ -15,10 +15,9 @@ class BitbucketCloudBase(BitbucketBase):
         """
         super(BitbucketCloudBase, self).__init__(url, *args, **kwargs)
 
-    def _get_new_session_args(self):
-        return dict(session=self._session, cloud=self.cloud, api_root=self.api_root, api_version=self.api_version)
-
-    def _get_paged(self, url, params={}, data=None, flags=None, trailing=None, absolute=False):
+    def _get_paged(
+        self, url, params={}, data=None, flags=None, trailing=None, absolute=False
+    ):
         """
         Used to get the paged data
         :param url:       The url to retrieve.
@@ -30,7 +29,12 @@ class BitbucketCloudBase(BitbucketBase):
 
         while True:
             response = super(BitbucketCloudBase, self).get(
-                url, trailing=trailing, params=params, data=data, flags=flags, absolute=absolute
+                url,
+                trailing=trailing,
+                params=params,
+                data=data,
+                flags=flags,
+                absolute=absolute,
             )
             if "values" not in response:
                 return
@@ -38,15 +42,10 @@ class BitbucketCloudBase(BitbucketBase):
             for value in response.get("values", []):
                 yield value
 
-            if self.cloud:
-                url = response.get("next")
-                if url is None:
-                    break
-                # From now on we have absolute URLs
-                absolute = True
-            else:
-                if response.get("nextPageStart") is None:
-                    break
-                params["start"] = response.get("nextPageStart")
+            url = response.get("next")
+            if url is None:
+                break
+            # From now on we have absolute URLs
+            absolute = True
 
         return

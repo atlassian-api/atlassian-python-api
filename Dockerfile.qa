@@ -1,0 +1,21 @@
+FROM ubuntu:18.04
+
+ARG PYTHON_VERSION
+
+RUN \
+  apt update && \
+  apt-get install -y make gcc-5 libkrb5-dev python$PYTHON_VERSION python3-pip && \
+  apt-get clean
+
+WORKDIR /atlassian-python-api
+COPY requirements.txt .
+COPY requirements-dev.txt .
+
+ENV PYTHON_VERSION=PYTHON_VERSION
+
+RUN \
+  python3 -m pip install --no-cache-dir --upgrade pip && \
+  python3 -m pip install --no-cache-dir -r requirements-dev.txt
+
+CMD python3 -m pip install -e . && \
+  make qa PYTHON_VERSION=$PYTHON_VERSION
