@@ -11,9 +11,7 @@ bamboo = Bamboo(url="https://", username="", password="")
 
 def create_plan_branch(plan, vcs_branch):
     bamboo_branch = vcs_branch.replace("/", "-")
-    return bamboo.create_branch(
-        plan, bamboo_branch, vcs_branch=vcs_branch, enabled=True
-    )
+    return bamboo.create_branch(plan, bamboo_branch, vcs_branch=vcs_branch, enabled=True)
 
 
 def main():

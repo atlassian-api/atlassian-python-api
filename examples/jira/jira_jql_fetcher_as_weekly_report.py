@@ -57,9 +57,7 @@ class ReportGenerator:
         today = datetime.now(timezone.utc)
         output = ""
         for history in histories:
-            change_date = datetime.strptime(
-                history.get("created"), "%Y-%m-%dT%H:%M:%S.%f%z"
-            )
+            change_date = datetime.strptime(history.get("created"), "%Y-%m-%dT%H:%M:%S.%f%z")
             difference = today - change_date
             if difference.days > self.days:
                 continue
@@ -69,9 +67,7 @@ class ReportGenerator:
             ]  # person who did the change
             changes = ["Listing all items that changed:"]
             for item in history.get("items"):
-                changes.append(
-                    f"{item['field']} - {item['fromString']}- {item['toString']}"
-                )
+                changes.append(f"{item['field']} - {item['fromString']}- {item['toString']}")
             output.append("\t".join(changes))
         return " - ".join(output)
 

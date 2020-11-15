@@ -18,9 +18,7 @@ print("Reopen: {}".format(response))
 ver = response.json().get("version")
 print("PR version: {}".format(ver))
 
-response = bitbucket.is_pull_request_can_be_merged(
-    "project_name", "repository_name", pr_id
-)
+response = bitbucket.is_pull_request_can_be_merged("project_name", "repository_name", pr_id)
 print("Reopen: {}".format(response))
 print("PR version: {}".format(ver))
 

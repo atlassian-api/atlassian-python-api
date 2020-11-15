@@ -53,9 +53,7 @@ if __name__ == "__main__":
         prog="confluence_copy_labes_between_spaces",
         description="Simple execution for sync labels between 2 spaces",
     )
-    parser.add_argument(
-        "--source", dest="source", default="SOURCESPACE", help="Just Source Space"
-    )
+    parser.add_argument("--source", dest="source", default="SOURCESPACE", help="Just Source Space")
     parser.add_argument(
         "--destination",
         dest="destination",
