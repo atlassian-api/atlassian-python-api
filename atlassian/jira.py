@@ -16,9 +16,7 @@ class Jira(AtlassianRestAPI):
     Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2
     """
 
-    def get_permissions(
-        self, project_id=None, project_key=None, issue_id=None, issue_key=None
-    ):
+    def get_permissions(self, project_id=None, project_key=None, issue_id=None, issue_key=None):
         """
         Returns all permissions in the system and whether the currently logged in user has them.
         You can optionally provide a specific context
@@ -199,9 +197,7 @@ class Jira(AtlassianRestAPI):
     Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/auditing
     """
 
-    def get_audit_records(
-        self, offset=None, limit=None, filter=None, from_date=None, to_date=None
-    ):
+    def get_audit_records(self, offset=None, limit=None, filter=None, from_date=None, to_date=None):
         """
         Returns auditing records filtered using provided parameters
         :param offset: the number of record from which search starts
@@ -349,9 +345,7 @@ class Jira(AtlassianRestAPI):
     """
 
     def component(self, component_id):
-        return self.get(
-            "rest/api/2/component/{component_id}".format(component_id=component_id)
-        )
+        return self.get("rest/api/2/component/{component_id}".format(component_id=component_id))
 
     def get_component_related_issues(self, component_id):
         """
@@ -359,9 +353,7 @@ class Jira(AtlassianRestAPI):
         :param component_id:
         :return:
         """
-        url = "rest/api/2/component/{component_id}/relatedIssueCounts".format(
-            component_id=component_id
-        )
+        url = "rest/api/2/component/{component_id}/relatedIssueCounts".format(component_id=component_id)
         return self.get(url)
 
     def create_component(self, component):
@@ -370,12 +362,8 @@ class Jira(AtlassianRestAPI):
         return self.post(url, data=component)
 
     def delete_component(self, component_id):
-        log.warning(
-            'Deleting component "{component_id}"'.format(component_id=component_id)
-        )
-        return self.delete(
-            "rest/api/2/component/{component_id}".format(component_id=component_id)
-        )
+        log.warning('Deleting component "{component_id}"'.format(component_id=component_id))
+        return self.delete("rest/api/2/component/{component_id}".format(component_id=component_id))
 
     def update_component_lead(self, component_id, lead):
         data = {"id": component_id, "leadUserName": lead}
@@ -589,9 +577,7 @@ class Jira(AtlassianRestAPI):
 
         return self.delete(url, params=params)
 
-    def get_all_users_from_group(
-        self, group, include_inactive_users=False, start=0, limit=50
-    ):
+    def get_all_users_from_group(self, group, include_inactive_users=False, start=0, limit=50):
         """
         Just wrapping method user group members
         :param group:
@@ -646,9 +632,7 @@ class Jira(AtlassianRestAPI):
     def issue(self, key, fields="*all"):
         return self.get("rest/api/2/issue/{0}?fields={1}".format(key, fields))
 
-    def get_issue(
-        self, issue_id_or_key, fields=None, properties=None, update_history=True
-    ):
+    def get_issue(self, issue_id_or_key, fields=None, properties=None, update_history=True):
         """
         Returns a full representation of the issue for the given issue key
         By default, all fields are returned in this get-issue resource
@@ -737,9 +721,7 @@ class Jira(AtlassianRestAPI):
         :param issue_id_or_key:
         :return:
         """
-        url = "rest/api/2/issue/{issueIdOrKey}/worklog".format(
-            issueIdOrKey=issue_id_or_key
-        )
+        url = "rest/api/2/issue/{issueIdOrKey}/worklog".format(issueIdOrKey=issue_id_or_key)
 
         return self.get(url)
 
@@ -756,9 +738,7 @@ class Jira(AtlassianRestAPI):
             params["notifyUsers"] = "true"
         else:
             params["notifyUsers"] = "false"
-        url = "rest/api/2/issue/{issueIdOrKey}/archive".format(
-            issueIdOrKey=issue_id_or_key
-        )
+        url = "rest/api/2/issue/{issueIdOrKey}/archive".format(issueIdOrKey=issue_id_or_key)
         return self.get(url)
 
     def issue_field_value(self, key, field):
@@ -801,9 +781,7 @@ class Jira(AtlassianRestAPI):
         try:
             resp = self.issue(issue_key, fields="*none")
             if resp.status_code == 404:
-                log.info(
-                    'Issue "{issue_key}" does not exists'.format(issue_key=issue_key)
-                )
+                log.info('Issue "{issue_key}" does not exists'.format(issue_key=issue_key))
                 return False
             resp.raise_for_status()
             log.info('Issue "{issue_key}" exists'.format(issue_key=issue_key))
@@ -842,11 +820,7 @@ class Jira(AtlassianRestAPI):
 
     # @todo merge with edit_issue method
     def issue_update(self, issue_key, fields):
-        log.warning(
-            'Updating issue "{issue_key}" with "{fields}"'.format(
-                issue_key=issue_key, fields=fields
-            )
-        )
+        log.warning('Updating issue "{issue_key}" with "{fields}"'.format(issue_key=issue_key, fields=fields))
         url = "rest/api/2/issue/{0}".format(issue_key)
         return self.put(url, data={"fields": fields})
 
@@ -878,11 +852,7 @@ class Jira(AtlassianRestAPI):
         :param user:
         :return:
         """
-        log.warning(
-            'Adding user {user} to "{issue_key}" watchers'.format(
-                issue_key=issue_key, user=user
-            )
-        )
+        log.warning('Adding user {user} to "{issue_key}" watchers'.format(issue_key=issue_key, user=user))
         data = user
         return self.post(
             "rest/api/2/issue/{issue_key}/watchers".format(issue_key=issue_key),
@@ -947,16 +917,12 @@ class Jira(AtlassianRestAPI):
         issue_key = fields.get("issuekey", None)
 
         if not issue_key or not self.issue_exists(issue_key):
-            log.info(
-                "IssueKey is not provided or does not exists in destination. Will attempt to create an issue"
-            )
+            log.info("IssueKey is not provided or does not exists in destination. Will attempt to create an issue")
             fields.pop("issuekey", None)
             return self.issue_create(fields)
 
         if self.issue_deleted(issue_key):
-            log.warning(
-                'Issue "{issue_key}" deleted, skipping'.format(issue_key=issue_key)
-            )
+            log.warning('Issue "{issue_key}" deleted, skipping'.format(issue_key=issue_key))
             return None
 
         log.info('Issue "{issue_key}" exists, will update'.format(issue_key=issue_key))
@@ -1014,9 +980,7 @@ class Jira(AtlassianRestAPI):
             url += "/" + internal_id
         return self.get(url, params=params)
 
-    def create_or_update_issue_remote_links(
-        self, issue_key, link_url, title, global_id=None, relationship=None
-    ):
+    def create_or_update_issue_remote_links(self, issue_key, link_url, title, global_id=None, relationship=None):
         """
         Add Remote Link to Issue, update url if global_id is passed
         :param issue_key: str
@@ -1034,14 +998,10 @@ class Jira(AtlassianRestAPI):
         return self.post(url, data=data)
 
     def get_issue_remote_link_by_id(self, issue_key, link_id):
-        url = "rest/api/2/issue/{issue_key}/remotelink/{link_id}".format(
-            issue_key=issue_key, link_id=link_id
-        )
+        url = "rest/api/2/issue/{issue_key}/remotelink/{link_id}".format(issue_key=issue_key, link_id=link_id)
         return self.get(url)
 
-    def update_issue_remote_link_by_id(
-        self, issue_key, link_id, url, title, global_id=None, relationship=None
-    ):
+    def update_issue_remote_link_by_id(self, issue_key, link_id, url, title, global_id=None, relationship=None):
         """
         Update existing Remote Link on Issue
         :param issue_key: str
@@ -1057,9 +1017,7 @@ class Jira(AtlassianRestAPI):
             data["globalId"] = global_id
         if relationship:
             data["relationship"] = relationship
-        url = "rest/api/2/issue/{issue_key}/remotelink/{link_id}".format(
-            issue_key=issue_key, link_id=link_id
-        )
+        url = "rest/api/2/issue/{issue_key}/remotelink/{link_id}".format(issue_key=issue_key, link_id=link_id)
         return self.put(url, data=data)
 
     def delete_issue_remote_link_by_id(self, issue_key, link_id):
@@ -1068,9 +1026,7 @@ class Jira(AtlassianRestAPI):
         :param issue_key: str
         :param link_id: str
         """
-        url = "rest/api/2/issue/{issue_key}/remotelink/{link_id}".format(
-            issue_key=issue_key, link_id=link_id
-        )
+        url = "rest/api/2/issue/{issue_key}/remotelink/{link_id}".format(issue_key=issue_key, link_id=link_id)
         return self.delete(url)
 
     def get_issue_transitions(self, issue_key):
@@ -1081,9 +1037,7 @@ class Jira(AtlassianRestAPI):
                     "id": int(transition["id"]),
                     "to": transition["to"]["name"],
                 }
-                for transition in (
-                    self.get_issue_transitions_full(issue_key).json() or {}
-                ).get("transitions")
+                for transition in (self.get_issue_transitions_full(issue_key).json() or {}).get("transitions")
             ]
         else:
             return [
@@ -1092,9 +1046,7 @@ class Jira(AtlassianRestAPI):
                     "id": int(transition["id"]),
                     "to": transition["to"]["name"],
                 }
-                for transition in (
-                    self.get_issue_transitions_full(issue_key) or {}
-                ).get("transitions")
+                for transition in (self.get_issue_transitions_full(issue_key) or {}).get("transitions")
             ]
 
     def issue_transition(self, issue_key, status):
@@ -1128,9 +1080,7 @@ class Jira(AtlassianRestAPI):
 
     def get_issue_status(self, issue_key):
         url = "rest/api/2/issue/{issue_key}?fields=status".format(issue_key=issue_key)
-        return (((self.get(url) or {}).get("fields") or {}).get("status") or {}).get(
-            "name"
-        ) or {}
+        return (((self.get(url) or {}).get("fields") or {}).get("status") or {}).get("name") or {}
 
     def get_issue_status_id(self, issue_key):
         url = "rest/api/2/issue/{issue_key}?fields=status".format(issue_key=issue_key)
@@ -1264,9 +1214,7 @@ class Jira(AtlassianRestAPI):
         data = {"name": username, "emailAddress": email}
         return self.user_update(username, data=data)
 
-    def user_create(
-        self, username, email, display_name, password=None, notification=None
-    ):
+    def user_create(self, username, email, display_name, password=None, notification=None):
         """
         Create a user in Jira
         :param username:
@@ -1305,9 +1253,7 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         params = {"username": username}
-        return self.get(
-            "rest/api/2/user/properties/{}".format(key_property), params=params
-        )
+        return self.get("rest/api/2/user/properties/{}".format(key_property), params=params)
 
     def user_set_property(self, username, key_property, value_property):
         """
@@ -1378,15 +1324,11 @@ class Jira(AtlassianRestAPI):
             "webSudoPassword": self.password,
             "webSudoIsPost": "false",
         }
-        answer = self.get(
-            "secure/admin/WebSudoAuthenticate.jspa", self.form_token_headers
-        )
+        answer = self.get("secure/admin/WebSudoAuthenticate.jspa", self.form_token_headers)
         atl_token = None
         if answer:
             atl_token = (
-                answer.split(
-                    '<meta id="atlassian-token" name="atlassian-token" content="'
-                )[1]
+                answer.split('<meta id="atlassian-token" name="atlassian-token" content="')[1]
                 .split("\n")[0]
                 .split('"')[0]
             )
@@ -1436,9 +1378,7 @@ class Jira(AtlassianRestAPI):
         :param application_key: The application key of the application
         :return: True if the user has the application, else False
         """
-        user = self.user(
-            username, "applicationRoles"
-        )  # Get applications roles of the user
+        user = self.user(username, "applicationRoles")  # Get applications roles of the user
         if "self" in user:
             for application_role in user.get("applicationRoles").get("items"):
                 if application_role.get("key") == application_key:
@@ -1585,9 +1525,7 @@ class Jira(AtlassianRestAPI):
             params["status"] = status
         return self.get("rest/api/2/project/{}/version".format(key), params=params)
 
-    def add_version(
-        self, project_key, project_id, version, is_archived=False, is_released=False
-    ):
+    def add_version(self, project_key, project_id, version, is_archived=False, is_released=False):
         """
         Add missing version to project
         :param project_key: the project key
@@ -1621,9 +1559,7 @@ class Jira(AtlassianRestAPI):
         :param role_id:
         :return:
         """
-        url = "rest/api/2/project/{projectIdOrKey}/role/{id}".format(
-            projectIdOrKey=project_key, id=role_id
-        )
+        url = "rest/api/2/project/{projectIdOrKey}/role/{id}".format(projectIdOrKey=project_key, id=role_id)
         return (self.get(url) or {}).get("actors")
 
     def delete_project_actors(self, project_key, role_id, actor, actor_type=None):
@@ -1637,9 +1573,7 @@ class Jira(AtlassianRestAPI):
         :param actor_type: str : group or user string
         :return:
         """
-        url = "rest/api/2/project/{projectIdOrKey}/role/{roleId}".format(
-            projectIdOrKey=project_key, roleId=role_id
-        )
+        url = "rest/api/2/project/{projectIdOrKey}/role/{roleId}".format(projectIdOrKey=project_key, roleId=role_id)
         params = {}
         if actor_type is not None and actor_type in ["group", "user"]:
             params[actor_type] = actor
@@ -1653,9 +1587,7 @@ class Jira(AtlassianRestAPI):
         :param user_name:
         :return:
         """
-        return self.add_project_actor_in_role(
-            project_key, role_id, user_name, "atlassian-user-role-actor"
-        )
+        return self.add_project_actor_in_role(project_key, role_id, user_name, "atlassian-user-role-actor")
 
     def add_project_actor_in_role(self, project_key, role_id, actor, actor_type):
         """
@@ -1666,9 +1598,7 @@ class Jira(AtlassianRestAPI):
         :param actor_type:
         :return:
         """
-        url = "rest/api/2/project/{projectIdOrKey}/role/{roleId}".format(
-            projectIdOrKey=project_key, roleId=role_id
-        )
+        url = "rest/api/2/project/{projectIdOrKey}/role/{roleId}".format(projectIdOrKey=project_key, roleId=role_id)
         data = {}
         if actor_type in ["group", "atlassian-group-role-actor"]:
             data["group"] = [actor]
@@ -1694,9 +1624,7 @@ class Jira(AtlassianRestAPI):
             params["expand"] = expand
         return self.put(url, data, params=params)
 
-    def update_project_category_for_project(
-        self, project_key, new_project_category_id, expand=None
-    ):
+    def update_project_category_for_project(self, project_key, new_project_category_id, expand=None):
         """
         Updates a project.
         Update project: /rest/api/2/project/{projectIdOrKey}
@@ -1724,9 +1652,7 @@ class Jira(AtlassianRestAPI):
         url = "rest/api/2/project/{}/notificationscheme".format(project_id_or_key)
         return self.get(url)
 
-    def assign_project_notification_scheme(
-        self, project_key, new_notification_scheme=""
-    ):
+    def assign_project_notification_scheme(self, project_key, new_notification_scheme=""):
         """
         Updates a project.
         Update project: /rest/api/2/project/{projectIdOrKey}
@@ -1892,9 +1818,7 @@ class Jira(AtlassianRestAPI):
         )
         return self.get(url)
 
-    def get_assignable_users_for_issue(
-        self, issue_key, username=None, start=0, limit=50
-    ):
+    def get_assignable_users_for_issue(self, issue_key, username=None, start=0, limit=50):
         """
         Provide assignable users for issue
         :param issue_key:
@@ -1979,9 +1903,7 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         log.info(
-            "Linking issue {inward} and {outward}".format(
-                inward=data["inwardIssue"], outward=data["outwardIssue"]
-            )
+            "Linking issue {inward} and {outward}".format(inward=data["inwardIssue"], outward=data["outwardIssue"])
         )
         url = "rest/api/2/issueLink"
         return self.post(url, data=data)
@@ -2047,9 +1969,7 @@ class Jira(AtlassianRestAPI):
         :param link_type_name:
         :return:
         """
-        if link_type_name.lower() in [
-            x.lower() for x in self.get_issue_link_types_names()
-        ]:
+        if link_type_name.lower() in [x.lower() for x in self.get_issue_link_types_names()]:
             log.error("Link type name already exists")
             return "Link type name already exists"
         data = {"name": link_type_name, "inward": inward, "outward": outward}
@@ -2057,16 +1977,12 @@ class Jira(AtlassianRestAPI):
 
     def get_issue_link_type(self, issue_link_type_id):
         """Returns for a given issue link type id all information about this issue link type."""
-        url = "rest/api/2/issueLinkType/{issueLinkTypeId}".format(
-            issueLinkTypeId=issue_link_type_id
-        )
+        url = "rest/api/2/issueLinkType/{issueLinkTypeId}".format(issueLinkTypeId=issue_link_type_id)
         return self.get(url)
 
     def delete_issue_link_type(self, issue_link_type_id):
         """Delete the specified issue link type."""
-        url = "rest/api/2/issueLinkType/{issueLinkTypeId}".format(
-            issueLinkTypeId=issue_link_type_id
-        )
+        url = "rest/api/2/issueLinkType/{issueLinkTypeId}".format(issueLinkTypeId=issue_link_type_id)
         return self.delete(url)
 
     def update_issue_link_type(self, issue_link_type_id, data):
@@ -2080,9 +1996,7 @@ class Jira(AtlassianRestAPI):
                     }
         :return:
         """
-        url = "rest/api/2/issueLinkType/{issueLinkTypeId}".format(
-            issueLinkTypeId=issue_link_type_id
-        )
+        url = "rest/api/2/issueLinkType/{issueLinkTypeId}".format(issueLinkTypeId=issue_link_type_id)
         return self.put(url, data=data)
 
     """
@@ -2172,9 +2086,7 @@ class Jira(AtlassianRestAPI):
         for screen_tab in screen_tabs:
             tab_id = screen_tab["id"]
             if tab_id:
-                tab_fields = self.get_screen_tab_fields(
-                    screen_id=screen_id, tab_id=tab_id
-                )
+                tab_fields = self.get_screen_tab_fields(screen_id=screen_id, tab_id=tab_id)
                 fields = fields + tab_fields
         return fields
 
@@ -2263,9 +2175,7 @@ class Jira(AtlassianRestAPI):
         url = "rest/api/2/workflow"
         return self.get(url)
 
-    def get_workflows_paginated(
-        self, startAt=None, maxResults=None, workflowName=None, expand=None
-    ):
+    def get_workflows_paginated(self, startAt=None, maxResults=None, workflowName=None, expand=None):
         """
         Provide all workflows paginated (see https://developer.atlassian.com/cloud/jira/platform/rest/v2/\
 api-group-workflows/#api-rest-api-2-workflow-search-get)
@@ -2385,9 +2295,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param new_permission
         :return:
         """
-        url = "rest/api/2/permissionscheme/{schemeID}/permission".format(
-            schemeID=permission_id
-        )
+        url = "rest/api/2/permissionscheme/{schemeID}/permission".format(schemeID=permission_id)
 
         return self.post(url, data=new_permission)
 
@@ -2444,13 +2352,9 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
             response = self.get(url)
         except HTTPError as e:
             if e.response.status_code == 401:
-                raise ApiPermissionError(
-                    "Returned if the user is not logged in.", reason=e
-                )
+                raise ApiPermissionError("Returned if the user is not logged in.", reason=e)
             elif e.response.status_code == 403:
-                raise ApiPermissionError(
-                    "User doesn't have administrative permissions", reason=e
-                )
+                raise ApiPermissionError("User doesn't have administrative permissions", reason=e)
             elif e.response.status_code == 404:
                 raise ApiNotFoundError(
                     "Returned if the project does not exist, or is not visible to the calling user",
@@ -2531,9 +2435,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param priority_scheme_id:
         :return:
         """
-        url = "rest/api/2/project/{projectKeyOrId}/priorityscheme".format(
-            projectKeyOrId=project_key_or_id
-        )
+        url = "rest/api/2/project/{projectKeyOrId}/priorityscheme".format(projectKeyOrId=project_key_or_id)
         data = {"id": priority_scheme_id}
         return self.put(url, data=data)
 
@@ -2550,9 +2452,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param project_key_or_id:
         :return: Returns a list of all security levels in a project for which the current user has access.
         """
-        url = "rest/api/2/project/{projectKeyOrId}/securitylevel".format(
-            projectKeyOrId=project_key_or_id
-        )
+        url = "rest/api/2/project/{projectKeyOrId}/securitylevel".format(projectKeyOrId=project_key_or_id)
         return self.get(url)
 
     """
@@ -2790,9 +2690,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param customer_id: the Customer id.
         :return:
         """
-        url = "rest/tempo-accounts/1/account/customer/{customerId}/".format(
-            customerId=customer_id
-        )
+        url = "rest/tempo-accounts/1/account/customer/{customerId}/".format(customerId=customer_id)
         return self.get(url)
 
     def tempo_account_get_customers(self, query=None, count_accounts=None):
@@ -2915,9 +2813,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         Provide a holiday scheme
         :return:
         """
-        url = "rest/tempo-core/2/holidayschemes/{}/member/{}/".format(
-            scheme_id, username
-        )
+        url = "rest/tempo-core/2/holidayschemes/{}/member/{}/".format(scheme_id, username)
         data = {"id": scheme_id}
         return self.put(url, data=data)
 
@@ -2962,9 +2858,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         url = "rest/tempo-timesheets/3/private/config/"
         return self.get(url)
 
-    def tempo_timesheets_get_team_utilization(
-        self, team_id, date_from, date_to=None, group_by=None
-    ):
+    def tempo_timesheets_get_team_utilization(self, team_id, date_from, date_to=None, group_by=None):
         """
         GEt team utulization. Response in json
         :param team_id:
@@ -3054,9 +2948,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         url = "rest/tempo-timesheets/4/worklogs/jira/issue/{issue}".format(issue=issue)
         return self.get(url)
 
-    def tempo_timesheets_write_worklog(
-        self, worker, started, time_spend_in_seconds, issue_id, comment=None
-    ):
+    def tempo_timesheets_write_worklog(self, worker, started, time_spend_in_seconds, issue_id, comment=None):
         """
         Log work for user
         :param worker:
@@ -3170,9 +3062,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
             "availability": "100",
             "role": {"id": 1},
         }
-        url = "rest/tempo-teams/2/team/{}/member/{}/membership".format(
-            team_id, member_id
-        )
+        url = "rest/tempo-teams/2/team/{}/member/{}/membership".format(team_id, member_id)
         return self.post(url, data=data)
 
     def tempo_teams_add_member_raw(self, team_id, member_data):
@@ -3203,14 +3093,10 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param membership_id:
         :return:
         """
-        url = "rest/tempo-teams/2/team/{}/member/{}/membership/{}".format(
-            team_id, member_id, membership_id
-        )
+        url = "rest/tempo-teams/2/team/{}/member/{}/membership/{}".format(team_id, member_id, membership_id)
         return self.delete(url)
 
-    def tempo_teams_update_member_information(
-        self, team_id, member_id, membership_id, data
-    ):
+    def tempo_teams_update_member_information(self, team_id, member_id, membership_id, data):
         """
         Update team membership attribute info
         :param team_id:
@@ -3219,9 +3105,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param data:
         :return:
         """
-        url = "rest/tempo-teams/2/team/{}/member/{}/membership/{}".format(
-            team_id, member_id, membership_id
-        )
+        url = "rest/tempo-teams/2/team/{}/member/{}/membership/{}".format(team_id, member_id, membership_id)
         return self.put(url, data=data)
 
     def tempo_timesheets_get_period_configuration(self):
@@ -3237,9 +3121,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
     #   Agile(Formerly Greenhopper) REST API implements
     #   Resource: https://docs.atlassian.com/jira-software/REST/7.3.1/
     #######################################################################
-    def get_all_agile_boards(
-        self, board_name=None, project_key=None, board_type=None, start=0, limit=50
-    ):
+    def get_all_agile_boards(self, board_name=None, project_key=None, board_type=None, start=0, limit=50):
         """
         Returns all boards. This only includes boards that the user has permission to view.
         :param board_name:
@@ -3452,9 +3334,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param sprint_id:
         :return:
         """
-        return self.delete(
-            "rest/agile/1.0/sprint/{sprintId}".format(sprintId=sprint_id)
-        )
+        return self.delete("rest/agile/1.0/sprint/{sprintId}".format(sprintId=sprint_id))
 
     def update_partially_sprint(self, sprint_id, data):
         """
