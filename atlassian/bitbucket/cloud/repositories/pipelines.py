@@ -94,16 +94,12 @@ class Pipelines(BitbucketCloudBase):
 
 class Pipeline(BitbucketCloudBase):
     def __init__(self, data, *args, **kwargs):
-        super(Pipeline, self).__init__(
-            None, *args, data=data, expected_type="pipeline", **kwargs
-        )
+        super(Pipeline, self).__init__(None, *args, data=data, expected_type="pipeline", **kwargs)
 
     def _get_object(self, data):
         if "errors" in data:
             return
-        return Step(
-            "{}/steps/{}".format(self.url, data["uuid"]), data, **self._new_session_args
-        )
+        return Step("{}/steps/{}".format(self.url, data["uuid"]), data, **self._new_session_args)
 
     @property
     def uuid(self):
@@ -150,9 +146,7 @@ class Pipeline(BitbucketCloudBase):
 
 class Step(BitbucketCloudBase):
     def __init__(self, url, data, *args, **kwargs):
-        super(Step, self).__init__(
-            url, *args, data=data, expected_type="pipeline_step", **kwargs
-        )
+        super(Step, self).__init__(url, *args, data=data, expected_type="pipeline_step", **kwargs)
 
     @property
     def uuid(self):
@@ -197,9 +191,7 @@ class Step(BitbucketCloudBase):
                  the overall size and the byte representation of the requested range.
         """
         headers = {"Accept": "application/octet-stream"}
-        if ((start is not None) and (end is None)) or (
-            (start is None) and (end is not None)
-        ):
+        if ((start is not None) and (end is None)) or ((start is None) and (end is not None)):
             raise ValueError("For a range [start] and [end] are needed.")
         if start is not None:
             start = int(start)
@@ -207,9 +199,7 @@ class Step(BitbucketCloudBase):
             if (start >= 0) and (start < end):
                 headers["Range"] = "bytes={}-{}".format(start, end)
             else:
-                raise ValueError(
-                    "Value of [start] must be o or greater and [end] must be greater than [start]."
-                )
+                raise ValueError("Value of [start] must be o or greater and [end] must be greater than [start].")
 
         response = None
         try:

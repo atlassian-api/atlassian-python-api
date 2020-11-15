@@ -20,6 +20,4 @@ if __name__ == "__main__":
 
     subtree = confluence.get_subtree_of_content_ids("123123")
     for page_id in subtree:
-        confluence.remove_page_history_keep_version(
-            page_id=page_id, keep_last_versions=remained_count
-        )
+        confluence.remove_page_history_keep_version(page_id=page_id, keep_last_versions=remained_count)

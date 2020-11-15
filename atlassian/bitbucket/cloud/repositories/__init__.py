@@ -109,11 +109,7 @@ class WorkspaceRepositories(RepositoriesBase):
                 if r.name == repository:
                     return r
         else:
-            ValueError(
-                "Unknown value '{}' for argument [by], expected 'key' or 'name'".format(
-                    by
-                )
-            )
+            ValueError("Unknown value '{}' for argument [by], expected 'key' or 'name'".format(by))
 
         raise Exception("Unknown repository {} '{}'".format(by, repository))
 
@@ -148,16 +144,10 @@ class ProjectRepositories(RepositoriesBase):
         :return: The requested Repository object
         """
         if by not in ("slug", "name"):
-            ValueError(
-                "Unknown value '{}' for argument [by], expected 'slug' or 'name'".format(
-                    by
-                )
-            )
+            ValueError("Unknown value '{}' for argument [by], expected 'slug' or 'name'".format(by))
 
         for r in self.each():
-            if ((by == "slug") and (r.slug == repository)) or (
-                (by == "name") and (r.name == repository)
-            ):
+            if ((by == "slug") and (r.slug == repository)) or ((by == "name") and (r.name == repository)):
                 return r
 
         raise Exception("Unknown repository {} '{}'".format(by, repository))
@@ -165,19 +155,13 @@ class ProjectRepositories(RepositoriesBase):
 
 class Repository(BitbucketCloudBase):
     def __init__(self, data, *args, **kwargs):
-        super(Repository, self).__init__(
-            None, *args, data=data, expected_type="repository", **kwargs
-        )
+        super(Repository, self).__init__(None, *args, data=data, expected_type="repository", **kwargs)
         self.__branch_restrictions = BranchRestrictions(
             "{}/branch-restrictions".format(self.url), **self._new_session_args
         )
-        self.__default_reviewers = DefaultReviewers(
-            "{}/default-reviewers".format(self.url), **self._new_session_args
-        )
+        self.__default_reviewers = DefaultReviewers("{}/default-reviewers".format(self.url), **self._new_session_args)
         self.__issues = Issues("{}/issues".format(self.url), **self._new_session_args)
-        self.__pipelines = Pipelines(
-            "{}/pipelines".format(self.url), **self._new_session_args
-        )
+        self.__pipelines = Pipelines("{}/pipelines".format(self.url), **self._new_session_args)
 
     @property
     def branch_restrictions(self):

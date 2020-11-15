@@ -3,9 +3,7 @@ import logging
 
 from atlassian import Bitbucket
 
-logging.basicConfig(
-    level=logging.DEBUG, format="[%(asctime).19s] [%(levelname)s] %(message)s"
-)
+logging.basicConfig(level=logging.DEBUG, format="[%(asctime).19s] [%(levelname)s] %(message)s")
 logging.getLogger("requests").setLevel(logging.WARNING)
 log = logging.getLogger("bitbucket-projects-administrators")
 
