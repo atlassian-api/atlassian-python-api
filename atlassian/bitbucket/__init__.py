@@ -1001,7 +1001,7 @@ class Bitbucket(BitbucketBase):
         data = {"name": name, "startPoint": start_point, "message": message}
         return self.post(url, data=data)
 
-    def delete_branch(self, project_key, repository_slug, name, end_point):
+    def delete_branch(self, project_key, repository_slug, name, end_point=None):
         """
         Delete branch from related repo
         :param self:
@@ -1014,7 +1014,9 @@ class Bitbucket(BitbucketBase):
         url = self._url_repo_branches(
             project_key, repository_slug, api_root="rest/branch-utils"
         )
-        data = {"name": str(name), "endPoint": str(end_point)}
+        data = {"name": str(name)}
+        if end_point:
+            data['endPoint'] = end_point
         return self.delete(url, data=data)
 
     def _url_repo_tags(self, project_key, repository_slug, api_root=None):

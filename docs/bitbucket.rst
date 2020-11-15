@@ -131,7 +131,7 @@ Manage code
     bitbucket.create_branch(project_key, repository, name, start_point, message)
 
     # Delete branch from related repo
-    bitbucket.delete_branch(project, repository, name, end_point)
+    bitbucket.delete_branch(project, repository, name, end_point=None)
 
     # Get pull requests
     bitbucket.get_pull_requests(project, repository, state='OPEN', order='newest', limit=100, start=0)
