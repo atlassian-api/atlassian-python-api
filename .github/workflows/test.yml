@@ -14,11 +14,11 @@ jobs:
   run-docker:
 
     runs-on: ubuntu-18.04
-  
+
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.4', '3.5', '3.6', '3.7', '3.8']
+        python-version: ['3.4', '3.5', '3.6', '3.7', '3.8', '3.9', '-dev']
 
     steps:
     - uses: actions/checkout@v2

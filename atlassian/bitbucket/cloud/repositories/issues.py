@@ -65,9 +65,7 @@ class Issues(BitbucketCloudBase):
 
 class Issue(BitbucketCloudBase):
     def __init__(self, data, *args, **kwargs):
-        super(Issue, self).__init__(
-            None, *args, data=data, expected_type="issue", **kwargs
-        )
+        super(Issue, self).__init__(None, *args, data=data, expected_type="issue", **kwargs)
 
     @property
     def id(self):

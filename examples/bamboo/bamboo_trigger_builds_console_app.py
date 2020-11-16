@@ -54,9 +54,6 @@ if __name__ == "__main__":
     # Getting arguments
     args = parser.parse_args()
     # Make a dictionary from the command arguments
-    build_arguments = {
-        args.arguments[i]: args.arguments[i + 1]
-        for i in range(0, len(args.arguments or []), 2)
-    }
+    build_arguments = {args.arguments[i]: args.arguments[i + 1] for i in range(0, len(args.arguments or []), 2)}
     # Pass build key and arguments to the function
     execute_build(args.build, build_arguments)

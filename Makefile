@@ -31,6 +31,8 @@ setup-dev:
 
 qa: tox
 
+tox: export PYTHONDONTWRITEBYTECODE := 1
+
 tox:
 	tox
 

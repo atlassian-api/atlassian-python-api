@@ -58,13 +58,9 @@ class Workspaces(BitbucketCloudBase):
 
 class Workspace(BitbucketCloudBase):
     def __init__(self, data, *args, **kwargs):
-        super(Workspace, self).__init__(
-            None, *args, data=data, expected_type="workspace", **kwargs
-        )
+        super(Workspace, self).__init__(None, *args, data=data, expected_type="workspace", **kwargs)
         self.__projects = Projects(self.get_link("projects"), **self._new_session_args)
-        self.__repositories = WorkspaceRepositories(
-            self.get_link("repositories"), **self._new_session_args
-        )
+        self.__repositories = WorkspaceRepositories(self.get_link("repositories"), **self._new_session_args)
 
     @property
     def projects(self):
