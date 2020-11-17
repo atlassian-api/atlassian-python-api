@@ -702,7 +702,7 @@ class ServiceDesk(AtlassianRestAPI):
             "issueTypeId": request_type_id,
             "name": request_name,
             "description": request_description,
-            "helpText": request_help_text,
+            "helpText": request_help_text
         }
             
         url = "rest/servicedeskapi/servicedesk/{}/requesttype".format(service_desk_id)
