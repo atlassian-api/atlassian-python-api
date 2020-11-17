@@ -704,13 +704,7 @@ class ServiceDesk(AtlassianRestAPI):
             "description": request_description,
             "helpText": request_help_text,
         }
-
-        param_map = {"headers": self.experimental_headers}
-
-        if isinstance(values_dict, dict):
-            param_map["json"] = data
-        elif isinstance(values_dict, str):
-            param_map["data"] = data
             
         url = "rest/servicedeskapi/servicedesk/{}/requesttype".format(service_desk_id)
-        return self.post(url, **param_map)
+        return self.post(url, headers=self.experimental_headers, data=data)
+
