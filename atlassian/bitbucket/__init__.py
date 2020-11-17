@@ -2343,7 +2343,7 @@ class Bitbucket(BitbucketBase):
             .workspaces.get(workspace)
             .repositories.get(repository_slug)
             .pipelines.get(pipeline_uuid)
-            .steps(step_uuid)
+            .step(step_uuid)
             .data
         )
 
@@ -2363,7 +2363,7 @@ class Bitbucket(BitbucketBase):
             .workspaces.get(workspace)
             .repositories.get(repository_slug)
             .pipelines.get(pipeline_uuid)
-            .steps(step_uuid)
+            .step(step_uuid)
             .log()
         )
 
@@ -2467,6 +2467,7 @@ class Bitbucket(BitbucketBase):
             .repositories.get(repository_slug)
             .issues.get(id)
             .delete()
+            .data
         )
 
     @deprecated(
@@ -2572,6 +2573,7 @@ class Bitbucket(BitbucketBase):
             .repositories.get(repository_slug)
             .branch_restrictions.get(id)
             .delete()
+            .data
         )
 
     @deprecated(

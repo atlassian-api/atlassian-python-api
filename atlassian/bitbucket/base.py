@@ -30,6 +30,37 @@ class BitbucketBase(AtlassianRestAPI):
     def __str__(self):
         return PrettyPrinter(indent=4).pformat(self.__data)
 
+    def _get_paged(self, url, params={}, data=None, flags=None, trailing=None, absolute=False):
+        """
+        Used to get the paged data
+        :param url:       The url to retrieve.
+        :param params:    The parameters (optional).
+        :param data:      The data (optional).
+
+        :return: nothing
+        """
+
+        while True:
+            response = self.get(url, trailing=trailing, params=params, data=data, flags=flags, absolute=absolute)
+            if "values" not in response:
+                return
+
+            for value in response.get("values", []):
+                yield value
+
+            if self.cloud:
+                url = response.get("next")
+                if url is None:
+                    break
+                # From now on we have absolute URLs
+                absolute = True
+            else:
+                if response.get("nextPageStart") is None:
+                    break
+                params["start"] = response.get("nextPageStart")
+
+        return
+
     @property
     def _new_session_args(self):
         return dict(
