@@ -704,7 +704,10 @@ class ServiceDesk(AtlassianRestAPI):
             "description": request_description,
             "helpText": request_help_text
         }
-            
+        
+        param_map = {"headers": self.experimental_headers}
+        param_map["data"] = data
+           
         url = "rest/servicedeskapi/servicedesk/{}/requesttype".format(service_desk_id)
-        return self.post(url, headers=self.experimental_headers, data=data)
+        return self.post(url, **param_map)
 
