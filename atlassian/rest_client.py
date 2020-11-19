@@ -158,7 +158,7 @@ class AtlassianRestAPI(object):
 
     @staticmethod
     def url_joiner(url, path, trailing=None):
-        url_link = "/".join(s.strip("/") for s in [url, path] if s is not None)
+        url_link = "/".join(str(s).strip("/") for s in [url, path] if s is not None)
         if trailing:
             url_link += "/"
         return url_link
