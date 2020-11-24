@@ -19,7 +19,6 @@ log = logging.getLogger(__name__)
 
 
 class Confluence(ConfluenceBase):
-
     @staticmethod
     def _create_body(body, representation):
         if representation not in ["editor", "export_view", "view", "storage", "wiki"]:
