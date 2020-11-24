@@ -2,10 +2,11 @@
 import logging
 from ..rest_client import AtlassianRestAPI
 
-
 log = logging.getLogger(__name__)
 
+
 class ConfluenceBase(AtlassianRestAPI):
+
     content_types = {
         ".gif": "image/gif",
         ".png": "image/png",
@@ -23,5 +24,3 @@ class ConfluenceBase(AtlassianRestAPI):
             if "cloud" not in kwargs:
                 kwargs["cloud"] = True
         super(ConfluenceBase, self).__init__(url, *args, **kwargs)
-
-  

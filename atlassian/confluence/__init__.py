@@ -3,7 +3,6 @@ import logging
 import os
 import time
 
-from deprecated import deprecated
 from requests import HTTPError
 from .base import ConfluenceBase
 from atlassian.confluence.cloud import Cloud
