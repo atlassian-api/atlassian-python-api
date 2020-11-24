@@ -3,39 +3,23 @@ import logging
 import os
 import time
 
+from deprecated import deprecated
 from requests import HTTPError
-
+from .base import ConfluenceBase
+from atlassian.confluence.cloud import Cloud
 from atlassian import utils
-from .errors import (
+from ..errors import (
     ApiError,
     ApiNotFoundError,
     ApiPermissionError,
     ApiValueError,
     ApiConflictError,
 )
-from .rest_client import AtlassianRestAPI
 
 log = logging.getLogger(__name__)
 
 
-class Confluence(AtlassianRestAPI):
-    content_types = {
-        ".gif": "image/gif",
-        ".png": "image/png",
-        ".jpg": "image/jpeg",
-        ".jpeg": "image/jpeg",
-        ".pdf": "application/pdf",
-        ".doc": "application/msword",
-        ".xls": "application/vnd.ms-excel",
-        ".svg": "image/svg+xml",
-    }
-
-    def __init__(self, url, *args, **kwargs):
-        if ("atlassian.net" in url or "jira.com" in url) and ("/wiki" not in url):
-            url = AtlassianRestAPI.url_joiner(url, "/wiki")
-            if "cloud" not in kwargs:
-                kwargs["cloud"] = True
-        super(Confluence, self).__init__(url, *args, **kwargs)
+class Confluence(ConfluenceBase):
 
     @staticmethod
     def _create_body(body, representation):
@@ -670,7 +654,10 @@ class Confluence(AtlassianRestAPI):
         Get user template by id. Experimental API
         Use case is get template body and create page from that
         """
-        url = "rest/experimental/template/{template_id}".format(template_id=template_id)
+        if Cloud:
+            url = "rest/api/template/{template_id}".format(template_id=template_id)
+        else:
+            url = "rest/experimental/template/{template_id}".format(template_id=template_id)
 
         try:
             response = self.get(url)
@@ -697,7 +684,10 @@ class Confluence(AtlassianRestAPI):
         :param expand: OPTIONAL: expand e.g. body
 
         """
-        url = "rest/experimental/template/blueprint"
+        if Cloud:
+            url = "rest/experimental/template/blueprint"
+        else:
+            url = "rest/api/template/blueprint"
         params = {}
         if space:
             params["spaceKey"] = space
@@ -733,7 +723,10 @@ class Confluence(AtlassianRestAPI):
         :param expand: OPTIONAL: expand e.g. body
 
         """
-        url = "rest/experimental/template/page"
+        if Cloud:
+            url = "rest/api/template/page"
+        else:
+            url = "rest/experimental/template/page"
         params = {}
         if space:
             params["spaceKey"] = space
