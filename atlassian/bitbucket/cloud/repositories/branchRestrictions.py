@@ -7,7 +7,7 @@ class BranchRestrictions(BitbucketCloudBase):
     def __init__(self, url, *args, **kwargs):
         super(BranchRestrictions, self).__init__(url, *args, **kwargs)
 
-    def _get_object(self, data):
+    def __get_object(self, data):
         if "errors" in data:
             return
         return BranchRestriction(data, **self._new_session_args)
@@ -63,7 +63,7 @@ class BranchRestrictions(BitbucketCloudBase):
         if value is not None:
             data["value"] = value
 
-        return self._get_object(self.post(None, data=data))
+        return self.__get_object(self.post(None, data=data))
 
     def each(self, kind=None, pattern=None, q=None, sort=None):
         """
@@ -88,7 +88,7 @@ class BranchRestrictions(BitbucketCloudBase):
         if q is not None:
             params["q"] = q
         for branch_restriction in self._get_paged(None, params=params):
-            yield self._get_object(branch_restriction)
+            yield self.__get_object(branch_restriction)
 
         return
 
@@ -100,7 +100,7 @@ class BranchRestrictions(BitbucketCloudBase):
 
         :return: The requested BranchRestriction objects
         """
-        return self._get_object(super(BranchRestrictions, self).get(id))
+        return self.__get_object(super(BranchRestrictions, self).get(id))
 
 
 class BranchRestriction(BitbucketCloudBase):

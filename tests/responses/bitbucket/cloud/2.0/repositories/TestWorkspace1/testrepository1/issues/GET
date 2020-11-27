@@ -1,0 +1,157 @@
+responses[None] = {
+    "pagelen": 20,
+    "values": [
+        {
+            "priority": "major",
+            "kind": "proposal",
+            "repository": {
+                "links": {
+                    "self": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1"},
+                    "html": {"href": "https://bitbucket.org/TestWorkspace1/testrepository1"},
+                    "avatar": {
+                        "href": "https://bytebucket.org/ravatar/%7Bf44bb8f7-15c9-4f0a-8221-e0695d58f02d%7D?ts=c"
+                    },
+                },
+                "type": "repository",
+                "name": "testrepository1",
+                "full_name": "TestWorkspace1/testrepository1",
+                "uuid": "RepositoryUuid",
+            },
+            "links": {
+                "attachments": {
+                    "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/issues/1/attachments"
+                },
+                "self": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/issues/1"},
+                "watch": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/issues/1/watch"},
+                "comments": {
+                    "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/issues/1/comments"
+                },
+                "html": {"href": "https://bitbucket.org/TestWorkspace1/testrepository1/issues/1/first-issue"},
+                "vote": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/issues/1/vote"},
+            },
+            "reporter": {
+                "display_name": "ReporterDisplayName",
+                "uuid": "ReporterUuid",
+                "links": {
+                    "self": {"href": "bitbucket/cloud/2.0/users/%7BReporterUuid%7D"},
+                    "html": {"href": "https://bitbucket.org/%7BReporterUuid%7D/"},
+                    "avatar": {
+                        "href": "https://secure.gravatar.com/avatar/31a164e6406a8deeb56e94c778030a9f?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FS-3.png"
+                    },
+                },
+                "nickname": "ReporterNickName",
+                "type": "user",
+                "account_id": "ReporterAccountId",
+            },
+            "title": "First issue",
+            "component": None,
+            "votes": 0,
+            "watches": 1,
+            "content": {
+                "raw": "Text of issue",
+                "markup": "markdown",
+                "html": "<p>Text of issue</p>",
+                "type": "rendered",
+            },
+            "assignee": {
+                "display_name": "AssigneeDisplayName",
+                "uuid": "AssigneeUuid",
+                "links": {
+                    "self": {"href": "bitbucket/cloud/2.0/users/%7BReporterUuid%7D"},
+                    "html": {"href": "https://bitbucket.org/%7BReporterUuid%7D/"},
+                    "avatar": {
+                        "href": "https://secure.gravatar.com/avatar/31a164e6406a8deeb56e94c778030a9f?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FS-3.png"
+                    },
+                },
+                "nickname": "AssigneeNickName",
+                "type": "user",
+                "account_id": "AssigneeAccountId",
+            },
+            "state": "new",
+            "version": None,
+            "edited_on": None,
+            "created_on": "2020-11-03T20:40:24.247794+00:00",
+            "milestone": None,
+            "updated_on": "2020-11-03T20:40:24.247794+00:00",
+            "type": "issue",
+            "id": 1,
+        },
+        {
+            "priority": "major",
+            "kind": "bug",
+            "repository": {
+                "links": {
+                    "self": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1"},
+                    "html": {"href": "https://bitbucket.org/TestWorkspace1/testrepository1"},
+                    "avatar": {
+                        "href": "https://bytebucket.org/ravatar/%7Bf44bb8f7-15c9-4f0a-8221-e0695d58f02d%7D?ts=c"
+                    },
+                },
+                "type": "repository",
+                "name": "testrepository1",
+                "full_name": "TestWorkspace1/testrepository1",
+                "uuid": "RepositoryUuid",
+            },
+            "links": {
+                "attachments": {
+                    "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/issues/2/attachments"
+                },
+                "self": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/issues/2"},
+                "watch": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/issues/2/watch"},
+                "comments": {
+                    "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/issues/2/comments"
+                },
+                "html": {"href": "https://bitbucket.org/TestWorkspace1/testrepository1/issues/2/first-issue"},
+                "vote": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/issues/2/vote"},
+            },
+            "reporter": {
+                "display_name": "ReporterDisplayName",
+                "uuid": "ReporterUuid",
+                "links": {
+                    "self": {"href": "bitbucket/cloud/2.0/users/%7BReporterUuid%7D"},
+                    "html": {"href": "https://bitbucket.org/%7BReporterUuid%7D/"},
+                    "avatar": {
+                        "href": "https://secure.gravatar.com/avatar/31a164e6406a8deeb56e94c778030a9f?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FS-3.png"
+                    },
+                },
+                "nickname": "ReporterNickName",
+                "type": "user",
+                "account_id": "ReporterAccountId",
+            },
+            "title": "Second issue",
+            "component": None,
+            "votes": 1,
+            "watches": 2,
+            "content": {
+                "raw": "Text of issue",
+                "markup": "markdown",
+                "html": "<p>Text of issue</p>",
+                "type": "rendered",
+            },
+            "assignee": {
+                "display_name": "AssigneeDisplayName",
+                "uuid": "AssigneeUuid",
+                "links": {
+                    "self": {"href": "bitbucket/cloud/2.0/users/%7BReporterUuid%7D"},
+                    "html": {"href": "https://bitbucket.org/%7BReporterUuid%7D/"},
+                    "avatar": {
+                        "href": "https://secure.gravatar.com/avatar/31a164e6406a8deeb56e94c778030a9f?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FS-3.png"
+                    },
+                },
+                "nickname": "AssigneeNickName",
+                "type": "user",
+                "account_id": "AssigneeAccountId",
+            },
+            "state": "new",
+            "version": None,
+            "edited_on": None,
+            "created_on": "2020-11-03T20:40:24.247794+00:00",
+            "milestone": None,
+            "updated_on": "2020-11-03T20:40:24.247794+00:00",
+            "type": "issue",
+            "id": 2,
+        },
+    ],
+    "page": 1,
+    "size": 2,
+}

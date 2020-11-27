@@ -9,7 +9,7 @@ class Pipelines(BitbucketCloudBase):
     def __init__(self, url, *args, **kwargs):
         super(Pipelines, self).__init__(url, *args, **kwargs)
 
-    def _get_object(self, data):
+    def __get_object(self, data):
         if "errors" in data:
             return
         return Pipeline(self.url_joiner(self.url, data["uuid"]), data, **self._new_session_args)
@@ -31,7 +31,7 @@ class Pipelines(BitbucketCloudBase):
         if q is not None:
             params["q"] = q
         for pipeline in self._get_paged(None, trailing=True, params=params):
-            yield self._get_object(pipeline)
+            yield self.__get_object(pipeline)
 
         return
 
@@ -43,7 +43,7 @@ class Pipelines(BitbucketCloudBase):
 
         :return: The requested Pipeline objects
         """
-        return self._get_object(super(Pipelines, self).get(uuid))
+        return self.__get_object(super(Pipelines, self).get(uuid))
 
     def trigger(self, branch="master", commit=None, pattern=None, variables=None):
         """
@@ -87,14 +87,14 @@ class Pipelines(BitbucketCloudBase):
         if variables is not None:
             data["variables"] = variables
 
-        return self._get_object(self.post(None, trailing=True, data=data))
+        return self.__get_object(self.post(None, trailing=True, data=data))
 
 
 class Pipeline(BitbucketCloudBase):
     def __init__(self, url, data, *args, **kwargs):
         super(Pipeline, self).__init__(url, *args, data=data, expected_type="pipeline", **kwargs)
 
-    def _get_object(self, data):
+    def __get_object(self, data):
         if "errors" in data:
             return
         return Step("{}/steps/{}".format(self.url, data["uuid"]), data, **self._new_session_args)
@@ -129,7 +129,7 @@ class Pipeline(BitbucketCloudBase):
         :return: A generator for the pipeline steps objects
         """
         for step in self._get_paged("steps", trailing=True):
-            yield self._get_object(step)
+            yield self.__get_object(step)
 
         return
 
@@ -139,7 +139,7 @@ class Pipeline(BitbucketCloudBase):
 
         :return: The requested pipeline objects
         """
-        return self._get_object(self.get("steps/{}".format(uuid)))
+        return self.__get_object(self.get("steps/{}".format(uuid)))
 
 
 class Step(BitbucketCloudBase):

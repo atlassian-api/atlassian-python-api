@@ -10,14 +10,14 @@ class Workspaces(BitbucketCloudBase):
     def __init__(self, url, *args, **kwargs):
         super(Workspaces, self).__init__(url, *args, **kwargs)
 
-    def _get_object(self, data):
+    def __get_object(self, data):
         if "errors" in data:
             return
         return Workspace(data, **self._new_session_args)
 
     def each(self, role=None, q=None, sort=None):
         """
-        Returns a list of workspaces accessible by the authenticated user.
+        Get all workspaces matching the criteria.
 
         :param role: string: Filters the workspaces based on the authenticated user"s role on each workspace.
                              * member: returns a list of all the workspaces which the caller is a member of
@@ -40,7 +40,7 @@ class Workspaces(BitbucketCloudBase):
         if sort is not None:
             params["sort"] = sort
         for workspace in self._get_paged(None, params):
-            yield self._get_object(workspace)
+            yield self.__get_object(workspace)
 
         return
 
@@ -53,7 +53,7 @@ class Workspaces(BitbucketCloudBase):
 
         :return: The requested Workspace objects
         """
-        return self._get_object(super(Workspaces, self).get(workspace))
+        return self.__get_object(super(Workspaces, self).get(workspace))
 
 
 class Workspace(BitbucketCloudBase):

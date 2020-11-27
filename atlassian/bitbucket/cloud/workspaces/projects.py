@@ -9,7 +9,7 @@ class Projects(BitbucketCloudBase):
     def __init__(self, url, *args, **kwargs):
         super(Projects, self).__init__(url, *args, **kwargs)
 
-    def _get_object(self, data):
+    def __get_object(self, data):
         if "errors" in data:
             return
         return Project(data, **self._new_session_args)
@@ -45,11 +45,12 @@ class Projects(BitbucketCloudBase):
             "description": description,
             "is_private": is_private,
         }
-        return self._get_object(self.post(None, data=data))
+        return self.__get_object(self.post(None, data=data))
 
     def each(self, q=None, sort=None):
         """
-        Returns the list of projects in this workspace.
+        Get all projects in the workspace matching the criteria.
+
 
         :param q: string: Query string to narrow down the response.
                           See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
@@ -64,7 +65,7 @@ class Projects(BitbucketCloudBase):
         if q is not None:
             params["q"] = q
         for project in self._get_paged(None, params=params):
-            yield self._get_object(project)
+            yield self.__get_object(project)
 
         return
 
@@ -78,7 +79,7 @@ class Projects(BitbucketCloudBase):
         :return: The requested Project object
         """
         if by == "key":
-            return self._get_object(super(Projects, self).get(project))
+            return self.__get_object(super(Projects, self).get(project))
         elif by == "name":
             for p in self.each():
                 if p.name == project:

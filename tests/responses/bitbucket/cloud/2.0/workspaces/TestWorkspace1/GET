@@ -1,0 +1,18 @@
+responses[None] = {
+    "created_on": "2020-10-28T12:00:00.0+00:00",
+    "is_private": True,
+    "links": {
+        "avatar": {"href": "https://bitbucket.org/workspaces/TestWorkspace1/avatar/?ts=1604430491"},
+        "html": {"href": "https://bitbucket.org/TestWorkspace1/"},
+        "members": {"href": "bitbucket/cloud/2.0/workspaces/TestWorkspace1/members"},
+        "owners": {"href": "bitbucket/cloud/2.0/workspaces/TestWorkspace1/members?q=permission%3D%22owner%22"},
+        "projects": {"href": "bitbucket/cloud/2.0/workspaces/TestWorkspace1/projects"},
+        "repositories": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1"},
+        "self": {"href": "bitbucket/cloud/2.0/workspaces/TestWorkspace1"},
+        "snippets": {"href": "bitbucket/cloud/2.0/snippets/TestWorkspace1"},
+    },
+    "name": "TestWorkspace1",
+    "slug": "TestWorkspace1",
+    "type": "workspace",
+    "uuid": "{TestWorkspace1Uuid}",
+}
