@@ -33,7 +33,7 @@ class Bitbucket(BitbucketBase):
         return self.post(url, data=data)
 
     ################################################################################################
-    # Administrativ functions
+    # Administrative functions
     ################################################################################################
 
     def _url_admin(self, api_version=None):
@@ -43,7 +43,8 @@ class Bitbucket(BitbucketBase):
         """
         Get group of members
         :param group: The group name to query
-
+        :param start:
+        :param limit:
         :return: A list of group members
         """
 
@@ -384,6 +385,8 @@ class Bitbucket(BitbucketBase):
         Get users who has permission in project
         :param key: The project key
         :param filter_str:  OPTIONAL: users filter string
+        :param start:
+        :param limit:
         :return: The list of project users
         """
         url = self._url_project_users(key)
@@ -2666,6 +2669,8 @@ class Bitbucket(BitbucketBase):
         """
         Remove user as default reviewer from the repository.
 
+        :param repository_slug:
+        :param workspace:
         :param user: The username or account UUID to delete as default reviewer.
         """
         return (
