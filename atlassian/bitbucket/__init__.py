@@ -1402,6 +1402,26 @@ class Bitbucket(BitbucketBase):
         data = {"version": comment_version, "text": comment}
         return self.put(url, data=data)
 
+    def delete_pull_reques_comment(
+        self,
+        project_key,
+        repository_slug,
+        pull_request_id,
+        comment_id,
+        comment_version,
+    ):
+        """
+        Delete a comment.
+        Only the repository admin or eser who created a comment may update it.
+
+        Note: the supplied supplied JSON object must contain a version
+        that must match the server's version of the comment
+        or the delete will fail.
+        """
+        url = self._url_pull_request_comment(project_key, repository_slug, pull_request_id, comment_id)
+        data = {"version": comment_version}
+        return self.delete(url, params=data)
+
     def decline_pull_request(self, project_key, repository_slug, pr_id, pr_version):
         """
         Decline a pull request.
