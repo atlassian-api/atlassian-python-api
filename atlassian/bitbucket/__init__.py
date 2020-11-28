@@ -844,7 +844,7 @@ class Bitbucket(BitbucketBase):
         return self.delete(url, params=params)
 
     def _url_repo_labels(self, project_key, repository_slug):
-        if Cloud:
+        if self.cloud:
             raise Exception("Not supported in Bitbucket Cloud")
 
         return "{}/labels".format(self._url_repo(project_key, repository_slug))
@@ -1098,7 +1098,7 @@ class Bitbucket(BitbucketBase):
         return self.post(url, data=data)
 
     def _url_pull_requests(self, project_key, repository_slug):
-        if Cloud:
+        if self.cloud:
             return self.resource_url("repositories/{}/{}/pullrequests".format(project_key, repository_slug))
         else:
             return "{}/pull-requests".format(self._url_repo(project_key, repository_slug))
@@ -1416,7 +1416,7 @@ class Bitbucket(BitbucketBase):
         """
         url = self._url_pull_request(project_key, repository_slug, pr_id)
         params = {}
-        if not Cloud:
+        if not self.cloud:
             params["version"] = pr_version
         return self.post(url, params=params)
 
@@ -1428,13 +1428,13 @@ class Bitbucket(BitbucketBase):
         :param pull_request_id: the ID of the pull request within the repository
         :return:
         """
-        if Cloud:
+        if self.cloud:
             raise Exception("Not supported in Bitbucket Cloud")
         url = "{}/tasks".format(self._url_pull_request(project_key, repository_slug, pull_request_id))
         return self.get(url)
 
     def _url_tasks(self):
-        if Cloud:
+        if self.cloud:
             raise Exception("Not supported in Bitbucket Cloud")
         return self.resource_url("tasks")
 
@@ -1517,7 +1517,7 @@ class Bitbucket(BitbucketBase):
         """
         url = "{}/merge".format(self._url_pull_request(project_key, repository_slug, pr_id))
         params = {}
-        if not Cloud:
+        if not self.cloud:
             params["version"] = pr_version
         return self.post(url, params=params)
 
