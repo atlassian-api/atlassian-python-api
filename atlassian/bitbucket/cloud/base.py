@@ -15,7 +15,7 @@ class BitbucketCloudBase(BitbucketBase):
         """
         super(BitbucketCloudBase, self).__init__(url, *args, **kwargs)
 
-    def _get_paged(self, url, params={}, data=None, flags=None, trailing=None, absolute=False):
+    def _get_paged(self, url, params=None, data=None, flags=None, trailing=None, absolute=False):
         """
         Used to get the paged data
         :param url:       The url to retrieve.
@@ -24,6 +24,9 @@ class BitbucketCloudBase(BitbucketBase):
 
         :return: nothing
         """
+
+        if params is None:
+            params = {}
 
         while True:
             response = super(BitbucketCloudBase, self).get(

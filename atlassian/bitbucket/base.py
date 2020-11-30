@@ -30,7 +30,7 @@ class BitbucketBase(AtlassianRestAPI):
     def __str__(self):
         return PrettyPrinter(indent=4).pformat(self.__data)
 
-    def _get_paged(self, url, params={}, data=None, flags=None, trailing=None, absolute=False):
+    def _get_paged(self, url, params=None, data=None, flags=None, trailing=None, absolute=False):
         """
         Used to get the paged data
         :param url:       The url to retrieve.
@@ -39,6 +39,9 @@ class BitbucketBase(AtlassianRestAPI):
 
         :return: nothing
         """
+
+        if params is None:
+            params = {}
 
         while True:
             response = self.get(url, trailing=trailing, params=params, data=data, flags=flags, absolute=absolute)
