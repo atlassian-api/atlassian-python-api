@@ -10,7 +10,7 @@ exclude = '.tox,.travis,docs'
 
 [tool.black]
 line-length = 120
-include = '(atlassian|examples|tests)\/.*\.py'
+include = '(atlassian|examples|tests)\/.*(\.py|GET|POST)'
 
 [tool.pylint]
 max-line-length = 120

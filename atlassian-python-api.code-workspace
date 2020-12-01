@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.exclude": {
+			".mypy_cache": true,
+			".tox": true,
+			"**/__pycache__": true,
+			"**/*.pyc": true,
+			"atlassian_python_api.egg-info": true
+		}
+	}
+}

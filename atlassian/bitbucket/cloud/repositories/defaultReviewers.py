@@ -12,7 +12,7 @@ class DefaultReviewers(BitbucketCloudBase):
     def _get_object(self, data):
         if "errors" in data:
             return
-        return DefaultReviewer(data, **self._new_session_args)
+        return DefaultReviewer(self.url_joiner(self.url, data["display_name"]), data, **self._new_session_args)
 
     def add(self, user):
         """
@@ -62,7 +62,7 @@ class DefaultReviewers(BitbucketCloudBase):
         try:
             default_reviewer = self._get_object(super(DefaultReviewers, self).get(user))
         except HTTPError as e:
-            # A 404 indicates that that specified user is not a default reviewer.
+            # A 404 indicates that the specified user is not a default reviewer.
             if not e.response.status_code == 404:
                 # Rethrow the exception
                 raise
@@ -71,8 +71,8 @@ class DefaultReviewers(BitbucketCloudBase):
 
 
 class DefaultReviewer(BitbucketCloudBase):
-    def __init__(self, data, *args, **kwargs):
-        super(DefaultReviewer, self).__init__(None, *args, data=data, expected_type="user", **kwargs)
+    def __init__(self, url, data, *args, **kwargs):
+        super(DefaultReviewer, self).__init__(url, *args, data=data, expected_type="user", **kwargs)
 
     @property
     def display_name(self):
@@ -94,4 +94,7 @@ class DefaultReviewer(BitbucketCloudBase):
         """
         Deletes the default reviewer
         """
-        return super(DefaultReviewer, self).delete(self.url, absolute=True)
+        data = super(DefaultReviewer, self).delete(None)
+        if "errors" in data:
+            return
+        return DefaultReviewer(self.url, data, **self._new_session_args)

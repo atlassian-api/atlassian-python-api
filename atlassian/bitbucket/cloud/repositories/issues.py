@@ -123,15 +123,11 @@ class Issue(BitbucketCloudBase):
     def updated_on(self):
         return self.get_data("updated_on", "never updated")
 
-    def update(self, **kwargs):
-        """
-        Update the issue.
-        """
-        self.__data = super(Issue, self).put(self.url, absolute=True, data=kwargs)
-        return self
-
     def delete(self):
         """
         Deletes the issue
         """
-        return super(Issue, self).delete(self.url, absolute=True)
+        data = super(Issue, self).delete(None)
+        if "errors" in data:
+            return
+        return Issue(data, **self._new_session_args)

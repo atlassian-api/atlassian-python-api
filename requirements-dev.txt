@@ -1,3 +1,4 @@
+mock
 -r requirements.txt
 flake9
 pytest
