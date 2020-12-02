@@ -24,5 +24,6 @@ jobs:
     - uses: actions/checkout@v2
     - name: Run Docker
       run: |
+        .github/bump_version ./ minor > atlassian/VERSION
         make docker-qa PYTHON_VERSION=${{matrix.python-version}}
     

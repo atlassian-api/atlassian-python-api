@@ -210,7 +210,7 @@ To authenticate to the Atlassian Cloud APIs:
    service_desk
    xray
 
-.. |Build Status| image:: https://travis-ci.org/atlassian-api/atlassian-python-api.svg?branch=master
+.. |Build Status| image:: https://github.com/atlassian-api/atlassian-python-api/workflows/Test/badge.svg?branch=master
    :target: https://pypi.python.org/pypi/atlassian-python-api
    :alt: Build status
 .. |PyPI version| image:: https://badge.fury.io/py/atlassian-python-api.svg

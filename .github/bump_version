@@ -24,8 +24,8 @@ increase=${2:patch}
 
 function autoversion(){
 
-    if [ -n "${TRAVIS_BUILD_NUMBER+x}" ]; then
-        BUILD_NUMBER="${TRAVIS_BUILD_NUMBER}"
+    if [ -n "${GITHUB_RUN_NUMBER+x}" ]; then
+        BUILD_NUMBER="${GITHUB_RUN_NUMBER}"
     else
         BUILD_NUMBER="0"  # In the developer machine, this will build x.y.z.dev0
     fi

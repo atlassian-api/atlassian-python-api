@@ -134,10 +134,10 @@ In addition to all the contributors we would like to thank to these companies:
 
 * Atlassian_ for developing such a powerful ecosystem.
 * JetBrains_ for providing us with free licenses of PyCharm_
-* Travis_ for hosting our continuous integration
+* GitHub_ for hosting our repository and continuous integration
 * Insomnia_ for providing the human rest client easy to test the methods
 .. _Atlassian: https://www.atlassian.com/
 .. _JetBrains: http://www.jetbrains.com
 .. _PyCharm: http://www.jetbrains.com/pycharm/
-.. _Travis: https://travis-ci.org/
+.. _GitHub: https://github.com/
 .. _Insomnia: https://insomnia.rest/
