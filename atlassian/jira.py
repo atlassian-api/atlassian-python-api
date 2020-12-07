@@ -744,8 +744,11 @@ class Jira(AtlassianRestAPI):
         url = "rest/api/2/issue/{issueIdOrKey}/archive".format(issueIdOrKey=issue_id_or_key)
         return self.get(url)
 
-    def issue_field_value(self, key, field):
-        issue = self.get("rest/api/2/issue/{0}?fields={1}".format(key, field))
+    def issue_field_value(self, key, field, expand=None):
+        params = {}
+        if expand:
+            params["expand"] = expand
+        issue = self.get("rest/api/2/issue/{0}?fields={1}".format(key, field), params=params)
         return issue["fields"][field]
 
     def issue_fields(self, key):
