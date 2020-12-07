@@ -1948,9 +1948,9 @@ class Bitbucket(BitbucketBase):
 
     def _url_branching_model(self, project_key, repository_slug):
         return self.resource_url(
-            "{}/branchmodel/configuration".format(self._url_repo(project_key, repository_slug)),
-            api_root="rest/branch-utils",
-            api_version="1.0",
+            "{}/branchmodel/configuration".format(self._url_repo(project_key, repository_slug, api_root="rest/branch-utils", api_version="1.0")),
+            api_root='',
+            api_version=''
         )
 
     def get_branching_model(self, project_key, repository_slug):
