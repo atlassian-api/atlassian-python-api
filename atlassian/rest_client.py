@@ -197,7 +197,7 @@ class AtlassianRestAPI(object):
         params_already_in_url = True if "?" in url else False
         if (params or flags) and not params_already_in_url:
             url += "?"
-        else:
+        if (params or flags) and params_already_in_url:
             url += "&"
         if params:
             url += urlencode(params or {})
