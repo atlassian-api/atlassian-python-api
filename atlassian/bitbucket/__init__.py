@@ -690,14 +690,8 @@ class Bitbucket(BitbucketBase):
         :param repository_slug: url-compatible repository identifier
         :return: None if the repo does not exist, else the value of the put request.
         """
-        data = self.get_repo(project_key, repository_slug)
-        if "errors" in data:
-            log.debug("Failed to update repo: {0}/{1}: Unable to read repo".format(project_key, repository_slug))
-            return None
-        else:
-            data.update(params)
-            url = self._url_repo(project_key, repository_slug)
-            return self.put(url, data=data)
+        url = self._url_repo(project_key, repository_slug)
+        return self.put(url, data=params)
 
     def delete_repo(self, project_key, repository_slug):
         """
