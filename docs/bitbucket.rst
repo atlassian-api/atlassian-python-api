@@ -47,6 +47,9 @@ Manage repositories
     # Get single repository
     bitbucket.get_repo(project_key, repository_slug)
 
+    # Update single repository
+    bitbucket.update_repo(project_key, repository_slug, description="Repo description")
+
     # Get labels for a single repository
     bitbucket.get_repo_labels(project_key, repository_slug)
 
