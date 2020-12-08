@@ -688,7 +688,7 @@ class Bitbucket(BitbucketBase):
         be confusing to some users.
         :param project_key: Key of the project you wish to look in.
         :param repository_slug: url-compatible repository identifier
-        :return: None if the repo does not exist, else the value of the put request.
+        :return: The value of the put request.
         """
         url = self._url_repo(project_key, repository_slug)
         return self.put(url, data=params)
