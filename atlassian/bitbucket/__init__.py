@@ -682,6 +682,24 @@ class Bitbucket(BitbucketBase):
         url = self._url_repo(project_key, repository_slug)
         return self.get(url)
 
+    def update_repo(self, project_key, repository_slug, **params):
+        """
+        Update a repository in a project. This operates based on slug not name which may
+        be confusing to some users.
+        :param project_key: Key of the project you wish to look in.
+        :param repository_slug: url-compatible repository identifier
+
+        :return: None if the project does not exist, else the value of the put request.
+        """
+        data = self.get_repo(project_key, repository_slug)
+        if "errors" in data:
+            log.debug("Failed to update repo: {0}/{1}: Unable to read repo".format(project_key, repository_slug))
+            return None
+        else:
+            data.update(params)
+            url = self._url_repo(project_key, repository_slug)
+            return self.put(url, data=data)
+
     def delete_repo(self, project_key, repository_slug):
         """
         Delete a specific repository from a project. This operates based on slug not name which may
