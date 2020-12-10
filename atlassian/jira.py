@@ -682,7 +682,7 @@ class Jira(AtlassianRestAPI):
             query_result, missing_issues = self.bulk_issue(issue_list, fields)
         return query_result, missing_issues
 
-    def issue_createmeta(self, project, expand='projects.issuetypes.fields'):
+    def issue_createmeta(self, project, expand="projects.issuetypes.fields"):
         params = {}
         if expand:
             params["expand"] = expand
