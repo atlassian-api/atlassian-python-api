@@ -305,7 +305,7 @@ class Bitbucket(BitbucketBase):
         """
         url = self._url_project(key)
         return self.put(url, data=params)
-    
+
     def _url_project_avatar(self, project_key):
         return "{}/avatar.png".format(self._url_project(project_key))
 
