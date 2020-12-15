@@ -6,8 +6,6 @@ from .repositories import Repositories
 
 
 class Cloud(BitbucketCloudBase):
-    bulk_headers = {"Content-Type": "application/vnd.atl.bitbucket.bulk+json"}
-
     def __init__(self, url, *args, **kwargs):
         kwargs["cloud"] = True
         kwargs["api_root"] = None

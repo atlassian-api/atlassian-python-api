@@ -1,0 +1,23 @@
+responses = {
+    None: {
+        "size": 4,
+        "limit": 25,
+        "isLastPage": true,
+        "values": [
+            {"group": {"name": "group_a"}, "permission": "SYS_ADMIN"},
+            {"group": {"name": "group_b"}, "permission": "ADMIN"},
+            {"group": {"name": "group_c"}, "permission": "PROJECT_CREATE"},
+            {"group": {"name": "group_d"}, "permission": "LICENSED_USER"},
+        ],
+        "start": 0,
+    },
+    "filter=group_a": {
+        "size": 1,
+        "limit": 25,
+        "isLastPage": true,
+        "values": [
+            {"group": {"name": "group_a"}, "permission": "SYS_ADMIN"},
+        ],
+        "start": 0,
+    },
+}

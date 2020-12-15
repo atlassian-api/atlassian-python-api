@@ -23,7 +23,7 @@ class Repositories(RepositoriesBase):
 
     def each(self, after=None, role=None, q=None, sort=None):
         """
-        Returns a list of repositories accessible by the authenticated user.
+        Get all repositories matching the criteria.
 
         The result can be narrowed down based on the authenticated user"s role.
         E.g. with ?role=contributor, only those repositories that the authenticated user has write access to
@@ -44,7 +44,6 @@ class Repositories(RepositoriesBase):
 
         :return: A generator for the Rorkspace objects
         """
-        url = None
         if q is not None and role is None:
             raise ValueError("Argument [q] requires argument [role].")
 
@@ -57,7 +56,7 @@ class Repositories(RepositoriesBase):
             params["q"] = q
         if sort is not None:
             params["sort"] = sort
-        for repository in self._get_paged(url, params):
+        for repository in self._get_paged(None, params):
             yield self._get_repository_object(repository)
 
 
@@ -67,7 +66,7 @@ class WorkspaceRepositories(RepositoriesBase):
 
     def each(self, role=None, q=None, sort=None):
         """
-        Returns a list of repositories which belong to the workspace.
+        Get all repositories in the workspace matching the criteria.
 
         :param role: string: Filters the workspaces based on the authenticated user"s role on each workspace.
                              * member: returns a list of all the workspaces which the caller is a member of
@@ -82,7 +81,6 @@ class WorkspaceRepositories(RepositoriesBase):
 
         :return: A generator for the Rorkspace objects
         """
-        url = None
         params = {}
         if role is not None:
             params["role"] = role
@@ -90,7 +88,7 @@ class WorkspaceRepositories(RepositoriesBase):
             params["q"] = q
         if sort is not None:
             params["sort"] = sort
-        for repository in self._get_paged(url, params):
+        for repository in self._get_paged(None, params):
             yield self._get_object(repository)
 
     def get(self, repository, by="slug"):
@@ -120,18 +118,17 @@ class ProjectRepositories(RepositoriesBase):
 
     def each(self, sort=None):
         """
-        Returns a list of repositories which belong to the project.
+        Get all repositories in the project matching the criteria.
 
         :param sort: string: Name of a response property to sort results.
                              See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
 
         :return: A generator for the Rorkspace objects
         """
-        url = None
         params = {}
         if sort is not None:
             params["sort"] = sort
-        for repository in self._get_paged(url, params):
+        for repository in self._get_paged(None, params):
             yield self._get_object(repository)
 
     def get(self, repository, by="slug"):

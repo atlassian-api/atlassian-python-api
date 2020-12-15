@@ -9,7 +9,7 @@ class DefaultReviewers(BitbucketCloudBase):
     def __init__(self, url, *args, **kwargs):
         super(DefaultReviewers, self).__init__(url, *args, **kwargs)
 
-    def _get_object(self, data):
+    def __get_object(self, data):
         if "errors" in data:
             return
         return DefaultReviewer(self.url_joiner(self.url, data["display_name"]), data, **self._new_session_args)
@@ -25,7 +25,7 @@ class DefaultReviewers(BitbucketCloudBase):
         :return: The added DefaultReviewer object
         """
         # the mention_id parameter is undocumented but if missed, leads to 400 statuses
-        return self._get_object(self.put(user, data={"mention_id": user}))
+        return self.__get_object(self.put(user, data={"mention_id": user}))
 
     def each(self, q=None, sort=None):
         """
@@ -46,7 +46,7 @@ class DefaultReviewers(BitbucketCloudBase):
         if q is not None:
             params["q"] = q
         for default_reviewer in self._get_paged(None, params=params):
-            yield self._get_object(default_reviewer)
+            yield self.__get_object(default_reviewer)
 
         return
 
@@ -60,7 +60,7 @@ class DefaultReviewers(BitbucketCloudBase):
         """
         default_reviewer = None
         try:
-            default_reviewer = self._get_object(super(DefaultReviewers, self).get(user))
+            default_reviewer = self.__get_object(super(DefaultReviewers, self).get(user))
         except HTTPError as e:
             # A 404 indicates that the specified user is not a default reviewer.
             if not e.response.status_code == 404:

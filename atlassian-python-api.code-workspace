@@ -11,6 +11,12 @@
 			"**/__pycache__": true,
 			"**/*.pyc": true,
 			"atlassian_python_api.egg-info": true
+		},
+		"files.associations": {
+			"DELETE": "python",
+			"GET": "python",
+			"POST": "python",
+			"PUT": "python",
 		}
 	}
 }

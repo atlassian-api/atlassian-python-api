@@ -1,0 +1,61 @@
+responses[None] = {
+    "size": 1,
+    "limit": 25,
+    "isLastPage": true,
+    "values": [
+        {
+            "slug": "my-repo",
+            "id": 2,
+            "name": "My repo",
+            "description": "My repo description",
+            "hierarchyId": "e3c939f9ef4a7fae272e",
+            "scmId": "git",
+            "state": "AVAILABLE",
+            "statusMessage": "Available",
+            "forkable": true,
+            "origin": {
+                "slug": "my-repo",
+                "id": 1,
+                "name": "My repo",
+                "description": "My repo description",
+                "hierarchyId": "e3c939f9ef4a7fae272e",
+                "scmId": "git",
+                "state": "AVAILABLE",
+                "statusMessage": "Available",
+                "forkable": true,
+                "project": {
+                    "key": "PRJ",
+                    "id": 1,
+                    "name": "My Cool Project",
+                    "description": "The description for my cool project.",
+                    "public": true,
+                    "type": "NORMAL",
+                    "links": {"self": [{"href": "http://link/to/project"}]},
+                },
+                "public": true,
+                "links": {
+                    "clone": [
+                        {"href": "ssh://git@<baseURL>/PRJ/my-repo.git", "name": "ssh"},
+                        {"href": "https://<baseURL>/scm/PRJ/my-repo.git", "name": "http"},
+                    ],
+                    "self": [{"href": "http://link/to/repository"}],
+                },
+            },
+            "project": {
+                "key": "~JDOE",
+                "id": 2,
+                "name": "John Doe",
+                "type": "PERSONAL",
+                "links": {"self": [{"href": "http://link/to/project"}]},
+            },
+            "links": {
+                "clone": [
+                    {"href": "https://<baseURL>/scm/JDOE/my-repo.git", "name": "http"},
+                    {"href": "ssh://git@<baseURL>/JDOE/my-repo.git", "name": "ssh"},
+                ],
+                "self": [{"href": "http://link/to/repository"}],
+            },
+        }
+    ],
+    "start": 0,
+}

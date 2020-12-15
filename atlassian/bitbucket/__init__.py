@@ -10,8 +10,6 @@ log = logging.getLogger(__name__)
 
 
 class Bitbucket(BitbucketBase):
-    bulk_headers = {"Content-Type": "application/vnd.atl.bitbucket.bulk+json"}
-
     def __init__(self, url, *args, **kwargs):
         if "cloud" not in kwargs and ("bitbucket.org" in url):
             kwargs["cloud"] = True

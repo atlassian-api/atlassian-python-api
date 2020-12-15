@@ -7,7 +7,7 @@ class Issues(BitbucketCloudBase):
     def __init__(self, url, *args, **kwargs):
         super(Issues, self).__init__(url, *args, **kwargs)
 
-    def _get_object(self, data):
+    def __get_object(self, data):
         if "errors" in data:
             return
         return Issue(data, **self._new_session_args)
@@ -29,7 +29,7 @@ class Issues(BitbucketCloudBase):
             "priority": priority,
             "content": {"raw": description},
         }
-        return self._get_object(self.post(None, data=data))
+        return self.__get_object(self.post(None, data=data))
 
     def each(self, q=None, sort=None):
         """
@@ -48,7 +48,7 @@ class Issues(BitbucketCloudBase):
         if q is not None:
             params["q"] = q
         for issue in self._get_paged(None, params=params):
-            yield self._get_object(issue)
+            yield self.__get_object(issue)
 
         return
 
@@ -60,7 +60,7 @@ class Issues(BitbucketCloudBase):
 
         :return: The requested Issue objects
         """
-        return self._get_object(super(Issues, self).get(id))
+        return self.__get_object(super(Issues, self).get(id))
 
 
 class Issue(BitbucketCloudBase):

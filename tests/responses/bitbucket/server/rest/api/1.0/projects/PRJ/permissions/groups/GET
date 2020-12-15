@@ -1,0 +1,22 @@
+responses = {
+    None: {
+        "size": 3,
+        "limit": 25,
+        "isLastPage": true,
+        "values": [
+            {"group": {"name": "group_a"}, "permission": "ADMIN"},
+            {"group": {"name": "group_b"}, "permission": "WRITE"},
+            {"group": {"name": "group_c"}, "permission": "READ"},
+        ],
+        "start": 0,
+    },
+    "filter=group_a": {
+        "size": 1,
+        "limit": 25,
+        "isLastPage": true,
+        "values": [
+            {"group": {"name": "group_a"}, "permission": "ADMIN"},
+        ],
+        "start": 0,
+    },
+}

@@ -6,15 +6,12 @@ from unittest.mock import Mock, MagicMock
 
 from requests import Session, Response
 
-SERVER = None
-RESPONSE_ROOT = None
+SERVER = "https://my.test.server.com"
+RESPONSE_ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "responses")
 
 
-def init_response_mockup(server, response_root):
-    global SERVER
-    SERVER = server
-    global RESPONSE_ROOT
-    RESPONSE_ROOT = response_root
+def mockup_server():
+    return SERVER
 
 
 def request_mookup(*args, **kwargs):
@@ -24,7 +21,9 @@ def request_mookup(*args, **kwargs):
         raise ValueError("URL [{}] does not start with [{}/].".format(url, SERVER))
     parts = url[len(SERVER) + 1 :].split("?")
     url = parts[0]
-    params = parts[1] if len(parts) > 1 else None
+    response_key = parts[1] if len(parts) > 1 else None
+    if kwargs["data"] is not None:
+        response_key = str(kwargs["data"])
 
     response = Response()
     response.url = kwargs["url"]
@@ -32,9 +31,9 @@ def request_mookup(*args, **kwargs):
     response_file = os.path.join(RESPONSE_ROOT, url, method)
     try:
         with open(response_file) as f:
-            data = {"responses": {}, "__builtins__": {}}
+            data = {"responses": {}, "__builtins__": {}, "true": True, "false": False}
             exec(f.read(), data)
-            data = data["responses"][params]
+            data = data["responses"][response_key]
             if type(data) is dict:
                 if "status_code" in data:
                     response.status_code = data.pop("status_code")
@@ -43,13 +42,13 @@ def request_mookup(*args, **kwargs):
 
                 # Extend the links with the server
                 for item in [None, "owner", "project", "workspace"]:
-                    cur_dict = data if item is None else data.get(item, {})
-                    if "links" in cur_dict:
-                        for link in cur_dict["links"].values():
-                            try:
-                                link["href"] = "{}/{}".format(SERVER, link["href"])
-                            except:
-                                pass
+                    # Use values of paged response
+                    for elem in data["values"] if "values" in data else [data]:
+                        cur_dict = elem if item is None else elem.get(item, {})
+                        if "links" in cur_dict:
+                            for link in cur_dict["links"].values():
+                                for l in link if type(link) is list else [link]:
+                                    l["href"] = "{}/{}".format(SERVER, l["href"])
                 if "next" in data:
                     data["next"] = "{}/{}".format(SERVER, data["next"])
 
@@ -67,9 +66,7 @@ def request_mookup(*args, **kwargs):
         response.encoding = "utf-8"
         response._content = b"{}"
         response.status_code = 404  # Not found
-        response.reason = "No stub defined for param [{}]".format(params)
-    except Exception as e:
-        raise e
+        response.reason = "No stub defined for key [{}] in [{}]".format(response_key, response_file)
 
     return response
 
