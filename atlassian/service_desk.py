@@ -377,10 +377,11 @@ class ServiceDesk(AtlassianRestAPI):
 
         return self.delete(url, headers=self.experimental_headers)
 
-    def add_users_to_organization(self, organization_id, users_list):
+    def add_users_to_organization(self, organization_id, users_list=[], account_list=[]):
         """
         Adds users to an organization
         users_list is a list of strings
+        account_list is a list of accountIDs
 
         :param organization_id: str
         :param users_list: list
@@ -388,22 +389,30 @@ class ServiceDesk(AtlassianRestAPI):
         """
         log.warning("Adding users...")
         url = "rest/servicedeskapi/organization/{}/user".format(organization_id)
-        data = {"usernames": users_list}
+        data = {
+            "usernames": users_list,
+            "accountIDs": account_list
+        }
 
         return self.post(url, headers=self.experimental_headers, data=data)
 
-    def remove_users_from_organization(self, organization_id, users_list):
+    def remove_users_from_organization(self, organization_id, users_list=[], account_list=[]):
         """
         Removes users from an organization
         users_list is a list of strings
+        account_list is a list of accountIDs
 
         :param organization_id: str
         :param users_list: list
+        :param account_list: list
         :return:
         """
         log.warning("Removing users...")
         url = "rest/servicedeskapi/organization/{}/user".format(organization_id)
-        data = {"usernames": users_list}
+        data = {
+            "usernames": users_list,
+            "accountIDs": account_list
+        }
 
         return self.delete(url, headers=self.experimental_headers, data=data)
 
