@@ -389,10 +389,7 @@ class ServiceDesk(AtlassianRestAPI):
         """
         log.warning("Adding users...")
         url = "rest/servicedeskapi/organization/{}/user".format(organization_id)
-        data = {
-            "usernames": users_list,
-            "accountIDs": account_list
-        }
+        data = {"usernames": users_list, "accountIDs": account_list}
 
         return self.post(url, headers=self.experimental_headers, data=data)
 
@@ -409,10 +406,7 @@ class ServiceDesk(AtlassianRestAPI):
         """
         log.warning("Removing users...")
         url = "rest/servicedeskapi/organization/{}/user".format(organization_id)
-        data = {
-            "usernames": users_list,
-            "accountIDs": account_list
-        }
+        data = {"usernames": users_list, "accountIDs": account_list}
 
         return self.delete(url, headers=self.experimental_headers, data=data)
 
