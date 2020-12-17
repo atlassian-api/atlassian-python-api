@@ -81,6 +81,12 @@ The following command builds a package and uploads it to PIP repository.
 
    python setup.py sdist upload
 
+An alternative way you can use next command
+
+::
+
+   python3 -m pip install git+https://github.com/atlassian-api/atlassian-python-api.git
+
 
 References
 ----------
