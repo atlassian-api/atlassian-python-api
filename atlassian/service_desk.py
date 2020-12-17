@@ -381,7 +381,7 @@ class ServiceDesk(AtlassianRestAPI):
         """
         Adds users to an organization
         users_list is a list of strings
-        account_list is a list of accountIDs
+        account_list is a list of accountIds
 
         :param organization_id: str
         :param users_list: list
@@ -389,7 +389,7 @@ class ServiceDesk(AtlassianRestAPI):
         """
         log.warning("Adding users...")
         url = "rest/servicedeskapi/organization/{}/user".format(organization_id)
-        data = {"usernames": users_list, "accountIDs": account_list}
+        data = {"usernames": users_list, "accountIds": account_list}
 
         return self.post(url, headers=self.experimental_headers, data=data)
 
@@ -397,7 +397,7 @@ class ServiceDesk(AtlassianRestAPI):
         """
         Removes users from an organization
         users_list is a list of strings
-        account_list is a list of accountIDs
+        account_list is a list of accountIds
 
         :param organization_id: str
         :param users_list: list
@@ -406,7 +406,7 @@ class ServiceDesk(AtlassianRestAPI):
         """
         log.warning("Removing users...")
         url = "rest/servicedeskapi/organization/{}/user".format(organization_id)
-        data = {"usernames": users_list, "accountIDs": account_list}
+        data = {"usernames": users_list, "accountIds": account_list}
 
         return self.delete(url, headers=self.experimental_headers, data=data)
 
