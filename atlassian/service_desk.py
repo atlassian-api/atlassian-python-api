@@ -600,7 +600,31 @@ class ServiceDesk(AtlassianRestAPI):
 
         return self.get(url, headers=self.experimental_headers)
 
-    def add_customers(self, service_desk_id, list_of_usernames):
+    def get_customers(self, service_desk_id, query=None, start=0, limit=50):
+        """
+        Returns a list of the customers on a service desk.
+
+        The returned list of customers can be filtered using the query parameter.
+        The parameter is matched against customers' displayName, name, or email.
+        For example, searching for "John", "Jo", "Smi", or "Smith" will match a
+        user with display name "John Smith"..
+
+        :param service_desk_id: str
+        :param list_of_usernames: list
+        :return: the customers added to the service desk
+        """
+        url = "rest/servicedeskapi/servicedesk/{}/customer".format(service_desk_id)
+        params = {}
+        if start is not None:
+            params["start"] = int(start)
+        if limit is not None:
+            params["limit"] = int(limit)
+        if query is not None:
+            params["query"] = query
+
+        return self.get(url, headers=self.experimental_headers, params=params)
+
+    def add_customers(self, service_desk_id, list_of_usernames=[], list_of_accountids=[]):
         """
         Adds one or more existing customers to the given service desk.
         If you need to create a customer, see Create customer method.
@@ -610,12 +634,32 @@ class ServiceDesk(AtlassianRestAPI):
 
         :param service_desk_id: str
         :param list_of_usernames: list
+        :param list_of_accountids: list
         :return: the customers added to the service desk
         """
         url = "rest/servicedeskapi/servicedesk/{}/customer".format(service_desk_id)
-        data = {"usernames": list_of_usernames}
+        data = {"usernames": list_of_usernames, "accountIds": list_of_accountids}
 
+        log.info("Adding customers...")
         return self.post(url, headers=self.experimental_headers, data=data)
+
+    def remove_customers(self, service_desk_id, list_of_usernames=[], list_of_accountids=[]):
+        """
+        Removes one or more customers from a service desk. The service
+        desk must have closed access. If any of the passed customers are
+        not associated with the service desk, no changes will be made for
+        those customers and the resource returns a 204 success code.
+
+        :param service_desk_id: str
+        :param list_of_usernames: list
+        :param list_of_accountids: list
+        :return: the customers added to the service desk
+        """
+        url = "rest/servicedeskapi/servicedesk/{}/customer".format(service_desk_id)
+        data = {"usernames": list_of_usernames, "accountIds": list_of_accountids}
+
+        log.info("Removing customers...")
+        return self.delete(url, headers=self.experimental_headers, data=data)
 
     def get_queues(self, service_desk_id, include_count=False, start=0, limit=50):
         """
