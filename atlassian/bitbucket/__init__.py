@@ -299,17 +299,10 @@ class Bitbucket(BitbucketBase):
         """
         Update project
         :param key: The project key
-
-        :return: None if the project does not exist, else the value of the put request.
+        :return: The value of the put request.
         """
-        data = self.project(key)
-        if "errors" in data:
-            log.debug("Failed to update project: {0}: Unable to read project".format(key))
-            return None
-        else:
-            data.update(params)
-            url = self._url_project(key)
-            return self.put(url, data=data)
+        url = self._url_project(key)
+        return self.put(url, data=params)
 
     def _url_project_avatar(self, project_key):
         return "{}/avatar.png".format(self._url_project(project_key))
@@ -679,6 +672,17 @@ class Bitbucket(BitbucketBase):
         """
         url = self._url_repo(project_key, repository_slug)
         return self.get(url)
+
+    def update_repo(self, project_key, repository_slug, **params):
+        """
+        Update a repository in a project. This operates based on slug not name which may
+        be confusing to some users.
+        :param project_key: Key of the project you wish to look in.
+        :param repository_slug: url-compatible repository identifier
+        :return: The value of the put request.
+        """
+        url = self._url_repo(project_key, repository_slug)
+        return self.put(url, data=params)
 
     def delete_repo(self, project_key, repository_slug):
         """
