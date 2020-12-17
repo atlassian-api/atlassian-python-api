@@ -682,6 +682,13 @@ class Jira(AtlassianRestAPI):
             query_result, missing_issues = self.bulk_issue(issue_list, fields)
         return query_result, missing_issues
 
+    def issue_createmeta(self, project, expand="projects.issuetypes.fields"):
+        params = {}
+        if expand:
+            params["expand"] = expand
+        url = "rest/api/2/issue/createmeta?projectKeys={}".format(project)
+        return self.get(url, params=params)
+
     def get_issue_changelog(self, issue_key):
         """
         Get issue related change log
