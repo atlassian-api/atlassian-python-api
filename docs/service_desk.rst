@@ -111,10 +111,10 @@ Manage the Organizations
     sd.delete_organization(organization_id)
 
     # Add users to organization
-    sd.add_users_to_organization(organization_id, users_list)
+    sd.add_users_to_organization(organization_id, users_list=[], account_list=[])
 
     # Remove users from organization
-    sd.remove_users_from_organization(organization_id, users_list)
+    sd.remove_users_from_organization(organization_id, , users_list=[], account_list=[])
 
 Attachment actions
 ------------------
