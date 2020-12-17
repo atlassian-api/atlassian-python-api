@@ -224,7 +224,7 @@ class AtlassianRestAPI(object):
         response.encoding = "utf-8"
 
         log.debug("HTTP: {} {} -> {} {}".format(method, path, response.status_code, response.reason))
-
+        log.debug("HTTP: Response text -> {}".format(response.text))
         if self.advanced_mode:
             return response
 
