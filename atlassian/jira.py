@@ -629,8 +629,11 @@ class Jira(AtlassianRestAPI):
     Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/issue
     """
 
-    def issue(self, key, fields="*all"):
-        return self.get("rest/api/2/issue/{0}?fields={1}".format(key, fields))
+    def issue(self, key, fields="*all", expand=None):
+        params = {}
+        if expand:
+            params["expand"] = expand
+        return self.get("rest/api/2/issue/{0}?fields={1}".format(key, fields), params=params)
 
     def get_issue(self, issue_id_or_key, fields=None, properties=None, update_history=True):
         """
@@ -748,8 +751,11 @@ class Jira(AtlassianRestAPI):
         url = "rest/api/2/issue/{issueIdOrKey}/archive".format(issueIdOrKey=issue_id_or_key)
         return self.get(url)
 
-    def issue_field_value(self, key, field):
-        issue = self.get("rest/api/2/issue/{0}?fields={1}".format(key, field))
+    def issue_field_value(self, key, field, expand=None):
+        params = {}
+        if expand:
+            params["expand"] = expand
+        issue = self.get("rest/api/2/issue/{0}?fields={1}".format(key, field), params=params)
         return issue["fields"][field]
 
     def issue_fields(self, key):
