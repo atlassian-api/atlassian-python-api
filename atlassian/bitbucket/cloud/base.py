@@ -7,10 +7,11 @@ from ..base import BitbucketBase
 
 
 class BitbucketCloudBase(BitbucketBase):
-    def __init__(self, url, *args, **kwargs):
+    def __init__(self, url, link="self", *args, **kwargs):
         """
         Init the rest api wrapper
         :param url:       The base url used for the rest api.
+        :param link:      Attribute to resolve a url based on input data. If None, no tries to receive an url from input data
         :param *args:     The fixed arguments for the AtlassianRestApi.
         :param **kwargs:  The keyword arguments for the AtlassianRestApi.
 
@@ -23,8 +24,8 @@ class BitbucketCloudBase(BitbucketBase):
                 raise ValueError(
                     "Expected type of data is [{}], got [{}].".format(expected_type, self.get_data("type"))
                 )
-        if url is None:
-            url = self.get_link("self")
+        if url is None and link is not None:
+            url = self.get_link(link)
         super(BitbucketCloudBase, self).__init__(url, *args, **kwargs)
 
     def __str__(self):
@@ -58,15 +59,7 @@ class BitbucketCloudBase(BitbucketBase):
             if "values" not in response:
                 return
 
-            values = response.get("values", [])
-            if not response.get("size", -1) == len(values):
-                raise AssertionError(
-                    "Wrong response for url [{}], the size attribute doesn't match the number of recieved values:\n{}".format(
-                        self.url, response
-                    )
-                )
-
-            for value in values:
+            for value in response.get("values", []):
                 yield value
 
             url = response.get("next")

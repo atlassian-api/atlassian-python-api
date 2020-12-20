@@ -5,6 +5,7 @@ from .issues import Issues
 from .branchRestrictions import BranchRestrictions
 from .defaultReviewers import DefaultReviewers
 from .pipelines import Pipelines
+from .pullRequests import PullRequests
 
 
 class RepositoriesBase(BitbucketCloudBase):
@@ -57,7 +58,7 @@ class Repositories(RepositoriesBase):
         if sort is not None:
             params["sort"] = sort
         for repository in self._get_paged(None, params):
-            yield self._get_repository_object(repository)
+            yield self._get_object(repository)
 
 
 class WorkspaceRepositories(RepositoriesBase):
@@ -159,6 +160,7 @@ class Repository(BitbucketCloudBase):
         self.__default_reviewers = DefaultReviewers("{}/default-reviewers".format(self.url), **self._new_session_args)
         self.__issues = Issues("{}/issues".format(self.url), **self._new_session_args)
         self.__pipelines = Pipelines("{}/pipelines".format(self.url), **self._new_session_args)
+        self.__pullrequests = PullRequests("{}/pullrequests".format(self.url), **self._new_session_args)
 
     @property
     def branch_restrictions(self):
@@ -175,6 +177,10 @@ class Repository(BitbucketCloudBase):
     @property
     def pipelines(self):
         return self.__pipelines
+
+    @property
+    def pullrequests(self):
+        return self.__pullrequests
 
     @property
     def name(self):
