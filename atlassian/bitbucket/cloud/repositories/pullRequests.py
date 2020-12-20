@@ -75,61 +75,63 @@ class PullRequest(BitbucketCloudBase):
         return self.get_data("state")
 
     @property
-    def created_on(self) -> datetime:
+    def created_on(self):
         """ time of creation """
         return datetime.strptime(self.get_data("created_on"), "%Y-%m-%dT%H:%M:%S.%f%z")
 
     @property
-    def updated_on(self) -> Union[datetime, None]:
+    def updated_on(self):
         """ time of last update """
         uo_str = self.get_data("updated_on")
         uo_dt = datetime.strptime(uo_str, "%Y-%m-%dT%H:%M:%S.%f%z") if uo_str else uo_str
         return uo_dt
 
     @property
-    def close_source_branch(self) -> bool:
+    def close_source_branch(self):
         """ close source branch flag """
         return self.get_data("close_source_branch")
 
     @property
-    def source_branch(self) -> str:
+    def source_branch(self):
         """ source branch """
         branch = self.get_data("source").get("branch")
         return branch.get("name")
 
     @property
-    def destination_branch(self) -> str:
+    def destination_branch(self):
         """ destination branch """
         branch = self.get_data("destination").get("branch")
         return branch.get("name")
 
     @property
-    def comment_count(self) -> int:
+    def comment_count(self):
         """ number of comments """
         return self.get_data("comment_count")
 
     @property
-    def task_count(self) -> int:
+    def task_count(self):
         """ number of tasks """
         return self.get_data("task_count")
 
     @property
-    def declined_reason(self) -> str:
+    def declined_reason(self):
+        """ reason for declining """
         return self.get_data("reason")
 
     @property
-    def author(self) -> DefaultReviewer:
+    def author(self):
+        """ DefaultReviewer object of the author """
         return DefaultReviewer(None, self.get_data("author"))
 
-    def participants(self) -> Generator:
-        """ A generator object of participants """
+    def participants(self):
+        """ Returns a generator object of participants """
         for participant in self.get_data("participants"):
             yield Participant(participant)
 
         return
 
-    def reviewers(self) -> Generator:
-        """ A generator object of reviewers """
+    def reviewers(self):
+        """ Returns a generator object of reviewers """
         for reviewer in self.get_data("reviewers"):
             yield DefaultReviewer(None, reviewer)
 
@@ -141,28 +143,28 @@ class Participant(BitbucketCloudBase):
         super(Participant, self).__init__(None, None, *args, data=data, expected_type="participant", **kwargs)
 
     @property
-    def user(self) -> DefaultReviewer:
+    def user(self):
         """ DefaultReviewer object with user information of the participant """
         return DefaultReviewer(None, self.get_data("user"))
 
     @property
-    def role(self) -> str:
+    def role(self):
         """ Returns PARTICIPANT or REVIEWER """
         return self.get_data("role")
 
     @property
-    def state(self) -> Union[str, None]:
+    def state(self):
         """ Returns approved, changes_requested or None"""
         return self.get_data("state")
 
     @property
-    def participated_on(self) -> Union[datetime, None]:
+    def participated_on(self):
         """ time of last participation """
         po_str = self.get_data("participated_on")
         po_dt = datetime.strptime(po_str, "%Y-%m-%dT%H:%M:%S.%f%z") if po_str else po_str
         return po_dt
 
     @property
-    def approved(self) -> bool:
+    def approved(self):
         """ Returns True if the user approved the pull request, else False """
         return self.get_data("approved")
