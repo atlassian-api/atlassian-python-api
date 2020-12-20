@@ -50,7 +50,6 @@ responses[None] = {
         "account_id": "OwnerTestWorkspace1AccountId",
     },
     "created_on": "2020-11-03T22:14:50.671Z",
-    "completed_on": "2020-11-03T22:14:53.173Z",
     "target": {
         "type": "pipeline_ref_target",
         "ref_type": "branch",

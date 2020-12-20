@@ -92,7 +92,7 @@ class BitbucketServerBase(BitbucketBase):
         if self.__can_delete is False:
             raise NotImplementedError("Delete not implemented for this object type.")
         data = super(BitbucketServerBase, self).delete(None)
-        if "errors" in data:
+        if data is None or "errors" in data:
             return
         return True
 

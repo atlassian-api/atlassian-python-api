@@ -128,6 +128,6 @@ class Issue(BitbucketCloudBase):
         Deletes the issue
         """
         data = super(Issue, self).delete(None)
-        if "errors" in data:
+        if data is None or "errors" in data:
             return
         return Issue(data, **self._new_session_args)

@@ -151,4 +151,8 @@ class Project(BitbucketCloudBase):
         """
         Delete the project
         """
-        return super(Project, self).delete(None)
+        data = super(Project, self).delete(None)
+        if data is None or "errors" in data:
+            return
+        return data
+

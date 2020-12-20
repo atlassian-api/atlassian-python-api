@@ -95,6 +95,6 @@ class DefaultReviewer(BitbucketCloudBase):
         Deletes the default reviewer
         """
         data = super(DefaultReviewer, self).delete(None)
-        if "errors" in data:
+        if data is None or "errors" in data:
             return
         return DefaultReviewer(self.url, data, **self._new_session_args)
