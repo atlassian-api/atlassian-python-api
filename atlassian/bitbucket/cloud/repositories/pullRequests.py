@@ -1,6 +1,5 @@
 # coding=utf-8
 
-from typing import Generator, Union
 from ..base import BitbucketCloudBase
 from .defaultReviewers import DefaultReviewer
 from datetime import datetime
