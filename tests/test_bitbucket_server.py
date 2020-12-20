@@ -1,6 +1,4 @@
 # coding: utf8
-import os
-import requests
 import pytest
 import sys
 
@@ -38,7 +36,7 @@ class TestBasic:
 
         group = BITBUCKET.groups.get("group_a")
         assert group.name == "group_a", "Get a group"
-        assert group.delete() == True, "Delete a group"
+        assert group.delete() is True, "Delete a group"
 
         result = list(BITBUCKET.users.each())
         assert [x.permission for x in result] == [
@@ -78,7 +76,7 @@ class TestBasic:
 
         user = BITBUCKET.users.get("jcitizen1")
         assert user.name == "jcitizen1", "Get a user"
-        assert user.delete() == True, "Delete a user"
+        assert user.delete() is True, "Delete a user"
 
     @pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3.4")
     def test_projects(self):
@@ -102,9 +100,9 @@ class TestBasic:
         project.description = "New description."
         assert project.description == "New description.", "Update the project description"
 
-        assert project.public == True, "The project public flag"
+        assert project.public is True, "The project public flag"
         project.public = False
-        assert project.public == False, "Update the project public flag"
+        assert project.public is False, "Update the project public flag"
 
         assert project.key == "PRJ", "The project key"
         project.key = "NEWKEY"
@@ -127,7 +125,7 @@ class TestBasic:
 
         group = project.groups.get("group_a")
         assert group.name == "group_a", "Get a group"
-        assert group.delete() == True, "Delete a group"
+        assert group.delete() is True, "Delete a group"
 
         result = list(project.users.each())
         assert [x.permission for x in result] == ["ADMIN", "WRITE", "READ"], "Each permission of project user"
@@ -159,7 +157,7 @@ class TestBasic:
 
         user = project.users.get("jcitizen1")
         assert user.name == "jcitizen1", "Get a user"
-        assert user.delete() == True, "Delete a user"
+        assert user.delete() is True, "Delete a user"
 
     @pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3.4")
     def test_repositories(self):
@@ -189,13 +187,13 @@ class TestBasic:
         repo.description = "New description."
         assert repo.description == "New description.", "Update the repo description"
 
-        assert repo.public == True, "The repo public flag"
+        assert repo.public is True, "The repo public flag"
         repo.public = False
-        assert repo.public == False, "Update the repo public flag"
+        assert repo.public is False, "Update the repo public flag"
 
-        assert repo.forkable == True, "The repo forkable flag"
+        assert repo.forkable is True, "The repo forkable flag"
         repo.forkable = False
-        assert repo.forkable == False, "Update the repo forkable flag"
+        assert repo.forkable is False, "Update the repo forkable flag"
 
         assert repo.contributing() == "Test contributing.md", "The contributing.md"
         assert repo.contributing(at="CommitId") == "Test contributing.md at CommitId", "The contributing.md at CommitId"
@@ -239,7 +237,7 @@ class TestBasic:
 
         group = repo.groups.get("group_a")
         assert group.name == "group_a", "Get a group"
-        assert group.delete() == True, "Delete a group"
+        assert group.delete() is True, "Delete a group"
 
         result = list(repo.users.each())
         assert [x.permission for x in result] == ["ADMIN", "WRITE", "READ"], "Each permission of repo user"
@@ -267,4 +265,4 @@ class TestBasic:
 
         user = repo.users.get("jcitizen1")
         assert user.name == "jcitizen1", "Get a user"
-        assert user.delete() == True, "Delete a user"
+        assert user.delete() is True, "Delete a user"

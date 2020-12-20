@@ -82,7 +82,7 @@ class BitbucketServerBase(BitbucketBase):
 
         :return: True if the update was successful
         """
-        if self.__can_update == False:
+        if self.__can_update is False:
             raise NotImplementedError("Update not implemented for this object type.")
         data = self.put(None, data=kwargs)
         if "errors" in data:
@@ -97,7 +97,7 @@ class BitbucketServerBase(BitbucketBase):
 
         :return: True if delete was successful
         """
-        if self.__can_delete == False:
+        if self.__can_delete is False:
             raise NotImplementedError("Delete not implemented for this object type.")
         data = super(BitbucketServerBase, self).delete(None)
         if "errors" in data:
