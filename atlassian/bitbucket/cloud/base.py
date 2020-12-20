@@ -80,8 +80,8 @@ class BitbucketCloudBase(BitbucketBase):
     def data(self):
         return copy.copy(self.__data)
 
-    def get_data(self, id):
-        return copy.copy(self.__data[id])
+    def get_data(self, id, default=None):
+        return copy.copy(self.__data[id]) if id in self.__data else default
 
     def get_link(self, link):
         return self.__data["links"][link]["href"]
