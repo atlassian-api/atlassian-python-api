@@ -59,15 +59,7 @@ class BitbucketServerBase(BitbucketBase):
             if "values" not in response:
                 return
 
-            values = response.get("values", [])
-            if not response.get("size", -1) == len(values):
-                raise AssertionError(
-                    "Wrong response for url [{}], the size attribute doesn't match the number of recieved values:\n{}".format(
-                        self.url, response
-                    )
-                )
-
-            for value in values:
+            for value in response.get("values", []):
                 yield value
 
             if response.get("nextPageStart") is None:
