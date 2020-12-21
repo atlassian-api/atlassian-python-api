@@ -1,5 +1,6 @@
 # coding=utf-8
 
+import json
 from ..base import BitbucketCloudBase
 from .users import User, Participant
 from datetime import datetime
@@ -49,6 +50,11 @@ class PullRequests(BitbucketCloudBase):
 class PullRequest(BitbucketCloudBase):
     def __init__(self, url, data, *args, **kwargs):
         super(PullRequest, self).__init__(url, *args, data=data, expected_type="pullrequest", **kwargs)
+
+    def _check_if_open(self):
+        if not self.is_open:
+            raise Exception("Pull Request isn't open")
+        return
 
     @property
     def id(self):
@@ -145,3 +151,47 @@ class PullRequest(BitbucketCloudBase):
             yield User(None, reviewer)
 
         return
+
+    def comment(self, raw_message):
+        """ Commenting the pull request in raw format """
+        markupstrings = ["markdown", "creole", "plaintext"]
+        if not raw_message:
+            raise ValueError("No message set")
+
+        data = {
+            "content": {
+                "raw": raw_message,
+            }
+        }
+
+        return self.post("comments", data)
+
+    def approve(self):
+        """ Approve a pull request if open """
+        self._check_if_open()
+        data = {"approved": True}
+        return self.post("approve", data)
+
+    def unapprove(self):
+        """ Unapporve a pull request if open """
+        self._check_if_open()
+        return self.delete("approve")
+
+    def merge(self, merge_strategy="merge_commit", close_source_branch=None):
+        """
+        Merges the pull request if it's open
+        :param merge_strategy: string:  Merge strategy (one of "merge_commit", "squash", "fast_forward")
+        :param close_source_branch: boolean: Close the source branch after merge, default PR option
+        """
+        self._check_if_open()
+        merge_strategies = ["merge_commit", "squash", "fast_forward"]
+
+        if merge_strategy not in merge_strategies:
+            raise ValueError("merge_stragegy must be {}".format(merge_strategies))
+
+        data = {
+            "close_source_branch": close_source_branch or self.close_source_branch,
+            "merge_strategy": merge_strategy,
+        }
+
+        return self.post("merge", data)
