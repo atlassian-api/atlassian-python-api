@@ -68,22 +68,22 @@ class PullRequest(BitbucketCloudBase):
     @property
     def is_declined(self):
         """ True if the pull request was declined """
-        return self.get_data("state") == "DECLINED"
+        return self.get_data("state").upper() == "DECLINED"
 
     @property
     def is_merged(self):
         """ True if the pull request was merged """
-        return self.get_data("state") == "MERGED"
+        return self.get_data("state").upper() == "MERGED"
 
     @property
     def is_open(self):
         """ True if the pull request is open """
-        return self.get_data("state") == "OPEN"
+        return self.get_data("state").upper() == "OPEN"
 
     @property
     def is_superseded(self):
         """ True if the pull request was superseded """
-        return self.get_data("state") == "SUPERSEDED"
+        return self.get_data("state").upper() == "SUPERSEDED"
 
     @property
     def created_on(self):

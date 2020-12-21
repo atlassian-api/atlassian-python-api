@@ -1,3 +1,4 @@
+from requests.models import ProtocolError
 from ..base import BitbucketCloudBase
 from datetime import datetime
 
@@ -44,17 +45,22 @@ class Participant(BitbucketCloudBase):
     @property
     def is_participant(self):
         """ True if the user is a pull request participant """
-        return self.get_data("role") == "PARTICIPANT"
+        return self.get_data("role").upper() == "PARTICIPANT"
 
     @property
     def is_reviewer(self):
         """ True if the user is a pull request reviewer """
-        return self.get_data("role") == "REVIEWER"
+        return self.get_data("role").upper() == "REVIEWER"
 
     @property
-    def state(self):
-        """ Returns approved, changes_requested or None"""
-        return self.get_data("state")
+    def has_changes_requested(self):
+        """ True if user requested changes """
+        return str(self.get_data("state")).upper() == "CHANGES_REQUESTED"
+
+    @property
+    def has_approved(self):
+        """ True if user approved the pull request """
+        return str(self.get_data("state")).upper() == "APPROVED"
 
     @property
     def participated_on(self):
