@@ -30,7 +30,11 @@ class TestBasic:
     @pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3.4")
     def test_get_organisations_servicedesk_id(self):
         result = [x["name"] for x in SERVICEDESK.get_organisations(service_desk_id="{serviceDeskId}")["values"]]
-        assert result == ["Charlie Cakes Franchises", "Atlas Coffee Co", "The Adjustment Bureau"], "Result of [get_organisations(service_desk_id)]"
+        assert result == [
+            "Charlie Cakes Franchises",
+            "Atlas Coffee Co",
+            "The Adjustment Bureau",
+        ], "Result of [get_organisations(service_desk_id)]"
 
     @pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3.4")
     def test_get_organization(self):
@@ -64,12 +68,16 @@ class TestBasic:
 
     @pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3.4")
     def test_add_users_to_organization(self):
-        result = SERVICEDESK.add_users_to_organization("{organizationId}", account_list=["{accountId1}", "{accountId2}"])
+        result = SERVICEDESK.add_users_to_organization(
+            "{organizationId}", account_list=["{accountId1}", "{accountId2}"]
+        )
         assert result == None, "Result of [add_users_to_organization(...)]"
 
     @pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3.4")
     def test_remove_users_from_organization(self):
-        result = SERVICEDESK.remove_users_from_organization("{organizationId}", account_list=["{accountId1}", "{accountId2}"])
+        result = SERVICEDESK.remove_users_from_organization(
+            "{organizationId}", account_list=["{accountId1}", "{accountId2}"]
+        )
         assert result == None, "Result of [remove_users_from_organization(...)]"
 
     @pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3.4")
@@ -86,5 +94,3 @@ class TestBasic:
     def test_remove_customers(self):
         result = SERVICEDESK.remove_customers("{serviceDeskId}", list_of_accountids=["{accountId1}", "{accountId2}"])
         assert result == None, "Result of [remove_users_from_organization(...)]"
-
-
