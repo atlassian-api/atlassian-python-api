@@ -1,7 +1,7 @@
 # coding=utf-8
 
 from ..base import BitbucketCloudBase
-from .defaultReviewers import DefaultReviewer
+from .users import User, Participant
 from datetime import datetime
 
 
@@ -66,12 +66,24 @@ class PullRequest(BitbucketCloudBase):
         return self.get_data("description")
 
     @property
-    def state(self):
-        """
-        pull request state
-        possible values: MERGED, SUPERSEDED, OPEN, DECLINED
-        """
-        return self.get_data("state")
+    def is_declined(self):
+        """ True if the pull request was declined """
+        return self.get_data("state") == "DECLINED"
+
+    @property
+    def is_merged(self):
+        """ True if the pull request was merged """
+        return self.get_data("state") == "MERGED"
+
+    @property
+    def is_open(self):
+        """ True if the pull request is open """
+        return self.get_data("state") == "OPEN"
+
+    @property
+    def is_superseded(self):
+        """ True if the pull request was superseded """
+        return self.get_data("state") == "SUPERSEDED"
 
     @property
     def created_on(self):
@@ -93,14 +105,12 @@ class PullRequest(BitbucketCloudBase):
     @property
     def source_branch(self):
         """ source branch """
-        branch = self.get_data("source").get("branch")
-        return branch.get("name")
+        return self.get_data("source")["name"]["branch"]
 
     @property
     def destination_branch(self):
         """ destination branch """
-        branch = self.get_data("destination").get("branch")
-        return branch.get("name")
+        return self.get_data("destination")["branch"]["name"]
 
     @property
     def comment_count(self):
@@ -119,8 +129,8 @@ class PullRequest(BitbucketCloudBase):
 
     @property
     def author(self):
-        """ DefaultReviewer object of the author """
-        return DefaultReviewer(None, self.get_data("author"))
+        """ User object of the author """
+        return User(None, self.get_data("author"))
 
     def participants(self):
         """ Returns a generator object of participants """
@@ -132,38 +142,6 @@ class PullRequest(BitbucketCloudBase):
     def reviewers(self):
         """ Returns a generator object of reviewers """
         for reviewer in self.get_data("reviewers"):
-            yield DefaultReviewer(None, reviewer)
+            yield User(None, reviewer)
 
         return
-
-
-class Participant(BitbucketCloudBase):
-    def __init__(self, data, *args, **kwargs):
-        super(Participant, self).__init__(None, None, *args, data=data, expected_type="participant", **kwargs)
-
-    @property
-    def user(self):
-        """ DefaultReviewer object with user information of the participant """
-        return DefaultReviewer(None, self.get_data("user"))
-
-    @property
-    def role(self):
-        """ Returns PARTICIPANT or REVIEWER """
-        return self.get_data("role")
-
-    @property
-    def state(self):
-        """ Returns approved, changes_requested or None"""
-        return self.get_data("state")
-
-    @property
-    def participated_on(self):
-        """ time of last participation """
-        po_str = self.get_data("participated_on")
-        po_dt = datetime.strptime(po_str, "%Y-%m-%dT%H:%M:%S.%f%z") if po_str else po_str
-        return po_dt
-
-    @property
-    def approved(self):
-        """ Returns True if the user approved the pull request, else False """
-        return self.get_data("approved")
