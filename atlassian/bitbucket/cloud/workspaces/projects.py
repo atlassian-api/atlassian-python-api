@@ -155,4 +155,3 @@ class Project(BitbucketCloudBase):
         if data is None or "errors" in data:
             return
         return data
-

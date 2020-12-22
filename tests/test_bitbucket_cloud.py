@@ -12,9 +12,7 @@ try:
     BITBUCKET = Bitbucket(
         "{}/bitbucket/cloud".format(mockup_server()), username="username", password="password", cloud=True
     )
-    CLOUD = Cloud(
-        "{}/bitbucket/cloud".format(mockup_server()), username="username", password="password"
-    )
+    CLOUD = Cloud("{}/bitbucket/cloud".format(mockup_server()), username="username", password="password")
 except ImportError:
     pass
 
@@ -39,9 +37,11 @@ class TestBasic:
     def test_get_pipeline(self):
         result = BITBUCKET.get_pipeline("TestWorkspace1", "testrepository1", "{PipelineUuid}")
         assert result["state"]["name"] == "COMPLETED", "Result of [get_pipeline(...)]"
-        result = CLOUD.workspaces.get("TestWorkspace1").repositories.get("testrepository1").pipelines.get("{PipelineUuid}")
+        result = (
+            CLOUD.workspaces.get("TestWorkspace1").repositories.get("testrepository1").pipelines.get("{PipelineUuid}")
+        )
         assert result.get_data("state")["name"] == "COMPLETED", "Pipeline state"
-        assert result.completed_on() == "Never completed", "Pipeline completed time"
+        assert result.completed_on == "never completed", "Pipeline completed time"
 
     @pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3.4")
     def test_stop_pipeline(self):
