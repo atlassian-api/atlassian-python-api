@@ -2,6 +2,17 @@
 
 from ..base import BitbucketCloudBase
 from ..common.users import User
+from ..const import (
+    PRP_CHANGES_REQUESTED,
+    PRP_ROLE_PARTICIPANT,
+    PRP_ROLE_REVIEWER,
+    PR_MERGE_COMMIT,
+    PR_MERGE_STRATEGIES,
+    PR_STATE_DECLINED,
+    PR_STATE_MERGED,
+    PR_STATE_OPEN,
+    PR_STATE_SUPERSEDED,
+)
 
 
 class PullRequests(BitbucketCloudBase):
@@ -72,22 +83,22 @@ class PullRequest(BitbucketCloudBase):
     @property
     def is_declined(self):
         """ True if the pull request was declined """
-        return self.get_data("state").upper() == "DECLINED"
+        return self.get_data("state").upper() == PR_STATE_DECLINED
 
     @property
     def is_merged(self):
         """ True if the pull request was merged """
-        return self.get_data("state").upper() == "MERGED"
+        return self.get_data("state").upper() == PR_STATE_MERGED
 
     @property
     def is_open(self):
         """ True if the pull request is open """
-        return self.get_data("state").upper() == "OPEN"
+        return self.get_data("state").upper() == PR_STATE_OPEN
 
     @property
     def is_superseded(self):
         """ True if the pull request was superseded """
-        return self.get_data("state").upper() == "SUPERSEDED"
+        return self.get_data("state").upper() == PR_STATE_SUPERSEDED
 
     @property
     def created_on(self):
@@ -177,17 +188,16 @@ class PullRequest(BitbucketCloudBase):
         self._check_if_open()
         return self.post("decline")
 
-    def merge(self, merge_strategy="merge_commit", close_source_branch=None):
+    def merge(self, merge_strategy=PR_MERGE_COMMIT, close_source_branch=None):
         """
         Merges the pull request if it's open
         :param merge_strategy: string:  Merge strategy (one of "merge_commit", "squash", "fast_forward")
         :param close_source_branch: boolean: Close the source branch after merge, default PR option
         """
         self._check_if_open()
-        merge_strategies = ["merge_commit", "squash", "fast_forward"]
 
-        if merge_strategy not in merge_strategies:
-            raise ValueError("merge_stragegy must be {}".format(merge_strategies))
+        if merge_strategy not in PR_MERGE_STRATEGIES:
+            raise ValueError("merge_stragegy must be {}".format(PR_MERGE_STRATEGIES))
 
         data = {
             "close_source_branch": close_source_branch or self.close_source_branch,
@@ -210,22 +220,22 @@ class Participant(BitbucketCloudBase):
     @property
     def is_participant(self):
         """ True if the user is a pull request participant """
-        return self.get_data("role").upper() == "PARTICIPANT"
+        return self.get_data("role").upper() == PRP_ROLE_PARTICIPANT
 
     @property
     def is_reviewer(self):
         """ True if the user is a pull request reviewer """
-        return self.get_data("role").upper() == "REVIEWER"
+        return self.get_data("role").upper() == PRP_ROLE_REVIEWER
 
     @property
     def has_changes_requested(self):
         """ True if user requested changes """
-        return str(self.get_data("state")).upper() == "CHANGES_REQUESTED"
+        return str(self.get_data("state")).upper() == PRP_CHANGES_REQUESTED
 
     @property
     def has_approved(self):
         """ True if user approved the pull request """
-        return str(self.get_data("state")).upper() == "APPROVED"
+        return str(self.get_data("state")).upper() == PRP_APPROVED
 
     @property
     def participated_on(self):
