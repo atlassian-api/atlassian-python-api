@@ -2,7 +2,6 @@
 
 from ..base import BitbucketCloudBase
 from ..common.users import User
-from datetime import datetime
 
 
 class PullRequests(BitbucketCloudBase):
@@ -93,14 +92,12 @@ class PullRequest(BitbucketCloudBase):
     @property
     def created_on(self):
         """ time of creation """
-        return datetime.strptime(self.get_data("created_on"), "%Y-%m-%dT%H:%M:%S.%f%z")
+        return self.get_time("created_on")
 
     @property
     def updated_on(self):
         """ time of last update """
-        uo_str = self.get_data("updated_on")
-        uo_dt = datetime.strptime(uo_str, "%Y-%m-%dT%H:%M:%S.%f%z") if uo_str else uo_str
-        return uo_dt
+        return self.get_time("updated_on")
 
     @property
     def close_source_branch(self):
