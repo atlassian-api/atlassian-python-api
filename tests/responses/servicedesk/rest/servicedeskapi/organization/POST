@@ -1,0 +1,5 @@
+responses['{"name": "Charlie Chocolate Franchises"}'] = {
+    "id": "2",
+    "name": "Charlie Chocolate Franchises",
+    "_links": {"self": "https://your-domain.atlassian.net/rest/servicedeskapi/organization/2"},
+}
