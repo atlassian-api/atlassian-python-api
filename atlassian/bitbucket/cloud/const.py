@@ -1,5 +1,8 @@
 """ Bitbucket Cloud constants """
 
+# Configuration
+CONF_TIMEFORMAT = "%Y-%m-%dT%H:%M:%S.%f%z"
+
 # Pull Request
 PR_MERGE_COMMIT = "merge_commit"
 PR_MERGE_SQUASH = "squash"

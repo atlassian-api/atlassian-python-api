@@ -4,6 +4,7 @@ from datetime import datetime
 from pprint import PrettyPrinter
 
 from ..base import BitbucketBase
+from .const import CONF_TIMEFORMAT
 
 
 class BitbucketCloudBase(BitbucketBase):
@@ -92,4 +93,4 @@ class BitbucketCloudBase(BitbucketBase):
         if not value_str or not isinstance(value_str, str):
             return None
         else:
-            return value_str if self.raw_timeformat else datetime.strptime(value_str, "%Y-%m-%dT%H:%M:%S.%f%z")
+            return value_str if self.raw_timeformat else datetime.strptime(value_str, CONF_TIMEFORMAT)
