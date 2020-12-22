@@ -113,15 +113,15 @@ class Issue(BitbucketCloudBase):
 
     @property
     def created_on(self):
-        return self.get_data("created_on")
+        return self.get_time("created_on")
 
     @property
     def edited_on(self):
-        return self.get_data("edited_on", "never edited")
+        return self.get_time("edited_on")
 
     @property
     def updated_on(self):
-        return self.get_data("updated_on", "never updated")
+        return self.get_time("updated_on")
 
     def delete(self):
         """

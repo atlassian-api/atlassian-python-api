@@ -3,7 +3,7 @@
 from requests import HTTPError
 
 from ..base import BitbucketCloudBase
-from .users import User
+from ..common.users import User
 
 
 class DefaultReviewers(BitbucketCloudBase):
@@ -13,7 +13,7 @@ class DefaultReviewers(BitbucketCloudBase):
     def __get_object(self, data):
         if "errors" in data:
             return
-        return User(self.url_joiner(self.url, data["display_name"]), data, **self._new_session_args)
+        return DefaultReviewer(self.url_joiner(self.url, data["display_name"]), data, **self._new_session_args)
 
     def add(self, user):
         """
@@ -69,3 +69,17 @@ class DefaultReviewers(BitbucketCloudBase):
                 raise
 
         return default_reviewer
+
+
+class DefaultReviewer(User):
+    def __init__(self, url, data, *args, **kwargs):
+        super(DefaultReviewer, self).__init__(url, data, *args, **kwargs)
+
+    def delete(self):
+        """
+        Deletes the default reviewer
+        """
+        data = super(User, self).delete(None)
+        if "errors" in data:
+            return
+        return User(self.url, data, **self._new_session_args)

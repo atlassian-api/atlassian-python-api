@@ -113,11 +113,11 @@ class Pipeline(BitbucketCloudBase):
 
     @property
     def created_on(self):
-        return self.get_data("created_on")
+        return self.get_time("created_on")
 
     @property
     def completed_on(self):
-        return self.get_data("completed_on", "never completed")
+        return self.get_time("completed_on")
 
     def stop(self):
         return self.post("stopPipeline")
@@ -156,11 +156,11 @@ class Step(BitbucketCloudBase):
 
     @property
     def started_on(self):
-        return self.get_data("started_on")
+        return self.get_time("started_on")
 
     @property
     def completed_on(self):
-        return self.get_data("completed_on")
+        return self.get_time("completed_on")
 
     @property
     def duration_in_seconds(self):

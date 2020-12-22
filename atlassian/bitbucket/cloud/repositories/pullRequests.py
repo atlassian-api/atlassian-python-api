@@ -1,8 +1,7 @@
 # coding=utf-8
 
-import json
 from ..base import BitbucketCloudBase
-from .users import User, Participant
+from ..common.users import User
 from datetime import datetime
 
 
@@ -111,7 +110,7 @@ class PullRequest(BitbucketCloudBase):
     @property
     def source_branch(self):
         """ source branch """
-        return self.get_data("source")["name"]["branch"]
+        return self.get_data("source")["branch"]["name"]
 
     @property
     def destination_branch(self):
@@ -141,20 +140,19 @@ class PullRequest(BitbucketCloudBase):
     def participants(self):
         """ Returns a generator object of participants """
         for participant in self.get_data("participants"):
-            yield Participant(participant)
+            yield Participant(participant, **self._new_session_args)
 
         return
 
     def reviewers(self):
         """ Returns a generator object of reviewers """
         for reviewer in self.get_data("reviewers"):
-            yield User(None, reviewer)
+            yield User(None, reviewer, **self._new_session_args)
 
         return
 
     def comment(self, raw_message):
         """ Commenting the pull request in raw format """
-        markupstrings = ["markdown", "creole", "plaintext"]
         if not raw_message:
             raise ValueError("No message set")
 
@@ -173,9 +171,17 @@ class PullRequest(BitbucketCloudBase):
         return self.post("approve", data)
 
     def unapprove(self):
-        """ Unapporve a pull request if open """
+        """ Unapprove a pull request if open """
         self._check_if_open()
         return self.delete("approve")
+
+    def decline(self, reason):
+        """ Decline a pull request """
+        self._check_if_open()
+        data = {
+            "reason": reason,
+        }
+        return self.post("decline", data)
 
     def merge(self, merge_strategy="merge_commit", close_source_branch=None):
         """
@@ -195,3 +201,44 @@ class PullRequest(BitbucketCloudBase):
         }
 
         return self.post("merge", data)
+
+
+class Participant(BitbucketCloudBase):
+    def __init__(self, data, *args, **kwargs):
+        print(kwargs)
+        super(Participant, self).__init__(None, None, *args, data=data, expected_type="participant", **kwargs)
+
+    @property
+    def user(self):
+        """ User object with user information of the participant """
+        return User(None, self.get_data("user"), **self._new_session_args)
+
+    @property
+    def is_participant(self):
+        """ True if the user is a pull request participant """
+        return self.get_data("role").upper() == "PARTICIPANT"
+
+    @property
+    def is_reviewer(self):
+        """ True if the user is a pull request reviewer """
+        return self.get_data("role").upper() == "REVIEWER"
+
+    @property
+    def has_changes_requested(self):
+        """ True if user requested changes """
+        return str(self.get_data("state")).upper() == "CHANGES_REQUESTED"
+
+    @property
+    def has_approved(self):
+        """ True if user approved the pull request """
+        return str(self.get_data("state")).upper() == "APPROVED"
+
+    @property
+    def participated_on(self):
+        """ time of last participation """
+        return self.get_time("participated_on")
+
+    @property
+    def approved(self):
+        """ Returns True if the user approved the pull request, else False """
+        return self.get_data("approved")

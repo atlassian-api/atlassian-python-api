@@ -10,6 +10,7 @@ class Cloud(BitbucketCloudBase):
         kwargs["cloud"] = True
         kwargs["api_root"] = None
         kwargs["api_version"] = "2.0"
+        kwargs["raw_timeformat"] = kwargs.pop("raw_timeformat", False)
         url = url.strip("/") + "/{}".format(kwargs["api_version"])
         super(Cloud, self).__init__(url, *args, **kwargs)
         self.__workspaces = Workspaces("{}/workspaces".format(self.url), **self._new_session_args)

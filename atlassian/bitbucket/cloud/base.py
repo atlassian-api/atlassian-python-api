@@ -1,6 +1,6 @@
 # coding=utf-8
 import copy
-
+from datetime import datetime
 from pprint import PrettyPrinter
 
 from ..base import BitbucketBase
@@ -86,3 +86,10 @@ class BitbucketCloudBase(BitbucketBase):
 
     def get_link(self, link):
         return self.__data["links"][link]["href"]
+
+    def get_time(self, id):
+        value_str = self.get_data(id)
+        if not value_str or not isinstance(value_str, str):
+            return None
+        else:
+            return value_str if self.raw_timeformat else datetime.strptime(value_str, "%Y-%m-%dT%H:%M:%S.%f%z")
