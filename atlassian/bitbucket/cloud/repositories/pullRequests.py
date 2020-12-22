@@ -175,13 +175,10 @@ class PullRequest(BitbucketCloudBase):
         self._check_if_open()
         return self.delete("approve")
 
-    def decline(self, reason):
+    def decline(self):
         """ Decline a pull request """
         self._check_if_open()
-        data = {
-            "reason": reason,
-        }
-        return self.post("decline", data)
+        return self.post("decline")
 
     def merge(self, merge_strategy="merge_commit", close_source_branch=None):
         """
