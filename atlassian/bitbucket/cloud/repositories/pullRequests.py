@@ -3,6 +3,7 @@
 from ..base import BitbucketCloudBase
 from ..common.users import User
 from ..const import (
+    PRP_APPROVED,
     PRP_CHANGES_REQUESTED,
     PRP_ROLE_PARTICIPANT,
     PRP_ROLE_REVIEWER,
@@ -230,12 +231,12 @@ class Participant(BitbucketCloudBase):
     @property
     def has_changes_requested(self):
         """ True if user requested changes """
-        return str(self.get_data("state")).upper() == PRP_CHANGES_REQUESTED
+        return str(self.get_data("state")).lower() == PRP_CHANGES_REQUESTED
 
     @property
     def has_approved(self):
         """ True if user approved the pull request """
-        return str(self.get_data("state")).upper() == PRP_APPROVED
+        return str(self.get_data("state")).lower() == PRP_APPROVED
 
     @property
     def participated_on(self):
