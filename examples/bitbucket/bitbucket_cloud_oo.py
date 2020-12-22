@@ -17,7 +17,7 @@ for w in cloud.workspaces.each():
         break
 
 print()
-w = cloud.workspaces.get(w.name)
+w = cloud.workspaces.get(w.slug)
 p = w.projects.get(p.key)
 print("Project key " + p.key)
 for r in p.repositories.each():
