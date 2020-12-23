@@ -1,6 +1,4 @@
 # coding: utf8
-import os
-import requests
 import pytest
 import sys
 
@@ -62,7 +60,7 @@ class TestBasic:
         result = BITBUCKET.get_pipeline_step_log(
             "TestWorkspace1", "testrepository1", "{PipelineUuid}", "{PipelineStep1Uuid}"
         )
-        assert result == None, "Result of step1 [get_pipeline_step_log(...)]"
+        assert result is None, "Result of step1 [get_pipeline_step_log(...)]"
 
     @pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3.4")
     def test_get_pipeline_step_log_2(self):
@@ -129,9 +127,9 @@ class TestBasic:
     @pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3.4")
     def test_is_default_reviewer(self):
         result = BITBUCKET.is_default_reviewer("TestWorkspace1", "testrepository1", "DefaultReviewerNo")
-        assert result == False, "Result of [is_default_reviewer(...)]"
+        assert result is False, "Result of [is_default_reviewer(...)]"
         result = BITBUCKET.is_default_reviewer("TestWorkspace1", "testrepository1", "DefaultReviewer1")
-        assert result == True, "Result of [is_default_reviewer(...)]"
+        assert result is True, "Result of [is_default_reviewer(...)]"
 
     @pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3.4")
     def test_delete_default_reviewer(self):

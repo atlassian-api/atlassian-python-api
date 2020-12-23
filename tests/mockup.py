@@ -2,7 +2,7 @@
 import json
 import os
 
-from unittest.mock import Mock, MagicMock
+from unittest.mock import Mock
 
 from requests import Session, Response
 
@@ -47,8 +47,8 @@ def request_mookup(*args, **kwargs):
                         cur_dict = elem if item is None else elem.get(item, {})
                         if "links" in cur_dict:
                             for link in cur_dict["links"].values():
-                                for l in link if type(link) is list else [link]:
-                                    l["href"] = "{}/{}".format(SERVER, l["href"])
+                                for ld in link if type(link) is list else [link]:
+                                    ld["href"] = "{}/{}".format(SERVER, ld["href"])
                 if "next" in data:
                     data["next"] = "{}/{}".format(SERVER, data["next"])
 

@@ -4,10 +4,6 @@
 # setup.cfg or other tool-specific files.
 # https://github.com/carlosperate/awesome-pyproject
 
-[tool.flake8]
-max-line-length = 120
-exclude = '.tox,docs'
-
 [tool.black]
 line-length = 120
 include = '(atlassian|examples|tests)\/.*(\.py|GET|POST)'

@@ -1,5 +1,4 @@
 # coding: utf8
-import os
 import pytest
 import sys
 
@@ -54,31 +53,31 @@ class TestBasic:
     @pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3.4")
     def test_add_organization(self):
         result = SERVICEDESK.add_organization("{serviceDeskId}", "{organizationId}")
-        assert result == None, "Result of [add_organization(...)]"
+        assert result is None, "Result of [add_organization(...)]"
 
     @pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3.4")
     def test_remove_organization(self):
         result = SERVICEDESK.remove_organization("{serviceDeskId}", "{organizationId}")
-        assert result == None, "Result of [remove_organization(...)]"
+        assert result is None, "Result of [remove_organization(...)]"
 
     @pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3.4")
     def test_delete_organization(self):
         result = SERVICEDESK.delete_organization("{organizationId}")
-        assert result == None, "Result of [delete_organization(...)]"
+        assert result is None, "Result of [delete_organization(...)]"
 
     @pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3.4")
     def test_add_users_to_organization(self):
         result = SERVICEDESK.add_users_to_organization(
             "{organizationId}", account_list=["{accountId1}", "{accountId2}"]
         )
-        assert result == None, "Result of [add_users_to_organization(...)]"
+        assert result is None, "Result of [add_users_to_organization(...)]"
 
     @pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3.4")
     def test_remove_users_from_organization(self):
         result = SERVICEDESK.remove_users_from_organization(
             "{organizationId}", account_list=["{accountId1}", "{accountId2}"]
         )
-        assert result == None, "Result of [remove_users_from_organization(...)]"
+        assert result is None, "Result of [remove_users_from_organization(...)]"
 
     @pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3.4")
     def test_get_customers(self):
@@ -88,9 +87,9 @@ class TestBasic:
     @pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3.4")
     def test_add_customers(self):
         result = SERVICEDESK.add_customers("{serviceDeskId}", list_of_accountids=["{accountId1}", "{accountId2}"])
-        assert result == None, "Result of [remove_users_from_organization(...)]"
+        assert result is None, "Result of [remove_users_from_organization(...)]"
 
     @pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3.4")
     def test_remove_customers(self):
         result = SERVICEDESK.remove_customers("{serviceDeskId}", list_of_accountids=["{accountId1}", "{accountId2}"])
-        assert result == None, "Result of [remove_users_from_organization(...)]"
+        assert result is None, "Result of [remove_users_from_organization(...)]"
