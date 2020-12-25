@@ -31,7 +31,7 @@ class BitbucketCloudBase(BitbucketBase):
         self._check_timeformat_func()
 
     def _check_timeformat_func(self):
-        LAMBDA = lambda: 0
+        LAMBDA = lambda: 0  # noqa: E731
         if self.timeformat_func is None or (
             isinstance(self.timeformat_func, type(LAMBDA)) and self.timeformat_func.__name__ == LAMBDA.__name__
         ):
