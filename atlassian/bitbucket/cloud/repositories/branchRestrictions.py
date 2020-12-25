@@ -144,6 +144,6 @@ class BranchRestriction(BitbucketCloudBase):
         Deletes the branch restriction
         """
         data = super(BranchRestriction, self).delete(None)
-        if "errors" in data:
+        if data is None or "errors" in data:
             return
         return BranchRestriction(data, **self._new_session_args)

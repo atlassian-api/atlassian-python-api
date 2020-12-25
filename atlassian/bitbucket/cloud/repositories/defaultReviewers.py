@@ -79,7 +79,7 @@ class DefaultReviewer(User):
         """
         Deletes the default reviewer
         """
-        data = super(User, self).delete(None)
-        if "errors" in data:
+        data = super(DefaultReviewer, self).delete(None)
+        if data is None or "errors" in data:
             return
         return User(self.url, data, **self._new_session_args)
