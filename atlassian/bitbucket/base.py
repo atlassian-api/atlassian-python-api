@@ -15,7 +15,7 @@ class BitbucketBase(AtlassianRestAPI):
 
         :return: nothing
         """
-        self.raw_timeformat = kwargs.pop("raw_timeformat")
+        self.timeformat_func = kwargs.pop("timeformat_func")
         super(BitbucketBase, self).__init__(url, *args, **kwargs)
 
     def _get_paged(self, url, params=None, data=None, flags=None, trailing=None, absolute=False):
@@ -62,5 +62,5 @@ class BitbucketBase(AtlassianRestAPI):
             cloud=self.cloud,
             api_root=self.api_root,
             api_version=self.api_version,
-            raw_timeformat=self.raw_timeformat,
+            timeformat_func=self.timeformat_func,
         )

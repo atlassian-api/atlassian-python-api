@@ -3,6 +3,8 @@
 from .base import BitbucketCloudBase
 from .workspaces import Workspaces
 from .repositories import Repositories
+from .const import CONF_TIMEFORMAT
+from datetime import datetime
 
 
 class Cloud(BitbucketCloudBase):
@@ -10,7 +12,7 @@ class Cloud(BitbucketCloudBase):
         kwargs["cloud"] = True
         kwargs["api_root"] = None
         kwargs["api_version"] = "2.0"
-        kwargs["raw_timeformat"] = kwargs.pop("raw_timeformat", False)
+        kwargs["timeformat_func"] = kwargs.pop("timeformat_func", lambda ts: datetime.strptime(ts, CONF_TIMEFORMAT))
         url = url.strip("/") + "/{}".format(kwargs["api_version"])
         super(Cloud, self).__init__(url, *args, **kwargs)
         self.__workspaces = Workspaces("{}/workspaces".format(self.url), **self._new_session_args)

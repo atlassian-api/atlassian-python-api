@@ -1,10 +1,8 @@
 # coding=utf-8
 import copy
-from datetime import datetime
 from pprint import PrettyPrinter
 
 from ..base import BitbucketBase
-from .const import CONF_TIMEFORMAT
 
 
 class BitbucketCloudBase(BitbucketBase):
@@ -27,7 +25,19 @@ class BitbucketCloudBase(BitbucketBase):
                 )
         if url is None and link is not None:
             url = self.get_link(link)
+
         super(BitbucketCloudBase, self).__init__(url, *args, **kwargs)
+
+        self._check_timeformat_func()
+
+    def _check_timeformat_func(self):
+        LAMBDA = lambda: 0
+        if self.timeformat_func is None or (
+            isinstance(self.timeformat_func, type(LAMBDA)) and self.timeformat_func.__name__ == LAMBDA.__name__
+        ):
+            return True
+        else:
+            ValueError("Expected [None] or [lambda function] for argument [timeformat_func]")
 
     def __str__(self):
         return PrettyPrinter(indent=4).pformat(self.__data)
@@ -93,4 +103,4 @@ class BitbucketCloudBase(BitbucketBase):
         if not value_str or not isinstance(value_str, str):
             return None
         else:
-            return value_str if self.raw_timeformat else datetime.strptime(value_str, CONF_TIMEFORMAT)
+            return self.timeformat_func(value_str) if self.timeformat_func else value_str

@@ -15,7 +15,7 @@ class Server(BitbucketServerBase):
         kwargs["cloud"] = False
         kwargs["api_root"] = "rest/api"
         kwargs["api_version"] = "1.0"
-        kwargs["raw_timeformat"] = False
+        kwargs["timeformat_func"] = None
         url = url.strip("/") + "/{}/{}".format(kwargs["api_root"], kwargs["api_version"])
         super(Server, self).__init__(url, *args, **kwargs)
         self.__projects = Projects(self._sub_url("projects"), **self._new_session_args)

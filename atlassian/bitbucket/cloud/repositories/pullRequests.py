@@ -210,7 +210,6 @@ class PullRequest(BitbucketCloudBase):
 
 class Participant(BitbucketCloudBase):
     def __init__(self, data, *args, **kwargs):
-        print(kwargs)
         super(Participant, self).__init__(None, None, *args, data=data, expected_type="participant", **kwargs)
 
     @property

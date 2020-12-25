@@ -41,7 +41,7 @@ class TestBasic:
             CLOUD.workspaces.get("TestWorkspace1").repositories.get("testrepository1").pipelines.get("{PipelineUuid}")
         )
         assert result.get_data("state")["name"] == "COMPLETED", "Pipeline state"
-        assert result.completed_on == "never completed", "Pipeline completed time"
+        assert result.completed_on == None, "Pipeline completed time"
 
     @pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3.4")
     def test_stop_pipeline(self):
