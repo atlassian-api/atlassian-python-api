@@ -1832,10 +1832,9 @@ class Jira(AtlassianRestAPI):
                 fixed system limits. Default by built-in method: 50
         :return:
         """
-        url = "rest/api/2/user/assignable/search?project={project_key}&startAt={start}&maxResults={limit}".format(
-            project_key=project_key, start=start, limit=limit
-        )
-        return self.get(url)
+        params = {"project": project_key, "startAt": start, "maxResults": limit}
+        url = "rest/api/2/user/assignable/search"
+        return self.get(url, params=params)
 
     def get_assignable_users_for_issue(self, issue_key, username=None, start=0, limit=50):
         """
@@ -1847,11 +1846,10 @@ class Jira(AtlassianRestAPI):
                 fixed system limits. Default by built-in method: 50
         :return:
         """
-        url = "rest/api/2/user/assignable/search?issueKey={issue_key}&startAt={start}&maxResults={limit}".format(
-            issue_key=issue_key, start=start, limit=limit
-        )
+        params = {"issueKey": issue_key, "startAt": start, "maxResults": limit}
         if username:
-            url += "&username={username}".format(username=username)
+            params["username"] = username
+        url = "rest/api/2/user/assignable/search"
         return self.get(url)
 
     def get_status_id_from_name(self, status_name):
@@ -1867,7 +1865,6 @@ class Jira(AtlassianRestAPI):
         Returns all time tracking providers. By default, Jira only has one time tracking provider: JIRA provided time
         tracking. However, you can install other time tracking providers via apps from the Atlassian Marketplace.
         """
-
         url = "rest/api/3/configuration/timetracking/list"
         return self.get(url)
 
@@ -1876,7 +1873,6 @@ class Jira(AtlassianRestAPI):
         Returns the time tracking provider that is currently selected. Note that if time tracking is disabled,
         then a successful but empty response is returned.
         """
-
         url = "rest/api/3/configuration/timetracking"
         return self.get(url)
 
