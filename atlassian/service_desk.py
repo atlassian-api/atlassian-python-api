@@ -728,7 +728,7 @@ class ServiceDesk(AtlassianRestAPI):
         ).headers["upm-token"]
         url = "rest/plugins/1.0/?token={upm_token}".format(upm_token=upm_token)
         return self.post(url, files=files, headers=self.no_check_headers)
-    
+
     def create_request_type(
         self,
         service_desk_id,
@@ -749,9 +749,9 @@ class ServiceDesk(AtlassianRestAPI):
             "issueTypeId": request_type_id,
             "name": request_name,
             "description": request_description,
-            "helpText": request_help_text
+            "helpText": request_help_text,
         }
-           
+
         url = "rest/servicedeskapi/servicedesk/{}/requesttype".format(service_desk_id)
 
         return self.post(url, headers=self.experimental_headers, data=data)
