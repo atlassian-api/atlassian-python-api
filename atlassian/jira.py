@@ -1764,11 +1764,11 @@ class Jira(AtlassianRestAPI):
             params["expand"] = expand
         return self.get(url, params=params)
 
-    def issue_types(self):
+    def get_issue_types(self):
         """
         Return all issue types
         """
-        return self.get('rest/api/2/issuetype')
+        return self.get("rest/api/2/issuetype")
 
     def create_issue_type(self, name, description="", type="standard"):
         """
