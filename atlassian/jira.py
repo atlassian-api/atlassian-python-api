@@ -1155,27 +1155,31 @@ class Jira(AtlassianRestAPI):
     Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/user
     """
 
-    def user(self, username=None, key=None, expand=None):
+    def user(self, username=None, key=None, account_id=None, expand=None):
         """
         Returns a user. This resource cannot be accessed anonymously.
         You can use only one parameter: username or key
 
         :param username:
         :param key: if username and key are different
+        :param account_id:
         :param expand: Can be 'groups,applicationRoles'
         :return:
         """
         params = {}
+        major_parameter_enabled = False
+        if account_id:
+            params = {"accountId": account_id}
+            major_parameter_enabled = True
 
-        if username and not key:
+        if not major_parameter_enabled and username and not key:
             params = {"username": username}
-        elif not username and key:
+        elif not major_parameter_enabled and not username and key:
             params = {"key": key}
-        elif username and key:
+        elif not major_parameter_enabled and username and key:
             return "You cannot specify both the username and the key parameters"
-        elif not username and not key:
-            return "You must specify at least one parameter: username or key"
-
+        elif not account_id and not key and not username:
+            return "You must specify at least one parameter: username or key or account_id"
         if expand:
             params["expand"] = expand
 
@@ -1189,13 +1193,20 @@ class Jira(AtlassianRestAPI):
         """
         return self.user(username).get("active")
 
-    def user_remove(self, username):
+    def user_remove(self, username=None, account_id=None, key=None):
         """
         Remove user from Jira if this user does not have any activity
         :param username:
         :return:
         """
-        return self.delete("rest/api/2/user?username={0}".format(username))
+        params = {}
+        if username:
+            params["username"] = username
+        if account_id:
+            params["accountId"] = account_id
+        if key:
+            params["key"] = key
+        return self.delete("rest/api/2/user", params=params)
 
     def user_update(self, username, data):
         """
