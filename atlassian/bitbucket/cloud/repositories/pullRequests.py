@@ -5,6 +5,12 @@ from ..common.users import User
 
 
 class PullRequests(BitbucketCloudBase):
+    """
+    Bitbucket Cloud pull requests
+
+    API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests#get
+    """
+
     def __init__(self, url, *args, **kwargs):
         super(PullRequests, self).__init__(url, *args, **kwargs)
 
@@ -44,8 +50,19 @@ class PullRequests(BitbucketCloudBase):
         """
         return self.__get_object(super(PullRequests, self).get(id))
 
+    # def add(self):
+    #     TODO add a new pull request
+    #     TODO https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests#post
+    #     return PullRequest object
+
 
 class PullRequest(BitbucketCloudBase):
+    """
+    Bitbucket Cloud pull request endpoint
+
+    See https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D
+    """
+
     MERGE_COMMIT = "merge_commit"
     MERGE_SQUASH = "squash"
     MERGE_FF = "fast_forward"
@@ -115,6 +132,7 @@ class PullRequest(BitbucketCloudBase):
     @property
     def default_merge_strategy(self):
         """ default merge strategy """
+        # TODO this wont work....
         return self.get_data("destination")["branch"]["default_merge_strategy"]
 
     @property
@@ -167,7 +185,11 @@ class PullRequest(BitbucketCloudBase):
         return
 
     def comment(self, raw_message):
-        """ Commenting the pull request in raw format """
+        """
+        Commenting the pull request in raw format
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D/comments#post
+        """
         if not raw_message:
             raise ValueError("No message set")
 
@@ -180,29 +202,49 @@ class PullRequest(BitbucketCloudBase):
         return self.post("comments", data)
 
     def approve(self):
-        """ Approve a pull request if open """
+        """
+        Approve a pull request if open
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D/approve#post
+        """
         self._check_if_open()
         data = {"approved": True}
         return self.post("approve", data)
 
     def unapprove(self):
-        """ Unapprove a pull request if open """
+        """
+        Unapprove a pull request if open
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D/approve#delete
+        """
         self._check_if_open()
         return self.delete("approve")
 
     def request_changes(self):
-        """ Request changes for the pull request if open """
+        """
+        Request changes for the pull request if open
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D/request-changes#post
+        """
         self._check_if_open()
         data = {"request-changes": True}
         return self.post("request-changes", data)
 
     def unrequest_changes(self):
-        """ Request changes for the pull request if open """
+        """
+        Request changes for the pull request if open
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D/request-changes#delete
+        """
         self._check_if_open()
         return self.delete("request-changes")
 
     def decline(self):
-        """ Decline a pull request """
+        """
+        Decline a pull request
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D/decline
+        """
         self._check_if_open()
         return self.post("decline")
 
@@ -211,6 +253,8 @@ class PullRequest(BitbucketCloudBase):
         Merges the pull request if it's open
         :param merge_strategy: string:  Merge strategy (one of "merge_commit", "squash", "fast_forward")
         :param close_source_branch: boolean: Close the source branch after merge, default PR option
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D/merge
         """
         self._check_if_open()
 

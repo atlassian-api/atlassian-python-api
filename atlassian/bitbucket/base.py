@@ -70,15 +70,20 @@ class BitbucketBase(AtlassianRestAPI):
             ValueError("Expected [None] or [lambda function] for argument [timeformat_func]")
 
     @staticmethod
-    def _default_timeformat_lambda(raw_timestamp):
-        if not raw_timestamp or not isinstance(raw_timestamp, str):
-            return None
-        else:
-            return datetime.strptime(raw_timestamp, CONF_TIMEFORMAT)
+    def _default_timeformat_lambda(timestamp):
+        return timestamp if isinstance(timestamp, datetime) else None
 
     def get_time(self, id):
-        value = self.get_data(id)
-        return value if not self.timeformat_lambda else self.timeformat_lambda(value)
+        value_str = self.get_data(id)
+        if self.timeformat_lambda is None:
+            return value_str
+
+        if isinstance(value_str, str):
+            value = datetime.strptime(value_str, CONF_TIMEFORMAT)
+        else:
+            value = value_str
+
+        return self.timeformat_lambda(value)
 
     @property
     def _new_session_args(self):
