@@ -140,5 +140,10 @@ class TestBasic:
 
     @pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3.4")
     def test_delete_default_reviewer(self):
-        result = BITBUCKET.delete_default_reviewer("TestWorkspace1", "testrepository1", "DefaultReviewer1")["nickname"]
-        assert result == "DefaultReviewer1Nickname", "Result of [delete_default_reviewer(...)]"
+        result = (
+            CLOUD.workspaces.get("TestWorkspace1")
+            .repositories.get("testrepository1")
+            .default_reviewers.get("DefaultReviewer1")
+            .delete()
+        )
+        assert result == True

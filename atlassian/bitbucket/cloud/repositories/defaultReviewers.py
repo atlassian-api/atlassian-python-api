@@ -73,7 +73,7 @@ class DefaultReviewers(BitbucketCloudBase):
 
 class DefaultReviewer(User):
     def __init__(self, url, data, *args, **kwargs):
-        super(DefaultReviewer, self).__init__(url, *args, data=data, expected_type="user", **kwargs)
+        super(DefaultReviewer, self).__init__(url, data, *args, **kwargs)
 
     def delete(self):
         """
