@@ -4,10 +4,8 @@ from datetime import datetime
 from ..rest_client import AtlassianRestAPI
 
 
-CONF_TIMEFORMAT = "%Y-%m-%dT%H:%M:%S.%f%z"
-
-
 class BitbucketBase(AtlassianRestAPI):
+    CONF_TIMEFORMAT = "%Y-%m-%dT%H:%M:%S.%f%z"
     bulk_headers = {"Content-Type": "application/vnd.atl.bitbucket.bulk+json"}
 
     def __init__(self, url, *args, **kwargs):
@@ -79,7 +77,7 @@ class BitbucketBase(AtlassianRestAPI):
             return value_str
 
         if isinstance(value_str, str):
-            value = datetime.strptime(value_str, CONF_TIMEFORMAT)
+            value = datetime.strptime(value_str, self.CONF_TIMEFORMAT)
         else:
             value = value_str
 

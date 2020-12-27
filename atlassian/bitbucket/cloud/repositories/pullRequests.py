@@ -251,18 +251,14 @@ class PullRequest(BitbucketCloudBase):
     def merge(self, merge_strategy=None, close_source_branch=None):
         """
         Merges the pull request if it's open
-        :param merge_strategy: string:  Merge strategy (one of "merge_commit", "squash", "fast_forward")
+        :param merge_strategy: string:  Merge strategy (one of PullRequest.MERGE_COMMIT, PullRequest.MERGE_SQUASH, PullRequest.MERGE_FF), if None default merge strategy will be used
         :param close_source_branch: boolean: Close the source branch after merge, default PR option
 
         API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D/merge
         """
         self._check_if_open()
 
-        if merge_strategy is None:
-            # Todo: Use default project merge stragtegy and remove the raise
-            # Check if passing merge_strategy = None uses the default_merge_stragegy
-            raise ValueError("merge_stragegy must be {}".format(self.MERGE_STRATEGIES))
-        elif merge_strategy not in self.MERGE_STRATEGIES:
+        if merge_strategy is not None and merge_strategy not in self.MERGE_STRATEGIES:
             raise ValueError("merge_stragegy must be {}".format(self.MERGE_STRATEGIES))
 
         data = {
