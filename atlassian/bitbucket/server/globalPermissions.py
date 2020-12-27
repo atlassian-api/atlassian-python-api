@@ -156,7 +156,7 @@ class PermissionBase(BitbucketServerBase):
         if self.url is None:
             raise NotImplementedError("Delete not implemented for this object type.")
         data = super(BitbucketServerBase, self).delete(None, params={"name": self.name})
-        if "errors" in data:
+        if data is None or "errors" in data:
             return
         return True
 

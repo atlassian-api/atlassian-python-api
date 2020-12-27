@@ -30,8 +30,11 @@ Mandatory conditions
 
 1. If you adding new method - add description to docs
 2. If you make changes in current methods - add changes to docs
+3. If you sent the PR, please validate via black_
 
 Please follow the code style in the docs.
+
+.. _black:  https://black.readthedocs.io/en/stable/editor_integration.html
 
 Connect on Chat for any queries
 ---------------------------------

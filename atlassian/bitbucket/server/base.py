@@ -59,15 +59,7 @@ class BitbucketServerBase(BitbucketBase):
             if "values" not in response:
                 return
 
-            values = response.get("values", [])
-            if not response.get("size", -1) == len(values):
-                raise AssertionError(
-                    "Wrong response for url [{}], the size attribute doesn't match the number of recieved values:\n{}".format(
-                        self.url, response
-                    )
-                )
-
-            for value in values:
+            for value in response.get("values", []):
                 yield value
 
             if response.get("nextPageStart") is None:
@@ -82,7 +74,7 @@ class BitbucketServerBase(BitbucketBase):
 
         :return: True if the update was successful
         """
-        if self.__can_update == False:
+        if self.__can_update is False:
             raise NotImplementedError("Update not implemented for this object type.")
         data = self.put(None, data=kwargs)
         if "errors" in data:
@@ -97,10 +89,10 @@ class BitbucketServerBase(BitbucketBase):
 
         :return: True if delete was successful
         """
-        if self.__can_delete == False:
+        if self.__can_delete is False:
             raise NotImplementedError("Delete not implemented for this object type.")
         data = super(BitbucketServerBase, self).delete(None)
-        if "errors" in data:
+        if data is None or "errors" in data:
             return
         return True
 
@@ -108,8 +100,8 @@ class BitbucketServerBase(BitbucketBase):
     def data(self):
         return copy.copy(self.__data)
 
-    def get_data(self, id):
-        return copy.copy(self.__data[id])
+    def get_data(self, id, default=None):
+        return copy.copy(self.__data[id]) if id in self.__data else default
 
     def get_link(self, link):
         return [x["href"] for x in self.__data["links"][link]]

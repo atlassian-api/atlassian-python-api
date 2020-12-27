@@ -1,7 +1,7 @@
 responses[None] = {
     "page": 1,
     "pagelen": 2,
-    "size": 2,
+    "size": 3,
     "next": "workspaces?nextPage",
     "values": [
         {
@@ -46,7 +46,7 @@ responses[None] = {
 responses["nextPage"] = {
     "page": 2,
     "pagelen": 2,
-    "size": 1,
+    "size": 3,
     "values": [
         {
             "created_on": "2020-10-28T12:00:00.0+00:00",

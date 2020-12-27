@@ -1,10 +1,9 @@
 # coding: utf8
-import os
-import requests
 import pytest
 import sys
 
 from atlassian import Bitbucket
+from atlassian.bitbucket import Cloud
 
 BITBUCKET = None
 try:
@@ -13,6 +12,7 @@ try:
     BITBUCKET = Bitbucket(
         "{}/bitbucket/cloud".format(mockup_server()), username="username", password="password", cloud=True
     )
+    CLOUD = Cloud("{}/bitbucket/cloud".format(mockup_server()), username="username", password="password")
 except ImportError:
     pass
 
@@ -37,6 +37,11 @@ class TestBasic:
     def test_get_pipeline(self):
         result = BITBUCKET.get_pipeline("TestWorkspace1", "testrepository1", "{PipelineUuid}")
         assert result["state"]["name"] == "COMPLETED", "Result of [get_pipeline(...)]"
+        result = (
+            CLOUD.workspaces.get("TestWorkspace1").repositories.get("testrepository1").pipelines.get("{PipelineUuid}")
+        )
+        assert result.get_data("state")["name"] == "COMPLETED", "Pipeline state"
+        assert result.completed_on == "never completed", "Pipeline completed time"
 
     @pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3.4")
     def test_stop_pipeline(self):
@@ -62,7 +67,7 @@ class TestBasic:
         result = BITBUCKET.get_pipeline_step_log(
             "TestWorkspace1", "testrepository1", "{PipelineUuid}", "{PipelineStep1Uuid}"
         )
-        assert result == None, "Result of step1 [get_pipeline_step_log(...)]"
+        assert result is None, "Result of step1 [get_pipeline_step_log(...)]"
 
     @pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3.4")
     def test_get_pipeline_step_log_2(self):
@@ -129,9 +134,9 @@ class TestBasic:
     @pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3.4")
     def test_is_default_reviewer(self):
         result = BITBUCKET.is_default_reviewer("TestWorkspace1", "testrepository1", "DefaultReviewerNo")
-        assert result == False, "Result of [is_default_reviewer(...)]"
+        assert result is False, "Result of [is_default_reviewer(...)]"
         result = BITBUCKET.is_default_reviewer("TestWorkspace1", "testrepository1", "DefaultReviewer1")
-        assert result == True, "Result of [is_default_reviewer(...)]"
+        assert result is True, "Result of [is_default_reviewer(...)]"
 
     @pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3.4")
     def test_delete_default_reviewer(self):

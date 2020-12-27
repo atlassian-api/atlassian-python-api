@@ -159,7 +159,7 @@ class PermissionBase(BitbucketServerBase):
         if self.url is None:
             raise NotImplementedError("Delete not implemented for this object type.")
         data = super(BitbucketServerBase, self).delete(None, params={"name": self.name})
-        if "errors" in data:
+        if data is None or "errors" in data:
             return
         return True
 
@@ -180,7 +180,6 @@ class User(PermissionBase):
         super(User, self).__init__(None, *args, data=data, **kwargs)
 
     def __userdata(self, key):
-        print(self.__dict__)
         if self.url is None:
             return self.get_data(key)
         return self.get_data("user")[key]

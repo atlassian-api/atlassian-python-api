@@ -1,5 +1,5 @@
 responses[None] = {
-    "size": 2,
+    "size": 3,
     "limit": 2,
     "isLastPage": false,
     "values": [
@@ -64,7 +64,7 @@ responses[None] = {
     "nextPageStart": 5,
 }
 responses["start=5"] = {
-    "size": 1,
+    "size": 3,
     "limit": 2,
     "isLastPage": true,
     "values": [
