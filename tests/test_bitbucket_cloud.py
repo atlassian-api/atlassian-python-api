@@ -1,9 +1,12 @@
 # coding: utf8
 import pytest
 import sys
+from datetime import datetime, timezone
 
 from atlassian import Bitbucket
 from atlassian.bitbucket import Cloud
+from atlassian.bitbucket.cloud.common.users import User
+from atlassian.bitbucket.cloud.repositories.pullRequests import Participant, PullRequest
 
 BITBUCKET = None
 try:
@@ -147,3 +150,145 @@ class TestBasic:
             .delete()
         )
         assert result
+
+
+@pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3.4")
+class TestPullRequests:
+    @pytest.fixture(scope="module")
+    def tc1(self):
+        return CLOUD.workspaces.get("TestWorkspace1").repositories.get("testrepository1").pullrequests.get(1)
+
+    @pytest.fixture(scope="module")
+    def tc2(self):
+        return CLOUD.workspaces.get("TestWorkspace1").repositories.get("testrepository1").pullrequests.each()
+
+    def test_id(self, tc1):
+        assert tc1.id == 1
+
+    def test_title(self, tc1):
+        assert tc1.title == "PRTitle"
+
+    def test_description(self, tc1):
+        assert tc1.description == "PRDescription"
+
+    def test_is_declined(self, tc1):
+        assert not tc1.is_declined
+
+    def test_is_merged(self, tc1):
+        assert not tc1.is_merged
+
+    def test_is_open(self, tc1):
+        assert tc1.is_open
+
+    def test_is_superseded(self, tc1):
+        assert not tc1.is_superseded
+
+    def test_created_on(self, tc1):
+        assert tc1.created_on == datetime(2020, 3, 19, 12, 0, 3, 494356, tzinfo=timezone.utc)
+
+    def test_updated_on(self, tc1):
+        assert tc1.updated_on == datetime(2020, 12, 27, 14, 9, 14, 660262, tzinfo=timezone.utc)
+
+    def test_close_source_branch(self, tc1):
+        assert tc1.close_source_branch
+
+    def test_source_branch(self, tc1):
+        assert tc1.source_branch == "feature/test-branch"
+
+    def test_destination_branch(self, tc1):
+        assert tc1.destination_branch == "master"
+
+    def test_comment_count(self, tc1):
+        assert tc1.comment_count == 5
+
+    def test_task_count(self, tc1):
+        assert tc1.task_count == 0
+
+    def test_declined_reason(self, tc1):
+        assert not tc1.declined_reason
+
+    def test_author(self, tc1):
+        assert isinstance(tc1.author, User)
+        assert tc1.author.display_name == "User03DisplayName"
+        assert tc1.author.uuid == "{User03UUID}"
+        assert tc1.author.account_id == "User03AccountID"
+        assert tc1.author.nickname == "User03Nickname"
+
+    def test_participants(self, tc1):
+        participants = list(tc1.participants())
+        assert len(participants) == 5
+
+        p1 = participants[1]
+        assert isinstance(p1, Participant)
+        assert isinstance(p1.user, User)
+        assert p1.user.display_name == "User03DisplayName"
+        assert p1.user.uuid == "{User03UUID}"
+        assert p1.user.account_id == "User03AccountID"
+        assert p1.user.nickname == "User03Nickname"
+        assert p1.participated_on == datetime(2020, 7, 9, 7, 0, 54, 416331, tzinfo=timezone.utc)
+        assert p1.is_participant
+        assert not p1.is_reviewer
+        assert not p1.has_approved
+        assert not p1.has_changes_requested
+
+        p2 = participants[2]
+        assert p2.has_approved
+        assert p2.is_reviewer
+        assert not p2.is_participant
+        assert not p2.has_changes_requested
+
+        p3 = participants[3]
+        assert not p3.has_approved
+        assert p3.is_reviewer
+        assert not p3.is_participant
+        assert p3.has_changes_requested
+
+    def test_reviewers(self, tc1):
+        reviewers = list(tc1.reviewers())
+        assert len(reviewers) == 3
+        assert isinstance(reviewers[0], User)
+
+    def test_comment(self, tc1):
+        msg = "hello world"
+        com = tc1.comment(msg)
+        assert com["type"] == "pullrequest_comment"
+        assert com["content"]["raw"] == msg
+        assert com["pullrequest"]["id"] == 1
+        assert not com["deleted"]
+
+    def test_approve(self, tc1):
+        ap = tc1.approve()
+        assert ap["approved"]
+        assert ap["state"] == "approved"
+
+    def test_unapprove(self, tc1):
+        assert tc1.unapprove() is None
+
+    def test_request_changes(self, tc1):
+        rc = tc1.request_changes()
+        assert rc["approved"] is False
+        assert rc["state"] == Participant.CHANGES_REQUESTED
+
+    def test_unrequest_changes(self, tc1):
+        assert tc1.unrequest_changes() is None
+
+    def test_decline(self, tc1):
+        decline = tc1.decline()
+        assert decline["type"] == "pullrequest"
+        assert decline["state"] == PullRequest.STATE_DECLINED
+        assert decline["merge_commit"] is None
+        assert decline["closed_by"]["uuid"] == "{User04UUID}"
+
+    def test_merge(self, tc1):
+        merge = tc1.merge()
+        assert merge["type"] == "pullrequest"
+        assert merge["state"] == PullRequest.STATE_MERGED
+        assert merge["closed_by"]["uuid"] == "{User04UUID}"
+        assert merge["merge_commit"]["hash"] == "36bb9607a8c9e0c6222342486e3393ae154b46c0"
+
+    def test_each(self, tc2):
+        prs = list(tc2)
+        assert len(prs) == 2
+        assert isinstance(prs[0], PullRequest)
+        assert prs[0].id == 1
+        assert prs[1].id == 25
