@@ -30,7 +30,7 @@ def request_mookup(*args, **kwargs):
 
     response_file = os.path.join(RESPONSE_ROOT, url, method)
     try:
-        with open(response_file) as f:
+        with open(response_file, encoding="utf-8") as f:
             data = {"responses": {}, "__builtins__": {}, "true": True, "false": False}
             exec(f.read(), data)
             data = data["responses"][response_key]
