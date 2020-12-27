@@ -17,8 +17,7 @@ class Bitbucket(BitbucketBase):
             kwargs["api_version"] = "2.0" if "cloud" in kwargs and kwargs["cloud"] else "1.0"
         if "cloud" in kwargs:
             kwargs["api_root"] = "" if "api.bitbucket.org" in url else "rest/api"
-        if "timeformat_func" not in kwargs:
-            kwargs["timeformat_func"] = None
+
         super(Bitbucket, self).__init__(url, *args, **kwargs)
 
     def markup_preview(self, data):

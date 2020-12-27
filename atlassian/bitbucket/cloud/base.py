@@ -28,17 +28,6 @@ class BitbucketCloudBase(BitbucketBase):
 
         super(BitbucketCloudBase, self).__init__(url, *args, **kwargs)
 
-        self._check_timeformat_func()
-
-    def _check_timeformat_func(self):
-        LAMBDA = lambda: 0  # noqa: E731
-        if self.timeformat_func is None or (
-            isinstance(self.timeformat_func, type(LAMBDA)) and self.timeformat_func.__name__ == LAMBDA.__name__
-        ):
-            return True
-        else:
-            ValueError("Expected [None] or [lambda function] for argument [timeformat_func]")
-
     def __str__(self):
         return PrettyPrinter(indent=4).pformat(self.__data)
 
@@ -97,10 +86,3 @@ class BitbucketCloudBase(BitbucketBase):
 
     def get_link(self, link):
         return self.__data["links"][link]["href"]
-
-    def get_time(self, id):
-        value_str = self.get_data(id)
-        if not value_str or not isinstance(value_str, str):
-            return None
-        else:
-            return self.timeformat_func(value_str) if self.timeformat_func else value_str

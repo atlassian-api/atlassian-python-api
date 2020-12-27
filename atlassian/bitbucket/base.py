@@ -1,6 +1,10 @@
 # coding=utf-8
 
+from datetime import datetime
 from ..rest_client import AtlassianRestAPI
+
+
+CONF_TIMEFORMAT = "%Y-%m-%dT%H:%M:%S.%f%z"
 
 
 class BitbucketBase(AtlassianRestAPI):
@@ -15,7 +19,8 @@ class BitbucketBase(AtlassianRestAPI):
 
         :return: nothing
         """
-        self.timeformat_func = kwargs.pop("timeformat_func")
+        self.timeformat_lambda = kwargs.pop("timeformat_lambda", lambda x: self._default_timeformat_lambda(x))
+        self._check_timeformat_lambda()
         super(BitbucketBase, self).__init__(url, *args, **kwargs)
 
     def _get_paged(self, url, params=None, data=None, flags=None, trailing=None, absolute=False):
@@ -55,6 +60,26 @@ class BitbucketBase(AtlassianRestAPI):
 
         return
 
+    def _check_timeformat_lambda(self):
+        LAMBDA = lambda: 0  # noqa: E731
+        if self.timeformat_lambda is None or (
+            isinstance(self.timeformat_lambda, type(LAMBDA)) and self.timeformat_lambda.__name__ == LAMBDA.__name__
+        ):
+            return True
+        else:
+            ValueError("Expected [None] or [lambda function] for argument [timeformat_func]")
+
+    @staticmethod
+    def _default_timeformat_lambda(raw_timestamp):
+        if not raw_timestamp or not isinstance(raw_timestamp, str):
+            return None
+        else:
+            return datetime.strptime(raw_timestamp, CONF_TIMEFORMAT)
+
+    def get_time(self, id):
+        value = self.get_data(id)
+        return value if not self.timeformat_lambda else self.timeformat_lambda(value)
+
     @property
     def _new_session_args(self):
         return dict(
@@ -62,5 +87,5 @@ class BitbucketBase(AtlassianRestAPI):
             cloud=self.cloud,
             api_root=self.api_root,
             api_version=self.api_version,
-            timeformat_func=self.timeformat_func,
+            timeformat_lambda=self.timeformat_lambda,
         )

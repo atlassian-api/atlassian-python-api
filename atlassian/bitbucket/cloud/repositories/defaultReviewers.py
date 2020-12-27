@@ -23,7 +23,7 @@ class DefaultReviewers(BitbucketCloudBase):
 
         :param user: string: The user to add
 
-        :return: The added User object
+        :return: The added DefaultReviewer object
         """
         # the mention_id parameter is undocumented but if missed, leads to 400 statuses
         return self.__get_object(self.put(user, data={"mention_id": user}))
@@ -73,7 +73,7 @@ class DefaultReviewers(BitbucketCloudBase):
 
 class DefaultReviewer(User):
     def __init__(self, url, data, *args, **kwargs):
-        super(DefaultReviewer, self).__init__(url, data, *args, **kwargs)
+        super(DefaultReviewer, self).__init__(url, *args, data=data, expected_type="user", **kwargs)
 
     def delete(self):
         """
@@ -82,4 +82,4 @@ class DefaultReviewer(User):
         data = super(DefaultReviewer, self).delete(None)
         if data is None or "errors" in data:
             return
-        return User(self.url, data, **self._new_session_args)
+        return True

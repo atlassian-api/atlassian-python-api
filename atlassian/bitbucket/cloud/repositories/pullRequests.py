@@ -2,18 +2,6 @@
 
 from ..base import BitbucketCloudBase
 from ..common.users import User
-from ..const import (
-    PRP_APPROVED,
-    PRP_CHANGES_REQUESTED,
-    PRP_ROLE_PARTICIPANT,
-    PRP_ROLE_REVIEWER,
-    PR_MERGE_COMMIT,
-    PR_MERGE_STRATEGIES,
-    PR_STATE_DECLINED,
-    PR_STATE_MERGED,
-    PR_STATE_OPEN,
-    PR_STATE_SUPERSEDED,
-)
 
 
 class PullRequests(BitbucketCloudBase):
@@ -58,6 +46,19 @@ class PullRequests(BitbucketCloudBase):
 
 
 class PullRequest(BitbucketCloudBase):
+    MERGE_COMMIT = "merge_commit"
+    MERGE_SQUASH = "squash"
+    MERGE_FF = "fast_forward"
+    MERGE_STRATEGIES = [
+        MERGE_COMMIT,
+        MERGE_SQUASH,
+        MERGE_FF,
+    ]
+    STATE_OPEN = "OPEN"
+    STATE_DECLINED = "DECLINED"
+    STATE_MERGED = "MERGED"
+    STATE_SUPERSEDED = "SUPERSEDED"
+
     def __init__(self, url, data, *args, **kwargs):
         super(PullRequest, self).__init__(url, *args, data=data, expected_type="pullrequest", **kwargs)
 
@@ -84,22 +85,22 @@ class PullRequest(BitbucketCloudBase):
     @property
     def is_declined(self):
         """ True if the pull request was declined """
-        return self.get_data("state").upper() == PR_STATE_DECLINED
+        return self.get_data("state") == self.STATE_DECLINED
 
     @property
     def is_merged(self):
         """ True if the pull request was merged """
-        return self.get_data("state").upper() == PR_STATE_MERGED
+        return self.get_data("state") == self.STATE_MERGED
 
     @property
     def is_open(self):
         """ True if the pull request is open """
-        return self.get_data("state").upper() == PR_STATE_OPEN
+        return self.get_data("state") == self.STATE_OPEN
 
     @property
     def is_superseded(self):
         """ True if the pull request was superseded """
-        return self.get_data("state").upper() == PR_STATE_SUPERSEDED
+        return self.get_data("state") == self.STATE_SUPERSEDED
 
     @property
     def created_on(self):
@@ -110,6 +111,11 @@ class PullRequest(BitbucketCloudBase):
     def updated_on(self):
         """ time of last update """
         return self.get_time("updated_on")
+
+    @property
+    def default_merge_strategy(self):
+        """ default merge strategy """
+        return self.get_data("destination")["branch"]["default_merge_strategy"]
 
     @property
     def close_source_branch(self):
@@ -189,7 +195,7 @@ class PullRequest(BitbucketCloudBase):
         self._check_if_open()
         return self.post("decline")
 
-    def merge(self, merge_strategy=PR_MERGE_COMMIT, close_source_branch=None):
+    def merge(self, merge_strategy=None, close_source_branch=None):
         """
         Merges the pull request if it's open
         :param merge_strategy: string:  Merge strategy (one of "merge_commit", "squash", "fast_forward")
@@ -197,8 +203,12 @@ class PullRequest(BitbucketCloudBase):
         """
         self._check_if_open()
 
-        if merge_strategy not in PR_MERGE_STRATEGIES:
-            raise ValueError("merge_stragegy must be {}".format(PR_MERGE_STRATEGIES))
+        if merge_strategy is None:
+            # Todo: Use default project merge stragtegy and remove the raise
+            # Check if passing merge_strategy = None uses the default_merge_stragegy
+            raise ValueError("merge_stragegy must be {}".format(self.MERGE_STRATEGIES))
+        elif merge_strategy not in self.MERGE_STRATEGIES:
+            raise ValueError("merge_stragegy must be {}".format(self.MERGE_STRATEGIES))
 
         data = {
             "close_source_branch": close_source_branch or self.close_source_branch,
@@ -209,6 +219,10 @@ class PullRequest(BitbucketCloudBase):
 
 
 class Participant(BitbucketCloudBase):
+    ROLE_REVIEWER = "REVIEWER"
+    ROLE_PARTICIPANT = "PARTICIPANT"
+    CHANGES_REQUESTED = "changes_requested"
+
     def __init__(self, data, *args, **kwargs):
         super(Participant, self).__init__(None, None, *args, data=data, expected_type="participant", **kwargs)
 
@@ -220,29 +234,24 @@ class Participant(BitbucketCloudBase):
     @property
     def is_participant(self):
         """ True if the user is a pull request participant """
-        return self.get_data("role").upper() == PRP_ROLE_PARTICIPANT
+        return self.get_data("role") == self.ROLE_PARTICIPANT
 
     @property
     def is_reviewer(self):
         """ True if the user is a pull request reviewer """
-        return self.get_data("role").upper() == PRP_ROLE_REVIEWER
+        return self.get_data("role") == self.ROLE_REVIEWER
 
     @property
     def has_changes_requested(self):
         """ True if user requested changes """
-        return str(self.get_data("state")).lower() == PRP_CHANGES_REQUESTED
+        return str(self.get_data("state")) == self.CHANGES_REQUESTED
 
     @property
     def has_approved(self):
         """ True if user approved the pull request """
-        return str(self.get_data("state")).lower() == PRP_APPROVED
+        return self.get_data("approved")
 
     @property
     def participated_on(self):
         """ time of last participation """
         return self.get_time("participated_on")
-
-    @property
-    def approved(self):
-        """ Returns True if the user approved the pull request, else False """
-        return self.get_data("approved")
