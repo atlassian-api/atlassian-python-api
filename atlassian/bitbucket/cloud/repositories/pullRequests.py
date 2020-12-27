@@ -190,6 +190,17 @@ class PullRequest(BitbucketCloudBase):
         self._check_if_open()
         return self.delete("approve")
 
+    def request_changes(self):
+        """ Request changes for the pull request if open """
+        self._check_if_open()
+        data = {"request-changes": True}
+        return self.post("request-changes", data)
+
+    def unrequest_changes(self):
+        """ Request changes for the pull request if open """
+        self._check_if_open()
+        return self.delete("request-changes")
+
     def decline(self):
         """ Decline a pull request """
         self._check_if_open()

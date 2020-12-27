@@ -146,4 +146,4 @@ class TestBasic:
             .default_reviewers.get("DefaultReviewer1")
             .delete()
         )
-        assert result == True
+        assert result
