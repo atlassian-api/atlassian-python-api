@@ -130,12 +130,6 @@ class PullRequest(BitbucketCloudBase):
         return self.get_time("updated_on")
 
     @property
-    def default_merge_strategy(self):
-        """ default merge strategy """
-        # TODO this wont work....
-        return self.get_data("destination")["branch"]["default_merge_strategy"]
-
-    @property
     def close_source_branch(self):
         """ close source branch flag """
         return self.get_data("close_source_branch")
@@ -246,7 +240,9 @@ class PullRequest(BitbucketCloudBase):
         API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D/decline
         """
         self._check_if_open()
-        return self.post("decline")
+        # decline endpoint needs data, but it's not possible to set a decline reason by api (frontend only)
+        data = {"id": self.id}
+        return self.post("decline", data)
 
     def merge(self, merge_strategy=None, close_source_branch=None):
         """
