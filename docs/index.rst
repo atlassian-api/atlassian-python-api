@@ -170,11 +170,12 @@ Or reuse cookie file:
         url='http://localhost:8080',
         cookies=cookie_dict)
 
-To authenticate to the Atlassian Cloud APIs:
+To authenticate to the Atlassian Cloud APIs Jira, Confluence, ServiceDesk:
 
 .. code-block:: python
 
     # Obtain an API token from: https://id.atlassian.com/manage-profile/security/api-tokens
+    # You cannot log-in with your regular password to these services.
 
     jira = Jira(
         url='https://your-domain.atlassian.net',
@@ -188,16 +189,34 @@ To authenticate to the Atlassian Cloud APIs:
         password=jira_api_token,
         cloud=True)
 
-    bitbucket = Bitbucket(
+    service_desk = ServiceDesk(
         url='https://your-domain.atlassian.net',
         username=jira_username,
         password=jira_api_token,
         cloud=True)
 
-    service_desk = ServiceDesk(
-        url='https://your-domain.atlassian.net',
-        username=jira_username,
-        password=jira_api_token,
+And to Bitbucket Cloud:
+
+.. code-block:: python
+
+    # Log-in with E-Mail / Username and regular password
+    # or with Username and App password.
+    # Get App password from https://bitbucket.org/account/settings/app-passwords/.
+    # Log-in with E-Mail and App password not possible.
+    # Username can be found here: https://bitbucket.org/account/settings/
+
+    from atlassian.bitbucket.cloud import Cloud
+
+    bitbucket = Cloud(
+        url='https://api.bitbucket.org/',
+        username=bitbucket_email,
+        password=bitbucket_password,
+        cloud=True)
+    
+    bitbucket_app_pw = Cloud(
+        url='https://api.bitbucket.org/',
+        username=bitbucket_username,
+        password=bitbucket_app_password,
         cloud=True)
 
 .. toctree::
