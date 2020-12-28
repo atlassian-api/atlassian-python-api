@@ -28,8 +28,8 @@ From PyPI
 From Source
 
 - Git clone repository
-- Use `pip install -r requirements.txt` to install the required packages
-- or `pipenv install && pipenv install --dev`
+- Use :code:`pip install -r requirements.txt` to install the required packages
+- or :code:`pipenv install && pipenv install --dev`
 
 How to contribute?
 __________________
@@ -38,7 +38,7 @@ Please, click here `Contribution Guidelines for this project`_
 
 Examples
 ________
-More **examples** in **``examples/``** directory.
+More **examples** in :code:`examples/` directory.
 
 Here's a short example of how to create a Confluence page:
 
