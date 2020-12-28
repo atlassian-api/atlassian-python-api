@@ -212,7 +212,7 @@ And to Bitbucket Cloud:
         username=bitbucket_email,
         password=bitbucket_password,
         cloud=True)
-    
+
     bitbucket_app_pw = Cloud(
         url='https://api.bitbucket.org/',
         username=bitbucket_username,
