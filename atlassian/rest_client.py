@@ -4,7 +4,7 @@ from json import dumps
 
 import requests
 from oauthlib.oauth1 import SIGNATURE_RSA
-from requests_oauthlib import OAuth1
+from requests_oauthlib import OAuth1, OAuth2
 from six.moves.urllib.parse import urlencode
 
 from atlassian.request_utils import get_default_logger
@@ -45,6 +45,7 @@ class AtlassianRestAPI(object):
         verify_ssl=True,
         session=None,
         oauth=None,
+        oauth2=None,
         cookies=None,
         advanced_mode=None,
         kerberos=None,
@@ -70,6 +71,8 @@ class AtlassianRestAPI(object):
             self._create_basic_session(username, password)
         elif oauth is not None:
             self._create_oauth_session(oauth)
+        elif oauth2 is not None:
+            self._create_oauth2_session(oauth2)
         elif kerberos is not None:
             self._create_kerberos_session(kerberos)
         elif cookies is not None:
@@ -108,6 +111,22 @@ class AtlassianRestAPI(object):
             resource_owner_key=oauth_dict["access_token"],
             resource_owner_secret=oauth_dict["access_token_secret"],
         )
+        self._session.auth = oauth
+
+    def _create_oauth2_session(self, oauth_dict):
+        """
+        Use OAuth 2.0 Authentication
+        :param oauth_dict: Dictionary containing access information. Must at
+            least contain "client_id" and "token". "token" is a dictionary and
+            must at least contain "access_token" and "token_type".
+        :return:
+        """
+        if "client" not in oauth_dict:
+            oauth_dict["client"] = None
+        oauth = OAuth2(
+            oauth_dict["client_id"],
+            oauth_dict["client"],
+            oauth_dict["token"])
         self._session.auth = oauth
 
     def _update_header(self, key, value):
