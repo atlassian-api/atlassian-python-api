@@ -146,7 +146,7 @@ See the `Contribution Guidelines for this project`_ for details on how to make c
 .. |PyPI - Downloads| image:: https://pepy.tech/badge/atlassian-python-api/month
    :alt: PyPI - Downloads
 .. |Docs| image:: https://readthedocs.org/projects/atlassian-python-api/badge/?version=latest
-   :target: https://atlassian-python-api.readthedocs.io/en/latest/?badge=latest
+   :target: https://atlassian-python-api.readthedocs.io/?badge=latest
    :alt: Documentation Status
 .. |Discord| image:: https://img.shields.io/discord/756142204761669743.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2
    :alt: Discord Chat
