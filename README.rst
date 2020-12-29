@@ -28,8 +28,8 @@ From PyPI
 From Source
 
 - Git clone repository
-- Use `pip install -r requirements.txt` to install the required packages
-- or `pipenv install && pipenv install --dev`
+- Use :code:`pip install -r requirements.txt` to install the required packages
+- or :code:`pipenv install && pipenv install --dev`
 
 How to contribute?
 __________________
@@ -38,7 +38,7 @@ Please, click here `Contribution Guidelines for this project`_
 
 Examples
 ________
-More **examples** in **``examples/``** directory.
+More **examples** in :code:`examples/` directory.
 
 Here's a short example of how to create a Confluence page:
 
@@ -146,7 +146,7 @@ See the `Contribution Guidelines for this project`_ for details on how to make c
 .. |PyPI - Downloads| image:: https://pepy.tech/badge/atlassian-python-api/month
    :alt: PyPI - Downloads
 .. |Docs| image:: https://readthedocs.org/projects/atlassian-python-api/badge/?version=latest
-   :target: https://atlassian-python-api.readthedocs.io/en/latest/?badge=latest
+   :target: https://atlassian-python-api.readthedocs.io/?badge=latest
    :alt: Documentation Status
 .. |Discord| image:: https://img.shields.io/discord/756142204761669743.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2
    :alt: Discord Chat
