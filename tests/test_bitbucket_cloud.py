@@ -1,7 +1,7 @@
 # coding: utf8
 import pytest
 import sys
-from datetime import datetime, timezone
+from datetime import datetime
 
 from atlassian import Bitbucket
 from atlassian.bitbucket import Cloud
@@ -18,6 +18,12 @@ try:
     CLOUD = Cloud("{}/bitbucket/cloud".format(mockup_server()), username="username", password="password")
 except ImportError:
     pass
+
+
+def _datetimetostr(dtime):
+    # convert datetime object to str because datetime.timezone is not available in py27
+    # doesn't work on py27: datetime(2020, 12, 27, 14, 9, 14, 660262, tzinfo=timezone.utc)
+    return dtime.strftime("%Y-%m-%d %H:%M:%S.%f")
 
 
 class TestBasic:
@@ -184,10 +190,10 @@ class TestPullRequests:
         assert not tc1.is_superseded
 
     def test_created_on(self, tc1):
-        assert tc1.created_on == datetime(2020, 3, 19, 12, 0, 3, 494356, tzinfo=timezone.utc)
+        assert _datetimetostr(tc1.created_on) == _datetimetostr(datetime(2020, 3, 19, 12, 0, 3, 494356))
 
     def test_updated_on(self, tc1):
-        assert tc1.updated_on == datetime(2020, 12, 27, 14, 9, 14, 660262, tzinfo=timezone.utc)
+        assert _datetimetostr(tc1.updated_on) == _datetimetostr(datetime(2020, 12, 27, 14, 9, 14, 660262))
 
     def test_close_source_branch(self, tc1):
         assert tc1.close_source_branch
@@ -225,7 +231,7 @@ class TestPullRequests:
         assert p1.user.uuid == "{User03UUID}"
         assert p1.user.account_id == "User03AccountID"
         assert p1.user.nickname == "User03Nickname"
-        assert p1.participated_on == datetime(2020, 7, 9, 7, 0, 54, 416331, tzinfo=timezone.utc)
+        assert _datetimetostr(p1.participated_on) == _datetimetostr(datetime(2020, 7, 9, 7, 0, 54, 416331))
         assert p1.is_participant
         assert not p1.is_reviewer
         assert not p1.has_approved
