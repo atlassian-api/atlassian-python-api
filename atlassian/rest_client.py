@@ -123,10 +123,7 @@ class AtlassianRestAPI(object):
         """
         if "client" not in oauth_dict:
             oauth_dict["client"] = None
-        oauth = OAuth2(
-            oauth_dict["client_id"],
-            oauth_dict["client"],
-            oauth_dict["token"])
+        oauth = OAuth2(oauth_dict["client_id"], oauth_dict["client"], oauth_dict["token"])
         self._session.auth = oauth
 
     def _update_header(self, key, value):
