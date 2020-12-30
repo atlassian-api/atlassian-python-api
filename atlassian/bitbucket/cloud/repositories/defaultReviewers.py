@@ -3,6 +3,7 @@
 from requests import HTTPError
 
 from ..base import BitbucketCloudBase
+from ..common.users import User
 
 
 class DefaultReviewers(BitbucketCloudBase):
@@ -70,25 +71,9 @@ class DefaultReviewers(BitbucketCloudBase):
         return default_reviewer
 
 
-class DefaultReviewer(BitbucketCloudBase):
+class DefaultReviewer(User):
     def __init__(self, url, data, *args, **kwargs):
-        super(DefaultReviewer, self).__init__(url, *args, data=data, expected_type="user", **kwargs)
-
-    @property
-    def display_name(self):
-        return str(self.get_data("display_name"))
-
-    @property
-    def nickname(self):
-        return self.get_data("nickname")
-
-    @property
-    def account_id(self):
-        return self.get_data("account_id")
-
-    @property
-    def uuid(self):
-        return self.get_data("uuid")
+        super(DefaultReviewer, self).__init__(url, data, *args, **kwargs)
 
     def delete(self):
         """
@@ -97,4 +82,4 @@ class DefaultReviewer(BitbucketCloudBase):
         data = super(DefaultReviewer, self).delete(None)
         if data is None or "errors" in data:
             return
-        return DefaultReviewer(self.url, data, **self._new_session_args)
+        return True
