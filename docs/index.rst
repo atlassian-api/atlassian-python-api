@@ -133,7 +133,7 @@ OAuth 2.0 is also supported:
         url='https://api.bitbucket.org/',
         oauth2=oauth2_dict)
 
-    # For a detailed example see bitbucket_oauth2.py in 
+    # For a detailed example see bitbucket_oauth2.py in
     # examples/bitbucket
 
 
