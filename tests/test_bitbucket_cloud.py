@@ -299,9 +299,9 @@ class TestPullRequests:
         assert prs[0].id == 1
         assert prs[1].id == 25
 
-    def test_add(self, tc2):
+    def test_create(self, tc2):
         reviewers = ["{User04UUID}", "{User02UUID}", "{User01UUID}"]
-        pr = tc2.add(
+        pr = tc2.create(
             title="PRTitle",
             source_branch="feature/test-branch",
             destination_branch="master",

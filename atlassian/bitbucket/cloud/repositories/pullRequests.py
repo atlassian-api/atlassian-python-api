@@ -50,7 +50,7 @@ class PullRequests(BitbucketCloudBase):
         """
         return self.__get_object(super(PullRequests, self).get(id))
 
-    def add(
+    def create(
         self,
         title,
         source_branch,
@@ -60,7 +60,7 @@ class PullRequests(BitbucketCloudBase):
         reviewers=None,
     ):
         """
-        Adds a pull requests for a given source branch
+        Creates a new pull requests for a given source branch
         Be careful, adding this mulitple times for the same source branch updates the pull request!
 
         :param title: string: pull request title
