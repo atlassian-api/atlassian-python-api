@@ -164,6 +164,14 @@ class PullRequest(BitbucketCloudBase):
         """ User object of the author """
         return User(None, self.get_data("author"))
 
+    def statuses(self):
+        """
+        Returns generator object of the statuses endpoint
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D/statuses
+        """
+        return self._get_paged("{}/statuses".format(self.url), absolute=True)
+
     def participants(self):
         """ Returns a generator object of participants """
         for participant in self.get_data("participants"):
@@ -287,6 +295,10 @@ class Participant(BitbucketCloudBase):
     def is_reviewer(self):
         """ True if the user is a pull request reviewer """
         return self.get_data("role") == self.ROLE_REVIEWER
+
+    @property
+    def is_default_reviewer(self):
+        """ True if the user is a default reviewer """
 
     @property
     def has_changes_requested(self):
