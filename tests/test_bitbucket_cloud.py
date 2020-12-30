@@ -166,7 +166,7 @@ class TestPullRequests:
 
     @pytest.fixture(scope="module")
     def tc2(self):
-        return CLOUD.workspaces.get("TestWorkspace1").repositories.get("testrepository1").pullrequests.each()
+        return CLOUD.workspaces.get("TestWorkspace1").repositories.get("testrepository1").pullrequests
 
     def test_id(self, tc1):
         assert tc1.id == 1
@@ -293,8 +293,21 @@ class TestPullRequests:
         assert merge["merge_commit"]["hash"] == "36bb9607a8c9e0c6222342486e3393ae154b46c0"
 
     def test_each(self, tc2):
-        prs = list(tc2)
+        prs = list(tc2.each())
         assert len(prs) == 2
         assert isinstance(prs[0], PullRequest)
         assert prs[0].id == 1
         assert prs[1].id == 25
+
+    def test_add(self, tc2):
+        reviewers = ["{User04UUID}", "{User02UUID}", "{User01UUID}"]
+        pr = tc2.add(
+            title="PRTitle",
+            source_branch="feature/test-branch",
+            destination_branch="master",
+            description="PRDescription",
+            close_source_branch=True,
+            reviewers=reviewers,
+        )
+        assert pr.id == 1
+        assert len(list(pr.reviewers())) == 3

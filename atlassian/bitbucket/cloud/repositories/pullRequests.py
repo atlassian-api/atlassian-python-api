@@ -50,10 +50,60 @@ class PullRequests(BitbucketCloudBase):
         """
         return self.__get_object(super(PullRequests, self).get(id))
 
-    # def add(self):
-    #     TODO add a new pull request
-    #     TODO https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests#post
-    #     return PullRequest object
+    def add(
+        self,
+        title,
+        source_branch,
+        destination_branch=None,
+        description=None,
+        close_source_branch=None,
+        reviewers=None,
+    ):
+        """
+        Adds a pull requests for a given source branch
+        Be careful, adding this mulitple times for the same source branch updates the pull request!
+
+        :param title: string: pull request title
+        :param source_branch: string: name of the source branch
+        :param destination_branch: string: name of the destination branch, if None the repository main branch is used
+        :param description: string: pull request description
+        :param close_source_branch: bool: specifies if the source branch should be closed upon merging
+        :param reviewers: list: list of user uuids in curly brackets
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests#post
+        """
+
+        rv = [{"uuid": x} for x in reviewers] if reviewers else []
+        data = {
+            "title": title,
+            "source": {"branch": {"name": source_branch}},
+            "description": description,
+            "close_source_branch": close_source_branch,
+            "reviewers": rv,
+        }
+        if destination_branch:
+            data["destination"] = {"branch": {"name": destination_branch}}
+        response = self.post(self.url, data, absolute=True)
+
+        return PullRequest(response["links"]["self"], response, **self._new_session_args)
+
+    def modify(
+        self,
+        source_branch,
+        title=None,
+        destination_branch=None,
+        description=None,
+        close_source_branch=None,
+        reviewers=None,
+    ):
+        return self.add(
+            title=title,
+            source_branch=source_branch,
+            destination_branch=destination_branch,
+            description=description,
+            close_source_branch=close_source_branch,
+            reviewers=reviewers,
+        )
 
 
 class PullRequest(BitbucketCloudBase):
