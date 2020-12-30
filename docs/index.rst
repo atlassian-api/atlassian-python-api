@@ -117,6 +117,26 @@ Alternatively OAuth can be used:
         url='http://localhost:8080',
         oauth=oauth_dict)
 
+OAuth 2.0 is also supported:
+
+.. code-block:: python
+
+    from atlassian.bitbucket.cloud import Cloud
+
+    # token is a dictionary and must at least contain "access_token"
+    # and "token_type".
+    oauth2_dict = {
+        "client_id": client_id,
+        "token": token}
+
+    bitbucket_cloud = Cloud(
+        url='https://api.bitbucket.org/',
+        oauth2=oauth2_dict)
+
+    # For a detailed example see bitbucket_oauth2.py in
+    # examples/bitbucket
+
+
 Or Kerberos *(installation with kerberos extra necessary)*:
 
 .. code-block:: python
