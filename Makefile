@@ -4,9 +4,10 @@
 
 PYTHON_VERSION ?= 3.7
 
-
 QA_CONTAINER ?= atlassian-python-api-qa-$(PYTHON_VERSION)
 TEST_OPTS ?=
+
+LINTING_TARGETS := atlassian/ examples/ tests/
 
 .PHONY: help setup-dev qa lint test doc docker-qa docker-qa-build
 
