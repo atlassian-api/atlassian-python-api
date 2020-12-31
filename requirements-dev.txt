@@ -1,6 +1,7 @@
-mock
 -r requirements.txt
-flake8
+mock
 pytest
-pylint
+pytest-cov
+flake8
+black
 tox

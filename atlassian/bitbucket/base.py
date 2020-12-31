@@ -1,7 +1,13 @@
 # coding=utf-8
 
+import re
+import sys
+
 from datetime import datetime
 from ..rest_client import AtlassianRestAPI
+
+
+RE_TIMEZONE = re.compile(r"(\d{2}):(\d{2})$")
 
 
 class BitbucketBase(AtlassianRestAPI):
@@ -77,6 +83,9 @@ class BitbucketBase(AtlassianRestAPI):
             return value_str
 
         if isinstance(value_str, str):
+            # The format contains a : in the timezone which is supported from 3.7 on.
+            if sys.version_info <= (3, 7):
+                value_str = RE_TIMEZONE.sub(r"\1\2", value_str)
             value = datetime.strptime(value_str, self.CONF_TIMEFORMAT)
         else:
             value = value_str
