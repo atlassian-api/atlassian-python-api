@@ -383,6 +383,7 @@ class ServiceDesk(AtlassianRestAPI):
         users_list is a list of strings
         account_list is a list of accountIds
 
+        :param account_list:
         :param organization_id: str
         :param users_list: list
         :return:
@@ -609,8 +610,10 @@ class ServiceDesk(AtlassianRestAPI):
         For example, searching for "John", "Jo", "Smi", or "Smith" will match a
         user with display name "John Smith"..
 
+        :param query:
+        :param start:
+        :param limit:
         :param service_desk_id: str
-        :param list_of_usernames: list
         :return: the customers added to the service desk
         """
         url = "rest/servicedeskapi/servicedesk/{}/customer".format(service_desk_id)
@@ -739,10 +742,11 @@ class ServiceDesk(AtlassianRestAPI):
     ):
         """
         Creating a request type
+        :param request_type_id:
+        :param request_help_text:
         :param service_desk_id: str
         :param request_name: str
         :param request_description: str
-        :param request_help_test: str
         """
         log.warning("Creating request type...")
         data = {

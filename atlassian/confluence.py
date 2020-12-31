@@ -1547,6 +1547,7 @@ class Confluence(AtlassianRestAPI):
         """
         Update the page (content) property.
         Use json data or independent keys
+        :param data:
         :param page_id: content_id format
         :data: property data in json format
         :return:
@@ -1772,6 +1773,7 @@ class Confluence(AtlassianRestAPI):
         Get space content.
         You can specify which type of content want to recieve, or get all content types.
         Use expand to get specific content properties or page
+        :param content_type:
         :param space_key: The unique space key name
         :param depth: OPTIONAL: all|root
                                 Gets all space pages or only root pages
