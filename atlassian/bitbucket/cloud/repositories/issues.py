@@ -8,8 +8,6 @@ class Issues(BitbucketCloudBase):
         super(Issues, self).__init__(url, *args, **kwargs)
 
     def __get_object(self, data):
-        if "errors" in data:
-            return
         return Issue(data, **self._new_session_args)
 
     def create(self, title, description, kind, priority):
@@ -22,6 +20,8 @@ class Issues(BitbucketCloudBase):
         :param priority: string: One of: trivial, minor, major, critical, blocker
 
         :return: The created Issue object
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/issues/%7Bissue_id%7D#put
         """
         data = {
             "title": title,
@@ -41,6 +41,8 @@ class Issues(BitbucketCloudBase):
                              See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
 
         :return: A generator for the Issue objects
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/issues#get
         """
         params = {}
         if sort is not None:
@@ -59,6 +61,8 @@ class Issues(BitbucketCloudBase):
         :param id: string: The requested issue ID
 
         :return: The requested Issue objects
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/issues/%7Bissue_id%7D#get
         """
         return self.__get_object(super(Issues, self).get(id))
 
@@ -67,67 +71,94 @@ class Issue(BitbucketCloudBase):
     def __init__(self, data, *args, **kwargs):
         super(Issue, self).__init__(None, *args, data=data, expected_type="issue", **kwargs)
 
+    def update(self, **kwargs):
+        """
+        Update the issue properties. Fields not present in the request body are ignored.
+
+        :param kwargs: dict: The data to update.
+
+        :return: The updated issue
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/issues/%7Bissue_id%7D#put
+        """
+        return self._update_data(self.put(None, data=kwargs))
+
+    def delete(self):
+        """
+        Delete the issue.
+
+        :return: The response on success
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/issues/%7Bissue_id%7D#delete
+        """
+        return super(Issue, self).delete(None)
+
     @property
     def id(self):
+        """ The issue id """
         return self.get_data("id")
 
     @property
     def title(self):
+        """ The issue title """
         return self.get_data("title")
 
     @title.setter
     def title(self, title):
+        """ Setter for the issue title """
         return self.update(title=title)
 
     @property
     def state(self):
+        """ The issue state """
         return self.get_data("state")
 
     @state.setter
     def state(self, state):
+        """ Setter for the issue state """
         return self.update(state=state)
 
     @property
     def kind(self):
+        """ The issue kind """
         return self.get_data("kind")
 
     @kind.setter
     def kind(self, kind):
+        """ Setter for the issue kind """
         return self.update(kind=kind)
 
     @property
     def priority(self):
+        """ The issue priority """
         return self.get_data("priority")
 
     @priority.setter
     def priority(self, priority):
+        """ Setter for the issue property """
         return self.update(priority=priority)
 
     @property
     def votes(self):
+        """ The issue votes """
         return self.get_data("votes")
 
     @property
     def content(self):
+        """ The issue content """
         return self.get_data("content")
 
     @property
     def created_on(self):
+        """ The issue creation time """
         return self.get_time("created_on")
 
     @property
     def edited_on(self):
+        """ The issue edit time """
         return self.get_time("edited_on")
 
     @property
     def updated_on(self):
+        """ The issue last update time """
         return self.get_time("updated_on")
-
-    def delete(self):
-        """
-        Deletes the issue
-        """
-        data = super(Issue, self).delete(None)
-        if data is None or "errors" in data:
-            return
-        return Issue(data, **self._new_session_args)

@@ -2536,7 +2536,6 @@ class Bitbucket(BitbucketBase):
             .repositories.get(repository_slug)
             .issues.get(id)
             .delete()
-            .data
         )
 
     @deprecated(
@@ -2645,7 +2644,6 @@ class Bitbucket(BitbucketBase):
             .repositories.get(repository_slug)
             .branch_restrictions.get(id)
             .delete()
-            .data
         )
 
     @deprecated(
@@ -2732,5 +2730,4 @@ class Bitbucket(BitbucketBase):
             .repositories.get(repository_slug)
             .default_reviewers.get(user)
             .delete()
-            .data
         )

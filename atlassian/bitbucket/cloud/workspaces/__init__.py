@@ -11,24 +11,22 @@ class Workspaces(BitbucketCloudBase):
         super(Workspaces, self).__init__(url, *args, **kwargs)
 
     def __get_object(self, data):
-        if "errors" in data:
-            return
         return Workspace(data, **self._new_session_args)
 
     def each(self, role=None, q=None, sort=None):
         """
         Get all workspaces matching the criteria.
 
-        :param role: string: Filters the workspaces based on the authenticated user"s role on each workspace.
-                             * member: returns a list of all the workspaces which the caller is a member of
-                               at least one workspace group or repository
-                             * collaborator: returns a list of workspaces which the caller has write access
-                               to at least one repository in the workspace
-                             * owner: returns a list of workspaces which the caller has administrator access
-        :param q: string: Query string to narrow down the response.
-                          See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
-        :param sort: string: Name of a response property to sort results.
-                             See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
+        :param role: string (default is None): Filters the workspaces based on the authenticated user"s role on each workspace.
+                                               * member: returns a list of all the workspaces which the caller is a member of
+                                                 at least one workspace group or repository
+                                               * collaborator: returns a list of workspaces which the caller has write access
+                                                 to at least one repository in the workspace
+                                               * owner: returns a list of workspaces which the caller has administrator access
+        :param q: string (default is None):    Query string to narrow down the response.
+                                               See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
+        :param sort: string (default is None): Name of a response property to sort results.
+                                               See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
 
         :return: A generator for the Workspace objects
         """
@@ -63,35 +61,50 @@ class Workspace(BitbucketCloudBase):
         self.__repositories = WorkspaceRepositories(self.get_link("repositories"), **self._new_session_args)
 
     @property
-    def projects(self):
-        return self.__projects
-
-    @property
-    def repositories(self):
-        return self.__repositories
-
-    @property
     def name(self):
+        """ The workspace name """
         return self.get_data("name")
+
+    @name.setter
+    def name(self, name):
+        """ Setter for the workspace name """
+        return self.update(name=name)
 
     @property
     def slug(self):
+        """ The workspace slug """
         return self.get_data("slug")
 
+    @property
     def uuid(self):
+        """ The workspace uuid """
         return self.get_data("uuid")
 
     @property
     def is_private(self):
+        """ The workspace private flag """
         return self.get_data("is_private")
 
     @property
     def created_on(self):
+        """ The workspace creation time """
         return self.get_data("created_on")
 
     @property
     def updated_on(self):
+        """ The workspace last update time """
         return self.get_data("updated_on", "never updated")
 
     def get_avatar(self):
+        """ The project avatar """
         return self.get(self.get_link("avatar"), absolute=True)
+
+    @property
+    def projects(self):
+        """ The workspace projects """
+        return self.__projects
+
+    @property
+    def repositories(self):
+        """ The workspace repositories """
+        return self.__repositories

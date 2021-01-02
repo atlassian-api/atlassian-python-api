@@ -10,7 +10,7 @@ class GlobalPermissions(BitbucketServerBase):
     SYS_ADMIN = "SYS_ADMIN"
 
     def __init__(self, url, *args, **kwargs):
-        super(GlobalPermissions, self).__init__(url, *args, can_delete=True, **kwargs)
+        super(GlobalPermissions, self).__init__(url, *args, **kwargs)
 
     def licensed_user(self, name):
         """
@@ -40,29 +40,27 @@ class GlobalPermissions(BitbucketServerBase):
         """
         Add the permission for a group/user.
 
-        For groups see https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp64
-        For users see https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp70
-
         :param name: string: The names of the groups/users
         :param permission: string: The permission to grant.
 
-        :return: True on success
+        API docs:
+        - For groups see https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp64
+        - For users see https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp70
         """
-        data = self.put(name, permission)
-        if "errors" in data:
-            return
-        return True
+        self.put(name, permission)
+        return
 
     def each(self, filter=None):
         """
         Get all groups/users.
 
-        For groups see https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp63
-        For users see https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp69
-
         :params filter: string: If specified only group/user names containing the supplied string will be returned
 
         :return: A generator for the group/user permission objects
+
+        API docs:
+        - For groups see https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp63
+        - For users see https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp69
         """
         params = {}
         if filter is not None:
@@ -76,12 +74,13 @@ class GlobalPermissions(BitbucketServerBase):
         """
         Get all not granted groups/users.
 
-        For groups see https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp67
-        For users see https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp73
-
         :params filter: string: If specified only group/user names containing the supplied string will be returned
 
         :return: A generator for the group/user permission objects
+
+        API docs:
+        - For groups see https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp67
+        - For users see https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp73
         """
         params = {}
         if filter is not None:
@@ -109,8 +108,6 @@ class Groups(GlobalPermissions):
         super(Groups, self).__init__(url, *args, **kwargs)
 
     def _get_object(self, data):
-        if "errors" in data:
-            return
         return Group(data, **self._new_session_args)
 
 
@@ -119,8 +116,6 @@ class Users(GlobalPermissions):
         super(Users, self).__init__(url, *args, **kwargs)
 
     def _get_object(self, data):
-        if "errors" in data:
-            return
         return User(data, **self._new_session_args)
 
 
@@ -149,16 +144,13 @@ class PermissionBase(BitbucketServerBase):
 
     def delete(self):
         """
-        Delete the element.
+        Delete the permission.
 
-        :return: True if the permission was deleted
+        :return: The response on success
         """
         if self.url is None:
             raise NotImplementedError("Delete not implemented for this object type.")
-        data = super(BitbucketServerBase, self).delete(None, params={"name": self.name})
-        if data is None or "errors" in data:
-            return
-        return True
+        return super(PermissionBase, self).delete(None, params={"name": self.name})
 
 
 class Group(PermissionBase):
