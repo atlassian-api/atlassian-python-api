@@ -1339,7 +1339,7 @@ class Jira(AtlassianRestAPI):
         url="rest/scriptrunner/latest/custom/disableUser",
         param="userName",
     ):
-        """The disable method throw own rest enpoint"""
+        """The disable method throw own rest endpoint"""
         url = "{}?{}={}".format(url, param, username)
         return self.get(path=url)
 
@@ -2552,7 +2552,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         Not relevant for foreground reindex, where changeHistory is always reindexed.
         :param worklogs: Indicates that changeHistory should also be reindexed.
         Not relevant for foreground reindex, where changeHistory is always reindexed.
-        :param indexing_type: OPTIONAL: The default value for the type is BACKGROUND_PREFFERED
+        :param indexing_type: OPTIONAL: The default value for the type is BACKGROUND_PREFERRED
         :return:
         """
         params = {}
@@ -2575,7 +2575,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
                    If Jira fails to finish the background reindexing, respond with 409 Conflict (error message).
         BACKGROUND_PREFERRED  - If possible do a background reindexing.
                    If it's not possible (due to an inconsistent index), do a foreground reindexing.
-        :param indexing_type: OPTIONAL: The default value for the type is BACKGROUND_PREFFERED
+        :param indexing_type: OPTIONAL: The default value for the type is BACKGROUND_PREFERRED
         :return:
         """
         return self.reindex(indexing_type=indexing_type)
@@ -2888,7 +2888,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
 
     def tempo_timesheets_get_team_utilization(self, team_id, date_from, date_to=None, group_by=None):
         """
-        GEt team utulization. Response in json
+        Get team utilization. Response in json
         :param team_id:
         :param date_from:
         :param date_to:

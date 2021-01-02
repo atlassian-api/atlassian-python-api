@@ -50,7 +50,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     # Initialize argparse module with some program name and additional information
     parser = argparse.ArgumentParser(
-        prog="confluence_copy_labes_between_spaces",
+        prog="confluence_copy_lables_between_spaces",
         description="Simple execution for sync labels between 2 spaces",
     )
     parser.add_argument("--source", dest="source", default="SOURCESPACE", help="Just Source Space")

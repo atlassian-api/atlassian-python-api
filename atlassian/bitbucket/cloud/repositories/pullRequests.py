@@ -61,7 +61,7 @@ class PullRequests(BitbucketCloudBase):
     ):
         """
         Creates a new pull requests for a given source branch
-        Be careful, adding this mulitple times for the same source branch updates the pull request!
+        Be careful, adding this multiple times for the same source branch updates the pull request!
 
         :param title: string: pull request title
         :param source_branch: string: name of the source branch
@@ -259,7 +259,7 @@ class PullRequest(BitbucketCloudBase):
 
     def unrequest_changes(self):
         """
-        Request changes for the pull request if open
+        Unrequest changes for the pull request if open
 
         API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D/request-changes#delete
         """
@@ -288,7 +288,7 @@ class PullRequest(BitbucketCloudBase):
         self._check_if_open()
 
         if merge_strategy is not None and merge_strategy not in self.MERGE_STRATEGIES:
-            raise ValueError("merge_stragegy must be {}".format(self.MERGE_STRATEGIES))
+            raise ValueError("merge_strategy must be {}".format(self.MERGE_STRATEGIES))
 
         data = {
             "close_source_branch": close_source_branch or self.close_source_branch,

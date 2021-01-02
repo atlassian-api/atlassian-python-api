@@ -506,7 +506,7 @@ class Confluence(AtlassianRestAPI):
 
         return response.get("results")
 
-    def get_all_restictions_for_content(self, content_id):
+    def get_all_restrictions_for_content(self, content_id):
         """keep typo method"""
         log.warning("Please, be informed that is deprecated as typo naming")
         return self.get_all_restrictions_for_content(content_id=content_id)
@@ -821,7 +821,7 @@ class Confluence(AtlassianRestAPI):
         :type  page_id: ``str``
         :param name: The name of the attachment
         :type  name: ``str``
-        :param content: Contains the content which should be uplaoded
+        :param content: Contains the content which should be uploaded
         :type  content: ``binary``
         :param content_type: Specify the HTTP content type. The default is
         :type  content_type: ``str``
@@ -1771,7 +1771,7 @@ class Confluence(AtlassianRestAPI):
     ):
         """
         Get space content.
-        You can specify which type of content want to recieve, or get all content types.
+        You can specify which type of content want to receive, or get all content types.
         Use expand to get specific content properties or page
         :param content_type:
         :param space_key: The unique space key name

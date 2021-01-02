@@ -7,7 +7,7 @@ from .globalPermissions import Groups, Users
 
 class Server(BitbucketServerBase):
     """
-    Class implementing parts of the REST API descrribed in
+    Class implementing parts of the REST API described in
     https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html
     """
 

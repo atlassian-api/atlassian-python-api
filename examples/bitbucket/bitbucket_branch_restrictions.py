@@ -26,7 +26,7 @@ print(single_permission)
 deleted_permission = bitbucket.delete_branch_permission("PROJECT_KEY", pid)
 print(deleted_permission)
 
-multiplpe_permissions_payload = [
+multiple_permissions_payload = [
     {
         "type": "read-only",
         "matcher": {
@@ -56,7 +56,7 @@ multiplpe_permissions_payload = [
 ]
 multiple_permissions = bitbucket.set_branches_permissions(
     "PROJECT_KEY",
-    multiple_permissions=multiplpe_permissions_payload,
+    multiple_permissions=multiple_permissions_payload,
     matcher_type="branch",
     matcher_value="master",
     permission_type="no-deletes",

@@ -69,7 +69,7 @@ class TestBasic:
         assert [x.is_sys_admin for x in result] == [True, False, False, False], "Is sys admin user"
         assert [x.is_admin for x in result] == [False, True, False, False], "Is admin user"
         assert [x.is_project_create for x in result] == [False, False, True, False], "Is project create user"
-        assert [x.is_licensed_user for x in result] == [False, False, False, True], "Is licenced user"
+        assert [x.is_licensed_user for x in result] == [False, False, False, True], "Is licensed user"
 
         result = list(BITBUCKET.users.each_none())
         assert [x.name for x in result] == ["jcitizen1_1"], "Each none global user"

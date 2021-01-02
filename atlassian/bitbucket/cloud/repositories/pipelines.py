@@ -182,7 +182,7 @@ class Step(BitbucketCloudBase):
         """
         Returns the log content in the given range.
 
-        :param start: int: The start of the range. First elment is 0.
+        :param start: int: The start of the range. First element is 0.
         :param end: int: The end of the range, must be greater than start.
 
         :return: The byte representation of the log or if range is given a tuple with
