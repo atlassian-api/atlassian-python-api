@@ -11,8 +11,6 @@ class DefaultReviewers(BitbucketCloudBase):
         super(DefaultReviewers, self).__init__(url, *args, **kwargs)
 
     def __get_object(self, data):
-        if "errors" in data:
-            return
         return DefaultReviewer(self.url_joiner(self.url, data["display_name"]), data, **self._new_session_args)
 
     def add(self, user):
@@ -24,6 +22,8 @@ class DefaultReviewers(BitbucketCloudBase):
         :param user: string: The user to add
 
         :return: The added DefaultReviewer object
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/default-reviewers/%7Btarget_username%7D#put
         """
         # the mention_id parameter is undocumented but if missed, leads to 400 statuses
         return self.__get_object(self.put(user, data={"mention_id": user}))
@@ -40,6 +40,8 @@ class DefaultReviewers(BitbucketCloudBase):
                              See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
 
         :return: A generator for the DefaultReviewer objects
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/default-reviewers#get
         """
         params = {}
         if sort is not None:
@@ -58,6 +60,8 @@ class DefaultReviewers(BitbucketCloudBase):
         :param user: string: The requested user name
 
         :return: The requested DefaultReviewer object, None if not a default reviewer
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/default-reviewers/%7Btarget_username%7D#get
         """
         default_reviewer = None
         try:
@@ -77,9 +81,10 @@ class DefaultReviewer(User):
 
     def delete(self):
         """
-        Deletes the default reviewer
+        Delete the default reviewer.
+
+        :return: The response on success
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/default-reviewers/%7Btarget_username%7D#delete
         """
-        data = super(DefaultReviewer, self).delete(None)
-        if data is None or "errors" in data:
-            return
-        return True
+        return super(DefaultReviewer, self).delete(None)

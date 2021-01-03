@@ -10,40 +10,7 @@ class Pipelines(BitbucketCloudBase):
         super(Pipelines, self).__init__(url, *args, **kwargs)
 
     def __get_object(self, data):
-        if "errors" in data:
-            return
         return Pipeline(self.url_joiner(self.url, data["uuid"]), data, **self._new_session_args)
-
-    def each(self, q=None, sort=None):
-        """
-        Returns the list of pipelines in this repository.
-
-        :param q: string: Query string to narrow down the response.
-                          See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
-        :param sort: string: Name of a response property to sort results.
-                             See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
-
-        :return: A generator for the Pipeline objects
-        """
-        params = {}
-        if sort is not None:
-            params["sort"] = sort
-        if q is not None:
-            params["q"] = q
-        for pipeline in self._get_paged(None, trailing=True, params=params):
-            yield self.__get_object(pipeline)
-
-        return
-
-    def get(self, uuid):
-        """
-        Returns the pipeline with the uuid in this repository.
-
-        :param uuid: string: The requested pipeline uuid
-
-        :return: The requested Pipeline objects
-        """
-        return self.__get_object(super(Pipelines, self).get(uuid))
 
     def trigger(self, branch="master", commit=None, pattern=None, variables=None):
         """
@@ -64,6 +31,8 @@ class Pipelines(BitbucketCloudBase):
         },
 
         :return: The initiated Pipeline object
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pipelines/#post
         """
         data = {
             "target": {
@@ -89,44 +58,89 @@ class Pipelines(BitbucketCloudBase):
 
         return self.__get_object(self.post(None, trailing=True, data=data))
 
+    def each(self, q=None, sort=None):
+        """
+        Returns the list of pipelines in this repository.
+
+        :param q: string: Query string to narrow down the response.
+                          See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
+        :param sort: string: Name of a response property to sort results.
+                             See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
+
+        :return: A generator for the Pipeline objects
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pipelines/#get
+        """
+        params = {}
+        if sort is not None:
+            params["sort"] = sort
+        if q is not None:
+            params["q"] = q
+        for pipeline in self._get_paged(None, trailing=True, params=params):
+            yield self.__get_object(pipeline)
+
+        return
+
+    def get(self, uuid):
+        """
+        Returns the pipeline with the uuid in this repository.
+
+        :param uuid: string: The requested pipeline uuid
+
+        :return: The requested Pipeline objects
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pipelines/%7Bpipeline_uuid%7D#get
+        """
+        return self.__get_object(super(Pipelines, self).get(uuid))
+
 
 class Pipeline(BitbucketCloudBase):
     def __init__(self, url, data, *args, **kwargs):
         super(Pipeline, self).__init__(url, *args, data=data, expected_type="pipeline", **kwargs)
 
     def __get_object(self, data):
-        if "errors" in data:
-            return
         return Step("{}/steps/{}".format(self.url, data["uuid"]), data, **self._new_session_args)
 
     @property
     def uuid(self):
+        """ The pipeline uuid """
         return self.get_data("uuid")
 
     @property
     def build_number(self):
+        """ The pipeline build number """
         return self.get_data("build_number")
 
     @property
     def build_seconds_used(self):
+        """ The pipeline duration in seconds """
         return self.get_data("build_seconds_used")
 
     @property
     def created_on(self):
+        """ The pipeline creation time """
         return self.get_time("created_on")
 
     @property
     def completed_on(self):
+        """ The pipeline completion time """
         return self.get_time("completed_on")
 
     def stop(self):
+        """
+        Stop the pipeline
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pipelines/%7Bpipeline_uuid%7D/stopPipeline#post
+        """
         return self.post("stopPipeline")
 
     def steps(self):
         """
-        Returns the list of pipeline steps.
+        Get the pipeline steps.
 
         :return: A generator for the pipeline steps objects
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pipelines/%7Bpipeline_uuid%7D/steps/#get
         """
         for step in self._get_paged("steps", trailing=True):
             yield self.__get_object(step)
@@ -135,9 +149,11 @@ class Pipeline(BitbucketCloudBase):
 
     def step(self, uuid):
         """
-        Returns the pipeline step with the uuid of this pipeline.
+        Get a specific pipeline step with the uuid.
 
-        :return: The requested pipeline objects
+        :return: The requested pipeline step objects
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pipelines/%7Bpipeline_uuid%7D/steps/%7Bstep_uuid%7D#get
         """
         return self.__get_object(self.get("steps/{}".format(uuid)))
 
@@ -148,34 +164,42 @@ class Step(BitbucketCloudBase):
 
     @property
     def uuid(self):
+        """ The step uuid """
         return self.get_data("uuid")
 
     @property
     def run_number(self):
+        """ The run number """
         return self.get_data("run_number")
 
     @property
     def started_on(self):
+        """ The step start time """
         return self.get_time("started_on")
 
     @property
     def completed_on(self):
+        """ The step end time """
         return self.get_time("completed_on")
 
     @property
     def duration_in_seconds(self):
+        """ The step duration in seconds """
         return self.get_data("duration_in_seconds")
 
     @property
     def state(self):
+        """ The step state """
         return self.get_data("state")
 
     @property
     def setup_commands(self):
+        """ The step setup commands """
         return self.get_data("setup_commands")
 
     @property
     def script_commands(self):
+        """ The step script commands """
         return self.get_data("script_commands")
 
     def log(self, start=None, end=None):
@@ -187,6 +211,8 @@ class Step(BitbucketCloudBase):
 
         :return: The byte representation of the log or if range is given a tuple with
                  the overall size and the byte representation of the requested range.
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pipelines/%7Bpipeline_uuid%7D/steps/%7Bstep_uuid%7D/log#get
         """
         headers = {"Accept": "application/octet-stream"}
         if ((start is not None) and (end is None)) or ((start is None) and (end is not None)):

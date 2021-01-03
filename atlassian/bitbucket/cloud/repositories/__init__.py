@@ -13,8 +13,6 @@ class RepositoriesBase(BitbucketCloudBase):
         super(RepositoriesBase, self).__init__(url, *args, **kwargs)
 
     def _get_object(self, data):
-        if "errors" in data:
-            return
         return Repository(data, **self._new_session_args)
 
 
@@ -162,57 +160,116 @@ class Repository(BitbucketCloudBase):
         self.__pipelines = Pipelines("{}/pipelines".format(self.url), **self._new_session_args)
         self.__pullrequests = PullRequests("{}/pullrequests".format(self.url), **self._new_session_args)
 
-    @property
-    def branch_restrictions(self):
-        return self.__branch_restrictions
+    def update(self, **kwargs):
+        """
+        Update the repository properties. Fields not present in the request body are ignored.
 
-    @property
-    def default_reviewers(self):
-        return self.__default_reviewers
+        :param kwargs: dict: The data to update.
 
-    @property
-    def issues(self):
-        return self.__issues
+        :return: The updated repository
 
-    @property
-    def pipelines(self):
-        return self.__pipelines
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D#put
+        """
+        return self._update_data(self.put(None, data=kwargs))
 
-    @property
-    def pullrequests(self):
-        return self.__pullrequests
+    def delete(self, redirect_to=None):
+        """
+        Delete the repostory.
+
+        :param redirect_to: string (default is None): If a repository has been moved to a new location, use this
+                                                      parameter to show users a friendly message in the Bitbucket UI
+                                                      that the repository has moved to a new location. However, a GET
+                                                      to this endpoint will still return a 404.
+
+        :return: The response on success
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D#delete
+        """
+        params = {}
+        if redirect_to is not None:
+            params["redirect_to"] = redirect_to
+        return super(Repository, self).delete(None, params=params)
 
     @property
     def name(self):
+        """ The repository name """
         return self.get_data("name")
+
+    @name.setter
+    def name(self, name):
+        """ Setter for the repository name """
+        return self.update(name=name)
 
     @property
     def slug(self):
+        """ The repository slug """
         return self.get_data("slug")
 
     @property
     def description(self):
+        """ The repository description """
         return self.get_data("description")
+
+    @description.setter
+    def description(self, description):
+        """ Setter for the repository description """
+        return self.update(description=description)
 
     @property
     def is_private(self):
+        """ The repository private flag """
         return self.get_data("is_private")
+
+    @is_private.setter
+    def is_private(self, is_private):
+        """ Setter for the repository private flag """
+        return self.update(is_private=is_private)
 
     @property
     def uuid(self):
+        """ The repository uuid """
         return self.get_data("uuid")
 
     @property
     def size(self):
+        """ The repository size """
         return self.get_data("size")
 
     @property
     def created_on(self):
+        """ The repository creation time """
         return self.get_data("created_on")
 
     @property
     def updated_on(self):
+        """ The repository last update time """
         return self.get_data("updated_on", "never updated")
 
     def get_avatar(self):
+        """ The repository avatar """
         return self.get(self.get_link("avatar"), absolute=True)
+
+    @property
+    def branch_restrictions(self):
+        """ The repository branch restrictions """
+        return self.__branch_restrictions
+
+    @property
+    def default_reviewers(self):
+        """ The repository default reviewers """
+        return self.__default_reviewers
+
+    @property
+    def issues(self):
+        """ The repository issues """
+        return self.__issues
+
+    @property
+    def pipelines(self):
+        """ The repository pipelines """
+        return self.__pipelines
+
+    @property
+    def pullrequests(self):
+        """ The repository pull requests """
+        return self.__pullrequests

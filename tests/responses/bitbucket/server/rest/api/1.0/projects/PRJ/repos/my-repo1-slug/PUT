@@ -1,5 +1,5 @@
 responses = {
-    '{"data": {"name": "New name"}}': {
+    '{"name": "New name"}': {
         "slug": "my-repo1-slug",
         "id": 1,
         "name": "New name",
@@ -27,7 +27,7 @@ responses = {
             "self": [{"href": "bitbucket/server/rest/api/1.0/projects/PRJ/repos/my-repo1"}],
         },
     },
-    '{"data": {"description": "New description."}}': {
+    '{"description": "New description."}': {
         "slug": "my-repo1-slug",
         "id": 1,
         "name": "My repo 1",
@@ -55,7 +55,7 @@ responses = {
             "self": [{"href": "bitbucket/server/rest/api/1.0/projects/PRJ/repos/my-repo1"}],
         },
     },
-    '{"data": {"public": false}}': {
+    '{"public": false}': {
         "slug": "my-repo1-slug",
         "id": 1,
         "name": "My repo 1",
@@ -83,7 +83,7 @@ responses = {
             "self": [{"href": "bitbucket/server/rest/api/1.0/projects/PRJ/repos/my-repo1"}],
         },
     },
-    '{"data": {"forkable": false}}': {
+    '{"forkable": false}': {
         "slug": "my-repo1-slug",
         "id": 1,
         "name": "My repo 1",

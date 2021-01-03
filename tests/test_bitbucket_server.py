@@ -15,8 +15,8 @@ except ImportError:
     pass
 
 
+@pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3.4")
 class TestBasic:
-    @pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3.4")
     def test_global_permissions(self):
         result = list(BITBUCKET.groups.each())
         assert [x.name for x in result] == ["group_a", "group_b", "group_c", "group_d"], "Each global group"
@@ -36,7 +36,7 @@ class TestBasic:
 
         group = BITBUCKET.groups.get("group_a")
         assert group.name == "group_a", "Get a group"
-        assert group.delete() is True, "Delete a group"
+        assert group.delete() == {}, "Delete a group"
 
         result = list(BITBUCKET.users.each())
         assert [x.permission for x in result] == [
@@ -76,9 +76,8 @@ class TestBasic:
 
         user = BITBUCKET.users.get("jcitizen1")
         assert user.name == "jcitizen1", "Get a user"
-        assert user.delete() is True, "Delete a user"
+        assert user.delete() == {}, "Delete a user"
 
-    @pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3.4")
     def test_projects(self):
         result = list(BITBUCKET.projects.each())
         assert [x.key for x in result] == ["PRJ", "PRJ1"], "Each project keys"
@@ -92,6 +91,8 @@ class TestBasic:
         project = BITBUCKET.projects.get("My Cool Project", by="name")
         assert project.key == "PRJ", "Get project by name"
 
+        assert project.id == 1, "The project id"
+        assert project.type == "NORMAL", "The project type"
         assert project.name == "My Cool Project", "The project name"
         project.name = "New name"
         assert project.name == "New name", "Update the project name"
@@ -108,7 +109,6 @@ class TestBasic:
         project.key = "NEWKEY"
         assert project.key == "NEWKEY", "Update the project key"
 
-    @pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3.4")
     def test_project_permissions(self):
         project = BITBUCKET.projects.get("PRJ")
 
@@ -125,7 +125,7 @@ class TestBasic:
 
         group = project.groups.get("group_a")
         assert group.name == "group_a", "Get a group"
-        assert group.delete() is True, "Delete a group"
+        assert group.delete() == {}, "Delete a group"
 
         result = list(project.users.each())
         assert [x.permission for x in result] == ["ADMIN", "WRITE", "READ"], "Each permission of project user"
@@ -157,9 +157,8 @@ class TestBasic:
 
         user = project.users.get("jcitizen1")
         assert user.name == "jcitizen1", "Get a user"
-        assert user.delete() is True, "Delete a user"
+        assert user.delete() == {}, "Delete a user"
 
-    @pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3.4")
     def test_repositories(self):
         project = BITBUCKET.projects.get("PRJ")
         result = list(project.repos.each())
@@ -220,7 +219,6 @@ class TestBasic:
 
         assert [x.id for x in repo.related()] == [2], "The related repositories"
 
-    @pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3.4")
     def test_repository_permissions(self):
         repo = BITBUCKET.projects.get("PRJ").repos.get("my-repo1-slug")
 
@@ -237,7 +235,7 @@ class TestBasic:
 
         group = repo.groups.get("group_a")
         assert group.name == "group_a", "Get a group"
-        assert group.delete() is True, "Delete a group"
+        assert group.delete() == {}, "Delete a group"
 
         result = list(repo.users.each())
         assert [x.permission for x in result] == ["ADMIN", "WRITE", "READ"], "Each permission of repo user"
@@ -265,4 +263,4 @@ class TestBasic:
 
         user = repo.users.get("jcitizen1")
         assert user.name == "jcitizen1", "Get a user"
-        assert user.delete() is True, "Delete a user"
+        assert user.delete() == {}, "Delete a user"

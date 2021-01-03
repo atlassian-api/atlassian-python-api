@@ -2,7 +2,7 @@
 
 from .repos import Repositories
 from ..base import BitbucketServerBase
-from ..common import Groups, Users
+from ..common.permissions import Groups, Users
 
 
 class Projects(BitbucketServerBase):
@@ -10,8 +10,6 @@ class Projects(BitbucketServerBase):
         super(Projects, self).__init__(url, *args, **kwargs)
 
     def __get_object(self, data):
-        if "errors" in data:
-            return
         return Project(data, **self._new_session_args)
 
     def create(self, name, key, description, avatar=None):
@@ -29,14 +27,14 @@ class Projects(BitbucketServerBase):
                 avatar="http://i.imgur.com/72tRx4w.gif"
             )
 
-        See https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp148
-
         :param name: string: The name of the project.
         :param key: string: The key of the project.
         :param description: string: The description of the project.
         :param avatar: string: The avatar of the project.
 
         :return: The created project object
+
+        API docs: https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp148
         """
         return self.__get_object(self.post(None, data={"name": name, "key": key, "description": description}))
 
@@ -44,12 +42,12 @@ class Projects(BitbucketServerBase):
         """
         Get all projects matching the criteria.
 
-        See https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp149
-
         :param name: string: Name to filter by.
         :param permission: string: Permission to filter by.
 
         :return: A generator for the project objects
+
+        API docs: https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp149
         """
         params = {}
         if name is not None:
@@ -69,6 +67,8 @@ class Projects(BitbucketServerBase):
         :param by: string: How to interprate project, can be 'key' or 'name'.
 
         :return: The requested Project object
+
+        API docs: https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp153
         """
         if by == "key":
             return self.__get_object(super(Projects, self).get(project))
@@ -84,61 +84,105 @@ class Projects(BitbucketServerBase):
 
 class Project(BitbucketServerBase):
     def __init__(self, data, *args, **kwargs):
-        super(Project, self).__init__(None, *args, data=data, can_update=True, can_delete=True, **kwargs)
+        super(Project, self).__init__(None, *args, data=data, **kwargs)
         self.__groups = Groups(self._sub_url("permissions/groups"), "PROJECT", **self._new_session_args)
         self.__users = Users(self._sub_url("permissions/users"), "PROJECT", **self._new_session_args)
         self.__repos = Repositories(self._sub_url("repos"), **self._new_session_args)
 
-    @property
-    def name(self):
-        return self.get_data("name")
+    def delete(self):
+        """
+        Delete the project.
 
-    @name.setter
-    def name(self, name):
-        return self.update(data={"name": name})
+        :return: The response on success
 
-    @property
-    def key(self):
-        return self.get_data("key")
+        API docs: https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp151
+        """
+        return super(Project, self).delete(None)
 
-    @key.setter
-    def key(self, key):
-        return self.update(data={"key": key})
+    def update(self, **kwargs):
+        """
+        Update the project properties. Fields not present in the request body are ignored.
 
-    @property
-    def description(self):
-        return self.get_data("description")
+        :param kwargs: dict: The data to update.
 
-    @description.setter
-    def description(self, description):
-        return self.update(data={"description": description})
+        :return: The updated project
 
-    @property
-    def public(self):
-        return self.get_data("public")
-
-    @public.setter
-    def public(self, public):
-        return self.update(data={"public": public})
+        API docs: https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp152
+        """
+        return self._update_data(self.put(None, data=kwargs))
 
     @property
     def id(self):
+        """ The project identifier """
         return self.get_data("id")
 
     @property
     def type(self):
+        """ The project type """
         return self.get_data("type")
+
+    @property
+    def name(self):
+        """ The project name """
+        return self.get_data("name")
+
+    @name.setter
+    def name(self, name):
+        """ Setter for the project name """
+        return self.update(name=name)
+
+    @property
+    def key(self):
+        """ The project key """
+        return self.get_data("key")
+
+    @key.setter
+    def key(self, key):
+        """ Setter for the project key """
+        return self.update(key=key)
+
+    @property
+    def description(self):
+        """ The project description """
+        return self.get_data("description")
+
+    @description.setter
+    def description(self, description):
+        """ Setter for the project description """
+        return self.update(description=description)
+
+    @property
+    def public(self):
+        """ The project public flag """
+        return self.get_data("public")
+
+    @public.setter
+    def public(self, public):
+        """ Setter for the project public flag """
+        return self.update(public=public)
 
     def get_avatar(self, s=0):
         """
+        Get the avatar.
+
         :param s: int (default 0): The desired size of the image. The server will return
                                    an image as close as possible to the specified size.
+
+        :return: The response on success
+
+        API docs: https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp155
         """
         return self.get("avatar.png", params={"s": s})
 
     def set_avatar(self, avatar):
         """
+        Set the avatar.
+
         :param avatar: See function create for examples.
+
+        :return: The response on success
+
+        API docs: https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp156
         """
         return self.post("avatar.png", data={"avatar": avatar})
 
@@ -146,7 +190,7 @@ class Project(BitbucketServerBase):
     def groups(self):
         """
         Property to access the project groups
-        Reference: https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp158
+        API docs: https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp158
         """
         return self.__groups
 
@@ -154,7 +198,7 @@ class Project(BitbucketServerBase):
     def users(self):
         """
         Property to access the project groups
-        Reference: https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp164
+        API docs: https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp164
         """
         return self.__users
 
@@ -162,6 +206,6 @@ class Project(BitbucketServerBase):
     def repos(self):
         """
         Property to access the repositories
-        Reference: https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp173
+        API docs: https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp173
         """
         return self.__repos
