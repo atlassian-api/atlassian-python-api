@@ -1749,7 +1749,7 @@ class Confluence(AtlassianRestAPI):
         step = 0
         members = []
         while flag:
-            values = self.get_group_members(group_name=group_name, start=limit * step, limit=limit, expand=expand)
+            values = self.get_group_members(group_name=group_name, start=len(members), limit=limit, expand=expand)
             step += 1
             if len(values) == 0:
                 flag = False
