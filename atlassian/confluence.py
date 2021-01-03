@@ -1737,6 +1737,28 @@ class Confluence(AtlassianRestAPI):
 
         return response.get("results")
 
+    def get_all_members(self, group_name="confluence-users", expand=None):
+        """
+        Get  collection of all users in the given group
+        :param group_name
+        :param expand: OPTIONAL: A comma separated list of properties to expand on the content. status
+        :return:
+        """
+        limit = 50
+        flag = True
+        step = 0
+        members = []
+        while flag:
+            values = self.get_group_members(group_name=group_name, start=len(members), limit=limit, expand=expand)
+            step += 1
+            if len(values) == 0:
+                flag = False
+            else:
+                members.extend(values)
+        if not members:
+            print("Did not get members from {} group, please check permissions or connectivity".format(group_name))
+        return members
+
     def get_space(self, space_key, expand="description.plain,homepage"):
         """
         Get information about a space through space key
