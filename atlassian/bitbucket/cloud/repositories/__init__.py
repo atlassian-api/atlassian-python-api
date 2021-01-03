@@ -43,7 +43,7 @@ class Repositories(RepositoriesBase):
         :param sort: string: Name of a response property to sort results.
                              See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
 
-        :return: A generator for the Rorkspace objects
+        :return: A generator for the repository objects
         """
         if q is not None and role is None:
             raise ValueError("Argument [q] requires argument [role].")
@@ -80,7 +80,7 @@ class WorkspaceRepositories(RepositoriesBase):
         :param sort: string: Name of a response property to sort results.
                              See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
 
-        :return: A generator for the Rorkspace objects
+        :return: A generator for the workspace objects
         """
         params = {}
         if role is not None:
@@ -124,7 +124,7 @@ class ProjectRepositories(RepositoriesBase):
         :param sort: string: Name of a response property to sort results.
                              See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
 
-        :return: A generator for the Rorkspace objects
+        :return: A generator for the repository objects
         """
         params = {}
         if sort is not None:

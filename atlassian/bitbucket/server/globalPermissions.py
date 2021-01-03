@@ -128,7 +128,7 @@ class PermissionBase(BitbucketServerBase):
     @property
     def permission(self):
         if self.url is None:
-            raise NotImplementedError("Pemission not implemented for this object type.")
+            raise NotImplementedError("Permission not implemented for this object type.")
         return self.get_data("permission")
 
     @property

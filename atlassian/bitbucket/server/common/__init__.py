@@ -58,7 +58,7 @@ class Permissions(BitbucketServerBase):
 
         For project groups see https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp159
         For project users see https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp165
-        For repository groupss see https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp280
+        For repository groups see https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp280
         For repository users see https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp286
 
         :params filter: string: If specified only group/user names containing the supplied string will be returned
@@ -131,7 +131,7 @@ class PermissionBase(BitbucketServerBase):
     @property
     def permission(self):
         if self.url is None:
-            raise NotImplementedError("Pemission not implemented for this object type.")
+            raise NotImplementedError("Permission not implemented for this object type.")
         return self.get_data("permission")
 
     @property

@@ -15,7 +15,7 @@ class Repositories(BitbucketServerBase):
 
     def create(self, name):
         """
-        Creates a new repostiory with the given name.
+        Creates a new repository with the given name.
 
         See https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp174
 
@@ -116,9 +116,9 @@ class Repository(BitbucketServerBase):
         https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp183
 
         :param at: string: Optional, the commit to get the contributing guideline from.
-        :param markup: boolean: Optional, If set to true, the rendered content is returnded as HTML.
+        :param markup: boolean: Optional, If set to true, the rendered content is returned as HTML.
 
-        :return: The text content of the contributing guidlines.
+        :return: The text content of the contributing guidelines.
         """
         params = {}
         if at is not None:
@@ -135,7 +135,7 @@ class Repository(BitbucketServerBase):
         https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp191
 
         :param at: string: Optional, the commit to get the license file from.
-        :param markup: boolean: Optional, If set to true, the rendered content is returnded as HTML.
+        :param markup: boolean: Optional, If set to true, the rendered content is returned as HTML.
 
         :return: The text content of the license file.
         """
@@ -154,7 +154,7 @@ class Repository(BitbucketServerBase):
         https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp194
 
         :param at: string: Optional, the commit to get the readme file from.
-        :param markup: boolean: Optional, If set to true, the rendered content is returnded as HTML.
+        :param markup: boolean: Optional, If set to true, the rendered content is returned as HTML.
 
         :return: The text content of the readme file.
         """
