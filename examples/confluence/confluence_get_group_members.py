@@ -25,5 +25,4 @@ def get_all_members(group_name):
 
 if __name__ == "__main__":
     group_name = "confluence-users"
-    result = get_all_members(group_name=group_name)
-    pprint(result)
+    pprint(get_all_members(group_name=group_name))
