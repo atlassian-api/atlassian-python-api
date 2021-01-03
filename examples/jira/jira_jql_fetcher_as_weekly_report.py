@@ -28,8 +28,8 @@ class ReportGenerator:
         flag = True
         limit = 10
         step = 0
-        jql = f"((assignee was in ({user})) OR assignee in ({user})) AND updated > -{self.days}d "
-        print(f"Start fetching info jql = {jql}")
+        jql = "((assignee was in ({})) OR assignee in ({})) AND updated > -{}d ".format(user, user, self.days)
+        print("Start fetching info jql = {}".format(jql))
         while flag:
             values = []
             try:

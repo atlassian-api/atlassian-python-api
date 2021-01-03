@@ -189,8 +189,7 @@ class Project(BitbucketServerBase):
     @property
     def groups(self):
         """
-        Property to access the project groups.
-
+        Property to access the project groups
         API docs: https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp158
         """
         return self.__groups
@@ -198,8 +197,7 @@ class Project(BitbucketServerBase):
     @property
     def users(self):
         """
-        Property to access the project groups.
-
+        Property to access the project groups
         API docs: https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp164
         """
         return self.__users
@@ -207,8 +205,7 @@ class Project(BitbucketServerBase):
     @property
     def repos(self):
         """
-        Property to access the repositories.
-
+        Property to access the repositories
         API docs: https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp173
         """
         return self.__repos

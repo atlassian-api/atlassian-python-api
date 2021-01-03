@@ -13,7 +13,7 @@ class Repositories(BitbucketServerBase):
 
     def create(self, name):
         """
-        Creates a new repostiory with the given name.
+        Creates a new repository with the given name.
 
         See https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp174
 
@@ -142,7 +142,7 @@ class Repository(BitbucketServerBase):
         Get the contributing guidelines.
 
         :param at: string: Optional, the commit to get the contributing guideline from.
-        :param markup: boolean: Optional, If set to true, the rendered content is returnded as HTML.
+        :param markup: boolean: Optional, If set to true, the rendered content is returned as HTML.
 
         :return: The text content of the contributing guidlines.
 
@@ -161,7 +161,7 @@ class Repository(BitbucketServerBase):
         Get the license file.
 
         :param at: string: Optional, the commit to get the license file from.
-        :param markup: boolean: Optional, If set to true, the rendered content is returnded as HTML.
+        :param markup: boolean: Optional, If set to true, the rendered content is returned as HTML.
 
         :return: The text content of the license file.
 
@@ -180,7 +180,7 @@ class Repository(BitbucketServerBase):
         Get the readme file.
 
         :param at: string: Optional, the commit to get the readme file from.
-        :param markup: boolean: Optional, If set to true, the rendered content is returnded as HTML.
+        :param markup: boolean: Optional, If set to true, the rendered content is returned as HTML.
 
         :return: The text content of the readme file.
 
@@ -241,8 +241,7 @@ class Repository(BitbucketServerBase):
     @property
     def groups(self):
         """
-        Property to access the project groups.
-
+        Property to access the project groups:
         API docs: https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp279
         """
         return self.__groups
@@ -250,8 +249,7 @@ class Repository(BitbucketServerBase):
     @property
     def users(self):
         """
-        Property to access the project groups.
-
+        Property to access the project groups
         API docs: https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp285
         """
         return self.__users

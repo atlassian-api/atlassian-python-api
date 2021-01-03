@@ -34,8 +34,7 @@ qa: tox
 
 tox: export PYTHONDONTWRITEBYTECODE := 1
 
-tox:
-	tox
+tox: tox
 
 docker-qa: export TEST_OPTS := $(TEST_OPTS)
 docker-qa: export PYTHONDONTWRITEBYTECODE := 1

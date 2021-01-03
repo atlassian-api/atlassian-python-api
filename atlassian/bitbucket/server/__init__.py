@@ -7,7 +7,7 @@ from .globalPermissions import Groups, Users
 
 class Server(BitbucketServerBase):
     """
-    Class implementing parts of the REST API descrribed in
+    Class implementing parts of the REST API described in
     https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html
     """
 
@@ -24,20 +24,23 @@ class Server(BitbucketServerBase):
     @property
     def groups(self):
         """
-        Property to access the global groups (https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp62)
+        Property to access the global groups
+        Reference: https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp62
         """
         return self.__groups
 
     @property
     def users(self):
         """
-        Property to access the global users (https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp68)
+        Property to access the global users
+        Reference: https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp68
         """
         return self.__users
 
     @property
     def projects(self):
         """
-        Property to access the projects (https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp147)
+        Property to access the projects
+        Reference: https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp147
         """
         return self.__projects

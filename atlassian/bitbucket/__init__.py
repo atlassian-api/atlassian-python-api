@@ -1426,17 +1426,19 @@ class Bitbucket(BitbucketBase):
         data = {"version": comment_version, "text": comment}
         return self.put(url, data=data)
 
-    def delete_pull_reques_comment(
-        self,
-        project_key,
-        repository_slug,
-        pull_request_id,
-        comment_id,
-        comment_version,
-    ):
+    @deprecated(version="2.4.2", reason="Use delete_pull_request_comment()")
+    def delete_pull_reques_comment(self, project_key, repository_slug, pull_request_id, comment_id, comment_version):
+        """
+        Deprecated name since 2.4.2. Let's use the get_pull_request()
+        """
+        return self.delete_pull_request_comment(
+            project_key, repository_slug, pull_request_id, comment_id, comment_version
+        )
+
+    def delete_pull_request_comment(self, project_key, repository_slug, pull_request_id, comment_id, comment_version):
         """
         Delete a comment.
-        Only the repository admin or eser who created a comment may update it.
+        Only the repository admin or user who created a comment may update it.
 
         Note: the supplied supplied JSON object must contain a version
         that must match the server's version of the comment
