@@ -1754,8 +1754,7 @@ class Confluence(AtlassianRestAPI):
             if len(values) == 0:
                 flag = False
             else:
-                for value in values:
-                    members.append(value)
+                members.extend(values)
         if not members:
             print("Did not get members from {} group, please check permissions or connectivity".format(group_name))
         return members
