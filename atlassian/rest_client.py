@@ -39,7 +39,7 @@ class AtlassianRestAPI(object):
         url,
         username=None,
         password=None,
-        timeout=60,
+        timeout=75,
         api_root="rest/api",
         api_version="latest",
         verify_ssl=True,
