@@ -1426,14 +1426,16 @@ class Bitbucket(BitbucketBase):
         data = {"version": comment_version, "text": comment}
         return self.put(url, data=data)
 
-    def delete_pull_request_comment(
-        self,
-        project_key,
-        repository_slug,
-        pull_request_id,
-        comment_id,
-        comment_version,
-    ):
+    @deprecated
+    def delete_pull_reques_comment(self, project_key, repository_slug, pull_request_id, comment_id, comment_version):
+        """
+        Typo will be removed
+        """
+        return self.delete_pull_request_comment(
+            project_key, repository_slug, pull_request_id, comment_id, comment_version
+        )
+
+    def delete_pull_request_comment(self, project_key, repository_slug, pull_request_id, comment_id, comment_version):
         """
         Delete a comment.
         Only the repository admin or user who created a comment may update it.

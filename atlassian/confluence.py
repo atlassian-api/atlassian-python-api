@@ -506,7 +506,7 @@ class Confluence(AtlassianRestAPI):
 
         return response.get("results")
 
-    def get_all_restrictions_for_content(self, content_id):
+    def get_all_restictions_for_content(self, content_id):
         """keep typo method"""
         log.warning("Please, be informed that is deprecated as typo naming")
         return self.get_all_restrictions_for_content(content_id=content_id)
