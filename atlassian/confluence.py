@@ -4,7 +4,7 @@ import os
 import time
 
 from requests import HTTPError
-
+from deprecated import deprecated
 from atlassian import utils
 from .errors import (
     ApiError,
@@ -506,8 +506,9 @@ class Confluence(AtlassianRestAPI):
 
         return response.get("results")
 
+    @deprecated(version="2.4.2", reason="Use get_all_restrictions_for_content()")
     def get_all_restictions_for_content(self, content_id):
-        """keep typo method"""
+        """Let's use the get_all_restrictions_for_content()"""
         log.warning("Please, be informed that is deprecated as typo naming")
         return self.get_all_restrictions_for_content(content_id=content_id)
 

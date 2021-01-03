@@ -10,7 +10,8 @@ class BitbucketCloudBase(BitbucketBase):
         """
         Init the rest api wrapper
         :param url:       The base url used for the rest api.
-        :param link:      Attribute to resolve a url based on input data. If None, no tries to receive an url from input data
+        :param link:      Attribute to resolve a url based on input data.
+                          If None, no tries to receive an url from input data
         :param *args:     The fixed arguments for the AtlassianRestApi.
         :param **kwargs:  The keyword arguments for the AtlassianRestApi.
 

@@ -217,13 +217,15 @@ class Repository(BitbucketServerBase):
     @property
     def groups(self):
         """
-        Property to access the project groups (https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp279)
+        Property to access the project groups:
+        Reference: https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp279
         """
         return self.__groups
 
     @property
     def users(self):
         """
-        Property to access the project groups (https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp285)
+        Property to access the project groups
+        Reference: https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp285
         """
         return self.__users
