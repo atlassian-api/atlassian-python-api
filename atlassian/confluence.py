@@ -1453,6 +1453,7 @@ class Confluence(AtlassianRestAPI):
         representation="storage",
         minor_edit=False,
         version_comment=None,
+        editor=None,
     ):
         """
         Update page or create a page if it is not exists
@@ -1462,6 +1463,7 @@ class Confluence(AtlassianRestAPI):
         :param representation: OPTIONAL: either Confluence 'storage' or 'wiki' markup format
         :param minor_edit: Update page without notification
         :param version_comment: Version comment
+        :param editor: OPTIONAL: v2 to be created in the new editor
         :return:
         """
         space = self.get_page_space(parent_id)
@@ -1485,6 +1487,7 @@ class Confluence(AtlassianRestAPI):
                 title=title,
                 body=body,
                 representation=representation,
+                editor=editor,
             )
 
         log.info(
