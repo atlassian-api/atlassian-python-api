@@ -31,11 +31,6 @@ From Source
 - Use :code:`pip install -r requirements.txt` to install the required packages
 - or :code:`pipenv install && pipenv install --dev`
 
-How to contribute?
-__________________
-Please, click here `Contribution Guidelines for this project`_
-
-
 Examples
 ________
 More **examples** in :code:`examples/` directory.
@@ -124,8 +119,8 @@ If you want to see the response in pretty print format JSON. Feel free for use c
     # and then print using pprint(result) instead of print(result)
     pprint(response)
 
-Development and Deployment (For contributors)
-_____________________________________________
+How to contribute?
+__________________
 First of all, I am happy for any PR requests.
 Let's fork and provide your changes :)
 See the `Contribution Guidelines for this project`_ for details on how to make changes to this library.
