@@ -1,7 +1,6 @@
 # coding=utf-8
 import json
 import os
-import tempfile
 import unittest
 from requests import Response
 
@@ -37,10 +36,8 @@ class TestConfluenceAdvancedModeCalls(unittest.TestCase):
                     username=credentials["username"],
                     password=credentials["password"],
                 )
-        except FileNotFoundError:
-            raise unittest.SkipTest("credentials.secret missing, skipping test")
         except Exception as err:
-            self.fail("[{0}]: {1}".format(self.secret_file, err))
+            raise cls.failureException("[{0}]: {1}".format(cls.secret_file, err))
 
         cls.space = "SAN"
         cls.created_pages = set()
