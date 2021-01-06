@@ -4,7 +4,7 @@
 # token and the available workspaces are returned.
 
 from requests_oauthlib import OAuth2Session
-from atlassian.bitbucket.cloud import Cloud
+from atlassian.bitbucket import Cloud
 from flask import Flask, request, redirect, session
 
 app = Flask(__name__)
@@ -52,6 +52,6 @@ def callback():
 def get_workspaces(token):
     oauth2 = {"client_id": client_id, "token": token}
 
-    bitbucket = Cloud(url="https://api.bitbucket.org/", oauth2=oauth2, cloud=True)
+    bitbucket = Cloud(oauth2=oauth2, cloud=True)
 
     return [ws.name for ws in bitbucket.workspaces.each()]
