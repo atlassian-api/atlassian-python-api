@@ -52,6 +52,6 @@ def callback():
 def get_workspaces(token):
     oauth2 = {"client_id": client_id, "token": token}
 
-    bitbucket = Cloud(oauth2=oauth2, cloud=True)
+    bitbucket = Cloud(url="https://api.bitbucket.org/", oauth2=oauth2, cloud=True)
 
     return [ws.name for ws in bitbucket.workspaces.each()]

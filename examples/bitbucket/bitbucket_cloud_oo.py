@@ -4,7 +4,7 @@ from textwrap import indent
 
 from atlassian.bitbucket import Cloud
 
-cloud = Cloud(username="admin", password="admin")
+cloud = Cloud(url="https://api.bitbucket.org/", username="admin", password="admin")
 
 index = 0
 for w in cloud.workspaces.each():
