@@ -86,7 +86,7 @@ OAuth 2.0 is also supported:
 
 .. code-block:: python
 
-    from atlassian.bitbucket.cloud import Cloud
+    from atlassian.bitbucket import Cloud
 
     # token is a dictionary and must at least contain "access_token"
     # and "token_type".
@@ -95,7 +95,6 @@ OAuth 2.0 is also supported:
         "token": token}
 
     bitbucket_cloud = Cloud(
-        url='https://api.bitbucket.org/',
         oauth2=oauth2_dict)
 
     # For a detailed example see bitbucket_oauth2.py in
@@ -190,16 +189,14 @@ And to Bitbucket Cloud:
     # Log-in with E-Mail and App password not possible.
     # Username can be found here: https://bitbucket.org/account/settings/
 
-    from atlassian.bitbucket.cloud import Cloud
+    from atlassian.bitbucket import Cloud
 
     bitbucket = Cloud(
-        url='https://api.bitbucket.org/',
         username=bitbucket_email,
         password=bitbucket_password,
         cloud=True)
 
     bitbucket_app_pw = Cloud(
-        url='https://api.bitbucket.org/',
         username=bitbucket_username,
         password=bitbucket_app_password,
         cloud=True)
