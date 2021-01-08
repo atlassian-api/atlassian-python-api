@@ -305,7 +305,12 @@ class AtlassianRestAPI(object):
         params=None,
         trailing=None,
         absolute=False,
+        advanced_mode=False,
     ):
+        """
+        :param advanced_mode: bool, OPTIONAL: Return the raw response
+        :return: if advanced_mode is not set - returns dictionary. If it is set - returns raw response.
+        """
         response = self.request(
             "POST",
             path=path,
@@ -317,7 +322,7 @@ class AtlassianRestAPI(object):
             trailing=trailing,
             absolute=absolute,
         )
-        if self.advanced_mode:
+        if self.advanced_mode or advanced_mode:
             return response
         return self._response_handler(response)
 
@@ -330,7 +335,12 @@ class AtlassianRestAPI(object):
         trailing=None,
         params=None,
         absolute=False,
+        advanced_mode=False,
     ):
+        """
+        :param advanced_mode: bool, OPTIONAL: Return the raw response
+        :return: if advanced_mode is not set - returns dictionary. If it is set - returns raw response.
+        """
         response = self.request(
             "PUT",
             path=path,
@@ -341,7 +351,7 @@ class AtlassianRestAPI(object):
             trailing=trailing,
             absolute=absolute,
         )
-        if self.advanced_mode:
+        if self.advanced_mode or advanced_mode:
             return response
         return self._response_handler(response)
 
@@ -353,12 +363,15 @@ class AtlassianRestAPI(object):
         params=None,
         trailing=None,
         absolute=False,
+        advanced_mode=False,
     ):
         """
         Deletes resources at given paths.
+        :param advanced_mode: bool, OPTIONAL: Return the raw response
         :rtype: dict
         :return: Empty dictionary to have consistent interface.
         Some of Atlassian REST resources don't return any content.
+        If advanced_mode is set - returns raw response.
         """
         response = self.request(
             "DELETE",
@@ -369,6 +382,6 @@ class AtlassianRestAPI(object):
             trailing=trailing,
             absolute=absolute,
         )
-        if self.advanced_mode:
+        if self.advanced_mode or advanced_mode:
             return response
         return self._response_handler(response)
