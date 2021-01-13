@@ -776,9 +776,9 @@ class Confluence(AtlassianRestAPI):
             params["limit"] = limit
         if expand:
             params["expand"] = expand
-        if spacetype:
+        if space_type:
             params["type"] = space_type
-        if spacestatus:
+        if space_status:
             params["status"] = space_status
         return self.get(url, params=params)
 
