@@ -774,7 +774,7 @@ class Confluence(AtlassianRestAPI):
             params["limit"] = limit
         if expand:
             params["expand"] = expand
-        return (self.get(url, params=params) or {}).get("results")
+        return self.get(url, params=params)
 
     def add_comment(self, page_id, text):
         """
