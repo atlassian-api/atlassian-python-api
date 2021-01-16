@@ -1196,6 +1196,8 @@ class Jira(AtlassianRestAPI):
     def user_remove(self, username=None, account_id=None, key=None):
         """
         Remove user from Jira if this user does not have any activity
+        :param key:
+        :param account_id:
         :param username:
         :return:
         """
@@ -2205,6 +2207,7 @@ class Jira(AtlassianRestAPI):
         """
         Provide all workflows paginated (see https://developer.atlassian.com/cloud/jira/platform/rest/v2/\
 api-group-workflows/#api-rest-api-2-workflow-search-get)
+        :param expand:
         :param startAt: OPTIONAL The index of the first item to return in a page of results (page offset).
         :param maxResults: OPTIONAL The maximum number of items to return per page.
         :param workflowName: OPTIONAL The name of a workflow to return.
@@ -2373,7 +2376,6 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :return: list
         """
         url = "rest/api/2/project/{}/issuesecuritylevelscheme".format(project_id_or_key)
-        response = None
         try:
             response = self.get(url)
         except HTTPError as e:

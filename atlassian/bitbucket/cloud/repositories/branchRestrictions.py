@@ -25,6 +25,7 @@ class BranchRestrictions(BitbucketCloudBase):
         """
         Add a new branch restriction.
 
+        :param value:
         :param kind: string: One of require_tasks_to_be_completed, force, restrict_merges,
                              enforce_merge_checks, require_approvals_to_merge, delete,
                              require_all_dependencies_merged, push, require_passing_builds_to_merge,

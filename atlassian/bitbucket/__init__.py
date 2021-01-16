@@ -355,6 +355,8 @@ class Bitbucket(BitbucketBase):
     def project_keys(self, key, start=0, limit=None, filter_str=None):
         """
         Get SSH access keys added to the project
+        :param start:
+        :param limit:
         :param key: The project key
         :param filter_str:  OPTIONAL: users filter string
         :return: The list of SSH access keys
@@ -437,6 +439,9 @@ class Bitbucket(BitbucketBase):
     def project_groups(self, key, start=0, limit=None, filter_str=None):
         """
         Get Project Groups
+        :param limit:
+        :param limit:
+        :param start:
         :param key: The project key
         :param filter_str: OPTIONAL: group filter string
         :return:
@@ -574,8 +579,10 @@ class Bitbucket(BitbucketBase):
     def repo_list(self, project_key, start=0, limit=25):
         """
         Get repositories list from project
-        :param project_key: The project key
 
+        :param project_key: The project key
+        :param start:
+        :param limit:
         :return:
         """
         url = self._url_repos(project_key)
@@ -605,7 +612,6 @@ class Bitbucket(BitbucketBase):
         :param project_key: The project matching the projectKey supplied in the resource path as shown in URL.
         :type project_key: str
         :param repository_slug: Name of repository to create (i.e. "My repo").
-        :type repository: str
         :param forkable: Set the repository to be forkable or not.
         :type forkable: bool
         :param is_private: Set the repository to be private or not.
@@ -715,6 +721,8 @@ class Bitbucket(BitbucketBase):
     def repo_keys(self, project_key, repo_key, start=0, limit=None, filter_str=None):
         """
         Get SSH access keys added to the repository
+        :param start:
+        :param limit:
         :param project_key: The project key
         :param repo_key: The repository key
         :param filter_str:  OPTIONAL: users filter string
@@ -736,6 +744,8 @@ class Bitbucket(BitbucketBase):
     def repo_users(self, project_key, repo_key, start=0, limit=None, filter_str=None):
         """
         Get users who has permission in repository
+        :param start:
+        :param limit:
         :param project_key: The project key
         :param repo_key: The repository key
         :param filter_str:  OPTIONAL: Users filter string
@@ -786,6 +796,8 @@ class Bitbucket(BitbucketBase):
     def repo_groups(self, project_key, repo_key, start=0, limit=None, filter_str=None):
         """
         Get repository Groups
+        :param start:
+        :param limit:
         :param project_key: The project key
         :param repo_key: The repository key
         :param filter_str: OPTIONAL: group filter string
@@ -957,7 +969,6 @@ class Bitbucket(BitbucketBase):
         :param project_key: The project matching the projectKey supplied in the resource path as shown in URL.
         :type project_key: str
         :param repository_slug: Name of repository where branch is created (i.e. "my_repo").
-        :type repository: str
         :param name: Name of branch to create (i.e. "my_branch").
         :type name: str
         :param start_point: Name of branch to branch from.
@@ -1258,6 +1269,7 @@ class Bitbucket(BitbucketBase):
     def get_pull_requests_activities(self, project_key, repository_slug, pull_request_id, start=0, limit=None):
         """
         Get pull requests activities
+        :param limit:
         :param project_key:
         :param repository_slug:
         :param pull_request_id: the ID of the pull request within the repository
@@ -1275,6 +1287,8 @@ class Bitbucket(BitbucketBase):
     def get_pull_requests_changes(self, project_key, repository_slug, pull_request_id, start=0, limit=None):
         """
         Get pull requests changes
+        :param start:
+        :param limit:
         :param project_key:
         :param repository_slug:
         :param pull_request_id: the ID of the pull request within the repository
@@ -1291,6 +1305,8 @@ class Bitbucket(BitbucketBase):
     def get_pull_requests_commits(self, project_key, repository_slug, pull_request_id, start=0, limit=None):
         """
         Get pull requests commits
+        :param start:
+        :param limit:
         :param project_key:
         :param repository_slug:
         :param pull_request_id: the ID of the pull request within the repository
@@ -1312,6 +1328,8 @@ class Bitbucket(BitbucketBase):
     def get_pull_requests_participants(self, project_key, repository_slug, pull_request_id, start=0, limit=None):
         """
         Get all participants of a pull request
+        :param start:
+        :param limit:
         :param project_key:
         :param repository_slug:
         :param pull_request_id:
@@ -1668,6 +1686,7 @@ class Bitbucket(BitbucketBase):
     def get_changelog(self, project_key, repository_slug, ref_from, ref_to, start=0, limit=None):
         """
         Get change log between 2 refs
+        :param start:
         :param project_key:
         :param repository_slug:
         :param ref_from:
@@ -1780,6 +1799,7 @@ class Bitbucket(BitbucketBase):
         Retrieve a page of files from particular directory of a repository.
         The search is done recursively, so all files from any sub-directory of the specified directory will be returned.
         The authenticated user must have REPO_READ permission for the specified repository to call this resource.
+        :param start:
         :param project_key:
         :param repository_slug:
         :param query: the commit ID or ref (e.g. a branch or tag) to list the files at.
@@ -2241,6 +2261,7 @@ class Bitbucket(BitbucketBase):
         """
         Get all repositories in a workspace.
 
+        :param workspace:
         :param role: Filters the result based on the authenticated user's role on each repository.
                       One of: member, contributor, admin, owner
         :param query: Query string to narrow down the response.
@@ -2261,6 +2282,9 @@ class Bitbucket(BitbucketBase):
         """
         Get information about latest pipelines runs.
 
+        :param workspace:
+        :param repository_slug:
+        :param sort_by:
         :param number: number of pipelines to fetch
         :param :sort_by: optional key to sort available pipelines for
         :return: List of pipeline data
@@ -2307,6 +2331,8 @@ class Bitbucket(BitbucketBase):
     def get_pipeline(self, workspace, repository_slug, uuid):
         """
         Get information about the pipeline specified by ``uuid``.
+        :param workspace:
+        :param repository_slug:
         :param uuid: Pipeline identifier (with surrounding {}; NOT the build number)
         """
         return (
@@ -2324,6 +2350,8 @@ class Bitbucket(BitbucketBase):
     def stop_pipeline(self, workspace, repository_slug, uuid):
         """
         Stop the pipeline specified by ``uuid``.
+        :param workspace:
+        :param repository_slug:
         :param uuid: Pipeline identifier (with surrounding {}; NOT the build number)
 
         See the documentation for the meaning of response status codes.
@@ -2343,6 +2371,8 @@ class Bitbucket(BitbucketBase):
     def get_pipeline_steps(self, workspace, repository_slug, uuid):
         """
         Get information about the steps of the pipeline specified by ``uuid``.
+        :param workspace:
+        :param repository_slug:
         :param uuid: Pipeline identifier (with surrounding {}; NOT the build number)
         """
         values = []
@@ -2364,6 +2394,8 @@ class Bitbucket(BitbucketBase):
     def get_pipeline_step(self, workspace, repository_slug, pipeline_uuid, step_uuid):
         """
         Get information about a step of a pipeline, specified by respective UUIDs.
+        :param workspace:
+        :param repository_slug:
         :param pipeline_uuid: Pipeline identifier (with surrounding {}; NOT the build number)
         :param step_uuid: Step identifier (with surrounding {})
         """
@@ -2383,6 +2415,8 @@ class Bitbucket(BitbucketBase):
     def get_pipeline_step_log(self, workspace, repository_slug, pipeline_uuid, step_uuid):
         """
         Get log of a step of a pipeline, specified by respective UUIDs.
+        :param workspace:
+        :param repository_slug:
         :param pipeline_uuid: Pipeline identifier (with surrounding {}; NOT the build number)
         :param step_uuid: Step identifier (with surrounding {})
         :return: byte string log
@@ -2411,6 +2445,10 @@ class Bitbucket(BitbucketBase):
     ):
         """
         Create a new issue in the issue tracker of the given repository.
+        :param workspace:
+        :param repository_slug:
+        :param title:
+        :param description:
         :param kind: one of: bug, enhancement, proposal, task
         :param priority: one of: trivial, minor, major, critical, blocker
         """
@@ -2430,6 +2468,8 @@ class Bitbucket(BitbucketBase):
         """
         Get information about the issues tracked in the given repository. By
         default, the issues are sorted by ID in descending order.
+        :param workspace:
+        :param repository_slug:
         :param sort_by: optional key to sort available issues for
         :param query: optional query to filter available issues for. See
           https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering
@@ -2518,6 +2558,9 @@ class Bitbucket(BitbucketBase):
         """
         Add a new branch restriction.
 
+        :param workspace:
+        :param repository_slug:
+        :param value:
         :param kind: One of require_tasks_to_be_completed, force, restrict_merges,
                       enforce_merge_checks, require_approvals_to_merge, delete,
                       require_all_dependencies_merged, push, require_passing_builds_to_merge,
@@ -2614,6 +2657,8 @@ class Bitbucket(BitbucketBase):
         Add user as default reviewer to the repository.
         Can safely be called multiple times with the same user, only adds once.
 
+        :param workspace:
+        :param repository_slug:
         :param user: The username or account UUID to add as default_reviewer.
         """
         return (
@@ -2653,6 +2698,8 @@ class Bitbucket(BitbucketBase):
         """
         Check if the user is a default reviewer of the repository.
 
+        :param workspace:
+        :param repository_slug:
         :param user: The username or account UUID to check.
         :return: True if present, False if not.
         """
