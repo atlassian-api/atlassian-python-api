@@ -3,5 +3,4 @@ requests
 six
 oauthlib
 requests_oauthlib
-kerberos; platform_system!='Windows'
-kerberos-sspi; platform_system=='Windows'
+requests-kerberos

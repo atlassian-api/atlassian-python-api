@@ -87,21 +87,10 @@ class AtlassianRestAPI(object):
     def _create_basic_session(self, username, password):
         self._session.auth = (username, password)
 
-    def _create_kerberos_session(self, kerberos_service):
-        try:
-            import kerberos as kerb
-        except ImportError as e:
-            log.debug(e)
-            try:
-                import kerberos_sspi as kerb
-            except ImportError:
-                raise ImportError("No kerberos implementation available")
-        __, krb_context = kerb.authGSSClientInit(kerberos_service)
-        kerb.authGSSClientStep(krb_context, "")
-        auth_header = "Negotiate " + kerb.authGSSClientResponse(krb_context)
-        self._update_header("Authorization", auth_header)
-        response = self._session.get(self.url, verify=self.verify_ssl)
-        response.raise_for_status()
+    def _create_kerberos_session(self, kerberos_dict):
+        from requests_kerberos import HTTPKerberosAuth, OPTIONAL
+
+        self._session.auth = HTTPKerberosAuth(mutual_authentication=OPTIONAL)
 
     def _create_oauth_session(self, oauth_dict):
         oauth = OAuth1(
