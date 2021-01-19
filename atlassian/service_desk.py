@@ -466,8 +466,14 @@ class ServiceDesk(AtlassianRestAPI):
         """
         url = "rest/servicedeskapi/servicedesk/{}/attachTemporaryFile".format(service_desk_id)
 
+        # no application/json content type and an additional X-Atlassian-Token header
+        # https://docs.atlassian.com/jira-servicedesk/REST/4.14.1/#servicedeskapi/servicedesk/{serviceDeskId}/attachTemporaryFile-attachTemporaryFile
+        experimental_headers = self.experimental_headers.copy()
+        del experimental_headers['Content-Type']
+        experimental_headers['X-Atlassian-Token'] = 'no-check'
+            
         with open(filename, "rb") as file:
-            result = self.post(path=url, headers=self.experimental_headers, files={"file": file}).get(
+            result = self.post(path=url, headers=experimental_headers, files={"file": file}).get(
                 "temporaryAttachments"
             )
             temp_attachment_id = result[0].get("temporaryAttachmentId")
