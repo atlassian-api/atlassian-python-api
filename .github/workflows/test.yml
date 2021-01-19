@@ -22,6 +22,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: Build Docker
+      run: |
+        make docker-qa-build PYTHON_VERSION=${{matrix.python-version}}
     - name: Run Docker
       run: |
         .github/bump_version ./ minor > atlassian/VERSION
