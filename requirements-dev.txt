@@ -5,3 +5,5 @@ pytest-cov
 flake8
 black
 tox
+coverage
+codecov
