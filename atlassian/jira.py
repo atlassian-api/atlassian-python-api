@@ -885,11 +885,13 @@ class Jira(AtlassianRestAPI):
 
         return self.put(url, data=data)
 
-    def create_issue(self, fields, update_history=False):
+    def create_issue(self, fields, update_history=False, update=None):
         """
         Creates an issue or a sub-task from a JSON representation
         :param fields: JSON data
                 mandatory keys are issuetype, summary and project
+        :param update: JSON data
+                Use it to link issues or update worklog
         :param update_history: bool (if true then the user's project history is updated)
         :return:
             example:
@@ -897,10 +899,23 @@ class Jira(AtlassianRestAPI):
                               project = dict(key='APA'),
                               issuetype = dict(name='Story')
                               )
-                jira.create_issue(fields=fields)
+                update = dict(issuelinks={
+                    "add": {
+                        "type": {
+                            "name": "Child-Issue"
+                            },
+                        "inwardIssue": {
+                            "key": "ISSUE-KEY"
+                            }
+                        }
+                    }
+                )
+                jira.create_issue(fields=fields, update=update)
         """
         url = "rest/api/2/issue"
         data = {"fields": fields}
+        if update:
+            data["update"] = update
         params = {}
 
         if update_history is True:
