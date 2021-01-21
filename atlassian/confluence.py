@@ -846,7 +846,7 @@ class Confluence(AtlassianRestAPI):
                 "comment": comment,
                 "minorEdit": "true",
             }
-            headers = {"X-Atlassian-Token": "nocheck", "Accept": "application/json"}
+            headers = {"X-Atlassian-Token": "no-check", "Accept": "application/json"}
             path = "rest/api/content/{page_id}/child/attachment".format(page_id=page_id)
             # Check if there is already a file with the same name
             attachments = self.get(path=path, headers=headers, params={"filename": name})
