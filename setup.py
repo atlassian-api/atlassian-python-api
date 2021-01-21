@@ -26,12 +26,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=["deprecated", "requests", "six", "oauthlib", "requests_oauthlib"],
-    extras_require={
-        "kerberos": [
-            'kerberos-sspi ; platform_system=="Windows"',
-            'kerberos ; platform_system!="Windows"',
-        ]
-    },
+    extras_require={"kerberos": ['requests-kerberos']},
     platforms="Platform Independent",
     classifiers=[
         "Development Status :: 4 - Beta",
