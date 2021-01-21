@@ -87,7 +87,7 @@ class AtlassianRestAPI(object):
     def _create_basic_session(self, username, password):
         self._session.auth = (username, password)
 
-    def _create_kerberos_session(self, kerberos_dict):
+    def _create_kerberos_session(self, _):
         from requests_kerberos import HTTPKerberosAuth, OPTIONAL
 
         self._session.auth = HTTPKerberosAuth(mutual_authentication=OPTIONAL)
