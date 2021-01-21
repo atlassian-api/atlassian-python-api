@@ -105,27 +105,25 @@ Or Kerberos *(installation with kerberos extra necessary)*:
 
 .. code-block:: python
 
-    kerberos_service = 'HTTP/jira.localhost@YOUR.DOMAIN.COM'
-
     jira = Jira(
         url='http://localhost:8080',
-        kerberos=kerberos_service)
+        kerberos={})
 
     confluence = Confluence(
         url='http://localhost:8090',
-        kerberos=kerberos_service)
+        kerberos={})
 
     bitbucket = Bitbucket(
         url='http://localhost:7990',
-        kerberos=kerberos_service)
+        kerberos={})
 
     service_desk = ServiceDesk(
         url='http://localhost:8080',
-        kerberos=kerberos_service)
+        kerberos={})
 
     xray = Xray(
         url='http://localhost:8080',
-        kerberos=kerberos_service)
+        kerberos={})
 
 Or reuse cookie file:
 
