@@ -2431,6 +2431,39 @@ class Confluence(AtlassianRestAPI):
         status is CHECKED or UNCHECKED
         :return:
         """
-        url = "/rest/inlinetasks/1/task/{page_id}/{task_id}/".format(page_id=page_id, task_id=task_id)
+        url = "rest/inlinetasks/1/task/{page_id}/{task_id}/".format(page_id=page_id, task_id=task_id)
         data = {"status": status, "trigger": "VIEW_PAGE"}
         return self.post(url, json=data)
+
+    def get_jira_metadata(self, page_id):
+        """
+        Get linked Jira ticket metadata
+        PRIVATE method
+        :param page_id: Page Id
+        :return:
+        """
+        url = "rest/jira-metadata/1.0/metadata"
+        params = {"pageId": page_id}
+        return self.get(url, params=params)
+
+    def get_jira_metadata_aggregated(self, page_id):
+        """
+        Get linked Jira ticket aggregated metadata
+        PRIVATE method
+        :param page_id: Page Id
+        :return:
+        """
+        url = "rest/jira-metadata/1.0/metadata/aggregate"
+        params = {"pageId": page_id}
+        return self.get(url, params=params)
+
+    def clean_jira_metadata_cache(self, global_id):
+        """
+        Clean cache for linked Jira app link
+        PRIVATE method
+        :param global_id: ID of Jira app link
+        :return:
+        """
+        url = "rest/jira-metadata/1.0/metadata/cache"
+        params = {"globalId": global_id}
+        return self.delete(url, params=params)
