@@ -2164,17 +2164,25 @@ class Jira(AtlassianRestAPI):
             params["expand"] = expand
         return self.get("rest/api/2/search", params=params)
 
-    def csv(self, jql, limit=1000, all_fields=True):
+    def csv(self, jql, limit=1000, all_fields=True, start=None, delimiter=None):
         """
             Get issues from jql search result with ALL or CURRENT fields
             default will be to return all fields
         :param jql: JQL query
         :param limit: max results in the output file
         :param all_fields: To return all fields or current fields only
+        :param start: index value
+        :param delimiter:
         :return: CSV file
         """
 
-        params = {"tempMax": limit, "jqlQuery": jql}
+        params = {"jqlQuery": jql}
+        if limit:
+            params["tempMax"] = limit
+        if start:
+            params["pager/start"] = start
+        if delimiter:
+            params["delimiter"] = delimiter
         # fmt: off
         if all_fields:
             url = "sr/jira.issueviews:searchrequest-csv-all-fields/temp/SearchRequest.csv"
@@ -2186,6 +2194,65 @@ class Jira(AtlassianRestAPI):
             params=params,
             not_json_response=True,
             headers={"Accept": "application/csv"},
+        )
+
+    def excel(self, jql, limit=1000, all_fields=True, start=None):
+        """
+            Get issues from jql search result with ALL or CURRENT fields
+            default will be to return all fields
+        :param jql: JQL query
+        :param limit: max results in the output file
+        :param all_fields: To return all fields or current fields only
+        :param start: index value
+        :param delimiter:
+        :return: CSV file
+        """
+
+        params = {"jqlQuery": jql}
+        if limit:
+            params["tempMax"] = limit
+        if start:
+            params["pager/start"] = start
+        # fmt: off
+        if all_fields:
+            url = "sr/jira.issueviews:searchrequest-excel-all-fields/temp/SearchRequest.xls"
+        else:
+            url = "sr/jira.issueviews:searchrequest-excel-current-fields/temp/SearchRequest.xls"
+        # fmt: on
+        return self.get(
+            url,
+            params=params,
+            not_json_response=True,
+            headers={"Accept": "application/vnd.ms-excel"},
+        )
+
+    def export_html(self, jql, limit=None, all_fields=True, start=None):
+        """
+        Get issues from jql search result with ALL or CURRENT fields
+            default will be to return all fields
+        :param jql: JQL query
+        :param limit: max results in the output file
+        :param all_fields: To return all fields or current fields only
+        :param start: index value
+        :return: HTML file
+        """
+
+        params = {"jqlQuery": jql}
+        if limit:
+            params["tempMax"] = limit
+        if start:
+            params["pager/start"] = start
+        # fmt: off
+        if all_fields:
+            url = "sr/jira.issueviews:searchrequest-html-all-fields/temp/SearchRequest.html"
+        else:
+            url = "sr/jira.issueviews:searchrequest-html-current-fields/temp/SearchRequest.html"
+        # fmt: on
+        return self.get(
+            url,
+            params=params,
+            not_json_response=True,
+            headers={"Accept": "application/xhtml+xml"},
         )
 
     def get_all_priorities(self):
