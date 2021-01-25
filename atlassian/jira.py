@@ -1570,6 +1570,19 @@ class Jira(AtlassianRestAPI):
         }
         return self.post("rest/api/2/version", data=payload)
 
+    def delete_version(self, version, moved_fixed=None, move_affected=None):
+        """
+        Delete version from the project
+        :param int version: the version id to delete
+        :param int moved_fixed: The version to set fixVersion to on issues where the deleted version is the fix version.
+                                If null then the fixVersion is removed.
+        :param int move_affected: The version to set affectedVersion to on issues where the deleted version is
+                                  the affected version, If null then the affectedVersion is removed.
+        :return:
+        """
+        payload = {"moveFixIssuesTo": moved_fixed, "moveAffectedIssuesTo": move_affected}
+        return self.delete("rest/api/2/version/{}".format(version), data=payload)
+
     def get_project_roles(self, project_key):
         """
         Provide associated project roles
