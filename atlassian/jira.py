@@ -2204,7 +2204,6 @@ class Jira(AtlassianRestAPI):
         :param limit: max results in the output file
         :param all_fields: To return all fields or current fields only
         :param start: index value
-        :param delimiter:
         :return: CSV file
         """
 
