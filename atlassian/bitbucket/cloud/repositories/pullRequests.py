@@ -415,3 +415,15 @@ class Build(BitbucketCloudBase):
     def commit(self):
         """Returns the hash key of the commit"""
         return self.get_data("commit")["hash"]
+
+    @property
+    def website(self):
+        """Returns the url to the builds webpage.
+        This url points to the build's frontend website (Pipelines, Jenkins ...)
+        """
+        return self.get_data("url")
+
+    @property
+    def refname(self):
+        """Returns the refname"""
+        return self.get_data("refname")

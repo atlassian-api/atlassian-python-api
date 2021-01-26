@@ -6,7 +6,7 @@ from datetime import datetime
 from atlassian import Bitbucket
 from atlassian.bitbucket import Cloud
 from atlassian.bitbucket.cloud.common.users import User
-from atlassian.bitbucket.cloud.repositories.pullRequests import Participant, PullRequest
+from atlassian.bitbucket.cloud.repositories.pullRequests import Participant, PullRequest, Build
 
 BITBUCKET = None
 try:
@@ -289,3 +289,18 @@ class TestPullRequests:
         )
         assert pr.id == 1
         assert len(list(pr.reviewers())) == 3
+
+    def test_builds(self, tc1):
+        builds = list(tc1.builds())
+        assert len(builds) == 1
+
+        build = builds[0]
+        assert isinstance(build, Build)
+        assert build.successful
+        assert build.name == "Build #5"
+        assert build.description == "This commit looks good."
+        assert build.key == "12345"
+        assert _datetimetostr(build.created_on) == _datetimetostr(datetime(2021, 1, 22, 14, 47, 16, 366063))
+        assert build.commit == "1fbd047cd99a"
+        assert build.refname == "feature/abranch"
+        assert build.website == "http://urltothebui.ld/5"
