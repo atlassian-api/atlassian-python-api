@@ -219,6 +219,14 @@ class PullRequest(BitbucketCloudBase):
 
         return
 
+    def builds(self):
+        """Returns the latest Build objects for the pull request."""
+        builds = [b for b in self.statuses() if b["type"] == "build"]
+        for build in builds:
+            yield Build(build, **self._new_session_args)
+
+        return
+
     def comment(self, raw_message):
         """
         Commenting the pull request in raw format
@@ -347,3 +355,63 @@ class Participant(BitbucketCloudBase):
     def participated_on(self):
         """ time of last participation """
         return self.get_time("participated_on")
+
+
+class Build(BitbucketCloudBase):
+    STATE_FAILED = "FAILED"
+    STATE_INPROGRESS = "INPROGRESS"
+    STATE_STOPPED = "STOPPED"
+    STATE_SUCCESSFUL = "SUCCESSFUL"
+
+    def __init__(self, data, *args, **kwargs) -> None:
+        super(Build, self).__init__(None, None, *args, data=data, expected_type="build", **kwargs)
+
+    @property
+    def key(self):
+        """Key of the build"""
+        return self.get_data("key")
+
+    @property
+    def name(self):
+        """Name of the build"""
+        return self.get_data("name")
+
+    @property
+    def description(self):
+        """Build description"""
+        return self.get_data("description")
+
+    @property
+    def failed(self):
+        """True if the build was stopped"""
+        return self.get_data("state") == self.STATE_FAILED
+
+    @property
+    def inprogress(self):
+        """True if the build is inprogress"""
+        return self.get_data("state") == self.STATE_INPROGRESS
+
+    @property
+    def successful(self):
+        """True if the build was successful"""
+        return self.get_data("state") == self.STATE_SUCCESSFUL
+
+    @property
+    def stopped(self):
+        """True if the build was stopped"""
+        return self.get_data("state") == self.STATE_STOPPED
+
+    @property
+    def created_on(self):
+        """ time of creation """
+        return self.get_time("created_on")
+
+    @property
+    def updated_on(self):
+        """ time of last update """
+        return self.get_time("updated_on")
+
+    @property
+    def commit(self):
+        """Returns the hash key of the commit"""
+        return self.get_data("commit")["hash"]
