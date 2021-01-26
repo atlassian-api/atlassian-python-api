@@ -39,7 +39,7 @@ class AtlassianRestAPI(object):
         url,
         username=None,
         password=None,
-        timeout=60,
+        timeout=75,
         api_root="rest/api",
         api_version="latest",
         verify_ssl=True,
@@ -87,21 +87,10 @@ class AtlassianRestAPI(object):
     def _create_basic_session(self, username, password):
         self._session.auth = (username, password)
 
-    def _create_kerberos_session(self, kerberos_service):
-        try:
-            import kerberos as kerb
-        except ImportError as e:
-            log.debug(e)
-            try:
-                import kerberos_sspi as kerb
-            except ImportError:
-                raise ImportError("No kerberos implementation available")
-        __, krb_context = kerb.authGSSClientInit(kerberos_service)
-        kerb.authGSSClientStep(krb_context, "")
-        auth_header = "Negotiate " + kerb.authGSSClientResponse(krb_context)
-        self._update_header("Authorization", auth_header)
-        response = self._session.get(self.url, verify=self.verify_ssl)
-        response.raise_for_status()
+    def _create_kerberos_session(self, _):
+        from requests_kerberos import HTTPKerberosAuth, OPTIONAL
+
+        self._session.auth = HTTPKerberosAuth(mutual_authentication=OPTIONAL)
 
     def _create_oauth_session(self, oauth_dict):
         oauth = OAuth1(
@@ -305,7 +294,12 @@ class AtlassianRestAPI(object):
         params=None,
         trailing=None,
         absolute=False,
+        advanced_mode=False,
     ):
+        """
+        :param advanced_mode: bool, OPTIONAL: Return the raw response
+        :return: if advanced_mode is not set - returns dictionary. If it is set - returns raw response.
+        """
         response = self.request(
             "POST",
             path=path,
@@ -317,7 +311,7 @@ class AtlassianRestAPI(object):
             trailing=trailing,
             absolute=absolute,
         )
-        if self.advanced_mode:
+        if self.advanced_mode or advanced_mode:
             return response
         return self._response_handler(response)
 
@@ -330,7 +324,12 @@ class AtlassianRestAPI(object):
         trailing=None,
         params=None,
         absolute=False,
+        advanced_mode=False,
     ):
+        """
+        :param advanced_mode: bool, OPTIONAL: Return the raw response
+        :return: if advanced_mode is not set - returns dictionary. If it is set - returns raw response.
+        """
         response = self.request(
             "PUT",
             path=path,
@@ -341,7 +340,7 @@ class AtlassianRestAPI(object):
             trailing=trailing,
             absolute=absolute,
         )
-        if self.advanced_mode:
+        if self.advanced_mode or advanced_mode:
             return response
         return self._response_handler(response)
 
@@ -353,12 +352,15 @@ class AtlassianRestAPI(object):
         params=None,
         trailing=None,
         absolute=False,
+        advanced_mode=False,
     ):
         """
         Deletes resources at given paths.
+        :param advanced_mode: bool, OPTIONAL: Return the raw response
         :rtype: dict
         :return: Empty dictionary to have consistent interface.
         Some of Atlassian REST resources don't return any content.
+        If advanced_mode is set - returns raw response.
         """
         response = self.request(
             "DELETE",
@@ -369,6 +371,6 @@ class AtlassianRestAPI(object):
             trailing=trailing,
             absolute=absolute,
         )
-        if self.advanced_mode:
+        if self.advanced_mode or advanced_mode:
             return response
         return self._response_handler(response)

@@ -1,4 +1,4 @@
-responses['{"data": {"name": "New name"}}'] = {
+responses['{"name": "New name"}'] = {
     "key": "PRJ",
     "id": 1,
     "name": "New name",
@@ -7,7 +7,7 @@ responses['{"data": {"name": "New name"}}'] = {
     "type": "NORMAL",
     "links": {"self": [{"href": "bitbucket/server/rest/api/1.0/projects/PRJ"}]},
 }
-responses['{"data": {"key": "NEWKEY"}}'] = {
+responses['{"key": "NEWKEY"}'] = {
     "key": "NEWKEY",
     "id": 1,
     "name": "My Cool Project",
@@ -16,7 +16,7 @@ responses['{"data": {"key": "NEWKEY"}}'] = {
     "type": "NORMAL",
     "links": {"self": [{"href": "bitbucket/server/rest/api/1.0/projects/NEWKEY"}]},
 }
-responses['{"data": {"description": "New description."}}'] = {
+responses['{"description": "New description."}'] = {
     "key": "PRJ",
     "id": 1,
     "name": "My Cool Project",
@@ -25,7 +25,7 @@ responses['{"data": {"description": "New description."}}'] = {
     "type": "NORMAL",
     "links": {"self": [{"href": "bitbucket/server/rest/api/1.0/projects/PRJ"}]},
 }
-responses['{"data": {"public": false}}'] = {
+responses['{"public": false}'] = {
     "key": "PRJ",
     "id": 1,
     "name": "My Cool Project",

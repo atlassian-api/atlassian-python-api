@@ -14,7 +14,7 @@ def mockup_server():
     return SERVER
 
 
-def request_mookup(*args, **kwargs):
+def request_mockup(*args, **kwargs):
     method = kwargs["method"]
     url = kwargs["url"]
     if not url.startswith(SERVER + "/"):
@@ -72,4 +72,4 @@ def request_mookup(*args, **kwargs):
 
 
 Session.request = Mock()
-Session.request.side_effect = request_mookup
+Session.request.side_effect = request_mockup

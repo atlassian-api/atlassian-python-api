@@ -885,11 +885,13 @@ class Jira(AtlassianRestAPI):
 
         return self.put(url, data=data)
 
-    def create_issue(self, fields, update_history=False):
+    def create_issue(self, fields, update_history=False, update=None):
         """
         Creates an issue or a sub-task from a JSON representation
         :param fields: JSON data
                 mandatory keys are issuetype, summary and project
+        :param update: JSON data
+                Use it to link issues or update worklog
         :param update_history: bool (if true then the user's project history is updated)
         :return:
             example:
@@ -897,10 +899,23 @@ class Jira(AtlassianRestAPI):
                               project = dict(key='APA'),
                               issuetype = dict(name='Story')
                               )
-                jira.create_issue(fields=fields)
+                update = dict(issuelinks={
+                    "add": {
+                        "type": {
+                            "name": "Child-Issue"
+                            },
+                        "inwardIssue": {
+                            "key": "ISSUE-KEY"
+                            }
+                        }
+                    }
+                )
+                jira.create_issue(fields=fields, update=update)
         """
         url = "rest/api/2/issue"
         data = {"fields": fields}
+        if update:
+            data["update"] = update
         params = {}
 
         if update_history is True:
@@ -1339,7 +1354,7 @@ class Jira(AtlassianRestAPI):
         url="rest/scriptrunner/latest/custom/disableUser",
         param="userName",
     ):
-        """The disable method throw own rest enpoint"""
+        """The disable method throw own rest endpoint"""
         url = "{}?{}={}".format(url, param, username)
         return self.get(path=url)
 
@@ -1569,6 +1584,19 @@ class Jira(AtlassianRestAPI):
             "projectId": project_id,
         }
         return self.post("rest/api/2/version", data=payload)
+
+    def delete_version(self, version, moved_fixed=None, move_affected=None):
+        """
+        Delete version from the project
+        :param int version: the version id to delete
+        :param int moved_fixed: The version to set fixVersion to on issues where the deleted version is the fix version.
+                                If null then the fixVersion is removed.
+        :param int move_affected: The version to set affectedVersion to on issues where the deleted version is
+                                  the affected version, If null then the affectedVersion is removed.
+        :return:
+        """
+        payload = {"moveFixIssuesTo": moved_fixed, "moveAffectedIssuesTo": move_affected}
+        return self.delete("rest/api/2/version/{}".format(version), data=payload)
 
     def get_project_roles(self, project_key):
         """
@@ -2149,17 +2177,25 @@ class Jira(AtlassianRestAPI):
             params["expand"] = expand
         return self.get("rest/api/2/search", params=params)
 
-    def csv(self, jql, limit=1000, all_fields=True):
+    def csv(self, jql, limit=1000, all_fields=True, start=None, delimiter=None):
         """
             Get issues from jql search result with ALL or CURRENT fields
             default will be to return all fields
         :param jql: JQL query
         :param limit: max results in the output file
         :param all_fields: To return all fields or current fields only
+        :param start: index value
+        :param delimiter:
         :return: CSV file
         """
 
-        params = {"tempMax": limit, "jqlQuery": jql}
+        params = {"jqlQuery": jql}
+        if limit:
+            params["tempMax"] = limit
+        if start:
+            params["pager/start"] = start
+        if delimiter:
+            params["delimiter"] = delimiter
         # fmt: off
         if all_fields:
             url = "sr/jira.issueviews:searchrequest-csv-all-fields/temp/SearchRequest.csv"
@@ -2171,6 +2207,64 @@ class Jira(AtlassianRestAPI):
             params=params,
             not_json_response=True,
             headers={"Accept": "application/csv"},
+        )
+
+    def excel(self, jql, limit=1000, all_fields=True, start=None):
+        """
+            Get issues from jql search result with ALL or CURRENT fields
+            default will be to return all fields
+        :param jql: JQL query
+        :param limit: max results in the output file
+        :param all_fields: To return all fields or current fields only
+        :param start: index value
+        :return: CSV file
+        """
+
+        params = {"jqlQuery": jql}
+        if limit:
+            params["tempMax"] = limit
+        if start:
+            params["pager/start"] = start
+        # fmt: off
+        if all_fields:
+            url = "sr/jira.issueviews:searchrequest-excel-all-fields/temp/SearchRequest.xls"
+        else:
+            url = "sr/jira.issueviews:searchrequest-excel-current-fields/temp/SearchRequest.xls"
+        # fmt: on
+        return self.get(
+            url,
+            params=params,
+            not_json_response=True,
+            headers={"Accept": "application/vnd.ms-excel"},
+        )
+
+    def export_html(self, jql, limit=None, all_fields=True, start=None):
+        """
+        Get issues from jql search result with ALL or CURRENT fields
+            default will be to return all fields
+        :param jql: JQL query
+        :param limit: max results in the output file
+        :param all_fields: To return all fields or current fields only
+        :param start: index value
+        :return: HTML file
+        """
+
+        params = {"jqlQuery": jql}
+        if limit:
+            params["tempMax"] = limit
+        if start:
+            params["pager/start"] = start
+        # fmt: off
+        if all_fields:
+            url = "sr/jira.issueviews:searchrequest-html-all-fields/temp/SearchRequest.html"
+        else:
+            url = "sr/jira.issueviews:searchrequest-html-current-fields/temp/SearchRequest.html"
+        # fmt: on
+        return self.get(
+            url,
+            params=params,
+            not_json_response=True,
+            headers={"Accept": "application/xhtml+xml"},
         )
 
     def get_all_priorities(self):
@@ -2552,7 +2646,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         Not relevant for foreground reindex, where changeHistory is always reindexed.
         :param worklogs: Indicates that changeHistory should also be reindexed.
         Not relevant for foreground reindex, where changeHistory is always reindexed.
-        :param indexing_type: OPTIONAL: The default value for the type is BACKGROUND_PREFFERED
+        :param indexing_type: OPTIONAL: The default value for the type is BACKGROUND_PREFERRED
         :return:
         """
         params = {}
@@ -2575,7 +2669,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
                    If Jira fails to finish the background reindexing, respond with 409 Conflict (error message).
         BACKGROUND_PREFERRED  - If possible do a background reindexing.
                    If it's not possible (due to an inconsistent index), do a foreground reindexing.
-        :param indexing_type: OPTIONAL: The default value for the type is BACKGROUND_PREFFERED
+        :param indexing_type: OPTIONAL: The default value for the type is BACKGROUND_PREFERRED
         :return:
         """
         return self.reindex(indexing_type=indexing_type)
@@ -2888,7 +2982,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
 
     def tempo_timesheets_get_team_utilization(self, team_id, date_from, date_to=None, group_by=None):
         """
-        GEt team utulization. Response in json
+        Get team utilization. Response in json
         :param team_id:
         :param date_from:
         :param date_to:

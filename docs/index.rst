@@ -49,45 +49,10 @@ Add a connection:
         username='admin',
         password='admin')
 
-Key/Cert Based authentication
------------------------------
+Other authentication methods
+----------------------------
 
-Add a connection using key/cert based authentication:
-
-.. code-block:: python
-
-    from atlassian import Jira
-    from atlassian import Confluence
-    from atlassian import Bitbucket
-    from atlassian import ServiceDesk
-    from atlassian import Xray
-
-    jira = Jira(
-        url='http://localhost:8080',
-        key='/path/to/key',
-        cert='/path/to/cert')
-
-    confluence = Confluence(
-        url='http://localhost:8090',
-        key='/path/to/key',
-        cert='/path/to/cert')
-
-    bitbucket = Bitbucket(
-        url='http://localhost:7990',
-        key='/path/to/key',
-        cert='/path/to/cert')
-
-    service_desk = ServiceDesk(
-        url='http://localhost:8080',
-        key='/path/to/key',
-        cert='/path/to/cert')
-
-    xray = Xray(
-        url='http://localhost:8080',
-        key='/path/to/key',
-        cert='/path/to/cert')
-
-Alternatively OAuth can be used:
+Further authentication methods are available. For example OAuth can be used:
 
 .. code-block:: python
 
@@ -121,7 +86,7 @@ OAuth 2.0 is also supported:
 
 .. code-block:: python
 
-    from atlassian.bitbucket.cloud import Cloud
+    from atlassian.bitbucket import Cloud
 
     # token is a dictionary and must at least contain "access_token"
     # and "token_type".
@@ -130,7 +95,6 @@ OAuth 2.0 is also supported:
         "token": token}
 
     bitbucket_cloud = Cloud(
-        url='https://api.bitbucket.org/',
         oauth2=oauth2_dict)
 
     # For a detailed example see bitbucket_oauth2.py in
@@ -141,27 +105,25 @@ Or Kerberos *(installation with kerberos extra necessary)*:
 
 .. code-block:: python
 
-    kerberos_service = 'HTTP/jira.localhost@YOUR.DOMAIN.COM'
-
     jira = Jira(
         url='http://localhost:8080',
-        kerberos=kerberos_service)
+        kerberos={})
 
     confluence = Confluence(
         url='http://localhost:8090',
-        kerberos=kerberos_service)
+        kerberos={})
 
     bitbucket = Bitbucket(
         url='http://localhost:7990',
-        kerberos=kerberos_service)
+        kerberos={})
 
     service_desk = ServiceDesk(
         url='http://localhost:8080',
-        kerberos=kerberos_service)
+        kerberos={})
 
     xray = Xray(
         url='http://localhost:8080',
-        kerberos=kerberos_service)
+        kerberos={})
 
 Or reuse cookie file:
 
@@ -225,16 +187,14 @@ And to Bitbucket Cloud:
     # Log-in with E-Mail and App password not possible.
     # Username can be found here: https://bitbucket.org/account/settings/
 
-    from atlassian.bitbucket.cloud import Cloud
+    from atlassian.bitbucket import Cloud
 
     bitbucket = Cloud(
-        url='https://api.bitbucket.org/',
         username=bitbucket_email,
         password=bitbucket_password,
         cloud=True)
 
     bitbucket_app_pw = Cloud(
-        url='https://api.bitbucket.org/',
         username=bitbucket_username,
         password=bitbucket_app_password,
         cloud=True)

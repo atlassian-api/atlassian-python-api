@@ -13,13 +13,13 @@ if [[ ( -z ${1+x} ) || ( -z ${2+x} ) ]]; then
 
         Expects arguments:
         - repo: the relative/absolute path to the repository
-        - increment: (major|minor|patch) part of the version to increase, default is patch
+        - increment: (major|minor|patch) part of the version to INCREASE, default is patch
 EOF
     exit 1
 fi
 
-repo_path=${1}
-increase=${2:patch}
+REPO_PATH=${1}
+INCREASE=${2:patch}
 
 
 function autoversion(){
@@ -30,7 +30,7 @@ function autoversion(){
         BUILD_NUMBER="0"  # In the developer machine, this will build x.y.z.dev0
     fi
 
-    cd ${repo_path}
+    cd ${REPO_PATH} || exit 1
 
     git fetch --tags 2>/dev/null
     last_tag=$(git tag | sort -Vr | head -1)
@@ -40,7 +40,7 @@ function autoversion(){
         echo "0.1.0.dev${BUILD_NUMBER}"
     else
         a=( ${last_tag//./ } )   # replace points, split into array
-        case ${increase} in
+        case ${INCREASE} in
           patch)
             ((a[2]++))
             ;;

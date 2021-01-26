@@ -1,6 +1,8 @@
 responses['{"content": {"raw": "hello world"}}'] = {
     "links": {
-        "self": {"href": "repositories/TestWorkspace1/testrepository1/pullrequests/1/comments/196230119"},
+        "self": {
+            "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/pullrequests/1/comments/196230119"
+        },
         "html": {
             "href": "https://bitbucket.org/TestWorkspace1/testrepository1/pull-requests/1/_/diff#comment-196230119"
         },
@@ -10,7 +12,7 @@ responses['{"content": {"raw": "hello world"}}'] = {
         "type": "pullrequest",
         "id": 1,
         "links": {
-            "self": {"href": "repositories/TestWorkspace1/testrepository1/pullrequests/1"},
+            "self": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/pullrequests/1"},
             "html": {"href": "https://bitbucket.org/TestWorkspace1/testrepository1/pull-requests/1"},
         },
         "title": "PRTitle",

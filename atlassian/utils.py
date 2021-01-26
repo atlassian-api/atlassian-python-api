@@ -330,7 +330,10 @@ def parse_cookie_file(cookie_file):
     cookies = {}
     with open(cookie_file, "r") as fp:
         for line in fp:
-            if not re.match(r"^#", line):
+            if not re.match(r"^(#|$)", line):
                 line_fields = line.strip().split("\t")
-                cookies[line_fields[5]] = line_fields[6]
+                try:
+                    cookies[line_fields[5]] = line_fields[6]
+                except IndexError as e:
+                    log.error(e)
     return cookies

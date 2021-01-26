@@ -11,22 +11,24 @@ responses[None] = {
     "type": "pullrequest",
     "description": "PRDescription",
     "links": {
-        "decline": {"href": "repositories/TestWorkspace1/testrepository1/pullrequests/1/decline"},
+        "decline": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/pullrequests/1/decline"},
         "diffstat": {
-            "href": "repositories/TestWorkspace1/testrepository1/diffstat/TestWorkspace1/testrepository1:16182c4698fb%0D1fbd047cd123?from_pullrequest_id=1"
+            "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/diffstat/TestWorkspace1/testrepository1:16182c4698fb%0D1fbd047cd123?from_pullrequest_id=1"
         },
-        "commits": {"href": "repositories/TestWorkspace1/testrepository1/pullrequests/1/commits"},
-        "self": {"href": "repositories/TestWorkspace1/testrepository1/pullrequests/1"},
-        "comments": {"href": "repositories/TestWorkspace1/testrepository1/pullrequests/1/comments"},
-        "merge": {"href": "repositories/TestWorkspace1/testrepository1/pullrequests/1/merge"},
+        "commits": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/pullrequests/1/commits"},
+        "self": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/pullrequests/1"},
+        "comments": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/pullrequests/1/comments"},
+        "merge": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/pullrequests/1/merge"},
         "html": {"href": "https://bitbucket.org/TestWorkspace1/testrepository1/pull-requests/1"},
-        "activity": {"href": "repositories/TestWorkspace1/testrepository1/pullrequests/1/activity"},
-        "request-changes": {"href": "repositories/TestWorkspace1/testrepository1/pullrequests/1/request-changes"},
-        "diff": {
-            "href": "repositories/TestWorkspace1/testrepository1/diff/TestWorkspace1/testrepository1:16182c4698fb%0D1fbd047cd123?from_pullrequest_id=1"
+        "activity": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/pullrequests/1/activity"},
+        "request-changes": {
+            "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/pullrequests/1/request-changes"
         },
-        "approve": {"href": "repositories/TestWorkspace1/testrepository1/pullrequests/1/approve"},
-        "statuses": {"href": "repositories/TestWorkspace1/testrepository1/pullrequests/1/statuses"},
+        "diff": {
+            "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/diff/TestWorkspace1/testrepository1:16182c4698fb%0D1fbd047cd123?from_pullrequest_id=1"
+        },
+        "approve": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/pullrequests/1/approve"},
+        "statuses": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/pullrequests/1/statuses"},
     },
     "title": "PRTitle",
     "close_source_branch": true,
@@ -80,13 +82,13 @@ responses[None] = {
             "hash": "1fbd047cd99a",
             "type": "commit",
             "links": {
-                "self": {"href": "repositories/TestWorkspace1/testrepository1/commit/1fbd047cd99a"},
+                "self": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/commit/1fbd047cd99a"},
                 "html": {"href": "https://bitbucket.org/TestWorkspace1/testrepository1/commits/1fbd047cd99a"},
             },
         },
         "repository": {
             "links": {
-                "self": {"href": "repositories/TestWorkspace1/testrepository1"},
+                "self": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1"},
                 "html": {"href": "https://bitbucket.org/TestWorkspace1/testrepository1"},
                 "avatar": {"href": "https://bytebucket.org/ravatar/%7BRepoUUID%7D?ts=default"},
             },
@@ -104,13 +106,13 @@ responses[None] = {
             "hash": "16182c4123fb",
             "type": "commit",
             "links": {
-                "self": {"href": "repositories/TestWorkspace1/testrepository1/commit/16182c4123fb"},
+                "self": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/commit/16182c4123fb"},
                 "html": {"href": "https://bitbucket.org/TestWorkspace1/testrepository1/commits/16182c4123fb"},
             },
         },
         "repository": {
             "links": {
-                "self": {"href": "repositories/TestWorkspace1/testrepository1"},
+                "self": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1"},
                 "html": {"href": "https://bitbucket.org/TestWorkspace1/testrepository1"},
                 "avatar": {"href": "https://bytebucket.org/ravatar/%7BRepoUUID%7D?ts=default"},
             },

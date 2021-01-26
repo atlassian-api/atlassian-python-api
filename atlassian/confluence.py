@@ -4,7 +4,7 @@ import os
 import time
 
 from requests import HTTPError
-
+from deprecated import deprecated
 from atlassian import utils
 from .errors import (
     ApiError,
@@ -506,8 +506,9 @@ class Confluence(AtlassianRestAPI):
 
         return response.get("results")
 
+    @deprecated(version="2.4.2", reason="Use get_all_restrictions_for_content()")
     def get_all_restictions_for_content(self, content_id):
-        """keep typo method"""
+        """Let's use the get_all_restrictions_for_content()"""
         log.warning("Please, be informed that is deprecated as typo naming")
         return self.get_all_restrictions_for_content(content_id=content_id)
 
@@ -757,12 +758,14 @@ class Confluence(AtlassianRestAPI):
 
         return response.get("results") or []
 
-    def get_all_spaces(self, start=0, limit=500, expand=None):
+    def get_all_spaces(self, start=0, limit=500, expand=None, space_type=None, space_status=None):
         """
         Get all spaces with provided limit
         :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
         :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
                             fixed system limits. Default: 500
+        :param space_type: OPTIONAL: Filter the list of spaces returned by type (global, personal)
+        :param space_status: OPTIONAL: Filter the list of spaces returned by status (current, archived)
         :param expand: OPTIONAL: additional info, e.g. metadata, icon, description, homepage
         """
         url = "rest/api/space"
@@ -773,7 +776,11 @@ class Confluence(AtlassianRestAPI):
             params["limit"] = limit
         if expand:
             params["expand"] = expand
-        return (self.get(url, params=params) or {}).get("results")
+        if space_type:
+            params["type"] = space_type
+        if space_status:
+            params["status"] = space_status
+        return self.get(url, params=params)
 
     def add_comment(self, page_id, text):
         """
@@ -821,7 +828,7 @@ class Confluence(AtlassianRestAPI):
         :type  page_id: ``str``
         :param name: The name of the attachment
         :type  name: ``str``
-        :param content: Contains the content which should be uplaoded
+        :param content: Contains the content which should be uploaded
         :type  content: ``binary``
         :param content_type: Specify the HTTP content type. The default is
         :type  content_type: ``str``
@@ -839,7 +846,7 @@ class Confluence(AtlassianRestAPI):
                 "comment": comment,
                 "minorEdit": "true",
             }
-            headers = {"X-Atlassian-Token": "nocheck", "Accept": "application/json"}
+            headers = {"X-Atlassian-Token": "no-check", "Accept": "application/json"}
             path = "rest/api/content/{page_id}/child/attachment".format(page_id=page_id)
             # Check if there is already a file with the same name
             attachments = self.get(path=path, headers=headers, params={"filename": name})
@@ -1452,6 +1459,7 @@ class Confluence(AtlassianRestAPI):
         representation="storage",
         minor_edit=False,
         version_comment=None,
+        editor=None,
     ):
         """
         Update page or create a page if it is not exists
@@ -1461,6 +1469,7 @@ class Confluence(AtlassianRestAPI):
         :param representation: OPTIONAL: either Confluence 'storage' or 'wiki' markup format
         :param minor_edit: Update page without notification
         :param version_comment: Version comment
+        :param editor: OPTIONAL: v2 to be created in the new editor
         :return:
         """
         space = self.get_page_space(parent_id)
@@ -1484,6 +1493,7 @@ class Confluence(AtlassianRestAPI):
                 title=title,
                 body=body,
                 representation=representation,
+                editor=editor,
             )
 
         log.info(
@@ -1736,6 +1746,28 @@ class Confluence(AtlassianRestAPI):
 
         return response.get("results")
 
+    def get_all_members(self, group_name="confluence-users", expand=None):
+        """
+        Get  collection of all users in the given group
+        :param group_name
+        :param expand: OPTIONAL: A comma separated list of properties to expand on the content. status
+        :return:
+        """
+        limit = 50
+        flag = True
+        step = 0
+        members = []
+        while flag:
+            values = self.get_group_members(group_name=group_name, start=len(members), limit=limit, expand=expand)
+            step += 1
+            if len(values) == 0:
+                flag = False
+            else:
+                members.extend(values)
+        if not members:
+            print("Did not get members from {} group, please check permissions or connectivity".format(group_name))
+        return members
+
     def get_space(self, space_key, expand="description.plain,homepage"):
         """
         Get information about a space through space key
@@ -1771,7 +1803,7 @@ class Confluence(AtlassianRestAPI):
     ):
         """
         Get space content.
-        You can specify which type of content want to recieve, or get all content types.
+        You can specify which type of content want to receive, or get all content types.
         Use expand to get specific content properties or page
         :param content_type:
         :param space_key: The unique space key name
@@ -2399,6 +2431,39 @@ class Confluence(AtlassianRestAPI):
         status is CHECKED or UNCHECKED
         :return:
         """
-        url = "/rest/inlinetasks/1/task/{page_id}/{task_id}/".format(page_id=page_id, task_id=task_id)
+        url = "rest/inlinetasks/1/task/{page_id}/{task_id}/".format(page_id=page_id, task_id=task_id)
         data = {"status": status, "trigger": "VIEW_PAGE"}
         return self.post(url, json=data)
+
+    def get_jira_metadata(self, page_id):
+        """
+        Get linked Jira ticket metadata
+        PRIVATE method
+        :param page_id: Page Id
+        :return:
+        """
+        url = "rest/jira-metadata/1.0/metadata"
+        params = {"pageId": page_id}
+        return self.get(url, params=params)
+
+    def get_jira_metadata_aggregated(self, page_id):
+        """
+        Get linked Jira ticket aggregated metadata
+        PRIVATE method
+        :param page_id: Page Id
+        :return:
+        """
+        url = "rest/jira-metadata/1.0/metadata/aggregate"
+        params = {"pageId": page_id}
+        return self.get(url, params=params)
+
+    def clean_jira_metadata_cache(self, global_id):
+        """
+        Clean cache for linked Jira app link
+        PRIVATE method
+        :param global_id: ID of Jira app link
+        :return:
+        """
+        url = "rest/jira-metadata/1.0/metadata/cache"
+        params = {"globalId": global_id}
+        return self.delete(url, params=params)

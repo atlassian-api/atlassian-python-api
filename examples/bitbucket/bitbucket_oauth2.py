@@ -4,7 +4,7 @@
 # token and the available workspaces are returned.
 
 from requests_oauthlib import OAuth2Session
-from atlassian.bitbucket.cloud import Cloud
+from atlassian.bitbucket import Cloud
 from flask import Flask, request, redirect, session
 
 app = Flask(__name__)

@@ -7,17 +7,51 @@ from ..common.users import User
 class PullRequests(BitbucketCloudBase):
     """
     Bitbucket Cloud pull requests
-
-    API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests#get
     """
 
     def __init__(self, url, *args, **kwargs):
         super(PullRequests, self).__init__(url, *args, **kwargs)
 
     def __get_object(self, data):
-        if "errors" in data:
-            return
-        return PullRequest(self.url_joiner(self.url, data["id"]), data, **self._new_session_args)
+        return PullRequest(data, **self._new_session_args)
+
+    def create(
+        self,
+        title,
+        source_branch,
+        destination_branch=None,
+        description=None,
+        close_source_branch=None,
+        reviewers=None,
+    ):
+        """
+        Creates a new pull requests for a given source branch
+        Be careful, adding this multiple times for the same source branch updates the pull request!
+
+        :param title: string: pull request title
+        :param source_branch: string: name of the source branch
+        :param destination_branch: string: name of the destination branch, if None the repository main branch is used
+        :param description: string: pull request description
+        :param close_source_branch: bool: specifies if the source branch should be closed upon merging
+        :param reviewers: list: list of user uuids in curly brackets
+
+        :return: Pull Request Object
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests#post
+        """
+
+        rv = [{"uuid": x} for x in reviewers] if reviewers else []
+        data = {
+            "title": title,
+            "source": {"branch": {"name": source_branch}},
+            "description": description,
+            "close_source_branch": close_source_branch,
+            "reviewers": rv,
+        }
+        if destination_branch:
+            data["destination"] = {"branch": {"name": destination_branch}}
+
+        return self.__get_object(self.post(None, data))
 
     def each(self, q=None, sort=None):
         """
@@ -29,6 +63,8 @@ class PullRequests(BitbucketCloudBase):
                              See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
 
         :return: A generator for the PullRequest objects
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests#get
         """
         params = {}
         if sort is not None:
@@ -47,46 +83,10 @@ class PullRequests(BitbucketCloudBase):
         :param id: int: The requested pull request id
 
         :return: The requested PullRequest object
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D#get
         """
         return self.__get_object(super(PullRequests, self).get(id))
-
-    def create(
-        self,
-        title,
-        source_branch,
-        destination_branch=None,
-        description=None,
-        close_source_branch=None,
-        reviewers=None,
-    ):
-        """
-        Creates a new pull requests for a given source branch
-        Be careful, adding this mulitple times for the same source branch updates the pull request!
-
-        :param title: string: pull request title
-        :param source_branch: string: name of the source branch
-        :param destination_branch: string: name of the destination branch, if None the repository main branch is used
-        :param description: string: pull request description
-        :param close_source_branch: bool: specifies if the source branch should be closed upon merging
-        :param reviewers: list: list of user uuids in curly brackets
-        :return: Pull Request Object
-
-        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests#post
-        """
-
-        rv = [{"uuid": x} for x in reviewers] if reviewers else []
-        data = {
-            "title": title,
-            "source": {"branch": {"name": source_branch}},
-            "description": description,
-            "close_source_branch": close_source_branch,
-            "reviewers": rv,
-        }
-        if destination_branch:
-            data["destination"] = {"branch": {"name": destination_branch}}
-        response = self.post(self.url, data, absolute=True)
-
-        return PullRequest(response["links"]["self"], response, **self._new_session_args)
 
 
 class PullRequest(BitbucketCloudBase):
@@ -109,8 +109,8 @@ class PullRequest(BitbucketCloudBase):
     STATE_MERGED = "MERGED"
     STATE_SUPERSEDED = "SUPERSEDED"
 
-    def __init__(self, url, data, *args, **kwargs):
-        super(PullRequest, self).__init__(url, *args, data=data, expected_type="pullrequest", **kwargs)
+    def __init__(self, data, *args, **kwargs):
+        super(PullRequest, self).__init__(None, *args, data=data, expected_type="pullrequest", **kwargs)
 
     def _check_if_open(self):
         if not self.is_open:
@@ -261,7 +261,7 @@ class PullRequest(BitbucketCloudBase):
         API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D/approve#delete
         """
         self._check_if_open()
-        return self.delete("approve")
+        return super(BitbucketCloudBase, self).delete("approve")
 
     def request_changes(self):
         """
@@ -275,12 +275,12 @@ class PullRequest(BitbucketCloudBase):
 
     def unrequest_changes(self):
         """
-        Request changes for the pull request if open
+        Unrequest changes for the pull request if open
 
         API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D/request-changes#delete
         """
         self._check_if_open()
-        return self.delete("request-changes")
+        return super(BitbucketCloudBase, self).delete("request-changes")
 
     def decline(self):
         """
@@ -304,7 +304,7 @@ class PullRequest(BitbucketCloudBase):
         self._check_if_open()
 
         if merge_strategy is not None and merge_strategy not in self.MERGE_STRATEGIES:
-            raise ValueError("merge_stragegy must be {}".format(self.MERGE_STRATEGIES))
+            raise ValueError("merge_strategy must be {}".format(self.MERGE_STRATEGIES))
 
         data = {
             "close_source_branch": close_source_branch or self.close_source_branch,
