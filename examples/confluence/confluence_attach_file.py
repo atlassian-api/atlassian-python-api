@@ -4,6 +4,7 @@ This is example to attach file with mimetype
 
 """
 import logging
+
 # https://pypi.org/project/python-magic/
 import magic
 from datetime import datetime
@@ -23,8 +24,9 @@ def attach_file(page_title, file_location, file_name, mime_type, space):
     if page_id is None:
         return 1
     try:
-        confluence.attach_file(filename=file_location, name=file_name,
-                               content_type=mime_type, page_id=page_id, space=space)
+        confluence.attach_file(
+            filename=file_location, name=file_name, content_type=mime_type, page_id=page_id, space=space
+        )
     except Exception as e:
         return 1
     return 0
@@ -38,6 +40,6 @@ title = "The page with attachments"
 space = "TST"
 
 content_type = magic.from_file(file_name, mime=True)
-attach_file(file_location=file_location_with_page, file_name=file_name,
-            mime_type=content_type,
-            page_title=title, space=space)
+attach_file(
+    file_location=file_location_with_page, file_name=file_name, mime_type=content_type, page_title=title, space=space
+)
