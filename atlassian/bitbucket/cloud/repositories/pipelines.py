@@ -1,5 +1,6 @@
 # coding=utf-8
 
+from .pullRequests import PullRequest
 from requests import HTTPError
 
 from ..base import BitbucketCloudBase
@@ -125,6 +126,17 @@ class Pipeline(BitbucketCloudBase):
     def completed_on(self):
         """ The pipeline completion time """
         return self.get_time("completed_on")
+
+    @property
+    def pullrequest(self):
+        """ Returns a PullRequest object if the pipeline was triggered by a pull request, else None """
+        target = self.get_data("target")
+        if target["type"] == "pipeline_pullrequest_target":
+            return PullRequest(
+                target["pullrequest"]["links"]["self"]["href"], target["pullrequest"], **self._new_session_args
+            )
+        else:
+            return None
 
     def stop(self):
         """

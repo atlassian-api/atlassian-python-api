@@ -197,6 +197,14 @@ class PullRequest(BitbucketCloudBase):
         """ User object of the author """
         return User(None, self.get_data("author"))
 
+    def statuses(self):
+        """
+        Returns generator object of the statuses endpoint
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D/statuses
+        """
+        return self._get_paged("{}/statuses".format(self.url), absolute=True)
+
     def participants(self):
         """ Returns a generator object of participants """
         for participant in self.get_data("participants"):
@@ -208,6 +216,14 @@ class PullRequest(BitbucketCloudBase):
         """ Returns a generator object of reviewers """
         for reviewer in self.get_data("reviewers"):
             yield User(None, reviewer, **self._new_session_args)
+
+        return
+
+    def builds(self):
+        """Returns the latest Build objects for the pull request."""
+        builds = [b for b in self.statuses() if b["type"] == "build"]
+        for build in builds:
+            yield Build(build, **self._new_session_args)
 
         return
 
@@ -322,6 +338,10 @@ class Participant(BitbucketCloudBase):
         return self.get_data("role") == self.ROLE_REVIEWER
 
     @property
+    def is_default_reviewer(self):
+        """ True if the user is a default reviewer """
+
+    @property
     def has_changes_requested(self):
         """ True if user requested changes """
         return str(self.get_data("state")) == self.CHANGES_REQUESTED
@@ -335,3 +355,75 @@ class Participant(BitbucketCloudBase):
     def participated_on(self):
         """ time of last participation """
         return self.get_time("participated_on")
+
+
+class Build(BitbucketCloudBase):
+    STATE_FAILED = "FAILED"
+    STATE_INPROGRESS = "INPROGRESS"
+    STATE_STOPPED = "STOPPED"
+    STATE_SUCCESSFUL = "SUCCESSFUL"
+
+    def __init__(self, data, *args, **kwargs) -> None:
+        super(Build, self).__init__(None, None, *args, data=data, expected_type="build", **kwargs)
+
+    @property
+    def key(self):
+        """Key of the build"""
+        return self.get_data("key")
+
+    @property
+    def name(self):
+        """Name of the build"""
+        return self.get_data("name")
+
+    @property
+    def description(self):
+        """Build description"""
+        return self.get_data("description")
+
+    @property
+    def failed(self):
+        """True if the build was stopped"""
+        return self.get_data("state") == self.STATE_FAILED
+
+    @property
+    def inprogress(self):
+        """True if the build is inprogress"""
+        return self.get_data("state") == self.STATE_INPROGRESS
+
+    @property
+    def successful(self):
+        """True if the build was successful"""
+        return self.get_data("state") == self.STATE_SUCCESSFUL
+
+    @property
+    def stopped(self):
+        """True if the build was stopped"""
+        return self.get_data("state") == self.STATE_STOPPED
+
+    @property
+    def created_on(self):
+        """ time of creation """
+        return self.get_time("created_on")
+
+    @property
+    def updated_on(self):
+        """ time of last update """
+        return self.get_time("updated_on")
+
+    @property
+    def commit(self):
+        """Returns the hash key of the commit"""
+        return self.get_data("commit")["hash"]
+
+    @property
+    def website(self):
+        """Returns the url to the builds webpage.
+        This url points to the build's frontend website (Pipelines, Jenkins ...)
+        """
+        return self.get_data("url")
+
+    @property
+    def refname(self):
+        """Returns the refname"""
+        return self.get_data("refname")
