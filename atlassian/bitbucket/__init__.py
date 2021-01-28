@@ -297,6 +297,21 @@ class Bitbucket(BitbucketBase):
         url = self._url_project(key)
         return self.get(url) or {}
 
+    def project_exists(self, project_key):
+        """
+        Check if project with the provided project key exists and available.
+        :param project_key: Key of the project where to check for repository.
+        :return: False is requested repository doesn't exist in the project or not accessible to the requestor
+        """
+        exists = False
+        try:
+            self.project(project_key)
+            exists = True
+        except HTTPError as e:
+            if e.response.status_code in (401, 404):
+                pass
+        return exists
+
     def update_project(self, key, **params):
         """
         Update project
