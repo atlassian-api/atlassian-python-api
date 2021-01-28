@@ -2,6 +2,7 @@
 import logging
 
 from deprecated import deprecated
+from requests import HTTPError
 
 from .base import BitbucketBase
 from atlassian.bitbucket.cloud import Cloud
@@ -679,6 +680,22 @@ class Bitbucket(BitbucketBase):
         """
         url = self._url_repo(project_key, repository_slug)
         return self.get(url)
+
+    def repo_exists(self, project_key, repository_slug):
+        """
+        Check if given combination of project and repository exists and available.
+        :param project_key: Key of the project where to check for repository.
+        :param repository_slug: url-compatible repository identifier to look for.
+        :return: False is requested repository doesn't exist in the project or not accessible to the requestor
+        """
+        exists = False
+        try:
+            self.get_repo(project_key, repository_slug)
+            exists = True
+        except HTTPError as e:
+            if e.response.status_code in (401, 404):
+                pass
+        return exists
 
     def update_repo(self, project_key, repository_slug, **params):
         """
