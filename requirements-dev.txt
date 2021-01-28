@@ -7,5 +7,5 @@ black
 tox
 coverage
 codecov
-# used for example
+# used for example confluence attach file
 python-magic
