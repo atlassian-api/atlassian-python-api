@@ -7,3 +7,5 @@ black
 tox
 coverage
 codecov
+# used for example
+python-magic
