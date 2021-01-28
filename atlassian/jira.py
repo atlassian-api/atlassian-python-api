@@ -278,6 +278,46 @@ class Jira(AtlassianRestAPI):
         url = "rest/api/2/cluster/node/{}/offline".format(node_id)
         return self.put(url)
 
+    def get_cluster_alive_nodes(self):
+        """
+        Get cluster nodes where alive = True
+        :return: list of node dicts
+        """
+        return [_ for _ in self.get_cluster_all_nodes() if _["alive"]]
+
+    """
+    Troubleshooting. (Available for DC) It gives the posibility to download support zips.
+    Reference: https://confluence.atlassian.com/support/create-a-support-zip-using-the-rest-api-in-data-center-applications-952054641.html
+    """
+
+    def generate_support_zip_on_nodes(self, node_ids):
+        """
+        Generate a support zip on targeted nodes of a cluster
+        :param node_ids: list
+        :return: dict representing cluster task created
+        """
+        data = {"nodeIds": node_ids}
+        url = "/rest/troubleshooting/latest/support-zip/cluster"
+        return self.post(url, data=data)
+
+    def check_support_zip_status(self, cluster_task_id):
+        """
+        Check status of support zip creation task
+        :param cluster_task_id: str
+        :return:
+        """
+        url = "/rest/troubleshooting/latest/support-zip/status/cluster/{}".format(cluster_task_id)
+        return self.get(url)
+
+    def download_support_zip(self, file_name):
+        """
+        Download created support zip file
+        :param file_name: str
+        :return: bytes of zip file
+        """
+        url = "/rest/troubleshooting/latest/support-zip/download/{}".format(file_name)
+        return self.get(url, advanced_mode=True).content
+
     """
     ZDU (Zero Downtime upgrade) module. (Available for DC)
     Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/cluster/zdu
