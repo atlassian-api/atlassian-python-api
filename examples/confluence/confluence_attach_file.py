@@ -7,7 +7,6 @@ import logging
 
 # https://pypi.org/project/python-magic/
 import magic
-from datetime import datetime
 from atlassian import Confluence
 
 logging.basicConfig(level=logging.DEBUG)
@@ -27,7 +26,7 @@ def attach_file(page_title, file_location, file_name, mime_type, space):
         confluence.attach_file(
             filename=file_location, name=file_name, content_type=mime_type, page_id=page_id, space=space
         )
-    except Exception as e:
+    except Exception:
         return 1
     return 0
 
