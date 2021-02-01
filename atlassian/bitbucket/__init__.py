@@ -1492,7 +1492,7 @@ class Bitbucket(BitbucketBase):
         :param pr_version: 12
         :return:
         """
-        url = self._url_pull_request(project_key, repository_slug, pr_id)
+        url = "{}/decline".format(self._url_pull_request(project_key, repository_slug, pr_id))
         params = {}
         if not self.cloud:
             params["version"] = pr_version
