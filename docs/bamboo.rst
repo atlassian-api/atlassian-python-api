@@ -160,6 +160,10 @@ Agents
     # Get agents statuses
     agent_status(online=False)
 
+    # Get remote agents. Currently (version 7.2.2) output is the same as for
+    # agent_status but uses different API
+    agent_remote(online=False)
+
     # Check if agent is online
     agent_is_online(agent_id=123456)
 

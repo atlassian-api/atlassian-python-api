@@ -800,6 +800,15 @@ class Bamboo(AtlassianRestAPI):
         """
         self.put(self.resource_url(f"agent/{agent_id}/disable"))
 
+    def agent_remote(self, online=False):
+        """
+        Provides a list of all agent authentication statuses.
+
+        :param online: list only online agents (default False = all)
+        :return: list of agent-describing dictionaries
+        """
+        return self.get(self.resource_url("agent/remote"), params={"online": online})
+
     def activity(self):
         return self.get("build/admin/ajax/getDashboardSummary.action")
 
