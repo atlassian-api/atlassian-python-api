@@ -177,6 +177,10 @@ Agents
     agent_details(agent_id=123456)
     agent_details(agent_id=123456, expand="capabilities,executableEnvironments,executableJobs")
 
+    # Get agent capabilities
+    agent_capabilities(agent_id=123456):
+    agent_capabilities(agent_id=123456, include_shared=False):
+
 Other actions
 -------------
 

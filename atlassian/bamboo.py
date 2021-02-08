@@ -822,6 +822,16 @@ class Bamboo(AtlassianRestAPI):
             params = {"expand": expand}
         return self.get(self.resource_url(f"agent/{agent_id}"), params=params)
 
+    def agent_capabilities(self, agent_id, include_shared=True):
+        """
+        List agent's capabilities.
+
+        :param agent_id:        Bamboo agent ID (integer number)
+        :param include_shared:  Include shared capabilities
+        :return: agents
+        """
+        return self.get(self.resource_url(f"agent/{agent_id}/capability"), params={"includeShared": include_shared})
+
     def activity(self):
         return self.get("build/admin/ajax/getDashboardSummary.action")
 
