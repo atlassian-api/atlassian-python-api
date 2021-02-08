@@ -163,6 +163,12 @@ Agents
     # Check if agent is online
     agent_is_online(agent_id=123456)
 
+    # Enable agent
+    agent_enable(agent_id=123456)
+
+    # Disable agent
+    agent_enable(agent_id=123456)
+
 Other actions
 -------------
 

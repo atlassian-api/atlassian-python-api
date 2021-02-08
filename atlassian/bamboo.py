@@ -782,6 +782,24 @@ class Bamboo(AtlassianRestAPI):
         response = self.get(self.resource_url(f"agent/{agent_id}/status"))
         return response["online"]
 
+    def agent_enable(self, agent_id):
+        """
+        Enable agent
+
+        :param agent_id:  Bamboo agent ID (integer number)
+        :return: None
+        """
+        self.put(self.resource_url(f"agent/{agent_id}/enable"))
+
+    def agent_disable(self, agent_id):
+        """
+        Disable agent
+
+        :param agent_id:  Bamboo agent ID (integer number)
+        :return: None
+        """
+        self.put(self.resource_url(f"agent/{agent_id}/disable"))
+
     def activity(self):
         return self.get("build/admin/ajax/getDashboardSummary.action")
 
