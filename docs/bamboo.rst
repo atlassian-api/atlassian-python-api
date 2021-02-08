@@ -160,6 +160,9 @@ Agents
     # Get agents statuses
     agent_status(online=False)
 
+    # Check if agent is online
+    agent_is_online(agent_id=123456)
+
 Other actions
 -------------
 
