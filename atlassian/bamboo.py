@@ -809,6 +809,19 @@ class Bamboo(AtlassianRestAPI):
         """
         return self.get(self.resource_url("agent/remote"), params={"online": online})
 
+    def agent_details(self, agent_id, expand=None):
+        """
+        Provides details of an agent with given id.
+
+        :param agent_id:  Bamboo agent ID (integer number)
+        :param expand:    Expand fields (None, capabilities, executableEnvironments, executableJobs)
+        :return:
+        """
+        params = None
+        if expand:
+            params = {"expand": expand}
+        return self.get(self.resource_url(f"agent/{agent_id}"), params=params)
+
     def activity(self):
         return self.get("build/admin/ajax/getDashboardSummary.action")
 

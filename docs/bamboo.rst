@@ -173,6 +173,10 @@ Agents
     # Disable agent
     agent_enable(agent_id=123456)
 
+    # Get agent details
+    agent_details(agent_id=123456)
+    agent_details(agent_id=123456, expand="capabilities,executableEnvironments,executableJobs")
+
 Other actions
 -------------
 
