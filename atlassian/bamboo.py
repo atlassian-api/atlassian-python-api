@@ -763,8 +763,14 @@ class Bamboo(AtlassianRestAPI):
     def server_info(self):
         return self.get(self.resource_url("info"))
 
-    def agent_status(self):
-        return self.get(self.resource_url("agent"))
+    def agent_status(self, online=False):
+        """
+        Provides a list of all agents.
+
+        :param online:  filter only online agents (default False = all)
+        :return:
+        """
+        return self.get(self.resource_url("agent"), params={"online": online})
 
     def activity(self):
         return self.get("build/admin/ajax/getDashboardSummary.action")

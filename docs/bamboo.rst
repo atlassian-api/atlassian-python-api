@@ -152,6 +152,14 @@ Users & Groups
     # Get users without Group
     get_users_not_in_group(group_name, filter_users='', start=0, limit=25)
 
+Agents
+------
+
+.. code-block:: python
+
+    # Get agents statuses
+    agent_status(online=False)
+
 Other actions
 -------------
 
@@ -162,9 +170,6 @@ Other actions
 
     # Get server information
     server_info()
-
-    # Get agents statuses
-    agent_status()
 
     # Get activity
     activity()
