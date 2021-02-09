@@ -152,6 +152,35 @@ Users & Groups
     # Get users without Group
     get_users_not_in_group(group_name, filter_users='', start=0, limit=25)
 
+Agents
+------
+
+.. code-block:: python
+
+    # Get agents statuses
+    agent_status(online=False)
+
+    # Get remote agents. Currently (version 7.2.2) output is the same as for
+    # agent_status but uses different API
+    agent_remote(online=False)
+
+    # Check if agent is online
+    agent_is_online(agent_id=123456)
+
+    # Enable agent
+    agent_enable(agent_id=123456)
+
+    # Disable agent
+    agent_enable(agent_id=123456)
+
+    # Get agent details
+    agent_details(agent_id=123456)
+    agent_details(agent_id=123456, expand="capabilities,executableEnvironments,executableJobs")
+
+    # Get agent capabilities
+    agent_capabilities(agent_id=123456):
+    agent_capabilities(agent_id=123456, include_shared=False):
+
 Other actions
 -------------
 
@@ -162,9 +191,6 @@ Other actions
 
     # Get server information
     server_info()
-
-    # Get agents statuses
-    agent_status()
 
     # Get activity
     activity()
