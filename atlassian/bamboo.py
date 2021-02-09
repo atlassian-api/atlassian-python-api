@@ -357,7 +357,7 @@ class Bamboo(AtlassianRestAPI):
             elements_key="results",
             element_key="result",
             label=label,
-            **params
+            **params,
         )
 
     def latest_results(
@@ -763,8 +763,74 @@ class Bamboo(AtlassianRestAPI):
     def server_info(self):
         return self.get(self.resource_url("info"))
 
-    def agent_status(self):
-        return self.get(self.resource_url("agent"))
+    def agent_status(self, online=False):
+        """
+        Provides a list of all agents.
+
+        :param online:  filter only online agents (default False = all)
+        :return:
+        """
+        return self.get(self.resource_url("agent"), params={"online": online})
+
+    def agent_is_online(self, agent_id):
+        """
+        Get agent online status.
+
+        :param agent_id:  Bamboo agent ID (integer number)
+        :return: True/False
+        """
+        response = self.get(self.resource_url(f"agent/{agent_id}/status"))
+        return response["online"]
+
+    def agent_enable(self, agent_id):
+        """
+        Enable agent
+
+        :param agent_id:  Bamboo agent ID (integer number)
+        :return: None
+        """
+        self.put(self.resource_url(f"agent/{agent_id}/enable"))
+
+    def agent_disable(self, agent_id):
+        """
+        Disable agent
+
+        :param agent_id:  Bamboo agent ID (integer number)
+        :return: None
+        """
+        self.put(self.resource_url(f"agent/{agent_id}/disable"))
+
+    def agent_remote(self, online=False):
+        """
+        Provides a list of all agent authentication statuses.
+
+        :param online: list only online agents (default False = all)
+        :return: list of agent-describing dictionaries
+        """
+        return self.get(self.resource_url("agent/remote"), params={"online": online})
+
+    def agent_details(self, agent_id, expand=None):
+        """
+        Provides details of an agent with given id.
+
+        :param agent_id:  Bamboo agent ID (integer number)
+        :param expand:    Expand fields (None, capabilities, executableEnvironments, executableJobs)
+        :return:
+        """
+        params = None
+        if expand:
+            params = {"expand": expand}
+        return self.get(self.resource_url(f"agent/{agent_id}"), params=params)
+
+    def agent_capabilities(self, agent_id, include_shared=True):
+        """
+        List agent's capabilities.
+
+        :param agent_id:        Bamboo agent ID (integer number)
+        :param include_shared:  Include shared capabilities
+        :return: agents
+        """
+        return self.get(self.resource_url(f"agent/{agent_id}/capability"), params={"includeShared": include_shared})
 
     def activity(self):
         return self.get("build/admin/ajax/getDashboardSummary.action")
