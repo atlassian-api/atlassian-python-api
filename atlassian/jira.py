@@ -1124,9 +1124,11 @@ class Jira(AtlassianRestAPI):
         """
         Setting status by status_name. fields defaults to None for transitions without mandatory fields.
         If there are mandatory fields for the transition, these can be set using a dict in 'fields'.
-        For updating screen properties that cannot be set/updated via the fields properties, they can set using a dict through 'update'
+        For updating screen properties that cannot be set/updated via the fields properties, 
+        they can set using a dict through 'update'
         Example:
-            jira.set_issue_status('MY-123','Resolved',{'myfield': 'myvalue'},{"comment": [{"add": { "body": "Issue Comments"}}]})
+            jira.set_issue_status('MY-123','Resolved',{'myfield': 'myvalue'},
+            {"comment": [{"add": { "body": "Issue Comments"}}]})
         :param issue_key: str
         :param status_name: str
         :param fields: dict, optional
