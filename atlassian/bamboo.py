@@ -779,7 +779,7 @@ class Bamboo(AtlassianRestAPI):
         :param agent_id:  Bamboo agent ID (integer number)
         :return: True/False
         """
-        response = self.get(self.resource_url(f"agent/{agent_id}/status"))
+        response = self.get(self.resource_url("agent/{}/status".format(agent_id)))
         return response["online"]
 
     def agent_enable(self, agent_id):
@@ -789,7 +789,7 @@ class Bamboo(AtlassianRestAPI):
         :param agent_id:  Bamboo agent ID (integer number)
         :return: None
         """
-        self.put(self.resource_url(f"agent/{agent_id}/enable"))
+        self.put(self.resource_url("agent/{}/enable".format(agent_id)))
 
     def agent_disable(self, agent_id):
         """
@@ -798,7 +798,7 @@ class Bamboo(AtlassianRestAPI):
         :param agent_id:  Bamboo agent ID (integer number)
         :return: None
         """
-        self.put(self.resource_url(f"agent/{agent_id}/disable"))
+        self.put(self.resource_url("agent/{}/disable".format(agent_id)))
 
     def agent_remote(self, online=False):
         """
@@ -820,7 +820,7 @@ class Bamboo(AtlassianRestAPI):
         params = None
         if expand:
             params = {"expand": expand}
-        return self.get(self.resource_url(f"agent/{agent_id}"), params=params)
+        return self.get(self.resource_url("agent/{}".format(agent_id)), params=params)
 
     def agent_capabilities(self, agent_id, include_shared=True):
         """
@@ -830,7 +830,9 @@ class Bamboo(AtlassianRestAPI):
         :param include_shared:  Include shared capabilities
         :return: agents
         """
-        return self.get(self.resource_url(f"agent/{agent_id}/capability"), params={"includeShared": include_shared})
+        return self.get(
+            self.resource_url("agent/{}/capability".format(agent_id)), params={"includeShared": include_shared}
+        )
 
     def activity(self):
         return self.get("build/admin/ajax/getDashboardSummary.action")
