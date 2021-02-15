@@ -1120,21 +1120,27 @@ class Jira(AtlassianRestAPI):
     def issue_transition(self, issue_key, status):
         return self.set_issue_status(issue_key, status)
 
-    def set_issue_status(self, issue_key, status_name, fields=None):
+    def set_issue_status(self, issue_key, status_name, fields=None, update=None):
         """
         Setting status by status_name. fields defaults to None for transitions without mandatory fields.
-        If there are mandatary fields for the transition, these can be set using a dict.
+        If there are mandatory fields for the transition, these can be set using a dict in 'fields'.
+        For updating screen properties that cannot be set/updated via the fields properties,
+        they can set using a dict through 'update'
         Example:
-            jira.set_issue_status('MY-123','Resolved',{'myfield': 'myvalue'})
+            jira.set_issue_status('MY-123','Resolved',{'myfield': 'myvalue'},
+            {"comment": [{"add": { "body": "Issue Comments"}}]})
         :param issue_key: str
         :param status_name: str
         :param fields: dict, optional
+        :param update: dict, optional
         """
         url = "rest/api/2/issue/{issue_key}/transitions".format(issue_key=issue_key)
         transition_id = self.get_transition_id_to_status_name(issue_key, status_name)
         data = {"transition": {"id": transition_id}}
         if fields is not None:
             data["fields"] = fields
+        if update is not None:
+            data["update"] = update
         return self.post(url, data=data)
 
     def set_issue_status_by_transition_id(self, issue_key, transition_id):
