@@ -1432,7 +1432,10 @@ class Jira(AtlassianRestAPI):
 
     def user_find_by_user_string(
         self,
-        username,
+        username=None,
+        query=None,
+        account_id=None,
+        property_key=None,
         start=0,
         limit=50,
         include_inactive_users=False,
@@ -1440,7 +1443,14 @@ class Jira(AtlassianRestAPI):
     ):
         """
         Fuzzy search using username and display name
-        :param username: Use '.' to find all users
+        You can use only one parameter: username, query, account_id or property
+
+        :param username: OPTIONAL: Use '.' to find all users
+        :param query: OPTIONAL: String matched against "displayName" and "emailAddress" user attributes
+        :param account_id: OPTIONAL: String matched exactly against a user "accountId".
+                Required unless "query" or "property" parameters are specified.
+        :param property_key: OPTIONAL: String used to search properties by key. Required unless
+                "account_id" or "query" is specified.
         :param start: OPTIONAL: The start point of the collection to return. Default: 0.
         :param limit: OPTIONAL: The limit of the number of users to return, this may be restricted by
                 fixed system limits. Default by built-in method: 50
@@ -1450,12 +1460,28 @@ class Jira(AtlassianRestAPI):
         """
         url = "rest/api/2/user/search"
         params = {
-            "username": username,
             "includeActive": include_active_users,
             "includeInactive": include_inactive_users,
             "startAt": start,
             "maxResults": limit,
         }
+
+        if account_id and not query:
+            params["accountId"] = account_id
+        elif account_id and query:
+            return "You cannot specify both a query and account_id"
+        elif not account_id and not query and not property_key:
+            return "You must specify at least one parameter: query or account_id or property_key"
+
+        if username:
+            params["username"] = username
+
+        if query:
+            params["query"] = query
+
+        if property_key:
+            params["property"] = property_key
+
         return self.get(url, params=params)
 
     def is_user_in_application(self, username, application_key):
