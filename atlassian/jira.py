@@ -1441,10 +1441,9 @@ class Jira(AtlassianRestAPI):
         include_active_users=True,
     ):
         """
-        Fuzzy search using username and display name
-        You can use only one parameter: username, query, account_id or property
+        Fuzzy search using display name, emailAddress or property, or an exact search for accountId
+        You can use only one parameter: query, account_id or property
 
-        :param username: OPTIONAL: Use '.' to find all users
         :param query: OPTIONAL: String matched against "displayName" and "emailAddress" user attributes
         :param account_id: OPTIONAL: String matched exactly against a user "accountId".
                 Required unless "query" or "property" parameters are specified.
