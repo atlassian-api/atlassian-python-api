@@ -1432,7 +1432,6 @@ class Jira(AtlassianRestAPI):
 
     def user_find_by_user_string(
         self,
-        username=None,
         query=None,
         account_id=None,
         property_key=None,
@@ -1469,12 +1468,9 @@ class Jira(AtlassianRestAPI):
         if account_id and not query:
             params["accountId"] = account_id
         elif account_id and query:
-            return "You cannot specify both a query and account_id"
+            return "You cannot specify both the query and account_id parameters"
         elif not account_id and not query and not property_key:
             return "You must specify at least one parameter: query or account_id or property_key"
-
-        if username:
-            params["username"] = username
 
         if query:
             params["query"] = query
