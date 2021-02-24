@@ -1,6 +1,7 @@
 # coding=utf-8
 import logging
 import re
+import json
 
 from requests import HTTPError
 
@@ -921,7 +922,7 @@ class Jira(AtlassianRestAPI):
         :rtype: bool
         """
         url = "rest/api/2/issue/{issue}/assignee".format(issue=issue)
-        data = {"name": assignee}
+        data = {"accountId": assignee}
 
         return self.put(url, data=data)
 
