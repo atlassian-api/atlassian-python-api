@@ -1,7 +1,6 @@
 # coding=utf-8
 import logging
 import re
-import json
 
 from requests import HTTPError
 
