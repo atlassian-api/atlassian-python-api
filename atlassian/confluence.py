@@ -666,6 +666,48 @@ class Confluence(AtlassianRestAPI):
             params["position"] = position
         return self.post(url, params=params, headers=self.no_check_headers)
 
+    def create_template(self, name, body, template_type="page", description=None, labels=None, space=None):
+        """
+        Creates a new content template.
+
+        Note, blueprint templates cannot be created via the REST API.
+
+        :param str name: The name of the new template.
+        :param dict body: This object is used when creating or updating content.
+            {
+                "storage": {
+                    "value": "<string>",
+                    "representation": "view"
+                }
+            }
+        :param str template_type: OPTIONAL: The type of the new template. Default: "page".
+        :param str description: OPTIONAL: A description of the new template. Max length 255.
+        :param list labels: OPTIONAL: Labels for the new template. An array like:
+            [
+                {
+                    "prefix": "<string>",
+                    "name": "<string>",
+                    "id": "<string>",
+                    "label": "<string>",
+                }
+            ]
+        :param dict space: OPTIONAL: The key for the space of the new template. Only applies to space templates.
+            If not specified, the template will be created as a global template.
+        :return:
+        """
+        json = {"name": name, "templateType": template_type, "body": body}
+
+        if description:
+            json["description"] = description
+
+        if labels:
+            json["labels"] = labels
+
+        if space:
+            json["space"] = {"key": space}
+
+        return self.post("wiki/rest/api/template", json=json)
+
     def get_template_by_id(self, template_id):
         """
         Get a content template.
