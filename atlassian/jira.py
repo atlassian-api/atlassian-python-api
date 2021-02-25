@@ -2383,7 +2383,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :return a json of installed plugins
         """
         url = "rest/plugins/1.0/"
-        return self.get(url, headers=self.no_check_headers)
+        return self.get(url, headers=self.no_check_headers, trailing=True)
 
     def upload_plugin(self, plugin_path):
         """
