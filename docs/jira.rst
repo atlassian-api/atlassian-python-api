@@ -195,16 +195,33 @@ Manage issues
     # Get issue status
     jira.get_issue_status(issue_key)
 
-    # Create or Update Issue Links
+    # Get Issue Link
+    jira.get_issue_link(link_id)
+
+    # Create Issue Link
+    data = {
+            "type": {"name": "Duplicate" },
+            "inwardIssue": { "key": "HSP-1"},
+            "outwardIssue": {"key": "MKY-1"},
+            "comment": { "body": "Linked related issue!",
+                         "visibility": { "type": "group", "value": "jira-software-users" }
+            }
+    }
+    jira.create_issue_link(data)
+
+    # Remove Issue Link
+    jira.remove_issue_link(link_id)
+
+    # Create or Update Issue Remote Links
     jira.create_or_update_issue_remote_links(issue_key, link_url, title, global_id=None, relationship=None)
 
-    # Get Issue Link by link ID
+    # Get Issue Remote Link by link ID
     jira.get_issue_remote_link_by_id(issue_key, link_id)
 
-    # Update Issue Link by link ID
+    # Update Issue Remote Link by link ID
     jira.update_issue_remote_link_by_id(issue_key, link_id, url, title, global_id=None, relationship=None)
 
-    # Delete Issue Links
+    # Delete Issue Remote Links
     jira.delete_issue_remote_link_by_id(issue_key, link_id)
 
     # Export Issues to csv
