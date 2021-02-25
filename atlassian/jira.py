@@ -1525,6 +1525,23 @@ class Jira(AtlassianRestAPI):
         """
         return self.post("rest/api/2/project", json=json)
 
+    def create_project_from_shared_template(self, project_id, key, name, lead):
+        """
+        Creates a new project based on an existing project.
+        :param str project_id: The numeric ID of the project to clone
+        :param str key: The KEY to use for the new project, e.g. KEY-10000
+        :param str name: The name of the new project
+        :param str lead: The username of the project lead
+        :return:
+        """
+        json = {
+            "key": key,
+            "name": name,
+            "lead": lead
+        }
+
+        return self.post("rest/project-templates/1.0/createshared/{}".format(project_id), json=json)
+
     def delete_project(self, key):
         """
         DELETE /rest/api/2/project/<project_key>
