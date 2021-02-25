@@ -2,6 +2,7 @@
 import logging
 import os
 import time
+import json
 
 from requests import HTTPError
 from deprecated import deprecated
@@ -666,13 +667,26 @@ class Confluence(AtlassianRestAPI):
             params["position"] = position
         return self.post(url, params=params, headers=self.no_check_headers)
 
-    def create_template(self, name, body, template_type="page", description=None, labels=None, space=None):
+    def create_or_update_template(
+        self,
+        name,
+        body,
+        template_type="page",
+        template_id=None,
+        description=None,
+        labels=None,
+        space=None
+    ):
         """
-        Creates a new content template.
+        Creates a new or updates an existing content template.
 
-        Note, blueprint templates cannot be created via the REST API.
+        Note, blueprint templates cannot be created or updated via the REST API.
 
-        :param str name: The name of the new template.
+        If you provide a ``template_id`` then this method will update the template with the provided settings.
+        If no ``template_id`` is provided, then this method assumes you are creating a new template.
+
+        :param str name: If creating, the name of the new template. If updating, the name to change
+            the template name to. Set to the current name if this field is not being updated.
         :param dict body: This object is used when creating or updating content.
             {
                 "storage": {
@@ -681,6 +695,7 @@ class Confluence(AtlassianRestAPI):
                 }
             }
         :param str template_type: OPTIONAL: The type of the new template. Default: "page".
+        :param str template_id: OPTIONAL: The ID of the template being updated. REQUIRED if updating a template.
         :param str description: OPTIONAL: A description of the new template. Max length 255.
         :param list labels: OPTIONAL: Labels for the new template. An array like:
             [
@@ -695,18 +710,22 @@ class Confluence(AtlassianRestAPI):
             If not specified, the template will be created as a global template.
         :return:
         """
-        json = {"name": name, "templateType": template_type, "body": body}
+        data = {"name": name, "templateType": template_type, "body": body}
 
         if description:
-            json["description"] = description
+            data["description"] = description
 
         if labels:
-            json["labels"] = labels
+            data["labels"] = labels
 
         if space:
-            json["space"] = {"key": space}
+            data["space"] = {"key": space}
 
-        return self.post("wiki/rest/api/template", json=json)
+        if template_id:
+            data["templateId"] = template_id
+            return self.put("wiki/rest/api/template", data=json.dumps(data))
+
+        return self.post("wiki/rest/api/template", json=data)
 
     def get_template_by_id(self, template_id):
         """
