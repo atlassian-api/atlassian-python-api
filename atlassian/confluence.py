@@ -763,6 +763,23 @@ class Confluence(AtlassianRestAPI):
 
         return response.get("results") or []
 
+    def remove_template(self, template_id):
+        """
+        Deletes a template.
+
+        This results in different actions depending on the type of template:
+            * If the template is a content template, it is deleted.
+            * If the template is a modified space-level blueprint template, it reverts to the template
+                inherited from the global-level blueprint template.
+            * If the template is a modified global-level blueprint template, it reverts to the default
+                global-level blueprint template.
+        Note: Unmodified blueprint templates cannot be deleted.
+
+        :param str template_id: The ID of the template to be deleted.
+        :return:
+        """
+        return self.delete("wiki/rest/api/template/{}".format(template_id))
+
     def get_all_spaces(self, start=0, limit=500, expand=None, space_type=None, space_status=None):
         """
         Get all spaces with provided limit
