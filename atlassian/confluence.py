@@ -668,14 +668,7 @@ class Confluence(AtlassianRestAPI):
         return self.post(url, params=params, headers=self.no_check_headers)
 
     def create_or_update_template(
-        self,
-        name,
-        body,
-        template_type="page",
-        template_id=None,
-        description=None,
-        labels=None,
-        space=None
+        self, name, body, template_type="page", template_id=None, description=None, labels=None, space=None
     ):
         """
         Creates a new or updates an existing content template.
