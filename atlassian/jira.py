@@ -1534,11 +1534,7 @@ class Jira(AtlassianRestAPI):
         :param str lead: The username of the project lead
         :return:
         """
-        json = {
-            "key": key,
-            "name": name,
-            "lead": lead
-        }
+        json = {"key": key, "name": name, "lead": lead}
 
         return self.post("rest/project-templates/1.0/createshared/{}".format(project_id), json=json)
 
