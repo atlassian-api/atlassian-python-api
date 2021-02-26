@@ -1255,6 +1255,7 @@ class Confluence(AtlassianRestAPI):
         representation="storage",
         minor_edit=False,
         version_comment=None,
+        always_update=False,
     ):
         """
         Update page if already exist
@@ -1267,11 +1268,12 @@ class Confluence(AtlassianRestAPI):
         :param minor_edit: Indicates whether to notify watchers about changes.
             If False then notifications will be sent.
         :param version_comment: Version comment
+        :param always_update: Whether always to update (suppress content check)
         :return:
         """
         log.info('Updating {type} "{title}"'.format(title=title, type=type))
 
-        if body is not None and self.is_page_content_is_already_updated(page_id, body, title):
+        if not always_update and body is not None and self.is_page_content_is_already_updated(page_id, body, title):
             return self.get_page_by_id(page_id)
 
         try:
@@ -1768,15 +1770,16 @@ class Confluence(AtlassianRestAPI):
             print("Did not get members from {} group, please check permissions or connectivity".format(group_name))
         return members
 
-    def get_space(self, space_key, expand="description.plain,homepage"):
+    def get_space(self, space_key, expand="description.plain,homepage", params=None):
         """
         Get information about a space through space key
         :param space_key: The unique space key name
         :param expand: OPTIONAL: additional info from description, homepage
+        :param params: OPTIONAL: dictionary of additional URL parameters
         :return: Returns the space along with its ID
         """
         url = "rest/api/space/{space_key}".format(space_key=space_key)
-        params = {}
+        params = params or {}
         if expand:
             params["expand"] = expand
         try:
