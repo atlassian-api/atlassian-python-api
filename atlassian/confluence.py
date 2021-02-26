@@ -720,7 +720,7 @@ class Confluence(AtlassianRestAPI):
 
         return self.post("wiki/rest/api/template", json=data)
 
-    def get_template_by_id(self, template_id):
+    def get_content_template(self, template_id):
         """
         Get a content template.
 
@@ -746,9 +746,10 @@ class Confluence(AtlassianRestAPI):
 
         return response
 
-    def get_all_blueprints_from_space(self, space=None, start=0, limit=None, expand=None):
+    def get_blueprint_templates(self, space=None, start=0, limit=None, expand=None):
         """
         Gets all templates provided by blueprints.
+
         Use this method to retrieve all global blueprint templates or all blueprint templates in a space.
         :param space: OPTIONAL: The key of the space to be queried for templates. If ``space`` is not
             specified, global blueprint templates will be returned.
@@ -781,7 +782,7 @@ class Confluence(AtlassianRestAPI):
 
         return response.get("results") or []
 
-    def get_all_templates_from_space(self, space=None, start=0, limit=None, expand=None):
+    def get_content_templates(self, space=None, start=0, limit=None, expand=None):
         """
         Get all content templates.
         Use this method to retrieve all global content templates or all content templates in a space.
