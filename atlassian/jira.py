@@ -3394,6 +3394,13 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         url = "rest/agile/1.0/{board_id}/backlog".format(board_id=board_id)
         return self.get(url)
 
+    def get_issues_for_board(self, board_id):
+        """
+        :param board_id: int, str
+        """
+        url = "rest/agile/1.0/board/{board_id}/issue".format(board_id=board_id)
+        return self.get(url)
+
     def delete_agile_board(self, board_id):
         """
         Delete agile board by id
