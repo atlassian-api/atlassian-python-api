@@ -1442,8 +1442,10 @@ class Jira(AtlassianRestAPI):
         include_active_users=True,
     ):
         """
-        Fuzzy search using display name, emailAddress or property, or an exact search for accountId
-        You can use only one parameter: query, account_id or property
+        Fuzzy search using display name, emailAddress or property, or an exact search for accountId or username
+
+        On Jira Cloud, you can use only one of query or account_id params. You may not specify username.
+        On Jira Server, you must specify a username. You may not use query, account_id or property_key.
 
         :param username: OPTIONAL: Required for Jira Server, cannot be used on Jira Cloud.
                 Use '.' to find all users.
@@ -1468,14 +1470,14 @@ class Jira(AtlassianRestAPI):
         }
 
         if self.cloud:
-            if account_id and not query:
-                params["accountId"] = account_id
+            if username:
+                return "Jira Cloud no longer supports a username parameter, use account_id, query or property_key"
             elif account_id and query:
                 return "You cannot specify both the query and account_id parameters"
             elif not any([account_id, query, property_key]):
                 return "You must specify at least one parameter: query or account_id or property_key"
-            elif username:
-                return "Jira Cloud no longer supports a username parameter, use account_id, query or property_key"
+            elif account_id:
+                params["accountId"] = account_id
 
             if query:
                 params["query"] = query
