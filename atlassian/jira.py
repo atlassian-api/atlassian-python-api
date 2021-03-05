@@ -1432,15 +1432,28 @@ class Jira(AtlassianRestAPI):
 
     def user_find_by_user_string(
         self,
-        username,
+        username=None,
+        query=None,
+        account_id=None,
+        property_key=None,
         start=0,
         limit=50,
         include_inactive_users=False,
         include_active_users=True,
     ):
         """
-        Fuzzy search using username and display name
-        :param username: Use '.' to find all users
+        Fuzzy search using display name, emailAddress or property, or an exact search for accountId or username
+
+        On Jira Cloud, you can use only one of query or account_id params. You may not specify username.
+        On Jira Server, you must specify a username. You may not use query, account_id or property_key.
+
+        :param username: OPTIONAL: Required for Jira Server, cannot be used on Jira Cloud.
+                Use '.' to find all users.
+        :param query: OPTIONAL: String matched against "displayName" and "emailAddress" user attributes
+        :param account_id: OPTIONAL: String matched exactly against a user "accountId".
+                Required unless "query" or "property" parameters are specified.
+        :param property_key: OPTIONAL: String used to search properties by key. Required unless
+                "account_id" or "query" is specified.
         :param start: OPTIONAL: The start point of the collection to return. Default: 0.
         :param limit: OPTIONAL: The limit of the number of users to return, this may be restricted by
                 fixed system limits. Default by built-in method: 50
@@ -1450,12 +1463,33 @@ class Jira(AtlassianRestAPI):
         """
         url = "rest/api/2/user/search"
         params = {
-            "username": username,
             "includeActive": include_active_users,
             "includeInactive": include_inactive_users,
             "startAt": start,
             "maxResults": limit,
         }
+
+        if self.cloud:
+            if username:
+                return "Jira Cloud no longer supports a username parameter, use account_id, query or property_key"
+            elif account_id and query:
+                return "You cannot specify both the query and account_id parameters"
+            elif not any([account_id, query, property_key]):
+                return "You must specify at least one parameter: query or account_id or property_key"
+            elif account_id:
+                params["accountId"] = account_id
+
+            if query:
+                params["query"] = query
+            if property_key:
+                params["property"] = property_key
+        elif not username:
+            return "Username parameter is required for user search on Jira Server"
+        elif any([account_id, query, property_key]):
+            return "Jira Server does not support account_id, query or property_key parameters"
+        else:
+            params["username"] = username
+
         return self.get(url, params=params)
 
     def is_user_in_application(self, username, application_key):

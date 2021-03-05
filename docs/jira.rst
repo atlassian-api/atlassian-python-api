@@ -37,7 +37,7 @@ Manage users
 .. code-block:: python
 
     # Get user
-    jira.user(username)
+    jira.user(account_id)
 
     # Remove user
     jira.user_remove(username)
@@ -48,8 +48,8 @@ Manage users
     # Get web sudo cookies using normal http request
     jira.user_get_websudo()
 
-    # Fuzzy search using username and display name
-    jira.user_find_by_user_string(username, start=0, limit=50, include_inactive_users=False)
+    # Fuzzy search using emailAddress or displayName
+    jira.user_find_by_user_string(query, start=0, limit=50, include_inactive_users=False)
 
 Manage groups
 -------------
