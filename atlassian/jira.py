@@ -3394,12 +3394,34 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         url = "rest/agile/1.0/{board_id}/backlog".format(board_id=board_id)
         return self.get(url)
 
-    def get_issues_for_board(self, board_id):
+    def get_issues_for_board(self, board_id, jql, fields="*all", start=0, limit=None, expand=None):
         """
+        Get issues for board
         :param board_id: int, str
+        :param jql:
+        :param fields: list of fields, for example: ['priority', 'summary', 'customfield_10007']
+        :param start: OPTIONAL: The start point of the collection to return. Default: 0.
+        :param limit: OPTIONAL: The limit of the number of issues to return, this may be restricted by
+                fixed system limits. Default by built-in method: 50
+        :param expand: OPTIONAL: expand the search result
+        :return:
         """
+        params = {}
+        if start is not None:
+            params["startAt"] = int(start)
+        if limit is not None:
+            params["maxResults"] = int(limit)
+        if fields is not None:
+            if isinstance(fields, (list, tuple, set)):
+                fields = ",".join(fields)
+            params["fields"] = fields
+        if jql is not None:
+            params["jql"] = jql
+        if expand is not None:
+            params["expand"] = expand
+
         url = "rest/agile/1.0/board/{board_id}/issue".format(board_id=board_id)
-        return self.get(url)
+        return self.get(url, params=params)
 
     def delete_agile_board(self, board_id):
         """
