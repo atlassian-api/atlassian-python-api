@@ -1472,21 +1472,21 @@ class Jira(AtlassianRestAPI):
                 params["accountId"] = account_id
             elif account_id and query:
                 return "You cannot specify both the query and account_id parameters"
-            elif not account_id and not query and not property_key:
+            elif not any([account_id, query, property_key]):
                 return "You must specify at least one parameter: query or account_id or property_key"
             elif username:
                 return "Jira Cloud no longer supports a username parameter, use account_id, query or property_key"
+
+            if query:
+                params["query"] = query
+            if property_key:
+                params["property"] = property_key
         elif not username:
             return "Username parameter is required for user search on Jira Server"
-
-        if username:
+        elif any([account_id, query, property_key]):
+            return "Jira Server does not support account_id, query or property_key parameters"
+        else:
             params["username"] = username
-
-        if self.cloud and query:
-            params["query"] = query
-
-        if self.cloud and property_key:
-            params["property"] = property_key
 
         return self.get(url, params=params)
 
