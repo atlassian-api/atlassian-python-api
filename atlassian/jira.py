@@ -3396,7 +3396,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
 
     def get_issues_for_board(self, board_id, jql, fields="*all", start=0, limit=None, expand=None):
         """
-        Get issues for board 
+        Get issues for board
         :param board_id: int, str
         :param jql:
         :param fields: list of fields, for example: ['priority', 'summary', 'customfield_10007']
