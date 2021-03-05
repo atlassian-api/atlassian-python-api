@@ -1482,10 +1482,10 @@ class Jira(AtlassianRestAPI):
         if username:
             params["username"] = username
 
-        if query:
+        if self.cloud and query:
             params["query"] = query
 
-        if property_key:
+        if self.cloud and property_key:
             params["property"] = property_key
 
         return self.get(url, params=params)
