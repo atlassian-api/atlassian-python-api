@@ -1432,6 +1432,7 @@ class Jira(AtlassianRestAPI):
 
     def user_find_by_user_string(
         self,
+        username=None,
         query=None,
         account_id=None,
         property_key=None,
@@ -1444,6 +1445,8 @@ class Jira(AtlassianRestAPI):
         Fuzzy search using display name, emailAddress or property, or an exact search for accountId
         You can use only one parameter: query, account_id or property
 
+        :param username: OPTIONAL: Required for Jira Server, cannot be used on Jira Cloud.
+                Use '.' to find all users.
         :param query: OPTIONAL: String matched against "displayName" and "emailAddress" user attributes
         :param account_id: OPTIONAL: String matched exactly against a user "accountId".
                 Required unless "query" or "property" parameters are specified.
@@ -1464,12 +1467,20 @@ class Jira(AtlassianRestAPI):
             "maxResults": limit,
         }
 
-        if account_id and not query:
-            params["accountId"] = account_id
-        elif account_id and query:
-            return "You cannot specify both the query and account_id parameters"
-        elif not account_id and not query and not property_key:
-            return "You must specify at least one parameter: query or account_id or property_key"
+        if self.cloud:
+            if account_id and not query:
+                params["accountId"] = account_id
+            elif account_id and query:
+                return "You cannot specify both the query and account_id parameters"
+            elif not account_id and not query and not property_key:
+                return "You must specify at least one parameter: query or account_id or property_key"
+            elif username:
+                return "Jira Cloud no longer supports a username parameter, use account_id, query or property_key"
+        elif not username:
+            return "Username parameter is required for user search on Jira Server"
+
+        if username:
+            params["username"] = username
 
         if query:
             params["query"] = query
