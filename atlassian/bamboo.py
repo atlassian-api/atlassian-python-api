@@ -565,7 +565,7 @@ class Bamboo(AtlassianRestAPI):
         :return: GET request
         """
         resource = "/build/admin/stopPlan.action?planKey={}".format(plan_key)
-        return self.get(path=resource)
+        return self.post(path=resource, headers=self.no_check_headers)
 
     """ Comments & Labels """
 
