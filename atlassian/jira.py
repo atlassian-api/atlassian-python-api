@@ -3642,6 +3642,24 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
             },
         )
 
+    def dvcs_get_linked_repos(self):
+        """
+        Get DVCS linked repos
+        :return:
+        """
+        url = "rest/bitbucket/1.0/repositories"
+        return self.get(url)
+
+    def dvcs_update_linked_repo_with_remote(self, repository_id):
+        """
+        Resync delayed sync repo
+        https://confluence.atlassian.com/jirakb/delays-for-commits-to-display-in-development-panel-in-jira-server-779160823.html
+        :param repository_id:
+        :return:
+        """
+        url = "rest/bitbucket/1.0/repositories/{}/sync".format(repository_id)
+        return self.post(url)
+
     def health_check(self):
         """
         Get health status
