@@ -2,6 +2,7 @@
 import logging
 import os
 import time
+import json
 
 from requests import HTTPError
 from deprecated import deprecated
@@ -666,12 +667,69 @@ class Confluence(AtlassianRestAPI):
             params["position"] = position
         return self.post(url, params=params, headers=self.no_check_headers)
 
-    def get_template_by_id(self, template_id):
+    def create_or_update_template(
+        self, name, body, template_type="page", template_id=None, description=None, labels=None, space=None
+    ):
         """
-        Get user template by id. Experimental API
-        Use case is get template body and create page from that
+        Creates a new or updates an existing content template.
+
+        Note, blueprint templates cannot be created or updated via the REST API.
+
+        If you provide a ``template_id`` then this method will update the template with the provided settings.
+        If no ``template_id`` is provided, then this method assumes you are creating a new template.
+
+        :param str name: If creating, the name of the new template. If updating, the name to change
+            the template name to. Set to the current name if this field is not being updated.
+        :param dict body: This object is used when creating or updating content.
+            {
+                "storage": {
+                    "value": "<string>",
+                    "representation": "view"
+                }
+            }
+        :param str template_type: OPTIONAL: The type of the new template. Default: "page".
+        :param str template_id: OPTIONAL: The ID of the template being updated. REQUIRED if updating a template.
+        :param str description: OPTIONAL: A description of the new template. Max length 255.
+        :param list labels: OPTIONAL: Labels for the new template. An array like:
+            [
+                {
+                    "prefix": "<string>",
+                    "name": "<string>",
+                    "id": "<string>",
+                    "label": "<string>",
+                }
+            ]
+        :param dict space: OPTIONAL: The key for the space of the new template. Only applies to space templates.
+            If not specified, the template will be created as a global template.
+        :return:
         """
-        url = "rest/experimental/template/{template_id}".format(template_id=template_id)
+        data = {"name": name, "templateType": template_type, "body": body}
+
+        if description:
+            data["description"] = description
+
+        if labels:
+            data["labels"] = labels
+
+        if space:
+            data["space"] = {"key": space}
+
+        if template_id:
+            data["templateId"] = template_id
+            return self.put("wiki/rest/api/template", data=json.dumps(data))
+
+        return self.post("wiki/rest/api/template", json=data)
+
+    def get_content_template(self, template_id):
+        """
+        Get a content template.
+
+        This includes information about the template, like the name, the space or blueprint
+            that the template is in, the body of the template, and more.
+        :param str template_id: The ID of the content template to be returned
+        :return:
+        """
+        url = "wiki/rest/api/template/{template_id}".format(template_id=template_id)
 
         try:
             response = self.get(url)
@@ -688,17 +746,19 @@ class Confluence(AtlassianRestAPI):
 
         return response
 
-    def get_all_blueprints_from_space(self, space, start=0, limit=20, expand=None):
+    def get_blueprint_templates(self, space=None, start=0, limit=None, expand=None):
         """
-        Get all users blue prints from space. Experimental API
-        :param space: Space Key
-        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
-        :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
-                            fixed system limits. Default: 20
-        :param expand: OPTIONAL: expand e.g. body
+        Gets all templates provided by blueprints.
 
+        Use this method to retrieve all global blueprint templates or all blueprint templates in a space.
+        :param space: OPTIONAL: The key of the space to be queried for templates. If ``space`` is not
+            specified, global blueprint templates will be returned.
+        :param start: OPTIONAL: The starting index of the returned templates. Default: None (0).
+        :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
+                            fixed system limits. Default: 25
+        :param expand: OPTIONAL: A multi-value parameter indicating which properties of the template to expand.
         """
-        url = "rest/experimental/template/blueprint"
+        url = "wiki/rest/api/template/blueprint"
         params = {}
         if space:
             params["spaceKey"] = space
@@ -722,19 +782,19 @@ class Confluence(AtlassianRestAPI):
 
         return response.get("results") or []
 
-    def get_all_templates_from_space(self, space, start=0, limit=20, expand=None):
+    def get_content_templates(self, space=None, start=0, limit=None, expand=None):
         """
-        Get all users templates from space. Experimental API
-        ref: https://docs.atlassian.com/atlassian-confluence/1000.73.0/com/atlassian/confluence/plugins/restapi\
-/resources/TemplateResource.html
-        :param space: Space Key
+        Get all content templates.
+        Use this method to retrieve all global content templates or all content templates in a space.
+        :param space: OPTIONAL: The key of the space to be queried for templates. If ``space`` is not
+            specified, global templates will be returned.
         :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
         :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
-                            fixed system limits. Default: 20
-        :param expand: OPTIONAL: expand e.g. body
-
+                            fixed system limits. Default: 25
+        :param expand: OPTIONAL: A multi-value parameter indicating which properties of the template to expand.
+            e.g. ``body``
         """
-        url = "rest/experimental/template/page"
+        url = "wiki/rest/api/template/page"
         params = {}
         if space:
             params["spaceKey"] = space
@@ -757,6 +817,23 @@ class Confluence(AtlassianRestAPI):
             raise
 
         return response.get("results") or []
+
+    def remove_template(self, template_id):
+        """
+        Deletes a template.
+
+        This results in different actions depending on the type of template:
+            * If the template is a content template, it is deleted.
+            * If the template is a modified space-level blueprint template, it reverts to the template
+                inherited from the global-level blueprint template.
+            * If the template is a modified global-level blueprint template, it reverts to the default
+                global-level blueprint template.
+        Note: Unmodified blueprint templates cannot be deleted.
+
+        :param str template_id: The ID of the template to be deleted.
+        :return:
+        """
+        return self.delete("wiki/rest/api/template/{}".format(template_id))
 
     def get_all_spaces(self, start=0, limit=500, expand=None, space_type=None, space_status=None):
         """
