@@ -720,6 +720,28 @@ class Confluence(AtlassianRestAPI):
 
         return self.post("wiki/rest/api/template", json=data)
 
+    @deprecated(version="3.7.0", reason="Use get_content_template()")
+    def get_template_by_id(self, template_id):
+        """
+        Get user template by id. Experimental API
+        Use case is get template body and create page from that
+        """
+        url = "rest/experimental/template/{template_id}".format(template_id=template_id)
+
+        try:
+            response = self.get(url)
+        except HTTPError as e:
+            if e.response.status_code == 403:
+                # Raise ApiError as the documented reason is ambiguous
+                raise ApiError(
+                    "There is no content with the given id, "
+                    "or the calling user does not have permission to view the content",
+                    reason=e,
+                )
+
+            raise
+        return response
+
     def get_content_template(self, template_id):
         """
         Get a content template.
@@ -745,6 +767,40 @@ class Confluence(AtlassianRestAPI):
             raise
 
         return response
+
+    @deprecated(version="3.7.0", reason="Use get_blueprint_templates()")
+    def get_all_blueprints_from_space(self, space, start=0, limit=None, expand=None):
+        """
+        Get all users blue prints from space. Experimental API
+        :param space: Space Key
+        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
+        :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
+                            fixed system limits. Default: 20
+        :param expand: OPTIONAL: expand e.g. body
+        """
+        url = "rest/experimental/template/blueprint"
+        params = {}
+        if space:
+            params["spaceKey"] = space
+        if start:
+            params["start"] = start
+        if limit:
+            params["limit"] = limit
+        if expand:
+            params["expand"] = expand
+
+        try:
+            response = self.get(url, params=params)
+        except HTTPError as e:
+            if e.response.status_code == 403:
+                raise ApiPermissionError(
+                    "The calling user does not have permission to view the content",
+                    reason=e,
+                )
+
+            raise
+
+        return response.get("results") or []
 
     def get_blueprint_templates(self, space=None, start=0, limit=None, expand=None):
         """
@@ -778,6 +834,41 @@ class Confluence(AtlassianRestAPI):
                     reason=e,
                 )
 
+            raise
+
+        return response.get("results") or []
+
+    @deprecated(since="3.7.0", reason="Use get_content_templates()")
+    def get_all_templates_from_space(self, space, start=0, limit=None, expand=None):
+        """
+        Get all users templates from space. Experimental API
+        ref: https://docs.atlassian.com/atlassian-confluence/1000.73.0/com/atlassian/confluence/plugins/restapi\
+    /resources/TemplateResource.html
+        :param space: Space Key
+        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
+        :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
+                                fixed system limits. Default: 20
+        :param expand: OPTIONAL: expand e.g. body
+        """
+        url = "rest/experimental/template/page"
+        params = {}
+        if space:
+            params["spaceKey"] = space
+        if start:
+            params["start"] = start
+        if limit:
+            params["limit"] = limit
+        if expand:
+            params["expand"] = expand
+
+        try:
+            response = self.get(url, params=params)
+        except HTTPError as e:
+            if e.response.status_code == 403:
+                raise ApiPermissionError(
+                    "The calling user does not have permission to view the content",
+                    reason=e,
+                )
             raise
 
         return response.get("results") or []
