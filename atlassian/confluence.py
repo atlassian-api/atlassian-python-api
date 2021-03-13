@@ -838,7 +838,7 @@ class Confluence(AtlassianRestAPI):
 
         return response.get("results") or []
 
-    @deprecated(since="3.7.0", reason="Use get_content_templates()")
+    @deprecated(version="3.7.0", reason="Use get_content_templates()")
     def get_all_templates_from_space(self, space, start=0, limit=None, expand=None):
         """
         Get all users templates from space. Experimental API
