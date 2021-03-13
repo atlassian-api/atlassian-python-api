@@ -2,7 +2,7 @@
 from atlassian import Jira
 
 """
-    That example use for normalizing the permission schemes between 
+    That example use for normalizing the permission schemes between
     BROWSE_PROJECTS and WORK_ON_ISSUES parameters
 """
 
