@@ -275,6 +275,41 @@ class Xray(AtlassianRestAPI):
         url = "rest/raven/1.0/api/testplan/{0}/test/{1}".format(test_plan_key, test_key)
         return self.delete(url)
 
+    def get_test_executions_with_test_plan(self, test_plan_key):
+        """
+        Retrieve test executions associated with the given test plan.
+        :param test_plan_key: Test plan key (eg. 'PLAN-001').
+        :return: Return a list of the test executions associated with the test plan.
+        """
+        url = "rest/raven/1.0/api/testplan/{0}/testexecution".format(test_plan_key)
+        return self.get(url)
+
+    def update_test_plan_test_executions(self, test_plan_key, add=None, remove=None):
+        """
+        Associate test executions with the given test plan.
+        :param test_plan_key: Test plan key (eg. 'PLAN-001').
+        :param add: OPTIONAL: List of Test Keys to associate with the test plan (eg. ['TEST-002', 'TEST-003'])
+        :param remove: OPTIONAL: List of Test Keys no longer associate with the test plan (eg. ['TEST-004', 'TEST-005'])
+        :return:
+        """
+        if add is None:
+            add = []
+        if remove is None:
+            remove = []
+        update = {"add": add, "remove": remove}
+        url = "rest/raven/1.0/api/testplan/{0}/testexecution".format(test_plan_key)
+        return self.post(url, update)
+
+    def delete_test_execution_from_test_plan(self, test_plan_key, test_exec_key):
+        """
+        Remove association of the specified tests execution from the given test plan.
+        :param test_plan_key: Test plan key (eg. 'PLAN-001').
+        :param test_exec_key: Test execution Key which should no longer be associate with the test plan (eg. 'TEST-100')
+        :return:
+        """
+        url = "rest/raven/1.0/api/testplan/{0}/testexecution/{1}".format(test_plan_key, test_exec_key)
+        return self.delete(url)
+
     # Test Executions API
     def get_tests_with_test_execution(self, test_exec_key, detailed=False, limit=None, page=None):
         """
