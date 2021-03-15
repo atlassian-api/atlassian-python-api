@@ -99,6 +99,15 @@ Manage Test plans
     # Remove association of the specified tests from the given test plan
     xray.delete_test_from_test_plan('PLAN-001', 'TEST-001'):
 
+    # Retrieve the test executionss associated with the given test plan
+    xray.get_test_executions_with_test_plan('PLAN-001')
+
+    # Associate test executionss with the given test plan
+    xray.update_test_plan_test_executions('PLAN-001', add=['EXEC-001', 'EXEC-002'], remove=['EXEC-003'])
+
+    # Remove association of the specified test executionss from the given test plan
+    xray.delete_test_execution_from_test_plan('PLAN-001', 'EXEC-001'):
+
 Manage Test Executions
 ----------------------
 
