@@ -805,7 +805,7 @@ class Jira(AtlassianRestAPI):
     def update_issue_field(self, key, fields="*all"):
         return self.put("rest/api/2/issue/{0}".format(key), data={"fields": fields})
 
-    def bulk_update_issue_filed(self, key_list, fields="*all"):
+    def bulk_update_issue_field(self, key_list, fields="*all"):
         """
         :param key_list=list of issues with common filed to be updated
         :param fields: common fields to be updated
