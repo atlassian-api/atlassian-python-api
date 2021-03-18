@@ -813,12 +813,11 @@ class Jira(AtlassianRestAPI):
         """
         try:
             for key in key_list:
-                self.put("rest/api/2/issue/{0}".format(key), data={"fields": fields})
-        except :
+                self.put("rest/api/2/issue/{0}".format(key),data={"fields": fields})
+        except Exception:
             return False
         return True
         
-
     def get_issue_labels(self, issue_key):
         """
         Get issue labels.
