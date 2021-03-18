@@ -813,7 +813,7 @@ class Jira(AtlassianRestAPI):
         """
         try:
             for key in key_list:
-                self.update_issue_field(key,fields=fields)
+                self.update_issue_field(key,fields)
         except :
             return False
         return True
