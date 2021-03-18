@@ -813,7 +813,7 @@ class Jira(AtlassianRestAPI):
         """
         try:
             for key in key_list:
-                self.update_issue_field(key,fields)
+                self.put("rest/api/2/issue/{0}".format(key), data={"fields": fields})
         except :
             return False
         return True
