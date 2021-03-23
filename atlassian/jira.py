@@ -1601,7 +1601,7 @@ class Jira(AtlassianRestAPI):
             params["expand"] = expand
         return self.get("rest/api/2/project/{0}".format(key), params=params)
 
-    def get_project(self, key, expand):
+    def get_project(self, key, expand=None):
         """
             Contains a full representation of a project in JSON format.
             All project keys associated with the project will only be returned if expand=projectKeys.
