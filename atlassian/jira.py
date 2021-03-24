@@ -1535,10 +1535,10 @@ class Jira(AtlassianRestAPI):
     Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/project
     """
 
-    def get_all_projects(self, included_archived=None):
-        return self.projects(included_archived)
+    def get_all_projects(self, included_archived=None, expand=None):
+        return self.projects(included_archived, expand)
 
-    def projects(self, included_archived=None):
+    def projects(self, included_archived=None, expand=None):
         """Returns all projects which are visible for the currently logged in user.
         If no user is logged in, it returns the list of projects that are visible when using anonymous access.
         :param included_archived: boolean whether to include archived projects in response, default: false
@@ -1547,7 +1547,9 @@ class Jira(AtlassianRestAPI):
         params = {}
         if included_archived:
             params["includeArchived"] = included_archived
-        return self.get("rest/api/2/project")
+        if expand:
+            params["expand"] = expand
+        return self.get("rest/api/2/project", params=params)
 
     def create_project_from_raw_json(self, json):
         """
@@ -1599,7 +1601,7 @@ class Jira(AtlassianRestAPI):
             params["expand"] = expand
         return self.get("rest/api/2/project/{0}".format(key), params=params)
 
-    def get_project(self, key, expand):
+    def get_project(self, key, expand=None):
         """
             Contains a full representation of a project in JSON format.
             All project keys associated with the project will only be returned if expand=projectKeys.
