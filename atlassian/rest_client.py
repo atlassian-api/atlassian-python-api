@@ -233,7 +233,7 @@ class AtlassianRestAPI(object):
         if self.advanced_mode:
             return response
 
-        response.raise_for_status()
+        self.raise_for_status(response)
         return response
 
     def get(
@@ -374,3 +374,13 @@ class AtlassianRestAPI(object):
         if self.advanced_mode or advanced_mode:
             return response
         return self._response_handler(response)
+
+    def raise_for_status(self, response):
+        """
+        Checks the response for errors and throws an exception if return code >= 400
+        Since different tools (Atlassian, Jira, ...) have different formats of returned json,
+        this method is intended to be overwritten by a tool specific implementation.
+        :param response:
+        :return:
+        """
+        response.raise_for_status()
