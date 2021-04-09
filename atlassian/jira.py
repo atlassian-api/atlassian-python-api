@@ -2259,7 +2259,7 @@ class Jira(AtlassianRestAPI):
     Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/search
     """
 
-    def jql(self, jql, fields="*all", start=0, limit=None, expand=None):
+    def jql(self, jql, fields="*all", start=0, limit=None, expand=None, validate_query=None):
         """
         Get issues from jql search result with all related fields
         :param jql:
@@ -2268,6 +2268,7 @@ class Jira(AtlassianRestAPI):
         :param limit: OPTIONAL: The limit of the number of issues to return, this may be restricted by
                 fixed system limits. Default by built-in method: 50
         :param expand: OPTIONAL: expand the search result
+        :param validate_query: Whether to validate the JQL query
         :return:
         """
         params = {}
@@ -2283,6 +2284,8 @@ class Jira(AtlassianRestAPI):
             params["jql"] = jql
         if expand is not None:
             params["expand"] = expand
+        if validate_query is not None:
+            params["validateQuery"] = validate_query
         return self.get("rest/api/2/search", params=params)
 
     def csv(self, jql, limit=1000, all_fields=True, start=None, delimiter=None):
