@@ -2289,7 +2289,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def get_repositories(self, workspace, role=None, query=None, sort=None):
         """
@@ -2310,7 +2310,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def get_pipelines(self, workspace, repository_slug, number=10, sort_by="-created_on"):
         """
@@ -2338,7 +2338,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def trigger_pipeline(self, workspace, repository_slug, branch="master", revision=None, name=None):
         """
@@ -2360,7 +2360,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def get_pipeline(self, workspace, repository_slug, uuid):
         """
@@ -2379,7 +2379,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def stop_pipeline(self, workspace, repository_slug, uuid):
         """
@@ -2400,7 +2400,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def get_pipeline_steps(self, workspace, repository_slug, uuid):
         """
@@ -2423,7 +2423,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def get_pipeline_step(self, workspace, repository_slug, pipeline_uuid, step_uuid):
         """
@@ -2444,7 +2444,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def get_pipeline_step_log(self, workspace, repository_slug, pipeline_uuid, step_uuid):
         """
@@ -2466,7 +2466,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def create_issue(
         self,
@@ -2496,7 +2496,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def get_issues(self, workspace, repository_slug, sort_by=None, query=None):
         """
@@ -2524,7 +2524,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def get_issue(self, workspace, repository_slug, id):
         """
@@ -2540,7 +2540,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def update_issue(self, workspace, repository_slug, id, **fields):
         """
@@ -2558,7 +2558,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def delete_issue(self, workspace, repository_slug, id):
         """
@@ -2574,7 +2574,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def add_branch_restriction(
         self,
@@ -2627,7 +2627,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def get_branch_restrictions(self, workspace, repository_slug, kind=None, pattern=None, number=10):
         """
@@ -2648,7 +2648,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def update_branch_restriction(self, workspace, repository_slug, id, **fields):
         """
@@ -2666,7 +2666,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def delete_branch_restriction(self, workspace, repository_slug, id):
         """
@@ -2682,7 +2682,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def add_default_reviewer(self, workspace, repository_slug, user):
         """
@@ -2703,7 +2703,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def get_default_reviewers(self, workspace, repository_slug, number=10):
         """
@@ -2724,7 +2724,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def is_default_reviewer(self, workspace, repository_slug, user):
         """
@@ -2748,7 +2748,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def delete_default_reviewer(self, workspace, repository_slug, user):
         """
