@@ -59,7 +59,7 @@ class Pipelines(BitbucketCloudBase):
 
         return self.__get_object(self.post(None, trailing=True, data=data))
 
-    def each(self, q=None, sort=None):
+    def each(self, q=None, sort=None, pagelen=None, page=None):
         """
         Returns the list of pipelines in this repository.
 
@@ -73,6 +73,10 @@ class Pipelines(BitbucketCloudBase):
         API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pipelines/#get
         """
         params = {}
+        if page is not None:
+            params["page"] = page
+        if pagelen is not None:
+            params["pagelen"] = pagelen
         if sort is not None:
             params["sort"] = sort
         if q is not None:
