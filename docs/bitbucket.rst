@@ -279,8 +279,11 @@ Pipelines management
         # Get the repository first
         r = cloud.workspaces.get(workspace).repositories.get(repository)
 
-        # Get all Pipelines results for repository
+        # Get first ten Pipelines results for repository
         r.pipelines.each()
+
+        # Get twenty last Pipelines results for repository
+        r.pipelines.each(sort="-created_on", pagelen=20)
 
         # Trigger default Pipeline on the latest revision of the master branch
         r.pipelines.trigger()
