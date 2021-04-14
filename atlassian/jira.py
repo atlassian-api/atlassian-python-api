@@ -3391,13 +3391,11 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param name: str
         :param type: str, scrum or kanban
         :param filter_id: int
-        :param location: dict, Optional. Default is user
+        :param location: dict, Optional. Only specify this for Jira Cloud!
         """
         data = {"name": name, "type": type, "filterId": filter_id}
         if location:
             data["location"] = location
-        else:
-            data["location"] = {"type": "user"}
         url = "rest/agile/1.0/board"
         return self.post(url, data=data)
 
