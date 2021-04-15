@@ -2728,6 +2728,22 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         return self.get(url, params=params)
 
     """
+    REST resources for Issue Type Schemes
+    """
+
+    def add_issuetypescheme(self, scheme_id, project_key):
+        """
+        Associate an issue type scheme with an additional project
+        https://docs.atlassian.com/software/jira/docs/api/REST/8.5.8/?_ga=2.198649263.1264679215.1618243100-319766074.1595597417#api/2/issuetypescheme-addProjectAssociationsToScheme
+        :param scheme_id: The issue type scheme ID to update
+        :param project_key: The project key to associate with the given issue type scheme
+        :return:
+        """
+        url = "/rest/api/2/issuetypescheme/{schemeId}/associations".format(schemeId=scheme_id)
+        data = {'idsOrKeys': [project_key]}
+        return self.post(url, data=data)
+
+    """
     REST resource for starting/stopping/querying indexing.
     Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/reindex
     """
