@@ -79,6 +79,8 @@ class TestBasic:
         assert user.delete() == {}, "Delete a user"
 
     def test_projects(self):
+        assert not BITBUCKET.projects.exists("PRJxxx"), "Not exists project by key"
+        assert BITBUCKET.projects.exists("PRJ"), "Exists project by key"
         result = list(BITBUCKET.projects.each())
         assert [x.key for x in result] == ["PRJ", "PRJ1"], "Each project keys"
         assert [x.description for x in result] == [
@@ -86,8 +88,12 @@ class TestBasic:
             "The description for my cool project 1.",
         ], "Each project description"
 
+        assert not BITBUCKET.projects.exists("PRJxxx"), "Not exists project by key"
+        assert BITBUCKET.projects.exists("PRJ"), "Exists project by key"
         project = BITBUCKET.projects.get("PRJ")
         assert project.name == "My Cool Project", "Get project by key"
+        assert not BITBUCKET.projects.exists("My Cool Project xxx", by="name"), "Not exists project by name"
+        assert BITBUCKET.projects.exists("My Cool Project", by="name"), "Exists project by name"
         project = BITBUCKET.projects.get("My Cool Project", by="name")
         assert project.key == "PRJ", "Get project by name"
 
@@ -170,6 +176,8 @@ class TestBasic:
         ], "Each repo description"
 
         print(list(project.repos.each()))
+
+        assert project.repos.exists("my-repo1-slug"), "Repo exists by slug"
 
         repo = project.repos.get("my-repo1-slug")
         assert repo.name == "My repo 1", "The repo name by slug"

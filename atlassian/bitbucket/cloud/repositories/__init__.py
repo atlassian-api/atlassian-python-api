@@ -1,5 +1,6 @@
 # coding=utf-8
 
+from requests import HTTPError
 from ..base import BitbucketCloudBase
 from .issues import Issues
 from .branchRestrictions import BranchRestrictions
@@ -109,6 +110,27 @@ class WorkspaceRepositories(RepositoriesBase):
             ValueError("Unknown value '{}' for argument [by], expected 'key' or 'name'".format(by))
 
         raise Exception("Unknown repository {} '{}'".format(by, repository))
+
+    def exists(self, repository, by="slug"):
+        """
+        Check if repository exist.
+
+        :param repository: string: The requested repository.
+        :param by: string (default is "slug"): How to interprate repository, can be 'slug' or 'name'.
+
+        :return: True if the repository exists
+        """
+        exists = False
+        try:
+            self.get(repository, by)
+            exists = True
+        except HTTPError as e:
+            if e.response.status_code in (401, 404):
+                pass
+        except Exception as e:
+            if not str(e) == "Unknonw project {} '{}'".format(by, repository):
+                raise e
+        return exists
 
 
 class ProjectRepositories(RepositoriesBase):

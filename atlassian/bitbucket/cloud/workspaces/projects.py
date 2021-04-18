@@ -1,5 +1,6 @@
 # coding=utf-8
 
+from requests import HTTPError
 from ..base import BitbucketCloudBase
 
 from ..repositories import ProjectRepositories
@@ -74,7 +75,7 @@ class Projects(BitbucketCloudBase):
         """
         Returns the requested project
 
-        :param project: string:               The requested project.
+        :param project: string: The requested project.
         :param by: string (default is "key"): How to interprate project, can be 'key' or 'name'.
 
         :return: The requested Project object
@@ -89,6 +90,27 @@ class Projects(BitbucketCloudBase):
             ValueError("Unknown value '{}' for argument [by], expected 'key' or 'name'".format(by))
 
         raise Exception("Unknown project {} '{}'".format(by, project))
+
+    def exists(self, project, by="key"):
+        """
+        Check if project exist.
+
+        :param project: string: The requested project.
+        :param by: string (default is "key"): How to interprate project, can be 'key' or 'name'.
+
+        :return: True if the project exists
+        """
+        exists = False
+        try:
+            self.get(project, by)
+            exists = True
+        except HTTPError as e:
+            if e.response.status_code in (401, 404):
+                pass
+        except Exception as e:
+            if not str(e) == "Unknonw project {} '{}'".format(by, project):
+                raise e
+        return exists
 
 
 class Project(BitbucketCloudBase):
