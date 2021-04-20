@@ -81,7 +81,13 @@ class Pipelines(BitbucketCloudBase):
             params["sort"] = sort
         if q is not None:
             params["q"] = q
-        for pipeline in self._get_paged(None, trailing=True, params=params):
+        paging_workaround = True if ("page" not in params) and ("pagelen" not in params) else False
+        for pipeline in self._get_paged(
+            None,
+            trailing=True,
+            paging_workaround=paging_workaround,
+            params=params,
+        ):
             yield self.__get_object(pipeline)
 
         return
