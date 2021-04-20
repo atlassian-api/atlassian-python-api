@@ -76,7 +76,7 @@ class Projects(BitbucketCloudBase):
         Returns the requested project
 
         :param project: string: The requested project.
-        :param by: string (default is "key"): How to interprate project, can be 'key' or 'name'.
+        :param by: string (default is "key"): How to interpret project, can be 'key' or 'name'.
 
         :return: The requested Project object
         """
@@ -96,7 +96,7 @@ class Projects(BitbucketCloudBase):
         Check if project exist.
 
         :param project: string: The requested project.
-        :param by: string (default is "key"): How to interprate project, can be 'key' or 'name'.
+        :param by: string (default is "key"): How to interpret project, can be 'key' or 'name'.
 
         :return: True if the project exists
         """
@@ -108,7 +108,7 @@ class Projects(BitbucketCloudBase):
             if e.response.status_code in (401, 404):
                 pass
         except Exception as e:
-            if not str(e) == "Unknonw project {} '{}'".format(by, project):
+            if not str(e) == "Unknown project {} '{}'".format(by, project):
                 raise e
         return exists
 

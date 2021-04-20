@@ -116,7 +116,7 @@ class WorkspaceRepositories(RepositoriesBase):
         Check if repository exist.
 
         :param repository: string: The requested repository.
-        :param by: string (default is "slug"): How to interprate repository, can be 'slug' or 'name'.
+        :param by: string (default is "slug"): How to interpret repository, can be 'slug' or 'name'.
 
         :return: True if the repository exists
         """
@@ -128,7 +128,7 @@ class WorkspaceRepositories(RepositoriesBase):
             if e.response.status_code in (401, 404):
                 pass
         except Exception as e:
-            if not str(e) == "Unknonw project {} '{}'".format(by, repository):
+            if not str(e) == "Unknown project {} '{}'".format(by, repository):
                 raise e
         return exists
 
