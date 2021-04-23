@@ -32,7 +32,9 @@ class BitbucketCloudBase(BitbucketBase):
             return None
         return links[link]["href"]
 
-    def _get_paged(self, url, params=None, data=None, flags=None, trailing=None, absolute=False, paging_workaround=False):
+    def _get_paged(
+        self, url, params=None, data=None, flags=None, trailing=None, absolute=False, paging_workaround=False
+    ):
         """
         Used to get the paged data
 
