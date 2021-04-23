@@ -43,6 +43,8 @@ class Repositories(RepositoriesBase):
                              See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
 
         :return: A generator for the repository objects
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories#get
         """
         if q is not None and role is None:
             raise ValueError("Argument [q] requires argument [role].")
@@ -64,6 +66,24 @@ class WorkspaceRepositories(RepositoriesBase):
     def __init__(self, url, *args, **kwargs):
         super(WorkspaceRepositories, self).__init__(url, *args, **kwargs)
 
+    def create(self, name, project_key=None):
+        """
+        Creates a new repository with the given name.
+
+        :param name: string: The name of the project.
+        :param project_key: string: The key of the project. If the project is not provided, the repository
+                                    is automatically assigned to the oldest project in the workspace.
+
+        :return: The created project object
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D#post
+        """
+
+        data = {"scm": "git"}
+        if project_key is not None:
+            data["project"] = {"key": project_key}
+        return self._get_object(self.post(name, data=data))
+
     def each(self, role=None, q=None, sort=None):
         """
         Get all repositories in the workspace matching the criteria.
@@ -80,6 +100,8 @@ class WorkspaceRepositories(RepositoriesBase):
                              See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
 
         :return: A generator for the workspace objects
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D#get
         """
         params = {}
         if role is not None:
@@ -99,6 +121,8 @@ class WorkspaceRepositories(RepositoriesBase):
         :param by: string: How to interprate repository, can be 'slug' or 'name'.
 
         :return: The requested Repository object
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D#get
         """
         if by == "slug":
             return self._get_object(super(WorkspaceRepositories, self).get(repository))
@@ -119,6 +143,8 @@ class WorkspaceRepositories(RepositoriesBase):
         :param by: string (default is "slug"): How to interpret repository, can be 'slug' or 'name'.
 
         :return: True if the repository exists
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D#get
         """
         exists = False
         try:
@@ -145,6 +171,8 @@ class ProjectRepositories(RepositoriesBase):
                              See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
 
         :return: A generator for the repository objects
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/workspaces/%7Bworkspace%7D/projects/%7Bproject_key%7D#get
         """
         params = {}
         if sort is not None:
@@ -160,6 +188,8 @@ class ProjectRepositories(RepositoriesBase):
         :param by: string: How to interprate repository, can be 'slug' or 'name'.
 
         :return: The requested Repository object
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/workspaces/%7Bworkspace%7D/projects/%7Bproject_key%7D#get
         """
         if by not in ("slug", "name"):
             ValueError("Unknown value '{}' for argument [by], expected 'slug' or 'name'".format(by))

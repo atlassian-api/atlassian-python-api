@@ -45,6 +45,14 @@ class TestBasic:
             "testrepository1xxx"
         ), "Not exists repository"
 
+    def test_create_repositories(self):
+        result = CLOUD.workspaces.get("TestWorkspace1").repositories.create("TestRepositoryCreated")
+        assert result.description == "Test newly created repository", "Result of repositories [create(...)]"
+        result = CLOUD.workspaces.get("TestWorkspace1").repositories.create("TestRepositoryCreated", "TEST1")
+        assert (
+            result.description == "Test newly created repository in project TEST1"
+        ), "Result of repositories [create(...)] with project"
+
     def test_get_repositories(self):
         result = [x["name"] for x in BITBUCKET.get_repositories("TestWorkspace1")]
         assert result == ["testrepository1", "testrepository2"], "Result of [get_repositories(...)]"

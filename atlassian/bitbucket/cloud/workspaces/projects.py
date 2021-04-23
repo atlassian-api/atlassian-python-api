@@ -79,6 +79,8 @@ class Projects(BitbucketCloudBase):
         :param by: string (default is "key"): How to interpret project, can be 'key' or 'name'.
 
         :return: The requested Project object
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/workspaces/%7Bworkspace%7D/projects/%7Bproject_key%7D#get
         """
         if by == "key":
             return self.__get_object(super(Projects, self).get(project))
@@ -99,6 +101,8 @@ class Projects(BitbucketCloudBase):
         :param by: string (default is "key"): How to interpret project, can be 'key' or 'name'.
 
         :return: True if the project exists
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/workspaces/%7Bworkspace%7D/projects/%7Bproject_key%7D#get
         """
         exists = False
         try:
