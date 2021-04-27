@@ -2743,6 +2743,19 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         data = {'idsOrKeys': [project_key]}
         return self.post(url, data=data)
 
+    def create_issuetypescheme(self, name, description, default_issue_type_id, issue_type_ids):
+        """
+        Create an issue type scheme
+        https://docs.atlassian.com/software/jira/docs/api/REST/8.13.6/#api/2/issuetypescheme-createIssueTypeScheme
+        :param name: The issue type scheme name
+        :param description: The issue type scheme description
+        :param default_issue_type_id: The default issue type id for this type scheme
+        :param issue_type_ids: A list of strings of available issue type ids for this scheme
+        """
+        url = "/rest/api/2/issuetypescheme/"
+        data = {'name': name, 'description': description, 'defaultIssueTypeId': default_issue_type_id, 'issueTypeIds': issue_type_ids}
+        return self.post(url, data=data)
+
     """
     REST resource for starting/stopping/querying indexing.
     Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/reindex
