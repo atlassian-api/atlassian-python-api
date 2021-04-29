@@ -214,84 +214,84 @@ class Repository(BitbucketCloudBase):
 
     @property
     def name(self):
-        """ The repository name """
+        """The repository name"""
         return self.get_data("name")
 
     @name.setter
     def name(self, name):
-        """ Setter for the repository name """
+        """Setter for the repository name"""
         return self.update(name=name)
 
     @property
     def slug(self):
-        """ The repository slug """
+        """The repository slug"""
         return self.get_data("slug")
 
     @property
     def description(self):
-        """ The repository description """
+        """The repository description"""
         return self.get_data("description")
 
     @description.setter
     def description(self, description):
-        """ Setter for the repository description """
+        """Setter for the repository description"""
         return self.update(description=description)
 
     @property
     def is_private(self):
-        """ The repository private flag """
+        """The repository private flag"""
         return self.get_data("is_private")
 
     @is_private.setter
     def is_private(self, is_private):
-        """ Setter for the repository private flag """
+        """Setter for the repository private flag"""
         return self.update(is_private=is_private)
 
     @property
     def uuid(self):
-        """ The repository uuid """
+        """The repository uuid"""
         return self.get_data("uuid")
 
     @property
     def size(self):
-        """ The repository size """
+        """The repository size"""
         return self.get_data("size")
 
     @property
     def created_on(self):
-        """ The repository creation time """
+        """The repository creation time"""
         return self.get_data("created_on")
 
     @property
     def updated_on(self):
-        """ The repository last update time """
+        """The repository last update time"""
         return self.get_data("updated_on", "never updated")
 
     def get_avatar(self):
-        """ The repository avatar """
+        """The repository avatar"""
         return self.get(self.get_link("avatar"), absolute=True)
 
     @property
     def branch_restrictions(self):
-        """ The repository branch restrictions """
+        """The repository branch restrictions"""
         return self.__branch_restrictions
 
     @property
     def default_reviewers(self):
-        """ The repository default reviewers """
+        """The repository default reviewers"""
         return self.__default_reviewers
 
     @property
     def issues(self):
-        """ The repository issues """
+        """The repository issues"""
         return self.__issues
 
     @property
     def pipelines(self):
-        """ The repository pipelines """
+        """The repository pipelines"""
         return self.__pipelines
 
     @property
     def pullrequests(self):
-        """ The repository pull requests """
+        """The repository pull requests"""
         return self.__pullrequests

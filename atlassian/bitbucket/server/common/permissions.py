@@ -13,7 +13,7 @@ class Permissions(BitbucketServerBase):
         super(Permissions, self).__init__(url, *args, **kwargs)
 
     def __permission(self, permission):
-        """ Internal function to get the permission for the put request. """
+        """Internal function to get the permission for the put request."""
         return "{}_{}".format(self.__permission_prefix, permission)
 
     def admin(self, name):
@@ -142,22 +142,22 @@ class PermissionBase(BitbucketServerBase):
 
     @property
     def is_admin(self):
-        """ True if group/user is admin """
+        """True if group/user is admin"""
         return True if self.permission == Permissions.ADMIN else False
 
     @property
     def is_write(self):
-        """ True if group/user has write permission """
+        """True if group/user has write permission"""
         return True if self.permission == Permissions.WRITE else False
 
     @property
     def is_read(self):
-        """ True if group/user has read premission """
+        """True if group/user has read premission"""
         return True if self.permission == Permissions.READ else False
 
     @property
     def can_write(self):
-        """ True if group/user can write """
+        """True if group/user can write"""
         return True if self.permission in (Permissions.ADMIN, Permissions.WRITE) else False
 
 
@@ -167,7 +167,7 @@ class Group(PermissionBase):
 
     @property
     def name(self):
-        """ The name of the group """
+        """The name of the group"""
         if self.url is None:
             return self.get_data("name")
         return self.get_data("group")["name"]
@@ -191,30 +191,30 @@ class User(PermissionBase):
 
     @property
     def name(self):
-        """ The name of the user """
+        """The name of the user"""
         return self.__userdata("name")
 
     @property
     def email(self):
-        """ The email of the user """
+        """The email of the user"""
         return self.__userdata("emailAddress")
 
     @property
     def displayname(self):
-        """ The displayname of the user """
+        """The displayname of the user"""
         return self.__userdata("displayName")
 
     @property
     def active(self):
-        """ The active flag of the user """
+        """The active flag of the user"""
         return self.__userdata("active")
 
     @property
     def slug(self):
-        """ The slug of the user """
+        """The slug of the user"""
         return self.__userdata("slug")
 
     @property
     def id(self):
-        """ The id of the user """
+        """The id of the user"""
         return self.__userdata("id")

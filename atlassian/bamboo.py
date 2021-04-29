@@ -9,7 +9,7 @@ log = logging.getLogger(__name__)
 
 
 class Bamboo(AtlassianRestAPI):
-    """ Private methods """
+    """Private methods"""
 
     def _get_generator(
         self,

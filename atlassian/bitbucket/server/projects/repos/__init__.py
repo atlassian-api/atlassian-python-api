@@ -111,52 +111,52 @@ class Repository(BitbucketServerBase):
 
     @property
     def id(self):
-        """ The repository identifier """
+        """The repository identifier"""
         return self.get_data("id")
 
     @property
     def name(self):
-        """ The repository name """
+        """The repository name"""
         return self.get_data("name")
 
     @name.setter
     def name(self, name):
-        """ Setter for the repository name """
+        """Setter for the repository name"""
         return self.update(name=name)
 
     @property
     def slug(self):
-        """ The repository slug """
+        """The repository slug"""
         return self.get_data("slug")
 
     @property
     def description(self):
-        """ The repository description """
+        """The repository description"""
         return self.get_data("description")
 
     @description.setter
     def description(self, description):
-        """ Setter for the repository description """
+        """Setter for the repository description"""
         return self.update(description=description)
 
     @property
     def public(self):
-        """ The repository public flag """
+        """The repository public flag"""
         return self.get_data("public")
 
     @public.setter
     def public(self, public):
-        """ Setter for the repository public flag """
+        """Setter for the repository public flag"""
         return self.update(public=public)
 
     @property
     def forkable(self):
-        """ The repository forkable flag """
+        """The repository forkable flag"""
         return self.get_data("forkable")
 
     @forkable.setter
     def forkable(self, forkable):
-        """ Setter for the repository forkable flag """
+        """Setter for the repository forkable flag"""
         return self.update(forkable=forkable)
 
     def contributing(self, at=None, markup=None):
