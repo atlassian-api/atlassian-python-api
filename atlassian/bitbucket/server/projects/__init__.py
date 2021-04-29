@@ -135,52 +135,52 @@ class Project(BitbucketServerBase):
 
     @property
     def id(self):
-        """ The project identifier """
+        """The project identifier"""
         return self.get_data("id")
 
     @property
     def type(self):
-        """ The project type """
+        """The project type"""
         return self.get_data("type")
 
     @property
     def name(self):
-        """ The project name """
+        """The project name"""
         return self.get_data("name")
 
     @name.setter
     def name(self, name):
-        """ Setter for the project name """
+        """Setter for the project name"""
         return self.update(name=name)
 
     @property
     def key(self):
-        """ The project key """
+        """The project key"""
         return self.get_data("key")
 
     @key.setter
     def key(self, key):
-        """ Setter for the project key """
+        """Setter for the project key"""
         return self.update(key=key)
 
     @property
     def description(self):
-        """ The project description """
+        """The project description"""
         return self.get_data("description")
 
     @description.setter
     def description(self, description):
-        """ Setter for the project description """
+        """Setter for the project description"""
         return self.update(description=description)
 
     @property
     def public(self):
-        """ The project public flag """
+        """The project public flag"""
         return self.get_data("public")
 
     @public.setter
     def public(self, public):
-        """ Setter for the project public flag """
+        """Setter for the project public flag"""
         return self.update(public=public)
 
     def get_avatar(self, s=0):

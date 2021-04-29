@@ -136,40 +136,40 @@ class BranchRestriction(BitbucketCloudBase):
 
     @property
     def id(self):
-        """ The branch restriction id """
+        """The branch restriction id"""
         return str(self.get_data("id"))
 
     @property
     def kind(self):
-        """ The branch restriction kind """
+        """The branch restriction kind"""
         return self.get_data("kind")
 
     @property
     def branch_match_kindstring(self):
-        """ The branch restriction match kindstring """
+        """The branch restriction match kindstring"""
         return self.get_data("branch_match_kindstring")
 
     @property
     def branch_typestring(self):
-        """ The branch restriction typestring """
+        """The branch restriction typestring"""
         return self.get_data("branch_typestring")
 
     @property
     def pattern(self):
-        """ The branch restriction pattern """
+        """The branch restriction pattern"""
         return self.get_data("pattern")
 
     @property
     def users(self):
-        """ The branch restriction users """
+        """The branch restriction users"""
         return self.get_data("users")
 
     @property
     def groups(self):
-        """ The branch restriction groups """
+        """The branch restriction groups"""
         return self.get_data("groups")
 
     @property
     def value(self):
-        """ The branch restriction value """
+        """The branch restriction value"""
         return self.get_data("value")

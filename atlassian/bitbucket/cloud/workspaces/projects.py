@@ -150,59 +150,59 @@ class Project(BitbucketCloudBase):
 
     @property
     def name(self):
-        """ The project name """
+        """The project name"""
         return self.get_data("name")
 
     @name.setter
     def name(self, name):
-        """ Setter for the project name """
+        """Setter for the project name"""
         return self.update(name=name)
 
     @property
     def key(self):
-        """ The project key """
+        """The project key"""
         return self.get_data("key")
 
     @key.setter
     def key(self, key):
-        """ Setter for the project key """
+        """Setter for the project key"""
         return self.update(key=key)
 
     @property
     def description(self):
-        """ The project description """
+        """The project description"""
         return self.get_data("description")
 
     @description.setter
     def description(self, description):
-        """ Setter for the project description """
+        """Setter for the project description"""
         return self.update(description=description)
 
     @property
     def is_private(self):
-        """ The project private flag """
+        """The project private flag"""
         return self.get_data("is_private")
 
     @is_private.setter
     def is_private(self, is_private):
-        """ Setter for the project private flag """
+        """Setter for the project private flag"""
         return self.update(is_private=is_private)
 
     @property
     def created_on(self):
-        """ The project creation time """
+        """The project creation time"""
         return self.get_data("created_on")
 
     @property
     def updated_on(self):
-        """ The project last update time """
+        """The project last update time"""
         return self.get_data("updated_on", "never updated")
 
     def get_avatar(self):
-        """ The project avatar """
+        """The project avatar"""
         return self.get(self.get_link("avatar"), absolute=True)
 
     @property
     def repositories(self):
-        """ The project repositories """
+        """The project repositories"""
         return self.__repositories

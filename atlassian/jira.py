@@ -1418,7 +1418,7 @@ class Jira(AtlassianRestAPI):
         return self.get(path=url)
 
     def user_get_websudo(self):
-        """ Get web sudo cookies using normal http request"""
+        """Get web sudo cookies using normal http request"""
         url = "secure/admin/WebSudoAuthenticate.jspa"
         data = {
             "webSudoPassword": self.password,
