@@ -1,5 +1,6 @@
 # coding=utf-8
 
+from requests import HTTPError
 from ..base import BitbucketCloudBase
 
 from .projects import Projects
@@ -52,6 +53,23 @@ class Workspaces(BitbucketCloudBase):
         :return: The requested Workspace objects
         """
         return self.__get_object(super(Workspaces, self).get(workspace))
+
+    def exists(self, workspace):
+        """
+        Check if workspace exist.
+
+        :param workspace: string: The requested workspace.
+
+        :return: True if the workspace exists
+        """
+        exists = False
+        try:
+            self.get(workspace)
+            exists = True
+        except HTTPError as e:
+            if e.response.status_code in (401, 404):
+                pass
+        return exists
 
 
 class Workspace(BitbucketCloudBase):

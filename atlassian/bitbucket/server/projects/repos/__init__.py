@@ -1,5 +1,6 @@
 # coding=utf-8
 
+from requests import HTTPError
 from ...base import BitbucketServerBase
 from ...common.permissions import Groups, Users
 
@@ -39,7 +40,7 @@ class Repositories(BitbucketServerBase):
         Returns the requested repository.
 
         :param repository: string: The requested repository.
-        :param by: string: How to interprate project, can be 'slug' or 'name'.
+        :param by: string (default is "slug"): How to interpret project, can be 'slug' or 'name'.
 
         :return: The requested Repository object
         """
@@ -54,6 +55,27 @@ class Repositories(BitbucketServerBase):
             ValueError("Unknown value '{}' for argument [by], expected 'slug' or 'name'".format(by))
 
         raise Exception("Unknown repository {} '{}'".format(by, repository))
+
+    def exists(self, repository, by="slug"):
+        """
+        Check if repository exist.
+
+        :param repository: string: The requested repository.
+        :param by: string (default is "slug"): How to interpret repository, can be 'slug' or 'name'.
+
+        :return: True if the repository exists
+        """
+        exists = False
+        try:
+            self.get(repository, by)
+            exists = True
+        except HTTPError as e:
+            if e.response.status_code in (401, 404):
+                pass
+        except Exception as e:
+            if not str(e) == "Unknown project {} '{}'".format(by, repository):
+                raise e
+        return exists
 
 
 class Repository(BitbucketServerBase):

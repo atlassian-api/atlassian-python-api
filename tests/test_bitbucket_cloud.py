@@ -28,6 +28,23 @@ def _datetimetostr(dtime):
 
 @pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3.4")
 class TestBasic:
+    def test_exists_workspace(self):
+        assert CLOUD.workspaces.exists("TestWorkspace1"), "Exists workspace"
+
+    def test_not_exists_workspace(self):
+        assert not CLOUD.workspaces.exists("TestWorkspace1xxx"), "Not exists workspace"
+
+    def test_not_exists_project(self):
+        assert not CLOUD.workspaces.get("TestWorkspace1").projects.exists("pr1"), "Not exists repository"
+
+    def test_exists_repository(self):
+        assert CLOUD.workspaces.get("TestWorkspace1").repositories.exists("testrepository1"), "Exists repository"
+
+    def test_not_exists_repository(self):
+        assert not CLOUD.workspaces.get("TestWorkspace1").repositories.exists(
+            "testrepository1xxx"
+        ), "Not exists repository"
+
     def test_get_repositories(self):
         result = [x["name"] for x in BITBUCKET.get_repositories("TestWorkspace1")]
         assert result == ["testrepository1", "testrepository2"], "Result of [get_repositories(...)]"
