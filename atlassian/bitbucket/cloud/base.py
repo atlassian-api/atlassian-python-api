@@ -64,10 +64,10 @@ class BitbucketCloudBase(BitbucketBase):
                 flags=flags,
                 absolute=absolute,
             )
-            if "values" not in response:
+            if len(response.get("values", [])) == 0:
                 return
 
-            for value in response.get("values", []):
+            for value in response["values"]:
                 yield value
 
             if paging_workaround:
