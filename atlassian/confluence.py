@@ -1858,7 +1858,7 @@ class Confluence(AtlassianRestAPI):
         return response.get("ancestors")
 
     def clean_all_caches(self):
-        """ Clean all caches from cache management"""
+        """Clean all caches from cache management"""
         headers = self.form_token_headers
         return self.delete("rest/cacheManagement/1.0/cacheEntries", headers=headers)
 

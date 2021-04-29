@@ -13,7 +13,7 @@ class ServiceDesk(AtlassianRestAPI):
 
     # Information actions
     def get_info(self):
-        """ Get info about Service Desk app """
+        """Get info about Service Desk app"""
 
         return self.get("rest/servicedeskapi/info", headers=self.experimental_headers)
 
@@ -71,7 +71,7 @@ class ServiceDesk(AtlassianRestAPI):
         )
 
     def get_my_customer_requests(self):
-        """ Returning requests where you are the assignee """
+        """Returning requests where you are the assignee"""
         response = self.get("rest/servicedeskapi/request", headers=self.experimental_headers)
         if self.advanced_mode:
             return response
