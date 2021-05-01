@@ -1,6 +1,8 @@
 # coding=utf-8
 import logging
 
+from requests import HTTPError
+
 from .rest_client import AtlassianRestAPI
 
 log = logging.getLogger(__name__)
@@ -763,3 +765,18 @@ class ServiceDesk(AtlassianRestAPI):
         url = "rest/servicedeskapi/servicedesk/{}/requesttype".format(service_desk_id)
 
         return self.post(url, headers=self.experimental_headers, data=data)
+
+    def raise_for_status(self, response):
+        """
+        Checks the response for an error status and raises an exception with the error message provided by the server
+        :param response:
+        :return:
+        """
+        if 400 <= response.status_code < 600:
+            try:
+                j = response.json()
+                error_msg = j["errorMessage"]
+            except Exception:
+                response.raise_for_status()
+
+            raise HTTPError(error_msg, response=response)
