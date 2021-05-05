@@ -48,7 +48,7 @@ class Bitbucket(BitbucketBase):
         :return: A list of group members
         """
 
-        url = "{}/groups/more-members".format(self._url_admin)
+        url = "{}/groups/more-members".format(self._url_admin())
         params = {}
         if start:
             params["start"] = start
