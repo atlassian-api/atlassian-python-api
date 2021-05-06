@@ -589,6 +589,28 @@ class Bitbucket(BitbucketBase):
         url = self._url_project_condition(project_key, id_condition)
         return self.delete(url) or {}
 
+    def _url_project_audit_log(self, project_key):
+        if self.cloud:
+            raise Exception("Not supported in Bitbucket Cloud")
+
+        return "{}/events".format(self._url_project(project_key, api_root="rest/audit"))
+
+    def get_project_audit_log(self, project_key, start=0, limit=None):
+        """
+        Get the audit log of the project
+        :param start:
+        :param limit:
+        :param project_key: The project key
+        :return: List of events of the audit log
+        """
+        url = self._url_project_audit_log(project_key)
+        params = {}
+        if start:
+            params["start"] = start
+        if limit:
+            params["limit"] = limit
+        return self._get_paged(url, params=params)
+
     def _url_repos(self, project_key, api_root=None, api_version=None):
         return "{}/repos".format(self._url_project(project_key, api_root, api_version))
 
@@ -922,6 +944,29 @@ class Bitbucket(BitbucketBase):
         url = self._url_repo_labels(project_key, repository_slug)
         data = {"name": label_name}
         return self.post(url, data=data)
+
+    def _url_repo_audit_log(self, project_key, repository_slug):
+        if self.cloud:
+            raise Exception("Not supported in Bitbucket Cloud")
+
+        return "{}/events".format(self._url_repo(project_key, repository_slug, api_root="rest/audit"))
+
+    def get_repo_audit_log(self, project_key, repository_slug, start=0, limit=None):
+        """
+        Get the audit log of the repository
+        :param start:
+        :param limit:
+        :param project_key: Key of the project you wish to look in.
+        :param repository_slug: url-compatible repository identifier
+        :return: List of events of the audit log
+        """
+        url = self._url_repo_audit_log(project_key, repository_slug)
+        params = {}
+        if start:
+            params["start"] = start
+        if limit:
+            params["limit"] = limit
+        return self._get_paged(url, params=params)
 
     def _url_repo_branches(self, project_key, repository_slug, api_root=None):
         return "{}/branches".format(self._url_repo(project_key, repository_slug, api_root=api_root))
