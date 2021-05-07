@@ -143,11 +143,11 @@ class TestBasic:
     def test_is_default_reviewer(self):
         result = BITBUCKET.is_default_reviewer("TestWorkspace1", "testrepository1", "DefaultReviewerNo")
         assert result is False, "Result of [is_default_reviewer(...)]"
-        result = BITBUCKET.is_default_reviewer("TestWorkspace1", "testrepository1", "DefaultReviewer1")
+        result = BITBUCKET.is_default_reviewer("TestWorkspace1", "testrepository1", "DefaultReviewer1Uuid")
         assert result is True, "Result of [is_default_reviewer(...)]"
 
     def test_delete_default_reviewer(self):
-        result = BITBUCKET.delete_default_reviewer("TestWorkspace1", "testrepository1", "DefaultReviewer1")[
+        result = BITBUCKET.delete_default_reviewer("TestWorkspace1", "testrepository1", "DefaultReviewer1Uuid")[
             "account_id"
         ]
         assert result == "DefaultReviewer1AccountId", "Result of [delete_default_reviewer(...)]"
