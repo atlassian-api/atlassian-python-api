@@ -1762,30 +1762,6 @@ class Bitbucket(BitbucketBase):
             params["limit"] = limit
         return (self.get(url, params=params) or {}).get("values")
 
-    def get_changelog(self, project_key, repository_slug, ref_from, ref_to, start=0, limit=None):
-        """
-        Get change log between 2 refs
-        :param start:
-        :param project_key:
-        :param repository_slug:
-        :param ref_from:
-        :param ref_to:
-        :param limit: OPTIONAL: The limit of the number of changes to return, this may be restricted by
-                fixed system limits. Default by built-in method: None
-        :return:
-        """
-        url = self._url_commits(project_key, repository_slug)
-        params = {}
-        if ref_from:
-            params["from"] = ref_from
-        if ref_to:
-            params["to"] = ref_to
-        if start:
-            params["start"] = start
-        if limit:
-            params["limit"] = limit
-        return self._get_paged(url, params=params)
-
     def _url_commit(self, project_key, repository_slug, commit_id, api_root=None, api_version=None):
         return "{}/{}".format(
             self._url_commits(project_key, repository_slug, api_root=api_root, api_version=api_version),
@@ -1816,6 +1792,30 @@ class Bitbucket(BitbucketBase):
     def get_pull_requests_contain_commit(self, project_key, repository_slug, commit):
         url = self._url_commit(project_key, repository_slug, commit)
         return (self.get(url) or {}).get("values")
+
+    def get_changelog(self, project_key, repository_slug, ref_from, ref_to, start=0, limit=None):
+        """
+        Get change log between 2 refs
+        :param start:
+        :param project_key:
+        :param repository_slug:
+        :param ref_from:
+        :param ref_to:
+        :param limit: OPTIONAL: The limit of the number of changes to return, this may be restricted by
+                fixed system limits. Default by built-in method: None
+        :return:
+        """
+        url = "{}/compare/commits".format(self._url_repo(project_key, repository_slug))
+        params = {}
+        if ref_from:
+            params["from"] = ref_from
+        if ref_to:
+            params["to"] = ref_to
+        if start:
+            params["start"] = start
+        if limit:
+            params["limit"] = limit
+        return self._get_paged(url, params=params)
 
     def _url_code_insights_report(self, project_key, repository_slug, commit_id, report_key):
         return "{}/reports/{}".format(
