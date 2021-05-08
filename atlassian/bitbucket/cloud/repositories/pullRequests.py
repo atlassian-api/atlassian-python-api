@@ -203,7 +203,7 @@ class PullRequest(BitbucketCloudBase):
 
         API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D/statuses
         """
-        return self._get_paged("{}/statuses".format(self.url), absolute=True)
+        return self._get_paged("statuses")
 
     def participants(self):
         """Returns a generator object of participants"""
@@ -226,6 +226,15 @@ class PullRequest(BitbucketCloudBase):
             yield Build(build, **self._new_session_args)
 
         return
+
+    def comments(self):
+        """
+        Returns generator object of the comments endpoint
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D/comments#get
+        """
+        for comment in self._get_paged("comments"):
+            yield Comment(comment, **self._new_session_args)
 
     def comment(self, raw_message):
         """
@@ -355,6 +364,53 @@ class Participant(BitbucketCloudBase):
     def participated_on(self):
         """time of last participation"""
         return self.get_time("participated_on")
+
+
+class Comment(BitbucketCloudBase):
+    def __init__(self, data, *args, **kwargs):
+        super(Comment, self).__init__(None, None, *args, data=data, expected_type="pullrequest_comment", **kwargs)
+
+    @property
+    def raw(self):
+        """The raw comment"""
+        return self.get_data("content")["raw"]
+
+    @property
+    def html(self):
+        """The html comment"""
+        return self.get_data("content")["html"]
+
+    @property
+    def markup(self):
+        """The markup type"""
+        return self.get_data("content")["markup"]
+
+    @property
+    def user(self):
+        """User object with user information of the comment"""
+        return User(None, self.get_data("user"), **self._new_session_args)
+
+    def update(self, **kwargs):
+        """
+        Update the pullrequest properties. Fields not present in the request body are ignored.
+
+        :param kwargs: dict: The data to update.
+
+        :return: The updated repository
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D/comments/%7Bcomment_id%7D#put
+        """
+        return self._update_data(self.put(None, data=kwargs))
+
+    def delete(self):
+        """
+        Delete the pullrequest comment.
+
+        :return: The response on success
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D/comments/%7Bcomment_id%7D#delete
+        """
+        return super(Comment, self).delete(None)
 
 
 class Build(BitbucketCloudBase):
