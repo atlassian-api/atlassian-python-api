@@ -66,11 +66,11 @@ class WorkspaceRepositories(RepositoriesBase):
     def __init__(self, url, *args, **kwargs):
         super(WorkspaceRepositories, self).__init__(url, *args, **kwargs)
 
-    def create(self, name, project_key=None):
+    def create(self, repo_slug, project_key=None):
         """
-        Creates a new repository with the given name.
+        Creates a new repository with the given repo_slug.
 
-        :param name: string: The name of the project.
+        :param repo_slug: string: The repo_slug of the project.
         :param project_key: string: The key of the project. If the project is not provided, the repository
                                     is automatically assigned to the oldest project in the workspace.
 
@@ -82,7 +82,7 @@ class WorkspaceRepositories(RepositoriesBase):
         data = {"scm": "git"}
         if project_key is not None:
             data["project"] = {"key": project_key}
-        return self._get_object(self.post(name, data=data))
+        return self._get_object(self.post(repo_slug, data=data))
 
     def each(self, role=None, q=None, sort=None):
         """
