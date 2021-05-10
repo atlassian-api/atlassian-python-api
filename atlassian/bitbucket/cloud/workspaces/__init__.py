@@ -30,6 +30,8 @@ class Workspaces(BitbucketCloudBase):
                                                See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
 
         :return: A generator for the Workspace objects
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/workspaces#get.
         """
         params = {}
         if role is not None:
@@ -51,6 +53,8 @@ class Workspaces(BitbucketCloudBase):
                                   surrounded by curly-braces, for example: {workspace UUID}.
 
         :return: The requested Workspace objects
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/workspaces/%7Bworkspace%7D#get
         """
         return self.__get_object(super(Workspaces, self).get(workspace))
 
@@ -61,6 +65,8 @@ class Workspaces(BitbucketCloudBase):
         :param workspace: string: The requested workspace.
 
         :return: True if the workspace exists
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/workspaces/%7Bworkspace%7D#get
         """
         exists = False
         try:
