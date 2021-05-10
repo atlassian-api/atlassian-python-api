@@ -6,7 +6,7 @@ from datetime import datetime
 from atlassian import Bitbucket
 from atlassian.bitbucket import Cloud
 from atlassian.bitbucket.cloud.common.users import User
-from atlassian.bitbucket.cloud.repositories.pullRequests import Participant, PullRequest, Build
+from atlassian.bitbucket.cloud.repositories.pullRequests import Comment, Participant, PullRequest, Build
 
 BITBUCKET = None
 try:
@@ -256,6 +256,17 @@ class TestPullRequests:
         assert com["content"]["raw"] == msg
         assert com["pullrequest"]["id"] == 1
         assert not com["deleted"]
+
+    def test_comments(self, tc1):
+        comments = list(tc1.comments())
+        assert len(comments) == 2
+        c1, c2 = comments
+        assert isinstance(c1, Comment)
+        assert isinstance(c2, Comment)
+        assert c1.raw == "Test comment 1"
+        assert isinstance(c1.user, User)
+        assert c1.user.display_name == "User04DisplayName"
+        assert c2.html == "<p>Test comment 2</p>"
 
     def test_approve(self, tc1):
         ap = tc1.approve()
