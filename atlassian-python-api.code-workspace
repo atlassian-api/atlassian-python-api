@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.exclude": {
+			".mypy_cache": true,
+			"**/__pycache__": true,
+			"**/*.pyc": true,
+		},
+		"files.associations": {
+			"DELETE": "python",
+			"GET": "python",
+			"POST": "python",
+			"PUT": "python",
+		}
+	}
+}

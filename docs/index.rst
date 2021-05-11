@@ -5,7 +5,7 @@
 
 Welcome to Atlassian Python API's documentation!
 ================================================
-|Build Status| |PyPI version| |PyPI - Downloads| |License| |Codacy Badge| |Docs|
+|Build Status| |PyPI version| |PyPI Downloads| |License| |Codacy Badge| |Docs|
 
 Getting started
 ---------------
@@ -48,47 +48,11 @@ Add a connection:
         url='http://localhost:8080',
         username='admin',
         password='admin')
-        
-        
-Key/Cert Based authentication
------------------------------
 
-Add a connection using key/cert based authentication:
+Other authentication methods
+----------------------------
 
-.. code-block:: python
-
-    from atlassian import Jira
-    from atlassian import Confluence
-    from atlassian import Bitbucket
-    from atlassian import ServiceDesk
-    from atlassian import Xray
-
-    jira = Jira(
-        url='http://localhost:8080',
-        key='/path/to/key',
-        cert='/path/to/cert')
-
-    confluence = Confluence(
-        url='http://localhost:8090',
-        key='/path/to/key',
-        cert='/path/to/cert')
-
-    bitbucket = Bitbucket(
-        url='http://localhost:7990',
-        key='/path/to/key',
-        cert='/path/to/cert')
-
-    service_desk = ServiceDesk(
-        url='http://localhost:8080',
-        key='/path/to/key',
-        cert='/path/to/cert')
-
-    xray = Xray(
-        url='http://localhost:8080',
-        key='/path/to/key',
-        cert='/path/to/cert')
-
-Alternatively OAuth can be used:
+Further authentication methods are available. For example OAuth can be used:
 
 .. code-block:: python
 
@@ -118,31 +82,48 @@ Alternatively OAuth can be used:
         url='http://localhost:8080',
         oauth=oauth_dict)
 
+OAuth 2.0 is also supported:
+
+.. code-block:: python
+
+    from atlassian.bitbucket import Cloud
+
+    # token is a dictionary and must at least contain "access_token"
+    # and "token_type".
+    oauth2_dict = {
+        "client_id": client_id,
+        "token": token}
+
+    bitbucket_cloud = Cloud(
+        oauth2=oauth2_dict)
+
+    # For a detailed example see bitbucket_oauth2.py in
+    # examples/bitbucket
+
+
 Or Kerberos *(installation with kerberos extra necessary)*:
 
 .. code-block:: python
 
-    kerberos_service = 'HTTP/jira.localhost@YOUR.DOMAIN.COM'
-
     jira = Jira(
         url='http://localhost:8080',
-        kerberos=kerberos_service)
+        kerberos={})
 
     confluence = Confluence(
         url='http://localhost:8090',
-        kerberos=kerberos_service)
+        kerberos={})
 
     bitbucket = Bitbucket(
         url='http://localhost:7990',
-        kerberos=kerberos_service)
+        kerberos={})
 
     service_desk = ServiceDesk(
         url='http://localhost:8080',
-        kerberos=kerberos_service)
+        kerberos={})
 
     xray = Xray(
         url='http://localhost:8080',
-        kerberos=kerberos_service)
+        kerberos={})
 
 Or reuse cookie file:
 
@@ -171,11 +152,12 @@ Or reuse cookie file:
         url='http://localhost:8080',
         cookies=cookie_dict)
 
-To authenticate to the Atlassian Cloud APIs:
+To authenticate to the Atlassian Cloud APIs Jira, Confluence, ServiceDesk:
 
 .. code-block:: python
 
     # Obtain an API token from: https://id.atlassian.com/manage-profile/security/api-tokens
+    # You cannot log-in with your regular password to these services.
 
     jira = Jira(
         url='https://your-domain.atlassian.net',
@@ -189,16 +171,32 @@ To authenticate to the Atlassian Cloud APIs:
         password=jira_api_token,
         cloud=True)
 
-    bitbucket = Bitbucket(
+    service_desk = ServiceDesk(
         url='https://your-domain.atlassian.net',
         username=jira_username,
         password=jira_api_token,
         cloud=True)
 
-    service_desk = ServiceDesk(
-        url='https://your-domain.atlassian.net',
-        username=jira_username,
-        password=jira_api_token,
+And to Bitbucket Cloud:
+
+.. code-block:: python
+
+    # Log-in with E-Mail / Username and regular password
+    # or with Username and App password.
+    # Get App password from https://bitbucket.org/account/settings/app-passwords/.
+    # Log-in with E-Mail and App password not possible.
+    # Username can be found here: https://bitbucket.org/account/settings/
+
+    from atlassian.bitbucket import Cloud
+
+    bitbucket = Cloud(
+        username=bitbucket_email,
+        password=bitbucket_password,
+        cloud=True)
+
+    bitbucket_app_pw = Cloud(
+        username=bitbucket_username,
+        password=bitbucket_app_password,
         cloud=True)
 
 .. toctree::
@@ -211,7 +209,7 @@ To authenticate to the Atlassian Cloud APIs:
    service_desk
    xray
 
-.. |Build Status| image:: https://travis-ci.org/atlassian-api/atlassian-python-api.svg?branch=master
+.. |Build Status| image:: https://github.com/atlassian-api/atlassian-python-api/workflows/Test/badge.svg?branch=master
    :target: https://pypi.python.org/pypi/atlassian-python-api
    :alt: Build status
 .. |PyPI version| image:: https://badge.fury.io/py/atlassian-python-api.svg
@@ -223,8 +221,8 @@ To authenticate to the Atlassian Cloud APIs:
 .. |Codacy Badge| image:: https://api.codacy.com/project/badge/Grade/c822908f507544fe98ae37b25518ae3d
    :target: https://www.codacy.com/project/gonchik/atlassian-python-api/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=AstroMatt/atlassian-python-api&amp;utm_campaign=Badge_Grade_Dashboard
    :alt: Codacy Badge
-.. |PyPI - Downloads| image:: https://pepy.tech/badge/atlassian-python-api/month
-   :alt: PyPI - Downloads
+.. |PyPI Downloads| image:: https://pepy.tech/badge/atlassian-python-api/month
+   :alt: PyPI Downloads
 .. |Docs| image:: https://readthedocs.org/projects/atlassian-python-api/badge/?version=latest
    :target: https://atlassian-python-api.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status

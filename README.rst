@@ -28,17 +28,12 @@ From PyPI
 From Source
 
 - Git clone repository
-- Use `pip install -r requirements.txt` to install the required packages
-- or `pipenv install && pipenv install --dev`
-
-How to contribute?
-__________________
-Please, click here `Contribution Guidelines for this project`_
-
+- Use :code:`pip install -r requirements.txt` to install the required packages
+- or :code:`pipenv install && pipenv install --dev`
 
 Examples
 ________
-More **examples** in **``examples/``** directory.
+More **examples** in :code:`examples/` directory.
 
 Here's a short example of how to create a Confluence page:
 
@@ -124,15 +119,15 @@ If you want to see the response in pretty print format JSON. Feel free for use c
     # and then print using pprint(result) instead of print(result)
     pprint(response)
 
-Development and Deployment (For contributors)
-_____________________________________________
+How to contribute?
+__________________
 First of all, I am happy for any PR requests.
 Let's fork and provide your changes :)
 See the `Contribution Guidelines for this project`_ for details on how to make changes to this library.
 
 .. _Contribution Guidelines for this project: CONTRIBUTING.rst
-.. |Build Status| image:: https://travis-ci.org/atlassian-api/atlassian-python-api.svg?branch=master
-   :target: https://pypi.python.org/pypi/atlassian-python-api
+.. |Build Status| image:: https://github.com/atlassian-api/atlassian-python-api/workflows/Test/badge.svg?branch=master
+   :target: https://github.com/atlassian-api/atlassian-python-api/actions?query=workflow%3ATest+branch%3Amaster
    :alt: Build status
 .. |PyPI version| image:: https://badge.fury.io/py/atlassian-python-api.svg
    :target: https://badge.fury.io/py/atlassian-python-api
@@ -146,7 +141,7 @@ See the `Contribution Guidelines for this project`_ for details on how to make c
 .. |PyPI - Downloads| image:: https://pepy.tech/badge/atlassian-python-api/month
    :alt: PyPI - Downloads
 .. |Docs| image:: https://readthedocs.org/projects/atlassian-python-api/badge/?version=latest
-   :target: https://atlassian-python-api.readthedocs.io/en/latest/?badge=latest
+   :target: https://atlassian-python-api.readthedocs.io/?badge=latest
    :alt: Documentation Status
 .. |Discord| image:: https://img.shields.io/discord/756142204761669743.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2
    :alt: Discord Chat
@@ -160,11 +155,11 @@ In addition to all the contributors we would like to thank these vendors:
 * Atlassian_ for developing such a powerful ecosystem.
 * JetBrains_ for providing us with free licenses of PyCharm_
 * Microsoft_ for providing us with free licenses of VSCode_
-* Travis_ for hosting our continuous integration
+* GitHub_ for hosting our repository and continuous integration
 
 .. _Atlassian: https://www.atlassian.com/
 .. _JetBrains: http://www.jetbrains.com
 .. _PyCharm: http://www.jetbrains.com/pycharm/
-.. _Travis: https://travis-ci.org/
+.. _GitHub: https://github.com/
 .. _Microsoft: https://github.com/Microsoft/vscode/
 .. _VSCode: https://code.visualstudio.com/

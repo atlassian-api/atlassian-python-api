@@ -1,0 +1,19 @@
+responses = {
+    None: {
+        "size": 1,
+        "limit": 25,
+        "isLastPage": true,
+        "values": [
+            {
+                "name": "jcitizen1_1",
+                "emailAddress": "jane1_1@example.com",
+                "id": 1011,
+                "displayName": "Jane Citizen 1_1",
+                "active": true,
+                "slug": "jcitizen1_1_slug",
+                "type": "NORMAL",
+            },
+        ],
+        "start": 0,
+    },
+}

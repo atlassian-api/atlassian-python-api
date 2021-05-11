@@ -10,14 +10,14 @@ from .service_desk import ServiceDesk
 from .xray import Xray
 
 __all__ = [
-    'Confluence',
-    'Jira',
-    'Bitbucket',
-    'Portfolio',
-    'Bamboo',
-    'Stash',
-    'Crowd',
-    'ServiceDesk',
-    'MarketPlace',
-    'Xray'
+    "Confluence",
+    "Jira",
+    "Bitbucket",
+    "Portfolio",
+    "Bamboo",
+    "Stash",
+    "Crowd",
+    "ServiceDesk",
+    "MarketPlace",
+    "Xray",
 ]

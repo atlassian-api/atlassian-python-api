@@ -1,0 +1,39 @@
+responses['{"content": {"raw": "hello world"}}'] = {
+    "links": {
+        "self": {
+            "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/pullrequests/1/comments/196230119"
+        },
+        "html": {
+            "href": "https://bitbucket.org/TestWorkspace1/testrepository1/pull-requests/1/_/diff#comment-196230119"
+        },
+    },
+    "deleted": false,
+    "pullrequest": {
+        "type": "pullrequest",
+        "id": 1,
+        "links": {
+            "self": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/pullrequests/1"},
+            "html": {"href": "https://bitbucket.org/TestWorkspace1/testrepository1/pull-requests/1"},
+        },
+        "title": "PRTitle",
+    },
+    "content": {"raw": "hello world", "markup": "markdown", "html": "<p>hello world</p>", "type": "rendered"},
+    "created_on": "2020-12-27T21:01:34.686441+00:00",
+    "user": {
+        "display_name": "User04DisplayName",
+        "uuid": "{User04UUID}",
+        "links": {
+            "self": {"href": "users/%7BUser04UUID%7D"},
+            "html": {"href": "https://bitbucket.org/%7BUser04UUID%7D/"},
+            "avatar": {
+                "href": "https://secure.gravatar.com/avatar/46a979e676028e3ec208927d6d537a3f?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FTS-2.png"
+            },
+        },
+        "nickname": "User04Nickname",
+        "type": "user",
+        "account_id": "User04AccountID",
+    },
+    "updated_on": "2020-12-27T21:01:34.688395+00:00",
+    "type": "pullrequest_comment",
+    "id": 196230119,
+}

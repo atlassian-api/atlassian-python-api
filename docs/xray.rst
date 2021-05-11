@@ -1,7 +1,9 @@
 Xray module
 ===========
 
-.. NOTE: The Xray module only support the Server + Data Center edition of the Xray Jira plugin!
+.. note::
+   The Xray module only support the Server + Data Center edition
+   of the Xray Jira plugin!
 
 Manage Test
 -----------
@@ -25,7 +27,7 @@ Manage Test
 
     # Retrieve test sets associated with a test
     xray.get_test_sets('TEST-001')
-    
+
     # Retrieve test executions of a test
     xray.get_test_executions('TEST-001')
 
@@ -63,7 +65,7 @@ Manage Pre-conditions
     # Retrieve the tests associated with the given pre-condition
     xray.get_tests_with_precondition('PREC-001')
 
-    # Associate tests with the given pre-condition 
+    # Associate tests with the given pre-condition
     xray.update_precondition('PREC-001', add=['TEST-001','TEST-002'], remove=['TEST-003'])
 
     # Remove association of the specified tests from the given pre-condition
@@ -87,7 +89,7 @@ Manage Test plans
 -----------------
 
 .. code-block:: python
-    
+
     # Retrieve the tests associated with the given test plan
     xray.get_tests_with_test_plan('PLAN-001')
 
@@ -96,6 +98,15 @@ Manage Test plans
 
     # Remove association of the specified tests from the given test plan
     xray.delete_test_from_test_plan('PLAN-001', 'TEST-001'):
+
+    # Retrieve the test executionss associated with the given test plan
+    xray.get_test_executions_with_test_plan('PLAN-001')
+
+    # Associate test executionss with the given test plan
+    xray.update_test_plan_test_executions('PLAN-001', add=['EXEC-001', 'EXEC-002'], remove=['EXEC-003'])
+
+    # Remove association of the specified test executionss from the given test plan
+    xray.delete_test_execution_from_test_plan('PLAN-001', 'EXEC-001'):
 
 Manage Test Executions
 ----------------------
@@ -120,7 +131,7 @@ Manage Test Runs
     xray.get_test_run(100)
 
     # Retrieve the assignee for the given test run.
-    xray.get_test_run_assignee(100)      
+    xray.get_test_run_assignee(100)
 
     # Update the assignee for the given test run
     xray.update_test_run_assignee(100, 'bob')
@@ -130,7 +141,7 @@ Manage Test Runs
 
     # Update the status for the given test run
     xray.update_test_run_status(100, 'PASS')
-    
+
     # Retrieve the defects for the given test run
     xray.get_test_run_defects(100)
 

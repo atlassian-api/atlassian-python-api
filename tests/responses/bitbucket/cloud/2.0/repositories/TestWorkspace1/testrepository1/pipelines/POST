@@ -1,0 +1,87 @@
+responses['{"target": {"ref_type": "branch", "type": "pipeline_ref_target", "ref_name": "master"}}'] = {
+    "status_code": 201,
+    "type": "pipeline",
+    "uuid": "{PipelineUuid}",
+    "repository": {
+        "name": "TestRepository",
+        "type": "repository",
+        "full_name": "TestWorkspace1/testrepository",
+        "links": {
+            "self": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository"},
+            "html": {"href": "https://bitbucket.org/TestWorkspace1/testrepository"},
+            "avatar": {"href": "https://bytebucket.org/ravatar/%7BTestRepositoryUuid%7D?ts=c"},
+        },
+        "uuid": "{TestRepositoryUuid}",
+    },
+    "state": {
+        "name": "COMPLETED",
+        "type": "pipeline_state_completed",
+        "result": {
+            "name": "STOPPED",
+            "type": "pipeline_state_completed_stopped",
+            "terminator": {
+                "display_name": "OwnerTestWorkspace1",
+                "uuid": "{OwnerTestWorkspace1AccountId}",
+                "links": {
+                    "self": {"href": "bitbucket/cloud/2.0/users/%7BOwnerTestWorkspace1AccountId%7D"},
+                    "html": {"href": "https://bitbucket.org/%7BOwnerTestWorkspace1AccountId%7D/"},
+                    "avatar": {
+                        "href": "https://secure.gravatar.com/avatar/31a164e6406a8deeb56e94c778030a9f?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FS-3.png"
+                    },
+                },
+                "type": "user",
+                "nickname": "OwnerTestWorkspace1Nickname",
+                "account_id": "OwnerTestWorkspace1AccountId",
+            },
+        },
+    },
+    "build_number": 25,
+    "creator": {
+        "display_name": "OwnerTestWorkspace1",
+        "uuid": "{OwnerTestWorkspace1AccountId}",
+        "links": {
+            "self": {"href": "bitbucket/cloud/2.0/users/%7BOwnerTestWorkspace1AccountId%7D"},
+            "html": {"href": "https://bitbucket.org/%7BOwnerTestWorkspace1AccountId%7D/"},
+            "avatar": {
+                "href": "https://secure.gravatar.com/avatar/31a164e6406a8deeb56e94c778030a9f?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FS-3.png"
+            },
+        },
+        "type": "user",
+        "nickname": "OwnerTestWorkspace1Nickname",
+        "account_id": "OwnerTestWorkspace1AccountId",
+    },
+    "created_on": "2020-11-03T22:14:50.671Z",
+    "target": {
+        "type": "pipeline_ref_target",
+        "ref_type": "branch",
+        "ref_name": "master",
+        "selector": {"type": "default"},
+        "commit": {
+            "type": "commit",
+            "hash": "30c1b58a2341992fe6870756a8880d5006ddb18e",
+            "links": {
+                "self": {
+                    "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository/commit/30c1b58a2341992fe6870756a8880d5006ddb18e"
+                },
+                "html": {
+                    "href": "https://bitbucket.org/TestWorkspace1/testrepository/commits/30c1b58a2341992fe6870756a8880d5006ddb18e"
+                },
+            },
+        },
+    },
+    "trigger": {"name": "MANUAL", "type": "pipeline_trigger_manual"},
+    "run_number": 1,
+    "duration_in_seconds": 0,
+    "build_seconds_used": 0,
+    "first_successful": False,
+    "expired": False,
+    "links": {
+        "self": {
+            "href": "https://bitbucket-pipelines.prod.public.atl-paas.net//rest/1.0/accounts/{OwnerTestWorkspace1AccountId}/repositories/{TestRepositoryUuid}/pipelines/{PipelineUuid}"
+        },
+        "steps": {
+            "href": "https://bitbucket-pipelines.prod.public.atl-paas.net//rest/1.0/accounts/{OwnerTestWorkspace1AccountId}/repositories/{TestRepositoryUuid}/pipelines/{PipelineUuid}/steps"
+        },
+    },
+    "has_variables": False,
+}

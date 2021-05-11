@@ -1,0 +1,65 @@
+#!/bin/bash
+
+if [[ ( -z ${1+x} ) || ( -z ${2+x} ) ]]; then
+    cat << EOF
+        usage: $(basename ${0}) repo increment
+
+        Quick and dirty version bump script
+        If a variable "BUILD_VERSION" is set, returns that variable as is
+        If "BUILD_VERSION" is not set, returns the bumped version based on last existing tag
+        and appends .devN where N is the build number.
+        (tags get sorted using 'sort -V', nothing fancy here)
+        If no tags are present, the initial version will be 0.1.0
+
+        Expects arguments:
+        - repo: the relative/absolute path to the repository
+        - increment: (major|minor|patch) part of the version to INCREASE, default is patch
+EOF
+    exit 1
+fi
+
+REPO_PATH=${1}
+INCREASE=${2:patch}
+
+
+function autoversion(){
+
+    if [ -n "${GITHUB_RUN_NUMBER+x}" ]; then
+        BUILD_NUMBER="${GITHUB_RUN_NUMBER}"
+    else
+        BUILD_NUMBER="0"  # In the developer machine, this will build x.y.z.dev0
+    fi
+
+    cd ${REPO_PATH} || exit 1
+
+    git fetch --tags 2>/dev/null
+    last_tag=$(git tag | sort -Vr | head -1)
+
+    # Catch existing no tags case
+    if [ -z "${last_tag}" ]; then
+        echo "0.1.0.dev${BUILD_NUMBER}"
+    else
+        a=( ${last_tag//./ } )   # replace points, split into array
+        case ${INCREASE} in
+          patch)
+            ((a[2]++))
+            ;;
+          minor)
+            ((a[1]++))
+            a[2]=0
+            ;;
+          major)
+            ((a[0]++))
+            a[1]=0
+            a[2]=0
+            ;;
+        esac
+        echo "${a[0]}.${a[1]}.${a[2]}.dev${BUILD_NUMBER}"
+    fi
+}
+
+if [ -n "${BUILD_VERSION+x}" ]; then
+    echo "${BUILD_VERSION}"
+else
+    autoversion
+fi

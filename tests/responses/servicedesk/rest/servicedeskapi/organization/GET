@@ -1,0 +1,20 @@
+responses["start=0&limit=50"] = {
+    "_expands": [],
+    "size": 1,
+    "start": 1,
+    "limit": 1,
+    "isLastPage": false,
+    "_links": {
+        "base": "https://your-domain.atlassian.net/rest/servicedeskapi",
+        "context": "context",
+        "next": "https://your-domain.atlassian.net/rest/servicedeskapi/organization?start=2&limit=1",
+        "prev": "https://your-domain.atlassian.net/rest/servicedeskapi/organization?start=0&limit=1",
+    },
+    "values": [
+        {
+            "id": "1",
+            "name": "Charlie Cakes Franchises",
+            "_links": {"self": "https://your-domain.atlassian.net/rest/servicedeskapi/organization/1"},
+        }
+    ],
+}

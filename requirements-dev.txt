@@ -1,4 +1,11 @@
-six
-requests
-oauthlib
-requests_oauthlib
+-r requirements.txt
+mock
+pytest
+pytest-cov
+flake8
+black
+tox
+coverage
+codecov
+# used for example confluence attach file
+python-magic

@@ -138,7 +138,8 @@ Page actions
     confluence.has_unknown_attachment_error(page_id)
 
     # Export page as PDF
-    # api_version needs to be set to 'cloud' when exporting from Confluence Cloud. 
+    # api_version needs to be set to 'cloud' when exporting from Confluence Cloud
+    .
     confluence.export_page(page_id)
 
     # Set a label on the page
@@ -149,6 +150,50 @@ Page actions
 
     # Add comment into page
     confluence.add_comment(page_id, text)
+
+Template actions
+----------------
+
+.. code-block:: python
+
+    # Updating a content template
+    template_id = "<string>"
+    name = "<string>"
+    body = {"value": "<string>", "representation": "view"}
+    template_type = "page"
+    description = "<string>"
+    labels = [{"prefix": "<string>", "name": "<string>", "id": "<string>", "label": "<string>"}]
+    space = "<key_string>"
+
+    confluence.create_or_update_template(name, body, template_type, template_id, description, labels, space)
+
+    # Creating a new content template
+    name = "<string>"
+    body = {"value": "<string>", "representation": "view"}
+    template_type = "page"
+    description = "<string>"
+    labels = [{"prefix": "<string>", "name": "<string>", "id": "<string>", "label": "<string>"}]
+    space = "<key_string>"
+
+    confluence.create_or_update_template(name, body, template_type, description=description, labels=labels, space=space)
+
+    # Get a template by its ID
+    confluence.get_template_by_id(template_id)
+
+    # Get all global content templates
+    confluence.get_all_templates_from_space()
+
+    # Get content templates in a space
+    confluence.get_all_templates_from_space(space)
+
+    # Get all global blueprint templates
+    confluence.get_all_blueprints_from_space()
+
+    # Get all blueprint templates in a space
+    confluence.get_all_blueprints_from_space(space)
+
+    # Removing a template
+    confluence.remove_template(template_id)
 
 Get spaces info
 ---------------

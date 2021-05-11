@@ -52,7 +52,7 @@ Branches
 
     # Get VCS Branches
     get_vcs_branches(plan_key, max_results=25)
-    
+
 Build results
 -------------
 
@@ -61,15 +61,15 @@ Build results
     # Get build results (Scalable from a single result to all build results)
     results(project_key=None, plan_key=None, job_key=None, build_number=None, expand=None, favourite=False,
             clover_enabled=False, issue_key=None, label=None, start_index=0, max_results=25, include_all_states=False)
-    
+
     # Get latest build results
     latest_results(expand=None, favourite=False, clover_enabled=False, label=None, issue_key=None,
                    start_index=0, max_results=25, include_all_states=False)
-    
+
     # Get latest build results for the project
     project_latest_results(project_key, expand=None, favourite=False, clover_enabled=False, label=None,
                            issue_key=None, start_index=0, max_results=25, include_all_states=False)
-    
+
     # Get build results for a single plan
     plan_results(project_key, plan_key, expand=None, favourite=False, clover_enabled=False, label=None,
                  issue_key=None, start_index=0, max_results=25, include_all_states=False)
@@ -133,7 +133,7 @@ Users & Groups
 
     # Get Groups
     get_groups(start=0, limit=25)
-    
+
     # Create Group
     create_group(group_name)
 
@@ -152,6 +152,71 @@ Users & Groups
     # Get users without Group
     get_users_not_in_group(group_name, filter_users='', start=0, limit=25)
 
+    # Get deployment users
+    get_deployment_users(self, deployment_id, filter_name=None, start=0, limit=25)
+
+    # Revoke user from deployment
+    revoke_user_from_deployment(self, deployment_id, user, permissions=['READ', 'WRITE', 'BUILD'])
+
+    # Grant user to deployment
+    grant_user_to_deployment(self, deployment_id, user, permissions)
+
+    # Get deployment groups
+    get_deployment_groups(self, deployment_id, filter_name=None, start=0, limit=25)
+
+    # Revoke group from deployment
+    revoke_group_from_deployment(self, deployment_id, group, permissions=['READ', 'WRITE', 'BUILD'])
+
+    # Grant group to deployment
+    grant_group_to_deployment(self, deployment_id, group, permissions)
+
+    # Get environment user
+    get_environment_users(self, environment_id, filter_name=None, start=0, limit=25)
+
+    # Revoke user from environment
+    revoke_user_from_environment(self, environment_id, user, permissions=['READ', 'WRITE', 'BUILD'])
+
+    # Grant user to environment
+    grant_user_to_environment(self, environment_id, user, permissions)
+
+    # Get environment groups
+    get_environment_groups(self, environment_id, filter_name=None, start=0, limit=25)
+
+    # Revoke group from environment
+    revoke_group_from_environment(self, environment_id, group, permissions=['READ', 'WRITE', 'BUILD'])
+
+    # Grant group to environment
+    grant_group_to_environment(self, environment_id, group, permissions)
+
+Agents
+------
+
+.. code-block:: python
+
+    # Get agents statuses
+    agent_status(online=False)
+
+    # Get remote agents. Currently (version 7.2.2) output is the same as for
+    # agent_status but uses different API
+    agent_remote(online=False)
+
+    # Check if agent is online
+    agent_is_online(agent_id=123456)
+
+    # Enable agent
+    agent_enable(agent_id=123456)
+
+    # Disable agent
+    agent_enable(agent_id=123456)
+
+    # Get agent details
+    agent_details(agent_id=123456)
+    agent_details(agent_id=123456, expand="capabilities,executableEnvironments,executableJobs")
+
+    # Get agent capabilities
+    agent_capabilities(agent_id=123456):
+    agent_capabilities(agent_id=123456, include_shared=False):
+
 Other actions
 -------------
 
@@ -162,9 +227,6 @@ Other actions
 
     # Get server information
     server_info()
-
-    # Get agents statuses
-    agent_status()
 
     # Get activity
     activity()

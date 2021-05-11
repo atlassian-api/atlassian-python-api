@@ -1,0 +1,37 @@
+# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: Test
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+
+  run-docker:
+
+    runs-on: ubuntu-18.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.6', '3.7', '3.8', '3.9']
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build Docker
+      run: |
+        make docker-qa-build PYTHON_VERSION=${{matrix.python-version}}
+    - name: Run Docker
+      run: |
+        .github/bump_version ./ minor > atlassian/VERSION
+        make docker-qa PYTHON_VERSION=${{matrix.python-version}}
+    - name: Creating coverage report
+      if: ${{ ( matrix.python-version == '3.8' ) }}
+      uses: codecov/codecov-action@v1
+      with:
+        files: ./coverage.xml
+        fail_ci_if_error: true

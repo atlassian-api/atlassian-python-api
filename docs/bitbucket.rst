@@ -22,7 +22,7 @@ Manage projects
     bitbucket.project_users(key, limit=99999, filter_str=None)
 
     # Get project administrators for project
-    butbucket.project_users_with_administrator_permissions(key)
+    bitbucket.project_users_with_administrator_permissions(key)
 
     # Get Project Groups
     bitbucket.project_groups(key, limit=99999, filter_str=None)
@@ -46,6 +46,9 @@ Manage repositories
 
     # Get single repository
     bitbucket.get_repo(project_key, repository_slug)
+
+    # Update single repository
+    bitbucket.update_repo(project_key, repository_slug, description="Repo description")
 
     # Get labels for a single repository
     bitbucket.get_repo_labels(project_key, repository_slug)
@@ -131,7 +134,7 @@ Manage code
     bitbucket.create_branch(project_key, repository, name, start_point, message)
 
     # Delete branch from related repo
-    bitbucket.delete_branch(project, repository, name, end_point)
+    bitbucket.delete_branch(project, repository, name, end_point=None)
 
     # Get pull requests
     bitbucket.get_pull_requests(project, repository, state='OPEN', order='newest', limit=100, start=0)
@@ -199,7 +202,7 @@ Branch permissions
     # Set branches permissions
     bitbucket.set_branches_permissions(project_key, multiple_permissions=False, matcher_type=None, matcher_value=None, permission_type=None, repository=None, except_users=[], except_groups=[], except_access_keys=[], start=0, limit=25)
 
-    # Delete a single branch permission by premission id
+    # Delete a single branch permission by permission id
     bitbucket.delete_branch_permission(project_key, permission_id, repository=None)
 
     # Get a single branch permission by permission id
@@ -272,61 +275,125 @@ Pipelines management
 
 .. code-block:: python
 
-    # Get most recent Pipelines results for repository
-    bitbucket.get_pipelines(workspace, repository)
+    # Object oriented:
+        # Get the repository first
+        r = cloud.workspaces.get(workspace).repositories.get(repository)
 
-    # Trigger default Pipeline on the latest revision of the master branch
-    bitbucket.trigger_pipeline(workspace, repository)
+        # Get first ten Pipelines results for repository
+        r.pipelines.each()
 
-    # Trigger default Pipeline on the latest revision of the develop branch
-    bitbucket.trigger_pipeline(workspace, repository, branch="develop")
+        # Get twenty last Pipelines results for repository
+        r.pipelines.each(sort="-created_on", pagelen=20)
 
-    # Trigger default Pipeline on a specific revision of the develop branch
-    bitbucket.trigger_pipeline(workspace, repository, branch="develop", revision="<40-char hash>")
+        # Trigger default Pipeline on the latest revision of the master branch
+        r.pipelines.trigger()
 
-    # Trigger specific Pipeline on a specific revision of the master branch
-    bitbucket.trigger_pipeline(workspace, repository, revision="<40-char hash>", name="style-check")
+        # Trigger default Pipeline on the latest revision of the develop branch
+        r.pipelines.trigger(branch="develop")
 
-    # Get specific Pipeline by UUID
-    bitbucket.get_pipeline(workspace, repository, "{7d6c327d-6336-4721-bfeb-c24caf25045c}")
+        # Trigger default Pipeline on a specific revision of the develop branch
+        r.pipelines.trigger(branch="develop", revision="<40-char hash>")
 
-    # Stop specific Pipeline by UUID
-    bitbucket.stop_pipeline(workspace, repository, "{7d6c327d-6336-4721-bfeb-c24caf25045c}")
+        # Trigger specific Pipeline on a specific revision of the master branch
+        r.pipelines.trigger(revision="<40-char hash>", name="style-check")
 
-    # Get steps of Pipeline specified by UUID
-    bitbucket.get_pipeline_steps(workspace, repository, "{7d6c327d-6336-4721-bfeb-c24caf25045c}")
+        # Get specific Pipeline by UUID
+        pl = r.pipelines.get("{7d6c327d-6336-4721-bfeb-c24caf25045c}")
 
-    # Get step of Pipeline specified by UUIDs
-    bitbucket.get_pipeline_step(workspace, repository, "{7d6c327d-6336-4721-bfeb-c24caf25045c}", "{56d2d8af-6526-4813-a22c-733ec6ecabf3}")
+        # Stop specific Pipeline by UUID
+        pl.stop()
 
-    # Get log of step of Pipeline specified by UUIDs
-    bitbucket.get_pipeline_step_log(workspace, repository, "{7d6c327d-6336-4721-bfeb-c24caf25045c}", "{56d2d8af-6526-4813-a22c-733ec6ecabf3}")
+        # Get steps of Pipeline specified by UUID
+        pl.steps()
+
+        # Get step of Pipeline specified by UUIDs
+        s = pl.step("{56d2d8af-6526-4813-a22c-733ec6ecabf3}")
+
+        # Get log of step of Pipeline specified by UUIDs
+        s.log()
+
+    # or function oriented:
+        # Get most recent Pipelines results for repository
+        bitbucket.get_pipelines(workspace, repository)
+
+        # Trigger default Pipeline on the latest revision of the master branch
+        bitbucket.trigger_pipeline(workspace, repository)
+
+        # Trigger default Pipeline on the latest revision of the develop branch
+        bitbucket.trigger_pipeline(workspace, repository, branch="develop")
+
+        # Trigger default Pipeline on a specific revision of the develop branch
+        bitbucket.trigger_pipeline(workspace, repository, branch="develop", revision="<40-char hash>")
+
+        # Trigger specific Pipeline on a specific revision of the master branch
+        bitbucket.trigger_pipeline(workspace, repository, revision="<40-char hash>", name="style-check")
+
+        # Get specific Pipeline by UUID
+        bitbucket.get_pipeline(workspace, repository, "{7d6c327d-6336-4721-bfeb-c24caf25045c}")
+
+        # Stop specific Pipeline by UUID
+        bitbucket.stop_pipeline(workspace, repository, "{7d6c327d-6336-4721-bfeb-c24caf25045c}")
+
+        # Get steps of Pipeline specified by UUID
+        bitbucket.get_pipeline_steps(workspace, repository, "{7d6c327d-6336-4721-bfeb-c24caf25045c}")
+
+        # Get step of Pipeline specified by UUIDs
+        bitbucket.get_pipeline_step(workspace, repository, "{7d6c327d-6336-4721-bfeb-c24caf25045c}", "{56d2d8af-6526-4813-a22c-733ec6ecabf3}")
+
+        # Get log of step of Pipeline specified by UUIDs
+        bitbucket.get_pipeline_step_log(workspace, repository, "{7d6c327d-6336-4721-bfeb-c24caf25045c}", "{56d2d8af-6526-4813-a22c-733ec6ecabf3}")
 
 Manage issues
 -------------
 
 .. code-block:: python
 
-    # Get all tracked issues
-    bitbucket.get_issues(workspace, repository)
+    # Object oriented:
+        # Get the repository first
+        r = cloud.workspaces.get(workspace).repositories.get(repository)
 
-    # Get all unassigned issues and sort them by priority
-    bitbucket.get_issues(workspace, repository, sort_by="priority", query='assignee = null')
+        # Get all tracked issues
+        r.issues.each()
 
-    # Create a new issue
-    bitbucket.create_issue(workspace, repository, "The title", "The description")
+        # Get all unassigned issues and sort them by priority
+        r.issues.get(sort_by="priority", query='assignee = null')
 
-    # Create a new issue of kind 'enhancement' and priority 'minor'
-    bitbucket.create_issue(workspace, repository, "New idea", "How about this", kind="enhancement", priority="minor")
+        # Create a new issue of kind 'enhancement' and priority 'minor'
+        r.issues.create("New idea", "How about this", kind="enhancement", priority="minor")
 
-    # Update the 'priority' field of the issue 42
-    bitbucket.update_issue(workspace, repository, 42, priority="blocker")
+        # Update the 'priority' field of the issue 42
+        r.issues.get(42).priority = "blocker"
 
-    # Mark issue 42 as resolved
-    bitbucket.update_issue(workspace, repository, 42, state="resolved")
+        # Mark issue 42 as resolved
+        r.issues.get(42).state = "resolved"
 
-    # Get information about issue 1
-    bitbucket.get_issue(workspace, repository, 1)
+        # Get information about issue 1
+        i = r.issues.get(1)
 
-    # Delete issue 123
-    bitbucket.delete_issue(workspace, repository, 123)
+        # Delete issue 123
+        r.issues.get(123).delete()
+
+    # or function oriented:
+        # Get all tracked issues
+        bitbucket.get_issues(workspace, repository)
+
+        # Get all unassigned issues and sort them by priority
+        bitbucket.get_issues(workspace, repository, sort_by="priority", query='assignee = null')
+
+        # Create a new issue
+        bitbucket.create_issue(workspace, repository, "The title", "The description")
+
+        # Create a new issue of kind 'enhancement' and priority 'minor'
+        bitbucket.create_issue(workspace, repository, "New idea", "How about this", kind="enhancement", priority="minor")
+
+        # Update the 'priority' field of the issue 42
+        bitbucket.update_issue(workspace, repository, 42, priority="blocker")
+
+        # Mark issue 42 as resolved
+        bitbucket.update_issue(workspace, repository, 42, state="resolved")
+
+        # Get information about issue 1
+        bitbucket.get_issue(workspace, repository, 1)
+
+        # Delete issue 123
+        bitbucket.delete_issue(workspace, repository, 123)
