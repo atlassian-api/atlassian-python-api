@@ -80,10 +80,10 @@ responses['{"scm": "git"}'] = {
         "uuid": "{TestWorkspace1}",
     },
 }
-responses['{"scm": "git", "project": {"key": "TEST1"}}'] = {
+responses['{"scm": "git", "project": {"key": "TEST1"}, "fork_policy": "allow_forks"}'] = {
     "created_on": "2020-11-03T12:09:39.418592+00:00",
     "description": "Test newly created repository in project TEST1",
-    "fork_policy": "no_forks",
+    "fork_policy": "allow_forks",
     "full_name": "TestWorkspace1/TestRepositoryCreated",
     "has_issues": True,
     "has_wiki": False,

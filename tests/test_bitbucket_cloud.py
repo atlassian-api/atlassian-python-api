@@ -1,4 +1,5 @@
 # coding: utf8
+from atlassian.bitbucket.cloud.repositories import WorkspaceRepositories
 import pytest
 import sys
 from datetime import datetime
@@ -48,10 +49,10 @@ class TestBasic:
     def test_create_repositories(self):
         result = CLOUD.workspaces.get("TestWorkspace1").repositories.create("TestRepositoryCreated")
         assert result.description == "Test newly created repository", "Result of repositories [create(...)]"
-        result = CLOUD.workspaces.get("TestWorkspace1").repositories.create("TestRepositoryCreated", "TEST1")
-        assert (
-            result.description == "Test newly created repository in project TEST1"
-        ), "Result of repositories [create(...)] with project"
+        result = CLOUD.workspaces.get("TestWorkspace1").repositories.create(
+            "TestRepositoryCreated", "TEST1", fork_policy=WorkspaceRepositories.ALLOW_FORKS
+        )
+        assert result.fork_policy == "allow_forks", "Result of repositories [create(...)] with project and fork policy"
 
     def test_get_repositories(self):
         result = [x["name"] for x in BITBUCKET.get_repositories("TestWorkspace1")]

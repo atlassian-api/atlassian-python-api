@@ -63,16 +63,28 @@ class Repositories(RepositoriesBase):
 
 
 class WorkspaceRepositories(RepositoriesBase):
+    ALLOW_FORKS = "allow_forks"
+    NO_PUBLIC_FORKS = "no_public_forks"
+    NO_FORKS = "no_forks"
+    FORK_POLICIES = [
+        ALLOW_FORKS,
+        NO_PUBLIC_FORKS,
+        NO_FORKS,
+    ]
+
     def __init__(self, url, *args, **kwargs):
         super(WorkspaceRepositories, self).__init__(url, *args, **kwargs)
 
-    def create(self, repo_slug, project_key=None):
+    def create(self, repo_slug, project_key=None, is_private=None, fork_policy=None):
         """
         Creates a new repository with the given repo_slug.
 
         :param repo_slug: string: The repo_slug of the project.
         :param project_key: string: The key of the project. If the project is not provided, the repository
                                     is automatically assigned to the oldest project in the workspace.
+        :param is_private: boolean: Set to false if the repository shall be public.
+        :param fork_policy: string: The fork policy (one of WorkspaceRepositories.ALLOW_FORKS,
+                                    WorkspaceRepositories.NO_PUBLIC_FORKS, WorkspaceRepositories.NO_FORKS).
 
         :return: The created project object
 
@@ -82,6 +94,12 @@ class WorkspaceRepositories(RepositoriesBase):
         data = {"scm": "git"}
         if project_key is not None:
             data["project"] = {"key": project_key}
+        if is_private is not None:
+            data["is_private"] = is_private
+        if fork_policy is not None:
+            if fork_policy not in self.FORK_POLICIES:
+                raise ValueError("fork_policy must be one of {}".format(self.FORK_POLICIES))
+            data["fork_policy"] = fork_policy
         return self._get_object(self.post(repo_slug, data=data))
 
     def each(self, role=None, q=None, sort=None):
@@ -276,6 +294,11 @@ class Repository(BitbucketCloudBase):
     def is_private(self, is_private):
         """Setter for the repository private flag"""
         return self.update(is_private=is_private)
+
+    @property
+    def fork_policy(self):
+        """Getter for the repository fork policy"""
+        return self.get_data("fork_policy")
 
     @property
     def uuid(self):
