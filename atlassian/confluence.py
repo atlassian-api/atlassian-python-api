@@ -1858,7 +1858,7 @@ class Confluence(AtlassianRestAPI):
         return response.get("ancestors")
 
     def clean_all_caches(self):
-        """ Clean all caches from cache management"""
+        """Clean all caches from cache management"""
         headers = self.form_token_headers
         return self.delete("rest/cacheManagement/1.0/cacheEntries", headers=headers)
 
@@ -2638,3 +2638,18 @@ class Confluence(AtlassianRestAPI):
         url = "rest/jira-metadata/1.0/metadata/cache"
         params = {"globalId": global_id}
         return self.delete(url, params=params)
+
+    def raise_for_status(self, response):
+        """
+        Checks the response for an error status and raises an exception with the error message provided by the server
+        :param response:
+        :return:
+        """
+        if 400 <= response.status_code < 600:
+            try:
+                j = response.json()
+                error_msg = j["message"]
+            except Exception:
+                response.raise_for_status()
+
+            raise HTTPError(error_msg, response=response)

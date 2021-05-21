@@ -1,5 +1,6 @@
 # coding=utf-8
 
+from requests import HTTPError
 from ..base import BitbucketCloudBase
 
 from ..repositories import ProjectRepositories
@@ -74,10 +75,12 @@ class Projects(BitbucketCloudBase):
         """
         Returns the requested project
 
-        :param project: string:               The requested project.
-        :param by: string (default is "key"): How to interprate project, can be 'key' or 'name'.
+        :param project: string: The requested project.
+        :param by: string (default is "key"): How to interpret project, can be 'key' or 'name'.
 
         :return: The requested Project object
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/workspaces/%7Bworkspace%7D/projects/%7Bproject_key%7D#get
         """
         if by == "key":
             return self.__get_object(super(Projects, self).get(project))
@@ -89,6 +92,29 @@ class Projects(BitbucketCloudBase):
             ValueError("Unknown value '{}' for argument [by], expected 'key' or 'name'".format(by))
 
         raise Exception("Unknown project {} '{}'".format(by, project))
+
+    def exists(self, project, by="key"):
+        """
+        Check if project exist.
+
+        :param project: string: The requested project.
+        :param by: string (default is "key"): How to interpret project, can be 'key' or 'name'.
+
+        :return: True if the project exists
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/workspaces/%7Bworkspace%7D/projects/%7Bproject_key%7D#get
+        """
+        exists = False
+        try:
+            self.get(project, by)
+            exists = True
+        except HTTPError as e:
+            if e.response.status_code in (401, 404):
+                pass
+        except Exception as e:
+            if not str(e) == "Unknown project {} '{}'".format(by, project):
+                raise e
+        return exists
 
 
 class Project(BitbucketCloudBase):
@@ -128,59 +154,59 @@ class Project(BitbucketCloudBase):
 
     @property
     def name(self):
-        """ The project name """
+        """The project name"""
         return self.get_data("name")
 
     @name.setter
     def name(self, name):
-        """ Setter for the project name """
+        """Setter for the project name"""
         return self.update(name=name)
 
     @property
     def key(self):
-        """ The project key """
+        """The project key"""
         return self.get_data("key")
 
     @key.setter
     def key(self, key):
-        """ Setter for the project key """
+        """Setter for the project key"""
         return self.update(key=key)
 
     @property
     def description(self):
-        """ The project description """
+        """The project description"""
         return self.get_data("description")
 
     @description.setter
     def description(self, description):
-        """ Setter for the project description """
+        """Setter for the project description"""
         return self.update(description=description)
 
     @property
     def is_private(self):
-        """ The project private flag """
+        """The project private flag"""
         return self.get_data("is_private")
 
     @is_private.setter
     def is_private(self, is_private):
-        """ Setter for the project private flag """
+        """Setter for the project private flag"""
         return self.update(is_private=is_private)
 
     @property
     def created_on(self):
-        """ The project creation time """
+        """The project creation time"""
         return self.get_data("created_on")
 
     @property
     def updated_on(self):
-        """ The project last update time """
+        """The project last update time"""
         return self.get_data("updated_on", "never updated")
 
     def get_avatar(self):
-        """ The project avatar """
+        """The project avatar"""
         return self.get(self.get_link("avatar"), absolute=True)
 
     @property
     def repositories(self):
-        """ The project repositories """
+        """The project repositories"""
         return self.__repositories

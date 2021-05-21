@@ -126,6 +126,8 @@ All methods based on docs from: https://developer.atlassian.com/docs/
 * Others:
     - https://developer.atlassian.com/server/jira/platform/oauth/
     - https://confluence.atlassian.com/cloud/api-tokens-938839638.html
+    - (OpsGenie) https://docs.opsgenie.com/docs/api-overview
+    - (Status Page) https://developer.statuspage.io/
 
 .. _`Jira Server`: https://docs.atlassian.com/software/jira/docs/api/REST/latest
 .. _`Jira Cloud`: https://developer.atlassian.com/cloud/jira/platform/rest/v3/

@@ -1,5 +1,6 @@
 # coding=utf-8
 
+from requests import HTTPError
 from ..base import BitbucketCloudBase
 
 from .projects import Projects
@@ -29,6 +30,8 @@ class Workspaces(BitbucketCloudBase):
                                                See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
 
         :return: A generator for the Workspace objects
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/workspaces#get.
         """
         params = {}
         if role is not None:
@@ -50,8 +53,29 @@ class Workspaces(BitbucketCloudBase):
                                   surrounded by curly-braces, for example: {workspace UUID}.
 
         :return: The requested Workspace objects
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/workspaces/%7Bworkspace%7D#get
         """
         return self.__get_object(super(Workspaces, self).get(workspace))
+
+    def exists(self, workspace):
+        """
+        Check if workspace exist.
+
+        :param workspace: string: The requested workspace.
+
+        :return: True if the workspace exists
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/workspaces/%7Bworkspace%7D#get
+        """
+        exists = False
+        try:
+            self.get(workspace)
+            exists = True
+        except HTTPError as e:
+            if e.response.status_code in (401, 404):
+                pass
+        return exists
 
 
 class Workspace(BitbucketCloudBase):
@@ -62,49 +86,49 @@ class Workspace(BitbucketCloudBase):
 
     @property
     def name(self):
-        """ The workspace name """
+        """The workspace name"""
         return self.get_data("name")
 
     @name.setter
     def name(self, name):
-        """ Setter for the workspace name """
+        """Setter for the workspace name"""
         return self.update(name=name)
 
     @property
     def slug(self):
-        """ The workspace slug """
+        """The workspace slug"""
         return self.get_data("slug")
 
     @property
     def uuid(self):
-        """ The workspace uuid """
+        """The workspace uuid"""
         return self.get_data("uuid")
 
     @property
     def is_private(self):
-        """ The workspace private flag """
+        """The workspace private flag"""
         return self.get_data("is_private")
 
     @property
     def created_on(self):
-        """ The workspace creation time """
+        """The workspace creation time"""
         return self.get_data("created_on")
 
     @property
     def updated_on(self):
-        """ The workspace last update time """
+        """The workspace last update time"""
         return self.get_data("updated_on", "never updated")
 
     def get_avatar(self):
-        """ The project avatar """
+        """The project avatar"""
         return self.get(self.get_link("avatar"), absolute=True)
 
     @property
     def projects(self):
-        """ The workspace projects """
+        """The workspace projects"""
         return self.__projects
 
     @property
     def repositories(self):
-        """ The workspace repositories """
+        """The workspace repositories"""
         return self.__repositories

@@ -18,7 +18,7 @@ class Xray(AtlassianRestAPI):
         :param test_keys: list of tests (eg. `['TEST-001', 'TEST-002']`) to retrieve.
         :return: Returns the retrieved tests.
         """
-        url = "rest/raven/1.0/api/test/?keys={0}".format(";".join(test_keys))
+        url = "rest/raven/1.0/api/test?keys={0}".format(";".join(test_keys))
         return self.get(url)
 
     def get_test_statuses(self):

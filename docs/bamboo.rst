@@ -152,6 +152,42 @@ Users & Groups
     # Get users without Group
     get_users_not_in_group(group_name, filter_users='', start=0, limit=25)
 
+    # Get deployment users
+    get_deployment_users(self, deployment_id, filter_name=None, start=0, limit=25)
+
+    # Revoke user from deployment
+    revoke_user_from_deployment(self, deployment_id, user, permissions=['READ', 'WRITE', 'BUILD'])
+
+    # Grant user to deployment
+    grant_user_to_deployment(self, deployment_id, user, permissions)
+
+    # Get deployment groups
+    get_deployment_groups(self, deployment_id, filter_name=None, start=0, limit=25)
+
+    # Revoke group from deployment
+    revoke_group_from_deployment(self, deployment_id, group, permissions=['READ', 'WRITE', 'BUILD'])
+
+    # Grant group to deployment
+    grant_group_to_deployment(self, deployment_id, group, permissions)
+
+    # Get environment user
+    get_environment_users(self, environment_id, filter_name=None, start=0, limit=25)
+
+    # Revoke user from environment
+    revoke_user_from_environment(self, environment_id, user, permissions=['READ', 'WRITE', 'BUILD'])
+
+    # Grant user to environment
+    grant_user_to_environment(self, environment_id, user, permissions)
+
+    # Get environment groups
+    get_environment_groups(self, environment_id, filter_name=None, start=0, limit=25)
+
+    # Revoke group from environment
+    revoke_group_from_environment(self, environment_id, group, permissions=['READ', 'WRITE', 'BUILD'])
+
+    # Grant group to environment
+    grant_group_to_environment(self, environment_id, group, permissions)
+
 Agents
 ------
 

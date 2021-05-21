@@ -1418,7 +1418,7 @@ class Jira(AtlassianRestAPI):
         return self.get(path=url)
 
     def user_get_websudo(self):
-        """ Get web sudo cookies using normal http request"""
+        """Get web sudo cookies using normal http request"""
         url = "secure/admin/WebSudoAuthenticate.jspa"
         data = {
             "webSudoPassword": self.password,
@@ -2259,7 +2259,7 @@ class Jira(AtlassianRestAPI):
     Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/search
     """
 
-    def jql(self, jql, fields="*all", start=0, limit=None, expand=None):
+    def jql(self, jql, fields="*all", start=0, limit=None, expand=None, validate_query=None):
         """
         Get issues from jql search result with all related fields
         :param jql:
@@ -2268,6 +2268,7 @@ class Jira(AtlassianRestAPI):
         :param limit: OPTIONAL: The limit of the number of issues to return, this may be restricted by
                 fixed system limits. Default by built-in method: 50
         :param expand: OPTIONAL: expand the search result
+        :param validate_query: Whether to validate the JQL query
         :return:
         """
         params = {}
@@ -2283,6 +2284,8 @@ class Jira(AtlassianRestAPI):
             params["jql"] = jql
         if expand is not None:
             params["expand"] = expand
+        if validate_query is not None:
+            params["validateQuery"] = validate_query
         return self.get("rest/api/2/search", params=params)
 
     def csv(self, jql, limit=1000, all_fields=True, start=None, delimiter=None):
@@ -3391,13 +3394,11 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param name: str
         :param type: str, scrum or kanban
         :param filter_id: int
-        :param location: dict, Optional. Default is user
+        :param location: dict, Optional. Only specify this for Jira Cloud!
         """
         data = {"name": name, "type": type, "filterId": filter_id}
         if location:
             data["location"] = location
-        else:
-            data["location"] = {"type": "user"}
         url = "rest/agile/1.0/board"
         return self.post(url, data=data)
 
@@ -3687,3 +3688,18 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
             # check as support tools
             response = self.get("rest/supportHealthCheck/1.0/check/")
         return response
+
+    def raise_for_status(self, response):
+        """
+        Checks the response for an error status and raises an exception with the error message provided by the server
+        :param response:
+        :return:
+        """
+        if 400 <= response.status_code < 600:
+            try:
+                j = response.json()
+                error_msg = "\n".join(j["errorMessages"])
+            except Exception:
+                response.raise_for_status()
+
+            raise HTTPError(error_msg, response=response)

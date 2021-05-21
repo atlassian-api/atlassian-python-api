@@ -48,7 +48,7 @@ class Bitbucket(BitbucketBase):
         :return: A list of group members
         """
 
-        url = "{}/groups/more-members".format(self._url_admin)
+        url = "{}/groups/more-members".format(self._url_admin())
         params = {}
         if start:
             params["start"] = start
@@ -589,6 +589,28 @@ class Bitbucket(BitbucketBase):
         url = self._url_project_condition(project_key, id_condition)
         return self.delete(url) or {}
 
+    def _url_project_audit_log(self, project_key):
+        if self.cloud:
+            raise Exception("Not supported in Bitbucket Cloud")
+
+        return "{}/events".format(self._url_project(project_key, api_root="rest/audit"))
+
+    def get_project_audit_log(self, project_key, start=0, limit=None):
+        """
+        Get the audit log of the project
+        :param start:
+        :param limit:
+        :param project_key: The project key
+        :return: List of events of the audit log
+        """
+        url = self._url_project_audit_log(project_key)
+        params = {}
+        if start:
+            params["start"] = start
+        if limit:
+            params["limit"] = limit
+        return self._get_paged(url, params=params)
+
     def _url_repos(self, project_key, api_root=None, api_version=None):
         return "{}/repos".format(self._url_project(project_key, api_root, api_version))
 
@@ -922,6 +944,29 @@ class Bitbucket(BitbucketBase):
         url = self._url_repo_labels(project_key, repository_slug)
         data = {"name": label_name}
         return self.post(url, data=data)
+
+    def _url_repo_audit_log(self, project_key, repository_slug):
+        if self.cloud:
+            raise Exception("Not supported in Bitbucket Cloud")
+
+        return "{}/events".format(self._url_repo(project_key, repository_slug, api_root="rest/audit"))
+
+    def get_repo_audit_log(self, project_key, repository_slug, start=0, limit=None):
+        """
+        Get the audit log of the repository
+        :param start:
+        :param limit:
+        :param project_key: Key of the project you wish to look in.
+        :param repository_slug: url-compatible repository identifier
+        :return: List of events of the audit log
+        """
+        url = self._url_repo_audit_log(project_key, repository_slug)
+        params = {}
+        if start:
+            params["start"] = start
+        if limit:
+            params["limit"] = limit
+        return self._get_paged(url, params=params)
 
     def _url_repo_branches(self, project_key, repository_slug, api_root=None):
         return "{}/branches".format(self._url_repo(project_key, repository_slug, api_root=api_root))
@@ -1717,30 +1762,6 @@ class Bitbucket(BitbucketBase):
             params["limit"] = limit
         return (self.get(url, params=params) or {}).get("values")
 
-    def get_changelog(self, project_key, repository_slug, ref_from, ref_to, start=0, limit=None):
-        """
-        Get change log between 2 refs
-        :param start:
-        :param project_key:
-        :param repository_slug:
-        :param ref_from:
-        :param ref_to:
-        :param limit: OPTIONAL: The limit of the number of changes to return, this may be restricted by
-                fixed system limits. Default by built-in method: None
-        :return:
-        """
-        url = self._url_commits(project_key, repository_slug)
-        params = {}
-        if ref_from:
-            params["from"] = ref_from
-        if ref_to:
-            params["to"] = ref_to
-        if start:
-            params["start"] = start
-        if limit:
-            params["limit"] = limit
-        return self._get_paged(url, params=params)
-
     def _url_commit(self, project_key, repository_slug, commit_id, api_root=None, api_version=None):
         return "{}/{}".format(
             self._url_commits(project_key, repository_slug, api_root=api_root, api_version=api_version),
@@ -1771,7 +1792,31 @@ class Bitbucket(BitbucketBase):
     def get_pull_requests_contain_commit(self, project_key, repository_slug, commit):
         url = self._url_commit(project_key, repository_slug, commit)
         return (self.get(url) or {}).get("values")
-
+      
+    def get_changelog(self, project_key, repository_slug, ref_from, ref_to, start=0, limit=None):
+        """
+        Get change log between 2 refs
+        :param start:
+        :param project_key:
+        :param repository_slug:
+        :param ref_from:
+        :param ref_to:
+        :param limit: OPTIONAL: The limit of the number of changes to return, this may be restricted by
+                fixed system limits. Default by built-in method: None
+        :return:
+        """
+        url = "{}/compare/commits".format(self._url_repo(project_key, repository_slug))
+        params = {}
+        if ref_from:
+            params["from"] = ref_from
+        if ref_to:
+            params["to"] = ref_to
+        if start:
+            params["start"] = start
+        if limit:
+            params["limit"] = limit
+        return self._get_paged(url, params=params)
+      
     def _url_code_insights_annotations(self, project_key, repository_slug, commit_id, report_key):
         return "{}/reports/{}/annotations".format(
             self._url_commit(
@@ -2318,7 +2363,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def get_repositories(self, workspace, role=None, query=None, sort=None):
         """
@@ -2339,7 +2384,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def get_pipelines(self, workspace, repository_slug, number=10, sort_by="-created_on"):
         """
@@ -2367,7 +2412,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def trigger_pipeline(self, workspace, repository_slug, branch="master", revision=None, name=None):
         """
@@ -2389,7 +2434,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def get_pipeline(self, workspace, repository_slug, uuid):
         """
@@ -2408,7 +2453,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def stop_pipeline(self, workspace, repository_slug, uuid):
         """
@@ -2429,7 +2474,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def get_pipeline_steps(self, workspace, repository_slug, uuid):
         """
@@ -2452,7 +2497,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def get_pipeline_step(self, workspace, repository_slug, pipeline_uuid, step_uuid):
         """
@@ -2473,7 +2518,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def get_pipeline_step_log(self, workspace, repository_slug, pipeline_uuid, step_uuid):
         """
@@ -2495,7 +2540,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def create_issue(
         self,
@@ -2525,7 +2570,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def get_issues(self, workspace, repository_slug, sort_by=None, query=None):
         """
@@ -2553,7 +2598,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def get_issue(self, workspace, repository_slug, id):
         """
@@ -2569,7 +2614,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def update_issue(self, workspace, repository_slug, id, **fields):
         """
@@ -2587,7 +2632,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def delete_issue(self, workspace, repository_slug, id):
         """
@@ -2603,7 +2648,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def add_branch_restriction(
         self,
@@ -2656,7 +2701,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def get_branch_restrictions(self, workspace, repository_slug, kind=None, pattern=None, number=10):
         """
@@ -2677,7 +2722,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def update_branch_restriction(self, workspace, repository_slug, id, **fields):
         """
@@ -2695,7 +2740,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def delete_branch_restriction(self, workspace, repository_slug, id):
         """
@@ -2711,7 +2756,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def add_default_reviewer(self, workspace, repository_slug, user):
         """
@@ -2732,7 +2777,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def get_default_reviewers(self, workspace, repository_slug, number=10):
         """
@@ -2753,7 +2798,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def is_default_reviewer(self, workspace, repository_slug, user):
         """
@@ -2777,7 +2822,7 @@ class Bitbucket(BitbucketBase):
 
     @deprecated(
         version="2.0.2",
-        reason="Use atlassion.bitbucket.cloud instead of atlassian.bitbucket",
+        reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
     )
     def delete_default_reviewer(self, workspace, repository_slug, user):
         """

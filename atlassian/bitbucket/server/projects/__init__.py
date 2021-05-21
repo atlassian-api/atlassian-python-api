@@ -1,5 +1,6 @@
 # coding=utf-8
 
+from requests import HTTPError
 from .repos import Repositories
 from ..base import BitbucketServerBase
 from ..common.permissions import Groups, Users
@@ -64,7 +65,7 @@ class Projects(BitbucketServerBase):
         Returns the requested project
 
         :param project: string: The requested project.
-        :param by: string: How to interprate project, can be 'key' or 'name'.
+        :param by: string (default is "key"): How to interpret project, can be 'key' or 'name'.
 
         :return: The requested Project object
 
@@ -80,6 +81,27 @@ class Projects(BitbucketServerBase):
             ValueError("Unknown value '{}' for argument [by], expected 'key' or 'name'".format(by))
 
         raise Exception("Unknown project {} '{}'".format(by, project))
+
+    def exists(self, project, by="key"):
+        """
+        Check if project exist.
+
+        :param project: string: The requested project.
+        :param by: string (default is "key"): How to interpret project, can be 'key' or 'name'.
+
+        :return: True if the project exists
+        """
+        exists = False
+        try:
+            self.get(project, by)
+            exists = True
+        except HTTPError as e:
+            if e.response.status_code in (401, 404):
+                pass
+        except Exception as e:
+            if not str(e) == "Unknown project {} '{}'".format(by, project):
+                raise e
+        return exists
 
 
 class Project(BitbucketServerBase):
@@ -113,52 +135,52 @@ class Project(BitbucketServerBase):
 
     @property
     def id(self):
-        """ The project identifier """
+        """The project identifier"""
         return self.get_data("id")
 
     @property
     def type(self):
-        """ The project type """
+        """The project type"""
         return self.get_data("type")
 
     @property
     def name(self):
-        """ The project name """
+        """The project name"""
         return self.get_data("name")
 
     @name.setter
     def name(self, name):
-        """ Setter for the project name """
+        """Setter for the project name"""
         return self.update(name=name)
 
     @property
     def key(self):
-        """ The project key """
+        """The project key"""
         return self.get_data("key")
 
     @key.setter
     def key(self, key):
-        """ Setter for the project key """
+        """Setter for the project key"""
         return self.update(key=key)
 
     @property
     def description(self):
-        """ The project description """
+        """The project description"""
         return self.get_data("description")
 
     @description.setter
     def description(self, description):
-        """ Setter for the project description """
+        """Setter for the project description"""
         return self.update(description=description)
 
     @property
     def public(self):
-        """ The project public flag """
+        """The project public flag"""
         return self.get_data("public")
 
     @public.setter
     def public(self, public):
-        """ Setter for the project public flag """
+        """Setter for the project public flag"""
         return self.update(public=public)
 
     def get_avatar(self, s=0):

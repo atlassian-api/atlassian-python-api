@@ -1,6 +1,8 @@
 # coding=utf-8
 import logging
 
+from requests import HTTPError
+
 from .rest_client import AtlassianRestAPI
 
 log = logging.getLogger(__name__)
@@ -13,7 +15,7 @@ class ServiceDesk(AtlassianRestAPI):
 
     # Information actions
     def get_info(self):
-        """ Get info about Service Desk app """
+        """Get info about Service Desk app"""
 
         return self.get("rest/servicedeskapi/info", headers=self.experimental_headers)
 
@@ -71,7 +73,7 @@ class ServiceDesk(AtlassianRestAPI):
         )
 
     def get_my_customer_requests(self):
-        """ Returning requests where you are the assignee """
+        """Returning requests where you are the assignee"""
         response = self.get("rest/servicedeskapi/request", headers=self.experimental_headers)
         if self.advanced_mode:
             return response
@@ -763,3 +765,18 @@ class ServiceDesk(AtlassianRestAPI):
         url = "rest/servicedeskapi/servicedesk/{}/requesttype".format(service_desk_id)
 
         return self.post(url, headers=self.experimental_headers, data=data)
+
+    def raise_for_status(self, response):
+        """
+        Checks the response for an error status and raises an exception with the error message provided by the server
+        :param response:
+        :return:
+        """
+        if 400 <= response.status_code < 600:
+            try:
+                j = response.json()
+                error_msg = j["errorMessage"]
+            except Exception:
+                response.raise_for_status()
+
+            raise HTTPError(error_msg, response=response)

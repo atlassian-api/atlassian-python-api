@@ -32,7 +32,9 @@ class BitbucketCloudBase(BitbucketBase):
             return None
         return links[link]["href"]
 
-    def _get_paged(self, url, params=None, data=None, flags=None, trailing=None, absolute=False):
+    def _get_paged(
+        self, url, params=None, data=None, flags=None, trailing=None, absolute=False, paging_workaround=False
+    ):
         """
         Used to get the paged data
 
@@ -42,12 +44,16 @@ class BitbucketCloudBase(BitbucketBase):
         :param flags: string[] (default is None):  The flags
         :param trailing: bool (default is None):   If True, a trailing slash is added to the url
         :param absolute: bool (default is False):  If True, the url is used absolute and not relative to the root
+        :param paging_workaround: bool (default is False): If True, the paging is done on our own because
+                                                           of https://jira.atlassian.com/browse/BCLOUD-13806
 
         :return: A generator object for the data elements
         """
 
         if params is None:
             params = {}
+        if paging_workaround:
+            params["page"] = 1
 
         while True:
             response = super(BitbucketCloudBase, self).get(
@@ -58,16 +64,19 @@ class BitbucketCloudBase(BitbucketBase):
                 flags=flags,
                 absolute=absolute,
             )
-            if "values" not in response:
+            if len(response.get("values", [])) == 0:
                 return
 
-            for value in response.get("values", []):
+            for value in response["values"]:
                 yield value
 
-            url = response.get("next")
-            if url is None:
-                break
-            # From now on we have absolute URLs
-            absolute = True
+            if paging_workaround:
+                params["page"] += 1
+            else:
+                url = response.get("next")
+                if url is None:
+                    break
+                # From now on we have absolute URLs
+                absolute = True
 
         return

@@ -1,4 +1,5 @@
 # coding: utf8
+from atlassian.bitbucket.cloud.repositories import WorkspaceRepositories
 import pytest
 import sys
 from datetime import datetime
@@ -6,7 +7,7 @@ from datetime import datetime
 from atlassian import Bitbucket
 from atlassian.bitbucket import Cloud
 from atlassian.bitbucket.cloud.common.users import User
-from atlassian.bitbucket.cloud.repositories.pullRequests import Participant, PullRequest, Build
+from atlassian.bitbucket.cloud.repositories.pullRequests import Comment, Participant, PullRequest, Build
 
 BITBUCKET = None
 try:
@@ -28,6 +29,31 @@ def _datetimetostr(dtime):
 
 @pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3.4")
 class TestBasic:
+    def test_exists_workspace(self):
+        assert CLOUD.workspaces.exists("TestWorkspace1"), "Exists workspace"
+
+    def test_not_exists_workspace(self):
+        assert not CLOUD.workspaces.exists("TestWorkspace1xxx"), "Not exists workspace"
+
+    def test_not_exists_project(self):
+        assert not CLOUD.workspaces.get("TestWorkspace1").projects.exists("pr1"), "Not exists repository"
+
+    def test_exists_repository(self):
+        assert CLOUD.workspaces.get("TestWorkspace1").repositories.exists("testrepository1"), "Exists repository"
+
+    def test_not_exists_repository(self):
+        assert not CLOUD.workspaces.get("TestWorkspace1").repositories.exists(
+            "testrepository1xxx"
+        ), "Not exists repository"
+
+    def test_create_repositories(self):
+        result = CLOUD.workspaces.get("TestWorkspace1").repositories.create("TestRepositoryCreated")
+        assert result.description == "Test newly created repository", "Result of repositories [create(...)]"
+        result = CLOUD.workspaces.get("TestWorkspace1").repositories.create(
+            "TestRepositoryCreated", "TEST1", fork_policy=WorkspaceRepositories.ALLOW_FORKS
+        )
+        assert result.fork_policy == "allow_forks", "Result of repositories [create(...)] with project and fork policy"
+
     def test_get_repositories(self):
         result = [x["name"] for x in BITBUCKET.get_repositories("TestWorkspace1")]
         assert result == ["testrepository1", "testrepository2"], "Result of [get_repositories(...)]"
@@ -126,11 +152,11 @@ class TestBasic:
     def test_is_default_reviewer(self):
         result = BITBUCKET.is_default_reviewer("TestWorkspace1", "testrepository1", "DefaultReviewerNo")
         assert result is False, "Result of [is_default_reviewer(...)]"
-        result = BITBUCKET.is_default_reviewer("TestWorkspace1", "testrepository1", "DefaultReviewer1")
+        result = BITBUCKET.is_default_reviewer("TestWorkspace1", "testrepository1", "DefaultReviewer1Uuid")
         assert result is True, "Result of [is_default_reviewer(...)]"
 
     def test_delete_default_reviewer(self):
-        result = BITBUCKET.delete_default_reviewer("TestWorkspace1", "testrepository1", "DefaultReviewer1")[
+        result = BITBUCKET.delete_default_reviewer("TestWorkspace1", "testrepository1", "DefaultReviewer1Uuid")[
             "account_id"
         ]
         assert result == "DefaultReviewer1AccountId", "Result of [delete_default_reviewer(...)]"
@@ -239,6 +265,17 @@ class TestPullRequests:
         assert com["content"]["raw"] == msg
         assert com["pullrequest"]["id"] == 1
         assert not com["deleted"]
+
+    def test_comments(self, tc1):
+        comments = list(tc1.comments())
+        assert len(comments) == 2
+        c1, c2 = comments
+        assert isinstance(c1, Comment)
+        assert isinstance(c2, Comment)
+        assert c1.raw == "Test comment 1"
+        assert isinstance(c1.user, User)
+        assert c1.user.display_name == "User04DisplayName"
+        assert c2.html == "<p>Test comment 2</p>"
 
     def test_approve(self, tc1):
         ap = tc1.approve()

@@ -1,5 +1,6 @@
 # coding=utf-8
 
+from requests import HTTPError
 from ..base import BitbucketCloudBase
 from .issues import Issues
 from .branchRestrictions import BranchRestrictions
@@ -42,6 +43,8 @@ class Repositories(RepositoriesBase):
                              See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
 
         :return: A generator for the repository objects
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories#get
         """
         if q is not None and role is None:
             raise ValueError("Argument [q] requires argument [role].")
@@ -60,8 +63,44 @@ class Repositories(RepositoriesBase):
 
 
 class WorkspaceRepositories(RepositoriesBase):
+    ALLOW_FORKS = "allow_forks"
+    NO_PUBLIC_FORKS = "no_public_forks"
+    NO_FORKS = "no_forks"
+    FORK_POLICIES = [
+        ALLOW_FORKS,
+        NO_PUBLIC_FORKS,
+        NO_FORKS,
+    ]
+
     def __init__(self, url, *args, **kwargs):
         super(WorkspaceRepositories, self).__init__(url, *args, **kwargs)
+
+    def create(self, repo_slug, project_key=None, is_private=None, fork_policy=None):
+        """
+        Creates a new repository with the given repo_slug.
+
+        :param repo_slug: string: The repo_slug of the project.
+        :param project_key: string: The key of the project. If the project is not provided, the repository
+                                    is automatically assigned to the oldest project in the workspace.
+        :param is_private: boolean: Set to false if the repository shall be public.
+        :param fork_policy: string: The fork policy (one of WorkspaceRepositories.ALLOW_FORKS,
+                                    WorkspaceRepositories.NO_PUBLIC_FORKS, WorkspaceRepositories.NO_FORKS).
+
+        :return: The created project object
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D#post
+        """
+
+        data = {"scm": "git"}
+        if project_key is not None:
+            data["project"] = {"key": project_key}
+        if is_private is not None:
+            data["is_private"] = is_private
+        if fork_policy is not None:
+            if fork_policy not in self.FORK_POLICIES:
+                raise ValueError("fork_policy must be one of {}".format(self.FORK_POLICIES))
+            data["fork_policy"] = fork_policy
+        return self._get_object(self.post(repo_slug, data=data))
 
     def each(self, role=None, q=None, sort=None):
         """
@@ -79,6 +118,8 @@ class WorkspaceRepositories(RepositoriesBase):
                              See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
 
         :return: A generator for the workspace objects
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D#get
         """
         params = {}
         if role is not None:
@@ -98,6 +139,8 @@ class WorkspaceRepositories(RepositoriesBase):
         :param by: string: How to interprate repository, can be 'slug' or 'name'.
 
         :return: The requested Repository object
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D#get
         """
         if by == "slug":
             return self._get_object(super(WorkspaceRepositories, self).get(repository))
@@ -109,6 +152,29 @@ class WorkspaceRepositories(RepositoriesBase):
             ValueError("Unknown value '{}' for argument [by], expected 'key' or 'name'".format(by))
 
         raise Exception("Unknown repository {} '{}'".format(by, repository))
+
+    def exists(self, repository, by="slug"):
+        """
+        Check if repository exist.
+
+        :param repository: string: The requested repository.
+        :param by: string (default is "slug"): How to interpret repository, can be 'slug' or 'name'.
+
+        :return: True if the repository exists
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D#get
+        """
+        exists = False
+        try:
+            self.get(repository, by)
+            exists = True
+        except HTTPError as e:
+            if e.response.status_code in (401, 404):
+                pass
+        except Exception as e:
+            if not str(e) == "Unknown project {} '{}'".format(by, repository):
+                raise e
+        return exists
 
 
 class ProjectRepositories(RepositoriesBase):
@@ -123,6 +189,8 @@ class ProjectRepositories(RepositoriesBase):
                              See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
 
         :return: A generator for the repository objects
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/workspaces/%7Bworkspace%7D/projects/%7Bproject_key%7D#get
         """
         params = {}
         if sort is not None:
@@ -138,6 +206,8 @@ class ProjectRepositories(RepositoriesBase):
         :param by: string: How to interprate repository, can be 'slug' or 'name'.
 
         :return: The requested Repository object
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/workspaces/%7Bworkspace%7D/projects/%7Bproject_key%7D#get
         """
         if by not in ("slug", "name"):
             ValueError("Unknown value '{}' for argument [by], expected 'slug' or 'name'".format(by))
@@ -192,84 +262,89 @@ class Repository(BitbucketCloudBase):
 
     @property
     def name(self):
-        """ The repository name """
+        """The repository name"""
         return self.get_data("name")
 
     @name.setter
     def name(self, name):
-        """ Setter for the repository name """
+        """Setter for the repository name"""
         return self.update(name=name)
 
     @property
     def slug(self):
-        """ The repository slug """
+        """The repository slug"""
         return self.get_data("slug")
 
     @property
     def description(self):
-        """ The repository description """
+        """The repository description"""
         return self.get_data("description")
 
     @description.setter
     def description(self, description):
-        """ Setter for the repository description """
+        """Setter for the repository description"""
         return self.update(description=description)
 
     @property
     def is_private(self):
-        """ The repository private flag """
+        """The repository private flag"""
         return self.get_data("is_private")
 
     @is_private.setter
     def is_private(self, is_private):
-        """ Setter for the repository private flag """
+        """Setter for the repository private flag"""
         return self.update(is_private=is_private)
 
     @property
+    def fork_policy(self):
+        """Getter for the repository fork policy"""
+        return self.get_data("fork_policy")
+
+    @property
     def uuid(self):
-        """ The repository uuid """
+        """The repository uuid"""
         return self.get_data("uuid")
 
     @property
     def size(self):
-        """ The repository size """
+        """The repository size"""
         return self.get_data("size")
 
     @property
     def created_on(self):
-        """ The repository creation time """
+        """The repository creation time"""
         return self.get_data("created_on")
 
     @property
     def updated_on(self):
-        """ The repository last update time """
+        """The repository last update time"""
         return self.get_data("updated_on", "never updated")
 
     def get_avatar(self):
-        """ The repository avatar """
+        """The repository avatar"""
         return self.get(self.get_link("avatar"), absolute=True)
 
     @property
     def branch_restrictions(self):
-        """ The repository branch restrictions """
+        """The repository branch restrictions"""
         return self.__branch_restrictions
 
     @property
     def default_reviewers(self):
-        """ The repository default reviewers """
+        """The repository default reviewers"""
         return self.__default_reviewers
 
     @property
     def issues(self):
-        """ The repository issues """
+        """The repository issues"""
         return self.__issues
 
     @property
     def pipelines(self):
-        """ The repository pipelines """
+        """The repository pipelines"""
         return self.__pipelines
 
     @property
     def pullrequests(self):
-        """ The repository pull requests """
+        """The repository pull requests"""
         return self.__pullrequests

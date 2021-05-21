@@ -119,82 +119,82 @@ class PullRequest(BitbucketCloudBase):
 
     @property
     def id(self):
-        """ unique pull request id """
+        """unique pull request id"""
         return self.get_data("id")
 
     @property
     def title(self):
-        """ pull request title """
+        """pull request title"""
         return self.get_data("title")
 
     @property
     def description(self):
-        """ pull request description """
+        """pull request description"""
         return self.get_data("description")
 
     @property
     def is_declined(self):
-        """ True if the pull request was declined """
+        """True if the pull request was declined"""
         return self.get_data("state") == self.STATE_DECLINED
 
     @property
     def is_merged(self):
-        """ True if the pull request was merged """
+        """True if the pull request was merged"""
         return self.get_data("state") == self.STATE_MERGED
 
     @property
     def is_open(self):
-        """ True if the pull request is open """
+        """True if the pull request is open"""
         return self.get_data("state") == self.STATE_OPEN
 
     @property
     def is_superseded(self):
-        """ True if the pull request was superseded """
+        """True if the pull request was superseded"""
         return self.get_data("state") == self.STATE_SUPERSEDED
 
     @property
     def created_on(self):
-        """ time of creation """
+        """time of creation"""
         return self.get_time("created_on")
 
     @property
     def updated_on(self):
-        """ time of last update """
+        """time of last update"""
         return self.get_time("updated_on")
 
     @property
     def close_source_branch(self):
-        """ close source branch flag """
+        """close source branch flag"""
         return self.get_data("close_source_branch")
 
     @property
     def source_branch(self):
-        """ source branch """
+        """source branch"""
         return self.get_data("source")["branch"]["name"]
 
     @property
     def destination_branch(self):
-        """ destination branch """
+        """destination branch"""
         return self.get_data("destination")["branch"]["name"]
 
     @property
     def comment_count(self):
-        """ number of comments """
+        """number of comments"""
         return self.get_data("comment_count")
 
     @property
     def task_count(self):
-        """ number of tasks """
+        """number of tasks"""
         return self.get_data("task_count")
 
     @property
     def declined_reason(self):
-        """ reason for declining """
+        """reason for declining"""
         return self.get_data("reason")
 
     @property
     def author(self):
-        """ User object of the author """
+        """User object of the author"""
         return User(None, self.get_data("author"))
 
     def statuses(self):
@@ -203,17 +203,17 @@ class PullRequest(BitbucketCloudBase):
 
         API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D/statuses
         """
-        return self._get_paged("{}/statuses".format(self.url), absolute=True)
+        return self._get_paged("statuses")
 
     def participants(self):
-        """ Returns a generator object of participants """
+        """Returns a generator object of participants"""
         for participant in self.get_data("participants"):
             yield Participant(participant, **self._new_session_args)
 
         return
 
     def reviewers(self):
-        """ Returns a generator object of reviewers """
+        """Returns a generator object of reviewers"""
         for reviewer in self.get_data("reviewers"):
             yield User(None, reviewer, **self._new_session_args)
 
@@ -226,6 +226,15 @@ class PullRequest(BitbucketCloudBase):
             yield Build(build, **self._new_session_args)
 
         return
+
+    def comments(self):
+        """
+        Returns generator object of the comments endpoint
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D/comments#get
+        """
+        for comment in self._get_paged("comments"):
+            yield Comment(comment, **self._new_session_args)
 
     def comment(self, raw_message):
         """
@@ -324,37 +333,84 @@ class Participant(BitbucketCloudBase):
 
     @property
     def user(self):
-        """ User object with user information of the participant """
+        """User object with user information of the participant"""
         return User(None, self.get_data("user"), **self._new_session_args)
 
     @property
     def is_participant(self):
-        """ True if the user is a pull request participant """
+        """True if the user is a pull request participant"""
         return self.get_data("role") == self.ROLE_PARTICIPANT
 
     @property
     def is_reviewer(self):
-        """ True if the user is a pull request reviewer """
+        """True if the user is a pull request reviewer"""
         return self.get_data("role") == self.ROLE_REVIEWER
 
     @property
     def is_default_reviewer(self):
-        """ True if the user is a default reviewer """
+        """True if the user is a default reviewer"""
 
     @property
     def has_changes_requested(self):
-        """ True if user requested changes """
+        """True if user requested changes"""
         return str(self.get_data("state")) == self.CHANGES_REQUESTED
 
     @property
     def has_approved(self):
-        """ True if user approved the pull request """
+        """True if user approved the pull request"""
         return self.get_data("approved")
 
     @property
     def participated_on(self):
-        """ time of last participation """
+        """time of last participation"""
         return self.get_time("participated_on")
+
+
+class Comment(BitbucketCloudBase):
+    def __init__(self, data, *args, **kwargs):
+        super(Comment, self).__init__(None, None, *args, data=data, expected_type="pullrequest_comment", **kwargs)
+
+    @property
+    def raw(self):
+        """The raw comment"""
+        return self.get_data("content")["raw"]
+
+    @property
+    def html(self):
+        """The html comment"""
+        return self.get_data("content")["html"]
+
+    @property
+    def markup(self):
+        """The markup type"""
+        return self.get_data("content")["markup"]
+
+    @property
+    def user(self):
+        """User object with user information of the comment"""
+        return User(None, self.get_data("user"), **self._new_session_args)
+
+    def update(self, **kwargs):
+        """
+        Update the pullrequest properties. Fields not present in the request body are ignored.
+
+        :param kwargs: dict: The data to update.
+
+        :return: The updated repository
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D/comments/%7Bcomment_id%7D#put
+        """
+        return self._update_data(self.put(None, data=kwargs))
+
+    def delete(self):
+        """
+        Delete the pullrequest comment.
+
+        :return: The response on success
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D/comments/%7Bcomment_id%7D#delete
+        """
+        return super(Comment, self).delete(None)
 
 
 class Build(BitbucketCloudBase):
@@ -403,12 +459,12 @@ class Build(BitbucketCloudBase):
 
     @property
     def created_on(self):
-        """ time of creation """
+        """time of creation"""
         return self.get_time("created_on")
 
     @property
     def updated_on(self):
-        """ time of last update """
+        """time of last update"""
         return self.get_time("updated_on")
 
     @property

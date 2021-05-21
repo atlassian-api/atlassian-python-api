@@ -1,5 +1,6 @@
 # coding=utf-8
 
+from requests import HTTPError
 from ...base import BitbucketServerBase
 from ...common.permissions import Groups, Users
 
@@ -39,7 +40,7 @@ class Repositories(BitbucketServerBase):
         Returns the requested repository.
 
         :param repository: string: The requested repository.
-        :param by: string: How to interprate project, can be 'slug' or 'name'.
+        :param by: string (default is "slug"): How to interpret project, can be 'slug' or 'name'.
 
         :return: The requested Repository object
         """
@@ -54,6 +55,27 @@ class Repositories(BitbucketServerBase):
             ValueError("Unknown value '{}' for argument [by], expected 'slug' or 'name'".format(by))
 
         raise Exception("Unknown repository {} '{}'".format(by, repository))
+
+    def exists(self, repository, by="slug"):
+        """
+        Check if repository exist.
+
+        :param repository: string: The requested repository.
+        :param by: string (default is "slug"): How to interpret repository, can be 'slug' or 'name'.
+
+        :return: True if the repository exists
+        """
+        exists = False
+        try:
+            self.get(repository, by)
+            exists = True
+        except HTTPError as e:
+            if e.response.status_code in (401, 404):
+                pass
+        except Exception as e:
+            if not str(e) == "Unknown project {} '{}'".format(by, repository):
+                raise e
+        return exists
 
 
 class Repository(BitbucketServerBase):
@@ -89,52 +111,52 @@ class Repository(BitbucketServerBase):
 
     @property
     def id(self):
-        """ The repository identifier """
+        """The repository identifier"""
         return self.get_data("id")
 
     @property
     def name(self):
-        """ The repository name """
+        """The repository name"""
         return self.get_data("name")
 
     @name.setter
     def name(self, name):
-        """ Setter for the repository name """
+        """Setter for the repository name"""
         return self.update(name=name)
 
     @property
     def slug(self):
-        """ The repository slug """
+        """The repository slug"""
         return self.get_data("slug")
 
     @property
     def description(self):
-        """ The repository description """
+        """The repository description"""
         return self.get_data("description")
 
     @description.setter
     def description(self, description):
-        """ Setter for the repository description """
+        """Setter for the repository description"""
         return self.update(description=description)
 
     @property
     def public(self):
-        """ The repository public flag """
+        """The repository public flag"""
         return self.get_data("public")
 
     @public.setter
     def public(self, public):
-        """ Setter for the repository public flag """
+        """Setter for the repository public flag"""
         return self.update(public=public)
 
     @property
     def forkable(self):
-        """ The repository forkable flag """
+        """The repository forkable flag"""
         return self.get_data("forkable")
 
     @forkable.setter
     def forkable(self, forkable):
-        """ Setter for the repository forkable flag """
+        """Setter for the repository forkable flag"""
         return self.update(forkable=forkable)
 
     def contributing(self, at=None, markup=None):
