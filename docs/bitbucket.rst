@@ -98,6 +98,40 @@ Manage repositories
     # Delete a repository (DANGER!)
     bitbucket.delete_repo(project_key, repository_slug)
 
+Manage Code Insights
+--------------------
+
+    # Delete an existing Code Insights report
+    bitbucket.delete_code_insights_report(project_key, repository_slug, commit_hash, report_key)
+
+    # Create a new Code Insights report
+    report = {
+        'details': 'This is an example report',
+        'result': 'FAIL',
+        'reporter': 'Anonymous',
+        'link': 'http://some-url',
+        'logo-url': 'http://some-url',
+        'data': [
+            {
+                'title': 'Example coverage',
+                'type': 'PERCENTAGE',
+                'value': 85
+            }
+        ]
+    } 
+    bitbucket.create_code_insights_report(project_key, repository_slug, commit_hash, report_key, 'Code Insights Report', **report)
+
+    # Add annotations to a Code Insights report
+    annotations = [
+        {
+        'path': 'some/path/to/file',
+        'line': 32,
+        'message': 'Roses are red, Violets are blue, Unexpected { on line 32',
+        'severity': 'MEDIUM'
+        }
+    ]
+    bitbucket.add_code_insights_annotations_to_report(project_key, repository_slug, commit_hash, report_key, **annotations)
+
 Groups and admins
 -----------------
 

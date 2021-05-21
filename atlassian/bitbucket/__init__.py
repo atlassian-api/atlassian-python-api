@@ -1772,6 +1772,35 @@ class Bitbucket(BitbucketBase):
         url = self._url_commit(project_key, repository_slug, commit)
         return (self.get(url) or {}).get("values")
 
+    def _url_code_insights_annotations(self, project_key, repository_slug, commit_id, report_key):
+        return "{}/reports/{}/annotations".format(
+            self._url_commit(
+                project_key,
+                repository_slug,
+                commit_id,
+                api_root="rest/insights",
+                api_version="1.0",
+            ),
+            report_key,
+        )
+
+    def add_code_insights_annotations_to_report(
+        self, project_key, repository_slug, commit_id, report_key, annotations
+    ):
+        """
+        Adds annotations to an existing insight report.
+        For further information visit:
+        https://docs.atlassian.com/bitbucket-server/rest/6.6.1/bitbucket-code-insights-rest.html
+        :project_key: str
+        :repository_slug: str
+        :commit_id: str
+        :report_key: str
+        :annotations: list
+        """
+        url = self._url_code_insights_annotations(project_key, repository_slug, commit_id, report_key)
+        data = {"annotations": annotations}
+        return self.post(url, data=data)
+
     def _url_code_insights_report(self, project_key, repository_slug, commit_id, report_key):
         return "{}/reports/{}".format(
             self._url_commit(
