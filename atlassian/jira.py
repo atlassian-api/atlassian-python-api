@@ -726,6 +726,7 @@ class Jira(AtlassianRestAPI):
         url = '{base_url}/{key}?fields={fields}'.format(
             base_url=base_url, key=key, fields=fields
         )
+        params = {}
         if expand:
             params["expand"] = expand
         return self.get(url, params=params)
