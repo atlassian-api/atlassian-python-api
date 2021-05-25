@@ -2184,10 +2184,19 @@ class Bitbucket(BitbucketBase):
         return self.get(url, params={"search_query": search_query, "page": page, "pagelen": limit})
 
     def get_lfs_repo_status(self, project_key, repo):
-        url = "rest/git-lfs/git-lfs/admin/projects/{projectKey}/repos/{repositorySlug}/enabled".format(
+        url = "rest/git-lfs/admin/projects/{projectKey}/repos/{repositorySlug}/enabled".format(
             projectKey=project_key, repositorySlug=repo
         )
         return self.get(url)
+
+    def set_lfs_repo_status(self, project_key, repo, enable=True):
+        url = "rest/git-lfs/admin/projects/{projectKey}/repos/{repositorySlug}/enabled".format(
+            projectKey=project_key, repositorySlug=repo
+        )
+        if enable:
+            return self.put(url)
+        else:
+            return self.delete(url)
 
     def _url_repo_conditions(self, project_key, repo_key):
         return "{}/conditions".format(
