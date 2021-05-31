@@ -1792,7 +1792,7 @@ class Bitbucket(BitbucketBase):
     def get_pull_requests_contain_commit(self, project_key, repository_slug, commit):
         url = self._url_commit(project_key, repository_slug, commit)
         return (self.get(url) or {}).get("values")
-      
+
     def get_changelog(self, project_key, repository_slug, ref_from, ref_to, start=0, limit=None):
         """
         Get change log between 2 refs
@@ -1816,7 +1816,7 @@ class Bitbucket(BitbucketBase):
         if limit:
             params["limit"] = limit
         return self._get_paged(url, params=params)
-      
+
     def _url_code_insights_annotations(self, project_key, repository_slug, commit_id, report_key):
         return "{}/reports/{}/annotations".format(
             self._url_commit(
@@ -1829,9 +1829,7 @@ class Bitbucket(BitbucketBase):
             report_key,
         )
 
-    def add_code_insights_annotations_to_report(
-        self, project_key, repository_slug, commit_id, report_key, annotations
-    ):
+    def add_code_insights_annotations_to_report(self, project_key, repository_slug, commit_id, report_key, annotations):
         """
         Adds annotations to an existing insight report.
         For further information visit:
