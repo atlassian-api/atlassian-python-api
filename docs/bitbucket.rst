@@ -101,6 +101,8 @@ Manage repositories
 Manage Code Insights
 --------------------
 
+.. code-block:: python
+
     # Delete an existing Code Insights report
     bitbucket.delete_code_insights_report(project_key, repository_slug, commit_hash, report_key)
 
@@ -118,7 +120,7 @@ Manage Code Insights
                 'value': 85
             }
         ]
-    } 
+    }
     bitbucket.create_code_insights_report(project_key, repository_slug, commit_hash, report_key, 'Code Insights Report', **report)
 
     # Add annotations to a Code Insights report
