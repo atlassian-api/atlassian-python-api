@@ -1913,6 +1913,18 @@ class Jira(AtlassianRestAPI):
             params["expand"] = expand
         return self.get(url, params=params)
 
+    def create_permission_scheme(self, name, description, permissions):
+        """
+        Create a new permission scheme
+
+        :param name: Name of new permission scheme
+        :param description: Description of new permission scheme
+        :param permissions: Defined permission set
+        """
+        url = "rest/api/2/permissionscheme"
+        data = {"name": name, "description": description, "permissions": permissions}
+        return self.post(url, data=data)
+
     def get_issue_types(self):
         """
         Return all issue types
