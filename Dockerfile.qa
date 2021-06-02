@@ -26,6 +26,9 @@ RUN python3 -m pip install --no-cache-dir --upgrade pip
 RUN python3 -m pip install --no-cache-dir -r requirements-dev.txt
 
 ENV PYTHON_VERSION=$PYTHON_VERSION
+# Select language-agnostic "C" locale.
+# Unicode is necessary for some tools like "black" to work.
+ENV LC_ALL=C.UTF-8 LANG=C.UTF-8
 
 CMD python3 -m pip install -e . && \
   make qa PYTHON_VERSION=$PYTHON_VERSION
