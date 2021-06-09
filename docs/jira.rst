@@ -168,6 +168,9 @@ Manage issues
     # Update issue
     jira.issue_update(issue_key, fields)
 
+    # Assign issue to user
+    jira.assign_issue(issue_key, account_id)
+
     # Create issue
     jira.issue_create(fields)
 
