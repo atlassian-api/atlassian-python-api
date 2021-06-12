@@ -1,6 +1,8 @@
 # coding: utf8
+import io
 import pytest
 import sys
+import zipfile
 
 from atlassian.bitbucket.server import Server
 
@@ -272,3 +274,19 @@ class TestBasic:
         user = repo.users.get("jcitizen1")
         assert user.name == "jcitizen1", "Get a user"
         assert user.delete() == {}, "Delete a user"
+
+    def test_download_repo_archive(self):
+        repo = BITBUCKET.projects.get("PRJ").repos.get("my-repo1-slug")
+        with io.BytesIO() as buf:
+            repo.download_archive(buf)
+            with zipfile.ZipFile(buf) as archive:
+                assert archive.namelist() == ["readme.md"]
+                with archive.open("readme.md") as file_in_archive:
+                    assert file_in_archive.read() == b"Test readme.md"
+
+        with io.BytesIO() as buf:
+            repo.download_archive(buf, at="CommitId")
+            with zipfile.ZipFile(buf) as archive:
+                assert archive.namelist() == ["readme.md"]
+                with archive.open("readme.md") as file_in_archive:
+                    assert file_in_archive.read() == b"Test readme.md at CommitId"

@@ -2368,6 +2368,51 @@ class Bitbucket(BitbucketBase):
         url = self._url_repo_condition(project_key, repo_key, id_condition)
         return self.delete(url) or {}
 
+    def download_repo_archive(
+        self,
+        project_key,
+        repository_slug,
+        dest_fd,
+        at=None,
+        filename=None,
+        format=None,
+        path=None,
+        prefix=None,
+        chunk_size=128,
+    ):
+        """
+        Downloads a repository archive.
+        Note that the data is written to the specified file-like object,
+        rather than simply being returned.
+        For further information visit:
+           https://docs.atlassian.com/bitbucket-server/rest/7.13.0/bitbucket-rest.html#idp199
+        :param project_key:
+        :param repository_slug:
+        :param dest_fd: a file-like object to which the archive will be written
+        :param at: string: Optional, the commit to download an archive of; if not supplied, an archive of the default branch is downloaded
+        :param filename: string: Optional, a filename to include the "Content-Disposition" header
+        :param format: string: Optional, the format to stream the archive in; must be one of: zip, tar, tar.gz or tgz. If not specified, then the archive will be in zip format.
+        :param paths: string: Optional, path to include in the streamed archive
+        :param prefix: string: Optional, a prefix to apply to all entries in the streamed archive; if the supplied prefix does not end with a trailing /, one will be added automatically
+        :param chunk_size: int: Optional, download chunk size. Defeault is 128
+        """
+        url = f"{self._url_repo(project_key, repository_slug)}/archive"
+        params = {}
+        if at is not None:
+            params["at"] = at
+        if filename is not None:
+            params["filename"] = filename
+        if format is not None:
+            params["format"] = format
+        if path is not None:
+            params["path"] = path
+        if prefix is not None:
+            params["prefix"] = prefix
+        headers = {"Accept": "*/*"}
+        response = self.get(url, params=params, headers=headers, advanced_mode=True)
+        for chunk in response.iter_content(chunk_size=chunk_size):
+            dest_fd.write(chunk)
+
     @deprecated(
         version="2.0.2",
         reason="Use atlassian.bitbucket.cloud instead of atlassian.bitbucket",
