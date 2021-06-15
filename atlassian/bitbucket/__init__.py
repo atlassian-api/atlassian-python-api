@@ -529,6 +529,59 @@ class Bitbucket(BitbucketBase):
         url = "{}/permissions/{}/all".format(self._url_project(project_key), permission)
         return self.post(url, params={"allow": False})
 
+    def _url_project_repo_hook_settings(self, project_key):
+        return "{}/settings/hooks".format(self._url_project(project_key))
+
+    def all_project_repo_hook_settings(self, project_key, start=0, limit=None, filter_type=None):
+        """
+        Get all repository hooks for a given project
+        :param project_key: The project key
+        :param start:
+        :param limit: OPTIONAL: The limit of the number of changes to return, this may be restricted by
+                fixed system limits. Default by built-in method: None
+        :param filter_type: OPTIONAL: PRE_RECEIVE|POST_RECEIVE if present, controls how repository hooks should be filtered.
+        :return:
+        """
+        url = self._url_project_repo_hook_settings(project_key)
+        params = {}
+        if filter_type:
+            params["type"] = filter_type
+        if start:
+            params["start"] = start
+        if limit:
+            params["limit"] = limit
+        return self._get_paged(url, params)
+
+    def get_project_repo_hook_settings(self, project_key, hook_key):
+        """
+        Get a repository hook from a given project
+        :param project_key: The project key
+        :param hook_key: The repository hook key
+        :return:
+        """
+        url = "{}/{}".format(self._url_project_repo_hook_settings(project_key), hook_key)
+        return self.get(url)
+
+    def enable_project_repo_hook_settings(self, project_key, hook_key):
+        """
+        Enable a repository hook for a given project
+        :param project_key: The project key
+        :param hook_key: The repository hook key
+        :return:
+        """
+        url = "{}/{}/enabled".format(self._url_project_repo_hook_settings(project_key), hook_key)
+        return self.put(url)
+
+    def disable_project_repo_hook_settings(self, project_key, hook_key):
+        """
+        Disable a repository hook for a given project
+        :param project_key: The project key
+        :param hook_key: The repository hook key
+        :return:
+        """
+        url = "{}/{}/enabled".format(self._url_project_repo_hook_settings(project_key), hook_key)
+        return self.delete(url)
+
     def _url_project_conditions(self, project_key):
         return "{}/conditions".format(
             self._url_project(project_key, api_root="rest/default-reviewers", api_version="1.0")
@@ -1234,7 +1287,7 @@ class Bitbucket(BitbucketBase):
 
     def enable_repo_hook_settings(self, project_key, repository_slug, hook_key):
         """
-        Enable a repository hook for a given project
+        Enable a repository hook for a given repo
         :param project_key: The project key
         :param repository_slug: The repository key
         :param hook_key: The repository hook key
@@ -1245,7 +1298,7 @@ class Bitbucket(BitbucketBase):
 
     def disable_repo_hook_settings(self, project_key, repository_slug, hook_key):
         """
-        Disable a repository hook for a given project
+        Disable a repository hook for a given repo
         :param project_key: The project key
         :param repository_slug: The repository key
         :param hook_key: The repository hook key
