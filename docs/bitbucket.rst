@@ -33,11 +33,26 @@ Manage projects
     # Project summary
     bitbucket.project_summary(key)
 
-    # Grant project permission to an specific user
+    # Check default permission for project
+    bitbucket.project_default_permissions(project_key, permission)
+
+    # Grant default permission for project
+    bitbucket.project_grant_default_permissions(project_key, permission)
+
+    # Grant project permission to a specific user
     bitbucket.project_grant_user_permissions(project_key, username, permission)
 
-    # Grant project permission to an specific group
+    # Grant project permission to a specific group
     bitbucket.project_grant_group_permissions(project_key, groupname, permission)
+
+    # Remove default permission for project
+    bitbucket.project_remove_default_permissions(project_key, permission)
+
+    # Remove all project permissions for a specific user
+    bitbucket.project_remove_user_permissions(project_key, username)
+
+    # Remove all project permissions for a specific group
+    bitbucket.project_remove_group_permissions(project_key, groupname)
 
 Manage repositories
 -------------------
