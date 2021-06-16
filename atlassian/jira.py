@@ -963,17 +963,17 @@ class Jira(AtlassianRestAPI):
             data=data,
         )
 
-    def assign_issue(self, issue, assignee=None):
+    def assign_issue(self, issue, account_id=None):
         """Assign an issue to a user. None will set it to unassigned. -1 will set it to Automatic.
         :param issue: the issue ID or key to assign
         :type issue: int or str
-        :param assignee: the user to assign the issue to
-        :type assignee: str
+        :param account_id: the account ID of the user to assign the issue to
+        :type account_id: str
         :rtype: bool
         """
         base_url = self.resource_url("issue")
         url = "{base_url}/{issue}/assignee".format(base_url=base_url, issue=issue)
-        data = {"name": assignee}
+        data = {"accountId": account_id}
         return self.put(url, data=data)
 
     def create_issue(self, fields, update_history=False, update=None):
@@ -2946,7 +2946,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param max_results:
         :return:
         """
-        url = "/rest/indexanalyzer/1/state"
+        url = "rest/indexanalyzer/1/state"
         params = {"maxResults": max_results}
         return self.get(url, params=params)
 
