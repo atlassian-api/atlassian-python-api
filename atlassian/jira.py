@@ -2946,7 +2946,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param max_results:
         :return:
         """
-        url = "/rest/indexanalyzer/1/state"
+        url = "rest/indexanalyzer/1/state"
         params = {"maxResults": max_results}
         return self.get(url, params=params)
 
