@@ -2064,9 +2064,9 @@ class Jira(AtlassianRestAPI):
         jql = "project = {project} ORDER BY issuekey DESC".format(project=project)
         return (self.jql(jql).get("issues") or {})[0]["key"]
 
-    def get_project_issuekey_all(self, project):
+    def get_project_issuekey_all(self, project, start=0, limit=None, expand=None):
         jql = "project = {project} ORDER BY issuekey ASC".format(project=project)
-        return [issue["key"] for issue in self.jql(jql)["issues"]]
+        return [issue["key"] for issue in self.jql(jql, start=start, limit=limit, expand=expand)["issues"]]
 
     def get_project_issues_count(self, project):
         jql = 'project = "{project}" '.format(project=project)
