@@ -67,8 +67,9 @@ class BitbucketBase(AtlassianRestAPI):
                 url = response.get("next")
                 if url is None:
                     break
-                # From now on we have absolute URLs
+                # From now on we have absolute URLs including the trailing slash if needed
                 absolute = True
+                trailing = False
             else:
                 if response.get("nextPageStart") is None:
                     break
