@@ -1394,6 +1394,18 @@ class Bitbucket(BitbucketBase):
         url = self._url_webhook(project_key, repository_slug, webhook_id)
         return self.put(url, data=params)
 
+    def delete_webhook(self, project_key, repository_slug, webhook_id):
+        """
+        Delete a webhook.
+        The authenticated user must have REPO_ADMIN permission for the context repository to call this resource.
+        :param project_key:
+        :param repository_slug:
+        :param webhook_id: the ID of the webhook within the repository
+        :return:
+        """
+        url = self._url_webhook(project_key, repository_slug, webhook_id)
+        return self.delete(url)
+
     def _url_pull_request_settings(self, project_key, repository_slug):
         return "{}/settings/pull-requests".format(self._url_repo(project_key, repository_slug))
 
