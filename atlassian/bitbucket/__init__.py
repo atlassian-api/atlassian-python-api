@@ -1307,6 +1307,105 @@ class Bitbucket(BitbucketBase):
         url = "{}/{}/enabled".format(self._url_repo_hook_settings(project_key, repository_slug), hook_key)
         return self.delete(url)
 
+    def _url_webhooks(self, project_key, repository_slug):
+        return "{}/webhooks".format(self._url_repo(project_key, repository_slug))
+
+    def get_webhooks(
+        self,
+        project_key,
+        repository_slug,
+        event=None,
+        statistics=False,
+    ):
+        """
+        Get webhooks
+        :param project_key:
+        :param repository_slug:
+        :param event: OPTIONAL: defaults to None
+        :param statistics: OPTIONAL: defaults to False
+        :return:
+        """
+        url = self._url_webhooks(project_key, repository_slug)
+        params = {}
+        if event:
+            params["event"] = event
+        if statistics:
+            params["statistics"] = statistics
+        return self._get_paged(url, params=params)
+
+    def create_webhook(
+        self,
+        project_key,
+        repository_slug,
+        name,
+        events,
+        webhook_url,
+        active,
+        secret=None,
+    ):
+        """Creates a webhook using the information provided in the request.
+
+        The authenticated user must have REPO_ADMIN permission for the context repository to call this resource.
+
+        :param project_key: The project matching the projectKey supplied in the resource path as shown in URL.
+        :param repository_slug:
+        :param name: Name of webhook to create.
+        :param events: List of event. (i.e. ["repo:refs_changed", "pr:merged", "pr:opened"])
+        :param webhook_url:
+        :param active:
+        :param secret: The string is used to verify data integrity between Bitbucket and your endpoint.
+        :return:
+        """
+        url = self._url_webhooks(project_key, repository_slug)
+        body = {
+            "name": name,
+            "events": events,
+            "url": webhook_url,
+            "active": active,
+        }
+        if secret:
+            body["configuration"] = {"secret": secret}
+        return self.post(url, data=body)
+
+    def _url_webhook(self, project_key, repository_slug, webhook_id):
+        return "{}/{}".format(self._url_webhooks(project_key, repository_slug), webhook_id)
+
+    def get_webhook(self, project_key, repository_slug, webhook_id):
+        """
+        Retrieve a webhook.
+        The authenticated user must have REPO_ADMIN permission for the context repository to call this resource.
+        :param project_key:
+        :param repository_slug:
+        :param webhook_id: the ID of the webhook within the repository
+        :return:
+        """
+        url = self._url_webhook(project_key, repository_slug, webhook_id)
+        return self.get(url)
+
+    def update_webhook(self, project_key, repository_slug, webhook_id, **params):
+        """
+        Update a webhook.
+        The authenticated user must have REPO_ADMIN permission for the context repository to call this resource.
+        :param project_key:
+        :param repository_slug:
+        :param webhook_id: the ID of the webhook within the repository
+        :return:
+        """
+        url = self._url_webhook(project_key, repository_slug, webhook_id)
+        return self.put(url, data=params)
+
+    def delete_webhook(self, project_key, repository_slug, webhook_id):
+        """
+        Delete a webhook.
+        The authenticated user must have REPO_ADMIN permission for the context repository to call this resource.
+        :param project_key:
+        :param repository_slug:
+        :param webhook_id: the ID of the webhook within the repository
+        :return:
+        """
+        url = self._url_webhook(project_key, repository_slug, webhook_id)
+        return self.delete(url)
+
     def _url_pull_request_settings(self, project_key, repository_slug):
         return "{}/settings/pull-requests".format(self._url_repo(project_key, repository_slug))
 
