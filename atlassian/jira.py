@@ -3844,7 +3844,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         if 400 <= response.status_code < 600:
             try:
                 j = response.json()
-                error_msg = "\n".join(j['errorMessages'] + [k + ": " + v for k, v in j['errors'].items()])
+                error_msg = "\n".join(j["errorMessages"] + [k + ": " + v for k, v in j["errors"].items()])
             except Exception:
                 response.raise_for_status()
 
