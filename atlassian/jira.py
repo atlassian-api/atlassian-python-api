@@ -581,7 +581,7 @@ class Jira(AtlassianRestAPI):
         }
         for k, v in kwargs.items():
             if k in allowed_fields: 
-                data.update({k:v})
+                data.update({k: v})
         base_url = self.resource_url("filter")
         url = "{base_url}/{id}".format(base_url=base_url, id=filter_id)
         return self.put(url, data=data)
