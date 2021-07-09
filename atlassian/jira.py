@@ -574,6 +574,7 @@ class Jira(AtlassianRestAPI):
         :param filter_id: int
         :param jql: str
         :param kwargs: dict, Optional (name, description, favourite)
+        :return:
         """
         allowed_fields = ("name", "description", "favourite")
         data = {"jql": jql}
