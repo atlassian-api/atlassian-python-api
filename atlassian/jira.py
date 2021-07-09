@@ -576,11 +576,9 @@ class Jira(AtlassianRestAPI):
         :param kwargs: dict, Optional (name, description, favourite)
         """
         allowed_fields = ("name", "description", "favourite")
-        data = {
-            "jql": jql
-        }
+        data = {"jql": jql}
         for k, v in kwargs.items():
-            if k in allowed_fields: 
+            if k in allowed_fields:
                 data.update({k: v})
         base_url = self.resource_url("filter")
         url = "{base_url}/{id}".format(base_url=base_url, id=filter_id)
