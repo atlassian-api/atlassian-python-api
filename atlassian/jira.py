@@ -2073,6 +2073,14 @@ class Jira(AtlassianRestAPI):
         return self.jql(jql, fields="*none")["total"]
 
     def get_all_project_issues(self, project, fields="*all", start=0, limit=None):
+        """
+        Get the Issues for a Project
+        :param project: Project Key name
+        :param fields: OPTIONAL list<str>: List of Issue Fields
+        :param start: OPTIONAL int: Starting index/offset from the list of target issues
+        :param limit: OPTIONAL int: Total number of project issues to be returned
+        :return: List of Dictionary for the Issue(s) returned.
+        """
         jql = "project = {project} ORDER BY key".format(project=project)
         return self.jql(jql, fields=fields, start=start, limit=limit)["issues"]
 
