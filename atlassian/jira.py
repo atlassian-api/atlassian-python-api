@@ -973,7 +973,10 @@ class Jira(AtlassianRestAPI):
         """
         base_url = self.resource_url("issue")
         url = "{base_url}/{issue}/assignee".format(base_url=base_url, issue=issue)
-        data = {"accountId": account_id}
+        data = {"name": account_id}
+        log.warning(
+            "Assigning Issue {issue_key} to User Id {account_id}".format(issue_key=issue, account_id=account_id)
+        )
         return self.put(url, data=data)
 
     def create_issue(self, fields, update_history=False, update=None):
