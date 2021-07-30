@@ -240,14 +240,23 @@ class Xray(AtlassianRestAPI):
         return self.delete(url)
 
     # Test Plans API
-    def get_tests_with_test_plan(self, test_plan_key):
+    def get_tests_with_test_plan(self, test_plan_key, limit=None, page=None):
         """
         Retrieve the tests associated with the given test plan.
         :param test_plan_key: Test set key (eg. 'PLAN-001').
+        :param limit: OPTIONAL: Limits the number of results per page.
+        :param page: OPTIONAL: Number of the page to be returned.
         :return: Return a list of the test associated with the test plan.
         """
         url = "rest/raven/1.0/api/testplan/{0}/test".format(test_plan_key)
-        return self.get(url)
+        params = {}
+
+        if limit:
+            params["limit"] = limit
+        if page:
+            params["page"] = page
+
+        return self.get(url, params=params)
 
     def update_test_plan(self, test_plan_key, add=None, remove=None):
         """
