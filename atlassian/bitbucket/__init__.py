@@ -2028,8 +2028,11 @@ class Bitbucket(BitbucketBase):
             params["path"] = path
         return self.get(url, params=params)
 
+    def _url_commit_pull_requests(self, project_key, repository_slug, commit_id):
+        return "{}/pull-requests".format(self._url_commit(project_key, repository_slug, commit_id))
+
     def get_pull_requests_contain_commit(self, project_key, repository_slug, commit):
-        url = self._url_commit(project_key, repository_slug, commit)
+        url = self._url_commit_pull_requests(project_key, repository_slug, commit)
         return (self.get(url) or {}).get("values")
 
     def get_changelog(self, project_key, repository_slug, ref_from, ref_to, start=0, limit=None):
