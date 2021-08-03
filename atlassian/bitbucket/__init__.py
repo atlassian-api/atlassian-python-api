@@ -1200,7 +1200,7 @@ class Bitbucket(BitbucketBase):
             params["orderBy"] = order_by
         return self._get_paged(url, params=params)
 
-    def get_project_tags(self, project_key, repository_slug, tag_name):
+    def get_project_tags(self, project_key, repository_slug, tag_name=None):
         """
         Retrieve a tag in the specified repository.
         The authenticated user must have REPO_READ permission for the context repository to call this resource.
@@ -1211,7 +1211,10 @@ class Bitbucket(BitbucketBase):
         :return:
         """
         url = self._url_repo_tags(project_key, repository_slug)
-        return self.get(url)
+        if tag_name is not None:
+            return self.get("{}/{}".format(url, tag_name))
+
+        return self._get_paged(url)
 
     def set_tag(self, project_key, repository_slug, tag_name, commit_revision, description=None):
         """
@@ -1225,13 +1228,13 @@ class Bitbucket(BitbucketBase):
         :return:
         """
         url = self._url_repo_tags(project_key, repository_slug)
-        body = {}
-        if tag_name is not None:
-            body["name"] = tag_name
-        if tag_name is not None:
-            body["startPoint"] = commit_revision
-        if tag_name is not None:
+        body = {
+            "name": tag_name,
+            "startPoint": commit_revision,
+        }
+        if description is not None:
             body["message"] = description
+
         return self.post(url, data=body)
 
     def delete_tag(self, project_key, repository_slug, tag_name):
@@ -1247,7 +1250,6 @@ class Bitbucket(BitbucketBase):
             self._url_repo_tags(project_key, repository_slug, api_root="rest/git"),
             tag_name,
         )
-        (project_key, repository_slug, tag_name)
         return self.delete(url)
 
     def _url_repo_hook_settings(self, project_key, repository_slug):
