@@ -2638,7 +2638,7 @@ class Bitbucket(BitbucketBase):
         :param prefix: string: Optional, a prefix to apply to all entries in the streamed archive; if the supplied prefix does not end with a trailing /, one will be added automatically
         :param chunk_size: int: Optional, download chunk size. Defeault is 128
         """
-        url = f"{self._url_repo(project_key, repository_slug)}/archive"
+        url = "{}/archive".format(self._url_repo(project_key, repository_slug))
         params = {}
         if at is not None:
             params["at"] = at
