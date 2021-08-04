@@ -63,11 +63,17 @@ class ReportGenerator:
                 continue
             output = [
                 history.get("author").get("name"),
-                f"{change_date:%Y-%m-%d}",
+                change_date.format("%Y-%m-%d"),
             ]  # person who did the change
             changes = ["Listing all items that changed:"]
             for item in history.get("items"):
-                changes.append(f"{item['field']} - {item['fromString']}- {item['toString']}")
+                changes.append(
+                    "{} - {}- {}".format(
+                        item["field"],
+                        item["fromString"],
+                        item["toString"],
+                    )
+                )
             output.append("\t".join(changes))
         return " - ".join(output)
 
@@ -84,7 +90,7 @@ class ReportGenerator:
         number = 1
         data = []
         for case in self.cases:
-            print(f"Processing case #{number}")
+            print("Processing case #{}".format(number))
             output = [
                 case.get("actor"),
                 case.get("key"),
