@@ -29,7 +29,9 @@ def report(limit=200, include_in_active=False):
         else:
             full_date = None
         if include_in_active or user.get("active"):
-            output = f"|{user.get('active')}|{user.get('displayName')}|{user.get('emailAddress')}|{full_date}|"
+            output = "|{}|{}|{}|{}|".format(
+                user.get("active"), user.get("displayName"), user.get("emailAddress"), full_date
+            )
             print(output)
 
 

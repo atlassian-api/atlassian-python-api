@@ -14,7 +14,7 @@ while True:
     for task in jira.check_support_zip_status(zips_creation_task_id)["tasks"]:
 
         if task["status"] == "IN_PROGRESS":
-            print(f"file {task['fileName']} {task['progressMessage']}")
+            print("file {} {}".format(task["fileName"], task["progressMessage"]))
 
             if task["fileName"] not in in_progress_zips:
                 in_progress_zips.append(task["fileName"])
@@ -25,7 +25,7 @@ while True:
             with open(task["fileName"], "wb") as fp:
                 fp.write(support_zip)
 
-            print(f"{task['fileName']} written.")
+            print("{} written.".format(task["fileName"]))
 
             if task["fileName"] in in_progress_zips:
                 in_progress_zips.remove(task["fileName"])
