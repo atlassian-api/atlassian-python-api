@@ -3,6 +3,7 @@ mock
 pytest
 pytest-cov
 flake8
+flake8-no-fstring
 black
 tox
 coverage
