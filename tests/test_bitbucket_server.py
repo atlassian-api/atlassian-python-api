@@ -321,7 +321,7 @@ class TestWebhook(TestCase):
                 "url": "https://example2.com",
                 "active": False,
                 "secret": None,
-            }
+            },
         ]
 
     def test_get_webhooks(self):
@@ -349,7 +349,7 @@ class TestWebhook(TestCase):
             self.fake_webhooks[0]["events"],
             self.fake_webhooks[0]["url"],
             self.fake_webhooks[0]["active"],
-            self.fake_webhooks[0]["secret"]
+            self.fake_webhooks[0]["secret"],
         )
         self.assertEqual(webhook["name"], self.fake_webhooks[0]["name"])
         self.assertEqual(webhook["events"], self.fake_webhooks[0]["events"])
@@ -359,9 +359,7 @@ class TestWebhook(TestCase):
 
     def test_get_webhook(self):
         webhook = self.bitbucket.get_webhook(
-            self.fake_webhooks[0]["project_key"],
-            self.fake_webhooks[0]["repository_slug"],
-            self.webhook_id
+            self.fake_webhooks[0]["project_key"], self.fake_webhooks[0]["repository_slug"], self.webhook_id
         )
         self.assertEqual(webhook["name"], self.fake_webhooks[0]["name"])
         self.assertEqual(webhook["events"], self.fake_webhooks[0]["events"])
@@ -370,15 +368,9 @@ class TestWebhook(TestCase):
         self.assertEqual(webhook["active"], self.fake_webhooks[0]["active"])
 
     def test_update_webhook(self):
-        params = {
-            "events": ["repo:refs_changed"],
-            "url": "https://example1-updated.com"
-        }
+        params = {"events": ["repo:refs_changed"], "url": "https://example1-updated.com"}
         webhook = self.bitbucket.update_webhook(
-            self.fake_webhooks[0]["project_key"],
-            self.fake_webhooks[0]["repository_slug"],
-            self.webhook_id,
-            **params
+            self.fake_webhooks[0]["project_key"], self.fake_webhooks[0]["repository_slug"], self.webhook_id, **params
         )
         self.assertEqual(webhook["name"], self.fake_webhooks[0]["name"])
         self.assertEqual(webhook["events"], params["events"])
@@ -388,8 +380,6 @@ class TestWebhook(TestCase):
 
     def test_delete_webhook(self):
         webhook = self.bitbucket.delete_webhook(
-            self.fake_webhooks[0]["project_key"],
-            self.fake_webhooks[0]["repository_slug"],
-            self.webhook_id
+            self.fake_webhooks[0]["project_key"], self.fake_webhooks[0]["repository_slug"], self.webhook_id
         )
         self.assertIsNone(webhook, "Delete response is not None")
