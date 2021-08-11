@@ -41,8 +41,8 @@ class Bamboo(AtlassianRestAPI):
         :param path: URI for the resource
         :return: generator with the contents of response[elements_key][element_key]
         """
-        start_index = 0
         params["start-index"] = start_index
+        start_index = 0
         response = self.get(path, data, flags, params, headers)
         if self.advanced_mode:
             try:
