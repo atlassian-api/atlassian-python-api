@@ -53,7 +53,7 @@ class PullRequests(BitbucketCloudBase):
 
         return self.__get_object(self.post(None, data))
 
-    def each(self, q=None, sort=None):
+    def each(self, q=None, sort=None, trailing=True):
         """
         Returns the list of pull requests in this repository.
 
@@ -61,6 +61,7 @@ class PullRequests(BitbucketCloudBase):
                           See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
         :param sort: string: Name of a response property to sort results.
                              See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
+        :param trailing: bool (default is None):   If True, a trailing slash is added to the url
 
         :return: A generator for the PullRequest objects
 
@@ -71,7 +72,7 @@ class PullRequests(BitbucketCloudBase):
             params["sort"] = sort
         if q is not None:
             params["q"] = q
-        for pr in self._get_paged(None, trailing=True, params=params):
+        for pr in self._get_paged(None, trailing=trailing, params=params):
             yield self.__get_object(pr)
 
         return
