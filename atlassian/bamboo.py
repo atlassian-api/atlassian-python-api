@@ -41,8 +41,6 @@ class Bamboo(AtlassianRestAPI):
         :param path: URI for the resource
         :return: generator with the contents of response[elements_key][element_key]
         """
-        start_index = 0
-        params["start-index"] = start_index
         response = self.get(path, data, flags, params, headers)
         if self.advanced_mode:
             try:
@@ -60,7 +58,6 @@ class Bamboo(AtlassianRestAPI):
             for r in results[element_key]:
                 size += 1
                 yield r
-            start_index += results["max-result"]
         except TypeError:
             logging.error("Broken response: {}".format(response))
             yield response
