@@ -1751,7 +1751,7 @@ class Jira(AtlassianRestAPI):
             params["status"] = status
         base_url = self.resource_url("project")
         url = "{base_url}/{key}/version".format(base_url=base_url, key=key)
-        return self.get(url, params)
+        return self.get(url, params=params)
 
     def add_version(self, project_key, project_id, version, is_archived=False, is_released=False):
         """
