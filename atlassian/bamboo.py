@@ -594,10 +594,25 @@ class Bamboo(AtlassianRestAPI):
 
     def get_projects(self):
         """Method used to list all projects defined in Bamboo.
-        Projects without any plan are not listed by default, unless showEmpty query param is set to true."""
-        resource = "project?showEmpty"
-        for project in self.get(self.resource_url(resource)):
-            yield project
+        Projects without any plan are not listed."""
+        start_idx = 0
+        max_results = 25
+
+        while True:
+            resource = "project?start-index={}&max-result={}".format(start_idx, max_results)
+
+            r = self.get(self.resource_url(resource))
+
+            if r is None:
+                break
+
+            if start_idx > r["projects"]["size"]:
+                break
+
+            start_idx += max_results
+
+            for project in r["projects"]["project"]:
+                yield project
 
     def get_project(self, project_key):
         """Method used to retrieve information for project specified as project key.
