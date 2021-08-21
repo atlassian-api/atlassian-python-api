@@ -2062,15 +2062,24 @@ class Jira(AtlassianRestAPI):
 
     def get_project_issuekey_last(self, project):
         jql = "project = {project} ORDER BY issuekey DESC".format(project=project)
-        return (self.jql(jql).get("issues") or {})[0]["key"]
+        response = self.jql(jql)
+        if self.advanced_mode:
+            return response
+        return (response.get("issues") or {"key": None})[0]["key"]
 
     def get_project_issuekey_all(self, project, start=0, limit=None, expand=None):
         jql = "project = {project} ORDER BY issuekey ASC".format(project=project)
-        return [issue["key"] for issue in self.jql(jql, start=start, limit=limit, expand=expand)["issues"]]
+        response = self.jql(jql, start=start, limit=limit, expand=expand)
+        if self.advanced_mode:
+            return response
+        return [issue["key"] for issue in response["issues"]]
 
     def get_project_issues_count(self, project):
         jql = 'project = "{project}" '.format(project=project)
-        return self.jql(jql, fields="*none")["total"]
+        response = self.jql(jql, fields="*none")
+        if self.advanced_mode:
+            return response
+        return response["total"]
 
     def get_all_project_issues(self, project, fields="*all", start=0, limit=None):
         """
@@ -2082,7 +2091,10 @@ class Jira(AtlassianRestAPI):
         :return: List of Dictionary for the Issue(s) returned.
         """
         jql = "project = {project} ORDER BY key".format(project=project)
-        return self.jql(jql, fields=fields, start=start, limit=limit)["issues"]
+        response = self.jql(jql, fields=fields, start=start, limit=limit)
+        if self.advanced_mode:
+            return response
+        return response["issues"]
 
     def get_all_assignable_users_for_project(self, project_key, start=0, limit=50):
         """
@@ -2387,7 +2399,7 @@ class Jira(AtlassianRestAPI):
     Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/search
     """
 
-    def jql(self, jql, fields="*all", start=0, limit=None, expand=None, validate_query=None):
+    def jql(self, jql, fields="*all", start=0, limit=None, expand=None, validate_query=None, advanced_mode=None):
         """
         Get issues from jql search result with all related fields
         :param jql:
