@@ -23,9 +23,6 @@ class Pipelines(BitbucketCloudBase):
         2. Specific commit on a branch (additionally specify ``commit``)
         3. Specific pipeline (additionally specify ``pattern``)
 
-        Atleast one of ``commit`` or ``branch`` has to be provided.
-
-
         Variables has to be a list of dictionaries:
 
         {
@@ -45,9 +42,6 @@ class Pipelines(BitbucketCloudBase):
                 "ref_name": branch,
             },
         }
-
-        if not commit and not pattern:
-            raise ValueError("[commit] and [pattern] both cannot by empty!")
 
         if commit is not None:
             data["target"]["commit"] = {
