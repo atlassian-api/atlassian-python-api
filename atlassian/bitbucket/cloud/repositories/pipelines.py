@@ -21,7 +21,7 @@ class Pipelines(BitbucketCloudBase):
 
         1. Latest revision of a branch (specify ``branch``)
         2. Specific commit on a branch (additionally specify ``commit``)
-        3. Specific pipeline (additionally specify ``pattern``)
+        3. Specific pipeline (additionally specify ``pattern``. ``commit`` is optional here)
 
         Variables has to be a list of dictionaries:
 
@@ -42,7 +42,6 @@ class Pipelines(BitbucketCloudBase):
                 "ref_name": branch,
             },
         }
-
         if commit is not None:
             data["target"]["commit"] = {
                 "type": "commit",
