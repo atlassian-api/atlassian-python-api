@@ -113,6 +113,12 @@ Manage repositories
     # Delete a repository (DANGER!)
     bitbucket.delete_repo(project_key, repository_slug)
 
+    # Fork repo inside same project
+    fork_repository(project_key, repository_slug, new_repository_slug)
+
+    # Fork repo to new project
+    fork_repository(project_key, repository_slug, new_repository_slug, new_project_key, new_repository_slug)
+
 Manage Code Insights
 --------------------
 
