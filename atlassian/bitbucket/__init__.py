@@ -855,7 +855,7 @@ class Bitbucket(BitbucketBase):
             body["project"] = {"key": project_key}
         return self.post(url, data=body)
 
-    def fork_repository_new_project(self, project_key, repository_slug, new_project, new_repository_slug):
+    def fork_repository_new_project(self, project_key, repository_slug, new_project_key, new_repository_slug):
         """
         Forks a repository to a separate project.
         :param project_key: Origin Project Key
