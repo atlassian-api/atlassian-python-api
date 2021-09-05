@@ -851,7 +851,6 @@ class Bitbucket(BitbucketBase):
         body = {}
         if new_repository_slug is not None:
             body["name"] = new_repository_slug
-        if new_repository_slug is not None:
             body["project"] = {"key": project_key}
         return self.post(url, data=body)
 
