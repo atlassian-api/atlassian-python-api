@@ -51,7 +51,7 @@ class AtlassianRestAPI(object):
         kerberos=None,
         cloud=False,
         proxies=None,
-        token=None
+        token=None,
     ):
         self.url = url
         self.username = username
