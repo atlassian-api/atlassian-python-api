@@ -632,8 +632,8 @@ class Confluence(AtlassianRestAPI):
         }
         if parent_id:
             data["ancestors"] = [{"type": type, "id": parent_id}]
-        if editor == "v2":
-            data["metadata"] = {"properties": {"editor": {"value": "v2"}}}
+        if editor is not None and editor in ["v1", "v2"]:
+            data["metadata"] = {"properties": {"editor": {"value": editor}}}
         try:
             response = self.post(url, data=data)
         except HTTPError as e:
