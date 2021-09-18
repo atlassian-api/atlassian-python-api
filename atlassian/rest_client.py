@@ -51,6 +51,7 @@ class AtlassianRestAPI(object):
         kerberos=None,
         cloud=False,
         proxies=None,
+        token=None,
     ):
         self.url = url
         self.username = username
@@ -69,6 +70,8 @@ class AtlassianRestAPI(object):
             self._session = session
         if username and password:
             self._create_basic_session(username, password)
+        elif token is not None:
+            self._create_token_session(token)
         elif oauth is not None:
             self._create_oauth_session(oauth)
         elif oauth2 is not None:
@@ -86,6 +89,9 @@ class AtlassianRestAPI(object):
 
     def _create_basic_session(self, username, password):
         self._session.auth = (username, password)
+
+    def _create_token_session(self, token):
+        self._update_header("Authorization", "Bearer {token}".format(token=token))
 
     def _create_kerberos_session(self, _):
         from requests_kerberos import HTTPKerberosAuth, OPTIONAL
