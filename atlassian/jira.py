@@ -1618,7 +1618,7 @@ class Jira(AtlassianRestAPI):
         if expand:
             params["expand"] = expand
         url = self.resource_url("project")
-        return self.get(url)
+        return self.get(url, params=params)
 
     def create_project_from_raw_json(self, json):
         """
