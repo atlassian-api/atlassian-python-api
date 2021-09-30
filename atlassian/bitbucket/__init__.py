@@ -851,8 +851,23 @@ class Bitbucket(BitbucketBase):
         body = {}
         if new_repository_slug is not None:
             body["name"] = new_repository_slug
-        if new_repository_slug is not None:
             body["project"] = {"key": project_key}
+        return self.post(url, data=body)
+
+    def fork_repository_new_project(self, project_key, repository_slug, new_project_key, new_repository_slug):
+        """
+        Forks a repository to a separate project.
+        :param project_key: Origin Project Key
+        :param repository_slug: Origin repository slug
+        :param new_project_key: Project Key of target project
+        :param new_repository_slug: Target Repository slug
+        :return:
+        """
+        url = self._url_repo(project_key, repository_slug)
+        body = {}
+        if new_repository_slug is not None and new_project_key is not None:
+            body["name"] = new_repository_slug
+            body["project"] = {"key": new_project_key}
         return self.post(url, data=body)
 
     def repo_keys(self, project_key, repo_key, start=0, limit=None, filter_str=None):
