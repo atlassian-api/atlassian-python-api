@@ -72,7 +72,7 @@ class PullRequests(BitbucketCloudBase):
         if q is not None:
             params["q"] = q
         for pr in self._get_paged(None, trailing=True, params=params):
-            yield self.__get_object(pr)
+            yield self.__get_object(super(PullRequests, self).get(pr.get("id")))
 
         return
 
