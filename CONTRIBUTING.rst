@@ -105,6 +105,8 @@ All methods based on docs from: https://developer.atlassian.com/docs/
 * Confluence
     - `Confluence Server`_
     - `Confluence Cloud`_
+* Crowd
+    - `Crowd Server`_
 * Advanced Roadmaps (formerly Portfolio for Jira)
     - `Portfolio for Jira`_
     - `Portfolio for Jira Teams`_
@@ -133,6 +135,7 @@ All methods based on docs from: https://developer.atlassian.com/docs/
 .. _`Jira Cloud`: https://developer.atlassian.com/cloud/jira/platform/rest/v3/
 .. _`Confluence Server`: https://developer.atlassian.com/server/confluence/confluence-server-rest-api/
 .. _`Confluence Cloud`: https://developer.atlassian.com/cloud/confluence/rest/
+.. _`Crowd Server`: https://developer.atlassian.com/server/crowd/crowd-rest-apis/
 .. _`Jira Service Desk Cloud`: https://developer.atlassian.com/cloud/jira/service-desk/rest/
 .. _`Jira Service Desk Server`: https://docs.atlassian.com/jira-servicedesk/REST/server
 .. _`Portfolio for Jira Teams`: https://docs.atlassian.com/portfolio-for-jira-server/REST/2.13.0/teams/

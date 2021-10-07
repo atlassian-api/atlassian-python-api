@@ -1,5 +1,7 @@
 # coding=utf-8
 import logging
+import string
+import secrets
 
 from .rest_client import AtlassianRestAPI
 
@@ -15,17 +17,111 @@ class Crowd(AtlassianRestAPI):
         super(Crowd, self).__init__(url, username, password, timeout, api_root, api_version)
 
     def _crowd_api_url(self, api, resource):
-        return "{server}/{api_root}/{api}/{version}/{resource}".format(
-            server=self.url,
+        return "/{api_root}/{api}/{version}/{resource}".format(
             api_root=self.api_root,
             api=api,
             version=self.api_version,
             resource=resource,
         )
 
+    def _user_change_status(self, username, active):
+        """
+        Change user status
+
+        :params active bool
+
+        :return:
+        """
+
+        user = self.user(username)
+
+        user_object = {
+            "name": username,
+            "active": active,
+            "display-name": user.get("display-name"),
+            "first-name": user.get("first-name"),
+            "last-name": user.get("last-name"),
+            "email": user.get("email"),
+        }
+
+        params = {"username": username}
+
+        return self.put(self._crowd_api_url("usermanagement", "user"), params=params, data=user_object)
+
     def user(self, username):
         params = {"username": username}
         return self.get(self._crowd_api_url("usermanagement", "user"), params=params)
+
+    def user_activate(self, username):
+        """
+        Activate user
+        """
+
+        return self._user_change_status(username, True)
+
+    def user_create(self, username, active, first_name, last_name, display_name, email, password=None):
+        """
+        Create new user
+
+        :param active: bool, OPTIONAL: password can be auto-generated if not included
+            username (string)
+            active (bool)
+            first-name (string)
+            last-name (string)
+            display-name (string)
+            email (string)
+            password (string, optional)
+
+        :return:
+        """
+
+        if not password:
+            characters = string.ascii_letters + string.punctuation + string.digits
+            password = "".join(secrets.choice(characters) for x in range(30))
+
+        user_object = {
+            "name": username,
+            "password": {"value": password},
+            "active": active,
+            "first-name": first_name,
+            "last-name": last_name,
+            "display-name": display_name,
+            "email": email,
+        }
+
+        return self.post(self._crowd_api_url("usermanagement", "user"), data=user_object)
+
+    def user_deactivate(self, username):
+        """
+        Deactivate user
+
+        :return:
+        """
+
+        return self._user_change_status(username, False)
+
+    def user_delete(self, username):
+        """
+        Delete user
+
+        :return:
+        """
+
+        params = {"username": username}
+
+        return self.delete(self._crowd_api_url("usermanagement", "user"), params=params)
+
+    def group_add_user(self, username, groupname):
+        """
+        Add user to group
+        :return:
+        """
+
+        data = {"name": groupname}
+
+        params = {"username": username}
+
+        return self.post(self._crowd_api_url("usermanagement", "user/group/direct"), params=params, json=data)
 
     def group_nested_members(self, group):
         params = {"groupname": group}
