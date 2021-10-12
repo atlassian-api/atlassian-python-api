@@ -167,7 +167,7 @@ Groups and admins
     bitbucket.all_project_administrators()
 
     # Get users. Use 'user_filter' parameter to get specific users.
-    bitbucket.get_users(user_filter="username")
+    bitbucket.get_users(user_filter="username", limit=25, start=0)
 
 Manage code
 -----------
