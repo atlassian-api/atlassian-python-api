@@ -107,7 +107,7 @@ class Bitbucket(BitbucketBase):
         if limit:
             params["limit"] = limit
         if start:
-            params["start"] = start 
+            params["start"] = start
         return self.get(url, params=params)
 
     def get_users_info(self, user_filter=None, start=0, limit=25):
