@@ -18,8 +18,9 @@ class ServiceDesk(AtlassianRestAPI):
         # Initialize insight API endpoint
         self.insightworkspaceversion = insightworkspaceversion
         self.insight_workspace_id = self._get_insight_workspace_id()
-        self.insight_api_endpoint = 'https://api.atlassian.com/jsm/insight/workspace/{0}/v{1}/'.format(self.insight_workspace_id, 
-                                                                                                        self.insightworkspaceversion)
+        self.insight_api_endpoint = "https://api.atlassian.com/jsm/insight/workspace/{0}/v{1}/".format(
+            self.insight_workspace_id, self.insightworkspaceversion
+        )
 
     # Information actions
     def get_info(self):
@@ -800,7 +801,7 @@ class ServiceDesk(AtlassianRestAPI):
             "rest/servicedeskapi/insight/workspace",
             headers=self.experimental_headers,
         )
-        return [i['workspaceId'] for i in result['values']]
+        return [i["workspaceId"] for i in result["values"]]
 
     def _get_insight_workspace_id(self):
         """
@@ -810,16 +811,16 @@ class ServiceDesk(AtlassianRestAPI):
         """
         return next(iter(self._get_insight_workspace_ids()))
 
-    ### Insight Icon API 
+    ### Insight Icon API
     # TODO Get icon {id} https://developer.atlassian.com/cloud/insight/rest/api-group-icon/#api-icon-id-get
     # TODO Get icon global https://developer.atlassian.com/cloud/insight/rest/api-group-icon/#api-icon-global-get
 
     ### Insight Import API
     # TODO Post import start {id} https://developer.atlassian.com/cloud/insight/rest/api-group-import/#api-import-start-id-post
-    
+
     ### Insight Iql API
     # TODO Get iql objects https://developer.atlassian.com/cloud/insight/rest/api-group-iql/#api-iql-objects-get
-    
+
     ### Insight Object API
     # TODO Get object {id} https://developer.atlassian.com/cloud/insight/rest/api-group-object/#api-object-id-get
     # TODO Put object {id} https://developer.atlassian.com/cloud/insight/rest/api-group-object/#api-object-id-put
@@ -829,12 +830,14 @@ class ServiceDesk(AtlassianRestAPI):
     # TODO Get object {id} referenceinfo https://developer.atlassian.com/cloud/insight/rest/api-group-object/#api-object-id-referenceinfo-get
     # TODO Post object create https://developer.atlassian.com/cloud/insight/rest/api-group-object/#api-object-create-post
     # TODO Post object navlist iql https://developer.atlassian.com/cloud/insight/rest/api-group-object/#api-object-navlist-iql-post
-    
+
     ### Insight Objectconnectedtickets API
     # TODO Get objectconnectedtickets {objectId} tickets https://developer.atlassian.com/cloud/insight/rest/api-group-objectconnectedtickets/#api-objectconnectedtickets-objectid-tickets-get
 
     ### Insight Objectschema API
-    def list_insight_object_schemas(self,):
+    def list_insight_object_schemas(
+        self,
+    ):
         """
         Returns a list of all insight object schemas.
         https://developer.atlassian.com/cloud/insight/rest/api-group-objectschema/#api-objectschema-list-get
@@ -842,9 +845,7 @@ class ServiceDesk(AtlassianRestAPI):
         :return: list of dicts
         """
         return self.get(
-            "{0}objectschema/list".format(self.insight_api_endpoint),
-            headers=self.experimental_headers,
-            absolute=True
+            "{0}objectschema/list".format(self.insight_api_endpoint), headers=self.experimental_headers, absolute=True
         )
 
     def create_insight_object_schema(self, name, objectschemakey, description):
@@ -861,15 +862,15 @@ class ServiceDesk(AtlassianRestAPI):
             ObjectSchema: New Insight Object Schema
         """
         data = {
-            'name': name,
-            'objectSchemaKey': objectschemakey,
-            'description': description,
+            "name": name,
+            "objectSchemaKey": objectschemakey,
+            "description": description,
         }
         return self.post(
             "{0}objectschema/create".format(self.insight_api_endpoint),
             headers=self.experimental_headers,
             absolute=True,
-            data=data
+            data=data,
         )
 
     def get_insight_object_schema(self, schema_id):
@@ -945,16 +946,17 @@ class ServiceDesk(AtlassianRestAPI):
             absolute=True,
         )
 
-    def _put_insight_object_type(self,
-                                type_id,
-                                name,
-                                iconid,
-                                objectschemaid,
-                                description=None,
-                                parentobjecttypeid=None,
-                                inherited=None,
-                                abstractobjecttype=None,
-                                ):
+    def _put_insight_object_type(
+        self,
+        type_id,
+        name,
+        iconid,
+        objectschemaid,
+        description=None,
+        parentobjecttypeid=None,
+        inherited=None,
+        abstractobjecttype=None,
+    ):
         """
         Put an Insight object type
         https://developer.atlassian.com/cloud/insight/rest/api-group-objecttype/#api-objecttype-id-put
@@ -973,19 +975,19 @@ class ServiceDesk(AtlassianRestAPI):
             ObjectType: The updated object type
         """
         data = {
-            'id': type_id,
-            'name': name,
-            'iconId': iconid,
-            'objectSchemaId': objectschemaid,
+            "id": type_id,
+            "name": name,
+            "iconId": iconid,
+            "objectSchemaId": objectschemaid,
         }
         if description is not None:
-            data['description'] = description
+            data["description"] = description
         if parentobjecttypeid is not None:
-            data['parentObjectTypeId'] = parentobjecttypeid
+            data["parentObjectTypeId"] = parentobjecttypeid
         if inherited is not None:
-            data['inherited'] = inherited
+            data["inherited"] = inherited
         if abstractobjecttype is not None:
-            data['abstractObjectType'] = abstractobjecttype
+            data["abstractObjectType"] = abstractobjecttype
         return self.put(
             "{0}objecttype/{1}".format(self.insight_api_endpoint, type_id),
             headers=self.experimental_headers,
@@ -993,22 +995,23 @@ class ServiceDesk(AtlassianRestAPI):
             data=data,
         )
 
-    def update_insight_object_type(self,
-                                type_id,
-                                name=None,
-                                iconid=None,
-                                objectschemaid=None,
-                                description=None,
-                                parentobjecttypeid=None,
-                                inherited=None,
-                                abstractobjecttype=None,
-                                ):
+    def update_insight_object_type(
+        self,
+        type_id,
+        name=None,
+        iconid=None,
+        objectschemaid=None,
+        description=None,
+        parentobjecttypeid=None,
+        inherited=None,
+        abstractobjecttype=None,
+    ):
         """
-        Update an Insight object type. This is a friendlier method than 
+        Update an Insight object type. This is a friendlier method than
         the official _put_insight_object_type since it does not require
         that the name, iconid, objectschemaid be provided every time even
         if they do not need to be updated.
-        Instead, it will get those from the existing object type 
+        Instead, it will get those from the existing object type
         and use the existing values.
 
         Args:
@@ -1024,17 +1027,17 @@ class ServiceDesk(AtlassianRestAPI):
         Returns:
             ObjectType: The updated object type
         """
-        
+
         otype = self.get_insight_object_type(type_id)
         args = {
-            'type_id': type_id,
-            'name': name or otype['name'],
-            'iconid': iconid or otype['icon']['id'],
-            'objectschemaid': objectschemaid or otype['objectSchemaId'],
-            'description': description,
-            'parentobjecttypeid': parentobjecttypeid,
-            'inherited': inherited,
-            'abstractobjecttype': abstractobjecttype,
+            "type_id": type_id,
+            "name": name or otype["name"],
+            "iconid": iconid or otype["icon"]["id"],
+            "objectschemaid": objectschemaid or otype["objectSchemaId"],
+            "description": description,
+            "parentobjecttypeid": parentobjecttypeid,
+            "inherited": inherited,
+            "abstractobjecttype": abstractobjecttype,
         }
 
         return self._put_insight_object_type(**args)
