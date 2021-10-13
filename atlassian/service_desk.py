@@ -13,6 +13,14 @@ class ServiceDesk(AtlassianRestAPI):
     JIRA ServiceDesk API object
     """
 
+    def __init__(self, *args, insightworkspaceversion=1, **kwargs):
+        super(ServiceDesk, self).__init__(*args, **kwargs)
+        # Initialize insight API endpoint
+        self.insightworkspaceversion = insightworkspaceversion
+        self.insight_workspace_id = self._get_insight_workspace_id()
+        self.insight_api_endpoint = 'https://api.atlassian.com/jsm/insight/workspace/{0}/v{1}/'.format(self.insight_workspace_id, 
+                                                                                                        self.insightworkspaceversion)
+
     # Information actions
     def get_info(self):
         """Get info about Service Desk app"""
@@ -780,3 +788,273 @@ class ServiceDesk(AtlassianRestAPI):
                 response.raise_for_status()
 
             raise HTTPError(error_msg, response=response)
+
+    ### Insight Objects ###
+    def _get_insight_workspace_ids(self):
+        """
+        Returns all Insight workspace Ids.
+
+        :return: List
+        """
+        result = self.get(
+            "rest/servicedeskapi/insight/workspace",
+            headers=self.experimental_headers,
+        )
+        return [i['workspaceId'] for i in result['values']]
+
+    def _get_insight_workspace_id(self):
+        """
+        Returns the first Insight workspace ID.
+
+        :return: str
+        """
+        return next(iter(self._get_insight_workspace_ids()))
+
+    ### Insight Icon API 
+    # TODO Get icon {id} https://developer.atlassian.com/cloud/insight/rest/api-group-icon/#api-icon-id-get
+    # TODO Get icon global https://developer.atlassian.com/cloud/insight/rest/api-group-icon/#api-icon-global-get
+
+    ### Insight Import API
+    # TODO Post import start {id} https://developer.atlassian.com/cloud/insight/rest/api-group-import/#api-import-start-id-post
+    
+    ### Insight Iql API
+    # TODO Get iql objects https://developer.atlassian.com/cloud/insight/rest/api-group-iql/#api-iql-objects-get
+    
+    ### Insight Object API
+    # TODO Get object {id} https://developer.atlassian.com/cloud/insight/rest/api-group-object/#api-object-id-get
+    # TODO Put object {id} https://developer.atlassian.com/cloud/insight/rest/api-group-object/#api-object-id-put
+    # TODO Delete object {id} https://developer.atlassian.com/cloud/insight/rest/api-group-object/#api-object-id-delete
+    # TODO Get object {id} attributes https://developer.atlassian.com/cloud/insight/rest/api-group-object/#api-object-id-attributes-get
+    # TODO Get object {id} history https://developer.atlassian.com/cloud/insight/rest/api-group-object/#api-object-id-history-get
+    # TODO Get object {id} referenceinfo https://developer.atlassian.com/cloud/insight/rest/api-group-object/#api-object-id-referenceinfo-get
+    # TODO Post object create https://developer.atlassian.com/cloud/insight/rest/api-group-object/#api-object-create-post
+    # TODO Post object navlist iql https://developer.atlassian.com/cloud/insight/rest/api-group-object/#api-object-navlist-iql-post
+    
+    ### Insight Objectconnectedtickets API
+    # TODO Get objectconnectedtickets {objectId} tickets https://developer.atlassian.com/cloud/insight/rest/api-group-objectconnectedtickets/#api-objectconnectedtickets-objectid-tickets-get
+
+    ### Insight Objectschema API
+    def list_insight_object_schemas(self,):
+        """
+        Returns a list of all insight object schemas.
+        https://developer.atlassian.com/cloud/insight/rest/api-group-objectschema/#api-objectschema-list-get
+
+        :return: list of dicts
+        """
+        return self.get(
+            "{0}objectschema/list".format(self.insight_api_endpoint),
+            headers=self.experimental_headers,
+            absolute=True
+        )
+
+    def create_insight_object_schema(self, name, objectschemakey, description):
+        """
+        Creates a new Insight Object Schema
+        https://developer.atlassian.com/cloud/insight/rest/api-group-objectschema/#api-objectschema-create-post
+
+        Args:
+            name (str): Name of the Insight object schema
+            objectschemakey (str): The schema key
+            description (str): Description of the schema
+
+        Returns:
+            ObjectSchema: New Insight Object Schema
+        """
+        data = {
+            'name': name,
+            'objectSchemaKey': objectschemakey,
+            'description': description,
+        }
+        return self.post(
+            "{0}objectschema/create".format(self.insight_api_endpoint),
+            headers=self.experimental_headers,
+            absolute=True,
+            data=data
+        )
+
+    def get_insight_object_schema(self, schema_id):
+        """
+        Get an Insight Object Schema by ID
+        https://developer.atlassian.com/cloud/insight/rest/api-group-objectschema/#api-objectschema-id-get
+
+        Args:
+            schema_id (str): id of the schema to get
+
+        Returns:
+            ObjectSchema: Insight Object Schema
+        """
+        return self.get(
+            "{0}objectschema/{1}".format(self.insight_api_endpoint, schema_id),
+            headers=self.experimental_headers,
+            absolute=True,
+        )
+
+    # TODO: Put objectschema {id} https://developer.atlassian.com/cloud/insight/rest/api-group-objectschema/#api-objectschema-id-put
+    # TODO: Delete objectschema {id} https://developer.atlassian.com/cloud/insight/rest/api-group-objectschema/#api-objectschema-id-delete
+    # TODO: Get objectschema {id} attributes https://developer.atlassian.com/cloud/insight/rest/api-group-objectschema/#api-objectschema-id-attributes-get
+
+    def get_insight_object_schema_attributes(self, schema_id):
+        """
+        Get Insight Object Schema Attributes by Schema ID
+        https://developer.atlassian.com/cloud/insight/rest/api-group-objectschema/#api-objectschema-id-attributes-get
+
+        Args:
+            schema_id (str): id of the schema attributes to get
+
+        Returns:
+            Array<ObjectTypeAttribute>: Array of attributes
+        """
+        return self.get(
+            "{0}objectschema/{1}/attributes".format(self.insight_api_endpoint, schema_id),
+            headers=self.experimental_headers,
+            absolute=True,
+        )
+
+    def get_insight_object_schema_objecttypes_flat(self, schema_id):
+        """
+        Get Insight Object Schema object types by schema ID
+        https://developer.atlassian.com/cloud/insight/rest/api-group-objectschema/#api-objectschema-id-objecttypes-flat-get
+
+        Args:
+            schema_id (str): id of the schema object types to get
+
+        Returns:
+            Array<ObjectType>: Array of objects
+        """
+        return self.get(
+            "{0}objectschema/{1}/objecttypes/flat".format(self.insight_api_endpoint, schema_id),
+            headers=self.experimental_headers,
+            absolute=True,
+        )
+
+    ### Insight Objecttype API
+    def get_insight_object_type(self, type_id):
+        """
+        Get Insight Object object ID
+        https://developer.atlassian.com/cloud/insight/rest/api-group-objecttype/#api-objecttype-id-get
+
+        Args:
+            type_id (str): id of the object type to get
+
+        Returns:
+            ObjectType: Insight Object Type
+        """
+        return self.get(
+            "{0}objecttype/{1}".format(self.insight_api_endpoint, type_id),
+            headers=self.experimental_headers,
+            absolute=True,
+        )
+
+    def _put_insight_object_type(self,
+                                type_id,
+                                name,
+                                iconid,
+                                objectschemaid,
+                                description=None,
+                                parentobjecttypeid=None,
+                                inherited=None,
+                                abstractobjecttype=None,
+                                ):
+        """
+        Put an Insight object type
+        https://developer.atlassian.com/cloud/insight/rest/api-group-objecttype/#api-objecttype-id-put
+
+        Args:
+            type_id (str): the ID of the type to update
+            name (str): The new name
+            iconid (str): The id of the icon to use
+            objectSchemaId (str): The object schema ID
+            description (str, optional): The updated description. Defaults to None.
+            parentobjecttypeid (str, optional): The new parent object type id. Defaults to None.
+            inherited (bool, optional): The new inherited value. Defaults to None.
+            abstractobjecttype (bool, optional): The new abstractobjecttype value. Defaults to None.
+
+        Returns:
+            ObjectType: The updated object type
+        """
+        data = {
+            'id': type_id,
+            'name': name,
+            'iconId': iconid,
+            'objectSchemaId': objectschemaid,
+        }
+        if description is not None:
+            data['description'] = description
+        if parentobjecttypeid is not None:
+            data['parentObjectTypeId'] = parentobjecttypeid
+        if inherited is not None:
+            data['inherited'] = inherited
+        if abstractobjecttype is not None:
+            data['abstractObjectType'] = abstractobjecttype
+        return self.put(
+            "{0}objecttype/{1}".format(self.insight_api_endpoint, type_id),
+            headers=self.experimental_headers,
+            absolute=True,
+            data=data,
+        )
+
+    def update_insight_object_type(self,
+                                type_id,
+                                name=None,
+                                iconid=None,
+                                objectschemaid=None,
+                                description=None,
+                                parentobjecttypeid=None,
+                                inherited=None,
+                                abstractobjecttype=None,
+                                ):
+        """
+        Update an Insight object type. This is a friendlier method than 
+        the official _put_insight_object_type since it does not require
+        that the name, iconid, objectschemaid be provided every time even
+        if they do not need to be updated.
+        Instead, it will get those from the existing object type 
+        and use the existing values.
+
+        Args:
+            type_id (str): the ID of the type to update
+            name (str, optional): The new name
+            iconid (str, optional): The id of the icon to use
+            objectSchemaId (str, optional): The object schema ID
+            description (str, optional): The updated description. Defaults to None.
+            parentobjecttypeid (str, optional): The new parent object type id. Defaults to None.
+            inherited (bool, optional): The new inherited value. Defaults to None.
+            abstractobjecttype (bool, optional): The new abstractobjecttype value. Defaults to None.
+
+        Returns:
+            ObjectType: The updated object type
+        """
+        
+        otype = self.get_insight_object_type(type_id)
+        args = {
+            'type_id': type_id,
+            'name': name or otype['name'],
+            'iconid': iconid or otype['icon']['id'],
+            'objectschemaid': objectschemaid or otype['objectSchemaId'],
+            'description': description,
+            'parentobjecttypeid': parentobjecttypeid,
+            'inherited': inherited,
+            'abstractobjecttype': abstractobjecttype,
+        }
+
+        return self._put_insight_object_type(**args)
+
+    # TODO: Delete objecttype {id} https://developer.atlassian.com/cloud/insight/rest/api-group-objecttype/#api-objecttype-id-delete
+    # TODO: Get objecttype {id} attributes https://developer.atlassian.com/cloud/insight/rest/api-group-objecttype/#api-objecttype-id-attributes-get
+    # TODO: Post objecttype {id} position https://developer.atlassian.com/cloud/insight/rest/api-group-objecttype/#api-objecttype-id-position-post
+    # TODO: Post objecttype create https://developer.atlassian.com/cloud/insight/rest/api-group-objecttype/#api-objecttype-create-post
+
+    ### Insight ObjectTypeAttribute API
+    # TODO: Post objecttypeattribute {objectTypeId} https://developer.atlassian.com/cloud/insight/rest/api-group-objecttypeattribute/#api-objecttypeattribute-objecttypeid-post
+    # TODO: Put objecttypeattribute {objectTypeId} {id} https://developer.atlassian.com/cloud/insight/rest/api-group-objecttypeattribute/#api-objecttypeattribute-objecttypeid-id-put
+    # TODO: Delete objecttypeattribute {id} https://developer.atlassian.com/cloud/insight/rest/api-group-objecttypeattribute/#api-objecttypeattribute-id-delete
+
+    ### Insight Progess API
+    # TODO: Get progress category imports {id} https://developer.atlassian.com/cloud/insight/rest/api-group-progress/#api-progress-category-imports-id-get
+
+    ### Insight Config API
+    # TODO: Get config statustype https://developer.atlassian.com/cloud/insight/rest/api-group-config/#api-config-statustype-get
+    # TODO: Post config statustype https://developer.atlassian.com/cloud/insight/rest/api-group-config/#api-config-statustype-post
+    # TODO: Get config statustype {id} https://developer.atlassian.com/cloud/insight/rest/api-group-config/#api-config-statustype-id-get
+    # TODO: Put config statustype {id} https://developer.atlassian.com/cloud/insight/rest/api-group-config/#api-config-statustype-id-put
+    # TODO: Delete config statustype {id} https://developer.atlassian.com/cloud/insight/rest/api-group-config/#api-config-statustype-id-delete
