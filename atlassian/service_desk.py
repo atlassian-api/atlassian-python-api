@@ -821,6 +821,43 @@ class ServiceDesk(AtlassianRestAPI):
     ### Insight Iql API
     # TODO Get iql objects https://developer.atlassian.com/cloud/insight/rest/api-group-iql/#api-iql-objects-get
 
+    def get_iql_objects(
+        self,
+        iql,
+        page=None,
+        resultperpage=None,
+        includeattributes=None,
+        includeattributesdeep=None,
+        includetypeattributes=None,
+        includeextendedinfo=None,
+    ):
+        """
+        Find objects based on Insight Query Language (IQL)
+        https://developer.atlassian.com/cloud/insight/rest/api-group-iql/#api-iql-objects-get
+
+        Args:
+            iql (str): [description]
+            page (int, optional): [description]. Defaults to None.
+            resultperpage (int, optional): [description]. Defaults to None.
+            includeattributes (bool, optional): [description]. Defaults to None.
+            includeattributesdeep (bool, optional): [description]. Defaults to None.
+            includetypeattributes (bool, optional): [description]. Defaults to None.
+            includeextendedinfo (bool, optional): [description]. Defaults to None.
+
+        Returns:
+            ObjectListResult
+        """
+        kwargs = locals().items()
+        params = dict()
+        params.update({k: v for k, v in kwargs if v is not None and k not in ["self"]})
+
+        return self.get(
+            "{0}iql/objects".format(self.insight_api_endpoint),
+            headers=self.experimental_headers,
+            params=params,
+            absolute=True,
+        )
+
     ### Insight Object API
     # TODO Get object {id} https://developer.atlassian.com/cloud/insight/rest/api-group-object/#api-object-id-get
     # TODO Put object {id} https://developer.atlassian.com/cloud/insight/rest/api-group-object/#api-object-id-put
