@@ -819,8 +819,6 @@ class ServiceDesk(AtlassianRestAPI):
     # TODO Post import start {id} https://developer.atlassian.com/cloud/insight/rest/api-group-import/#api-import-start-id-post
 
     ### Insight Iql API
-    # TODO Get iql objects https://developer.atlassian.com/cloud/insight/rest/api-group-iql/#api-iql-objects-get
-
     def get_iql_objects(
         self,
         iql,
@@ -859,17 +857,204 @@ class ServiceDesk(AtlassianRestAPI):
         )
 
     ### Insight Object API
-    # TODO Get object {id} https://developer.atlassian.com/cloud/insight/rest/api-group-object/#api-object-id-get
-    # TODO Put object {id} https://developer.atlassian.com/cloud/insight/rest/api-group-object/#api-object-id-put
-    # TODO Delete object {id} https://developer.atlassian.com/cloud/insight/rest/api-group-object/#api-object-id-delete
-    # TODO Get object {id} attributes https://developer.atlassian.com/cloud/insight/rest/api-group-object/#api-object-id-attributes-get
-    # TODO Get object {id} history https://developer.atlassian.com/cloud/insight/rest/api-group-object/#api-object-id-history-get
-    # TODO Get object {id} referenceinfo https://developer.atlassian.com/cloud/insight/rest/api-group-object/#api-object-id-referenceinfo-get
-    # TODO Post object create https://developer.atlassian.com/cloud/insight/rest/api-group-object/#api-object-create-post
-    # TODO Post object navlist iql https://developer.atlassian.com/cloud/insight/rest/api-group-object/#api-object-navlist-iql-post
+    def get_insight_object(self, object_id):
+        """
+        Get one Insight object by ID
+        https://developer.atlassian.com/cloud/insight/rest/api-group-object/#api-object-id-get
+
+        Args:
+            object_id (str): The object id to operate on
+
+        Returns:
+            Object: Insight object
+        """
+
+        return self.get(
+            "{0}object/{1}".format(self.insight_api_endpoint, object_id),
+            headers=self.experimental_headers,
+            absolute=True,
+        )
+
+    def put_insight_object(self, object_id, objecttypeid, attributes, hasavatar=None, avataruuid=None):
+        """
+        Update an existing object in Insight
+        https://developer.atlassian.com/cloud/insight/rest/api-group-object/#api-object-id-put
+
+        Args:
+            object_id (str): The object id to operate on
+            objecttypeid (str): The object type determines where the object should be stored and which attributes are available
+            attributes (list): Array<ObjectAttributeIn> - dicts containing attributes.
+            hasavatar (bool, optional): Unclear from API docs. Defaults to None.
+            avataruuid (bool, optional): The UUID as retrieved by uploading an avatar. Defaults to None.
+
+        Returns:
+            Object: Insight object updated
+        """
+
+        kwargs = locals().items()
+        data = dict()
+        data.update({k: v for k, v in kwargs if v is not None and k not in ["self"]})
+
+        return self.put(
+            "{0}object/{1}".format(self.insight_api_endpoint, object_id),
+            headers=self.experimental_headers,
+            absolute=True,
+            data=data,
+        )
+
+    def update_insight_object(self, object_id, objecttypeid=None, attributes=None, hasavatar=None, avataruuid=None):
+        """
+        Convenience function for updating an existing object in Insight without having
+        to specify parameters that are not going to change.
+
+        Args:
+            object_id (str): The object id to operate on
+            objecttypeid (str): The object type determines where the object should be stored and which attributes are available
+            attributes (list): Array<ObjectAttributeIn> - dicts containing attributes.
+            hasavatar (bool, optional): Unclear from API docs. Defaults to None.
+            avataruuid (bool, optional): The UUID as retrieved by uploading an avatar. Defaults to None.
+
+        Returns:
+            Object: Insight object updated
+        """
+
+        o = self.get_insight_object(object_id)
+        args = {
+            "object_id": object_id,
+            "objecttypeid": objecttypeid or o["objectType"]["id"],
+            "attributes": attributes or o["attributes"],
+            "hasavatar": hasavatar or o["hasAvatar"],
+            "avataruuid": avataruuid or o["avatar"]["mediaClientConfig"]["fileId"],
+        }
+
+        return self.put_insight_object(**args)
+
+    def delete_insight_object(self, object_id):
+        """
+        Delete the referenced object by id
+        https://developer.atlassian.com/cloud/insight/rest/api-group-object/#api-object-id-delete
+
+        Args:
+            object_id (str): The object id to operate on
+
+
+
+        Returns:
+            TBA: TBA
+        """
+        return self.delete(
+            "{0}object/{1}".format(self.insight_api_endpoint, object_id),
+            headers=self.experimental_headers,
+            absolute=True,
+        )
+
+    def get_insight_object_attributes(self, object_id):
+        """
+        Get the attributes one Insight object by ID
+        https://developer.atlassian.com/cloud/insight/rest/api-group-object/#api-object-id-attributes-get
+
+        Args:
+            object_id (str): The object id to operate on
+
+        Returns:
+            list: Array<ObjectAttribute>
+        """
+
+        return self.get(
+            "{0}object/{1}/attributes".format(self.insight_api_endpoint, object_id),
+            headers=self.experimental_headers,
+            absolute=True,
+        )
+
+    def get_insight_object_history(self, object_id, asc=None, abbreviate=None):
+        """
+        Retrieve the history entries for an Insight object
+        https://developer.atlassian.com/cloud/insight/rest/api-group-object/#api-object-id-history-get
+
+        Args:
+            object_id (str): The object id to operate on
+
+            asc (bool, optional): Should the historiy be retrieved in ascending order. Defaults to None (Use the Jira setting for sort order)
+            abbreviate (bool, optional): Should the values returned in the history entriy be abbreviated. Defaults to None.
+
+        Returns:
+            list: Array<ObjectHistory>
+        """
+
+        kwargs = locals().items()
+        params = dict()
+        params.update({k: v for k, v in kwargs if v is not None and k not in ["self", "object_id"]})
+
+        return self.get(
+            "{0}object/{1}/history".format(self.insight_api_endpoint, object_id),
+            headers=self.experimental_headers,
+            absolute=True,
+            params=params,
+        )
+
+    def get_insight_object_referenceinfo(self, object_id):
+        """
+        Find all references for an object
+        https://developer.atlassian.com/cloud/insight/rest/api-group-object/#api-object-id-referenceinfo-get
+
+        Args:
+            object_id (str): The object id to operate on
+
+        Returns:
+            list: Array<ObjectReferenceTypeInfo>
+        """
+
+        return self.get(
+            "{0}object/{1}/referenceinfo".format(self.insight_api_endpoint, object_id),
+            headers=self.experimental_headers,
+            absolute=True,
+        )
+
+    def create_insight_object(self, objecttypeid, attributes, hasavatar=None, avataruuid=None):
+        """
+        Create a new object in Insight
+        https://developer.atlassian.com/cloud/insight/rest/api-group-object/#api-object-create-post
+
+        Args:
+            objecttypeid (str): The object type determines where the object should be stored and which attributes are available
+            attributes (list): List of object attributes (Array<ObjectAttributeIn>)
+            hasavatar (bool, optional): If the insight object has an avatar. Defaults to None.
+            avataruuid (bool, optional): The UUID of the avatar. Defaults to None.
+
+        Returns:
+            dict: the created object without attributes
+        """
+        kwargs = locals().items()
+        data = {
+            "objecttypeid": objecttypeid,
+            "attributes": attributes,
+        }
+        data.update({k: v for k, v in kwargs if v is not None and k not in (list(data.keys()) + ["self"])})
+
+        return self.post(
+            "{0}object/create".format(self.insight_api_endpoint),
+            headers=self.experimental_headers,
+            absolute=True,
+            data=data,
+        )
 
     ### Insight Objectconnectedtickets API
-    # TODO Get objectconnectedtickets {objectId} tickets https://developer.atlassian.com/cloud/insight/rest/api-group-objectconnectedtickets/#api-objectconnectedtickets-objectid-tickets-get
+    def get_insight_object_connected_tickets(self, object_id):
+        """
+        Relation between Jira issues and Insight objects
+        https://developer.atlassian.com/cloud/insight/rest/api-group-objectconnectedtickets/#api-objectconnectedtickets-objectid-tickets-get
+
+        Args:
+            object_id (str): The id of the object to get connected tickets for
+
+        Returns:
+            list: Tickets
+        """
+        return self.get(
+            "{0}objectconnectedtickets/{1}/tickets".format(self.insight_api_endpoint, object_id),
+            headers=self.experimental_headers,
+            absolute=True,
+        )
 
     ### Insight Objectschema API
     def list_insight_object_schemas(
@@ -879,7 +1064,7 @@ class ServiceDesk(AtlassianRestAPI):
         Returns a list of all insight object schemas.
         https://developer.atlassian.com/cloud/insight/rest/api-group-objectschema/#api-objectschema-list-get
 
-        :return: list of dicts
+        :return: ObjectSchemaList
         """
         return self.get(
             "{0}objectschema/list".format(self.insight_api_endpoint), headers=self.experimental_headers, absolute=True
