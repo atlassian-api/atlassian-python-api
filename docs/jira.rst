@@ -110,7 +110,8 @@ Manage projects
     # Get last project issuekey
     jira.get_project_issuekey_last(project)
 
-    # Get all project issue keys
+    # Get all project issue keys. 
+    # JIRA Cloud API can return up to  100 results  in one API call. If your project has more than 100 issues see following community  disussion: https://community.atlassian.com/t5/Jira-Software-questions/Is-there-a-limit-to-the-number-of-quot-items-quot-returned-from/qaq-p/1317195
     jira.get_project_issuekey_all(project)
 
     # Get project issues count
