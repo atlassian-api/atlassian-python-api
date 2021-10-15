@@ -18,7 +18,7 @@ class ServiceDesk(AtlassianRestAPI):
         # Initialize insight API endpoint
         self.insightworkspaceversion = insightworkspaceversion
         self.insight_workspace_id = self._get_insight_workspace_id()
-        self.insight_api_endpoint = "https://api.atlassian.com/jsm/insight/workspace/{0}/v{1}/".format(
+        self.insight_api_endpoint = "gateway/api/jsm/insight/workspace/{0}/v{1}/".format(
             self.insight_workspace_id, self.insightworkspaceversion
         )
 
@@ -834,13 +834,21 @@ class ServiceDesk(AtlassianRestAPI):
         https://developer.atlassian.com/cloud/insight/rest/api-group-iql/#api-iql-objects-get
 
         Args:
-            iql (str): [description]
-            page (int, optional): [description]. Defaults to None.
-            resultperpage (int, optional): [description]. Defaults to None.
-            includeattributes (bool, optional): [description]. Defaults to None.
-            includeattributesdeep (bool, optional): [description]. Defaults to None.
-            includetypeattributes (bool, optional): [description]. Defaults to None.
-            includeextendedinfo (bool, optional): [description]. Defaults to None.
+            iql (str): the iql query, see https://support.atlassian.com/jira-service-management-cloud/docs/use-insight-query-language-iql/
+            page (int, optional): page number. Defaults to None (use API default).
+            resultperpage (int, optional): Results returned per page. Defaults to None (use API default).
+            includeattributes (bool, optional): Should the objects attributes be included in the response.
+                If this parameter is false only the information on the object will be returned and the object attributes will not be present.
+                Defaults to None (use API default).
+            includeattributesdeep (int, optional): How many levels of attributes should be included. E.g. consider an object A that has a
+                reference to object B that has a reference to object C. If object A is included in the response and includeAttributesDeep=1
+                object A's reference to object B will be included in the attributes of object A but object B's reference to object C will
+                not be included. However if the includeAttributesDeep=2 then object B's reference to object C will be included in object
+                B's attributes. Defaults to None (use API default).
+            includetypeattributes (bool, optional): Should the response include the object type attribute definition for each attribute
+                that is returned with the objects. Defaults to None (use API default).
+            includeextendedinfo (bool, optional): Include information about open Jira issues. Should each object have information if open
+                tickets are connected to the object? Defaults to None (use API default).
 
         Returns:
             ObjectListResult
@@ -853,7 +861,6 @@ class ServiceDesk(AtlassianRestAPI):
             "{0}iql/objects".format(self.insight_api_endpoint),
             headers=self.experimental_headers,
             params=params,
-            absolute=True,
         )
 
     ### Insight Object API
@@ -872,7 +879,6 @@ class ServiceDesk(AtlassianRestAPI):
         return self.get(
             "{0}object/{1}".format(self.insight_api_endpoint, object_id),
             headers=self.experimental_headers,
-            absolute=True,
         )
 
     def put_insight_object(self, object_id, objecttypeid, attributes, hasavatar=None, avataruuid=None):
@@ -898,7 +904,6 @@ class ServiceDesk(AtlassianRestAPI):
         return self.put(
             "{0}object/{1}".format(self.insight_api_endpoint, object_id),
             headers=self.experimental_headers,
-            absolute=True,
             data=data,
         )
 
@@ -929,6 +934,69 @@ class ServiceDesk(AtlassianRestAPI):
 
         return self.put_insight_object(**args)
 
+    def update_insight_objects_attributes_by_name_iql(self, iql, newattributes, whatif=False):
+        """
+        Convenience function for updating existing object(s) using iql and attribute names with new values.
+
+        WARNING 1: While this is convenient and powerful it can also be dangerous as it will update all
+        objects returned by the iql en masse so be careful how it's wielded so that many objects are not changed
+        in an unintentional way, leading to having to go through the history of the objects and undo the changes.
+        There's no convenience function for reverting to values in the history... yet :-)
+
+        WARNING 2: This function currently does not complain if you've specified an attribute by name that does not
+        exist, it will do nothing and not return an error or notification. Be especially aware that the field
+        names are CASE SENSITIVE so that hair is not pulled out in frustration.
+
+        Args:
+            iql (str): The iql query returning the objects to be updated.
+            newattributes (dict): A dictionary where the keys are the names of the attributes to be updated and the values are the values to set for those attributes.
+            whatif (bool, optional): do not commit any changes, instead return a list of the objects with the `attributes` replaced with the new attributes
+            to be sent to the API.
+
+        Returns:
+            list: List of Insight object(s) updated or to be updated
+        """
+        # Run the iql, loop through all pages as necessary and build a list of all objects
+        page, lastpage = 1, 2
+        iobs, otas = [], {}
+        while page < lastpage:
+            results = self.get_iql_objects(iql, page=page, includeattributes=1, includetypeattributes=1)
+            iobs += results.get("objectEntries", [])
+            # Unclear if the API would ever return different objectTypeAttributes between different pages
+            # and a dict is more useful to us anyway so convert to a dict now while doing a dupe check
+            for ota in results.get("objectTypeAttributes"):
+                if ota["globalId"] not in otas.keys():
+                    otas[ota["globalId"]] = ota
+            page = results["pageNumber"]
+            lastpage = results["pageSize"]
+
+        updates = []
+        for idx, iob in enumerate(iobs):
+            # build a list of updated attributes for the object
+            newattrs = [
+                {
+                    "objectTypeAttributeId": a["objectTypeAttributeId"],
+                    "objectAttributeValues": [
+                        {
+                            "value": newattributes[
+                                otas["{0}:{1}".format(a["workspaceId"], a["objectTypeAttributeId"])]["name"]
+                            ]
+                        }
+                    ],
+                }
+                for a in iob["attributes"]
+                if otas["{0}:{1}".format(a["workspaceId"], a["objectTypeAttributeId"])]["name"] in newattributes.keys()
+            ]
+            iob["attributes"] = newattrs
+            iobs[idx] = iob
+            if not whatif and newattrs:
+                updates.append(self.put_insight_object(iob["id"], iob["objectType"]["id"], attributes=newattrs))
+
+        if whatif:
+            return iobs
+
+        return updates
+
     def delete_insight_object(self, object_id):
         """
         Delete the referenced object by id
@@ -945,7 +1013,6 @@ class ServiceDesk(AtlassianRestAPI):
         return self.delete(
             "{0}object/{1}".format(self.insight_api_endpoint, object_id),
             headers=self.experimental_headers,
-            absolute=True,
         )
 
     def get_insight_object_attributes(self, object_id):
@@ -963,7 +1030,6 @@ class ServiceDesk(AtlassianRestAPI):
         return self.get(
             "{0}object/{1}/attributes".format(self.insight_api_endpoint, object_id),
             headers=self.experimental_headers,
-            absolute=True,
         )
 
     def get_insight_object_history(self, object_id, asc=None, abbreviate=None):
@@ -988,7 +1054,6 @@ class ServiceDesk(AtlassianRestAPI):
         return self.get(
             "{0}object/{1}/history".format(self.insight_api_endpoint, object_id),
             headers=self.experimental_headers,
-            absolute=True,
             params=params,
         )
 
@@ -1007,7 +1072,6 @@ class ServiceDesk(AtlassianRestAPI):
         return self.get(
             "{0}object/{1}/referenceinfo".format(self.insight_api_endpoint, object_id),
             headers=self.experimental_headers,
-            absolute=True,
         )
 
     def create_insight_object(self, objecttypeid, attributes, hasavatar=None, avataruuid=None):
@@ -1034,7 +1098,6 @@ class ServiceDesk(AtlassianRestAPI):
         return self.post(
             "{0}object/create".format(self.insight_api_endpoint),
             headers=self.experimental_headers,
-            absolute=True,
             data=data,
         )
 
@@ -1053,7 +1116,6 @@ class ServiceDesk(AtlassianRestAPI):
         return self.get(
             "{0}objectconnectedtickets/{1}/tickets".format(self.insight_api_endpoint, object_id),
             headers=self.experimental_headers,
-            absolute=True,
         )
 
     ### Insight Objectschema API
@@ -1091,7 +1153,6 @@ class ServiceDesk(AtlassianRestAPI):
         return self.post(
             "{0}objectschema/create".format(self.insight_api_endpoint),
             headers=self.experimental_headers,
-            absolute=True,
             data=data,
         )
 
@@ -1109,7 +1170,6 @@ class ServiceDesk(AtlassianRestAPI):
         return self.get(
             "{0}objectschema/{1}".format(self.insight_api_endpoint, schema_id),
             headers=self.experimental_headers,
-            absolute=True,
         )
 
     # TODO: Put objectschema {id} https://developer.atlassian.com/cloud/insight/rest/api-group-objectschema/#api-objectschema-id-put
@@ -1130,7 +1190,6 @@ class ServiceDesk(AtlassianRestAPI):
         return self.get(
             "{0}objectschema/{1}/attributes".format(self.insight_api_endpoint, schema_id),
             headers=self.experimental_headers,
-            absolute=True,
         )
 
     def get_insight_object_schema_objecttypes_flat(self, schema_id):
@@ -1147,7 +1206,6 @@ class ServiceDesk(AtlassianRestAPI):
         return self.get(
             "{0}objectschema/{1}/objecttypes/flat".format(self.insight_api_endpoint, schema_id),
             headers=self.experimental_headers,
-            absolute=True,
         )
 
     ### Insight Objecttype API
@@ -1165,7 +1223,6 @@ class ServiceDesk(AtlassianRestAPI):
         return self.get(
             "{0}objecttype/{1}".format(self.insight_api_endpoint, type_id),
             headers=self.experimental_headers,
-            absolute=True,
         )
 
     def _put_insight_object_type(
@@ -1213,7 +1270,6 @@ class ServiceDesk(AtlassianRestAPI):
         return self.put(
             "{0}objecttype/{1}".format(self.insight_api_endpoint, type_id),
             headers=self.experimental_headers,
-            absolute=True,
             data=data,
         )
 
