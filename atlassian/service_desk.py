@@ -881,7 +881,7 @@ class ServiceDesk(AtlassianRestAPI):
             headers=self.experimental_headers,
         )
 
-    def put_insight_object(self, object_id, objecttypeid, attributes, hasavatar=None, avataruuid=None):
+    def put_insight_object(self, object_id, objecttypeid, attributes, hasAvatar=None, avatarUUID=None):
         """
         Update an existing object in Insight
         https://developer.atlassian.com/cloud/insight/rest/api-group-object/#api-object-id-put
@@ -890,8 +890,8 @@ class ServiceDesk(AtlassianRestAPI):
             object_id (str): The object id to operate on
             objecttypeid (str): The object type determines where the object should be stored and which attributes are available
             attributes (list): Array<ObjectAttributeIn> - dicts containing attributes.
-            hasavatar (bool, optional): Unclear from API docs. Defaults to None.
-            avataruuid (bool, optional): The UUID as retrieved by uploading an avatar. Defaults to None.
+            hasAvatar (bool, optional): Unclear from API docs. Defaults to None.
+            avatarUUID (bool, optional): The UUID as retrieved by uploading an avatar. Defaults to None.
 
         Returns:
             Object: Insight object updated
@@ -907,7 +907,7 @@ class ServiceDesk(AtlassianRestAPI):
             data=data,
         )
 
-    def update_insight_object(self, object_id, objecttypeid=None, attributes=None, hasavatar=None, avataruuid=None):
+    def update_insight_object(self, object_id, objecttypeid=None, attributes=None, hasAvatar=None, avatarUUID=None):
         """
         Convenience function for updating an existing object in Insight without having
         to specify parameters that are not going to change.
@@ -916,8 +916,8 @@ class ServiceDesk(AtlassianRestAPI):
             object_id (str): The object id to operate on
             objecttypeid (str): The object type determines where the object should be stored and which attributes are available
             attributes (list): Array<ObjectAttributeIn> - dicts containing attributes.
-            hasavatar (bool, optional): Unclear from API docs. Defaults to None.
-            avataruuid (bool, optional): The UUID as retrieved by uploading an avatar. Defaults to None.
+            hasAvatar (bool, optional): Unclear from API docs. Defaults to None.
+            avatarUUID (bool, optional): The UUID as retrieved by uploading an avatar. Defaults to None.
 
         Returns:
             Object: Insight object updated
@@ -928,8 +928,8 @@ class ServiceDesk(AtlassianRestAPI):
             "object_id": object_id,
             "objecttypeid": objecttypeid or o["objectType"]["id"],
             "attributes": attributes or o["attributes"],
-            "hasavatar": hasavatar or o["hasAvatar"],
-            "avataruuid": avataruuid or o["avatar"]["mediaClientConfig"]["fileId"],
+            "hasAvatar": hasAvatar or o["hasAvatar"],
+            "avatarUUID": avatarUUID or o["avatar"]["mediaClientConfig"]["fileId"],
         }
 
         return self.put_insight_object(**args)
@@ -1074,7 +1074,7 @@ class ServiceDesk(AtlassianRestAPI):
             headers=self.experimental_headers,
         )
 
-    def create_insight_object(self, objecttypeid, attributes, hasavatar=None, avataruuid=None):
+    def create_insight_object(self, objecttypeid, attributes, hasAvatar=None, avatarUUID=None):
         """
         Create a new object in Insight
         https://developer.atlassian.com/cloud/insight/rest/api-group-object/#api-object-create-post
@@ -1082,15 +1082,15 @@ class ServiceDesk(AtlassianRestAPI):
         Args:
             objecttypeid (str): The object type determines where the object should be stored and which attributes are available
             attributes (list): List of object attributes (Array<ObjectAttributeIn>)
-            hasavatar (bool, optional): If the insight object has an avatar. Defaults to None.
-            avataruuid (bool, optional): The UUID of the avatar. Defaults to None.
+            hasAvatar (bool, optional): If the insight object has an avatar. Defaults to None.
+            avatarUUID (bool, optional): The UUID of the avatar. Defaults to None.
 
         Returns:
             dict: the created object without attributes
         """
         kwargs = locals().items()
         data = {
-            "objecttypeid": objecttypeid,
+            "objectTypeId": objecttypeid,
             "attributes": attributes,
         }
         data.update({k: v for k, v in kwargs if v is not None and k not in (list(data.keys()) + ["self"])})
@@ -1100,6 +1100,42 @@ class ServiceDesk(AtlassianRestAPI):
             headers=self.experimental_headers,
             data=data,
         )
+
+    def create_insight_object_by_attribute_name(self, objecttypeid, attributes, hasAvatar=None, avatarUUID=None):
+        """
+        Convenience function to create an Insight object by passing the attributes as name:value instead of having to look up the
+        attribute IDs first and build the required attributes.
+
+        Args:
+            objecttypeid (str): The object type determines where the object should be stored and which attributes are available
+            attributes (dict): Dictionary where the key is the name of the attribute to set and the value is the value
+            hasAvatar (bool, optional): If the insight object has an avatar. Defaults to None.
+            avatarUUID (bool, optional): The UUID of the avatar. Defaults to None.
+
+        Returns:
+            dict: the created object without attributes
+        """
+        # Get the attributes associated with the object type
+        otypeattrs = self.get_object_type_attributes(objecttypeid, onlyValueEditable=True)
+        # Validate that all passed attributes exist for this object types
+        otattrnames = [i["name"] for i in otypeattrs]
+        keycheck = all(i in otattrnames for i in attributes.keys())
+        if not keycheck:
+            raise ValueError(
+                "Invalid attributes names passed. Passed attribute names were {0} and valid "
+                "attribute names are {1}".format(list(attributes.keys()), otattrnames)
+            )
+        attrs = [
+            {
+                "objectTypeAttributeId": ota["id"],
+                "objectAttributeValues": [{"value": attributes[ota["name"]]}],
+            }
+            for ota in otypeattrs
+            if ota["name"] in attributes.keys()
+        ]
+
+        # return attrs
+        return self.create_insight_object(objecttypeid, attributes=attrs, hasAvatar=hasAvatar, avatarUUID=avatarUUID)
 
     ### Insight Objectconnectedtickets API
     def get_insight_object_connected_tickets(self, object_id):
@@ -1119,9 +1155,7 @@ class ServiceDesk(AtlassianRestAPI):
         )
 
     ### Insight Objectschema API
-    def list_insight_object_schemas(
-        self,
-    ):
+    def list_insight_object_schemas(self, asdfasdfasdf):
         """
         Returns a list of all insight object schemas.
         https://developer.atlassian.com/cloud/insight/rest/api-group-objectschema/#api-objectschema-list-get
@@ -1174,7 +1208,6 @@ class ServiceDesk(AtlassianRestAPI):
 
     # TODO: Put objectschema {id} https://developer.atlassian.com/cloud/insight/rest/api-group-objectschema/#api-objectschema-id-put
     # TODO: Delete objectschema {id} https://developer.atlassian.com/cloud/insight/rest/api-group-objectschema/#api-objectschema-id-delete
-    # TODO: Get objectschema {id} attributes https://developer.atlassian.com/cloud/insight/rest/api-group-objectschema/#api-objectschema-id-attributes-get
 
     def get_insight_object_schema_attributes(self, schema_id):
         """
@@ -1321,7 +1354,44 @@ class ServiceDesk(AtlassianRestAPI):
         return self._put_insight_object_type(**args)
 
     # TODO: Delete objecttype {id} https://developer.atlassian.com/cloud/insight/rest/api-group-objecttype/#api-objecttype-id-delete
-    # TODO: Get objecttype {id} attributes https://developer.atlassian.com/cloud/insight/rest/api-group-objecttype/#api-objecttype-id-attributes-get
+
+    def get_object_type_attributes(
+        self,
+        type_id,
+        onlyValueEditable=None,
+        orderByName=None,
+        query=None,
+        includeValuesExist=None,
+        excludeParentAttributes=None,
+        includeChildren=None,
+        orderByRequired=None,
+    ):
+        """
+        Find all attributes for this object type
+        https://developer.atlassian.com/cloud/insight/rest/api-group-objecttype/#api-objecttype-id-attributes-get
+
+
+        Args:
+            type_id (str): id of the object type
+            onlyValueEditable (bool, optional): only return editable values, defaults to None (Use API default)
+            orderByName (bool, optional): values, defaults to None (Use API default)
+            query (str, optional): Not documented in API, defaults to None (Use API default)
+            includeValuesExist (bool, optional): Include only where values exist, defaults to None (Use API default)
+            excludeParentAttributes (bool, optional): Exclude parent attributes, defaults to None (Use API default)
+            includeChildren (bool, optional): include attributes from children, defaults to None (Use API default)
+            orderbyrequired (bool, optional): Order by required fields, defaults to None (Use API default)
+        """
+
+        kwargs = locals().items()
+        params = dict()
+        params.update({k: v for k, v in kwargs if v is not None and k not in ["self", "type_id"]})
+
+        return self.get(
+            "{0}objecttype/{1}/attributes".format(self.insight_api_endpoint, type_id),
+            headers=self.experimental_headers,
+            params=params,
+        )
+
     # TODO: Post objecttype {id} position https://developer.atlassian.com/cloud/insight/rest/api-group-objecttype/#api-objecttype-id-position-post
     # TODO: Post objecttype create https://developer.atlassian.com/cloud/insight/rest/api-group-objecttype/#api-objecttype-create-post
 
