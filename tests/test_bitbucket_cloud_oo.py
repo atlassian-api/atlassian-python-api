@@ -313,6 +313,7 @@ class TestPullRequests:
         assert isinstance(prs[0], PullRequest)
         assert prs[0].id == 1
         assert prs[1].id == 25
+        assert len(list(prs[1].participants())) == 5
 
     def test_create(self, tc2):
         reviewers = ["{User04UUID}", "{User02UUID}", "{User01UUID}"]

@@ -91,16 +91,23 @@ class Bitbucket(BitbucketBase):
         url = self.resource_url("status", api_root="rest/indexing", api_version="latest")
         return self.get(url)
 
-    def get_users(self, user_filter=None):
+    def get_users(self, user_filter=None, limit=25, start=0):
         """
         Get list of bitbucket users.
-        Use 'user_filter' for get specific users.
-        :user_filter: str
+        Use 'user_filter' for get specific users or get all users if necessary.
+        :param user_filter: str - username, displayname or email
+        :param limit: int - paginated limit to retrieve
+        :param start: int - paginated point to start retreiving
+        :return: The collection as JSON with all relevant information about the licensed user
         """
         url = self.resource_url("users", api_version="1.0")
         params = {}
         if user_filter:
             params["filter"] = user_filter
+        if limit:
+            params["limit"] = limit
+        if start:
+            params["start"] = start
         return self.get(url, params=params)
 
     def get_users_info(self, user_filter=None, start=0, limit=25):

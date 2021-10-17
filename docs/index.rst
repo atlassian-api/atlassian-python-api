@@ -20,6 +20,7 @@ Add a connection:
 
     from atlassian import Jira
     from atlassian import Confluence
+    from atlassian import Crowd
     from atlassian import Bitbucket
     from atlassian import ServiceDesk
     from atlassian import Xray
@@ -33,6 +34,12 @@ Add a connection:
         url='http://localhost:8090',
         username='admin',
         password='admin')
+
+    crowd = Crowd(
+        url='http://localhost:4990',
+        username='app-name',
+        password='app-password'
+    )
 
     bitbucket = Bitbucket(
         url='http://localhost:7990',
@@ -217,6 +224,7 @@ And to Bitbucket Cloud:
 
    jira
    confluence
+   crowd
    bitbucket
    bamboo
    service_desk
