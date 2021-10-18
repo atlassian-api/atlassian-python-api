@@ -78,6 +78,9 @@ class BitbucketCloudBase(BitbucketBase):
                     break
                 # From now on we have absolute URLs with parameters
                 absolute = True
-                params = None
+                # Params are now provided by the url
+                params = {}
+                # Trailing should not be added as it is already part of the url
+                trailing = False
 
         return
