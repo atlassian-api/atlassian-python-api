@@ -1,0 +1,82 @@
+responses[None] = {
+    "pagelen": 10,
+    "values": [
+        {
+            "links": {
+                "self": {
+                    "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/pullrequests/1/tasks/234567"
+                },
+                "html": {
+                    "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/pullrequests/1/_/diff#task-234567"
+                },
+            },
+            "creator": {
+                "display_name": "User04DisplayName",
+                "uuid": "{User04UUID}",
+                "links": {
+                    "self": {"href": "users/%7BUser04UUID%7D"},
+                    "html": {"href": "https://bitbucket.org/%7BUser04UUID%7D/"},
+                    "avatar": {
+                        "href": "https://secure.gravatar.com/avatar/ad2424dafaasdssaew12232344434432?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FU4-2.png"
+                    },
+                },
+                "nickname": "User04Nickname",
+                "type": "user",
+                "account_id": "User04AccountID",
+            },
+            "resolved_on": "2021-10-19T20:28:47.493275+00:00",
+            "created_on": "2021-10-19T20:26:35.443146+00:00",
+            "content": {"raw": "ToDo 2"},
+            "state": "RESOLVED",
+            "resolved_by": {
+                "display_name": "User04DisplayName",
+                "uuid": "{User04UUID}",
+                "links": {
+                    "self": {"href": "users/%7BUser04UUID%7D"},
+                    "html": {"href": "https://bitbucket.org/%7BUser04UUID%7D/"},
+                    "avatar": {
+                        "href": "https://secure.gravatar.com/avatar/ad2424dafaasdssaew12232344434432?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FU4-2.png"
+                    },
+                },
+                "nickname": "User04Nickname",
+                "type": "user",
+                "account_id": "User04AccountID",
+            },
+            "updated_on": "2021-10-19T20:28:47.493283+00:00",
+            "id": 234567,
+        },
+        {
+            "links": {
+                "self": {
+                    "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/pullrequests/1/tasks/123456"
+                },
+                "html": {
+                    "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/pullrequests/1/_/diff#task-123456"
+                },
+            },
+            "creator": {
+                "display_name": "User04DisplayName",
+                "uuid": "{User04UUID}",
+                "links": {
+                    "self": {"href": "users/%7BUser04UUID%7D"},
+                    "html": {"href": "https://bitbucket.org/%7BUser04UUID%7D/"},
+                    "avatar": {
+                        "href": "https://secure.gravatar.com/avatar/ad2424dafaasdssaew12232344434432?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FU4-2.png"
+                    },
+                },
+                "nickname": "User04Nickname",
+                "type": "user",
+                "account_id": "User04AccountID",
+            },
+            "resolved_on": null,
+            "created_on": "2021-10-19T20:20:49.288763+00:00",
+            "content": {"raw": "ToDo 1"},
+            "state": "UNRESOLVED",
+            "resolved_by": null,
+            "updated_on": "2021-10-19T20:20:49.288843+00:00",
+            "id": 123456,
+        },
+    ],
+    "page": 1,
+    "size": 2,
+}
