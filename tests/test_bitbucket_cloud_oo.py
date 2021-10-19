@@ -293,6 +293,9 @@ class TestPullRequests:
         task = task.update("ToDo 10")
         assert task.description == "ToDo 10"
 
+        with pytest.raises(ValueError):
+            task.update(None)
+
     def test_delete_task(self, tc1):
         task = [t for t in tc1.tasks() if t.id == 123456][0]
         assert task.delete() is None
