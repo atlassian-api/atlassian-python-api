@@ -285,6 +285,18 @@ class TestPullRequests:
         assert task.description == msg
         assert not task.is_resolved
 
+        with pytest.raises(ValueError):
+            tc1.add_task(None)
+
+    def test_update_task(self, tc1):
+        task = [t for t in tc1.tasks() if t.id == 123456][0]
+        task = task.update("ToDo 10")
+        assert task.description == "ToDo 10"
+
+    def test_delete_task(self, tc1):
+        task = [t for t in tc1.tasks() if t.id == 123456][0]
+        assert task.delete() is None
+
     def test_tasks(self, tc1):
         tasks = list(tc1.tasks())
         assert len(tasks) == 2
@@ -298,6 +310,8 @@ class TestPullRequests:
         assert isinstance(t2.creator, User)
         assert isinstance(t1.resolved_by, User)
         assert t2.description == "ToDo 1"
+        assert _datetimetostr(t1.resolved_on) == _datetimetostr(datetime(2021, 10, 19, 20, 28, 47, 493275))
+        assert _datetimetostr(t2.created_on) == _datetimetostr(datetime(2021, 10, 19, 20, 20, 49, 288763))
 
     def test_approve(self, tc1):
         ap = tc1.approve()
