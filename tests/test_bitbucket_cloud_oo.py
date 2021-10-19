@@ -7,7 +7,7 @@ from datetime import datetime
 from atlassian import Bitbucket
 from atlassian.bitbucket import Cloud
 from atlassian.bitbucket.cloud.common.users import User
-from atlassian.bitbucket.cloud.repositories.pullRequests import Comment, Participant, PullRequest, Build
+from atlassian.bitbucket.cloud.repositories.pullRequests import Comment, Participant, PullRequest, Build, Task
 
 BITBUCKET = None
 try:
@@ -276,6 +276,45 @@ class TestPullRequests:
         assert isinstance(c1.user, User)
         assert c1.user.display_name == "User04DisplayName"
         assert c2.html == "<p>Test comment 2</p>"
+
+    def test_add_task(self, tc1):
+        msg = "ToDo 1"
+        task = tc1.add_task(msg)
+        assert isinstance(task, Task)
+        assert task.id == 123456
+        assert task.description == msg
+        assert not task.is_resolved
+
+        with pytest.raises(ValueError):
+            tc1.add_task(None)
+
+    def test_update_task(self, tc1):
+        task = [t for t in tc1.tasks() if t.id == 123456][0]
+        task = task.update("ToDo 10")
+        assert task.description == "ToDo 10"
+
+        with pytest.raises(ValueError):
+            task.update(None)
+
+    def test_delete_task(self, tc1):
+        task = [t for t in tc1.tasks() if t.id == 123456][0]
+        assert task.delete() is None
+
+    def test_tasks(self, tc1):
+        tasks = list(tc1.tasks())
+        assert len(tasks) == 2
+        t1, t2 = tasks
+        assert isinstance(t1, Task)
+        assert isinstance(t2, Task)
+        assert t2.id == 123456
+        assert t1.id == 234567
+        assert not t2.is_resolved
+        assert t1.is_resolved
+        assert isinstance(t2.creator, User)
+        assert isinstance(t1.resolved_by, User)
+        assert t2.description == "ToDo 1"
+        assert _datetimetostr(t1.resolved_on) == _datetimetostr(datetime(2021, 10, 19, 20, 28, 47, 493275))
+        assert _datetimetostr(t2.created_on) == _datetimetostr(datetime(2021, 10, 19, 20, 20, 49, 288763))
 
     def test_approve(self, tc1):
         ap = tc1.approve()

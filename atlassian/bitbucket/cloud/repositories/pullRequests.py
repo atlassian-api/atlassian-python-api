@@ -253,6 +253,34 @@ class PullRequest(BitbucketCloudBase):
 
         return self.post("comments", data)
 
+    def tasks(self):
+        """
+        Returns generator object of the tasks endpoint
+
+        This is feature currently undocumented.
+        But confirmed by an Atlassian employee (BCLOUD-16682).
+        """
+        for task in self._get_paged("tasks"):
+            yield Task(task, **self._new_session_args)
+
+    def add_task(self, raw_message):
+        """
+        Adding a task to the pull request in raw format.
+
+        This is feature currently undocumented.
+        But confirmed by an Atlassian employee (BCLOUD-16682).
+        """
+        if not raw_message:
+            raise ValueError("No message set")
+
+        data = {
+            "content": {
+                "raw": raw_message,
+            }
+        }
+
+        return Task(self.post("tasks", data), **self._new_session_args)
+
     def approve(self):
         """
         Approve a pull request if open
@@ -483,3 +511,70 @@ class Build(BitbucketCloudBase):
     def refname(self):
         """Returns the refname"""
         return self.get_data("refname")
+
+
+class Task(BitbucketCloudBase):
+    STATE_RESOLVED = "RESOLVED"
+    STATE_UNRESOLVED = "UNRESOLVED"
+
+    def __init__(self, data, *args, **kwargs):
+        super().__init__(None, None, *args, data=data, **kwargs)
+
+    @property
+    def id(self):
+        """Task id."""
+        return self.get_data("id")
+
+    @property
+    def description(self):
+        """The task description."""
+        return self.get_data("content")["raw"]
+
+    @property
+    def created_on(self):
+        """time of creation"""
+        return self.get_time("created_on")
+
+    @property
+    def resolved_on(self):
+        """resolve timestamp"""
+        return self.get_time("resolved_on")
+
+    @property
+    def is_resolved(self):
+        """True if the task was already resolved."""
+        return self.get_data("state") == self.STATE_RESOLVED
+
+    @property
+    def creator(self):
+        """User object with user information of the task creator"""
+        return User(None, self.get_data("creator"), **self._new_session_args)
+
+    @property
+    def resolved_by(self):
+        """User object with user information of the task resolver"""
+        return User(None, self.get_data("resolved_by"), **self._new_session_args)
+
+    def update(self, raw_message):
+        """
+        Update a task in raw format
+
+        This is feature currently undocumented.
+        """
+        if not raw_message:
+            raise ValueError("No message set")
+
+        data = {
+            "content": {
+                "raw": raw_message,
+            }
+        }
+        return self._update_data(self.put(None, data=data))
+
+    def delete(self):
+        """
+        Delete the pullrequest tasl.
+
+        This is feature currently undocumented.
+        """
+        return super(Task, self).delete(None)
