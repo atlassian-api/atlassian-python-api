@@ -104,6 +104,9 @@ Manage projects
     # Add missing version to project
     jira.add_version(key, project_id, version, is_archived=False, is_released=False)
 
+    # Update an existing version
+    jira.update_version(version, name=None, description=None, is_archived=None, is_released=None, start_date=None, release_date=None)
+
     # Get project leaders
     jira.project_leaders()
 
