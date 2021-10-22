@@ -1786,8 +1786,16 @@ class Jira(AtlassianRestAPI):
         payload = {"moveFixIssuesTo": moved_fixed, "moveAffectedIssuesTo": move_affected}
         return self.delete("rest/api/2/version/{}".format(version), data=payload)
 
-    def update_version(self, version, name=None, description=None, is_archived=None, is_released=None,
-                       start_date=None, release_date=None):
+    def update_version(
+        self,
+        version,
+        name=None,
+        description=None,
+        is_archived=None,
+        is_released=None,
+        start_date=None,
+        release_date=None,
+    ):
         """
         Update a project version
         :param version: The version id to update
@@ -1798,12 +1806,14 @@ class Jira(AtlassianRestAPI):
         :param startDate: The Start Date in isoformat. Example value is "2015-04-11T15:22:00.000+10:00"
         :param releaseDate: The Release Date in isoformat. Example value is "2015-04-11T15:22:00.000+10:00"
         """
-        payload = {"name": name,
-                   "description": description,
-                   "archived": is_archived,
-                   "released": is_released,
-                   "startDate": start_date,
-                   "releaseDate": release_date}
+        payload = {
+            "name": name,
+            "description": description,
+            "archived": is_archived,
+            "released": is_released,
+            "startDate": start_date,
+            "releaseDate": release_date,
+        }
         return self.put("rest/api/3/version/{}".format(version), data=payload)
 
     def get_project_roles(self, project_key):
