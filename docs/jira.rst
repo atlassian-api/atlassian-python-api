@@ -203,7 +203,7 @@ Manage issues
 
     # Get Issue Link
     jira.get_issue_link(link_id)
-    
+
     # Get Issue Edit Meta
     jira.issue_editmeta(issue_key)
 
