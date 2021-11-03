@@ -758,7 +758,7 @@ class Jira(AtlassianRestAPI):
             params["expand"] = expand
         url = "rest/api/2/issue/createmeta?projectKeys={}".format(project)
         return self.get(url, params=params)
-    
+
     def issue_editmeta(self, key):
         base_url = self.resource_url("issue")
         url = f"{base_url}/{key}/editmeta"
