@@ -233,6 +233,12 @@ Manage issues
     # Export Issues to csv
     jira.csv(jql, all_fields=False)
 
+    # Add watcher to an issue
+    jira.issue_add_watcher(issue_key, user)
+
+    # Remove watcher from an issue
+    jira.issue_delete_watcher(issue_key, user)
+
 
 Manage Boards
 -------------
