@@ -239,6 +239,9 @@ Manage issues
     # Remove watcher from an issue
     jira.issue_delete_watcher(issue_key, user)
 
+    # Get watchers for an issue
+    jira.issue_get_watchers(issue_key)
+
 
 Manage Boards
 -------------
