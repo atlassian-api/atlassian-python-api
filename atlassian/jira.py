@@ -971,11 +971,11 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         log.warning('Deleting user {user} from "{issue_key}" watchers'.format(issue_key=issue_key, user=user))
-        data = user
+        params = {"username": user}
         base_url = self.resource_url("issue")
         return self.delete(
             "{base_url}/{issue_key}/watchers".format(base_url=base_url, issue_key=issue_key),
-            data=data,
+            params=params,
         )
 
     def issue_get_watchers(self, issue_key):
