@@ -978,6 +978,15 @@ class Jira(AtlassianRestAPI):
             data=data,
         )
 
+    def issue_get_watchers(self, issue_key):
+        """
+        Get watchers for an issue
+        :param issue_key: Issue Id or Key
+        :return: List of watchers for issue
+        """
+        base_url = self.resource_url("issue")
+        return self.get("{base_url}/{issue_key}/watchers".format(base_url=base_url, issue_key=issue_key))
+
     def assign_issue(self, issue, account_id=None):
         """Assign an issue to a user. None will set it to unassigned. -1 will set it to Automatic.
         :param issue: the issue ID or key to assign
