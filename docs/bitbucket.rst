@@ -113,6 +113,12 @@ Manage repositories
     # Delete a repository (DANGER!)
     bitbucket.delete_repo(project_key, repository_slug)
 
+    # Fork repo inside same project
+    fork_repository(project_key, repository_slug, new_repository_slug)
+
+    # Fork repo to new project
+    fork_repository(project_key, repository_slug, new_repository_slug, new_project_key, new_repository_slug)
+
 Manage Code Insights
 --------------------
 
@@ -161,7 +167,7 @@ Groups and admins
     bitbucket.all_project_administrators()
 
     # Get users. Use 'user_filter' parameter to get specific users.
-    bitbucket.get_users(user_filter="username")
+    bitbucket.get_users(user_filter="username", limit=25, start=0)
 
 Manage code
 -----------

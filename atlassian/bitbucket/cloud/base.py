@@ -76,7 +76,11 @@ class BitbucketCloudBase(BitbucketBase):
                 url = response.get("next")
                 if url is None:
                     break
-                # From now on we have absolute URLs
+                # From now on we have absolute URLs with parameters
                 absolute = True
+                # Params are now provided by the url
+                params = {}
+                # Trailing should not be added as it is already part of the url
+                trailing = False
 
         return

@@ -632,8 +632,8 @@ class Confluence(AtlassianRestAPI):
         }
         if parent_id:
             data["ancestors"] = [{"type": type, "id": parent_id}]
-        if editor == "v2":
-            data["metadata"] = {"properties": {"editor": {"value": "v2"}}}
+        if editor is not None and editor in ["v1", "v2"]:
+            data["metadata"] = {"properties": {"editor": {"value": editor}}}
         try:
             response = self.post(url, data=data)
         except HTTPError as e:
@@ -2093,6 +2093,34 @@ class Confluence(AtlassianRestAPI):
             if e.response.status_code == 404:
                 raise ApiNotFoundError(
                     "The user with the given username or userkey does not exist",
+                    reason=e,
+                )
+
+            raise
+
+        return response
+
+    def get_user_details_by_accountid(self, accountid, expand=None):
+        """
+        Get information about a user through accountid
+        :param accountid: The account id
+        :param expand: OPTIONAL expand for get status of user.
+                Possible param is "status". Results are "Active, Deactivated"
+        :return: Returns the user details
+        """
+        url = "rest/api/user"
+        params = {"accountId": accountid}
+        if expand:
+            params["expand"] = expand
+
+        try:
+            response = self.get(url, params=params)
+        except HTTPError as e:
+            if e.response.status_code == 403:
+                raise ApiPermissionError("The calling user does not have permission to view users", reason=e)
+            if e.response.status_code == 404:
+                raise ApiNotFoundError(
+                    "The user with the given account does not exist",
                     reason=e,
                 )
 

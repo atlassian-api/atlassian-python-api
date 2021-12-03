@@ -735,7 +735,7 @@ class Jira(AtlassianRestAPI):
         :param list issue_list:
         :return:
         """
-        jira_issue_regex = re.compile(r"[A-Z]{1,10}-\d+")
+        jira_issue_regex = re.compile(r"\w+-\d+")
         missing_issues = list()
         matched_issue_keys = list()
         for key in issue_list:
@@ -963,6 +963,30 @@ class Jira(AtlassianRestAPI):
             data=data,
         )
 
+    def issue_delete_watcher(self, issue_key, user):
+        """
+        Stop watching issue
+        :param issue_key:
+        :param user:
+        :return:
+        """
+        log.warning('Deleting user {user} from "{issue_key}" watchers'.format(issue_key=issue_key, user=user))
+        params = {"username": user}
+        base_url = self.resource_url("issue")
+        return self.delete(
+            "{base_url}/{issue_key}/watchers".format(base_url=base_url, issue_key=issue_key),
+            params=params,
+        )
+
+    def issue_get_watchers(self, issue_key):
+        """
+        Get watchers for an issue
+        :param issue_key: Issue Id or Key
+        :return: List of watchers for issue
+        """
+        base_url = self.resource_url("issue")
+        return self.get("{base_url}/{issue_key}/watchers".format(base_url=base_url, issue_key=issue_key))
+
     def assign_issue(self, issue, account_id=None):
         """Assign an issue to a user. None will set it to unassigned. -1 will set it to Automatic.
         :param issue: the issue ID or key to assign
@@ -973,7 +997,7 @@ class Jira(AtlassianRestAPI):
         """
         base_url = self.resource_url("issue")
         url = "{base_url}/{issue}/assignee".format(base_url=base_url, issue=issue)
-        data = {"accountId": account_id}
+        data = {"name": account_id}
         return self.put(url, data=data)
 
     def create_issue(self, fields, update_history=False, update=None):
@@ -1618,7 +1642,7 @@ class Jira(AtlassianRestAPI):
         if expand:
             params["expand"] = expand
         url = self.resource_url("project")
-        return self.get(url)
+        return self.get(url, params=params)
 
     def create_project_from_raw_json(self, json):
         """
@@ -1751,7 +1775,7 @@ class Jira(AtlassianRestAPI):
             params["status"] = status
         base_url = self.resource_url("project")
         url = "{base_url}/{key}/version".format(base_url=base_url, key=key)
-        return self.get(url, params)
+        return self.get(url, params=params)
 
     def add_version(self, project_key, project_id, version, is_archived=False, is_released=False):
         """
@@ -1785,6 +1809,36 @@ class Jira(AtlassianRestAPI):
         """
         payload = {"moveFixIssuesTo": moved_fixed, "moveAffectedIssuesTo": move_affected}
         return self.delete("rest/api/2/version/{}".format(version), data=payload)
+
+    def update_version(
+        self,
+        version,
+        name=None,
+        description=None,
+        is_archived=None,
+        is_released=None,
+        start_date=None,
+        release_date=None,
+    ):
+        """
+        Update a project version
+        :param version: The version id to update
+        :param name: The version name
+        :param description: The version description
+        :param is_archived:
+        :param is_released:
+        :param startDate: The Start Date in isoformat. Example value is "2015-04-11T15:22:00.000+10:00"
+        :param releaseDate: The Release Date in isoformat. Example value is "2015-04-11T15:22:00.000+10:00"
+        """
+        payload = {
+            "name": name,
+            "description": description,
+            "archived": is_archived,
+            "released": is_released,
+            "startDate": start_date,
+            "releaseDate": release_date,
+        }
+        return self.put("rest/api/3/version/{}".format(version), data=payload)
 
     def get_project_roles(self, project_key):
         """
@@ -2062,19 +2116,39 @@ class Jira(AtlassianRestAPI):
 
     def get_project_issuekey_last(self, project):
         jql = "project = {project} ORDER BY issuekey DESC".format(project=project)
-        return (self.jql(jql).get("issues") or {})[0]["key"]
+        response = self.jql(jql)
+        if self.advanced_mode:
+            return response
+        return (response.get("issues") or {"key": None})[0]["key"]
 
     def get_project_issuekey_all(self, project, start=0, limit=None, expand=None):
         jql = "project = {project} ORDER BY issuekey ASC".format(project=project)
-        return [issue["key"] for issue in self.jql(jql, start=start, limit=limit, expand=expand)["issues"]]
+        response = self.jql(jql, start=start, limit=limit, expand=expand)
+        if self.advanced_mode:
+            return response
+        return [issue["key"] for issue in response["issues"]]
 
     def get_project_issues_count(self, project):
         jql = 'project = "{project}" '.format(project=project)
-        return self.jql(jql, fields="*none")["total"]
+        response = self.jql(jql, fields="*none")
+        if self.advanced_mode:
+            return response
+        return response["total"]
 
     def get_all_project_issues(self, project, fields="*all", start=0, limit=None):
+        """
+        Get the Issues for a Project
+        :param project: Project Key name
+        :param fields: OPTIONAL list<str>: List of Issue Fields
+        :param start: OPTIONAL int: Starting index/offset from the list of target issues
+        :param limit: OPTIONAL int: Total number of project issues to be returned
+        :return: List of Dictionary for the Issue(s) returned.
+        """
         jql = "project = {project} ORDER BY key".format(project=project)
-        return self.jql(jql, fields=fields, start=start, limit=limit)["issues"]
+        response = self.jql(jql, fields=fields, start=start, limit=limit)
+        if self.advanced_mode:
+            return response
+        return response["issues"]
 
     def get_all_assignable_users_for_project(self, project_key, start=0, limit=50):
         """
@@ -2379,7 +2453,7 @@ class Jira(AtlassianRestAPI):
     Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/search
     """
 
-    def jql(self, jql, fields="*all", start=0, limit=None, expand=None, validate_query=None):
+    def jql(self, jql, fields="*all", start=0, limit=None, expand=None, validate_query=None, advanced_mode=None):
         """
         Get issues from jql search result with all related fields
         :param jql:
@@ -3844,7 +3918,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         if 400 <= response.status_code < 600:
             try:
                 j = response.json()
-                error_msg = "\n".join(j['errorMessages'] + [k + ": " + v for k, v in j['errors'].items()])
+                error_msg = "\n".join(j["errorMessages"] + [k + ": " + v for k, v in j["errors"].items()])
             except Exception:
                 response.raise_for_status()
 

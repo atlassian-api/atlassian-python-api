@@ -91,16 +91,23 @@ class Bitbucket(BitbucketBase):
         url = self.resource_url("status", api_root="rest/indexing", api_version="latest")
         return self.get(url)
 
-    def get_users(self, user_filter=None):
+    def get_users(self, user_filter=None, limit=25, start=0):
         """
         Get list of bitbucket users.
-        Use 'user_filter' for get specific users.
-        :user_filter: str
+        Use 'user_filter' for get specific users or get all users if necessary.
+        :param user_filter: str - username, displayname or email
+        :param limit: int - paginated limit to retrieve
+        :param start: int - paginated point to start retreiving
+        :return: The collection as JSON with all relevant information about the licensed user
         """
         url = self.resource_url("users", api_version="1.0")
         params = {}
         if user_filter:
             params["filter"] = user_filter
+        if limit:
+            params["limit"] = limit
+        if start:
+            params["start"] = start
         return self.get(url, params=params)
 
     def get_users_info(self, user_filter=None, start=0, limit=25):
@@ -851,8 +858,23 @@ class Bitbucket(BitbucketBase):
         body = {}
         if new_repository_slug is not None:
             body["name"] = new_repository_slug
-        if new_repository_slug is not None:
             body["project"] = {"key": project_key}
+        return self.post(url, data=body)
+
+    def fork_repository_new_project(self, project_key, repository_slug, new_project_key, new_repository_slug):
+        """
+        Forks a repository to a separate project.
+        :param project_key: Origin Project Key
+        :param repository_slug: Origin repository slug
+        :param new_project_key: Project Key of target project
+        :param new_repository_slug: Target Repository slug
+        :return:
+        """
+        url = self._url_repo(project_key, repository_slug)
+        body = {}
+        if new_repository_slug is not None and new_project_key is not None:
+            body["name"] = new_repository_slug
+            body["project"] = {"key": new_project_key}
         return self.post(url, data=body)
 
     def repo_keys(self, project_key, repo_key, start=0, limit=None, filter_str=None):
@@ -1200,7 +1222,7 @@ class Bitbucket(BitbucketBase):
             params["orderBy"] = order_by
         return self._get_paged(url, params=params)
 
-    def get_project_tags(self, project_key, repository_slug, tag_name):
+    def get_project_tags(self, project_key, repository_slug, tag_name=None):
         """
         Retrieve a tag in the specified repository.
         The authenticated user must have REPO_READ permission for the context repository to call this resource.
@@ -1211,7 +1233,10 @@ class Bitbucket(BitbucketBase):
         :return:
         """
         url = self._url_repo_tags(project_key, repository_slug)
-        return self.get(url)
+        if tag_name is not None:
+            return self.get("{}/{}".format(url, tag_name))
+
+        return self._get_paged(url)
 
     def set_tag(self, project_key, repository_slug, tag_name, commit_revision, description=None):
         """
@@ -1225,13 +1250,13 @@ class Bitbucket(BitbucketBase):
         :return:
         """
         url = self._url_repo_tags(project_key, repository_slug)
-        body = {}
-        if tag_name is not None:
-            body["name"] = tag_name
-        if tag_name is not None:
-            body["startPoint"] = commit_revision
-        if tag_name is not None:
+        body = {
+            "name": tag_name,
+            "startPoint": commit_revision,
+        }
+        if description is not None:
             body["message"] = description
+
         return self.post(url, data=body)
 
     def delete_tag(self, project_key, repository_slug, tag_name):
@@ -1247,7 +1272,6 @@ class Bitbucket(BitbucketBase):
             self._url_repo_tags(project_key, repository_slug, api_root="rest/git"),
             tag_name,
         )
-        (project_key, repository_slug, tag_name)
         return self.delete(url)
 
     def _url_repo_hook_settings(self, project_key, repository_slug):
@@ -1305,6 +1329,105 @@ class Bitbucket(BitbucketBase):
         :return:
         """
         url = "{}/{}/enabled".format(self._url_repo_hook_settings(project_key, repository_slug), hook_key)
+        return self.delete(url)
+
+    def _url_webhooks(self, project_key, repository_slug):
+        return "{}/webhooks".format(self._url_repo(project_key, repository_slug))
+
+    def get_webhooks(
+        self,
+        project_key,
+        repository_slug,
+        event=None,
+        statistics=False,
+    ):
+        """
+        Get webhooks
+        :param project_key:
+        :param repository_slug:
+        :param event: OPTIONAL: defaults to None
+        :param statistics: OPTIONAL: defaults to False
+        :return:
+        """
+        url = self._url_webhooks(project_key, repository_slug)
+        params = {}
+        if event:
+            params["event"] = event
+        if statistics:
+            params["statistics"] = statistics
+        return self._get_paged(url, params=params)
+
+    def create_webhook(
+        self,
+        project_key,
+        repository_slug,
+        name,
+        events,
+        webhook_url,
+        active,
+        secret=None,
+    ):
+        """Creates a webhook using the information provided in the request.
+
+        The authenticated user must have REPO_ADMIN permission for the context repository to call this resource.
+
+        :param project_key: The project matching the projectKey supplied in the resource path as shown in URL.
+        :param repository_slug:
+        :param name: Name of webhook to create.
+        :param events: List of event. (i.e. ["repo:refs_changed", "pr:merged", "pr:opened"])
+        :param webhook_url:
+        :param active:
+        :param secret: The string is used to verify data integrity between Bitbucket and your endpoint.
+        :return:
+        """
+        url = self._url_webhooks(project_key, repository_slug)
+        body = {
+            "name": name,
+            "events": events,
+            "url": webhook_url,
+            "active": active,
+        }
+        if secret:
+            body["configuration"] = {"secret": secret}
+        return self.post(url, data=body)
+
+    def _url_webhook(self, project_key, repository_slug, webhook_id):
+        return "{}/{}".format(self._url_webhooks(project_key, repository_slug), webhook_id)
+
+    def get_webhook(self, project_key, repository_slug, webhook_id):
+        """
+        Retrieve a webhook.
+        The authenticated user must have REPO_ADMIN permission for the context repository to call this resource.
+        :param project_key:
+        :param repository_slug:
+        :param webhook_id: the ID of the webhook within the repository
+        :return:
+        """
+        url = self._url_webhook(project_key, repository_slug, webhook_id)
+        return self.get(url)
+
+    def update_webhook(self, project_key, repository_slug, webhook_id, **params):
+        """
+        Update a webhook.
+        The authenticated user must have REPO_ADMIN permission for the context repository to call this resource.
+        :param project_key:
+        :param repository_slug:
+        :param webhook_id: the ID of the webhook within the repository
+        :return:
+        """
+        url = self._url_webhook(project_key, repository_slug, webhook_id)
+        return self.put(url, data=params)
+
+    def delete_webhook(self, project_key, repository_slug, webhook_id):
+        """
+        Delete a webhook.
+        The authenticated user must have REPO_ADMIN permission for the context repository to call this resource.
+        :param project_key:
+        :param repository_slug:
+        :param webhook_id: the ID of the webhook within the repository
+        :return:
+        """
+        url = self._url_webhook(project_key, repository_slug, webhook_id)
         return self.delete(url)
 
     def _url_pull_request_settings(self, project_key, repository_slug):
@@ -1929,8 +2052,11 @@ class Bitbucket(BitbucketBase):
             params["path"] = path
         return self.get(url, params=params)
 
+    def _url_commit_pull_requests(self, project_key, repository_slug, commit_id):
+        return "{}/pull-requests".format(self._url_commit(project_key, repository_slug, commit_id))
+
     def get_pull_requests_contain_commit(self, project_key, repository_slug, commit):
-        url = self._url_commit(project_key, repository_slug, commit)
+        url = self._url_commit_pull_requests(project_key, repository_slug, commit)
         return (self.get(url) or {}).get("values")
 
     def get_changelog(self, project_key, repository_slug, ref_from, ref_to, start=0, limit=None):
@@ -2536,7 +2662,7 @@ class Bitbucket(BitbucketBase):
         :param prefix: string: Optional, a prefix to apply to all entries in the streamed archive; if the supplied prefix does not end with a trailing /, one will be added automatically
         :param chunk_size: int: Optional, download chunk size. Defeault is 128
         """
-        url = f"{self._url_repo(project_key, repository_slug)}/archive"
+        url = "{}/archive".format(self._url_repo(project_key, repository_slug))
         params = {}
         if at is not None:
             params["at"] = at

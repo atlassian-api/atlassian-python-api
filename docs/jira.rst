@@ -104,6 +104,9 @@ Manage projects
     # Add missing version to project
     jira.add_version(key, project_id, version, is_archived=False, is_released=False)
 
+    # Update an existing version
+    jira.update_version(version, name=None, description=None, is_archived=None, is_released=None, start_date=None, release_date=None)
+
     # Get project leaders
     jira.project_leaders()
 
@@ -229,6 +232,15 @@ Manage issues
 
     # Export Issues to csv
     jira.csv(jql, all_fields=False)
+
+    # Add watcher to an issue
+    jira.issue_add_watcher(issue_key, user)
+
+    # Remove watcher from an issue
+    jira.issue_delete_watcher(issue_key, user)
+
+    # Get watchers for an issue
+    jira.issue_get_watchers(issue_key)
 
 
 Manage Boards
