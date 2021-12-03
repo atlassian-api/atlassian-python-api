@@ -471,3 +471,89 @@ class Xray(AtlassianRestAPI):
         """
         url = "rest/raven/1.0/api/testrun/{0}/step".format(test_run_id)
         return self.get(url)
+
+    def get_test_repo_folders(self, project_key):
+        """
+        Retrieve test repository folders of a project.
+        :param project_key: Project key (eg. 'FOO').
+        :return: Returns the list of test repository folders.
+        """
+        url = "rest/raven/1.0/api/testrepository/{0}/folders".format(project_key)
+        return self.get(url)
+
+    def get_test_repo_folder(self, project_key, folder_id):
+        """
+        Retrieve test repository folder of a project.
+        :param project_key: Project key (eg. 'FOO').
+        :param folder_id: Internal folder Id.
+        :return: Returns the test repository folder.
+        """
+        url = "rest/raven/1.0/api/testrepository/{0}/folders/{1}".format(project_key, folder_id)
+        return self.get(url)
+
+    def create_test_repo_folder(self, project_key, folder_name, parent_folder_id=-1):
+        """
+        Create test repository folder for a project.
+        :param project_key: Project key (eg. 'FOO').
+        :param folder_name: Name of folder.
+        :param parent_folder_id: Internal folder Id; "-1" corresponds to the root folder of the test repository.
+        :return: Returns the created test repository folder.
+        """
+        data = {"name": folder_name}
+        url = "rest/raven/1.0/api/testrepository/{0}/folders/{1}".format(project_key, parent_folder_id)
+        return self.post(url, data=data)
+
+    def update_test_repo_folder(self, project_key, folder_id, folder_name, rank=1):
+        """
+        Update test repository folder for a project.
+        :param project_key: Project key (eg. 'FOO').
+        :param folder_id: Internal folder Id.
+        :param folder_name: Name of folder.
+        :param rank: Rank within the parent folder.
+        :return: Returns the updated test repository folder.
+        """
+        data = {"name": folder_name, "rank": rank}
+        url = "rest/raven/1.0/api/testrepository/{0}/folders/{1}".format(project_key, folder_id)
+        return self.put(url, data=data)
+
+    def delete_test_repo_folder(self, project_key, folder_id):
+        """
+        Delete test repository folder for a project.
+        :param project_key: Project key (eg. 'FOO').
+        :param folder_id: Internal folder Id.
+        :return: Returns the delete results.
+        """
+        url = "rest/raven/1.0/api/testrepository/{0}/folders/{1}".format(project_key, folder_id)
+        return self.delete(url)
+
+    def get_test_repo_folder_tests(self, project_key, folder_id, all_descendants=False, page=1, limit=50):
+        """
+        Retrieve tests of a test repository folder.
+        :param project_key: Project key (eg. 'FOO').
+        :param folder_id: Internal folder Id.
+        :param all_descendants: Include all descendants (i.e. all child Tests); "false", by default.
+        :param page: Page of paginated data (first 1)
+        :param limit: Amount of Tests per paginated data.
+        :return: Returns list of the Tests contained in a given folder of the test repository.
+        """
+        url = "rest/raven/1.0/api/testrepository/{0}/folders/{1}/tests?allDescendants={2}&page={3}&limit={4}".format(
+            project_key, folder_id, all_descendants, page, limit
+        )
+        return self.get(url)
+
+    def update_test_repo_folder_tests(self, project_key, folder_id, add=None, remove=None):
+        """
+        Update tests of a test repository folder.
+        :param project_key: Project key (eg. 'FOO').
+        :param folder_id: Internal folder Id.
+        :param add: OPTIONAL: List of tests to be added (eg. ['TEST-001', 'TEST-002'])
+        :param remove: OPTIONAL: List of tests to be removed (eg. ['TEST-003'])
+        :return: Returns the update result.
+        """
+        if add is None:
+            add = []
+        if remove is None:
+            remove = []
+        data = {"add": add, "remove": remove}
+        url = "rest/raven/1.0/api/testrepository/{0}/folders/{1}/tests".format(project_key, folder_id)
+        return self.put(url, data=data)
