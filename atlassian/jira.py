@@ -805,22 +805,15 @@ class Jira(AtlassianRestAPI):
 
         return self.get(url)
 
-    def issue_archive(self, issue_id_or_key, notify_users=False):
+    def issue_archive(self, issue_id_or_key):
         """
         Archives an issue.
         :param issue_id_or_key: Issue id or issue key
-        :param notify_users: send the email with notification that the issue was updated to users that watch it.
-                            Admin or project admin permissions are required to disable the notification.
         :return:
         """
-        params = {}
-        if notify_users:
-            params["notifyUsers"] = "true"
-        else:
-            params["notifyUsers"] = "false"
         base_url = self.resource_url("issue")
         url = "{base_url}/{issueIdOrKey}/archive".format(base_url=base_url, issueIdOrKey=issue_id_or_key)
-        return self.get(url)
+        return self.put(url)
 
     def issue_field_value(self, key, field):
         base_url = self.resource_url("issue")
