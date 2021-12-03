@@ -536,10 +536,18 @@ class Xray(AtlassianRestAPI):
         :param limit: Amount of Tests per paginated data.
         :return: Returns list of the Tests contained in a given folder of the test repository.
         """
-        url = "rest/raven/1.0/api/testrepository/{0}/folders/{1}/tests?allDescendants={2}&page={3}&limit={4}".format(
-            project_key, folder_id, all_descendants, page, limit
-        )
-        return self.get(url)
+        url = "rest/raven/1.0/api/testrepository/{0}/folders/{1}/tests".format(project_key, folder_id)
+        params = {}
+
+        if all_descendants:
+            params["allDescendants"] = all_descendants
+        # param "page" and "limit" must coexist, otherwise rest api will raise 400
+        if page:
+            params["page"] = page
+        if limit:
+            params["limit"] = limit
+
+        return self.get(url, params=params)
 
     def update_test_repo_folder_tests(self, project_key, folder_id, add=None, remove=None):
         """
