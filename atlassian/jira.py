@@ -3914,5 +3914,5 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
                 error_msg = "\n".join(j["errorMessages"] + [k + ": " + v for k, v in j["errors"].items()])
             except Exception:
                 response.raise_for_status()
-
-            raise HTTPError(error_msg, response=response)
+            else:
+                raise HTTPError(error_msg, response=response)

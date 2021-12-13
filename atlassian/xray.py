@@ -1,7 +1,7 @@
 # coding=utf-8
 import logging
 import re
-
+from requests import HTTPError
 from .rest_client import AtlassianRestAPI
 
 log = logging.getLogger(__name__)
@@ -535,11 +535,19 @@ class Xray(AtlassianRestAPI):
         :param page: Page of paginated data (first 1)
         :param limit: Amount of Tests per paginated data.
         :return: Returns list of the Tests contained in a given folder of the test repository.
+        Note: param "page" and "limit" must coexist, otherwise rest api will raise 400
         """
-        url = "rest/raven/1.0/api/testrepository/{0}/folders/{1}/tests?allDescendants={2}&page={3}&limit={4}".format(
-            project_key, folder_id, all_descendants, page, limit
-        )
-        return self.get(url)
+        url = "rest/raven/1.0/api/testrepository/{0}/folders/{1}/tests".format(project_key, folder_id)
+        params = {}
+
+        if all_descendants:
+            params["allDescendants"] = all_descendants
+        if page:
+            params["page"] = page
+        if limit:
+            params["limit"] = limit
+
+        return self.get(url, params=params)
 
     def update_test_repo_folder_tests(self, project_key, folder_id, add=None, remove=None):
         """
@@ -557,3 +565,17 @@ class Xray(AtlassianRestAPI):
         data = {"add": add, "remove": remove}
         url = "rest/raven/1.0/api/testrepository/{0}/folders/{1}/tests".format(project_key, folder_id)
         return self.put(url, data=data)
+
+    def raise_for_status(self, response):
+        """
+        Checks the response for an error status and raises an exception with the error message provided by the server
+        :param response:
+        :return:
+        """
+        if 400 <= response.status_code < 600:
+            try:
+                error_msg = response.text
+            except Exception:
+                response.raise_for_status()
+            else:
+                raise HTTPError(error_msg, response=response)
