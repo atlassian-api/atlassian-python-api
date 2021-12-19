@@ -559,6 +559,27 @@ class Jira(AtlassianRestAPI):
         url = self.resource_url("filter")
         return self.post(url, data=data)
 
+    def edit_filter(self, filter_id, name, jql=None, description=None, favourite=None):
+        """
+        Updates an existing filter.
+        :param filter_id: Filter Id
+        :param name: Filter Name
+        :param jql: Filter JQL
+        :param description: Filter description
+        :param favourite: Indicates if filter is selected as favorite
+        :return: Returns updated filter information
+        """
+        data = {"name": name}
+        if jql:
+            data["jql"] = jql
+        if description:
+            data["description"] = description
+        if favourite:
+            data["favourite"] = favourite
+        base_url = self.resource_url("filter")
+        url = "{base_url}/{id}".format(base_url=base_url, id=filter_id)
+        return self.put(url, data=data)
+
     def get_filter(self, filter_id):
         """
         Returns a full representation of a filter that has the given id.
