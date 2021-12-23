@@ -3588,6 +3588,21 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
     #   Agile(Formerly Greenhopper) REST API implements
     #   Resource: https://docs.atlassian.com/jira-software/REST/7.3.1/
     #######################################################################
+    def add_issues_to_backlog(self, sprint_id, issues):
+        """
+        Adding Issue(s) to Backlog
+        :param issues:       list:  List of Issue Keys
+                                    eg. ['APA-1', 'APA-2']
+        :return: Dictionary of response received from the API
+
+        https://docs.atlassian.com/jira-software/REST/8.9.0/#agile/1.0/backlog-moveIssuesToBacklog
+        """
+        if not isinstance(issues, list):
+            raise ValueError("`issues` param should be List of Issue Keys")
+        url = "/rest/agile/1.0/backlog/issue"
+        data = dict(issues=issues)
+        return self.post(url, data=data)
+
     def get_all_agile_boards(self, board_name=None, project_key=None, board_type=None, start=0, limit=50):
         """
         Returns all boards. This only includes boards that the user has permission to view.
