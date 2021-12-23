@@ -600,6 +600,69 @@ class Jira(AtlassianRestAPI):
         url = "{base_url}/{id}".format(base_url=base_url, id=filter_id)
         return self.delete(url)
 
+    def get_filter_share_permissions(self, filter_id):
+        """
+        Gets share permissions of a filter
+        :param filter_id: Filter Id
+        :return: Returns current share permissions of filter
+        """
+        base_url = self.resource_url("filter")
+        url = "{base_url}/{id}/permission".format(base_url=base_url, id=filter_id)
+        return self.get(url)
+
+    def add_filter_share_permission(
+        self,
+        filter_id,
+        type,
+        project_id=None,
+        project_role_id=None,
+        groupname=None,
+        user_key=None,
+        view=None,
+        edit=None,
+    ):
+        """
+        Adds share permission for a filter
+        :param filter_id: Filter Id
+        :param type: What type of permission is granted (i.e. user, project)
+        :param project_id: Project Id, relevant for type 'project' and 'projectRole'
+        :param project_role_id: Project role Id, relevant for type 'projectRole'
+        :param groupname: Group name, relevant for type 'group'
+        :param user_key: User key, relevant for type 'user'
+        :param view: Sets view permission
+        :param edit: Sets edit permission
+        :return: Returns updated share permissions
+        """
+        base_url = self.resource_url("filter")
+        url = "{base_url}/{id}/permission".format(base_url=base_url, id=filter_id)
+        data = {"type": type}
+        if project_id:
+            data["projectId"] = project_id
+        if project_role_id:
+            data["projectRoleId"] = project_role_id
+        if groupname:
+            data["groupname"] = groupname
+        if user_key:
+            data["userKey"] = user_key
+        if view:
+            data["view"] = view
+        if edit:
+            data["edit"] = edit
+        return self.post(url, data=data)
+
+    def delete_filter_share_permission(self, filter_id, permission_id):
+        """
+        Removes share permission
+        :param filter_id: Filter Id
+        :param permission_id: Permission Id to be removed
+        :return:
+        """
+        base_url = self.resource_url("filter")
+        url = "{base_url}/{id}/permission/{permission_id}".format(
+            base_url=base_url, id=filter_id, permission_id=permission_id
+        )
+        return self.delete(url)
+
     """
     Group.
     Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/group
