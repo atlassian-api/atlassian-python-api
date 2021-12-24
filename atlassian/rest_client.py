@@ -3,6 +3,7 @@ import logging
 from json import dumps
 
 import requests
+import time
 from oauthlib.oauth1 import SIGNATURE_RSA
 from requests_oauthlib import OAuth1, OAuth2
 from six.moves.urllib.parse import urlencode
@@ -52,7 +53,45 @@ class AtlassianRestAPI(object):
         cloud=False,
         proxies=None,
         token=None,
+        backoff_and_retry=False,
+        retry_error_matches=[(429, 'Too Many Requests')],
+        max_backoff_seconds=1800,
+        max_backoff_retries=1000,
     ):
+        """
+        init function for the AtlassianRestAPI object.
+
+        Args:
+            url (str): The url to be used in the request.
+            username (str, optional): Username Defaults to None.
+            password (sstr, optional): Password. Defaults to None.
+            timeout (int, optional): Request timeout. Defaults to 75.
+            api_root (str, optional): Root for the api requests. Defaults to "rest/api".
+            api_version (str, optional): Version of the API to use. Defaults to "latest".
+            verify_ssl (bool, optional): Turn on / off SSL verification. Defaults to True.
+            session ([type], optional): Pass an existing Python requests session object. Defaults to None.
+            oauth ([type], optional): oauth. Defaults to None.
+            oauth2 ([type], optional): oauth2. Defaults to None.
+            cookies ([type], optional): Cookies to send with the request. Defaults to None.
+            advanced_mode ([type], optional): Return results in advanced mode. Defaults to None.
+            kerberos ([type], optional): Kerberos. Defaults to None.
+            cloud (bool, optional): Specify if using Atlassian Cloud. Defaults to False.
+            proxies ([type], optional): Specify proxies to use. Defaults to None.
+            token ([type], optional): Atlassian / Jira auth token. Defaults to None.
+            backoff_and_retry (bool, optional): Enable exponential backoff and retry.
+                This will retry the request if there is a predefined failure. Primarily
+                designed for Atlassian Cloud where API limits are commonly hit if doing
+                operations on many issues, and the limits require a cooling off period.
+                The wait period before the next request increases exponentially with each
+                failed retry. Defaults to False.
+            retry_error_matches (list, optional): Errors to match, passed as a tuple containing
+                the response code and the response text to match (exact match).
+                Defaults to [(429, 'Too Many Requests')].
+            max_backoff_seconds (int, optional): Max backoff seconds. When backing off, requests won't
+                wait any longer than this. Defaults to 1800.
+            max_backoff_retries (int, optional): Maximum number of retries to try before
+                continuing. Defaults to 1000.
+        """
         self.url = url
         self.username = username
         self.password = password
@@ -64,6 +103,10 @@ class AtlassianRestAPI(object):
         self.advanced_mode = advanced_mode
         self.cloud = cloud
         self.proxies = proxies
+        self.backoff_and_retry = backoff_and_retry
+        self.retry_error_matches = retry_error_matches
+        self.max_backoff_seconds = max_backoff_seconds
+        self.max_backoff_retries = max_backoff_retries
         if session is None:
             self._session = requests.Session()
         else:
@@ -221,17 +264,36 @@ class AtlassianRestAPI(object):
             json_dump = None if not json else dumps(json)
         self.log_curl_debug(method=method, url=url, headers=headers, data=data if data else json_dump)
         headers = headers or self.default_headers
-        response = self._session.request(
-            method=method,
-            url=url,
-            headers=headers,
-            data=data,
-            json=json,
-            timeout=self.timeout,
-            verify=self.verify_ssl,
-            files=files,
-            proxies=self.proxies,
-        )
+
+        backoff = 1
+        retries = 0
+        responseloop = True
+        while responseloop:
+            response = self._session.request(
+                method=method,
+                url=url,
+                headers=headers,
+                data=data,
+                json=json,
+                timeout=self.timeout,
+                verify=self.verify_ssl,
+                files=files,
+                proxies=self.proxies,
+            )
+            responseloop = False
+            if self.backoff_and_retry:
+                if retries > self.max_backoff_retries:
+                    log.warning('Hit max backoff retry limit of {0}, no more retries.'.format(self.max_backoff_retries))
+                    responseloop = False
+                for em in self.retry_error_matches:
+                    if response.status_code == em[0] and response.reason == em[1]:
+                        log.warning('Backing off due to error "{0}: {1}" for {2}s\n'.format(em[0],em[1],backoff))
+                        time.sleep(backoff)
+                        backoff = backoff * 2 if backoff * 2 < self.max_backoff_seconds else self.max_backoff_seconds
+                        retries += 1
+                        responseloop = True
+                        break
+
         response.encoding = "utf-8"
 
         log.debug(u"HTTP: {} {} -> {} {}".format(method, path, response.status_code, response.reason))
