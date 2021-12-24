@@ -54,7 +54,7 @@ class AtlassianRestAPI(object):
         proxies=None,
         token=None,
         backoff_and_retry=False,
-        retry_error_matches=[(429, 'Too Many Requests')],
+        retry_error_matches=[(429, "Too Many Requests")],
         max_backoff_seconds=1800,
         max_backoff_retries=1000,
     ):
@@ -283,11 +283,11 @@ class AtlassianRestAPI(object):
             responseloop = False
             if self.backoff_and_retry:
                 if retries > self.max_backoff_retries:
-                    log.warning('Hit max backoff retry limit of {0}, no more retries.'.format(self.max_backoff_retries))
+                    log.warning("Hit max backoff retry limit of {0}, no more retries.".format(self.max_backoff_retries))
                     responseloop = False
                 for em in self.retry_error_matches:
                     if response.status_code == em[0] and response.reason == em[1]:
-                        log.warning('Backing off due to error "{0}: {1}" for {2}s\n'.format(em[0],em[1],backoff))
+                        log.warning('Backing off due to error "{0}: {1}" for {2}s'.format(em[0], em[1], backoff))
                         time.sleep(backoff)
                         backoff = backoff * 2 if backoff * 2 < self.max_backoff_seconds else self.max_backoff_seconds
                         retries += 1
