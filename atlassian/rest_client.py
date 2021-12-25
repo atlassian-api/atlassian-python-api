@@ -84,9 +84,9 @@ class AtlassianRestAPI(object):
                 operations on many issues, and the limits require a cooling off period.
                 The wait period before the next request increases exponentially with each
                 failed retry. Defaults to False.
-            retry_error_matches (list, optional): Errors to match, passed as a tuple containing
-                the response code and the response text to match (exact match).
-                Defaults to [(429, 'Too Many Requests')].
+            retry_error_matches (list, optional): Errors to match, passed as a list of tuples
+                containing the response code and the response text to match (exact match).
+                Defaults to the rate limit error from Atlassian Cloud - [(429, 'Too Many Requests')].
             max_backoff_seconds (int, optional): Max backoff seconds. When backing off, requests won't
                 wait any longer than this. Defaults to 1800.
             max_backoff_retries (int, optional): Maximum number of retries to try before
