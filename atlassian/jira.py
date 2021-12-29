@@ -845,7 +845,7 @@ class Jira(AtlassianRestAPI):
 
     def issue_editmeta(self, key):
         base_url = self.resource_url("issue")
-        url = f"{base_url}/{key}/editmeta"
+        url = "{}/{}/editmeta".format(base_url, key)
         return self.get(url)
 
     def get_issue_changelog(self, issue_key):
