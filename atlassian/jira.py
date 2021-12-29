@@ -2215,10 +2215,14 @@ class Jira(AtlassianRestAPI):
 
     def get_project_issuekey_all(self, project, start=0, limit=None, expand=None):
         jql = "project = {project} ORDER BY issuekey ASC".format(project=project)
+<<<<<<< HEAD
         response = self.jql(jql, start=start, limit=limit, expand=expand)
         if self.advanced_mode:
             return response
         return [issue["key"] for issue in response["issues"]]
+=======
+        return [issue["key"] for issue in self.jql(jql, start=start, limit=limit, expand=expand)["issues"]]
+>>>>>>> d64d3766d798eb0e946e8c15024480deba43ffb6
 
     def get_project_issues_count(self, project):
         jql = 'project = "{project}" '.format(project=project)
