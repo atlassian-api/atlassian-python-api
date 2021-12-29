@@ -245,6 +245,12 @@ Manage issues
     # Get watchers for an issue
     jira.issue_get_watchers(issue_key)
 
+    # Archive an issue
+    jira.issue_archive(issue_id_or_key)
+
+    # Restore an issue
+    issue_restore(issue_id_or_key)
+
 
 Manage Boards
 -------------
