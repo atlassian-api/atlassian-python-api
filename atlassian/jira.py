@@ -904,6 +904,16 @@ class Jira(AtlassianRestAPI):
         url = "{base_url}/{issueIdOrKey}/archive".format(base_url=base_url, issueIdOrKey=issue_id_or_key)
         return self.put(url)
 
+    def issue_restore(self, issue_id_or_key):
+        """
+        Restores an archived issue.
+        :param issue_id_or_key: Issue id or issue key
+        :return:
+        """
+        base_url = self.resource_url("issue")
+        url = "{base_url}/{issueIdOrKey}/restore".format(base_url=base_url, issueIdOrKey=issue_id_or_key)
+        return self.put(url)
+
     def issue_field_value(self, key, field):
         base_url = self.resource_url("issue")
         issue = self.get("{base_url}/{key}?fields={field}".format(base_url=base_url, key=key, field=field))
