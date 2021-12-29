@@ -1,6 +1,7 @@
 # coding=utf-8
 
 from ..base import BitbucketCloudBase
+from .diffstat import DiffStat
 from ..common.users import User
 
 
@@ -178,6 +179,16 @@ class PullRequest(BitbucketCloudBase):
         return self.get_data("destination")["branch"]["name"]
 
     @property
+    def source_commit(self):
+        """Source commit."""
+        return self.get_data("source")["commit"]["hash"]
+
+    @property
+    def destination_commit(self):
+        """Destination commit."""
+        return self.get_data("destination")["commit"]["hash"]
+
+    @property
     def comment_count(self):
         """number of comments"""
         return self.get_data("comment_count")
@@ -196,6 +207,41 @@ class PullRequest(BitbucketCloudBase):
     def author(self):
         """User object of the author"""
         return User(None, self.get_data("author"))
+
+    @property
+    def has_conflict(self):
+        """Returns True if any of the changes in the PR cause conflicts."""
+        for diffstat in self.diffstat():
+            if diffstat.has_conflict:
+                return True
+        return False
+
+    def diffstat(self):
+        """
+        Returns a generator object of diffstats
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D/diffstat
+        """
+        for diffstat in self._get_paged("diffstat"):
+            yield DiffStat(diffstat, **self._new_session_args)
+
+        return
+
+    def diff(self, encoding="utf-8"):
+        """
+        Returns PR diff
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D/diff
+        """
+        return str(self.get("diff", not_json_response=True), encoding=encoding)
+
+    def patch(self, encoding="utf-8"):
+        """
+        Returns PR patch
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D/patch
+        """
+        return str(self.get("patch", not_json_response=True), encoding=encoding)
 
     def statuses(self):
         """
@@ -573,7 +619,7 @@ class Task(BitbucketCloudBase):
 
     def delete(self):
         """
-        Delete the pullrequest tasl.
+        Delete the pullrequest task.
 
         This is feature currently undocumented.
         """
