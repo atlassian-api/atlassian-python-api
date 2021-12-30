@@ -778,5 +778,5 @@ class ServiceDesk(AtlassianRestAPI):
                 error_msg = j["errorMessage"]
             except Exception:
                 response.raise_for_status()
-
-            raise HTTPError(error_msg, response=response)
+            else:
+                raise HTTPError(error_msg, response=response)
