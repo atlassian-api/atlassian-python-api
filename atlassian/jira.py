@@ -2123,6 +2123,19 @@ class Jira(AtlassianRestAPI):
             params["expand"] = expand
         return self.get(url, params=params)
 
+    def get_project_notification_scheme(self, project_id_or_key):
+        """
+        Gets a notification scheme assigned with a project
+
+        :param project_id_or_key: str
+        :return: data of project notification scheme
+        """
+        base_url = self.resource_url("project")
+        url = "{base_url}/{project_id_or_key}/notificationscheme".format(
+            base_url=base_url, project_id_or_key=project_id_or_key
+        )
+        return self.get(url)
+
     """
     Resource for associating permission schemes and projects.
     Reference:
