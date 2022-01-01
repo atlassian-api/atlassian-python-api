@@ -6,7 +6,7 @@ import requests
 from oauthlib.oauth1 import SIGNATURE_RSA
 from requests_oauthlib import OAuth1, OAuth2
 from six.moves.urllib.parse import urlencode
-
+from requests import HTTPError
 from atlassian.request_utils import get_default_logger
 
 log = get_default_logger(__name__)
@@ -389,4 +389,11 @@ class AtlassianRestAPI(object):
         :param response:
         :return:
         """
-        response.raise_for_status()
+        if 400 <= response.status_code < 600:
+            try:
+                j = response.json()
+                error_msg = "\n".join(j["errorMessages"] + [k + ": " + v for k, v in j["errors"].items()])
+            except Exception:
+                response.raise_for_status()
+            else:
+                raise HTTPError(error_msg, response=response)
