@@ -716,9 +716,9 @@ class Confluence(AtlassianRestAPI):
 
         if template_id:
             data["templateId"] = template_id
-            return self.put("wiki/rest/api/template", data=json.dumps(data))
+            return self.put("rest/api/template", data=json.dumps(data))
 
-        return self.post("wiki/rest/api/template", json=data)
+        return self.post("rest/api/template", json=data)
 
     @deprecated(version="3.7.0", reason="Use get_content_template()")
     def get_template_by_id(self, template_id):
@@ -751,7 +751,7 @@ class Confluence(AtlassianRestAPI):
         :param str template_id: The ID of the content template to be returned
         :return:
         """
-        url = "wiki/rest/api/template/{template_id}".format(template_id=template_id)
+        url = "rest/api/template/{template_id}".format(template_id=template_id)
 
         try:
             response = self.get(url)
@@ -814,7 +814,7 @@ class Confluence(AtlassianRestAPI):
                             fixed system limits. Default: 25
         :param expand: OPTIONAL: A multi-value parameter indicating which properties of the template to expand.
         """
-        url = "wiki/rest/api/template/blueprint"
+        url = "rest/api/template/blueprint"
         params = {}
         if space:
             params["spaceKey"] = space
@@ -885,7 +885,7 @@ class Confluence(AtlassianRestAPI):
         :param expand: OPTIONAL: A multi-value parameter indicating which properties of the template to expand.
             e.g. ``body``
         """
-        url = "wiki/rest/api/template/page"
+        url = "rest/api/template/page"
         params = {}
         if space:
             params["spaceKey"] = space
@@ -924,7 +924,7 @@ class Confluence(AtlassianRestAPI):
         :param str template_id: The ID of the template to be deleted.
         :return:
         """
-        return self.delete("wiki/rest/api/template/{}".format(template_id))
+        return self.delete("rest/api/template/{}".format(template_id))
 
     def get_all_spaces(self, start=0, limit=500, expand=None, space_type=None, space_status=None):
         """
