@@ -1726,6 +1726,7 @@ class Jira(AtlassianRestAPI):
         """Returns all projects which are visible for the currently logged in user.
         If no user is logged in, it returns the list of projects that are visible when using anonymous access.
         :param included_archived: boolean whether to include archived projects in response, default: false
+        :param expand:
         :return:
         """
         params = {}
@@ -1919,8 +1920,8 @@ class Jira(AtlassianRestAPI):
         :param description: The version description
         :param is_archived:
         :param is_released:
-        :param startDate: The Start Date in isoformat. Example value is "2015-04-11T15:22:00.000+10:00"
-        :param releaseDate: The Release Date in isoformat. Example value is "2015-04-11T15:22:00.000+10:00"
+        :param start_date: The Start Date in isoformat. Example value is "2015-04-11T15:22:00.000+10:00"
+        :param release_date: The Release Date in isoformat. Example value is "2015-04-11T15:22:00.000+10:00"
         """
         payload = {
             "name": name,
