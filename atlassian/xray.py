@@ -1,7 +1,6 @@
 # coding=utf-8
 import logging
 import re
-from requests import HTTPError
 from .rest_client import AtlassianRestAPI
 
 log = logging.getLogger(__name__)

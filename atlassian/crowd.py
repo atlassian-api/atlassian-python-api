@@ -61,17 +61,15 @@ class Crowd(AtlassianRestAPI):
 
     def user_create(self, username, active, first_name, last_name, display_name, email, password=None):
         """
-        Create new user
-
-        :param active: bool, OPTIONAL: password can be auto-generated if not included
-            username (string)
-            active (bool)
-            first-name (string)
-            last-name (string)
-            display-name (string)
-            email (string)
-            password (string, optional)
-
+        Create new user method
+        :param  active: bool: OPTIONAL: password can be auto-generated if not included
+        :param  username: string: username
+        :param  active: bool:
+        :param  first_name: string:
+        :param  last_name: string:
+        :param  display_name:  string:
+        :param  email: string:
+        :param  password: string: OPTIONAL:
         :return:
         """
 
