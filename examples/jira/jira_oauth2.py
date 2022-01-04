@@ -54,8 +54,7 @@ def login():
 @app.route("/callback")
 def callback():
     jira_oauth = OAuth2Session(client_id, state=session["oauth_state"], redirect_uri=redirect_uri)
-    request_url = request.url.replace("http://", "https://")
-    token_json = jira_oauth.fetch_token(token_url, client_secret=client_secret, authorization_response=request_url)
+    token_json = jira_oauth.fetch_token(token_url, client_secret=client_secret, authorization_response=request.url)
     return "Token: {}<p />Projects: {}".format(token_json, ", ".join(get_projects(token_json)))
 
 
@@ -67,7 +66,7 @@ def get_projects(token_json):
     req = requests.get(
         "https://api.atlassian.com/oauth/token/accessible-resources",
         headers={
-            "Authorization": f"Bearer {token_json['access_token']}",
+            "Authorization": "Bearer {}".format(token_json["access_token"]),
             "Accept": "application/json",
         },
     )
@@ -82,9 +81,5 @@ def get_projects(token_json):
             "token_type": "Bearer",
         },
     }
-    jira = Jira(url=f"https://api.atlassian.com/ex/jira/{cloud_id}", oauth2=oauth2_dict)
+    jira = Jira(url="https://api.atlassian.com/ex/jira/{}".format(cloud_id), oauth2=oauth2_dict)
     return [project["name"] for project in jira.projects()]
-
-
-if __name__ == "__main__":
-    app.run(debug=True, port=8000, host="0.0.0.0")
