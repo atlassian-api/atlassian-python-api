@@ -1,7 +1,5 @@
 # coding=utf-8
 import logging
-import string
-import secrets
 
 from .rest_client import AtlassianRestAPI
 
@@ -59,23 +57,19 @@ class Crowd(AtlassianRestAPI):
 
         return self._user_change_status(username, True)
 
-    def user_create(self, username, active, first_name, last_name, display_name, email, password=None):
+    def user_create(self, username, active, first_name, last_name, display_name, email, password):
         """
         Create new user method
-        :param  active: bool: OPTIONAL: password can be auto-generated if not included
+        :param  active: bool:
         :param  username: string: username
         :param  active: bool:
         :param  first_name: string:
         :param  last_name: string:
         :param  display_name:  string:
         :param  email: string:
-        :param  password: string: OPTIONAL:
+        :param  password: string:
         :return:
         """
-
-        if not password:
-            characters = string.ascii_letters + string.punctuation + string.digits
-            password = "".join(secrets.choice(characters) for x in range(30))
 
         user_object = {
             "name": username,
