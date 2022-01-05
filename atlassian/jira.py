@@ -1092,7 +1092,7 @@ class Jira(AtlassianRestAPI):
         data = {"name": account_id}
         return self.put(url, data=data)
 
-    def create_issue(self, fields, update_history=False, update=None, notify_users=True):
+    def create_issue(self, fields, update_history=False, update=None):
         """
         Creates an issue or a sub-task from a JSON representation
         :param fields: JSON data
@@ -1100,7 +1100,6 @@ class Jira(AtlassianRestAPI):
         :param update: JSON data
                 Use it to link issues or update worklog
         :param update_history: bool (if true then the user's project history is updated)
-        :param notify_users: bool, if true then send notifications, else do not.
         :return:
             example:
                 fields = dict(summary='Into The Night',
@@ -1125,11 +1124,6 @@ class Jira(AtlassianRestAPI):
         if update:
             data["update"] = update
         params = {}
-
-        if notify_users is True:
-            params["notifyUsers"] = "true"
-        else:
-            params["notifyUsers"] = "false"
 
         if update_history is True:
             params["updateHistory"] = "true"
