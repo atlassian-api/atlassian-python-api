@@ -1,6 +1,6 @@
 FROM ubuntu:20.04
 
-ARG DEBIAN_FRONTEND="noninteractive"
+ARG DEBIAN_FRONTEND=noninteractive
 ARG PYTHON_VERSION
 
 # Install add-apt-repository
@@ -13,11 +13,12 @@ RUN apt-get update
 
 # Install apt-utils
 RUN apt-get install -y apt-utils
-# install distutils.util
-RUN apt-get install -y python3-distutils python3-distutils-extra python3-apt
 
 # Install python development
 RUN apt-get install -y python$PYTHON_VERSION-dev python3-pip
+
+# install distutils.util
+RUN apt-get install -y python$PYTHON_VERSION-distutils python$PYTHON_VERSION-distutils-extra python3-apt
 
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python$PYTHON_VERSION 1
 
