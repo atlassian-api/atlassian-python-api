@@ -14,7 +14,7 @@ RUN apt-get update
 # Install apt-utils
 RUN apt-get install -y apt-utils
 # install distutils.util
-RUN apt-get install -y python3-distutils python3-distutils-extra
+RUN apt-get install -y python3-distutils python3-distutils-extra python3-apt
 
 # Install python development
 RUN apt-get install -y python$PYTHON_VERSION-dev python3-pip
