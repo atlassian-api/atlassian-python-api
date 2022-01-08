@@ -3680,7 +3680,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
     #   Agile(Formerly Greenhopper) REST API implements
     #   Resource: https://docs.atlassian.com/jira-software/REST/7.3.1/
     #######################################################################
-    def add_issues_to_backlog(self, sprint_id, issues):
+    def add_issues_to_backlog(self, issues):
         """
         Adding Issue(s) to Backlog
         :param issues:       list:  List of Issue Keys
