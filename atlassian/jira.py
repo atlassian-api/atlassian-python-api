@@ -589,7 +589,7 @@ class Jira(AtlassianRestAPI):
         base_url = self.resource_url("filter")
         url = "{base_url}/{id}".format(base_url=base_url, id=filter_id)
         return self.get(url)
-    
+
     def update_filter(self, filter_id, jql, **kwargs):
         """
         :param filter_id: int
@@ -2585,6 +2585,7 @@ class Jira(AtlassianRestAPI):
                 fixed system limits. Default by built-in method: 50
         :param expand: OPTIONAL: expand the search result
         :param validate_query: Whether to validate the JQL query
+        :param advanced_mode: Make an advanced mode
         :return:
         """
         params = {}
