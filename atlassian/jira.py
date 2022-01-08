@@ -589,6 +589,22 @@ class Jira(AtlassianRestAPI):
         base_url = self.resource_url("filter")
         url = "{base_url}/{id}".format(base_url=base_url, id=filter_id)
         return self.get(url)
+    
+    def update_filter(self, filter_id, jql, **kwargs):
+        """
+        :param filter_id: int
+        :param jql: str
+        :param kwargs: dict, Optional (name, description, favourite)
+        :return:
+        """
+        allowed_fields = ("name", "description", "favourite")
+        data = {"jql": jql}
+        for k, v in kwargs.items():
+            if k in allowed_fields:
+                data.update({k: v})
+        base_url = self.resource_url("filter")
+        url = "{base_url}/{id}".format(base_url=base_url, id=filter_id)
+        return self.put(url, data=data)
 
     def delete_filter(self, filter_id):
         """
