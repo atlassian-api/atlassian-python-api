@@ -74,7 +74,7 @@ class Confluence(AtlassianRestAPI):
             params["limit"] = int(limit)
         if expand is not None:
             params["expand"] = expand
-            
+
         url = "rest/api/content/{page_id}/child/{type}".format(page_id=page_id, type=type)
         log.info(url)
 
