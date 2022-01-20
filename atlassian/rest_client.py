@@ -54,7 +54,8 @@ class AtlassianRestAPI(object):
         proxies=None,
         token=None,
         backoff_and_retry=False,
-        retry_error_matches=[(429, "Too Many Requests")],
+        retry_error_matches=[(429, "Too Many Requests"),
+                                         (429, "Unknown Status Code")],
         max_backoff_seconds=1800,
         max_backoff_retries=1000,
     ):
