@@ -2237,14 +2237,14 @@ class Jira(AtlassianRestAPI):
             }
 
     def get_project_issuekey_last(self, project):
-        jql = "project = {project} ORDER BY issuekey DESC".format(project=project)
+        jql = 'project = "{project}" ORDER BY issuekey DESC'.format(project=project)
         response = self.jql(jql)
         if self.advanced_mode:
             return response
         return (response.get("issues") or {"key": None})[0]["key"]
 
     def get_project_issuekey_all(self, project, start=0, limit=None, expand=None):
-        jql = "project = {project} ORDER BY issuekey ASC".format(project=project)
+        jql = 'project = "{project}" ORDER BY issuekey ASC'.format(project=project)
         response = self.jql(jql, start=start, limit=limit, expand=expand)
         if self.advanced_mode:
             return response
@@ -2266,7 +2266,7 @@ class Jira(AtlassianRestAPI):
         :param limit: OPTIONAL int: Total number of project issues to be returned
         :return: List of Dictionary for the Issue(s) returned.
         """
-        jql = "project = {project} ORDER BY key".format(project=project)
+        jql = 'project = "{project}" ORDER BY key'.format(project=project)
         response = self.jql(jql, fields=fields, start=start, limit=limit)
         if self.advanced_mode:
             return response
