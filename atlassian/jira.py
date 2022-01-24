@@ -1099,7 +1099,8 @@ class Jira(AtlassianRestAPI):
         """Assign an issue to a user. None will set it to unassigned. -1 will set it to Automatic.
         :param issue: the issue ID or key to assign
         :type issue: int or str
-        :param account_id: the account ID of the user to assign the issue to
+        :param account_id: the account ID of the user to assign the issue to;
+                for jira server the value for account_id should be a valid jira username
         :type account_id: str
         :rtype: bool
         """
