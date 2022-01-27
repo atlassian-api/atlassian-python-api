@@ -2676,21 +2676,21 @@ class Confluence(AtlassianRestAPI):
 
     def get_license_usercount(self):
         """
-        Returns the license detailed information
+        Returns the total used seats in the license
         """
         url = "rest/license/1.0/license/userCount"
         return self.get(url)
 
     def get_license_remaining(self):
         """
-        Returns the license detailed information
+        Returns the available license seats remaining
         """
         url = "rest/license/1.0/license/remainingSeats"
         return self.get(url)
 
     def get_license_maxusers(self):
         """
-        Returns the license detailed information
+        Returns the license max users
         """
         url = "rest/license/1.0/license/maxUsers"
         return self.get(url)
