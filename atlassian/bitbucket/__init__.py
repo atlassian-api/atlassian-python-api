@@ -2328,7 +2328,7 @@ class Bitbucket(BitbucketBase):
         :return:
         """
         url = self._url_branches_permissions(project_key, permission_id, repository_slug)
-        return self.get(url)
+        return self._get_paged(url)
 
     def all_branches_permissions(self, project_key, permission_id, repository_slug=None):
         """
