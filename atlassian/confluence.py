@@ -45,6 +45,46 @@ class Confluence(AtlassianRestAPI):
 
         return {representation: {"value": body, "representation": representation}}
 
+    def _get_paged(self, url, params=None, data=None, flags=None, trailing=None, absolute=False):
+        """
+        Used to get the paged data
+
+        :param url: string:                        The url to retrieve
+        :param params: dict (default is None):     The parameters
+        :param data: dict (default is None):       The data
+        :param flags: string[] (default is None):  The flags
+        :param trailing: bool (default is None):   If True, a trailing slash is added to the url
+        :param absolute: bool (default is False):  If True, the url is used absolute and not relative to the root
+
+        :return: A generator object for the data elements
+        """
+
+        if params is None:
+            params = {}
+
+        while True:
+            response = self.get(url, trailing=trailing, params=params, data=data, flags=flags, absolute=absolute)
+            if "results" not in response:
+                return
+
+            for value in response.get("results", []):
+                yield value
+
+            # According to Cloud and Server documentation the links are returned the same way:
+            # https://developer.atlassian.com/cloud/confluence/rest/api-group-content/#api-wiki-rest-api-content-get
+            # https://developer.atlassian.com/server/confluence/pagination-in-the-rest-api/
+            url = response.get("_links", {}).get("next")
+            if url is None:
+                break
+            # From now on we have absolute URLs with parameters
+            absolute = True
+            # Params are now provided by the url
+            params = {}
+            # Trailing should not be added as it is already part of the url
+            trailing = False
+
+        return
+
     def page_exists(self, space, title):
         try:
             if self.get_page_by_title(space, title):
@@ -79,7 +119,13 @@ class Confluence(AtlassianRestAPI):
         log.info(url)
 
         try:
-            response = self.get(url, params=params)
+            if not self.advanced_mode and start is None and limit is None:
+                return self._get_paged(url, params=params)
+            else:
+                response = self.get(url, params=params)
+                if self.advanced_mode:
+                    return response
+                return response.get("results")
         except HTTPError as e:
             if e.response.status_code == 404:
                 # Raise ApiError as the documented reason is ambiguous
@@ -90,10 +136,6 @@ class Confluence(AtlassianRestAPI):
                 )
 
             raise
-
-        if self.advanced_mode:
-            return response
-        return response.get("results")
 
     def get_child_title_list(self, page_id, type="page", start=None, limit=None):
         """
