@@ -1522,7 +1522,7 @@ class Confluence(AtlassianRestAPI):
             previous_body = (
                 (self.get_page_by_id(page_id, expand="body.storage").get("body") or {}).get("storage").get("value")
             )
-            previous_body = previous_body.replace("&oacute;", u"ó")
+            previous_body = previous_body.replace("&oacute;", "ó")
             body = insert_body + previous_body if top_of_page else previous_body + insert_body
             data = {
                 "id": page_id,
