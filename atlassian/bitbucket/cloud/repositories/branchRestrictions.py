@@ -145,14 +145,14 @@ class BranchRestriction(BitbucketCloudBase):
         return self.get_data("kind")
 
     @property
-    def branch_match_kindstring(self):
-        """The branch restriction match kindstring"""
-        return self.get_data("branch_match_kindstring")
+    def branch_match_kind(self):
+        """The branch restriction match kind"""
+        return self.get_data("branch_match_kind")
 
     @property
-    def branch_typestring(self):
-        """The branch restriction typestring"""
-        return self.get_data("branch_typestring")
+    def branch_type(self):
+        """The branch restriction type"""
+        return self.get_data("branch_type")
 
     @property
     def pattern(self):
