@@ -353,7 +353,7 @@ class Bamboo(AtlassianRestAPI):
             elements_key="results",
             element_key="result",
             label=label,
-            **params
+            **params,
         )
 
     def latest_results(
