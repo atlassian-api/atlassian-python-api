@@ -2674,7 +2674,7 @@ class Confluence(AtlassianRestAPI):
         url = "rest/license/1.0/license/details"
         return self.get(url)
 
-    def get_license_usercount(self):
+    def get_license_user_count(self):
         """
         Returns the total used seats in the license
         """
