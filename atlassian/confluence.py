@@ -57,13 +57,14 @@ class Confluence(AtlassianRestAPI):
             log.info('Page "{title}" does not exist in space "{space}"'.format(space=space, title=title))
             return False
 
-    def get_page_child_by_type(self, page_id, type="page", start=None, limit=None):
+    def get_page_child_by_type(self, page_id, type="page", start=None, limit=None, expand=None):
         """
         Provide content by type (page, blog, comment)
         :param page_id: A string containing the id of the type content container.
         :param type:
         :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
         :param limit: OPTIONAL: how many items should be returned after the start index. Default: Site limit 200.
+        :param expand: OPTIONAL: expand e.g. history
         :return:
         """
         params = {}
@@ -71,6 +72,8 @@ class Confluence(AtlassianRestAPI):
             params["start"] = int(start)
         if limit is not None:
             params["limit"] = int(limit)
+        if expand is not None:
+            params["expand"] = expand
 
         url = "rest/api/content/{page_id}/child/{type}".format(page_id=page_id, type=type)
         log.info(url)
@@ -716,9 +719,9 @@ class Confluence(AtlassianRestAPI):
 
         if template_id:
             data["templateId"] = template_id
-            return self.put("wiki/rest/api/template", data=json.dumps(data))
+            return self.put("rest/api/template", data=json.dumps(data))
 
-        return self.post("wiki/rest/api/template", json=data)
+        return self.post("rest/api/template", json=data)
 
     @deprecated(version="3.7.0", reason="Use get_content_template()")
     def get_template_by_id(self, template_id):
@@ -751,7 +754,7 @@ class Confluence(AtlassianRestAPI):
         :param str template_id: The ID of the content template to be returned
         :return:
         """
-        url = "wiki/rest/api/template/{template_id}".format(template_id=template_id)
+        url = "rest/api/template/{template_id}".format(template_id=template_id)
 
         try:
             response = self.get(url)
@@ -814,7 +817,7 @@ class Confluence(AtlassianRestAPI):
                             fixed system limits. Default: 25
         :param expand: OPTIONAL: A multi-value parameter indicating which properties of the template to expand.
         """
-        url = "wiki/rest/api/template/blueprint"
+        url = "rest/api/template/blueprint"
         params = {}
         if space:
             params["spaceKey"] = space
@@ -885,7 +888,7 @@ class Confluence(AtlassianRestAPI):
         :param expand: OPTIONAL: A multi-value parameter indicating which properties of the template to expand.
             e.g. ``body``
         """
-        url = "wiki/rest/api/template/page"
+        url = "rest/api/template/page"
         params = {}
         if space:
             params["spaceKey"] = space
@@ -924,7 +927,7 @@ class Confluence(AtlassianRestAPI):
         :param str template_id: The ID of the template to be deleted.
         :return:
         """
-        return self.delete("wiki/rest/api/template/{}".format(template_id))
+        return self.delete("rest/api/template/{}".format(template_id))
 
     def get_all_spaces(self, start=0, limit=500, expand=None, space_type=None, space_status=None):
         """
@@ -1519,7 +1522,7 @@ class Confluence(AtlassianRestAPI):
             previous_body = (
                 (self.get_page_by_id(page_id, expand="body.storage").get("body") or {}).get("storage").get("value")
             )
-            previous_body = previous_body.replace("&oacute;", u"ó")
+            previous_body = previous_body.replace("&oacute;", "ó")
             body = insert_body + previous_body if top_of_page else previous_body + insert_body
             data = {
                 "id": page_id,
@@ -2688,7 +2691,7 @@ class Confluence(AtlassianRestAPI):
         url = "rest/license/1.0/license/remainingSeats"
         return self.get(url)
 
-    def get_license_maxusers(self):
+    def get_license_max_users(self):
         """
         Returns the license max users
         """
@@ -2709,3 +2712,4 @@ class Confluence(AtlassianRestAPI):
                 response.raise_for_status()
             else:
                 raise HTTPError(error_msg, response=response)
+

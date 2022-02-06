@@ -590,6 +590,22 @@ class Jira(AtlassianRestAPI):
         url = "{base_url}/{id}".format(base_url=base_url, id=filter_id)
         return self.get(url)
 
+    def update_filter(self, filter_id, jql, **kwargs):
+        """
+        :param filter_id: int
+        :param jql: str
+        :param kwargs: dict, Optional (name, description, favourite)
+        :return:
+        """
+        allowed_fields = ("name", "description", "favourite")
+        data = {"jql": jql}
+        for k, v in kwargs.items():
+            if k in allowed_fields:
+                data.update({k: v})
+        base_url = self.resource_url("filter")
+        url = "{base_url}/{id}".format(base_url=base_url, id=filter_id)
+        return self.put(url, data=data)
+
     def delete_filter(self, filter_id):
         """
         Deletes a filter that has the given id.
@@ -1083,7 +1099,8 @@ class Jira(AtlassianRestAPI):
         """Assign an issue to a user. None will set it to unassigned. -1 will set it to Automatic.
         :param issue: the issue ID or key to assign
         :type issue: int or str
-        :param account_id: the account ID of the user to assign the issue to
+        :param account_id: the account ID of the user to assign the issue to;
+                for jira server the value for account_id should be a valid jira username
         :type account_id: str
         :rtype: bool
         """
@@ -1726,6 +1743,7 @@ class Jira(AtlassianRestAPI):
         """Returns all projects which are visible for the currently logged in user.
         If no user is logged in, it returns the list of projects that are visible when using anonymous access.
         :param included_archived: boolean whether to include archived projects in response, default: false
+        :param expand:
         :return:
         """
         params = {}
@@ -1919,8 +1937,8 @@ class Jira(AtlassianRestAPI):
         :param description: The version description
         :param is_archived:
         :param is_released:
-        :param startDate: The Start Date in isoformat. Example value is "2015-04-11T15:22:00.000+10:00"
-        :param releaseDate: The Release Date in isoformat. Example value is "2015-04-11T15:22:00.000+10:00"
+        :param start_date: The Start Date in isoformat. Example value is "2015-04-11T15:22:00.000+10:00"
+        :param release_date: The Release Date in isoformat. Example value is "2015-04-11T15:22:00.000+10:00"
         """
         payload = {
             "name": name,
@@ -2123,6 +2141,19 @@ class Jira(AtlassianRestAPI):
             params["expand"] = expand
         return self.get(url, params=params)
 
+    def get_project_notification_scheme(self, project_id_or_key):
+        """
+        Gets a notification scheme assigned with a project
+
+        :param project_id_or_key: str
+        :return: data of project notification scheme
+        """
+        base_url = self.resource_url("project")
+        url = "{base_url}/{project_id_or_key}/notificationscheme".format(
+            base_url=base_url, project_id_or_key=project_id_or_key
+        )
+        return self.get(url)
+
     """
     Resource for associating permission schemes and projects.
     Reference:
@@ -2207,14 +2238,14 @@ class Jira(AtlassianRestAPI):
             }
 
     def get_project_issuekey_last(self, project):
-        jql = "project = {project} ORDER BY issuekey DESC".format(project=project)
+        jql = 'project = "{project}" ORDER BY issuekey DESC'.format(project=project)
         response = self.jql(jql)
         if self.advanced_mode:
             return response
         return (response.get("issues") or {"key": None})[0]["key"]
 
     def get_project_issuekey_all(self, project, start=0, limit=None, expand=None):
-        jql = "project = {project} ORDER BY issuekey ASC".format(project=project)
+        jql = 'project = "{project}" ORDER BY issuekey ASC'.format(project=project)
         response = self.jql(jql, start=start, limit=limit, expand=expand)
         if self.advanced_mode:
             return response
@@ -2236,7 +2267,7 @@ class Jira(AtlassianRestAPI):
         :param limit: OPTIONAL int: Total number of project issues to be returned
         :return: List of Dictionary for the Issue(s) returned.
         """
-        jql = "project = {project} ORDER BY key".format(project=project)
+        jql = 'project = "{project}" ORDER BY key'.format(project=project)
         response = self.jql(jql, fields=fields, start=start, limit=limit)
         if self.advanced_mode:
             return response
@@ -2555,6 +2586,7 @@ class Jira(AtlassianRestAPI):
                 fixed system limits. Default by built-in method: 50
         :param expand: OPTIONAL: expand the search result
         :param validate_query: Whether to validate the JQL query
+        :param advanced_mode: Make an advanced mode
         :return:
         """
         params = {}
@@ -3666,7 +3698,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
     #   Agile(Formerly Greenhopper) REST API implements
     #   Resource: https://docs.atlassian.com/jira-software/REST/7.3.1/
     #######################################################################
-    def add_issues_to_backlog(self, sprint_id, issues):
+    def add_issues_to_backlog(self, issues):
         """
         Adding Issue(s) to Backlog
         :param issues:       list:  List of Issue Keys
@@ -4015,18 +4047,3 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
             # check as support tools
             response = self.get("rest/supportHealthCheck/1.0/check/")
         return response
-
-    def raise_for_status(self, response):
-        """
-        Checks the response for an error status and raises an exception with the error message provided by the server
-        :param response:
-        :return:
-        """
-        if 400 <= response.status_code < 600:
-            try:
-                j = response.json()
-                error_msg = "\n".join(j["errorMessages"] + [k + ": " + v for k, v in j["errors"].items()])
-            except Exception:
-                response.raise_for_status()
-            else:
-                raise HTTPError(error_msg, response=response)

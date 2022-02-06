@@ -10,7 +10,7 @@ Get page info
     confluence.page_exists(space, title)
 
     # Provide content by type (page, blog, comment)
-    confluence.get_page_child_by_type(page_id, type='page', start=None, limit=None)
+    confluence.get_page_child_by_type(page_id, type='page', start=None, limit=None, expand=None)
 
     # Provide content id from search result by title and space
     confluence.get_page_id(space, title)

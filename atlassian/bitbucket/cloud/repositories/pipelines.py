@@ -252,7 +252,7 @@ class Step(BitbucketCloudBase):
         if response is None:
             if start is None:
                 return None
-            return (None, None)
+            return None, None
 
         if start is None:
             return response.content

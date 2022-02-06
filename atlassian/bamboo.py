@@ -2,7 +2,6 @@
 import logging
 
 from requests.exceptions import HTTPError
-
 from .rest_client import AtlassianRestAPI
 
 log = logging.getLogger(__name__)
@@ -354,7 +353,7 @@ class Bamboo(AtlassianRestAPI):
             elements_key="results",
             element_key="result",
             label=label,
-            **params
+            **params,
         )
 
     def latest_results(

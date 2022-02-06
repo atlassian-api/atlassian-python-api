@@ -2328,7 +2328,7 @@ class Bitbucket(BitbucketBase):
         :return:
         """
         url = self._url_branches_permissions(project_key, permission_id, repository_slug)
-        return self.get(url)
+        return self._get_paged(url)
 
     def all_branches_permissions(self, project_key, permission_id, repository_slug=None):
         """
@@ -2658,7 +2658,7 @@ class Bitbucket(BitbucketBase):
         :param at: string: Optional, the commit to download an archive of; if not supplied, an archive of the default branch is downloaded
         :param filename: string: Optional, a filename to include the "Content-Disposition" header
         :param format: string: Optional, the format to stream the archive in; must be one of: zip, tar, tar.gz or tgz. If not specified, then the archive will be in zip format.
-        :param paths: string: Optional, path to include in the streamed archive
+        :param path: string: Optional, path to include in the streamed archive
         :param prefix: string: Optional, a prefix to apply to all entries in the streamed archive; if the supplied prefix does not end with a trailing /, one will be added automatically
         :param chunk_size: int: Optional, download chunk size. Defeault is 128
         """

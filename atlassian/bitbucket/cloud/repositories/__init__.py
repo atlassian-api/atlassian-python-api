@@ -7,6 +7,7 @@ from .branchRestrictions import BranchRestrictions
 from .defaultReviewers import DefaultReviewers
 from .pipelines import Pipelines
 from .pullRequests import PullRequests
+from .refs import Branches, Tags
 
 
 class RepositoriesBase(BitbucketCloudBase):
@@ -225,10 +226,12 @@ class Repository(BitbucketCloudBase):
         self.__branch_restrictions = BranchRestrictions(
             "{}/branch-restrictions".format(self.url), **self._new_session_args
         )
+        self.__branches = Branches("{}/refs/branches".format(self.url), **self._new_session_args)
         self.__default_reviewers = DefaultReviewers("{}/default-reviewers".format(self.url), **self._new_session_args)
         self.__issues = Issues("{}/issues".format(self.url), **self._new_session_args)
         self.__pipelines = Pipelines("{}/pipelines".format(self.url), **self._new_session_args)
         self.__pullrequests = PullRequests("{}/pullrequests".format(self.url), **self._new_session_args)
+        self.__tags = Tags("{}/refs/tags".format(self.url), **self._new_session_args)
 
     def update(self, **kwargs):
         """
@@ -330,6 +333,11 @@ class Repository(BitbucketCloudBase):
         return self.__branch_restrictions
 
     @property
+    def branches(self):
+        """The repository branches."""
+        return self.__branches
+
+    @property
     def default_reviewers(self):
         """The repository default reviewers"""
         return self.__default_reviewers
@@ -348,3 +356,8 @@ class Repository(BitbucketCloudBase):
     def pullrequests(self):
         """The repository pull requests"""
         return self.__pullrequests
+
+    @property
+    def tags(self):
+        """The repository tags."""
+        return self.__tags
