@@ -2770,6 +2770,14 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         url = "rest/plugins/1.0/"
         return self.get(url, headers=self.no_check_headers, trailing=True)
 
+    def get_plugin_info(self, plugin_key):
+        """
+        Provide plugin info
+        :return a json of installed plugins
+        """
+        url = "rest/plugins/1.0/{plugin_key}-key".format(plugin_key=plugin_key)
+        return self.get(url, headers=self.no_check_headers, trailing=True)
+
     def upload_plugin(self, plugin_path):
         """
         Provide plugin path for upload into Jira e.g. useful for auto deploy
@@ -2798,6 +2806,21 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
     def check_plugin_manager_status(self):
         url = "rest/plugins/latest/safe-mode"
         return self.request(method="GET", path=url, headers=self.safe_mode_headers)
+
+    def update_plugin_license(self, plugin_key, raw_license):
+        """
+        Update license for plugin
+        :param plugin_key:
+        :param raw_license:
+        :return:
+        """
+        app_headers = {
+            "X-Atlassian-Token": "nocheck",
+            "Content-Type": "application/vnd.atl.plugins+json",
+        }
+        url = "/plugins/1.0/{plugin_key}/license".format(plugin_key=plugin_key)
+        data = {"rawLicense": raw_license}
+        return self.put(url, data=data, headers=app_headers)
 
     def get_all_permissionschemes(self, expand=None):
         """
