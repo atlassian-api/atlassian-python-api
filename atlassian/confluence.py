@@ -2712,4 +2712,3 @@ class Confluence(AtlassianRestAPI):
                 response.raise_for_status()
             else:
                 raise HTTPError(error_msg, response=response)
-
