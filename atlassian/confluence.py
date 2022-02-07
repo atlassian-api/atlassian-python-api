@@ -2669,3 +2669,47 @@ class Confluence(AtlassianRestAPI):
         url = "rest/jira-metadata/1.0/metadata/cache"
         params = {"globalId": global_id}
         return self.delete(url, params=params)
+
+    def get_license_details(self):
+        """
+        Returns the license detailed information
+        """
+        url = "rest/license/1.0/license/details"
+        return self.get(url)
+
+    def get_license_user_count(self):
+        """
+        Returns the total used seats in the license
+        """
+        url = "rest/license/1.0/license/userCount"
+        return self.get(url)
+
+    def get_license_remaining(self):
+        """
+        Returns the available license seats remaining
+        """
+        url = "rest/license/1.0/license/remainingSeats"
+        return self.get(url)
+
+    def get_license_max_users(self):
+        """
+        Returns the license max users
+        """
+        url = "rest/license/1.0/license/maxUsers"
+        return self.get(url)
+
+    def raise_for_status(self, response):
+        """
+        Checks the response for an error status and raises an exception with the error message provided by the server
+        :param response:
+        :return:
+        """
+        if 400 <= response.status_code < 600:
+            try:
+                j = response.json()
+                error_msg = j["message"]
+            except Exception:
+                response.raise_for_status()
+            else:
+                raise HTTPError(error_msg, response=response)
+
