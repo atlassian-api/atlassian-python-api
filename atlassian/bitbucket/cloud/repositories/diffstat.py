@@ -13,7 +13,11 @@ class DiffStat(BitbucketCloudBase):
     MODIFIED = "modified"
     ADDED = "added"
     REMOVED = "removed"
+    LOCAL_DELETED = "local deleted"
+    REMOTE_DELETED = "remote deleted"
     MERGE_CONFLICT = "merge conflict"
+    RENAME_CONFLICT = "rename conflict"
+    RENAME_DELETE_CONFLICT = "rename/delete conflict"
     SUBREPO_CONFLICT = "subrepo conflict"
 
     def __init__(self, data, *args, **kwargs):
@@ -43,7 +47,14 @@ class DiffStat(BitbucketCloudBase):
     @property
     def has_conflict(self):
         """True if the change causes a conflict."""
-        return str(self.get_data("status")) in (self.MERGE_CONFLICT, self.SUBREPO_CONFLICT)
+        return str(self.get_data("status")) in [
+            self.MERGE_CONFLICT,
+            self.RENAME_CONFLICT,
+            self.RENAME_DELETE_CONFLICT,
+            self.SUBREPO_CONFLICT,
+            self.LOCAL_DELETED,
+            self.REMOTE_DELETED,
+        ]
 
 
 class CommitFile(BitbucketCloudBase):
