@@ -2590,8 +2590,6 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         params = {}
-        if start is not None:
-            params["startAt"] = int(start)
         if limit is not None:
             params["maxResults"] = int(limit)
         if fields is not None:
@@ -2605,7 +2603,24 @@ class Jira(AtlassianRestAPI):
         if validate_query is not None:
             params["validateQuery"] = validate_query
         url = self.resource_url("search")
-        return self.get(url, params=params)
+
+        results = []
+        while True:
+            params["startAt"] = int(start)
+            response = self.get(url, params=params)
+            if not response:
+                break
+
+            issues = response["issues"]
+            results.extend(issues)
+            total = int(response["total"])
+            # #print("DBG: response: total={total} start={startAt} max={maxResults}".format(**response))
+            # If we don't have a limit, and there's more to fetch, keep looping
+            if limit is not None or total <= len(response["issues"]) + start:
+                break
+            start += len(issues)
+
+        return results
 
     def csv(self, jql, limit=1000, all_fields=True, start=None, delimiter=None):
         """

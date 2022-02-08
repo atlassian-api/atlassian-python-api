@@ -2023,7 +2023,7 @@ class Bitbucket(BitbucketBase):
             params["avatarScheme"] = avatar_scheme
         if limit:
             params["limit"] = limit
-        return (self.get(url, params=params) or {}).get("values")
+        return self._get_paged(url, params=params)
 
     def _url_commit(self, project_key, repository_slug, commit_id, api_root=None, api_version=None):
         return "{}/{}".format(
