@@ -2586,7 +2586,36 @@ class Jira(AtlassianRestAPI):
                 fixed system limits. Default by built-in method: 50
         :param expand: OPTIONAL: expand the search result
         :param validate_query: Whether to validate the JQL query
-        :param advanced_mode: Make an advanced mode
+        :return:
+        """
+        params = {}
+        if start is not None:
+            params["startAt"] = int(start)
+        if limit is not None:
+            params["maxResults"] = int(limit)
+        if fields is not None:
+            if isinstance(fields, (list, tuple, set)):
+                fields = ",".join(fields)
+            params["fields"] = fields
+        if jql is not None:
+            params["jql"] = jql
+        if expand is not None:
+            params["expand"] = expand
+        if validate_query is not None:
+            params["validateQuery"] = validate_query
+        url = self.resource_url("search")
+        return self.get(url, params=params)
+
+    def jql_get_list_of_tickets(self, jql, fields="*all", start=0, limit=None, expand=None, validate_query=None):
+        """
+        Get issues from jql search result with all related fields
+        :param jql:
+        :param fields: list of fields, for example: ['priority', 'summary', 'customfield_10007']
+        :param start: OPTIONAL: The start point of the collection to return. Default: 0.
+        :param limit: OPTIONAL: The limit of the number of issues to return, this may be restricted by
+                fixed system limits. Default by built-in method: 50
+        :param expand: OPTIONAL: expand the search result
+        :param validate_query: Whether to validate the JQL query
         :return:
         """
         params = {}
