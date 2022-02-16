@@ -34,7 +34,7 @@ Mandatory conditions
 
 Please follow the code style in the docs.
 
-.. _black:  https://black.readthedocs.io/en/stable/editor_integration.html
+.. _black:  https://black.readthedocs.io/en/stable/integrations/editors.html
 
 Connect on Chat for any queries
 ---------------------------------
