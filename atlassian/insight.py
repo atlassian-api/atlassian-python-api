@@ -12,7 +12,30 @@ class Insight(AtlassianRestAPI):
     # https://insight-javadoc.riada.io/insight-javadoc-8.6/insight-rest/
 
     def __init__(self, *args, **kwargs):
+        kwargs["api_root"] = "rest/insight/1.0"
+        # If cloud is set to true, trigger private __cloud__init method
+        if kwargs.get("cloud"):
+            args, kwargs = self.__cloud_init(*args, **kwargs)
         super(Insight, self).__init__(*args, **kwargs)
+
+    def __cloud_init(self, *args, **kwargs):
+        # trigger a normal init and avoid looping
+        del kwargs["cloud"]
+        temp = Insight(*args, **kwargs)
+        # retrieve cloud workspace id and generate the api_root
+        kwargs["api_root"] = "/jsm/insight/workspace/{}/v1/".format(temp.__get_workspace_id())
+        # insight cloud uses the atlassian base url, not custom instnace urls
+        kwargs["url"] = "https://api.atlassian.com"
+        # set cloud back to true and return
+        kwargs["cloud"] = True
+        # Insight cloud is particular about its headers..
+        self.default_headers = {"Accept": "application/json"}
+        return args, kwargs
+
+    def __get_workspace_id(self):
+        return self.get("rest/servicedeskapi/insight/workspace", headers=self.default_headers,)["values"][
+            0
+        ]["workspaceId"]
 
     # Attachments
     def get_attachments_of_objects(self, object_id):
@@ -45,7 +68,9 @@ class Insight(AtlassianRestAPI):
             commentOutput: (string)
             url: required(string)
         """
-        url = "rest/insight/1.0/attachments/object/{objectId}".format(objectId=object_id)
+        if self.cloud:
+            raise NotImplementedError
+        url = self.url_joiner(self.api_root, "attachments/object/{objectId}".format(objectId=object_id))
         return self.get(url)
 
     def upload_attachment_to_object(self, object_id, filename):
@@ -54,6 +79,8 @@ class Insight(AtlassianRestAPI):
         :param object_id: int
         :param filename: str, name, if file in current directory or full path to file
         """
+        if self.cloud:
+            raise NotImplementedError
         log.warning("Adding attachment...")
         url = "rest/insight/1.0/attachments/object/{objectId}".format(objectId=object_id)
         with open(filename, "rb") as attachment:
@@ -65,6 +92,8 @@ class Insight(AtlassianRestAPI):
         Add attachment to Object
         :param attachment_id: int
         """
+        if self.cloud:
+            raise NotImplementedError
         log.warning("Adding attachment...")
         url = "rest/insight/1.0/attachments/{attachmentId}".format(attachmentId=attachment_id)
         return self.delete(url)
@@ -103,6 +132,8 @@ class Insight(AtlassianRestAPI):
             "canDelete": true
         }
         """
+        if self.cloud:
+            raise NotImplementedError
         params = {"comment": comment, "objectId": object_id, "role": role}
         url = "rest/insight/1.0/comment/create"
         return self.post(url, params=params)
@@ -113,6 +144,8 @@ class Insight(AtlassianRestAPI):
         :param object_id:
         :return:
         """
+        if self.cloud:
+            raise NotImplementedError
         url = "rest/insight/1.0/comment/object/{objectId}".format(objectId=object_id)
         return self.get(url)
 
@@ -130,7 +163,7 @@ class Insight(AtlassianRestAPI):
             "url48": "http://jira/rest/insight/1.0/icon/1/icon.png?size=48"
         }
         """
-        url = "rest/insight/1.0/icon/{id}".format(id=id)
+        url = self.url_joiner(self.api_root, "icon/{id}".format(id=id))
         return self.get(url)
 
     def get_all_global_icons(self):
@@ -138,7 +171,7 @@ class Insight(AtlassianRestAPI):
         All existing global icons
         :return:
         """
-        url = "rest/insight/1.0/icon/global"
+        url = self.url_joiner(self.api_root, "icon/global")
         return self.get(url)
 
     # Import
@@ -149,7 +182,7 @@ class Insight(AtlassianRestAPI):
         :param id:
         :return:
         """
-        url = "rest/insight/1.0/import/start/{id}".format(id=id)
+        url = self.url_joiner(self.api_root, "import/start/{id}")
         return self.post(url)
 
     # Index
@@ -159,7 +192,9 @@ class Insight(AtlassianRestAPI):
         Should the reindex clean the index before doing the reindex
         :return:
         """
-        url = "rest/insight/1.0/index/reindex/start"
+        if self.cloud:
+            raise NotImplementedError
+        url = self.url_joiner(self.api_root, "index/reindex/start")
         return self.post(url)
 
     def reindex_current_node_insight(self):
@@ -167,14 +202,27 @@ class Insight(AtlassianRestAPI):
         Should the reindex clean the index before doing the reindex
         :return:
         """
-        url = "rest/insight/1.0/index/reindex/currentnode"
+        if self.cloud:
+            raise NotImplementedError
+        url = self.url_joiner(self.api_root, "index/reindex/currentnode")
         return self.post(url)
 
     # IQL
     # Resource dedicated to finding objects based on the Insight Query Language (IQL)
-    def iql(self, iql, object_schema_id, page=1, order_by_attribute_id=None, order_asc=True, result_per_page=25,
-            include_attributes=True, include_attributes_deep=1, include_type_attributes=False,
-            include_extended_info=False, extended=None):
+    def iql(
+        self,
+        iql,
+        object_schema_id,
+        page=1,
+        order_by_attribute_id=None,
+        order_asc=True,
+        result_per_page=25,
+        include_attributes=True,
+        include_attributes_deep=1,
+        include_type_attributes=False,
+        include_extended_info=False,
+        extended=None,
+    ):
         """
 
         :param iql:
@@ -201,5 +249,5 @@ class Insight(AtlassianRestAPI):
         params["includeExtendedInfo"] = include_extended_info
         if extended:
             params["extended"] = extended
-        url = "rest/insight/1.0/iql/objects"
+        url = self.url_joiner(self.api_root, "iql/objects")
         return self.get(url, params=params)
