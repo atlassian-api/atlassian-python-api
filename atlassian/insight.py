@@ -12,7 +12,22 @@ class Insight(AtlassianRestAPI):
     # https://insight-javadoc.riada.io/insight-javadoc-8.6/insight-rest/
 
     def __init__(self, *args, **kwargs):
+        if kwargs.get("cloud"):
+            args, kwargs = self.__cloud_init(*args, **kwargs)
         super(Insight, self).__init__(*args, **kwargs)
+
+    def __cloud_init(self, *args, **kwargs):
+        del kwargs["cloud"]
+        temp = Insight(*args, **kwargs)
+        kwargs["api_root"] = "/jsm/insight/workspace/{}/v1/".format(temp.__get_workspace_id())
+        kwargs["url"] = "https://api.atlassian.com"
+        kwargs["cloud"] = True
+        return args, kwargs
+
+    def __get_workspace_id(self):
+        return self.get("rest/servicedeskapi/insight/workspace", headers=self.default_headers,)["values"][
+            0
+        ]["workspaceId"]
 
     # Attachments
     def get_attachments_of_objects(self, object_id):
@@ -45,6 +60,8 @@ class Insight(AtlassianRestAPI):
             commentOutput: (string)
             url: required(string)
         """
+        if self.cloud:
+            raise NotImplementedError
         url = "rest/insight/1.0/attachments/object/{objectId}".format(objectId=object_id)
         return self.get(url)
 
@@ -54,6 +71,8 @@ class Insight(AtlassianRestAPI):
         :param object_id: int
         :param filename: str, name, if file in current directory or full path to file
         """
+        if self.cloud:
+            raise NotImplementedError
         log.warning("Adding attachment...")
         url = "rest/insight/1.0/attachments/object/{objectId}".format(objectId=object_id)
         with open(filename, "rb") as attachment:
@@ -65,6 +84,8 @@ class Insight(AtlassianRestAPI):
         Add attachment to Object
         :param attachment_id: int
         """
+        if self.cloud:
+            raise NotImplementedError
         log.warning("Adding attachment...")
         url = "rest/insight/1.0/attachments/{attachmentId}".format(attachmentId=attachment_id)
         return self.delete(url)
@@ -172,9 +193,20 @@ class Insight(AtlassianRestAPI):
 
     # IQL
     # Resource dedicated to finding objects based on the Insight Query Language (IQL)
-    def iql(self, iql, object_schema_id, page=1, order_by_attribute_id=None, order_asc=True, result_per_page=25,
-            include_attributes=True, include_attributes_deep=1, include_type_attributes=False,
-            include_extended_info=False, extended=None):
+    def iql(
+        self,
+        iql,
+        object_schema_id,
+        page=1,
+        order_by_attribute_id=None,
+        order_asc=True,
+        result_per_page=25,
+        include_attributes=True,
+        include_attributes_deep=1,
+        include_type_attributes=False,
+        include_extended_info=False,
+        extended=None,
+    ):
         """
 
         :param iql:
