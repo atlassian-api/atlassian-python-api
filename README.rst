@@ -77,7 +77,7 @@ Also, you can use the Bitbucket module e.g. for getting project list
             url='http://localhost:7990',
             username='admin',
             password='admin')
-    
+
     data = bitbucket.project_list()
     print(data)
 
@@ -92,9 +92,24 @@ Example to get your requests:
             url='http://localhost:7990',
             username='admin',
             password='admin')
-    
+
     data = sd.get_my_customer_requests()
     print(data)
+
+Using Insight (CMDB Tool for Jira):
+
+.. code-block:: python
+
+    from atlassian import Insight
+
+    insight = Insight(
+            url='http://localhost:7990',
+            username='admin',
+            password='admin')
+
+    data = insight.get_object(88)
+    print(data)
+
 
 Using Xray (Test Management tool for Jira):
 
@@ -106,7 +121,7 @@ Using Xray (Test Management tool for Jira):
            url='http://localhost:7990',
             username='admin',
             password='admin')
-    
+
     data = xr.get_tests('TEST-001')
     print(data)
 
