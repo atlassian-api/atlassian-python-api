@@ -251,3 +251,204 @@ class Insight(AtlassianRestAPI):
             params["extended"] = extended
         url = self.url_joiner(self.api_root, "iql/objects")
         return self.get(url, params=params)
+
+    # Object
+    def get_object(self, id):
+        """
+        Load one object
+        :param id:
+        :return:
+        """
+        url = self.url_joiner(self.api_root, "object/{id}".format(id=id))
+        return self.get(url)
+
+    def update_object(self, id, objectTypeId, attributes, hasAvatar=False, avatarUUID=""):
+        """
+        Update an existing object in Insight
+        :param id:
+        :param objectTypeId:
+        :param attributes:
+        :param hasAvatar:
+        :param avatarUUID:
+        :return:
+        """
+        body = {
+            "attributes": attributes,
+            "objectTypeId": objectTypeId,
+            "avatarUUID": avatarUUID,
+            "hasAvatar": hasAvatar,
+        }
+        url = self.url_joiner(self.api_root, "object/{id}".format(id=id))
+        return self.put(url, data=body)
+
+    def delete_object(self, id):
+        """
+        Delete the referenced object
+        :param id:
+        :return:
+        """
+        url = self.url_joiner(self.api_root, "object/{id}".format(id=id))
+        return self.delete(url)
+
+    def get_object_attributes(self, id):
+        """
+        List all attributes for the given object
+        :param id:
+        :return:
+        """
+        url = self.url_joiner(self.api_root, "object/{id}/attributes".format(id=id))
+        return self.get(url)
+
+    def get_object_history(self, id, asc=False, abbreviate=True):
+        """
+        Retrieve the history entries for this object
+        :param id:
+        :param asc:
+        :param abbreviate:
+        :return:
+        """
+        params = {"asc": asc, "abbreviate": abbreviate}
+        url = self.url_joiner(self.api_root, "object/{id}/history".format(id=id))
+        return self.get(url, params=params)
+
+    def get_object_referenceinfo(self, id):
+        """
+        Find all references for an object
+        :param id:
+        :return:
+        """
+        url = self.url_joiner(self.api_root, "object/{id}/referenceinfo".format(id=id))
+        return self.get(url)
+
+    def create_object(self, objectTypeId, attributes, hasAvatar=False, avatarUUID=""):
+        """
+        Create a new object in Insight
+        :param id:
+        :param objectTypeId:
+        :param attributes:
+        :param hasAvatar:
+        :param avatarUUID:
+        :return:
+        :return:
+        """
+        data = {
+            "attributes": attributes,
+            "objectTypeId": objectTypeId,
+            "avatarUUID": avatarUUID,
+            "hasAvatar": hasAvatar,
+        }
+        url = self.url_joiner(self.api_root, "object/create")
+        return self.post(url, data=data)
+
+    def create_object_navlist_iql(
+        self,
+        iql,
+        objectTypeId,
+        resultsPerPage,
+        orderByTypeAttrId,
+        objectId,
+        objectSchemaId,
+        includeAttributes,
+        attributesToDisplay,
+        page=1,
+        asc=0,
+    ):
+        """
+        A filter object that is used to find a paginatad result set based on an object type and an IQL query
+        :param iql:
+        :param objectTypeId:
+        :param page:
+        :param resultsPerPage:
+        :param orderByTypeAttrId:
+        :param asc:
+        :param objectId:
+        :param objectSchemaId:
+        :param includeAttributes:
+        :param attributesToDisplay:
+        :return:
+        """
+        data = {"objectTypeId": objectTypeId, "iql": iql, "resultsPerPage": resultsPerPage, "page": page, "asc": asc}
+        if attributesToDisplay is not None:
+            data["attributesToDisplay"] = attributesToDisplay
+        if includeAttributes is not None:
+            data["includeAttributes"] = includeAttributes
+        if objectSchemaId is not None:
+            data["objectSchemaId"] = objectSchemaId
+        if orderByTypeAttrId is not None:
+            data["orderByTypeAttrId"] = orderByTypeAttrId
+        if objectId is not None:
+            data["objectId"] = objectId
+        url = self.url_joiner(self.api_root, "iql/objects")
+        return self.post(url, data=data)
+
+    # Objectconnectedtickets
+    def get_object_connected_tickets(self, id):
+        """
+        Relation between Jira issues and Insight objects
+        :param id:
+        :return:
+        """
+        url = self.url_joiner(self.api_root, "objectconnectedtickets/{id}/tickets".format(id=id))
+        return self.get(url)
+
+    # Objectschema
+    def list_objectschema(self):
+        """
+        Resource to find object schemas in Insight
+        :return:
+        {
+            "objectschemas": [
+            {
+                "id": 1,
+                "name": "Test",
+                "objectSchemaKey": "TEST",
+                "status": "Ok",
+                "created": "2019-11-26T08:05:46.894Z",
+                "updated": "2019-11-26T08:05:46.894Z",
+                "objectCount": 2,
+                "objectTypeCount": 3
+            }
+            ]
+        }
+        """
+        url = self.url_joiner(self.api_root, "objectschema/list")
+        return self.get(url)
+
+    def create_objectschema(self, objectSchemaKey, description):
+        raise NotImplementedError
+
+    def get_objectschema(self, id):
+        """
+        Find a schema by id
+        """
+        url = self.url_joiner(self.api_root, "objectschema/{id}".format(id=id))
+        return self.get(url)
+
+    def update_objectschema(self, id):
+        """
+        Update an object schema
+        """
+        raise NotImplementedError
+
+    def delete_objectschema(self, id):
+        """
+        Delete a schema
+        """
+        raise NotImplementedError
+
+    def get_objectschema_attributes(self, id):
+        """
+        Find all object type attributes for this object schema
+        """
+        raise NotImplementedError
+
+    def get_objectschema_objecttypes_flat(self, id):
+        """
+        Find all object types for this object schema
+        """
+        raise NotImplementedError
+
+    # Objecttype
+    # Objecttypeattribute
+    # Progress
+    # Config
