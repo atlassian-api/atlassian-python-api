@@ -7,11 +7,15 @@ log = logging.getLogger(__name__)
 
 
 class Insight(AtlassianRestAPI):
+
     """Insight for Jira API wrapper."""
 
     # https://insight-javadoc.riada.io/insight-javadoc-8.6/insight-rest/
 
     def __init__(self, *args, **kwargs):
+        """
+        Initialize Insight()
+        """
         kwargs["api_root"] = "rest/insight/1.0"
         # If cloud is set to true, trigger private __cloud__init method
         if kwargs.get("cloud"):
@@ -41,6 +45,7 @@ class Insight(AtlassianRestAPI):
     def get_attachments_of_objects(self, object_id):
         """
         Get Attachment info
+
         Example output:
         [
             {
@@ -151,10 +156,10 @@ class Insight(AtlassianRestAPI):
 
     # Icon
     # Resources dedicated to load and find icons
-    def get_icon_by_id(self, id):
+    def get_icon_by_id(self, icon_id):
         """
         Load a single icon by id
-        :param id:
+        :param icon_id:
         :return:
         {
             "id": 1,
@@ -163,7 +168,7 @@ class Insight(AtlassianRestAPI):
             "url48": "http://jira/rest/insight/1.0/icon/1/icon.png?size=48"
         }
         """
-        url = self.url_joiner(self.api_root, "icon/{id}".format(id=id))
+        url = self.url_joiner(self.api_root, "icon/{id}".format(id=icon_id))
         return self.get(url)
 
     def get_all_global_icons(self):
@@ -176,13 +181,13 @@ class Insight(AtlassianRestAPI):
 
     # Import
     # Start configured imports. To see an ongoing import see the Progress resource
-    def start_import_configuration(self, id):
+    def start_import_configuration(self, import_id):
         """
         The id of the import configuration that should be started
-        :param id:
+        :param import_id:
         :return:
         """
-        url = self.url_joiner(self.api_root, "import/start/{id}")
+        url = self.url_joiner(self.api_root, "import/start/{import_id}")
         return self.post(url)
 
     # Index
@@ -253,19 +258,21 @@ class Insight(AtlassianRestAPI):
         return self.get(url, params=params)
 
     # Object
-    def get_object(self, id):
+    def get_object(self, object_id):
         """
         Load one object
-        :param id:
+
+        :param object_id:
         :return:
         """
-        url = self.url_joiner(self.api_root, "object/{id}".format(id=id))
+        url = self.url_joiner(self.api_root, "object/{id}".format(id=object_id))
         return self.get(url)
 
-    def update_object(self, id, objectTypeId, attributes, hasAvatar=False, avatarUUID=""):
+    def update_object(self, object_id, objectTypeId, attributes, hasAvatar=False, avatarUUID=""):
         """
         Update an existing object in Insight
-        :param id:
+
+        :param object_id:
         :param objectTypeId:
         :param attributes:
         :param hasAvatar:
@@ -278,52 +285,56 @@ class Insight(AtlassianRestAPI):
             "avatarUUID": avatarUUID,
             "hasAvatar": hasAvatar,
         }
-        url = self.url_joiner(self.api_root, "object/{id}".format(id=id))
+        url = self.url_joiner(self.api_root, "object/{id}".format(id=object_id))
         return self.put(url, data=body)
 
-    def delete_object(self, id):
+    def delete_object(self, object_id):
         """
         Delete the referenced object
-        :param id:
+
+        :param object_id:
         :return:
         """
-        url = self.url_joiner(self.api_root, "object/{id}".format(id=id))
+        url = self.url_joiner(self.api_root, "object/{id}".format(id=object_id))
         return self.delete(url)
 
-    def get_object_attributes(self, id):
+    def get_object_attributes(self, object_id):
         """
         List all attributes for the given object
+
         :param id:
         :return:
         """
-        url = self.url_joiner(self.api_root, "object/{id}/attributes".format(id=id))
+        url = self.url_joiner(self.api_root, "object/{id}/attributes".format(id=object_id))
         return self.get(url)
 
-    def get_object_history(self, id, asc=False, abbreviate=True):
+    def get_object_history(self, object_id, asc=False, abbreviate=True):
         """
         Retrieve the history entries for this object
+
         :param id:
         :param asc:
         :param abbreviate:
         :return:
         """
         params = {"asc": asc, "abbreviate": abbreviate}
-        url = self.url_joiner(self.api_root, "object/{id}/history".format(id=id))
+        url = self.url_joiner(self.api_root, "object/{id}/history".format(id=object_id))
         return self.get(url, params=params)
 
-    def get_object_referenceinfo(self, id):
+    def get_object_referenceinfo(self, object_id):
         """
         Find all references for an object
+
         :param id:
         :return:
         """
-        url = self.url_joiner(self.api_root, "object/{id}/referenceinfo".format(id=id))
+        url = self.url_joiner(self.api_root, "object/{id}/referenceinfo".format(id=object_id))
         return self.get(url)
 
     def create_object(self, objectTypeId, attributes, hasAvatar=False, avatarUUID=""):
         """
         Create a new object in Insight
-        :param id:
+
         :param objectTypeId:
         :param attributes:
         :param hasAvatar:
@@ -382,13 +393,14 @@ class Insight(AtlassianRestAPI):
         return self.post(url, data=data)
 
     # Objectconnectedtickets
-    def get_object_connected_tickets(self, id):
+    def get_object_connected_tickets(self, object_id):
         """
         Relation between Jira issues and Insight objects
-        :param id:
+
+        :param object_id:
         :return:
         """
-        url = self.url_joiner(self.api_root, "objectconnectedtickets/{id}/tickets".format(id=id))
+        url = self.url_joiner(self.api_root, "objectconnectedtickets/{id}/tickets".format(id=object_id))
         return self.get(url)
 
     # Objectschema
@@ -417,32 +429,34 @@ class Insight(AtlassianRestAPI):
     def create_objectschema(self, objectSchemaKey, description):
         raise NotImplementedError
 
-    def get_objectschema(self, id):
+    def get_objectschema(self, schema_id):
         """
         Find a schema by id
+
+        :param schema_id:
         """
-        url = self.url_joiner(self.api_root, "objectschema/{id}".format(id=id))
+        url = self.url_joiner(self.api_root, "objectschema/{id}".format(id=schema_id))
         return self.get(url)
 
-    def update_objectschema(self, id):
+    def update_objectschema(self, schema_id):
         """
         Update an object schema
         """
         raise NotImplementedError
 
-    def delete_objectschema(self, id):
+    def delete_objectschema(self, schema_id):
         """
         Delete a schema
         """
         raise NotImplementedError
 
-    def get_objectschema_attributes(self, id):
+    def get_objectschema_attributes(self, schema_id):
         """
         Find all object type attributes for this object schema
         """
         raise NotImplementedError
 
-    def get_objectschema_objecttypes_flat(self, id):
+    def get_objectschema_objecttypes_flat(self, schema_id):
         """
         Find all object types for this object schema
         """
