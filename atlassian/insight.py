@@ -8,13 +8,19 @@ log = logging.getLogger(__name__)
 
 class Insight(AtlassianRestAPI):
 
-    """Insight for Jira API wrapper."""
+    """
+    Insight for Jira API wrapper.
+    """
 
     # https://insight-javadoc.riada.io/insight-javadoc-8.6/insight-rest/
 
     def __init__(self, *args, **kwargs):
         """
         Initialize Insight()
+
+        :param args:
+        :param kwargs:
+        :return: Insight()
         """
         kwargs["api_root"] = "rest/insight/1.0"
         # If cloud is set to true, trigger private __cloud__init method
@@ -23,6 +29,11 @@ class Insight(AtlassianRestAPI):
         super(Insight, self).__init__(*args, **kwargs)
 
     def __cloud_init(self, *args, **kwargs):
+        """Creates a InsightCloud specific version of Insight()
+
+        Returns:
+            Insight(AtlassianRestAPI)
+        """
         # trigger a normal init and avoid looping
         del kwargs["cloud"]
         temp = Insight(*args, **kwargs)
@@ -81,6 +92,7 @@ class Insight(AtlassianRestAPI):
     def upload_attachment_to_object(self, object_id, filename):
         """
         Add attachment to Object
+
         :param object_id: int
         :param filename: str, name, if file in current directory or full path to file
         """
@@ -95,6 +107,7 @@ class Insight(AtlassianRestAPI):
     def delete_attachment(self, attachment_id):
         """
         Add attachment to Object
+
         :param attachment_id: int
         """
         if self.cloud:
@@ -146,6 +159,7 @@ class Insight(AtlassianRestAPI):
     def get_comment_of_object(self, object_id):
         """
         The object id to fetch comments from
+
         :param object_id:
         :return:
         """
@@ -159,6 +173,7 @@ class Insight(AtlassianRestAPI):
     def get_icon_by_id(self, icon_id):
         """
         Load a single icon by id
+
         :param icon_id:
         :return:
         {
@@ -174,6 +189,7 @@ class Insight(AtlassianRestAPI):
     def get_all_global_icons(self):
         """
         All existing global icons
+
         :return:
         """
         url = self.url_joiner(self.api_root, "icon/global")
@@ -184,6 +200,7 @@ class Insight(AtlassianRestAPI):
     def start_import_configuration(self, import_id):
         """
         The id of the import configuration that should be started
+
         :param import_id:
         :return:
         """
@@ -195,6 +212,7 @@ class Insight(AtlassianRestAPI):
     def reindex_insight(self):
         """
         Should the reindex clean the index before doing the reindex
+
         :return:
         """
         if self.cloud:
@@ -205,6 +223,7 @@ class Insight(AtlassianRestAPI):
     def reindex_current_node_insight(self):
         """
         Should the reindex clean the index before doing the reindex
+
         :return:
         """
         if self.cloud:
@@ -229,6 +248,7 @@ class Insight(AtlassianRestAPI):
         extended=None,
     ):
         """
+        Resource dedicated to finding objects based on the Insight Query Language (IQL)
 
         :param iql:
         :param object_schema_id:
@@ -366,6 +386,7 @@ class Insight(AtlassianRestAPI):
     ):
         """
         A filter object that is used to find a paginatad result set based on an object type and an IQL query
+
         :param iql:
         :param objectTypeId:
         :param page:
@@ -407,6 +428,7 @@ class Insight(AtlassianRestAPI):
     def list_objectschema(self):
         """
         Resource to find object schemas in Insight
+
         :return:
         {
             "objectschemas": [
@@ -441,24 +463,28 @@ class Insight(AtlassianRestAPI):
     def update_objectschema(self, schema_id):
         """
         Update an object schema
+
         """
         raise NotImplementedError
 
     def delete_objectschema(self, schema_id):
         """
         Delete a schema
+
         """
         raise NotImplementedError
 
     def get_objectschema_attributes(self, schema_id):
         """
         Find all object type attributes for this object schema
+
         """
         raise NotImplementedError
 
     def get_objectschema_objecttypes_flat(self, schema_id):
         """
         Find all object types for this object schema
+
         """
         raise NotImplementedError
 
