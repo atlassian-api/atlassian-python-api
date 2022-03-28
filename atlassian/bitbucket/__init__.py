@@ -2182,7 +2182,7 @@ class Bitbucket(BitbucketBase):
         """
         url = "{}/files".format(self._url_repo(project_key, repository_slug))
         if sub_folder:
-            url = "{}/{}".format(url, sub_folder)
+            url = "{}/{}".format(url, sub_folder.lstrip("/"))
         params = {}
         if query:
             params["at"] = query
