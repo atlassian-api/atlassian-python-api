@@ -2200,7 +2200,6 @@ class Bitbucket(BitbucketBase):
             params["limit"] = limit
         return self._get_paged(url, params=params)
 
-
     def get_content_of_file(self, project_key, repository_slug, filename, at=None, markup=None):
         """
         Retrieve the raw content for a file path at a specified revision.
