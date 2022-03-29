@@ -636,6 +636,10 @@ class Bamboo(AtlassianRestAPI):
         resource = "deploy/project/{}".format(project_id)
         return self.get(self.resource_url(resource))
 
+    def delete_deployment_project(self, project_id):
+        resource = "deploy/project/{}".format(project_id)
+        return self.delete(self.resource_url(resource))
+
     def deployment_environment_results(self, env_id, expand=None, max_results=25):
         resource = "deploy/environment/{environmentId}/results".format(environmentId=env_id)
         params = {"max-result": max_results, "start-index": 0}
