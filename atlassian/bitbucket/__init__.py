@@ -2166,7 +2166,15 @@ class Bitbucket(BitbucketBase):
         data.update(report_params)
         return self.put(url, data=data)
 
-    def get_file_list(self, project_key, repository_slug, sub_folder=None, query=None, start=0, limit=None):
+    def get_file_list(
+        self,
+        project_key,
+        repository_slug,
+        sub_folder=None,
+        query=None,
+        start=0,
+        limit=None,
+    ):
         """
         Retrieve a page of files from particular directory of a repository.
         The search is done recursively, so all files from any sub-directory of the specified directory will be returned.
@@ -2191,6 +2199,7 @@ class Bitbucket(BitbucketBase):
         if limit:
             params["limit"] = limit
         return self._get_paged(url, params=params)
+
 
     def get_content_of_file(self, project_key, repository_slug, filename, at=None, markup=None):
         """
