@@ -8,6 +8,8 @@ from .marketplace import MarketPlace
 from .portfolio import Portfolio
 from .service_desk import ServiceDesk
 from .xray import Xray
+from .insight import Insight
+
 
 __all__ = [
     "Confluence",
@@ -20,4 +22,5 @@ __all__ = [
     "ServiceDesk",
     "MarketPlace",
     "Xray",
+    "Insight",
 ]
