@@ -123,6 +123,9 @@ Deployments
     # Get deployment dashboard
     deployment_dashboard(project_id=None)
 
+    # Delete deployment project
+    delete_deployment_project(project_id)
+
 Users & Groups
 --------------
 
