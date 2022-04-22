@@ -2266,6 +2266,15 @@ class Jira(AtlassianRestAPI):
                 fields = fields + tab_fields
         return fields
 
+    def add_field_default_screen(self, field_id):
+        """
+        Add field to default screen
+
+        :param field_id: field or custom field ID to be added to default screen
+        """
+        url = "/rest/api/2/screens/addToDefault/" + field_id
+        return self.post(url)
+
     """
     Search
     Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/search
