@@ -135,8 +135,8 @@ See the `Contribution Guidelines for this project`_ for details on how to make c
 .. |License| image:: https://img.shields.io/pypi/l/atlassian-python-api.svg
    :target: https://pypi.python.org/pypi/atlassian-python-api
    :alt: License
-.. |Codacy Badge| image:: https://api.codacy.com/project/badge/Grade/c822908f507544fe98ae37b25518ae3d
-   :target: https://www.codacy.com/project/gonchik/atlassian-python-api/dashboard
+.. |Codacy Badge| image:: https://app.codacy.com/project/badge/Grade/2cca43995cf041b8b181e2b2ff04cee6
+   :target: https://app.codacy.com/gh/atlassian-api/atlassian-python-api/dashboard
    :alt: Codacy Badge
 .. |PyPI - Downloads| image:: https://pepy.tech/badge/atlassian-python-api/month
    :alt: PyPI - Downloads
