@@ -163,3 +163,8 @@ In addition to all the contributors we would like to thank these vendors:
 .. _GitHub: https://github.com/
 .. _Microsoft: https://github.com/Microsoft/vscode/
 .. _VSCode: https://code.visualstudio.com/
+
+
+.. image:: https://api.codacy.com/project/badge/Grade/f6f3a665b2624c029215c4a62ca850f0
+   :alt: Codacy Badge
+   :target: https://app.codacy.com/gh/atlassian-api/atlassian-python-api?utm_source=github.com&utm_medium=referral&utm_content=atlassian-api/atlassian-python-api&utm_campaign=Badge_Grade_Settings
