@@ -1532,51 +1532,73 @@ class Jira(AtlassianRestAPI):
         url = self.resource_url("user")
         return self.post(url, data=data)
 
-    def user_properties(self, account_id):
+    def user_properties(self, username=None, account_id=None):
         """
         Get user property
-        :param account_id:
+        :param username:
+        :param account_id: account_id is parameter used in Cloud instances
         :return:
         """
         base_url = self.resource_url("user/properties")
-        url = "{base_url}?accountId={account_id}".format(base_url=base_url, account_id=account_id)
+        url = ""
+        if username or not self.cloud:
+            url = "{base_url}?accountId={username}".format(base_url=base_url, username=username)
+        elif account_id or self.cloud:
+            url = "{base_url}?accountId={account_id}".format(base_url=base_url, account_id=account_id)
         return self.get(url)
 
-    def user_property(self, account_id, key_property):
+    def user_property(self, username=None, account_id=None, key_property=None):
         """
         Get user property
-        :param account_id:
+        :param username:
+        :param account_id: account_id is parameter used in Cloud instances
         :param key_property:
         :return:
         """
-        params = {"accountId": account_id}
+        if username or not self.cloud:
+            params = {"username": username}
+        elif account_id or self.cloud:
+            params = {"accountId": account_id}
         base_url = self.resource_url("user/properties")
         return self.get("{base_url}/{key_property}".format(base_url=base_url, key_property=key_property), params=params)
 
-    def user_set_property(self, account_id, key_property, value_property):
+    def user_set_property(self, username=None, account_id=None, key_property=None, value_property=None):
         """
         Set property for user
-        :param account_id:
+        :param username:
+        :param account_id: account_id is parameter used in Cloud instances
         :param key_property:
         :param value_property:
         :return:
         """
         base_url = self.resource_url("user/properties")
-        url = "{base_url}/{key_property}?accountId={account_id}".format(
-            base_url=base_url, key_property=key_property, account_id=account_id
-        )
+        url = ""
+        if username or not self.cloud:
+            url = "{base_url}/{key_property}?username={username}".format(
+                base_url=base_url, key_property=key_property, username=username
+            )
+        elif account_id or self.cloud:
+            url = "{base_url}/{key_property}?accountId={account_id}".format(
+                base_url=base_url, key_property=key_property, account_id=account_id
+            )
+
         return self.put(url, data=value_property)
 
-    def user_delete_property(self, account_id, key_property):
+    def user_delete_property(self, username=None, account_id=None, key_property=None):
         """
         Delete property for user
-        :param account_id:
+        :param username:
+        :param account_id: account_id is parameter used in Cloud instances
         :param key_property:
         :return:
         """
         base_url = self.resource_url("user/properties")
         url = "{base_url}/{key_property}".format(base_url=base_url, key_property=key_property)
-        params = {"accountId": account_id}
+        params = {}
+        if username or not self.cloud:
+            params = {"username": username}
+        elif account_id or self.cloud:
+            params = {"accountId": account_id}
         return self.delete(url, params=params)
 
     def user_update_or_create_property_through_rest_point(self, username, key, value):
