@@ -23,7 +23,7 @@ RUN apt-get install -y \
 RUN if [ $PYTHON_VERSION != '3.10' ] ; then \
   apt-get install -y python3-distutils python3-distutils-extra python3-apt --reinstall ; \
   elif [ $PYTHON_VERSION -eq '3.7' ] ; then \
-  apt install -y --no-install-recommends python$PYTHON_VERSION-distutils; \
+  apt install -y --no-install-recommends python$PYTHON_VERSION-distutils python3-distutils-extra python3-apt ; \
   else \
   apt-get install -y python$PYTHON_VERSION-distutils python3-distutils-extra python3-apt --reinstall ; \
   curl -sS https://bootstrap.pypa.io/get-pip.py | python3.10 ; \
@@ -47,7 +47,7 @@ RUN apt-get clean
 WORKDIR /atlassian-python-api
 COPY requirements.txt .
 COPY requirements-dev.txt .
-RUN python3 -m pip install --no-cache-dir --upgrade pip
+#RUN python3 -m pip install --no-cache-dir --upgrade pip
 RUN python3 -m pip install --no-cache-dir -r requirements-dev.txt
 
 ENV PYTHON_VERSION=$PYTHON_VERSION
