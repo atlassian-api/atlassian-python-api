@@ -20,10 +20,10 @@ RUN apt-get install -y \
   python3-pip
 
 # install distutils.util
-RUN if [ $PYTHON_VERSION != '3.10' ] ; then \
-  apt-get install -y python3-distutils python3-distutils-extra python3-apt --reinstall ; \
-  elif [ $PYTHON_VERSION -eq '3.7' ] ; then \
+RUN if [ $PYTHON_VERSION -eq '3.7' ] ; then \
   echo 'skip' ;\
+  elif [ $PYTHON_VERSION != '3.10' ] ; then \
+  apt-get install -y python3-distutils python3-distutils-extra python3-apt --reinstall ; \
   else \
   apt-get install -y python$PYTHON_VERSION-distutils python3-distutils-extra python3-apt --reinstall ; \
   curl -sS https://bootstrap.pypa.io/get-pip.py | python3.10 ; \
