@@ -26,7 +26,8 @@ class Insight(AtlassianRestAPI):
         super(Insight, self).__init__(*args, **kwargs)
 
     def __cloud_init(self, *args, **kwargs):
-        """Creates a InsightCloud specific version of Insight()
+        """
+        Creates a InsightCloud specific version of Insight()
 
         Returns:
             Insight(AtlassianRestAPI)
