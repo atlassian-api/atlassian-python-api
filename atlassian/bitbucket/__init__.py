@@ -2166,7 +2166,15 @@ class Bitbucket(BitbucketBase):
         data.update(report_params)
         return self.put(url, data=data)
 
-    def get_file_list(self, project_key, repository_slug, query=None, start=0, limit=None):
+    def get_file_list(
+        self,
+        project_key,
+        repository_slug,
+        sub_folder=None,
+        query=None,
+        start=0,
+        limit=None,
+    ):
         """
         Retrieve a page of files from particular directory of a repository.
         The search is done recursively, so all files from any sub-directory of the specified directory will be returned.
@@ -2174,12 +2182,15 @@ class Bitbucket(BitbucketBase):
         :param start:
         :param project_key:
         :param repository_slug:
+        :param sub_folder: a sub folder in the target repository to list the files from.
         :param query: the commit ID or ref (e.g. a branch or tag) to list the files at.
                       If not specified the default branch will be used instead.
         :param limit: OPTIONAL
         :return:
         """
         url = "{}/files".format(self._url_repo(project_key, repository_slug))
+        if sub_folder:
+            url = "{}/{}".format(url, sub_folder.lstrip("/"))
         params = {}
         if query:
             params["at"] = query

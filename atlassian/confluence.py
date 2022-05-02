@@ -86,15 +86,33 @@ class Confluence(AtlassianRestAPI):
         return
 
     def page_exists(self, space, title):
+        """
+        Check if title exists as page.
+        :param space: Space key
+        :param title: Title of the page
+        :return:
+        """
+        url = "rest/api/content"
+        params = {}
+        if space is not None:
+            params["spaceKey"] = str(space)
+        if title is not None:
+            params["title"] = str(title)
+
         try:
-            if self.get_page_by_title(space, title):
-                log.info('Page "{title}" already exists in space "{space}"'.format(space=space, title=title))
-                return True
-            else:
-                log.info("Page does not exist because did not find by title search")
-                return False
-        except (HTTPError, KeyError, IndexError):
-            log.info('Page "{title}" does not exist in space "{space}"'.format(space=space, title=title))
+            response = self.get(url, params=params)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                raise ApiPermissionError(
+                    "The calling user does not have permission to view the content",
+                    reason=e,
+                )
+
+            raise
+
+        if response.get("results"):
+            return True
+        else:
             return False
 
     def get_page_child_by_type(self, page_id, type="page", start=None, limit=None, expand=None):

@@ -7,10 +7,7 @@ log = logging.getLogger(__name__)
 
 
 class Insight(AtlassianRestAPI):
-
-    """
-    Insight for Jira API wrapper.
-    """
+    """Insight for Jira API wrapper."""
 
     # https://insight-javadoc.riada.io/insight-javadoc-8.6/insight-rest/
 
@@ -56,7 +53,6 @@ class Insight(AtlassianRestAPI):
     def get_attachments_of_objects(self, object_id):
         """
         Get Attachment info
-
         Example output:
         [
             {
@@ -92,7 +88,6 @@ class Insight(AtlassianRestAPI):
     def upload_attachment_to_object(self, object_id, filename):
         """
         Add attachment to Object
-
         :param object_id: int
         :param filename: str, name, if file in current directory or full path to file
         """
@@ -107,7 +102,6 @@ class Insight(AtlassianRestAPI):
     def delete_attachment(self, attachment_id):
         """
         Add attachment to Object
-
         :param attachment_id: int
         """
         if self.cloud:
@@ -159,7 +153,6 @@ class Insight(AtlassianRestAPI):
     def get_comment_of_object(self, object_id):
         """
         The object id to fetch comments from
-
         :param object_id:
         :return:
         """
@@ -189,7 +182,6 @@ class Insight(AtlassianRestAPI):
     def get_all_global_icons(self):
         """
         All existing global icons
-
         :return:
         """
         url = self.url_joiner(self.api_root, "icon/global")
@@ -212,7 +204,6 @@ class Insight(AtlassianRestAPI):
     def reindex_insight(self):
         """
         Should the reindex clean the index before doing the reindex
-
         :return:
         """
         if self.cloud:
@@ -223,7 +214,6 @@ class Insight(AtlassianRestAPI):
     def reindex_current_node_insight(self):
         """
         Should the reindex clean the index before doing the reindex
-
         :return:
         """
         if self.cloud:
