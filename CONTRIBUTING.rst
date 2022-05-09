@@ -16,7 +16,7 @@ Getting Started
 * Start up related product:
   - Standalone product atlas-run-standalone_
   - For cloud product, just do registration
-* Run the quality checks with `make qa` or if you have docker installed with `make docker-qa` 
+* Run the quality checks with `make qa` or if you have docker installed with `make docker-qa`
 * Send pull request
 
 .. _Fork: https://help.github.com/articles/fork-a-repo/
@@ -110,6 +110,9 @@ All methods based on docs from: https://developer.atlassian.com/docs/
 * Advanced Roadmaps (formerly Portfolio for Jira)
     - `Portfolio for Jira`_
     - `Portfolio for Jira Teams`_
+* Insight
+    _`Insight Server`_
+    _`Insight Cloud`_
 *  Bitbucket:
     - https://developer.atlassian.com/server/bitbucket/reference/rest-api/
     - https://developer.atlassian.com/server/bitbucket/how-tos/command-line-rest/
@@ -140,7 +143,8 @@ All methods based on docs from: https://developer.atlassian.com/docs/
 .. _`Jira Service Desk Server`: https://docs.atlassian.com/jira-servicedesk/REST/server
 .. _`Portfolio for Jira Teams`: https://docs.atlassian.com/portfolio-for-jira-server/REST/2.13.0/teams/
 .. _`Portfolio for Jira`: https://docs.atlassian.com/portfolio-for-jira-server/REST/2.13.0/jpo/
-
+.. _`Insight Server`: https://insight-javadoc.riada.io/insight-javadoc-8.6/insight-rest/
+.. _`Insight Cloud`: https://developer.atlassian.com/cloud/insight/rest/api-group-objectschema/#api-objectschema-list-get
 
 Credits
 -------
