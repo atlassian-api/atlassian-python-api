@@ -95,70 +95,70 @@ class Issue(BitbucketCloudBase):
 
     @property
     def id(self):
-        """ The issue id """
+        """The issue id"""
         return self.get_data("id")
 
     @property
     def title(self):
-        """ The issue title """
+        """The issue title"""
         return self.get_data("title")
 
     @title.setter
     def title(self, title):
-        """ Setter for the issue title """
+        """Setter for the issue title"""
         return self.update(title=title)
 
     @property
     def state(self):
-        """ The issue state """
+        """The issue state"""
         return self.get_data("state")
 
     @state.setter
     def state(self, state):
-        """ Setter for the issue state """
+        """Setter for the issue state"""
         return self.update(state=state)
 
     @property
     def kind(self):
-        """ The issue kind """
+        """The issue kind"""
         return self.get_data("kind")
 
     @kind.setter
     def kind(self, kind):
-        """ Setter for the issue kind """
+        """Setter for the issue kind"""
         return self.update(kind=kind)
 
     @property
     def priority(self):
-        """ The issue priority """
+        """The issue priority"""
         return self.get_data("priority")
 
     @priority.setter
     def priority(self, priority):
-        """ Setter for the issue property """
+        """Setter for the issue property"""
         return self.update(priority=priority)
 
     @property
     def votes(self):
-        """ The issue votes """
+        """The issue votes"""
         return self.get_data("votes")
 
     @property
     def content(self):
-        """ The issue content """
+        """The issue content"""
         return self.get_data("content")
 
     @property
     def created_on(self):
-        """ The issue creation time """
+        """The issue creation time"""
         return self.get_time("created_on")
 
     @property
     def edited_on(self):
-        """ The issue edit time """
+        """The issue edit time"""
         return self.get_time("edited_on")
 
     @property
     def updated_on(self):
-        """ The issue last update time """
+        """The issue last update time"""
         return self.get_time("updated_on")

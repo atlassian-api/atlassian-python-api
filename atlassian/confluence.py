@@ -45,25 +45,84 @@ class Confluence(AtlassianRestAPI):
 
         return {representation: {"value": body, "representation": representation}}
 
+    def _get_paged(self, url, params=None, data=None, flags=None, trailing=None, absolute=False):
+        """
+        Used to get the paged data
+
+        :param url: string:                        The url to retrieve
+        :param params: dict (default is None):     The parameters
+        :param data: dict (default is None):       The data
+        :param flags: string[] (default is None):  The flags
+        :param trailing: bool (default is None):   If True, a trailing slash is added to the url
+        :param absolute: bool (default is False):  If True, the url is used absolute and not relative to the root
+
+        :return: A generator object for the data elements
+        """
+
+        if params is None:
+            params = {}
+
+        while True:
+            response = self.get(url, trailing=trailing, params=params, data=data, flags=flags, absolute=absolute)
+            if "results" not in response:
+                return
+
+            for value in response.get("results", []):
+                yield value
+
+            # According to Cloud and Server documentation the links are returned the same way:
+            # https://developer.atlassian.com/cloud/confluence/rest/api-group-content/#api-wiki-rest-api-content-get
+            # https://developer.atlassian.com/server/confluence/pagination-in-the-rest-api/
+            url = response.get("_links", {}).get("next")
+            if url is None:
+                break
+            # From now on we have absolute URLs with parameters
+            absolute = True
+            # Params are now provided by the url
+            params = {}
+            # Trailing should not be added as it is already part of the url
+            trailing = False
+
+        return
+
     def page_exists(self, space, title):
+        """
+        Check if title exists as page.
+        :param space: Space key
+        :param title: Title of the page
+        :return:
+        """
+        url = "rest/api/content"
+        params = {}
+        if space is not None:
+            params["spaceKey"] = str(space)
+        if title is not None:
+            params["title"] = str(title)
+
         try:
-            if self.get_page_by_title(space, title):
-                log.info('Page "{title}" already exists in space "{space}"'.format(space=space, title=title))
-                return True
-            else:
-                log.info("Page does not exist because did not find by title search")
-                return False
-        except (HTTPError, KeyError, IndexError):
-            log.info('Page "{title}" does not exist in space "{space}"'.format(space=space, title=title))
+            response = self.get(url, params=params)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                raise ApiPermissionError(
+                    "The calling user does not have permission to view the content",
+                    reason=e,
+                )
+
+            raise
+
+        if response.get("results"):
+            return True
+        else:
             return False
 
-    def get_page_child_by_type(self, page_id, type="page", start=None, limit=None):
+    def get_page_child_by_type(self, page_id, type="page", start=None, limit=None, expand=None):
         """
         Provide content by type (page, blog, comment)
         :param page_id: A string containing the id of the type content container.
         :param type:
         :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
         :param limit: OPTIONAL: how many items should be returned after the start index. Default: Site limit 200.
+        :param expand: OPTIONAL: expand e.g. history
         :return:
         """
         params = {}
@@ -71,12 +130,20 @@ class Confluence(AtlassianRestAPI):
             params["start"] = int(start)
         if limit is not None:
             params["limit"] = int(limit)
+        if expand is not None:
+            params["expand"] = expand
 
         url = "rest/api/content/{page_id}/child/{type}".format(page_id=page_id, type=type)
         log.info(url)
 
         try:
-            response = self.get(url, params=params)
+            if not self.advanced_mode and start is None and limit is None:
+                return self._get_paged(url, params=params)
+            else:
+                response = self.get(url, params=params)
+                if self.advanced_mode:
+                    return response
+                return response.get("results")
         except HTTPError as e:
             if e.response.status_code == 404:
                 # Raise ApiError as the documented reason is ambiguous
@@ -87,10 +154,6 @@ class Confluence(AtlassianRestAPI):
                 )
 
             raise
-
-        if self.advanced_mode:
-            return response
-        return response.get("results")
 
     def get_child_title_list(self, page_id, type="page", start=None, limit=None):
         """
@@ -632,8 +695,8 @@ class Confluence(AtlassianRestAPI):
         }
         if parent_id:
             data["ancestors"] = [{"type": type, "id": parent_id}]
-        if editor == "v2":
-            data["metadata"] = {"properties": {"editor": {"value": "v2"}}}
+        if editor is not None and editor in ["v1", "v2"]:
+            data["metadata"] = {"properties": {"editor": {"value": editor}}}
         try:
             response = self.post(url, data=data)
         except HTTPError as e:
@@ -716,9 +779,9 @@ class Confluence(AtlassianRestAPI):
 
         if template_id:
             data["templateId"] = template_id
-            return self.put("wiki/rest/api/template", data=json.dumps(data))
+            return self.put("rest/api/template", data=json.dumps(data))
 
-        return self.post("wiki/rest/api/template", json=data)
+        return self.post("rest/api/template", json=data)
 
     @deprecated(version="3.7.0", reason="Use get_content_template()")
     def get_template_by_id(self, template_id):
@@ -751,7 +814,7 @@ class Confluence(AtlassianRestAPI):
         :param str template_id: The ID of the content template to be returned
         :return:
         """
-        url = "wiki/rest/api/template/{template_id}".format(template_id=template_id)
+        url = "rest/api/template/{template_id}".format(template_id=template_id)
 
         try:
             response = self.get(url)
@@ -814,7 +877,7 @@ class Confluence(AtlassianRestAPI):
                             fixed system limits. Default: 25
         :param expand: OPTIONAL: A multi-value parameter indicating which properties of the template to expand.
         """
-        url = "wiki/rest/api/template/blueprint"
+        url = "rest/api/template/blueprint"
         params = {}
         if space:
             params["spaceKey"] = space
@@ -885,7 +948,7 @@ class Confluence(AtlassianRestAPI):
         :param expand: OPTIONAL: A multi-value parameter indicating which properties of the template to expand.
             e.g. ``body``
         """
-        url = "wiki/rest/api/template/page"
+        url = "rest/api/template/page"
         params = {}
         if space:
             params["spaceKey"] = space
@@ -924,7 +987,7 @@ class Confluence(AtlassianRestAPI):
         :param str template_id: The ID of the template to be deleted.
         :return:
         """
-        return self.delete("wiki/rest/api/template/{}".format(template_id))
+        return self.delete("rest/api/template/{}".format(template_id))
 
     def get_all_spaces(self, start=0, limit=500, expand=None, space_type=None, space_status=None):
         """
@@ -1519,7 +1582,7 @@ class Confluence(AtlassianRestAPI):
             previous_body = (
                 (self.get_page_by_id(page_id, expand="body.storage").get("body") or {}).get("storage").get("value")
             )
-            previous_body = previous_body.replace("&oacute;", u"ó")
+            previous_body = previous_body.replace("&oacute;", "ó")
             body = insert_body + previous_body if top_of_page else previous_body + insert_body
             data = {
                 "id": page_id,
@@ -1858,7 +1921,7 @@ class Confluence(AtlassianRestAPI):
         return response.get("ancestors")
 
     def clean_all_caches(self):
-        """ Clean all caches from cache management"""
+        """Clean all caches from cache management"""
         headers = self.form_token_headers
         return self.delete("rest/cacheManagement/1.0/cacheEntries", headers=headers)
 
@@ -2093,6 +2156,34 @@ class Confluence(AtlassianRestAPI):
             if e.response.status_code == 404:
                 raise ApiNotFoundError(
                     "The user with the given username or userkey does not exist",
+                    reason=e,
+                )
+
+            raise
+
+        return response
+
+    def get_user_details_by_accountid(self, accountid, expand=None):
+        """
+        Get information about a user through accountid
+        :param accountid: The account id
+        :param expand: OPTIONAL expand for get status of user.
+                Possible param is "status". Results are "Active, Deactivated"
+        :return: Returns the user details
+        """
+        url = "rest/api/user"
+        params = {"accountId": accountid}
+        if expand:
+            params["expand"] = expand
+
+        try:
+            response = self.get(url, params=params)
+        except HTTPError as e:
+            if e.response.status_code == 403:
+                raise ApiPermissionError("The calling user does not have permission to view users", reason=e)
+            if e.response.status_code == 404:
+                raise ApiNotFoundError(
+                    "The user with the given account does not exist",
                     reason=e,
                 )
 
@@ -2638,3 +2729,46 @@ class Confluence(AtlassianRestAPI):
         url = "rest/jira-metadata/1.0/metadata/cache"
         params = {"globalId": global_id}
         return self.delete(url, params=params)
+
+    def get_license_details(self):
+        """
+        Returns the license detailed information
+        """
+        url = "rest/license/1.0/license/details"
+        return self.get(url)
+
+    def get_license_user_count(self):
+        """
+        Returns the total used seats in the license
+        """
+        url = "rest/license/1.0/license/userCount"
+        return self.get(url)
+
+    def get_license_remaining(self):
+        """
+        Returns the available license seats remaining
+        """
+        url = "rest/license/1.0/license/remainingSeats"
+        return self.get(url)
+
+    def get_license_max_users(self):
+        """
+        Returns the license max users
+        """
+        url = "rest/license/1.0/license/maxUsers"
+        return self.get(url)
+
+    def raise_for_status(self, response):
+        """
+        Checks the response for an error status and raises an exception with the error message provided by the server
+        :param response:
+        :return:
+        """
+        if 400 <= response.status_code < 600:
+            try:
+                j = response.json()
+                error_msg = j["message"]
+            except Exception:
+                response.raise_for_status()
+            else:
+                raise HTTPError(error_msg, response=response)

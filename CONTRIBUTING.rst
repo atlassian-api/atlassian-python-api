@@ -16,7 +16,7 @@ Getting Started
 * Start up related product:
   - Standalone product atlas-run-standalone_
   - For cloud product, just do registration
-* Run the quality checks with `make qa` or if you have docker installed with `make docker-qa` 
+* Run the quality checks with `make qa` or if you have docker installed with `make docker-qa`
 * Send pull request
 
 .. _Fork: https://help.github.com/articles/fork-a-repo/
@@ -34,7 +34,7 @@ Mandatory conditions
 
 Please follow the code style in the docs.
 
-.. _black:  https://black.readthedocs.io/en/stable/editor_integration.html
+.. _black:  https://black.readthedocs.io/en/stable/integrations/editors.html
 
 Connect on Chat for any queries
 ---------------------------------
@@ -105,9 +105,14 @@ All methods based on docs from: https://developer.atlassian.com/docs/
 * Confluence
     - `Confluence Server`_
     - `Confluence Cloud`_
+* Crowd
+    - `Crowd Server`_
 * Advanced Roadmaps (formerly Portfolio for Jira)
     - `Portfolio for Jira`_
     - `Portfolio for Jira Teams`_
+* Insight
+    _`Insight Server`_
+    _`Insight Cloud`_
 *  Bitbucket:
     - https://developer.atlassian.com/server/bitbucket/reference/rest-api/
     - https://developer.atlassian.com/server/bitbucket/how-tos/command-line-rest/
@@ -126,16 +131,20 @@ All methods based on docs from: https://developer.atlassian.com/docs/
 * Others:
     - https://developer.atlassian.com/server/jira/platform/oauth/
     - https://confluence.atlassian.com/cloud/api-tokens-938839638.html
+    - (OpsGenie) https://docs.opsgenie.com/docs/api-overview
+    - (Status Page) https://developer.statuspage.io/
 
 .. _`Jira Server`: https://docs.atlassian.com/software/jira/docs/api/REST/latest
 .. _`Jira Cloud`: https://developer.atlassian.com/cloud/jira/platform/rest/v3/
 .. _`Confluence Server`: https://developer.atlassian.com/server/confluence/confluence-server-rest-api/
 .. _`Confluence Cloud`: https://developer.atlassian.com/cloud/confluence/rest/
+.. _`Crowd Server`: https://developer.atlassian.com/server/crowd/crowd-rest-apis/
 .. _`Jira Service Desk Cloud`: https://developer.atlassian.com/cloud/jira/service-desk/rest/
 .. _`Jira Service Desk Server`: https://docs.atlassian.com/jira-servicedesk/REST/server
 .. _`Portfolio for Jira Teams`: https://docs.atlassian.com/portfolio-for-jira-server/REST/2.13.0/teams/
 .. _`Portfolio for Jira`: https://docs.atlassian.com/portfolio-for-jira-server/REST/2.13.0/jpo/
-
+.. _`Insight Server`: https://insight-javadoc.riada.io/insight-javadoc-8.6/insight-rest/
+.. _`Insight Cloud`: https://developer.atlassian.com/cloud/insight/rest/api-group-objectschema/#api-objectschema-list-get
 
 Credits
 -------

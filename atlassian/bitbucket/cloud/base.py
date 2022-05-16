@@ -2,6 +2,8 @@
 
 from ..base import BitbucketBase
 
+from requests import HTTPError
+
 
 class BitbucketCloudBase(BitbucketBase):
     def __init__(self, url, *args, **kwargs):
@@ -32,7 +34,9 @@ class BitbucketCloudBase(BitbucketBase):
             return None
         return links[link]["href"]
 
-    def _get_paged(self, url, params=None, data=None, flags=None, trailing=None, absolute=False):
+    def _get_paged(
+        self, url, params=None, data=None, flags=None, trailing=None, absolute=False, paging_workaround=False
+    ):
         """
         Used to get the paged data
 
@@ -42,12 +46,16 @@ class BitbucketCloudBase(BitbucketBase):
         :param flags: string[] (default is None):  The flags
         :param trailing: bool (default is None):   If True, a trailing slash is added to the url
         :param absolute: bool (default is False):  If True, the url is used absolute and not relative to the root
+        :param paging_workaround: bool (default is False): If True, the paging is done on our own because
+                                                           of https://jira.atlassian.com/browse/BCLOUD-13806
 
         :return: A generator object for the data elements
         """
 
         if params is None:
             params = {}
+        if paging_workaround:
+            params["page"] = 1
 
         while True:
             response = super(BitbucketCloudBase, self).get(
@@ -58,16 +66,47 @@ class BitbucketCloudBase(BitbucketBase):
                 flags=flags,
                 absolute=absolute,
             )
-            if "values" not in response:
+            if len(response.get("values", [])) == 0:
                 return
 
-            for value in response.get("values", []):
+            for value in response["values"]:
                 yield value
 
-            url = response.get("next")
-            if url is None:
-                break
-            # From now on we have absolute URLs
-            absolute = True
+            if paging_workaround:
+                params["page"] += 1
+            else:
+                url = response.get("next")
+                if url is None:
+                    break
+                # From now on we have absolute URLs with parameters
+                absolute = True
+                # Params are now provided by the url
+                params = {}
+                # Trailing should not be added as it is already part of the url
+                trailing = False
 
         return
+
+    def raise_for_status(self, response):
+        """
+        Checks the response for errors and throws an exception if return code >= 400
+
+        Implementation for Bitbucket Cloud according to
+        https://developer.atlassian.com/cloud/bitbucket/rest/intro/#standardized-error-responses
+
+        :param response:
+        :return:
+        """
+        if 400 <= response.status_code < 600:
+            try:
+                j = response.json()
+                e = j["error"]
+                error_msg = e["message"]
+                if e.get("detail"):
+                    error_msg += "\n" + e["detail"]
+            except Exception:
+                response.raise_for_status()
+            else:
+                raise HTTPError(error_msg, response=response)
+        else:
+            response.raise_for_status()

@@ -2,14 +2,13 @@
 import logging
 
 from requests.exceptions import HTTPError
-
 from .rest_client import AtlassianRestAPI
 
 log = logging.getLogger(__name__)
 
 
 class Bamboo(AtlassianRestAPI):
-    """ Private methods """
+    """Private methods"""
 
     def _get_generator(
         self,
@@ -41,8 +40,6 @@ class Bamboo(AtlassianRestAPI):
         :param path: URI for the resource
         :return: generator with the contents of response[elements_key][element_key]
         """
-        start_index = 0
-        params["start-index"] = start_index
         response = self.get(path, data, flags, params, headers)
         if self.advanced_mode:
             try:
@@ -60,7 +57,6 @@ class Bamboo(AtlassianRestAPI):
             for r in results[element_key]:
                 size += 1
                 yield r
-            start_index += results["max-result"]
         except TypeError:
             logging.error("Broken response: {}".format(response))
             yield response
@@ -357,7 +353,7 @@ class Bamboo(AtlassianRestAPI):
             elements_key="results",
             element_key="result",
             label=label,
-            **params
+            **params,
         )
 
     def latest_results(
@@ -597,10 +593,25 @@ class Bamboo(AtlassianRestAPI):
 
     def get_projects(self):
         """Method used to list all projects defined in Bamboo.
-        Projects without any plan are not listed by default, unless showEmpty query param is set to true."""
-        resource = "project?showEmpty"
-        for project in self.get(self.resource_url(resource)):
-            yield project
+        Projects without any plan are not listed."""
+        start_idx = 0
+        max_results = 25
+
+        while True:
+            resource = "project?start-index={}&max-result={}".format(start_idx, max_results)
+
+            r = self.get(self.resource_url(resource))
+
+            if r is None:
+                break
+
+            if start_idx > r["projects"]["size"]:
+                break
+
+            start_idx += max_results
+
+            for project in r["projects"]["project"]:
+                yield project
 
     def get_project(self, project_key):
         """Method used to retrieve information for project specified as project key.
@@ -757,6 +768,162 @@ class Bamboo(AtlassianRestAPI):
         """
         params = {"expand": expand}
         return self.get("rest/api/latest/queue", params=params)
+
+    def get_deployment_users(self, deployment_id, filter_name=None, start=0, limit=25):
+        """
+        Retrieve a list of users with their explicit permissions to given resource.
+        The list can be filtered by some attributes.
+        This resource is paged and returns a single page of results.
+        :param deployment_id:
+        :param filter_name:
+        :param start:
+        :param limit:
+        :return:
+        """
+        params = {"limit": limit, "start": start}
+        if filter_name:
+            params = {"name": filter_name}
+        resource = "permissions/deployment/{}/users".format(deployment_id)
+        return self.get(self.resource_url(resource), params=params)
+
+    def revoke_user_from_deployment(self, deployment_id, user, permissions=["READ", "WRITE", "BUILD"]):
+        """
+        Revokes deployment project permissions from a given user.
+        :param deployment_id:
+        :param user:
+        :param permissions:
+        :return:
+        """
+        resource = "permissions/deployment/{}/users/{}".format(deployment_id, user)
+        return self.delete(self.resource_url(resource), data=permissions)
+
+    def grant_user_to_deployment(self, deployment_id, user, permissions):
+        """
+        Grants deployment project permissions to a given user.
+        :param deployment_id:
+        :param user:
+        :param permissions:
+        :return:
+        """
+        resource = "permissions/deployment/{}/users/{}".format(deployment_id, user)
+        return self.put(self.resource_url(resource), data=permissions)
+
+    def get_deployment_groups(self, deployment_id, filter_name=None, start=0, limit=25):
+        """
+        Retrieve a list of groups with their deployment project permissions.
+        The list can be filtered by some attributes.
+        This resource is paged returns a single page of results.
+        :param deployment_id:
+        :param filter_name:
+        :param start:
+        :param limit:
+        :return:
+        """
+        params = {"limit": limit, "start": start}
+        if filter_name:
+            params = {"name": filter_name}
+        resource = "permissions/deployment/{}/groups".format(deployment_id)
+        return self.get(self.resource_url(resource), params=params)
+
+    def revoke_group_from_deployment(self, deployment_id, group, permissions=["READ", "WRITE", "BUILD"]):
+        """
+        Revokes deployment project permissions from a given group.
+        :param deployment_id:
+        :param group:
+        :param permissions:
+        :return:
+        """
+        resource = "permissions/deployment/{}/groups/{}".format(deployment_id, group)
+        return self.delete(self.resource_url(resource), data=permissions)
+
+    def grant_group_to_deployment(self, deployment_id, group, permissions):
+        """
+        Grants deployment project permissions to a given group.
+        :param deployment_id:
+        :param group:
+        :param permissions:
+        :return:
+        """
+        resource = "permissions/deployment/{}/groups/{}".format(deployment_id, group)
+        return self.put(self.resource_url(resource), data=permissions)
+
+    def get_environment_users(self, environment_id, filter_name=None, start=0, limit=25):
+        """
+        Retrieve a list of users with their explicit permissions to given resource.
+        The list can be filtered by some attributes.
+        This resource is paged and returns a single page of results.
+        :param environment_id:
+        :param filter_name:
+        :param start:
+        :param limit:
+        :return:
+        """
+        params = {"limit": limit, "start": start}
+        if filter_name:
+            params = {"name": filter_name}
+        resource = "permissions/environment/{}/users".format(environment_id)
+        return self.get(self.resource_url(resource), params=params)
+
+    def revoke_user_from_environment(self, environment_id, user, permissions=["READ", "WRITE", "BUILD"]):
+        """
+        Revokes deployment environment permissions from a given user.
+        :param environment_id:
+        :param user:
+        :param permissions:
+        :return:
+        """
+        resource = "permissions/environment/{}/users/{}".format(environment_id, user)
+        return self.delete(self.resource_url(resource), data=permissions)
+
+    def grant_user_to_environment(self, environment_id, user, permissions):
+        """
+        Grants deployment environment permissions to a given user.
+        :param environment_id:
+        :param user:
+        :param permissions:
+        :return:
+        """
+        resource = "permissions/environment/{}/users/{}".format(environment_id, user)
+        return self.put(self.resource_url(resource), data=permissions)
+
+    def get_environment_groups(self, environment_id, filter_name=None, start=0, limit=25):
+        """
+        Retrieve a list of groups with their deployment environment permissions.
+        The list can be filtered by some attributes.
+        This resource is paged returns a single page of results.
+        :param environment_id:
+        :param filter_name:
+        :param start:
+        :param limit:
+        :return:
+        """
+        params = {"limit": limit, "start": start}
+        if filter_name:
+            params = {"name": filter_name}
+        resource = "permissions/environment/{}/groups".format(environment_id)
+        return self.get(self.resource_url(resource), params=params)
+
+    def revoke_group_from_environment(self, environment_id, group, permissions=["READ", "WRITE", "BUILD"]):
+        """
+        Revokes deployment environment permissions from a given group.
+        :param environment_id:
+        :param group:
+        :param permissions:
+        :return:
+        """
+        resource = "permissions/environment/{}/groups/{}".format(environment_id, group)
+        return self.delete(self.resource_url(resource), data=permissions)
+
+    def grant_group_to_environment(self, environment_id, group, permissions):
+        """
+        Grants deployment environment permissions to a given group.
+        :param environment_id:
+        :param group:
+        :param permissions:
+        :return:
+        """
+        resource = "permissions/environment/{}/groups/{}".format(environment_id, group)
+        return self.put(self.resource_url(resource), data=permissions)
 
     """Other actions"""
 

@@ -104,13 +104,19 @@ Manage projects
     # Add missing version to project
     jira.add_version(key, project_id, version, is_archived=False, is_released=False)
 
+    # Update an existing version
+    jira.update_version(version, name=None, description=None, is_archived=None, is_released=None, start_date=None, release_date=None)
+
     # Get project leaders
     jira.project_leaders()
 
     # Get last project issuekey
     jira.get_project_issuekey_last(project)
 
-    # Get all project issue keys
+    # Get all project issue keys.
+    # JIRA Cloud API can return up to  100 results  in one API call.
+    # If your project has more than 100 issues see following community discussion:
+    # https://community.atlassian.com/t5/Jira-Software-questions/Is-there-a-limit-to-the-number-of-quot-items-quot-returned-from/qaq-p/1317195
     jira.get_project_issuekey_all(project)
 
     # Get project issues count
@@ -168,6 +174,9 @@ Manage issues
     # Update issue
     jira.issue_update(issue_key, fields)
 
+    # Assign issue to user
+    jira.assign_issue(issue_key, account_id)
+
     # Create issue
     jira.issue_create(fields)
 
@@ -198,6 +207,9 @@ Manage issues
     # Get Issue Link
     jira.get_issue_link(link_id)
 
+    # Get Issue Edit Meta
+    jira.issue_editmeta(issue_key)
+
     # Create Issue Link
     data = {
             "type": {"name": "Duplicate" },
@@ -226,6 +238,21 @@ Manage issues
 
     # Export Issues to csv
     jira.csv(jql, all_fields=False)
+
+    # Add watcher to an issue
+    jira.issue_add_watcher(issue_key, user)
+
+    # Remove watcher from an issue
+    jira.issue_delete_watcher(issue_key, user)
+
+    # Get watchers for an issue
+    jira.issue_get_watchers(issue_key)
+
+    # Archive an issue
+    jira.issue_archive(issue_id_or_key)
+
+    # Restore an issue
+    issue_restore(issue_id_or_key)
 
 
 Manage Boards

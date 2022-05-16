@@ -33,11 +33,26 @@ Manage projects
     # Project summary
     bitbucket.project_summary(key)
 
-    # Grant project permission to an specific user
+    # Check default permission for project
+    bitbucket.project_default_permissions(project_key, permission)
+
+    # Grant default permission for project
+    bitbucket.project_grant_default_permissions(project_key, permission)
+
+    # Grant project permission to a specific user
     bitbucket.project_grant_user_permissions(project_key, username, permission)
 
-    # Grant project permission to an specific group
+    # Grant project permission to a specific group
     bitbucket.project_grant_group_permissions(project_key, groupname, permission)
+
+    # Remove default permission for project
+    bitbucket.project_remove_default_permissions(project_key, permission)
+
+    # Remove all project permissions for a specific user
+    bitbucket.project_remove_user_permissions(project_key, username)
+
+    # Remove all project permissions for a specific group
+    bitbucket.project_remove_group_permissions(project_key, groupname)
 
 Manage repositories
 -------------------
@@ -98,6 +113,48 @@ Manage repositories
     # Delete a repository (DANGER!)
     bitbucket.delete_repo(project_key, repository_slug)
 
+    # Fork repo inside same project
+    fork_repository(project_key, repository_slug, new_repository_slug)
+
+    # Fork repo to new project
+    fork_repository(project_key, repository_slug, new_repository_slug, new_project_key, new_repository_slug)
+
+Manage Code Insights
+--------------------
+
+.. code-block:: python
+
+    # Delete an existing Code Insights report
+    bitbucket.delete_code_insights_report(project_key, repository_slug, commit_hash, report_key)
+
+    # Create a new Code Insights report
+    report = {
+        'details': 'This is an example report',
+        'result': 'FAIL',
+        'reporter': 'Anonymous',
+        'link': 'http://some-url',
+        'logo-url': 'http://some-url',
+        'data': [
+            {
+                'title': 'Example coverage',
+                'type': 'PERCENTAGE',
+                'value': 85
+            }
+        ]
+    }
+    bitbucket.create_code_insights_report(project_key, repository_slug, commit_hash, report_key, 'Code Insights Report', **report)
+
+    # Add annotations to a Code Insights report
+    annotations = [
+        {
+        'path': 'some/path/to/file',
+        'line': 32,
+        'message': 'Roses are red, Violets are blue, Unexpected { on line 32',
+        'severity': 'MEDIUM'
+        }
+    ]
+    bitbucket.add_code_insights_annotations_to_report(project_key, repository_slug, commit_hash, report_key, **annotations)
+
 Groups and admins
 -----------------
 
@@ -110,7 +167,7 @@ Groups and admins
     bitbucket.all_project_administrators()
 
     # Get users. Use 'user_filter' parameter to get specific users.
-    bitbucket.get_users(user_filter="username")
+    bitbucket.get_users(user_filter="username", limit=25, start=0)
 
 Manage code
 -----------
@@ -200,13 +257,13 @@ Branch permissions
 .. code-block:: python
 
     # Set branches permissions
-    bitbucket.set_branches_permissions(project_key, multiple_permissions=False, matcher_type=None, matcher_value=None, permission_type=None, repository=None, except_users=[], except_groups=[], except_access_keys=[], start=0, limit=25)
+    bitbucket.set_branches_permissions(project_key, multiple_permissions=False, matcher_type=None, matcher_value=None, permission_type=None, repository_slug=None, except_users=[], except_groups=[], except_access_keys=[], start=0, limit=25)
 
     # Delete a single branch permission by permission id
-    bitbucket.delete_branch_permission(project_key, permission_id, repository=None)
+    bitbucket.delete_branch_permission(project_key, permission_id, repository_slug=None)
 
     # Get a single branch permission by permission id
-    bitbucket.get_branch_permission(project_key, permission_id, repository=None)
+    bitbucket.get_branch_permission(project_key, permission_id, repository_slug=None)
 
 Pull Request management
 -----------------------
@@ -279,8 +336,11 @@ Pipelines management
         # Get the repository first
         r = cloud.workspaces.get(workspace).repositories.get(repository)
 
-        # Get all Pipelines results for repository
+        # Get first ten Pipelines results for repository
         r.pipelines.each()
+
+        # Get twenty last Pipelines results for repository
+        r.pipelines.each(sort="-created_on", pagelen=20)
 
         # Trigger default Pipeline on the latest revision of the master branch
         r.pipelines.trigger()

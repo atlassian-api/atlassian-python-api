@@ -20,6 +20,7 @@ Add a connection:
 
     from atlassian import Jira
     from atlassian import Confluence
+    from atlassian import Crowd
     from atlassian import Bitbucket
     from atlassian import ServiceDesk
     from atlassian import Xray
@@ -33,6 +34,12 @@ Add a connection:
         url='http://localhost:8090',
         username='admin',
         password='admin')
+
+    crowd = Crowd(
+        url='http://localhost:4990',
+        username='app-name',
+        password='app-password'
+    )
 
     bitbucket = Bitbucket(
         url='http://localhost:7990',
@@ -152,6 +159,19 @@ Or reuse cookie file:
         url='http://localhost:8080',
         cookies=cookie_dict)
 
+Or using Personal Access Token
+Note: this method is valid for Jira Data center / server editions only! For Jira cloud, see below.
+
+First, create your access token (check https://confluence.atlassian.com/enterprise/using-personal-access-tokens-1026032365.html for details)
+Then, just provide the token to the constructor:
+
+.. code-block:: python
+
+   jira = Jira(
+       url='https://your-jira-instance.company.com',
+       token=jira_access_token
+   )
+
 To authenticate to the Atlassian Cloud APIs Jira, Confluence, ServiceDesk:
 
 .. code-block:: python
@@ -204,6 +224,7 @@ And to Bitbucket Cloud:
 
    jira
    confluence
+   crowd
    bitbucket
    bamboo
    service_desk
