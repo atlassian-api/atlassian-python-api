@@ -2266,6 +2266,17 @@ class Jira(AtlassianRestAPI):
                 fields = fields + tab_fields
         return fields
 
+    def add_field(self, field_id, screen_id, tab_id):
+        """
+        Add field to a given tab in a screen
+        :param field_id: field or custom field ID to be added
+        :param screen_id: screen ID
+        :param tab_id: tab ID
+        """
+        url = f"rest/api/2/screens/{screen_id}/tabs/{tab_id}/fields"
+        data = {"fieldId": field_id}
+        return self.post(url, data = data)
+
     """
     Search
     Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/search
