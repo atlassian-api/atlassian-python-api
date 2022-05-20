@@ -1970,9 +1970,7 @@ class Jira(AtlassianRestAPI):
             "releaseDate": release_date,
         }
         base_url = self.resource_url("version")
-        url = "{base_url}/{version}".format(
-            base_url=base_url, version=version
-        )
+        url = "{base_url}/{version}".format(base_url=base_url, version=version)
         return self.put(url, data=payload)
 
     def get_project_roles(self, project_key):
