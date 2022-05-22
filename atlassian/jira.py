@@ -2613,7 +2613,7 @@ class Jira(AtlassianRestAPI):
         :param screen_id: screen ID
         :param tab_id: tab ID
         """
-        url = f"rest/api/2/screens/{screen_id}/tabs/{tab_id}/fields"
+        url = "rest/api/2/screens/{screen_id}/tabs/{tab_id}/fields".format(screen_id=screen_id, tab_id=tab_id)
         data = {"fieldId": field_id}
         return self.post(url, data=data)
 
