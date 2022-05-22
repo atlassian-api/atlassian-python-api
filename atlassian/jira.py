@@ -2615,7 +2615,7 @@ class Jira(AtlassianRestAPI):
         """
         url = f"rest/api/2/screens/{screen_id}/tabs/{tab_id}/fields"
         data = {"fieldId": field_id}
-        return self.post(url, data = data)
+        return self.post(url, data=data)
 
     """
     Search
@@ -3178,19 +3178,19 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
     REST resources for Issue Type Schemes
     """
 
-    def add_issuetypescheme(self, scheme_id, project_key):
+    def add_issue_type_scheme(self, scheme_id, project_key):
         """
         Associate an issue type scheme with an additional project
-        https://docs.atlassian.com/software/jira/docs/api/REST/8.5.8/?_ga=2.198649263.1264679215.1618243100-319766074.1595597417#api/2/issuetypescheme-addProjectAssociationsToScheme
+        https://docs.atlassian.com/software/jira/docs/api/REST/8.5.8#api/2/issuetypescheme-addProjectAssociationsToScheme
         :param scheme_id: The issue type scheme ID to update
         :param project_key: The project key to associate with the given issue type scheme
         :return:
         """
-        url = "/rest/api/2/issuetypescheme/{schemeId}/associations".format(schemeId=scheme_id)
-        data = {'idsOrKeys': [project_key]}
+        url = "rest/api/2/issuetypescheme/{schemeId}/associations".format(schemeId=scheme_id)
+        data = {"idsOrKeys": [project_key]}
         return self.post(url, data=data)
 
-    def create_issuetypescheme(self, name, description, default_issue_type_id, issue_type_ids):
+    def create_issuetype_scheme(self, name, description, default_issue_type_id, issue_type_ids):
         """
         Create an issue type scheme
         https://docs.atlassian.com/software/jira/docs/api/REST/8.13.6/#api/2/issuetypescheme-createIssueTypeScheme
@@ -3199,8 +3199,13 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param default_issue_type_id: The default issue type id for this type scheme
         :param issue_type_ids: A list of strings of available issue type ids for this scheme
         """
-        url = "/rest/api/2/issuetypescheme/"
-        data = {'name': name, 'description': description, 'defaultIssueTypeId': default_issue_type_id, 'issueTypeIds': issue_type_ids}
+        url = "rest/api/2/issuetypescheme/"
+        data = {
+            "name": name,
+            "description": description,
+            "defaultIssueTypeId": default_issue_type_id,
+            "issueTypeIds": issue_type_ids,
+        }
         return self.post(url, data=data)
 
     """
