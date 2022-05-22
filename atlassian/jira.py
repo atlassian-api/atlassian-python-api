@@ -2215,6 +2215,18 @@ class Jira(AtlassianRestAPI):
             params["expand"] = expand
         return self.get(url, params=params)
 
+    def create_permission_scheme(self, name, description, permissions):
+        """
+        Create a new permission scheme
+
+        :param name: Name of new permission scheme
+        :param description: Description of new permission scheme
+        :param permissions: Defined permission set
+        """
+        url = "rest/api/2/permissionscheme"
+        data = {"name": name, "description": description, "permissions": permissions}
+        return self.post(url, data=data)
+
     def get_issue_types(self):
         """
         Return all issue types
@@ -2593,6 +2605,17 @@ class Jira(AtlassianRestAPI):
                 tab_fields = self.get_screen_tab_fields(screen_id=screen_id, tab_id=tab_id)
                 fields = fields + tab_fields
         return fields
+
+    def add_field(self, field_id, screen_id, tab_id):
+        """
+        Add field to a given tab in a screen
+        :param field_id: field or custom field ID to be added
+        :param screen_id: screen ID
+        :param tab_id: tab ID
+        """
+        url = f"rest/api/2/screens/{screen_id}/tabs/{tab_id}/fields"
+        data = {"fieldId": field_id}
+        return self.post(url, data = data)
 
     """
     Search
@@ -3150,6 +3173,35 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         params = {"key": key}
         url = self.resource_url("projectvalidate/key")
         return self.get(url, params=params)
+
+    """
+    REST resources for Issue Type Schemes
+    """
+
+    def add_issuetypescheme(self, scheme_id, project_key):
+        """
+        Associate an issue type scheme with an additional project
+        https://docs.atlassian.com/software/jira/docs/api/REST/8.5.8/?_ga=2.198649263.1264679215.1618243100-319766074.1595597417#api/2/issuetypescheme-addProjectAssociationsToScheme
+        :param scheme_id: The issue type scheme ID to update
+        :param project_key: The project key to associate with the given issue type scheme
+        :return:
+        """
+        url = "/rest/api/2/issuetypescheme/{schemeId}/associations".format(schemeId=scheme_id)
+        data = {'idsOrKeys': [project_key]}
+        return self.post(url, data=data)
+
+    def create_issuetypescheme(self, name, description, default_issue_type_id, issue_type_ids):
+        """
+        Create an issue type scheme
+        https://docs.atlassian.com/software/jira/docs/api/REST/8.13.6/#api/2/issuetypescheme-createIssueTypeScheme
+        :param name: The issue type scheme name
+        :param description: The issue type scheme description
+        :param default_issue_type_id: The default issue type id for this type scheme
+        :param issue_type_ids: A list of strings of available issue type ids for this scheme
+        """
+        url = "/rest/api/2/issuetypescheme/"
+        data = {'name': name, 'description': description, 'defaultIssueTypeId': default_issue_type_id, 'issueTypeIds': issue_type_ids}
+        return self.post(url, data=data)
 
     """
     REST resource for starting/stopping/querying indexing.
