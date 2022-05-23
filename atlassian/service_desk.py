@@ -95,7 +95,7 @@ class ServiceDesk(AtlassianRestAPI):
         :param request_participants: list
         :return: New request
         """
-        log.warning("Creating request...")
+        log.info("Creating request...")
         data = {
             "serviceDeskId": service_desk_id,
             "requestTypeId": request_type_id,
