@@ -2868,6 +2868,14 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         url = "rest/plugins/1.0/{plugin_key}-key".format(plugin_key=plugin_key)
         return self.get(url, headers=self.no_check_headers, trailing=True)
 
+    def get_plugin_license_info(self, plugin_key):
+        """
+        Provide plugin license info
+        :return a json specific License query
+        """
+        url = f"/rest/plugins/1.0/{plugin_key}-key/license"
+        return self.get(url, headers=self.no_check_headers, trailing=True)
+
     def upload_plugin(self, plugin_path):
         """
         Provide plugin path for upload into Jira e.g. useful for auto deploy
