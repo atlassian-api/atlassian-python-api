@@ -392,7 +392,7 @@ class AtlassianRestAPI(object):
         if 400 <= response.status_code < 600:
             try:
                 j = response.json()
-                error_msg = "\n".join(j["errorMessages"] + [k + ": " + v for k, v in j["errors"].items()])
+                error_msg = "\n".join(j.get("errorMessages", list()) + [k + ": " + v for k, v in j.get("errors", dict()).items()])
             except Exception:
                 response.raise_for_status()
             else:
