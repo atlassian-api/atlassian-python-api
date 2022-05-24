@@ -2873,7 +2873,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         Provide plugin license info
         :return a json specific License query
         """
-        url = f"/rest/plugins/1.0/{plugin_key}-key/license"
+        url = "rest/plugins/1.0/{plugin_key}-key/license".format(plugin_key=plugin_key)
         return self.get(url, headers=self.no_check_headers, trailing=True)
 
     def upload_plugin(self, plugin_path):
