@@ -50,7 +50,7 @@ Before you raise a PR
 Create the **Commit Header** with the relevant Service Name pre-fixed, examples below,
 
 * Jira: review user module           :heavy_check_mark:
-* [JIRA] Issues Move to Sprint       :heavy_check_mark:
+* [Jira] Issues Move to Sprint       :heavy_check_mark:
 * Confluence: update_page_property method     :heavy_check_mark:
 
 An example of a commit message header,
@@ -59,7 +59,7 @@ An example of a commit message header,
 
 could be better written as,
 
-* [JIRA] Project Issues parameter addition for start and limit      :heavy_check_mark:
+* [Jira] Project Issues parameter addition for start and limit      :heavy_check_mark:
 
 with the commit body have a detail about where/what changes introduced.
 
