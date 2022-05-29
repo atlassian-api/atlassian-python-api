@@ -117,7 +117,7 @@ Manage repositories
     fork_repository(project_key, repository_slug, new_repository_slug)
 
     # Fork repo to new project
-    fork_repository(project_key, repository_slug, new_repository_slug, new_project_key, new_repository_slug)
+    fork_repository(project_key, repository_slug, new_repository_slug, new_project_key)
 
 Manage Code Insights
 --------------------
