@@ -236,7 +236,7 @@ class ServiceDesk(AtlassianRestAPI):
         :param public: OPTIONAL: bool (default is True)
         :return: New comment
         """
-        log.warning("Creating comment...")
+        log.info("Creating comment...")
         data = {"body": body, "public": public}
         url = "rest/servicedeskapi/request/{}/comment".format(issue_id_or_key)
 
