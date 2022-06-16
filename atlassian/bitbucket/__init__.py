@@ -264,10 +264,9 @@ class Bitbucket(BitbucketBase):
         url = "project/{}".format(project_key)
         if repository_slug:
             url = "{}/repository/{}".format(url, repository_slug)
-        url = self.resource_url(url, api_root='rest/categories',
-                                api_version='latest')
+        url = self.resource_url(url, api_root="rest/categories", api_version="latest")
         data = self.get(url)
-        return data.get('result').get('categories')
+        return data.get("result").get("categories")
 
     ################################################################################################
     # Functions related to projects
