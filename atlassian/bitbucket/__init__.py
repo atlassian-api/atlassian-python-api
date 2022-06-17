@@ -259,7 +259,8 @@ class Bitbucket(BitbucketBase):
         Get a list of categories assigned to a project or repository.
         :param project_key: The project key as shown in URL.
         :param repository_slug: The repository as shown in URL (optional).
-        :return: List of categories
+        :return: If 'repository_slug', returns the list with categories of the repository,
+        otherwise, returns the list with the categories of the project 'project_key'
         """
         url = "project/{}".format(project_key)
         if repository_slug:
