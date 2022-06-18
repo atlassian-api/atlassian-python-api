@@ -254,6 +254,21 @@ class Bitbucket(BitbucketBase):
         files = {"plugin": open(plugin_path, "rb")}
         return self.post(url, files=files, headers=self.no_check_headers)
 
+    def get_categories(self, project_key, repository_slug=None):
+        """
+        Get a list of categories assigned to a project or repository.
+        :param project_key: The project key as shown in URL.
+        :param repository_slug: The repository as shown in URL (optional).
+        :return: If 'repository_slug', returns the list with categories of the repository,
+        otherwise, returns the list with the categories of the project 'project_key'
+        """
+        url = "project/{}".format(project_key)
+        if repository_slug:
+            url = "{}/repository/{}".format(url, repository_slug)
+        url = self.resource_url(url, api_root="rest/categories", api_version="latest")
+        data = self.get(url)
+        return data.get("result").get("categories")
+
     ################################################################################################
     # Functions related to projects
     ################################################################################################
