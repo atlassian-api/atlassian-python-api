@@ -163,7 +163,7 @@ Manage issues
     jira.update_issue_field(key, fields)
 
     # Get existing custom fields or find by filter
-    get_custom_fields(self, search=None, start=1, limit=50):
+    jira.get_custom_fields(self, search=None, start=1, limit=50):
 
     # Check issue exists
     jira.issue_exists(issue_key)
