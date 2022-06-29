@@ -290,7 +290,7 @@ class AtlassianRestAPI(object):
                     if response.status_code == em[0] and response.reason == em[1]:
                         log.warning('Backing off due to error "{0}: {1}" for {2}s'.format(em[0], em[1], backoff))
                         time.sleep(backoff)
-                        backoff = backoff * 2 if backoff * 2 < self.max_backoff_seconds else self.max_backoff_seconds
+                        backoff = min(2 * backoff, self.max_backoff_seconds)
                         retries += 1
                         responseloop = True
                         break
