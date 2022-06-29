@@ -167,6 +167,16 @@ class Jira(AtlassianRestAPI):
         url = "{base_url}/{attachment_id}".format(base_url=base_url, attachment_id=attachment_id)
         return self.get(url)
 
+    def get_attachment_content(self, attachment_id):
+        """
+        Returns the content for an attachment
+        :param attachment_id: int
+        :return: json
+        """
+        base_url = self.resource_url("attachment")
+        url = "{base_url}/content/{attachment_id}".format(base_url=base_url, attachment_id=attachment_id)
+        return self.get(url)
+
     def remove_attachment(self, attachment_id):
         """
         Remove an attachment from an issue
@@ -836,6 +846,46 @@ class Jira(AtlassianRestAPI):
         base_url = self.resource_url("issue")
         return self.put("{base_url}/{key}".format(base_url=base_url, key=key), data={"fields": fields})
 
+    def update_issue_insight_field(self, key, field_id, insight_keys, add=False):
+        """
+        Set the value of an Insight field.
+
+        Args:
+            key (str): Jira issue key, eg. SFT-446
+            field_id (str): The internal Jira name of the Insight field, eg. customfield_10200
+            insight_keys (list): List of Insight objects to associate with the field. Limited
+                to 20 objects. If the field only takes a single object pass a single value list.
+            add (bool, optional): Add to the existing field rather than setting the field value.
+                Defaults to False.
+
+        Returns:
+            [type]: The insight object updated.
+        """
+        base_url = self.resource_url("issue")
+        action = 'add' if add else 'set'
+        data = {'update':
+            {
+                field_id: [
+                    {
+                        action: [
+                            {'key': i} for i in insight_keys
+                        ]
+                    }
+                ],
+                'summary': 'testapi'
+            }
+        }
+        data = {'fields':
+            {
+                field_id: [
+                    {'key': i} for i in insight_keys
+                ]
+            }
+        }
+        print(base_url)
+        print(data)
+        return self.put("{base_url}/{key}".format(base_url=base_url, key=key), data=data)
+
     def bulk_update_issue_field(self, key_list, fields="*all"):
         """
         :param key_list=list of issues with common filed to be updated
@@ -961,6 +1011,17 @@ class Jira(AtlassianRestAPI):
         return self.post(
             "{base_url}/{issue_key}/watchers".format(base_url=base_url, issue_key=issue_key),
             data=data,
+        )
+
+    def issue_get_watchers(self, issue_key):
+        """
+        Get watchers of an issue
+        :param issue_key:
+        :return:
+        """
+        base_url = self.resource_url("issue")
+        return self.get(
+            "{base_url}/{issue_key}/watchers".format(base_url=base_url, issue_key=issue_key),
         )
 
     def assign_issue(self, issue, account_id=None):
@@ -1510,6 +1571,19 @@ class Jira(AtlassianRestAPI):
         """
         return self.delete("rest/auth/1/websudo")
 
+    def users_get_all(self,
+        start=0,
+        limit=50,):
+
+        url = self.resource_url("users/search")
+        params = {
+            "startAt": start,
+            "maxResults": limit,
+        }
+        return self.get(url, params=params)
+
+
+
     def user_find_by_user_string(
         self,
         username=None,
@@ -1543,8 +1617,8 @@ class Jira(AtlassianRestAPI):
         """
         url = self.resource_url("user/search")
         params = {
-            "includeActive": include_active_users,
-            "includeInactive": include_inactive_users,
+            "includeActive": str(include_active_users).lower(),
+            "includeInactive": str(include_inactive_users).lower(),
             "startAt": start,
             "maxResults": limit,
         }
