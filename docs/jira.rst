@@ -254,6 +254,15 @@ Manage issues
     # Restore an issue
     issue_restore(issue_id_or_key)
 
+Epic Issues
+-------------
+
+*Uses the Jira Agile API*
+
+.. code-block:: python
+
+    # Issues within an Epic
+    jira.epic_issues(epic_key)
 
 Manage Boards
 -------------
