@@ -12,7 +12,8 @@ Getting Started
 * Keep it sync_'ed while you are developing
 * Install pyenv_
 * Install related atlassian product for testing through SDK_ or use the cloud instance
-* ``pip install -r requirements-dev.txt``
+* `apt install libkrb5-dev`
+* Install Kerberos Dependency: `pip install -r requirements-dev.txt`
 * Start up related product:
   - Standalone product atlas-run-standalone_
   - For cloud product, just do registration
@@ -24,6 +25,7 @@ Getting Started
 .. _pyenv: https://amaral.northwestern.edu/resources/guides/pyenv-tutorial
 .. _SDK: https://developer.atlassian.com/server/framework/atlassian-sdk/downloads/
 .. _atlas-run-standalone: https://developer.atlassian.com/server/framework/atlassian-sdk/atlas-run-standalone/
+
 
 Mandatory conditions
 --------------------
