@@ -829,6 +829,23 @@ class Jira(AtlassianRestAPI):
 
         return self.get(url, params=params)
 
+    def epic_issues(self, epic, fields="*all", expand=None):
+        """
+        Given an epic return all child issues
+        By default, all fields are returned in this get-issue resource
+        Cloud Software API
+
+        :param epic: str
+        :param fields: list of fields, for example: ['priority', 'summary', 'customfield_10007']
+        :param expand: str: A comma-separated list of the parameters to expand.
+        :returns: Issues within the epic
+        :rtype: list
+        """
+        base_url = self.resource_url("epic", api_root="rest/agile", api_version="1.0")
+        url = "{base_url}/{key}/issue?fields={fields}".format(base_url=base_url, key=epic, fields=fields)
+        params = {}
+        return self.get(url, params=params)
+
     def bulk_issue(self, issue_list, fields="*all"):
         """
         :param fields:
