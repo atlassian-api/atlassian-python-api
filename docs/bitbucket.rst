@@ -327,6 +327,26 @@ Conditions-Reviewers management
     # Delete a project condition for specific repository in project
     bitbucket.delete_repo_condition(project_key, repo_key, id_condition)
 
+Bitbucket Cloud
+-------------
+
+.. code-block:: python
+
+    # Get a list of workplaces:
+    cloud.workspaces.each()
+
+    # Get a single workplace by workplace slug
+    workplace = cloud.workspaces.get(workspace_slug)
+
+    # Get a list of projects in a workspace
+    workplace.projects.each():
+
+    # Get a single project from a workplace by project key
+    project = workplace.projects.get(project_key)
+
+    # Get a list of repos from a project
+    project.repositories.each():
+
 Pipelines management
 --------------------
 
