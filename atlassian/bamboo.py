@@ -174,6 +174,22 @@ class Bamboo(AtlassianRestAPI):
         resource = "rest/api/latest/plan/{}".format(plan_key)
         return self.get(resource, params=params)
 
+    def search_plans(self, search_term, fuzzy=True, start_index=0, max_results=25):
+        """
+        Search plans by name
+        :param search_term: str
+        :param fuzzy: bool optional
+        :param start_index: optional
+        :param max_results: optional
+        :return: GET request
+        """
+
+        resource = "rest/api/latest/search/plans"
+        return self.get(
+            resource,
+            params={"fuzzy": fuzzy, "searchTerm": search_term, "max-results": max_results, "start-index": start_index},
+        )
+
     def delete_plan(self, plan_key):
         """
         Marks plan for deletion. Plan will be deleted by a batch job.
