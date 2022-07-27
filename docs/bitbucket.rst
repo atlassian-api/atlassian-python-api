@@ -328,7 +328,7 @@ Conditions-Reviewers management
     bitbucket.delete_repo_condition(project_key, repo_key, id_condition)
 
 Bitbucket Cloud
--------------
+---------------
 
 .. code-block:: python
 
