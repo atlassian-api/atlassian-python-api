@@ -24,6 +24,9 @@ Projects & Plans
     # Get plan information
     get_plan(plan_key)
 
+    # Search for a plan by name
+    search_plans(name, name, fuzzy=True, start_index=0, max_results=25)
+
     # Delete a plan (or a plan branch)
     delete_plan(plan_key)
 
