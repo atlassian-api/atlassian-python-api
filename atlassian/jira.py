@@ -22,35 +22,33 @@ class Jira(AtlassianRestAPI):
 
         super(Jira, self).__init__(url, *args, **kwargs)
 
-    def get_permissions(self, project_id=None, project_key=None, issue_id=None, issue_key=None):
+    def get_permissions(self, permissions, project_id=None, project_key=None, issue_id=None, issue_key=None):
         """
-        Returns all permissions in the system and whether the currently logged in user has them.
-        You can optionally provide a specific context
-        to get permissions for (projectKey OR projectId OR issueKey OR issueId)
-        When no context supplied the project related permissions will return true
-        if the user has that permission in ANY project
-        If a project context is provided, project related permissions will return true
-        if the user has the permissions in the specified project.
-        For permissions that are determined using issue data (e.g Current Assignee), true will be returned
-        if the user meets the permission criteria in ANY issue in that project If an issue context is provided,
-        it will return whether or not the user has each permission in that specific issue
-        NB: The above means that for issue-level permissions (EDIT_ISSUE for example),
-        hasPermission may be true when no context is provided, or when a project context is provided,
-        but may be false for any given (or all) issues. This would occur (for example)
-        if Reporters were given the EDIT_ISSUE permission.
-        This is because any user could be a reporter,
-        except in the context of a concrete issue, where the reporter is known.
+        Returns a list of permissions indicating which permissions the user has. Details of the user's permissions can
+         be obtained in a global, project, issue or comment context.
 
-        Global permissions will still be returned for all scopes.
+        The user is reported as having a project permission:
+        - in the global context, if the user has the project permission in any project.
+        - for a project, where the project permission is determined using issue data, if the user meets the
+         permission's criteria for any issue in the project. Otherwise, if the user has the project permission in
+         the project.
+        - for an issue, where a project permission is determined using issue data, if the user has the permission in the
+         issue. Otherwise, if the user has the project permission in the project containing the issue.
+        - for a comment, where the user has both the permission to browse the comment and the project permission for the
+         comment's parent issue. Only the BROWSE_PROJECTS permission is supported. If a commentId is provided whose
+         permissions does not equal BROWSE_PROJECTS, a 400 error will be returned.
 
-        Prior to version 6.4 this service returned project permissions with keys corresponding to
-        com.atlassian.jira.security.Permissions.Permission constants.
-        Since 6.4 those keys are considered deprecated and this service returns system project permission keys
-        corresponding to constants defined in com.atlassian.jira.permission.ProjectPermissions.
-        Permissions with legacy keys are still also returned for backwards compatibility,
-        they are marked with an attribute deprecatedKey=true.
-        The attribute is missing for project permissions with the current keys.
+        This means that users may be shown as having an issue permission (such as EDIT_ISSUES) in the global context or
+         a project context but may not have the permission for any or all issues. For example, if Reporters have the
+         EDIT_ISSUES permission a user would be shown as having this permission in the global context or the context of
+         a project, because any user can be a reporter. However, if they are not the user who reported the issue queried
+         they would not have EDIT_ISSUES permission for that issue.
 
+        Global permissions are unaffected by context.
+
+        This operation can be accessed anonymously.
+
+        :param permissions: (str)  A list of permission keys. This parameter accepts a comma-separated list. (Required)
         :param project_id: (str)  id of project to scope returned permissions for.
         :param project_key: (str) key of project to scope returned permissions for.
         :param issue_id: (str)  key of the issue to scope returned permissions for.
@@ -59,7 +57,7 @@ class Jira(AtlassianRestAPI):
         """
 
         url = self.resource_url("mypermissions")
-        params = {}
+        params = {"permissions": permissions}
 
         if project_id:
             params["projectId"] = project_id
