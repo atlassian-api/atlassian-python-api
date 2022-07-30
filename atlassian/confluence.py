@@ -673,6 +673,7 @@ class Confluence(AtlassianRestAPI):
         type="page",
         representation="storage",
         editor=None,
+        full_width=False,
     ):
         """
         Create page from scratch
@@ -683,6 +684,7 @@ class Confluence(AtlassianRestAPI):
         :param type:
         :param representation: OPTIONAL: either Confluence 'storage' or 'wiki' markup format
         :param editor: OPTIONAL: v2 to be created in the new editor
+        :param full_width: DEFAULT: False
         :return:
         """
         log.info('Creating {type} "{space}" -> "{title}"'.format(space=space, title=title, type=type))
@@ -692,11 +694,15 @@ class Confluence(AtlassianRestAPI):
             "title": title,
             "space": {"key": space},
             "body": self._create_body(body, representation),
+            "metadata": {"properties": {}},
         }
         if parent_id:
             data["ancestors"] = [{"type": type, "id": parent_id}]
         if editor is not None and editor in ["v1", "v2"]:
-            data["metadata"] = {"properties": {"editor": {"value": editor}}}
+            data["metadata"]["properties"]["editor"] = {"value": editor}
+        if full_width is True:
+            data["metadata"]["properties"]["content-appearance-draft"] = {"value": "full-width"}
+            data["metadata"]["properties"]["content-appearance-published"] = {"value": "full-width"}
         try:
             response = self.post(url, data=data)
         except HTTPError as e:
