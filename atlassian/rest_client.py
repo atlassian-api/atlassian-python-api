@@ -2,6 +2,7 @@
 import logging
 from json import dumps
 
+import random
 import requests
 import time
 from oauthlib.oauth1 import SIGNATURE_RSA
@@ -290,7 +291,7 @@ class AtlassianRestAPI(object):
                         break
                     if response.status_code == em[0] and response.reason == em[1]:
                         log.warning('Backing off due to error "{0}: {1}" for {2}s'.format(em[0], em[1], backoff))
-                        time.sleep(backoff)
+                        time.sleep(backoff + (random.random() * backoff / 10))
                         backoff = min(2 * backoff, self.max_backoff_seconds)
                         retries += 1
                         responseloop = True
