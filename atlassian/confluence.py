@@ -1367,7 +1367,7 @@ class Confluence(AtlassianRestAPI):
         :param version_number: version number
         :return:
         """
-        url = "rest/experimental/content/{id}/version/{versionNumber}".format(id=page_id, versionNumber=version_number)
+        url = "rest/api/content/{id}/version/{versionNumber}".format(id=page_id, versionNumber=version_number)
         self.delete(url)
 
     def remove_page_history(self, page_id, version_number):
