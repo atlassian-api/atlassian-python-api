@@ -772,7 +772,7 @@ class Jira(AtlassianRestAPI):
         data = {"name": username}
         return self.post(url, params=params, data=data)
 
-    def remove_user_from_group(self, username="", group_name="", account_id=""):
+    def remove_user_from_group(self, username=None, group_name=None, account_id=None):
         """
         Remove given user from a group
 
