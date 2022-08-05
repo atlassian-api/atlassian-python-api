@@ -72,7 +72,7 @@ Manage groups
     jira.add_user_to_group(username, group_name)
 
     # Remove given user from a group
-    jira.remove_user_from_group(username, group_name)
+    jira.remove_user_from_group(username=None, group_name=None, account_id=None)
 
 Manage projects
 ---------------
