@@ -1012,7 +1012,7 @@ class Bitbucket(BitbucketBase):
         for user in self.project_users_with_administrator_permissions(project_key):
             repo_administrators.append(user)
         # We convert to a set to ensure uniqueness then back to a list for later useability
-        return list({user['id']: user for user in repo_administrators}.values())
+        return list({user["id"]: user for user in repo_administrators}.values())
 
     def repo_groups_with_administrator_permissions(self, project_key, repo_key):
         """
@@ -1024,7 +1024,7 @@ class Bitbucket(BitbucketBase):
         repo_group_administrators = []
         for group in self.repo_groups(project_key, repo_key):
             if group["permission"] == "REPO_ADMIN":
-                repo_group_administrators.append(group['group']['name'])
+                repo_group_administrators.append(group["group"]["name"])
         for group in self.project_groups_with_administrator_permissions(project_key):
             repo_group_administrators.append(group)
         # We convert to a set to ensure uniqueness, then back to a list for later useability
