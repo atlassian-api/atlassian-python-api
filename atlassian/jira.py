@@ -785,6 +785,37 @@ class Jira(AtlassianRestAPI):
         params = {"groupname": group_name, "username": username}
 
         return self.delete(url, params=params)
+    
+    
+    def get_users_with_browse_permission_to_a_project(self, username, issue_key=None, project_key=None,
+                                                      start=0, limit=100):
+        """
+        Returns a list of active users that match the search string. This resource cannot be accessed anonymously
+        and requires the Browse Users global permission. Given an issue key this resource will provide a list of users
+        that match the search string and have the browse issue permission for the issue provided.
+
+        :param: username:
+        :param: issueKey:
+        :param: projectKey:
+        :param: startAt: OPTIONAL
+        :param: maxResults: OPTIONAL
+        :return: List of active users who has browser permission for the given project_key or issue_key
+        """
+        url = self.resource_url("user/viewissue/search")
+        params = {}
+        if username:
+            params["username"] = username
+        if issue_key:
+            params["issueKey"] = issue_key
+        if project_key:
+            params["projectKey"] = project_key
+        if start:
+            params["startAt"] = start
+        if limit:
+            params["maxResults"] = limit
+
+        return self.get(url, params=params)
+
 
     """
     Issue
