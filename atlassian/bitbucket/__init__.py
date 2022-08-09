@@ -995,6 +995,41 @@ class Bitbucket(BitbucketBase):
         """
         return [group["group"]["name"] for group in self.project_groups(key) if group["permission"] == "PROJECT_ADMIN"]
 
+    def repo_users_with_administrator_permissions(self, project_key, repo_key):
+        """
+        Get repository administrators for repository
+        :param project_key: The project key
+        :param repo_key: The repository key
+        :return: List of repo administrators
+        """
+        repo_administrators = []
+        for user in self.repo_users(project_key, repo_key):
+            if user["permission"] == "REPO_ADMIN":
+                repo_administrators.append(user)
+        for group in self.repo_groups_with_administrator_permissions(project_key, repo_key):
+            for user in self.group_members(group):
+                repo_administrators.append(user)
+        for user in self.project_users_with_administrator_permissions(project_key):
+            repo_administrators.append(user)
+        # We convert to a set to ensure uniqueness then back to a list for later useability
+        return list({user["id"]: user for user in repo_administrators}.values())
+
+    def repo_groups_with_administrator_permissions(self, project_key, repo_key):
+        """
+        Get groups with admin permissions
+        :param project_key:
+        :param repo_key:
+        :return:
+        """
+        repo_group_administrators = []
+        for group in self.repo_groups(project_key, repo_key):
+            if group["permission"] == "REPO_ADMIN":
+                repo_group_administrators.append(group["group"]["name"])
+        for group in self.project_groups_with_administrator_permissions(project_key):
+            repo_group_administrators.append(group)
+        # We convert to a set to ensure uniqueness, then back to a list for later useability
+        return list(set(repo_group_administrators))
+
     def repo_grant_group_permissions(self, project_key, repo_key, groupname, permission):
         """
         Grant the specified repository permission to an specific group
