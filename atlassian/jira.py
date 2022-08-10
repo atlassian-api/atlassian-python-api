@@ -789,7 +789,7 @@ class Jira(AtlassianRestAPI):
         log.warning("Removing user from a group...")
         url = self.resource_url("group/user")
         url_domain = self.url
-        if ("atlassian.net" in url_domain):
+        if "atlassian.net" in url_domain:
             params = {"groupname": group_name, "accountId": account_id}
         else:
             params = {"groupname": group_name, "username": username}
