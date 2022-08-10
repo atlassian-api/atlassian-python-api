@@ -147,6 +147,10 @@ Manage projects
     # Use 'expand' to get details (default is None)  possible values are notificationSchemeEvents,user,group,projectRole,field,all
     jira.get_priority_scheme_of_project(project_key_or_id, expand=None)
 
+    # Returns a list of active users who have browse permission for a project that matches the search string for username.
+    # Using " " string (space) for username gives All the active users who have browse permission for a project
+    jira.get_users_with_browse_permission_to_a_project(self, username, issue_key=None, project_key=None, start=0, limit=100)
+
 Manage issues
 -------------
 
