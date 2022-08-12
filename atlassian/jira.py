@@ -759,17 +759,27 @@ class Jira(AtlassianRestAPI):
         params["maxResults"] = limit
         return self.get(url, params=params)
 
-    def add_user_to_group(self, username, group_name):
+    def add_user_to_group(self, username=None, group_name=None, account_id=None):
         """
         Add given user to a group
 
+        For Jira DC/Server platform
         :param username: str
+        :param group_name: str
+        :return: Current state of the group
+
+        For Jira Cloud platform
+        :param account_id: str (name is no longer available for Jira Cloud platform)
         :param group_name: str
         :return: Current state of the group
         """
         url = self.resource_url("group/user")
         params = {"groupname": group_name}
-        data = {"name": username}
+        url_domain = self.url
+        if "atlassian.net" in url_domain:
+            data = {"accountId": account_id}
+        else:
+            data = {"name": username}
         return self.post(url, params=params, data=data)
 
     def remove_user_from_group(self, username=None, group_name=None, account_id=None):
