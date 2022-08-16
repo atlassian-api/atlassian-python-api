@@ -924,9 +924,12 @@ class Jira(AtlassianRestAPI):
         See https://confluence.atlassian.com/jiracore/createmeta-rest-endpoint-to-be-removed-975040986.html
         for further details.
         """
-        warn("This function will fail from Jira 9+. "
-             "Use issue_createmeta_issuetypes or issue_createmeta_fieldtypes instead.",
-             DeprecationWarning, stacklevel=2)
+        warn(
+            "This function will fail from Jira 9+. "
+            "Use issue_createmeta_issuetypes or issue_createmeta_fieldtypes instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         params = {}
         if expand:
             params["expand"] = expand
