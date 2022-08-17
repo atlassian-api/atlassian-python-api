@@ -1115,3 +1115,60 @@ class Bamboo(AtlassianRestAPI):
         ).headers["upm-token"]
         url = "rest/plugins/1.0/?token={upm_token}".format(upm_token=upm_token)
         return self.post(url, files=files, headers=self.no_check_headers)
+
+    def get_elastic_instance_logs(self, instance_id):
+        """
+        Get logs from an EC2 instance
+        :param instance_id:
+        :return:
+        """
+        resource = "/elasticInstances/instance/{instance_id}/logs".format(instance_id=instance_id)
+        return self.get(self.resource_url(resource))
+
+    def get_elastic_configurations(self):
+        """
+        Get list of all elastic configurations
+        :return:
+        """
+        resource = "elasticConfiguration"
+        return self.get(self.resource_url(resource))
+
+    def create_elastic_configuration(self, json):
+        """
+        Create an elastic configuration
+        :param json:
+        :return:
+        """
+        resource = "elasticConfiguration"
+        return self.post(self.resource_url(resource), json=json)
+
+    def get_elastic_configuration(self, configuration_id):
+        """
+        Get informatin of an elastic configuration
+        :param configuration_id:
+        :return:
+        """
+
+        resource = "elasticConfiguration/{configuration_id}".format(configuration_id=configuration_id)
+        return self.get(self.resource_url(resource))
+
+    def update_elastic_configuration(self, configuration_id, data):
+        """
+        Update an elastic configuration
+        :param configuration_id:
+        :param data:
+        :return:
+        """
+
+        resource = "elasticConfiguration/{configuration_id}".format(configuration_id=configuration_id)
+        return self.put(self.resource_url(resource), data=data)
+
+    def delete_elastic_configuration(self, configuration_id):
+        """
+        Delete an elastic configuration
+        :param configuration_id:
+        :return:
+        """
+
+        resource = "elasticConfiguration/{configuration_id}".format(configuration_id=configuration_id)
+        return self.delete(self.resource_url(resource))
