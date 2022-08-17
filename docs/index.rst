@@ -232,7 +232,7 @@ Add a connection:
         admin-api-key=admin-api-key)
 
     cloud_admin_users = CloudAdminUsers(
-        admin-api-key=admin-api-key)    
+        admin-api-key=admin-api-key)
 
 .. toctree::
    :maxdepth: 2

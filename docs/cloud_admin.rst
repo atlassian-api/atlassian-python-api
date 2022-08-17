@@ -17,5 +17,3 @@ CloudAdminUsers
 
     # Returns information about a single Atlassian account by ID
     cloud_admin_users.get_profile(account_id)
-
-    
