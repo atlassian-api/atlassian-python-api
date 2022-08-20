@@ -1454,7 +1454,7 @@ class Confluence(AtlassianRestAPI):
         log.debug('New Content: """{body}"""'.format(body=body))
 
         if confluence_body_content.strip() == body.strip():
-            log.warning("Content of {page_id} is exactly the same".format(page_id=page_id))
+            log.info("Content of {page_id} is exactly the same".format(page_id=page_id))
             return True
         else:
             log.info("Content of {page_id} differs".format(page_id=page_id))
