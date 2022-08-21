@@ -4,6 +4,7 @@ from requests import HTTPError
 from ..base import BitbucketCloudBase
 from .issues import Issues
 from .branchRestrictions import BranchRestrictions
+from .commits import Commits
 from .defaultReviewers import DefaultReviewers
 from .pipelines import Pipelines
 from .pullRequests import PullRequests
@@ -227,6 +228,11 @@ class Repository(BitbucketCloudBase):
             "{}/branch-restrictions".format(self.url), **self._new_session_args
         )
         self.__branches = Branches("{}/refs/branches".format(self.url), **self._new_session_args)
+        self.__commits = Commits(
+            "{}/commits".format(self.url),
+            data={"links": {"commit": {"href": "{}/commit".format(self.url)}}},
+            **self._new_session_args
+        )
         self.__default_reviewers = DefaultReviewers("{}/default-reviewers".format(self.url), **self._new_session_args)
         self.__issues = Issues("{}/issues".format(self.url), **self._new_session_args)
         self.__pipelines = Pipelines("{}/pipelines".format(self.url), **self._new_session_args)
@@ -336,6 +342,11 @@ class Repository(BitbucketCloudBase):
     def branches(self):
         """The repository branches."""
         return self.__branches
+
+    @property
+    def commits(self):
+        """The repository commits."""
+        return self.__commits
 
     @property
     def default_reviewers(self):
