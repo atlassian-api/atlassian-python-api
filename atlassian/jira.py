@@ -22,35 +22,33 @@ class Jira(AtlassianRestAPI):
 
         super(Jira, self).__init__(url, *args, **kwargs)
 
-    def get_permissions(self, project_id=None, project_key=None, issue_id=None, issue_key=None):
+    def get_permissions(self, permissions, project_id=None, project_key=None, issue_id=None, issue_key=None):
         """
-        Returns all permissions in the system and whether the currently logged in user has them.
-        You can optionally provide a specific context
-        to get permissions for (projectKey OR projectId OR issueKey OR issueId)
-        When no context supplied the project related permissions will return true
-        if the user has that permission in ANY project
-        If a project context is provided, project related permissions will return true
-        if the user has the permissions in the specified project.
-        For permissions that are determined using issue data (e.g Current Assignee), true will be returned
-        if the user meets the permission criteria in ANY issue in that project If an issue context is provided,
-        it will return whether or not the user has each permission in that specific issue
-        NB: The above means that for issue-level permissions (EDIT_ISSUE for example),
-        hasPermission may be true when no context is provided, or when a project context is provided,
-        but may be false for any given (or all) issues. This would occur (for example)
-        if Reporters were given the EDIT_ISSUE permission.
-        This is because any user could be a reporter,
-        except in the context of a concrete issue, where the reporter is known.
+        Returns a list of permissions indicating which permissions the user has. Details of the user's permissions can
+         be obtained in a global, project, issue or comment context.
 
-        Global permissions will still be returned for all scopes.
+        The user is reported as having a project permission:
+        - in the global context, if the user has the project permission in any project.
+        - for a project, where the project permission is determined using issue data, if the user meets the
+         permission's criteria for any issue in the project. Otherwise, if the user has the project permission in
+         the project.
+        - for an issue, where a project permission is determined using issue data, if the user has the permission in the
+         issue. Otherwise, if the user has the project permission in the project containing the issue.
+        - for a comment, where the user has both the permission to browse the comment and the project permission for the
+         comment's parent issue. Only the BROWSE_PROJECTS permission is supported. If a commentId is provided whose
+         permissions does not equal BROWSE_PROJECTS, a 400 error will be returned.
 
-        Prior to version 6.4 this service returned project permissions with keys corresponding to
-        com.atlassian.jira.security.Permissions.Permission constants.
-        Since 6.4 those keys are considered deprecated and this service returns system project permission keys
-        corresponding to constants defined in com.atlassian.jira.permission.ProjectPermissions.
-        Permissions with legacy keys are still also returned for backwards compatibility,
-        they are marked with an attribute deprecatedKey=true.
-        The attribute is missing for project permissions with the current keys.
+        This means that users may be shown as having an issue permission (such as EDIT_ISSUES) in the global context or
+         a project context but may not have the permission for any or all issues. For example, if Reporters have the
+         EDIT_ISSUES permission a user would be shown as having this permission in the global context or the context of
+         a project, because any user can be a reporter. However, if they are not the user who reported the issue queried
+         they would not have EDIT_ISSUES permission for that issue.
 
+        Global permissions are unaffected by context.
+
+        This operation can be accessed anonymously.
+
+        :param permissions: (str)  A list of permission keys. This parameter accepts a comma-separated list. (Required)
         :param project_id: (str)  id of project to scope returned permissions for.
         :param project_key: (str) key of project to scope returned permissions for.
         :param issue_id: (str)  key of the issue to scope returned permissions for.
@@ -59,7 +57,7 @@ class Jira(AtlassianRestAPI):
         """
 
         url = self.resource_url("mypermissions")
-        params = {}
+        params = {"permissions": permissions}
 
         if project_id:
             params["projectId"] = project_id
@@ -761,32 +759,81 @@ class Jira(AtlassianRestAPI):
         params["maxResults"] = limit
         return self.get(url, params=params)
 
-    def add_user_to_group(self, username, group_name):
+    def add_user_to_group(self, username=None, group_name=None, account_id=None):
         """
         Add given user to a group
 
+        For Jira DC/Server platform
         :param username: str
+        :param group_name: str
+        :return: Current state of the group
+
+        For Jira Cloud platform
+        :param account_id: str (name is no longer available for Jira Cloud platform)
         :param group_name: str
         :return: Current state of the group
         """
         url = self.resource_url("group/user")
         params = {"groupname": group_name}
-        data = {"name": username}
+        url_domain = self.url
+        if "atlassian.net" in url_domain:
+            data = {"accountId": account_id}
+        else:
+            data = {"name": username}
         return self.post(url, params=params, data=data)
 
-    def remove_user_from_group(self, username, group_name):
+    def remove_user_from_group(self, username=None, group_name=None, account_id=None):
         """
         Remove given user from a group
 
+        For Jira DC/Server platform
         :param username: str
+        :param group_name: str
+        :return:
+
+        For Jira Cloud platform
+        :param account_id: str (username is no longer available for Jira Cloud platform)
         :param group_name: str
         :return:
         """
         log.warning("Removing user from a group...")
         url = self.resource_url("group/user")
-        params = {"groupname": group_name, "username": username}
-
+        url_domain = self.url
+        if "atlassian.net" in url_domain:
+            params = {"groupname": group_name, "accountId": account_id}
+        else:
+            params = {"groupname": group_name, "username": username}
         return self.delete(url, params=params)
+
+    def get_users_with_browse_permission_to_a_project(
+        self, username, issue_key=None, project_key=None, start=0, limit=100
+    ):
+        """
+        Returns a list of active users that match the search string. This resource cannot be accessed anonymously
+        and requires the Browse Users global permission. Given an issue key this resource will provide a list of users
+        that match the search string and have the browse issue permission for the issue provided.
+
+        :param: username:
+        :param: issueKey:
+        :param: projectKey:
+        :param: startAt: OPTIONAL
+        :param: maxResults: OPTIONAL
+        :return: List of active users who has browser permission for the given project_key or issue_key
+        """
+        url = self.resource_url("user/viewissue/search")
+        params = {}
+        if username:
+            params["username"] = username
+        if issue_key:
+            params["issueKey"] = issue_key
+        if project_key:
+            params["projectKey"] = project_key
+        if start:
+            params["startAt"] = start
+        if limit:
+            params["maxResults"] = limit
+
+        return self.get(url, params=params)
 
     """
     Issue
@@ -827,6 +874,23 @@ class Jira(AtlassianRestAPI):
         if update_history is False:
             params["updateHistory"] = "false"
 
+        return self.get(url, params=params)
+
+    def epic_issues(self, epic, fields="*all", expand=None):
+        """
+        Given an epic return all child issues
+        By default, all fields are returned in this get-issue resource
+        Cloud Software API
+
+        :param epic: str
+        :param fields: list of fields, for example: ['priority', 'summary', 'customfield_10007']
+        :param expand: str: A comma-separated list of the parameters to expand.
+        :returns: Issues within the epic
+        :rtype: list
+        """
+        base_url = self.resource_url("epic", api_root="rest/agile", api_version="1.0")
+        url = "{base_url}/{key}/issue?fields={fields}".format(base_url=base_url, key=epic, fields=fields)
+        params = {}
         return self.get(url, params=params)
 
     def bulk_issue(self, issue_list, fields="*all"):
@@ -1532,52 +1596,73 @@ class Jira(AtlassianRestAPI):
         url = self.resource_url("user")
         return self.post(url, data=data)
 
-    def user_properties(self, username):
+    def user_properties(self, username=None, account_id=None):
         """
         Get user property
         :param username:
+        :param account_id: account_id is parameter used in Cloud instances
         :return:
         """
         base_url = self.resource_url("user/properties")
-        url = "{base_url}?username={username}".format(base_url=base_url, username=username)
+        url = ""
+        if username or not self.cloud:
+            url = "{base_url}?accountId={username}".format(base_url=base_url, username=username)
+        elif account_id or self.cloud:
+            url = "{base_url}?accountId={account_id}".format(base_url=base_url, account_id=account_id)
         return self.get(url)
 
-    def user_property(self, username, key_property):
+    def user_property(self, username=None, account_id=None, key_property=None):
         """
         Get user property
-        :param key_property:
         :param username:
+        :param account_id: account_id is parameter used in Cloud instances
+        :param key_property:
         :return:
         """
-        params = {"username": username}
+        if username or not self.cloud:
+            params = {"username": username}
+        elif account_id or self.cloud:
+            params = {"accountId": account_id}
         base_url = self.resource_url("user/properties")
         return self.get("{base_url}/{key_property}".format(base_url=base_url, key_property=key_property), params=params)
 
-    def user_set_property(self, username, key_property, value_property):
+    def user_set_property(self, username=None, account_id=None, key_property=None, value_property=None):
         """
         Set property for user
         :param username:
+        :param account_id: account_id is parameter used in Cloud instances
         :param key_property:
         :param value_property:
         :return:
         """
         base_url = self.resource_url("user/properties")
-        url = "{base_url}/{key_property}?username={user_name}".format(
-            base_url=base_url, key_property=key_property, user_name=username
-        )
-        data = {"value": value_property}
-        return self.put(url, data=data)
+        url = ""
+        if username or not self.cloud:
+            url = "{base_url}/{key_property}?username={username}".format(
+                base_url=base_url, key_property=key_property, username=username
+            )
+        elif account_id or self.cloud:
+            url = "{base_url}/{key_property}?accountId={account_id}".format(
+                base_url=base_url, key_property=key_property, account_id=account_id
+            )
 
-    def user_delete_property(self, username, key_property):
+        return self.put(url, data=value_property)
+
+    def user_delete_property(self, username=None, account_id=None, key_property=None):
         """
         Delete property for user
         :param username:
+        :param account_id: account_id is parameter used in Cloud instances
         :param key_property:
         :return:
         """
         base_url = self.resource_url("user/properties")
         url = "{base_url}/{key_property}".format(base_url=base_url, key_property=key_property)
-        params = {"username": username}
+        params = {}
+        if username or not self.cloud:
+            params = {"username": username}
+        elif account_id or self.cloud:
+            params = {"accountId": account_id}
         return self.delete(url, params=params)
 
     def user_update_or_create_property_through_rest_point(self, username, key, value):
@@ -1948,7 +2033,9 @@ class Jira(AtlassianRestAPI):
             "startDate": start_date,
             "releaseDate": release_date,
         }
-        return self.put("rest/api/3/version/{}".format(version), data=payload)
+        base_url = self.resource_url("version")
+        url = "{base_url}/{version}".format(base_url=base_url, version=version)
+        return self.put(url, data=payload)
 
     def get_project_roles(self, project_key):
         """
@@ -2191,6 +2278,18 @@ class Jira(AtlassianRestAPI):
         if expand:
             params["expand"] = expand
         return self.get(url, params=params)
+
+    def create_permission_scheme(self, name, description, permissions):
+        """
+        Create a new permission scheme
+
+        :param name: Name of new permission scheme
+        :param description: Description of new permission scheme
+        :param permissions: Defined permission set
+        """
+        url = "rest/api/2/permissionscheme"
+        data = {"name": name, "description": description, "permissions": permissions}
+        return self.post(url, data=data)
 
     def get_issue_types(self):
         """
@@ -2571,6 +2670,17 @@ class Jira(AtlassianRestAPI):
                 fields = fields + tab_fields
         return fields
 
+    def add_field(self, field_id, screen_id, tab_id):
+        """
+        Add field to a given tab in a screen
+        :param field_id: field or custom field ID to be added
+        :param screen_id: screen ID
+        :param tab_id: tab ID
+        """
+        url = "rest/api/2/screens/{screen_id}/tabs/{tab_id}/fields".format(screen_id=screen_id, tab_id=tab_id)
+        data = {"fieldId": field_id}
+        return self.post(url, data=data)
+
     """
     Search
     Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/search
@@ -2820,6 +2930,14 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :return a json of installed plugins
         """
         url = "rest/plugins/1.0/{plugin_key}-key".format(plugin_key=plugin_key)
+        return self.get(url, headers=self.no_check_headers, trailing=True)
+
+    def get_plugin_license_info(self, plugin_key):
+        """
+        Provide plugin license info
+        :return a json specific License query
+        """
+        url = "rest/plugins/1.0/{plugin_key}-key/license".format(plugin_key=plugin_key)
         return self.get(url, headers=self.no_check_headers, trailing=True)
 
     def upload_plugin(self, plugin_path):
@@ -3127,6 +3245,40 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         params = {"key": key}
         url = self.resource_url("projectvalidate/key")
         return self.get(url, params=params)
+
+    """
+    REST resources for Issue Type Schemes
+    """
+
+    def add_issue_type_scheme(self, scheme_id, project_key):
+        """
+        Associate an issue type scheme with an additional project
+        https://docs.atlassian.com/software/jira/docs/api/REST/8.5.8#api/2/issuetypescheme-addProjectAssociationsToScheme
+        :param scheme_id: The issue type scheme ID to update
+        :param project_key: The project key to associate with the given issue type scheme
+        :return:
+        """
+        url = "rest/api/2/issuetypescheme/{schemeId}/associations".format(schemeId=scheme_id)
+        data = {"idsOrKeys": [project_key]}
+        return self.post(url, data=data)
+
+    def create_issuetype_scheme(self, name, description, default_issue_type_id, issue_type_ids):
+        """
+        Create an issue type scheme
+        https://docs.atlassian.com/software/jira/docs/api/REST/8.13.6/#api/2/issuetypescheme-createIssueTypeScheme
+        :param name: The issue type scheme name
+        :param description: The issue type scheme description
+        :param default_issue_type_id: The default issue type id for this type scheme
+        :param issue_type_ids: A list of strings of available issue type ids for this scheme
+        """
+        url = "rest/api/2/issuetypescheme/"
+        data = {
+            "name": name,
+            "description": description,
+            "defaultIssueTypeId": default_issue_type_id,
+            "issueTypeIds": issue_type_ids,
+        }
+        return self.post(url, data=data)
 
     """
     REST resource for starting/stopping/querying indexing.

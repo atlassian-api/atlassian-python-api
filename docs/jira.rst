@@ -69,10 +69,10 @@ Manage groups
     jira.get_all_users_from_group(group, include_inactive_users=False, start=0, limit=50)
 
     # Add given user to a group
-    jira.add_user_to_group(username, group_name)
+    jira.add_user_to_group(username=None, group_name=None, account_id=None)
 
     # Remove given user from a group
-    jira.remove_user_from_group(username, group_name)
+    jira.remove_user_from_group(username=None, group_name=None, account_id=None)
 
 Manage projects
 ---------------
@@ -147,6 +147,10 @@ Manage projects
     # Use 'expand' to get details (default is None)  possible values are notificationSchemeEvents,user,group,projectRole,field,all
     jira.get_priority_scheme_of_project(project_key_or_id, expand=None)
 
+    # Returns a list of active users who have browse permission for a project that matches the search string for username.
+    # Using " " string (space) for username gives All the active users who have browse permission for a project
+    jira.get_users_with_browse_permission_to_a_project(self, username, issue_key=None, project_key=None, start=0, limit=100)
+
 Manage issues
 -------------
 
@@ -163,7 +167,7 @@ Manage issues
     jira.update_issue_field(key, fields)
 
     # Get existing custom fields or find by filter
-    get_custom_fields(self, search=None, start=1, limit=50):
+    jira.get_custom_fields(self, search=None, start=1, limit=50):
 
     # Check issue exists
     jira.issue_exists(issue_key)
@@ -254,6 +258,15 @@ Manage issues
     # Restore an issue
     issue_restore(issue_id_or_key)
 
+Epic Issues
+-------------
+
+*Uses the Jira Agile API*
+
+.. code-block:: python
+
+    # Issues within an Epic
+    jira.epic_issues(epic_key)
 
 Manage Boards
 -------------

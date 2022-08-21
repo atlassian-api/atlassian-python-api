@@ -76,8 +76,8 @@ class Confluence(AtlassianRestAPI):
             url = response.get("_links", {}).get("next")
             if url is None:
                 break
-            # From now on we have absolute URLs with parameters
-            absolute = True
+            # From now on we have relative URLs with parameters
+            absolute = False
             # Params are now provided by the url
             params = {}
             # Trailing should not be added as it is already part of the url
@@ -86,15 +86,33 @@ class Confluence(AtlassianRestAPI):
         return
 
     def page_exists(self, space, title):
+        """
+        Check if title exists as page.
+        :param space: Space key
+        :param title: Title of the page
+        :return:
+        """
+        url = "rest/api/content"
+        params = {}
+        if space is not None:
+            params["spaceKey"] = str(space)
+        if title is not None:
+            params["title"] = str(title)
+
         try:
-            if self.get_page_by_title(space, title):
-                log.info('Page "{title}" already exists in space "{space}"'.format(space=space, title=title))
-                return True
-            else:
-                log.info("Page does not exist because did not find by title search")
-                return False
-        except (HTTPError, KeyError, IndexError):
-            log.info('Page "{title}" does not exist in space "{space}"'.format(space=space, title=title))
+            response = self.get(url, params=params)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                raise ApiPermissionError(
+                    "The calling user does not have permission to view the content",
+                    reason=e,
+                )
+
+            raise
+
+        if response.get("results"):
+            return True
+        else:
             return False
 
     def get_page_child_by_type(self, page_id, type="page", start=None, limit=None, expand=None):
@@ -655,6 +673,7 @@ class Confluence(AtlassianRestAPI):
         type="page",
         representation="storage",
         editor=None,
+        full_width=False,
     ):
         """
         Create page from scratch
@@ -665,6 +684,7 @@ class Confluence(AtlassianRestAPI):
         :param type:
         :param representation: OPTIONAL: either Confluence 'storage' or 'wiki' markup format
         :param editor: OPTIONAL: v2 to be created in the new editor
+        :param full_width: DEFAULT: False
         :return:
         """
         log.info('Creating {type} "{space}" -> "{title}"'.format(space=space, title=title, type=type))
@@ -674,11 +694,15 @@ class Confluence(AtlassianRestAPI):
             "title": title,
             "space": {"key": space},
             "body": self._create_body(body, representation),
+            "metadata": {"properties": {}},
         }
         if parent_id:
             data["ancestors"] = [{"type": type, "id": parent_id}]
         if editor is not None and editor in ["v1", "v2"]:
-            data["metadata"] = {"properties": {"editor": {"value": editor}}}
+            data["metadata"]["properties"]["editor"] = {"value": editor}
+        if full_width is True:
+            data["metadata"]["properties"]["content-appearance-draft"] = {"value": "full-width"}
+            data["metadata"]["properties"]["content-appearance-published"] = {"value": "full-width"}
         try:
             response = self.post(url, data=data)
         except HTTPError as e:
@@ -1343,7 +1367,7 @@ class Confluence(AtlassianRestAPI):
         :param version_number: version number
         :return:
         """
-        url = "rest/experimental/content/{id}/version/{versionNumber}".format(id=page_id, versionNumber=version_number)
+        url = "rest/api/content/{id}/version/{versionNumber}".format(id=page_id, versionNumber=version_number)
         self.delete(url)
 
     def remove_page_history(self, page_id, version_number):
@@ -1430,7 +1454,7 @@ class Confluence(AtlassianRestAPI):
         log.debug('New Content: """{body}"""'.format(body=body))
 
         if confluence_body_content.strip() == body.strip():
-            log.warning("Content of {page_id} is exactly the same".format(page_id=page_id))
+            log.info("Content of {page_id} is exactly the same".format(page_id=page_id))
             return True
         else:
             log.info("Content of {page_id} differs".format(page_id=page_id))

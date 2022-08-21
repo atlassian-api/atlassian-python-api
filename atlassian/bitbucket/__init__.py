@@ -254,6 +254,21 @@ class Bitbucket(BitbucketBase):
         files = {"plugin": open(plugin_path, "rb")}
         return self.post(url, files=files, headers=self.no_check_headers)
 
+    def get_categories(self, project_key, repository_slug=None):
+        """
+        Get a list of categories assigned to a project or repository.
+        :param project_key: The project key as shown in URL.
+        :param repository_slug: The repository as shown in URL (optional).
+        :return: If 'repository_slug', returns the list with categories of the repository,
+        otherwise, returns the list with the categories of the project 'project_key'
+        """
+        url = "project/{}".format(project_key)
+        if repository_slug:
+            url = "{}/repository/{}".format(url, repository_slug)
+        url = self.resource_url(url, api_root="rest/categories", api_version="latest")
+        data = self.get(url)
+        return data.get("result").get("categories")
+
     ################################################################################################
     # Functions related to projects
     ################################################################################################
@@ -979,6 +994,41 @@ class Bitbucket(BitbucketBase):
         :return:
         """
         return [group["group"]["name"] for group in self.project_groups(key) if group["permission"] == "PROJECT_ADMIN"]
+
+    def repo_users_with_administrator_permissions(self, project_key, repo_key):
+        """
+        Get repository administrators for repository
+        :param project_key: The project key
+        :param repo_key: The repository key
+        :return: List of repo administrators
+        """
+        repo_administrators = []
+        for user in self.repo_users(project_key, repo_key):
+            if user["permission"] == "REPO_ADMIN":
+                repo_administrators.append(user)
+        for group in self.repo_groups_with_administrator_permissions(project_key, repo_key):
+            for user in self.group_members(group):
+                repo_administrators.append(user)
+        for user in self.project_users_with_administrator_permissions(project_key):
+            repo_administrators.append(user)
+        # We convert to a set to ensure uniqueness then back to a list for later useability
+        return list({user["id"]: user for user in repo_administrators}.values())
+
+    def repo_groups_with_administrator_permissions(self, project_key, repo_key):
+        """
+        Get groups with admin permissions
+        :param project_key:
+        :param repo_key:
+        :return:
+        """
+        repo_group_administrators = []
+        for group in self.repo_groups(project_key, repo_key):
+            if group["permission"] == "REPO_ADMIN":
+                repo_group_administrators.append(group["group"]["name"])
+        for group in self.project_groups_with_administrator_permissions(project_key):
+            repo_group_administrators.append(group)
+        # We convert to a set to ensure uniqueness, then back to a list for later useability
+        return list(set(repo_group_administrators))
 
     def repo_grant_group_permissions(self, project_key, repo_key, groupname, permission):
         """
@@ -2166,7 +2216,15 @@ class Bitbucket(BitbucketBase):
         data.update(report_params)
         return self.put(url, data=data)
 
-    def get_file_list(self, project_key, repository_slug, query=None, start=0, limit=None):
+    def get_file_list(
+        self,
+        project_key,
+        repository_slug,
+        sub_folder=None,
+        query=None,
+        start=0,
+        limit=None,
+    ):
         """
         Retrieve a page of files from particular directory of a repository.
         The search is done recursively, so all files from any sub-directory of the specified directory will be returned.
@@ -2174,12 +2232,15 @@ class Bitbucket(BitbucketBase):
         :param start:
         :param project_key:
         :param repository_slug:
+        :param sub_folder: a sub folder in the target repository to list the files from.
         :param query: the commit ID or ref (e.g. a branch or tag) to list the files at.
                       If not specified the default branch will be used instead.
         :param limit: OPTIONAL
         :return:
         """
         url = "{}/files".format(self._url_repo(project_key, repository_slug))
+        if sub_folder:
+            url = "{}/{}".format(url, sub_folder.lstrip("/"))
         params = {}
         if query:
             params["at"] = query

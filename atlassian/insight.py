@@ -8,9 +8,7 @@ log = logging.getLogger(__name__)
 
 class Insight(AtlassianRestAPI):
 
-    """
-    Insight for Jira API wrapper.
-    """
+    """Insight for Jira API wrapper."""
 
     # https://insight-javadoc.riada.io/insight-javadoc-8.6/insight-rest/
 
@@ -29,7 +27,8 @@ class Insight(AtlassianRestAPI):
         super(Insight, self).__init__(*args, **kwargs)
 
     def __cloud_init(self, *args, **kwargs):
-        """Creates a InsightCloud specific version of Insight()
+        """
+        Creates a InsightCloud specific version of Insight()
 
         Returns:
             Insight(AtlassianRestAPI)
@@ -56,7 +55,6 @@ class Insight(AtlassianRestAPI):
     def get_attachments_of_objects(self, object_id):
         """
         Get Attachment info
-
         Example output:
         [
             {
@@ -92,7 +90,6 @@ class Insight(AtlassianRestAPI):
     def upload_attachment_to_object(self, object_id, filename):
         """
         Add attachment to Object
-
         :param object_id: int
         :param filename: str, name, if file in current directory or full path to file
         """
@@ -107,7 +104,6 @@ class Insight(AtlassianRestAPI):
     def delete_attachment(self, attachment_id):
         """
         Add attachment to Object
-
         :param attachment_id: int
         """
         if self.cloud:
@@ -340,7 +336,7 @@ class Insight(AtlassianRestAPI):
         params = {"asc": asc, "abbreviate": abbreviate}
         url = self.url_joiner(self.api_root, "object/{id}/history".format(id=object_id))
         return self.get(url, params=params)
-
+ 
     def get_object_referenceinfo(self, object_id):
         """
         Find all references for an object

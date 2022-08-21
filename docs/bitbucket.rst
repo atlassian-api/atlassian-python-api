@@ -117,7 +117,7 @@ Manage repositories
     fork_repository(project_key, repository_slug, new_repository_slug)
 
     # Fork repo to new project
-    fork_repository(project_key, repository_slug, new_repository_slug, new_project_key, new_repository_slug)
+    fork_repository(project_key, repository_slug, new_repository_slug, new_project_key)
 
 Manage Code Insights
 --------------------
@@ -257,13 +257,13 @@ Branch permissions
 .. code-block:: python
 
     # Set branches permissions
-    bitbucket.set_branches_permissions(project_key, multiple_permissions=False, matcher_type=None, matcher_value=None, permission_type=None, repository=None, except_users=[], except_groups=[], except_access_keys=[], start=0, limit=25)
+    bitbucket.set_branches_permissions(project_key, multiple_permissions=False, matcher_type=None, matcher_value=None, permission_type=None, repository_slug=None, except_users=[], except_groups=[], except_access_keys=[], start=0, limit=25)
 
     # Delete a single branch permission by permission id
-    bitbucket.delete_branch_permission(project_key, permission_id, repository=None)
+    bitbucket.delete_branch_permission(project_key, permission_id, repository_slug=None)
 
     # Get a single branch permission by permission id
-    bitbucket.get_branch_permission(project_key, permission_id, repository=None)
+    bitbucket.get_branch_permission(project_key, permission_id, repository_slug=None)
 
 Pull Request management
 -----------------------
@@ -326,6 +326,26 @@ Conditions-Reviewers management
 
     # Delete a project condition for specific repository in project
     bitbucket.delete_repo_condition(project_key, repo_key, id_condition)
+
+Bitbucket Cloud
+---------------
+
+.. code-block:: python
+
+    # Get a list of workplaces:
+    cloud.workspaces.each()
+
+    # Get a single workplace by workplace slug
+    workplace = cloud.workspaces.get(workspace_slug)
+
+    # Get a list of projects in a workspace
+    workplace.projects.each():
+
+    # Get a single project from a workplace by project key
+    project = workplace.projects.get(project_key)
+
+    # Get a list of repos from a project
+    project.repositories.each():
 
 Pipelines management
 --------------------

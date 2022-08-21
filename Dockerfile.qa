@@ -15,15 +15,23 @@ RUN apt-get update
 RUN apt-get install -y apt-utils
 
 # Install python development
-RUN apt-get install -y python$PYTHON_VERSION-dev python3-pip
+RUN apt-get install -y \
+  python$PYTHON_VERSION-dev \
+  python3-pip
 
 # install distutils.util
-RUN if [ $PYTHON_VERSION != '3.10' ] ; then \
- apt-get install -y python3-distutils python3-distutils-extra python3-apt --reinstall ; \
-else \
- apt-get install -y python$PYTHON_VERSION-distutils python3-distutils-extra python3-apt --reinstall ; \
- curl -sS https://bootstrap.pypa.io/get-pip.py | python3.10 ; \
-fi
+RUN if [ $PYTHON_VERSION = '3.7' ] ; then \
+  apt-get install -y python$PYTHON_VERSION-distutils python3-distutils-extra python3-apt --reinstall ;\
+  elif [ $PYTHON_VERSION = '3.6' ] ; then \
+  apt-get install -y python$PYTHON_VERSION-distutils python3-distutils-extra python3-apt --reinstall ;\
+  elif [ $PYTHON_VERSION != '3.10' ] ; then \
+  apt-get install -y python3-distutils python3-distutils-extra python3-apt --reinstall ; \
+  else \
+  apt-get install -y python$PYTHON_VERSION-distutils python3-distutils-extra python3-apt --reinstall ; \
+  curl -sS https://bootstrap.pypa.io/get-pip.py | python3.10 ; \
+  fi
+
+# Register the version in alternatives
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python$PYTHON_VERSION 1
 
 # Install kerberos development

@@ -12,7 +12,8 @@ Getting Started
 * Keep it sync_'ed while you are developing
 * Install pyenv_
 * Install related atlassian product for testing through SDK_ or use the cloud instance
-* ``pip install -r requirements-dev.txt``
+* `apt install libkrb5-dev`
+* Install Kerberos Dependency: `pip install -r requirements-dev.txt`
 * Start up related product:
   - Standalone product atlas-run-standalone_
   - For cloud product, just do registration
@@ -25,6 +26,7 @@ Getting Started
 .. _SDK: https://developer.atlassian.com/server/framework/atlassian-sdk/downloads/
 .. _atlas-run-standalone: https://developer.atlassian.com/server/framework/atlassian-sdk/atlas-run-standalone/
 
+
 Mandatory conditions
 --------------------
 
@@ -34,7 +36,7 @@ Mandatory conditions
 
 Please follow the code style in the docs.
 
-.. _black:  https://black.readthedocs.io/en/stable/editor_integration.html
+.. _black:  https://black.readthedocs.io/en/stable/integrations/editors.html
 
 Connect on Chat for any queries
 ---------------------------------
@@ -50,7 +52,7 @@ Before you raise a PR
 Create the **Commit Header** with the relevant Service Name pre-fixed, examples below,
 
 * Jira: review user module           :heavy_check_mark:
-* [JIRA] Issues Move to Sprint       :heavy_check_mark:
+* [Jira] Issues Move to Sprint       :heavy_check_mark:
 * Confluence: update_page_property method     :heavy_check_mark:
 
 An example of a commit message header,
@@ -59,7 +61,7 @@ An example of a commit message header,
 
 could be better written as,
 
-* [JIRA] Project Issues parameter addition for start and limit      :heavy_check_mark:
+* [Jira] Project Issues parameter addition for start and limit      :heavy_check_mark:
 
 with the commit body have a detail about where/what changes introduced.
 
