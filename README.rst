@@ -125,6 +125,19 @@ Using Xray (Test Management tool for Jira):
     data = xr.get_tests('TEST-001')
     print(data)
 
+Using Bamboo:
+
+.. code-block:: python
+
+    from atlassian import Bamboo
+
+    bamboo = Bamboo(
+            url='http://localhost:6990/bamboo/',
+            token="<TOKEN>")
+
+    data = bamboo.get_elastic_configurations()
+    print(data)
+
 If you want to see the response in pretty print format JSON. Feel free for use construction like:
 
 .. code-block:: python

@@ -253,3 +253,26 @@ Other actions
     # Upload plugin
     upload_plugin(plugin_path)
 
+Elastic Bamboo
+--------------
+
+.. code-block:: python
+
+    # Get elastic bamboo instance logs
+    get_elastic_instance_logs('i-12ab34cd56ef')
+
+    # Get elastic bamboo configurations
+    get_elastic_configurations()
+
+    # Create elastic bamboo configuration
+    create_elastic_configuration({"name": "value"})
+
+    # Get elastic bamboo configuration
+    get_elastic_configuration('123456')
+
+    # Update elastic bamboo configuration
+    update_elastic_configuration('123456')
+
+    # Delete elastic bamboo configuration
+    delete_elastic_configuration('123456')
+
