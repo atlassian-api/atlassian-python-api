@@ -4,9 +4,10 @@ from json import dumps
 
 import requests
 from oauthlib.oauth1 import SIGNATURE_RSA
+from requests import HTTPError
 from requests_oauthlib import OAuth1, OAuth2
 from six.moves.urllib.parse import urlencode
-from requests import HTTPError
+
 from atlassian.request_utils import get_default_logger
 
 log = get_default_logger(__name__)
@@ -94,7 +95,7 @@ class AtlassianRestAPI(object):
         self._update_header("Authorization", "Bearer {token}".format(token=token))
 
     def _create_kerberos_session(self, _):
-        from requests_kerberos import HTTPKerberosAuth, OPTIONAL
+        from requests_kerberos import OPTIONAL, HTTPKerberosAuth
 
         self._session.auth = HTTPKerberosAuth(mutual_authentication=OPTIONAL)
 
@@ -392,9 +393,12 @@ class AtlassianRestAPI(object):
         if 400 <= response.status_code < 600:
             try:
                 j = response.json()
-                error_msg = "\n".join(
-                    j.get("errorMessages", list()) + [k + ": " + v for k, v in j.get("errors", dict()).items()]
-                )
+                if self.url == "https://api.atlassian.com":
+                    error_msg = "\n".join([k + ": " + v for k, v in j.items()])
+                else:
+                    error_msg = "\n".join(
+                        j.get("errorMessages", list()) + [k + ": " + v for k, v in j.get("errors", dict()).items()]
+                    )
             except Exception:
                 response.raise_for_status()
             else:

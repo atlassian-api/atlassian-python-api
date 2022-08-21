@@ -219,6 +219,21 @@ And to Bitbucket Cloud:
         password=bitbucket_app_password,
         cloud=True)
 
+Getting started with Cloud Admin module
+---------------------------------------
+
+Add a connection:
+
+.. code-block:: python
+
+    from atlassian import CloudAdminOrgs, CloudAdminUsers
+
+    cloud_admin_orgs = CloudAdminOrgs(
+        admin-api-key=admin-api-key)
+
+    cloud_admin_users = CloudAdminUsers(
+        admin-api-key=admin-api-key)
+
 .. toctree::
    :maxdepth: 2
 
@@ -229,6 +244,7 @@ And to Bitbucket Cloud:
    bamboo
    service_desk
    xray
+   cloud_admin
 
 .. |Build Status| image:: https://github.com/atlassian-api/atlassian-python-api/workflows/Test/badge.svg?branch=master
    :target: https://pypi.python.org/pypi/atlassian-python-api
