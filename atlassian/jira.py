@@ -940,9 +940,7 @@ class Jira(AtlassianRestAPI):
         return self.get(url)
 
     def issue_createmeta_fieldtypes(self, project, issue_type_id):
-        url = self.resource_url(
-            "issue/createmeta/{}/issuetypes/{}".format(project, issue_type_id)
-        )
+        url = self.resource_url("issue/createmeta/{}/issuetypes/{}".format(project, issue_type_id))
         return self.get(url)
 
     def issue_editmeta(self, key):
