@@ -1,7 +1,6 @@
 # coding=utf-8
 import logging
 import re
-from typing import Union
 from warnings import warn
 
 from requests import HTTPError
@@ -918,7 +917,7 @@ class Jira(AtlassianRestAPI):
             query_result, missing_issues = self.bulk_issue(issue_list, fields)
         return query_result, missing_issues
 
-    def issue_createmeta(self, project: str, expand="projects.issuetypes.fields"):
+    def issue_createmeta(self, project, expand="projects.issuetypes.fields"):
         """
         This function is deprecated.
         See https://confluence.atlassian.com/jiracore/createmeta-rest-endpoint-to-be-removed-975040986.html
@@ -933,15 +932,17 @@ class Jira(AtlassianRestAPI):
         params = {}
         if expand:
             params["expand"] = expand
-        url = "rest/api/2/issue/createmeta?projectKeys={}".format(project)
+        url = self.resource_url("issue/createmeta?projectKeys={}".format(project))
         return self.get(url, params=params)
 
-    def issue_createmeta_issuetypes(self, project: str):
-        url = "rest/api/2/issue/createmeta/{}/issuetypes".format(project)
+    def issue_createmeta_issuetypes(self, project):
+        url = self.resource_url("issue/createmeta/{}/issuetypes".format(project))
         return self.get(url)
 
-    def issue_createmeta_fieldtypes(self, project: str, issue_type_id: Union[str, int]):
-        url = "rest/api/2/issue/createmeta/{}/issuetypes/{}".format(project, issue_type_id)
+    def issue_createmeta_fieldtypes(self, project, issue_type_id):
+        url = self.resource_url(
+            "issue/createmeta/{}/issuetypes/{}".format(project, issue_type_id)
+        )
         return self.get(url)
 
     def issue_editmeta(self, key):
