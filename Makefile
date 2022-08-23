@@ -4,6 +4,7 @@
 
 PYTHON_VERSION ?= 3.7
 
+ATLASSIAN_SDK ?= atlassian-sdk
 QA_CONTAINER ?= atlassian-python-api-qa-$(PYTHON_VERSION)
 TEST_OPTS ?=
 
@@ -47,4 +48,9 @@ docker-qa-build: Dockerfile.qa requirements.txt requirements-dev.txt
 	docker build \
 		--tag $(QA_CONTAINER) \
 		--build-arg PYTHON_VERSION=$(PYTHON_VERSION) \
+		--file $< .
+
+docker-atlassian-standalone: Dockerfile.standalone
+	docker build \
+		--tag $(ATLASSIAN_SDK) \
 		--file $< .
