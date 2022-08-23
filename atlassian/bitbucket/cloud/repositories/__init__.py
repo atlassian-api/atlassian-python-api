@@ -62,7 +62,7 @@ class Repositories(RepositoriesBase):
         for repository in self._get_paged(None, params):
             yield self._get_object(repository)
 
-    def get(self, repository):
+    def get(self, workspace, repo_slug):
         """
         Returns the requested repository.
 
@@ -70,14 +70,14 @@ class Repositories(RepositoriesBase):
         directly it is usable if you do not have permission
         to access the workspace endpoint.
 
-        :param repository: string: The requested repository. Needs to be
-        the full name {workspace}/{slug}.
+        :param workspace: string: The workspace of the repository
+        :param repo_slug: string: The requested repository.
 
         :return: The requested Repository object
 
         API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-repositories/#api-repositories-workspace-repo-slug-get
         """
-        return self._get_object(super(Repositories, self).get(repository))
+        return self._get_object(super(Repositories, self).get("{}/{}".format(workspace, workspace)))
 
 
 class WorkspaceRepositories(RepositoriesBase):
