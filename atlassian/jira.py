@@ -1821,6 +1821,17 @@ class Jira(AtlassianRestAPI):
     Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/project
     """
 
+    def get_user_groups(self, account_id=None):
+        """
+        Get groups of a user
+        This API is only available for Jira Cloud platform
+        :param account_id: str
+        :return: list of group info
+        """
+        params = {"accountId": account_id}
+        url = self.resource_url("user/groups")
+        return self.get(url, params=params)
+
     def get_all_projects(self, included_archived=None, expand=None):
         return self.projects(included_archived, expand)
 

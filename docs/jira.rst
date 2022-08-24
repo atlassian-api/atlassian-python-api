@@ -51,6 +51,9 @@ Manage users
     # Fuzzy search using emailAddress or displayName
     jira.user_find_by_user_string(query, start=0, limit=50, include_inactive_users=False)
 
+    # Get groups of a user. This API is only available for Jira Cloud platform.
+    jira.get_user_groups(account_id)
+
 Manage groups
 -------------
 
