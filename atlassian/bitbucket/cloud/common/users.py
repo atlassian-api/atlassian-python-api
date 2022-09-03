@@ -25,6 +25,11 @@ class User(BitbucketCloudBase):
         """User id used by Bitbucket Cloud"""
         return self.get_data("uuid")
 
+    @property
+    def avatar(self):
+        """ URL to user avatar on Bitbucket Cloud """
+        return self.get_data("links")["avatar"]["href"]
+
 
 class Participant(BitbucketCloudBase):
     ROLE_REVIEWER = "REVIEWER"
