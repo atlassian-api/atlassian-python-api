@@ -77,7 +77,7 @@ class Repositories(RepositoriesBase):
 
         API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-repositories/#api-repositories-workspace-repo-slug-get
         """
-        return self._get_object(super(Repositories, self).get("{}/{}".format(workspace, workspace)))
+        return self._get_object(super(Repositories, self).get("{}/{}".format(workspace, repo_slug)))
 
 
 class WorkspaceRepositories(RepositoriesBase):
