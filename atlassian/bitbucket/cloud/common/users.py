@@ -27,7 +27,7 @@ class User(BitbucketCloudBase):
 
     @property
     def avatar(self):
-        """ URL to user avatar on Bitbucket Cloud """
+        """URL to user avatar on Bitbucket Cloud"""
         return self.get_data("links")["avatar"]["href"]
 
 
