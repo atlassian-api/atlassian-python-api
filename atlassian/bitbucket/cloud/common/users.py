@@ -31,6 +31,7 @@ class User(BitbucketCloudBase):
         return self.get_data("links")["avatar"]["href"]
 
 
+
 class Participant(BitbucketCloudBase):
     ROLE_REVIEWER = "REVIEWER"
     ROLE_PARTICIPANT = "PARTICIPANT"
@@ -72,3 +73,4 @@ class Participant(BitbucketCloudBase):
     def participated_on(self):
         """Time of last participation."""
         return self.get_time("participated_on")
+
