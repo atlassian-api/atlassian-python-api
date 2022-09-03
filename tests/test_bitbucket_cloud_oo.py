@@ -223,6 +223,7 @@ class TestPullRequests:
         assert tc1.author.uuid == "{User03UUID}"
         assert tc1.author.account_id == "User03AccountID"
         assert tc1.author.nickname == "User03Nickname"
+        assert tc1.author.avatar == "users/%7BUser03UUID%7D.png"
 
     def test_participants(self, tc1):
         participants = list(tc1.participants())
@@ -231,10 +232,13 @@ class TestPullRequests:
         p1 = participants[1]
         assert isinstance(p1, Participant)
         assert isinstance(p1.user, User)
+        print(p1)
         assert p1.user.display_name == "User03DisplayName"
         assert p1.user.uuid == "{User03UUID}"
         assert p1.user.account_id == "User03AccountID"
         assert p1.user.nickname == "User03Nickname"
+        assert p1.user.avatar == "users/%7BUser03UUID%7D.png"
+
         assert _datetimetostr(p1.participated_on) == _datetimetostr(datetime(2020, 7, 9, 7, 0, 54, 416331))
         assert p1.is_participant
         assert not p1.is_reviewer
