@@ -1190,7 +1190,10 @@ class Jira(AtlassianRestAPI):
         """
         base_url = self.resource_url("issue")
         url = "{base_url}/{issue}/assignee".format(base_url=base_url, issue=issue)
-        data = {"name": account_id}
+        if self.cloud:
+            data = {"accountId": account_id}
+        else:
+            data = {"name": account_id}
         return self.put(url, data=data)
 
     def create_issue(self, fields, update_history=False, update=None):
