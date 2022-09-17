@@ -21,7 +21,7 @@ class Pipelines(BitbucketCloudBase):
 
         1. Latest revision of a branch (specify ``branch``)
         2. Specific commit on a branch (additionally specify ``commit``)
-        3. Specific pipeline (additionally specify ``pattern``)
+        3. Specific pipeline (additionally specify ``pattern``. ``commit`` is optional here)
 
         Variables has to be a list of dictionaries:
 
@@ -48,8 +48,6 @@ class Pipelines(BitbucketCloudBase):
                 "hash": commit,
             }
         if pattern is not None:
-            if commit is None:
-                raise ValueError("Missing argument [commit].")
             data["target"]["selector"] = {
                 "type": "custom",
                 "pattern": pattern,
@@ -77,7 +75,12 @@ class Pipelines(BitbucketCloudBase):
             params["sort"] = sort
         if q is not None:
             params["q"] = q
-        for pipeline in self._get_paged(None, trailing=True, params=params):
+        for pipeline in self._get_paged(
+            None,
+            trailing=True,
+            paging_workaround=True,
+            params=params,
+        ):
             yield self.__get_object(pipeline)
 
         return
@@ -104,32 +107,32 @@ class Pipeline(BitbucketCloudBase):
 
     @property
     def uuid(self):
-        """ The pipeline uuid """
+        """The pipeline uuid"""
         return self.get_data("uuid")
 
     @property
     def build_number(self):
-        """ The pipeline build number """
+        """The pipeline build number"""
         return self.get_data("build_number")
 
     @property
     def build_seconds_used(self):
-        """ The pipeline duration in seconds """
+        """The pipeline duration in seconds"""
         return self.get_data("build_seconds_used")
 
     @property
     def created_on(self):
-        """ The pipeline creation time """
+        """The pipeline creation time"""
         return self.get_time("created_on")
 
     @property
     def completed_on(self):
-        """ The pipeline completion time """
+        """The pipeline completion time"""
         return self.get_time("completed_on")
 
     @property
     def pullrequest(self):
-        """ Returns a PullRequest object if the pipeline was triggered by a pull request, else None """
+        """Returns a PullRequest object if the pipeline was triggered by a pull request, else None"""
         target = self.get_data("target")
         if target["type"] == "pipeline_pullrequest_target":
             return PullRequest(
@@ -176,42 +179,42 @@ class Step(BitbucketCloudBase):
 
     @property
     def uuid(self):
-        """ The step uuid """
+        """The step uuid"""
         return self.get_data("uuid")
 
     @property
     def run_number(self):
-        """ The run number """
+        """The run number"""
         return self.get_data("run_number")
 
     @property
     def started_on(self):
-        """ The step start time """
+        """The step start time"""
         return self.get_time("started_on")
 
     @property
     def completed_on(self):
-        """ The step end time """
+        """The step end time"""
         return self.get_time("completed_on")
 
     @property
     def duration_in_seconds(self):
-        """ The step duration in seconds """
+        """The step duration in seconds"""
         return self.get_data("duration_in_seconds")
 
     @property
     def state(self):
-        """ The step state """
+        """The step state"""
         return self.get_data("state")
 
     @property
     def setup_commands(self):
-        """ The step setup commands """
+        """The step setup commands"""
         return self.get_data("setup_commands")
 
     @property
     def script_commands(self):
-        """ The step script commands """
+        """The step script commands"""
         return self.get_data("script_commands")
 
     def log(self, start=None, end=None):
@@ -249,7 +252,7 @@ class Step(BitbucketCloudBase):
         if response is None:
             if start is None:
                 return None
-            return (None, None)
+            return None, None
 
         if start is None:
             return response.content

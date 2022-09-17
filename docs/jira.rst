@@ -37,7 +37,7 @@ Manage users
 .. code-block:: python
 
     # Get user
-    jira.user(username)
+    jira.user(account_id)
 
     # Remove user
     jira.user_remove(username)
@@ -48,8 +48,11 @@ Manage users
     # Get web sudo cookies using normal http request
     jira.user_get_websudo()
 
-    # Fuzzy search using username and display name
-    jira.user_find_by_user_string(username, start=0, limit=50, include_inactive_users=False)
+    # Fuzzy search using emailAddress or displayName
+    jira.user_find_by_user_string(query, start=0, limit=50, include_inactive_users=False)
+
+    # Get groups of a user. This API is only available for Jira Cloud platform.
+    jira.get_user_groups(account_id)
 
 Manage groups
 -------------
@@ -69,10 +72,10 @@ Manage groups
     jira.get_all_users_from_group(group, include_inactive_users=False, start=0, limit=50)
 
     # Add given user to a group
-    jira.add_user_to_group(username, group_name)
+    jira.add_user_to_group(username=None, group_name=None, account_id=None)
 
     # Remove given user from a group
-    jira.remove_user_from_group(username, group_name)
+    jira.remove_user_from_group(username=None, group_name=None, account_id=None)
 
 Manage projects
 ---------------
@@ -104,13 +107,19 @@ Manage projects
     # Add missing version to project
     jira.add_version(key, project_id, version, is_archived=False, is_released=False)
 
+    # Update an existing version
+    jira.update_version(version, name=None, description=None, is_archived=None, is_released=None, start_date=None, release_date=None)
+
     # Get project leaders
     jira.project_leaders()
 
     # Get last project issuekey
     jira.get_project_issuekey_last(project)
 
-    # Get all project issue keys
+    # Get all project issue keys.
+    # JIRA Cloud API can return up to  100 results  in one API call.
+    # If your project has more than 100 issues see following community discussion:
+    # https://community.atlassian.com/t5/Jira-Software-questions/Is-there-a-limit-to-the-number-of-quot-items-quot-returned-from/qaq-p/1317195
     jira.get_project_issuekey_all(project)
 
     # Get project issues count
@@ -141,6 +150,10 @@ Manage projects
     # Use 'expand' to get details (default is None)  possible values are notificationSchemeEvents,user,group,projectRole,field,all
     jira.get_priority_scheme_of_project(project_key_or_id, expand=None)
 
+    # Returns a list of active users who have browse permission for a project that matches the search string for username.
+    # Using " " string (space) for username gives All the active users who have browse permission for a project
+    jira.get_users_with_browse_permission_to_a_project(self, username, issue_key=None, project_key=None, start=0, limit=100)
+
 Manage issues
 -------------
 
@@ -157,7 +170,7 @@ Manage issues
     jira.update_issue_field(key, fields)
 
     # Get existing custom fields or find by filter
-    get_custom_fields(self, search=None, start=1, limit=50):
+    jira.get_custom_fields(self, search=None, start=1, limit=50):
 
     # Check issue exists
     jira.issue_exists(issue_key)
@@ -167,6 +180,9 @@ Manage issues
 
     # Update issue
     jira.issue_update(issue_key, fields)
+
+    # Assign issue to user
+    jira.assign_issue(issue_key, account_id)
 
     # Create issue
     jira.issue_create(fields)
@@ -195,21 +211,65 @@ Manage issues
     # Get issue status
     jira.get_issue_status(issue_key)
 
-    # Create or Update Issue Links
-    jira.create_or_update_issue_remote_links(issue_key, link_url, title, global_id=None, relationship=None)
+    # Get Issue Link
+    jira.get_issue_link(link_id)
 
-    # Get Issue Link by link ID
+    # Get Issue Edit Meta
+    jira.issue_editmeta(issue_key)
+
+    # Create Issue Link
+    data = {
+            "type": {"name": "Duplicate" },
+            "inwardIssue": { "key": "HSP-1"},
+            "outwardIssue": {"key": "MKY-1"},
+            "comment": { "body": "Linked related issue!",
+                         "visibility": { "type": "group", "value": "jira-software-users" }
+            }
+    }
+    jira.create_issue_link(data)
+
+    # Remove Issue Link
+    jira.remove_issue_link(link_id)
+
+    # Create or Update Issue Remote Links
+    jira.create_or_update_issue_remote_links(issue_key, link_url, title, global_id=None, relationship=None, icon_url=None, icon_title=None)
+
+    # Get Issue Remote Link by link ID
     jira.get_issue_remote_link_by_id(issue_key, link_id)
 
-    # Update Issue Link by link ID
+    # Update Issue Remote Link by link ID
     jira.update_issue_remote_link_by_id(issue_key, link_id, url, title, global_id=None, relationship=None)
 
-    # Delete Issue Links
+    # Delete Issue Remote Links
     jira.delete_issue_remote_link_by_id(issue_key, link_id)
 
     # Export Issues to csv
     jira.csv(jql, all_fields=False)
 
+    # Add watcher to an issue
+    jira.issue_add_watcher(issue_key, user)
+
+    # Remove watcher from an issue
+    jira.issue_delete_watcher(issue_key, user)
+
+    # Get watchers for an issue
+    jira.issue_get_watchers(issue_key)
+
+    # Archive an issue
+    jira.issue_archive(issue_id_or_key)
+
+    # Restore an issue
+    issue_restore(issue_id_or_key)
+
+Epic Issues
+-------------
+
+*Uses the Jira Agile API*
+
+.. code-block:: python
+
+    # Issues within an Epic
+    jira.epic_issues(epic_key)
 
 Manage Boards
 -------------

@@ -20,6 +20,7 @@ Add a connection:
 
     from atlassian import Jira
     from atlassian import Confluence
+    from atlassian import Crowd
     from atlassian import Bitbucket
     from atlassian import ServiceDesk
     from atlassian import Xray
@@ -33,6 +34,12 @@ Add a connection:
         url='http://localhost:8090',
         username='admin',
         password='admin')
+
+    crowd = Crowd(
+        url='http://localhost:4990',
+        username='app-name',
+        password='app-password'
+    )
 
     bitbucket = Bitbucket(
         url='http://localhost:7990',
@@ -152,6 +159,19 @@ Or reuse cookie file:
         url='http://localhost:8080',
         cookies=cookie_dict)
 
+Or using Personal Access Token
+Note: this method is valid for Jira Data center / server editions only! For Jira cloud, see below.
+
+First, create your access token (check https://confluence.atlassian.com/enterprise/using-personal-access-tokens-1026032365.html for details)
+Then, just provide the token to the constructor:
+
+.. code-block:: python
+
+   jira = Jira(
+       url='https://your-jira-instance.company.com',
+       token=jira_access_token
+   )
+
 To authenticate to the Atlassian Cloud APIs Jira, Confluence, ServiceDesk:
 
 .. code-block:: python
@@ -199,15 +219,32 @@ And to Bitbucket Cloud:
         password=bitbucket_app_password,
         cloud=True)
 
+Getting started with Cloud Admin module
+---------------------------------------
+
+Add a connection:
+
+.. code-block:: python
+
+    from atlassian import CloudAdminOrgs, CloudAdminUsers
+
+    cloud_admin_orgs = CloudAdminOrgs(
+        admin-api-key=admin-api-key)
+
+    cloud_admin_users = CloudAdminUsers(
+        admin-api-key=admin-api-key)
+
 .. toctree::
    :maxdepth: 2
 
    jira
    confluence
+   crowd
    bitbucket
    bamboo
    service_desk
    xray
+   cloud_admin
 
 .. |Build Status| image:: https://github.com/atlassian-api/atlassian-python-api/workflows/Test/badge.svg?branch=master
    :target: https://pypi.python.org/pypi/atlassian-python-api

@@ -45,7 +45,7 @@ The Request actions
     sd.create_request_comment(issue_id_or_key, body, public=True)
 
     # Get request comments
-    sd.get_request_comments(issue_id_or_key)
+    sd.get_request_comments(issue_id_or_key, start=0, limit=50, public=True, internal=True)
 
     # Get request comment
     sd.get_request_comment_by_id(issue_id_or_key, comment_id)

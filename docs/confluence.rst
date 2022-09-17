@@ -10,7 +10,7 @@ Get page info
     confluence.page_exists(space, title)
 
     # Provide content by type (page, blog, comment)
-    confluence.get_page_child_by_type(page_id, type='page', start=None, limit=None)
+    confluence.get_page_child_by_type(page_id, type='page', start=None, limit=None, expand=None)
 
     # Provide content id from search result by title and space
     confluence.get_page_id(space, title)
@@ -33,7 +33,7 @@ Get page info
     #                   We can also specify some extensions such as extensions.inlineProperties
     #                   (for getting inline comment-specific properties) or extensions.resolution
     #                   for the resolution status of each comment in the results
-    confluence.get_page_by_id(self, page_id, expand=None, status=None, version=None)
+    confluence.get_page_by_id(page_id, expand=None, status=None, version=None)
 
     # The list of labels on a piece of Content
     confluence.get_page_labels(page_id, prefix=None, start=None, limit=None)
@@ -91,7 +91,7 @@ Page actions
     confluence.update_or_create(parent_id, title, body, representation='storage')
 
     # Append body to page if already exist
-    confluence.append_page(self, page_id, title, append_body, parent_id=None, type='page', representation='storage', minor_edit=False)
+    confluence.append_page(page_id, title, append_body, parent_id=None, type='page', representation='storage', minor_edit=False)
 
     # Set the page (content) property e.g. add hash parameters
     confluence.set_page_property(page_id, data)
@@ -150,6 +150,50 @@ Page actions
 
     # Add comment into page
     confluence.add_comment(page_id, text)
+
+Template actions
+----------------
+
+.. code-block:: python
+
+    # Updating a content template
+    template_id = "<string>"
+    name = "<string>"
+    body = {"value": "<string>", "representation": "view"}
+    template_type = "page"
+    description = "<string>"
+    labels = [{"prefix": "<string>", "name": "<string>", "id": "<string>", "label": "<string>"}]
+    space = "<key_string>"
+
+    confluence.create_or_update_template(name, body, template_type, template_id, description, labels, space)
+
+    # Creating a new content template
+    name = "<string>"
+    body = {"value": "<string>", "representation": "view"}
+    template_type = "page"
+    description = "<string>"
+    labels = [{"prefix": "<string>", "name": "<string>", "id": "<string>", "label": "<string>"}]
+    space = "<key_string>"
+
+    confluence.create_or_update_template(name, body, template_type, description=description, labels=labels, space=space)
+
+    # Get a template by its ID
+    confluence.get_template_by_id(template_id)
+
+    # Get all global content templates
+    confluence.get_all_templates_from_space()
+
+    # Get content templates in a space
+    confluence.get_all_templates_from_space(space)
+
+    # Get all global blueprint templates
+    confluence.get_all_blueprints_from_space()
+
+    # Get all blueprint templates in a space
+    confluence.get_all_blueprints_from_space(space)
+
+    # Removing a template
+    confluence.remove_template(template_id)
 
 Get spaces info
 ---------------

@@ -1,5 +1,6 @@
 # coding=utf-8
 
+from requests import HTTPError
 from ...base import BitbucketServerBase
 from ...common.permissions import Groups, Users
 
@@ -39,7 +40,7 @@ class Repositories(BitbucketServerBase):
         Returns the requested repository.
 
         :param repository: string: The requested repository.
-        :param by: string: How to interprate project, can be 'slug' or 'name'.
+        :param by: string (default is "slug"): How to interpret project, can be 'slug' or 'name'.
 
         :return: The requested Repository object
         """
@@ -54,6 +55,27 @@ class Repositories(BitbucketServerBase):
             ValueError("Unknown value '{}' for argument [by], expected 'slug' or 'name'".format(by))
 
         raise Exception("Unknown repository {} '{}'".format(by, repository))
+
+    def exists(self, repository, by="slug"):
+        """
+        Check if repository exist.
+
+        :param repository: string: The requested repository.
+        :param by: string (default is "slug"): How to interpret repository, can be 'slug' or 'name'.
+
+        :return: True if the repository exists
+        """
+        exists = False
+        try:
+            self.get(repository, by)
+            exists = True
+        except HTTPError as e:
+            if e.response.status_code in (401, 404):
+                pass
+        except Exception as e:
+            if not str(e) == "Unknown project {} '{}'".format(by, repository):
+                raise e
+        return exists
 
 
 class Repository(BitbucketServerBase):
@@ -89,52 +111,52 @@ class Repository(BitbucketServerBase):
 
     @property
     def id(self):
-        """ The repository identifier """
+        """The repository identifier"""
         return self.get_data("id")
 
     @property
     def name(self):
-        """ The repository name """
+        """The repository name"""
         return self.get_data("name")
 
     @name.setter
     def name(self, name):
-        """ Setter for the repository name """
+        """Setter for the repository name"""
         return self.update(name=name)
 
     @property
     def slug(self):
-        """ The repository slug """
+        """The repository slug"""
         return self.get_data("slug")
 
     @property
     def description(self):
-        """ The repository description """
+        """The repository description"""
         return self.get_data("description")
 
     @description.setter
     def description(self, description):
-        """ Setter for the repository description """
+        """Setter for the repository description"""
         return self.update(description=description)
 
     @property
     def public(self):
-        """ The repository public flag """
+        """The repository public flag"""
         return self.get_data("public")
 
     @public.setter
     def public(self, public):
-        """ Setter for the repository public flag """
+        """Setter for the repository public flag"""
         return self.update(public=public)
 
     @property
     def forkable(self):
-        """ The repository forkable flag """
+        """The repository forkable flag"""
         return self.get_data("forkable")
 
     @forkable.setter
     def forkable(self, forkable):
-        """ Setter for the repository forkable flag """
+        """Setter for the repository forkable flag"""
         return self.update(forkable=forkable)
 
     def contributing(self, at=None, markup=None):
@@ -253,3 +275,36 @@ class Repository(BitbucketServerBase):
         API docs: https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp285
         """
         return self.__users
+
+    def download_archive(self, dest_fd, at=None, filename=None, format=None, path=None, prefix=None, chunk_size=128):
+        """
+        Downloads a repository archive.
+        Note that the data is written to the specified file-like object,
+        rather than simply being returned.
+        For further information visit:
+           https://docs.atlassian.com/bitbucket-server/rest/7.13.0/bitbucket-rest.html#idp199
+        :param dest_fd: a file-like object to which the archive will be written
+        :param at: string: Optional, the commit to download an archive of; if not supplied, an archive of the default branch is downloaded
+        :param filename: string: Optional, a filename to include the "Content-Disposition" header
+        :param format: string: Optional, the format to stream the archive in; must be one of: zip, tar, tar.gz or tgz.
+                        If not specified, then the archive will be in zip format.
+        :param path: string: Optional, path to include in the streamed archive
+        :param prefix: string: Optional, a prefix to apply to all entries in the streamed archive;
+                        if the supplied prefix does not end with a trailing /, one will be added automatically
+        :param chunk_size: int: Optional, download chunk size. Defeault is 128
+        """
+        params = {}
+        if at is not None:
+            params["at"] = at
+        if filename is not None:
+            params["filename"] = filename
+        if format is not None:
+            params["format"] = format
+        if path is not None:
+            params["path"] = path
+        if prefix is not None:
+            params["prefix"] = prefix
+        headers = {"Accept": "*/*"}
+        response = self.get("archive", params=params, headers=headers, advanced_mode=True)
+        for chunk in response.iter_content(chunk_size=chunk_size):
+            dest_fd.write(chunk)

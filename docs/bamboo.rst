@@ -24,6 +24,9 @@ Projects & Plans
     # Get plan information
     get_plan(plan_key)
 
+    # Search for a plan by name
+    search_plans(name, name, fuzzy=True, start_index=0, max_results=25)
+
     # Delete a plan (or a plan branch)
     delete_plan(plan_key)
 
@@ -123,6 +126,9 @@ Deployments
     # Get deployment dashboard
     deployment_dashboard(project_id=None)
 
+    # Delete deployment project
+    delete_deployment_project(project_id)
+
 Users & Groups
 --------------
 
@@ -151,6 +157,42 @@ Users & Groups
 
     # Get users without Group
     get_users_not_in_group(group_name, filter_users='', start=0, limit=25)
+
+    # Get deployment users
+    get_deployment_users(self, deployment_id, filter_name=None, start=0, limit=25)
+
+    # Revoke user from deployment
+    revoke_user_from_deployment(self, deployment_id, user, permissions=['READ', 'WRITE', 'BUILD'])
+
+    # Grant user to deployment
+    grant_user_to_deployment(self, deployment_id, user, permissions)
+
+    # Get deployment groups
+    get_deployment_groups(self, deployment_id, filter_name=None, start=0, limit=25)
+
+    # Revoke group from deployment
+    revoke_group_from_deployment(self, deployment_id, group, permissions=['READ', 'WRITE', 'BUILD'])
+
+    # Grant group to deployment
+    grant_group_to_deployment(self, deployment_id, group, permissions)
+
+    # Get environment user
+    get_environment_users(self, environment_id, filter_name=None, start=0, limit=25)
+
+    # Revoke user from environment
+    revoke_user_from_environment(self, environment_id, user, permissions=['READ', 'WRITE', 'BUILD'])
+
+    # Grant user to environment
+    grant_user_to_environment(self, environment_id, user, permissions)
+
+    # Get environment groups
+    get_environment_groups(self, environment_id, filter_name=None, start=0, limit=25)
+
+    # Revoke group from environment
+    revoke_group_from_environment(self, environment_id, group, permissions=['READ', 'WRITE', 'BUILD'])
+
+    # Grant group to environment
+    grant_group_to_environment(self, environment_id, group, permissions)
 
 Agents
 ------
@@ -210,4 +252,27 @@ Other actions
 
     # Upload plugin
     upload_plugin(plugin_path)
+
+Elastic Bamboo
+--------------
+
+.. code-block:: python
+
+    # Get elastic bamboo instance logs
+    get_elastic_instance_logs('i-12ab34cd56ef')
+
+    # Get elastic bamboo configurations
+    get_elastic_configurations()
+
+    # Create elastic bamboo configuration
+    create_elastic_configuration({"name": "value"})
+
+    # Get elastic bamboo configuration
+    get_elastic_configuration('123456')
+
+    # Update elastic bamboo configuration
+    update_elastic_configuration('123456')
+
+    # Delete elastic bamboo configuration
+    delete_elastic_configuration('123456')
 

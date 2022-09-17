@@ -1,0 +1,28 @@
+responses[None] = {
+    "size": 2,
+    "limit": 25,
+    "isLastPage": true,
+    "values": [
+        {
+            "id": 3,
+            "name": "fake_name_1",
+            "createdDate": 1513106011000,
+            "updatedDate": 1513106011000,
+            "events": ["repo:refs_changed", "pr:merged", "pr:opened"],
+            "configuration": {"secret": "fake_secret_1"},
+            "url": "https://example1.com",
+            "active": true,
+        },
+        {
+            "id": 20,
+            "name": "fake_name_2",
+            "createdDate": 1513106011000,
+            "updatedDate": 1513106011000,
+            "events": ["repo:refs_changed", "pr:merged", "pr:opened"],
+            "configuration": {},
+            "url": "https://example2.com",
+            "active": false,
+        },
+    ],
+    "start": 0,
+}

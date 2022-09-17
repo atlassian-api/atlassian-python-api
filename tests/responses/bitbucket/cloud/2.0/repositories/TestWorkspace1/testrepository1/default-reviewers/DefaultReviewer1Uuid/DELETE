@@ -1,9 +1,9 @@
 responses[None] = {
     "display_name": "DefaultReviewer1",
-    "uuid": "{DefaultReviewer1Uuid}",
+    "uuid": "DefaultReviewer1Uuid",
     "links": {
-        "self": {"href": "bitbucket/cloud/2.0/users/%7BDefaultReviewer1Uuid%7D"},
-        "html": {"href": "https://bitbucket.org/%7BDefaultReviewer1Uuid%7D/"},
+        "self": {"href": "bitbucket/cloud/2.0/users/DefaultReviewer1Uuid"},
+        "html": {"href": "https://bitbucket.org/DefaultReviewer1Uuid/"},
         "avatar": {
             "href": "https://secure.gravatar.com/avatar/31a164e6406a8deeb56e94c778030a9f?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FS-3.png"
         },

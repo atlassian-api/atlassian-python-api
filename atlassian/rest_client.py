@@ -4,6 +4,7 @@ from json import dumps
 
 import requests
 from oauthlib.oauth1 import SIGNATURE_RSA
+from requests import HTTPError
 from requests_oauthlib import OAuth1, OAuth2
 from six.moves.urllib.parse import urlencode
 
@@ -51,6 +52,7 @@ class AtlassianRestAPI(object):
         kerberos=None,
         cloud=False,
         proxies=None,
+        token=None,
     ):
         self.url = url
         self.username = username
@@ -69,6 +71,8 @@ class AtlassianRestAPI(object):
             self._session = session
         if username and password:
             self._create_basic_session(username, password)
+        elif token is not None:
+            self._create_token_session(token)
         elif oauth is not None:
             self._create_oauth_session(oauth)
         elif oauth2 is not None:
@@ -87,8 +91,11 @@ class AtlassianRestAPI(object):
     def _create_basic_session(self, username, password):
         self._session.auth = (username, password)
 
+    def _create_token_session(self, token):
+        self._update_header("Authorization", "Bearer {token}".format(token=token))
+
     def _create_kerberos_session(self, _):
-        from requests_kerberos import HTTPKerberosAuth, OPTIONAL
+        from requests_kerberos import OPTIONAL, HTTPKerberosAuth
 
         self._session.auth = HTTPKerberosAuth(mutual_authentication=OPTIONAL)
 
@@ -233,7 +240,7 @@ class AtlassianRestAPI(object):
         if self.advanced_mode:
             return response
 
-        response.raise_for_status()
+        self.raise_for_status(response)
         return response
 
     def get(
@@ -374,3 +381,27 @@ class AtlassianRestAPI(object):
         if self.advanced_mode or advanced_mode:
             return response
         return self._response_handler(response)
+
+    def raise_for_status(self, response):
+        """
+        Checks the response for errors and throws an exception if return code >= 400
+        Since different tools (Atlassian, Jira, ...) have different formats of returned json,
+        this method is intended to be overwritten by a tool specific implementation.
+        :param response:
+        :return:
+        """
+        if 400 <= response.status_code < 600:
+            try:
+                j = response.json()
+                if self.url == "https://api.atlassian.com":
+                    error_msg = "\n".join([k + ": " + v for k, v in j.items()])
+                else:
+                    error_msg = "\n".join(
+                        j.get("errorMessages", list()) + [k + ": " + v for k, v in j.get("errors", dict()).items()]
+                    )
+            except Exception:
+                response.raise_for_status()
+            else:
+                raise HTTPError(error_msg, response=response)
+        else:
+            response.raise_for_status()

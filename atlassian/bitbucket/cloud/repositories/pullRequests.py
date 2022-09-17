@@ -1,7 +1,10 @@
 # coding=utf-8
 
 from ..base import BitbucketCloudBase
-from ..common.users import User
+from .diffstat import DiffStat
+from ..common.builds import Build
+from ..common.comments import Comment
+from ..common.users import User, Participant
 
 
 class PullRequests(BitbucketCloudBase):
@@ -72,7 +75,7 @@ class PullRequests(BitbucketCloudBase):
         if q is not None:
             params["q"] = q
         for pr in self._get_paged(None, trailing=True, params=params):
-            yield self.__get_object(pr)
+            yield self.__get_object(super(PullRequests, self).get(pr.get("id")))
 
         return
 
@@ -119,83 +122,128 @@ class PullRequest(BitbucketCloudBase):
 
     @property
     def id(self):
-        """ unique pull request id """
+        """unique pull request id"""
         return self.get_data("id")
 
     @property
     def title(self):
-        """ pull request title """
+        """pull request title"""
         return self.get_data("title")
 
     @property
     def description(self):
-        """ pull request description """
+        """pull request description"""
         return self.get_data("description")
 
     @property
     def is_declined(self):
-        """ True if the pull request was declined """
+        """True if the pull request was declined"""
         return self.get_data("state") == self.STATE_DECLINED
 
     @property
     def is_merged(self):
-        """ True if the pull request was merged """
+        """True if the pull request was merged"""
         return self.get_data("state") == self.STATE_MERGED
 
     @property
     def is_open(self):
-        """ True if the pull request is open """
+        """True if the pull request is open"""
         return self.get_data("state") == self.STATE_OPEN
 
     @property
     def is_superseded(self):
-        """ True if the pull request was superseded """
+        """True if the pull request was superseded"""
         return self.get_data("state") == self.STATE_SUPERSEDED
 
     @property
     def created_on(self):
-        """ time of creation """
+        """time of creation"""
         return self.get_time("created_on")
 
     @property
     def updated_on(self):
-        """ time of last update """
+        """time of last update"""
         return self.get_time("updated_on")
 
     @property
     def close_source_branch(self):
-        """ close source branch flag """
+        """close source branch flag"""
         return self.get_data("close_source_branch")
 
     @property
     def source_branch(self):
-        """ source branch """
+        """source branch"""
         return self.get_data("source")["branch"]["name"]
 
     @property
     def destination_branch(self):
-        """ destination branch """
+        """destination branch"""
         return self.get_data("destination")["branch"]["name"]
 
     @property
+    def source_commit(self):
+        """Source commit."""
+        return self.get_data("source")["commit"]["hash"]
+
+    @property
+    def destination_commit(self):
+        """Destination commit."""
+        return self.get_data("destination")["commit"]["hash"]
+
+    @property
     def comment_count(self):
-        """ number of comments """
+        """number of comments"""
         return self.get_data("comment_count")
 
     @property
     def task_count(self):
-        """ number of tasks """
+        """number of tasks"""
         return self.get_data("task_count")
 
     @property
     def declined_reason(self):
-        """ reason for declining """
+        """reason for declining"""
         return self.get_data("reason")
 
     @property
     def author(self):
-        """ User object of the author """
+        """User object of the author"""
         return User(None, self.get_data("author"))
+
+    @property
+    def has_conflict(self):
+        """Returns True if any of the changes in the PR cause conflicts."""
+        for diffstat in self.diffstat():
+            if diffstat.has_conflict:
+                return True
+        return False
+
+    def diffstat(self):
+        """
+        Returns a generator object of diffstats
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D/diffstat
+        """
+        for diffstat in self._get_paged("diffstat"):
+            yield DiffStat(diffstat, **self._new_session_args)
+
+        return
+
+    def diff(self, encoding="utf-8"):
+        """
+        Returns PR diff
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D/diff
+        """
+        return str(self.get("diff", not_json_response=True), encoding=encoding)
+
+    def patch(self, encoding="utf-8"):
+        """
+        Returns PR patch
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D/patch
+        """
+        return str(self.get("patch", not_json_response=True), encoding=encoding)
 
     def statuses(self):
         """
@@ -203,17 +251,17 @@ class PullRequest(BitbucketCloudBase):
 
         API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D/statuses
         """
-        return self._get_paged("{}/statuses".format(self.url), absolute=True)
+        return self._get_paged("statuses")
 
     def participants(self):
-        """ Returns a generator object of participants """
+        """Returns a generator object of participants"""
         for participant in self.get_data("participants"):
             yield Participant(participant, **self._new_session_args)
 
         return
 
     def reviewers(self):
-        """ Returns a generator object of reviewers """
+        """Returns a generator object of reviewers"""
         for reviewer in self.get_data("reviewers"):
             yield User(None, reviewer, **self._new_session_args)
 
@@ -226,6 +274,15 @@ class PullRequest(BitbucketCloudBase):
             yield Build(build, **self._new_session_args)
 
         return
+
+    def comments(self):
+        """
+        Returns generator object of the comments endpoint
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D/comments#get
+        """
+        for comment in self._get_paged("comments"):
+            yield Comment(comment, **self._new_session_args)
 
     def comment(self, raw_message):
         """
@@ -243,6 +300,34 @@ class PullRequest(BitbucketCloudBase):
         }
 
         return self.post("comments", data)
+
+    def tasks(self):
+        """
+        Returns generator object of the tasks endpoint
+
+        This is feature currently undocumented.
+        But confirmed by an Atlassian employee (BCLOUD-16682).
+        """
+        for task in self._get_paged("tasks"):
+            yield Task(task, **self._new_session_args)
+
+    def add_task(self, raw_message):
+        """
+        Adding a task to the pull request in raw format.
+
+        This is feature currently undocumented.
+        But confirmed by an Atlassian employee (BCLOUD-16682).
+        """
+        if not raw_message:
+            raise ValueError("No message set")
+
+        data = {
+            "content": {
+                "raw": raw_message,
+            }
+        }
+
+        return Task(self.post("tasks", data), **self._new_session_args)
 
     def approve(self):
         """
@@ -314,116 +399,68 @@ class PullRequest(BitbucketCloudBase):
         return self.post("merge", data)
 
 
-class Participant(BitbucketCloudBase):
-    ROLE_REVIEWER = "REVIEWER"
-    ROLE_PARTICIPANT = "PARTICIPANT"
-    CHANGES_REQUESTED = "changes_requested"
+class Task(BitbucketCloudBase):
+    STATE_RESOLVED = "RESOLVED"
+    STATE_UNRESOLVED = "UNRESOLVED"
 
     def __init__(self, data, *args, **kwargs):
-        super(Participant, self).__init__(None, None, *args, data=data, expected_type="participant", **kwargs)
+        super().__init__(None, None, *args, data=data, **kwargs)
 
     @property
-    def user(self):
-        """ User object with user information of the participant """
-        return User(None, self.get_data("user"), **self._new_session_args)
-
-    @property
-    def is_participant(self):
-        """ True if the user is a pull request participant """
-        return self.get_data("role") == self.ROLE_PARTICIPANT
-
-    @property
-    def is_reviewer(self):
-        """ True if the user is a pull request reviewer """
-        return self.get_data("role") == self.ROLE_REVIEWER
-
-    @property
-    def is_default_reviewer(self):
-        """ True if the user is a default reviewer """
-
-    @property
-    def has_changes_requested(self):
-        """ True if user requested changes """
-        return str(self.get_data("state")) == self.CHANGES_REQUESTED
-
-    @property
-    def has_approved(self):
-        """ True if user approved the pull request """
-        return self.get_data("approved")
-
-    @property
-    def participated_on(self):
-        """ time of last participation """
-        return self.get_time("participated_on")
-
-
-class Build(BitbucketCloudBase):
-    STATE_FAILED = "FAILED"
-    STATE_INPROGRESS = "INPROGRESS"
-    STATE_STOPPED = "STOPPED"
-    STATE_SUCCESSFUL = "SUCCESSFUL"
-
-    def __init__(self, data, *args, **kwargs):
-        super(Build, self).__init__(None, None, *args, data=data, expected_type="build", **kwargs)
-
-    @property
-    def key(self):
-        """Key of the build"""
-        return self.get_data("key")
-
-    @property
-    def name(self):
-        """Name of the build"""
-        return self.get_data("name")
+    def id(self):
+        """Task id."""
+        return self.get_data("id")
 
     @property
     def description(self):
-        """Build description"""
-        return self.get_data("description")
-
-    @property
-    def failed(self):
-        """True if the build was stopped"""
-        return self.get_data("state") == self.STATE_FAILED
-
-    @property
-    def inprogress(self):
-        """True if the build is inprogress"""
-        return self.get_data("state") == self.STATE_INPROGRESS
-
-    @property
-    def successful(self):
-        """True if the build was successful"""
-        return self.get_data("state") == self.STATE_SUCCESSFUL
-
-    @property
-    def stopped(self):
-        """True if the build was stopped"""
-        return self.get_data("state") == self.STATE_STOPPED
+        """The task description."""
+        return self.get_data("content")["raw"]
 
     @property
     def created_on(self):
-        """ time of creation """
+        """time of creation"""
         return self.get_time("created_on")
 
     @property
-    def updated_on(self):
-        """ time of last update """
-        return self.get_time("updated_on")
+    def resolved_on(self):
+        """resolve timestamp"""
+        return self.get_time("resolved_on")
 
     @property
-    def commit(self):
-        """Returns the hash key of the commit"""
-        return self.get_data("commit")["hash"]
+    def is_resolved(self):
+        """True if the task was already resolved."""
+        return self.get_data("state") == self.STATE_RESOLVED
 
     @property
-    def website(self):
-        """Returns the url to the builds webpage.
-        This url points to the build's frontend website (Pipelines, Jenkins ...)
+    def creator(self):
+        """User object with user information of the task creator"""
+        return User(None, self.get_data("creator"), **self._new_session_args)
+
+    @property
+    def resolved_by(self):
+        """User object with user information of the task resolver"""
+        return User(None, self.get_data("resolved_by"), **self._new_session_args)
+
+    def update(self, raw_message):
         """
-        return self.get_data("url")
+        Update a task in raw format
 
-    @property
-    def refname(self):
-        """Returns the refname"""
-        return self.get_data("refname")
+        This is feature currently undocumented.
+        """
+        if not raw_message:
+            raise ValueError("No message set")
+
+        data = {
+            "content": {
+                "raw": raw_message,
+            }
+        }
+        return self._update_data(self.put(None, data=data))
+
+    def delete(self):
+        """
+        Delete the pullrequest task.
+
+        This is feature currently undocumented.
+        """
+        return super(Task, self).delete(None)

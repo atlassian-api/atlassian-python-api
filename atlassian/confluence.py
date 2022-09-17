@@ -2,6 +2,7 @@
 import logging
 import os
 import time
+import json
 
 from requests import HTTPError
 from deprecated import deprecated
@@ -44,25 +45,84 @@ class Confluence(AtlassianRestAPI):
 
         return {representation: {"value": body, "representation": representation}}
 
+    def _get_paged(self, url, params=None, data=None, flags=None, trailing=None, absolute=False):
+        """
+        Used to get the paged data
+
+        :param url: string:                        The url to retrieve
+        :param params: dict (default is None):     The parameters
+        :param data: dict (default is None):       The data
+        :param flags: string[] (default is None):  The flags
+        :param trailing: bool (default is None):   If True, a trailing slash is added to the url
+        :param absolute: bool (default is False):  If True, the url is used absolute and not relative to the root
+
+        :return: A generator object for the data elements
+        """
+
+        if params is None:
+            params = {}
+
+        while True:
+            response = self.get(url, trailing=trailing, params=params, data=data, flags=flags, absolute=absolute)
+            if "results" not in response:
+                return
+
+            for value in response.get("results", []):
+                yield value
+
+            # According to Cloud and Server documentation the links are returned the same way:
+            # https://developer.atlassian.com/cloud/confluence/rest/api-group-content/#api-wiki-rest-api-content-get
+            # https://developer.atlassian.com/server/confluence/pagination-in-the-rest-api/
+            url = response.get("_links", {}).get("next")
+            if url is None:
+                break
+            # From now on we have relative URLs with parameters
+            absolute = False
+            # Params are now provided by the url
+            params = {}
+            # Trailing should not be added as it is already part of the url
+            trailing = False
+
+        return
+
     def page_exists(self, space, title):
+        """
+        Check if title exists as page.
+        :param space: Space key
+        :param title: Title of the page
+        :return:
+        """
+        url = "rest/api/content"
+        params = {}
+        if space is not None:
+            params["spaceKey"] = str(space)
+        if title is not None:
+            params["title"] = str(title)
+
         try:
-            if self.get_page_by_title(space, title):
-                log.info('Page "{title}" already exists in space "{space}"'.format(space=space, title=title))
-                return True
-            else:
-                log.info("Page does not exist because did not find by title search")
-                return False
-        except (HTTPError, KeyError, IndexError):
-            log.info('Page "{title}" does not exist in space "{space}"'.format(space=space, title=title))
+            response = self.get(url, params=params)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                raise ApiPermissionError(
+                    "The calling user does not have permission to view the content",
+                    reason=e,
+                )
+
+            raise
+
+        if response.get("results"):
+            return True
+        else:
             return False
 
-    def get_page_child_by_type(self, page_id, type="page", start=None, limit=None):
+    def get_page_child_by_type(self, page_id, type="page", start=None, limit=None, expand=None):
         """
         Provide content by type (page, blog, comment)
         :param page_id: A string containing the id of the type content container.
         :param type:
         :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
         :param limit: OPTIONAL: how many items should be returned after the start index. Default: Site limit 200.
+        :param expand: OPTIONAL: expand e.g. history
         :return:
         """
         params = {}
@@ -70,12 +130,20 @@ class Confluence(AtlassianRestAPI):
             params["start"] = int(start)
         if limit is not None:
             params["limit"] = int(limit)
+        if expand is not None:
+            params["expand"] = expand
 
         url = "rest/api/content/{page_id}/child/{type}".format(page_id=page_id, type=type)
         log.info(url)
 
         try:
-            response = self.get(url, params=params)
+            if not self.advanced_mode and start is None and limit is None:
+                return self._get_paged(url, params=params)
+            else:
+                response = self.get(url, params=params)
+                if self.advanced_mode:
+                    return response
+                return response.get("results")
         except HTTPError as e:
             if e.response.status_code == 404:
                 # Raise ApiError as the documented reason is ambiguous
@@ -86,10 +154,6 @@ class Confluence(AtlassianRestAPI):
                 )
 
             raise
-
-        if self.advanced_mode:
-            return response
-        return response.get("results")
 
     def get_child_title_list(self, page_id, type="page", start=None, limit=None):
         """
@@ -609,6 +673,7 @@ class Confluence(AtlassianRestAPI):
         type="page",
         representation="storage",
         editor=None,
+        full_width=False,
     ):
         """
         Create page from scratch
@@ -619,6 +684,7 @@ class Confluence(AtlassianRestAPI):
         :param type:
         :param representation: OPTIONAL: either Confluence 'storage' or 'wiki' markup format
         :param editor: OPTIONAL: v2 to be created in the new editor
+        :param full_width: DEFAULT: False
         :return:
         """
         log.info('Creating {type} "{space}" -> "{title}"'.format(space=space, title=title, type=type))
@@ -628,11 +694,15 @@ class Confluence(AtlassianRestAPI):
             "title": title,
             "space": {"key": space},
             "body": self._create_body(body, representation),
+            "metadata": {"properties": {}},
         }
         if parent_id:
             data["ancestors"] = [{"type": type, "id": parent_id}]
-        if editor == "v2":
-            data["metadata"] = {"properties": {"editor": {"value": "v2"}}}
+        if editor is not None and editor in ["v1", "v2"]:
+            data["metadata"]["properties"]["editor"] = {"value": editor}
+        if full_width is True:
+            data["metadata"]["properties"]["content-appearance-draft"] = {"value": "full-width"}
+            data["metadata"]["properties"]["content-appearance-published"] = {"value": "full-width"}
         try:
             response = self.post(url, data=data)
         except HTTPError as e:
@@ -666,6 +736,60 @@ class Confluence(AtlassianRestAPI):
             params["position"] = position
         return self.post(url, params=params, headers=self.no_check_headers)
 
+    def create_or_update_template(
+        self, name, body, template_type="page", template_id=None, description=None, labels=None, space=None
+    ):
+        """
+        Creates a new or updates an existing content template.
+
+        Note, blueprint templates cannot be created or updated via the REST API.
+
+        If you provide a ``template_id`` then this method will update the template with the provided settings.
+        If no ``template_id`` is provided, then this method assumes you are creating a new template.
+
+        :param str name: If creating, the name of the new template. If updating, the name to change
+            the template name to. Set to the current name if this field is not being updated.
+        :param dict body: This object is used when creating or updating content.
+            {
+                "storage": {
+                    "value": "<string>",
+                    "representation": "view"
+                }
+            }
+        :param str template_type: OPTIONAL: The type of the new template. Default: "page".
+        :param str template_id: OPTIONAL: The ID of the template being updated. REQUIRED if updating a template.
+        :param str description: OPTIONAL: A description of the new template. Max length 255.
+        :param list labels: OPTIONAL: Labels for the new template. An array like:
+            [
+                {
+                    "prefix": "<string>",
+                    "name": "<string>",
+                    "id": "<string>",
+                    "label": "<string>",
+                }
+            ]
+        :param dict space: OPTIONAL: The key for the space of the new template. Only applies to space templates.
+            If not specified, the template will be created as a global template.
+        :return:
+        """
+        data = {"name": name, "templateType": template_type, "body": body}
+
+        if description:
+            data["description"] = description
+
+        if labels:
+            data["labels"] = labels
+
+        if space:
+            data["space"] = {"key": space}
+
+        if template_id:
+            data["templateId"] = template_id
+            return self.put("rest/api/template", data=json.dumps(data))
+
+        return self.post("rest/api/template", json=data)
+
+    @deprecated(version="3.7.0", reason="Use get_content_template()")
     def get_template_by_id(self, template_id):
         """
         Get user template by id. Experimental API
@@ -685,10 +809,36 @@ class Confluence(AtlassianRestAPI):
                 )
 
             raise
+        return response
+
+    def get_content_template(self, template_id):
+        """
+        Get a content template.
+
+        This includes information about the template, like the name, the space or blueprint
+            that the template is in, the body of the template, and more.
+        :param str template_id: The ID of the content template to be returned
+        :return:
+        """
+        url = "rest/api/template/{template_id}".format(template_id=template_id)
+
+        try:
+            response = self.get(url)
+        except HTTPError as e:
+            if e.response.status_code == 403:
+                # Raise ApiError as the documented reason is ambiguous
+                raise ApiError(
+                    "There is no content with the given id, "
+                    "or the calling user does not have permission to view the content",
+                    reason=e,
+                )
+
+            raise
 
         return response
 
-    def get_all_blueprints_from_space(self, space, start=0, limit=20, expand=None):
+    @deprecated(version="3.7.0", reason="Use get_blueprint_templates()")
+    def get_all_blueprints_from_space(self, space, start=0, limit=None, expand=None):
         """
         Get all users blue prints from space. Experimental API
         :param space: Space Key
@@ -696,7 +846,6 @@ class Confluence(AtlassianRestAPI):
         :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
                             fixed system limits. Default: 20
         :param expand: OPTIONAL: expand e.g. body
-
         """
         url = "rest/experimental/template/blueprint"
         params = {}
@@ -722,19 +871,19 @@ class Confluence(AtlassianRestAPI):
 
         return response.get("results") or []
 
-    def get_all_templates_from_space(self, space, start=0, limit=20, expand=None):
+    def get_blueprint_templates(self, space=None, start=0, limit=None, expand=None):
         """
-        Get all users templates from space. Experimental API
-        ref: https://docs.atlassian.com/atlassian-confluence/1000.73.0/com/atlassian/confluence/plugins/restapi\
-/resources/TemplateResource.html
-        :param space: Space Key
-        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
-        :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
-                            fixed system limits. Default: 20
-        :param expand: OPTIONAL: expand e.g. body
+        Gets all templates provided by blueprints.
 
+        Use this method to retrieve all global blueprint templates or all blueprint templates in a space.
+        :param space: OPTIONAL: The key of the space to be queried for templates. If ``space`` is not
+            specified, global blueprint templates will be returned.
+        :param start: OPTIONAL: The starting index of the returned templates. Default: None (0).
+        :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
+                            fixed system limits. Default: 25
+        :param expand: OPTIONAL: A multi-value parameter indicating which properties of the template to expand.
         """
-        url = "rest/experimental/template/page"
+        url = "rest/api/template/blueprint"
         params = {}
         if space:
             params["spaceKey"] = space
@@ -757,6 +906,94 @@ class Confluence(AtlassianRestAPI):
             raise
 
         return response.get("results") or []
+
+    @deprecated(version="3.7.0", reason="Use get_content_templates()")
+    def get_all_templates_from_space(self, space, start=0, limit=None, expand=None):
+        """
+        Get all users templates from space. Experimental API
+        ref: https://docs.atlassian.com/atlassian-confluence/1000.73.0/com/atlassian/confluence/plugins/restapi\
+    /resources/TemplateResource.html
+        :param space: Space Key
+        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
+        :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
+                                fixed system limits. Default: 20
+        :param expand: OPTIONAL: expand e.g. body
+        """
+        url = "rest/experimental/template/page"
+        params = {}
+        if space:
+            params["spaceKey"] = space
+        if start:
+            params["start"] = start
+        if limit:
+            params["limit"] = limit
+        if expand:
+            params["expand"] = expand
+
+        try:
+            response = self.get(url, params=params)
+        except HTTPError as e:
+            if e.response.status_code == 403:
+                raise ApiPermissionError(
+                    "The calling user does not have permission to view the content",
+                    reason=e,
+                )
+            raise
+
+        return response.get("results") or []
+
+    def get_content_templates(self, space=None, start=0, limit=None, expand=None):
+        """
+        Get all content templates.
+        Use this method to retrieve all global content templates or all content templates in a space.
+        :param space: OPTIONAL: The key of the space to be queried for templates. If ``space`` is not
+            specified, global templates will be returned.
+        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
+        :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
+                            fixed system limits. Default: 25
+        :param expand: OPTIONAL: A multi-value parameter indicating which properties of the template to expand.
+            e.g. ``body``
+        """
+        url = "rest/api/template/page"
+        params = {}
+        if space:
+            params["spaceKey"] = space
+        if start:
+            params["start"] = start
+        if limit:
+            params["limit"] = limit
+        if expand:
+            params["expand"] = expand
+
+        try:
+            response = self.get(url, params=params)
+        except HTTPError as e:
+            if e.response.status_code == 403:
+                raise ApiPermissionError(
+                    "The calling user does not have permission to view the content",
+                    reason=e,
+                )
+
+            raise
+
+        return response.get("results") or []
+
+    def remove_template(self, template_id):
+        """
+        Deletes a template.
+
+        This results in different actions depending on the type of template:
+            * If the template is a content template, it is deleted.
+            * If the template is a modified space-level blueprint template, it reverts to the template
+                inherited from the global-level blueprint template.
+            * If the template is a modified global-level blueprint template, it reverts to the default
+                global-level blueprint template.
+        Note: Unmodified blueprint templates cannot be deleted.
+
+        :param str template_id: The ID of the template to be deleted.
+        :return:
+        """
+        return self.delete("rest/api/template/{}".format(template_id))
 
     def get_all_spaces(self, start=0, limit=500, expand=None, space_type=None, space_status=None):
         """
@@ -1130,7 +1367,7 @@ class Confluence(AtlassianRestAPI):
         :param version_number: version number
         :return:
         """
-        url = "rest/experimental/content/{id}/version/{versionNumber}".format(id=page_id, versionNumber=version_number)
+        url = "rest/api/content/{id}/version/{versionNumber}".format(id=page_id, versionNumber=version_number)
         self.delete(url)
 
     def remove_page_history(self, page_id, version_number):
@@ -1217,7 +1454,7 @@ class Confluence(AtlassianRestAPI):
         log.debug('New Content: """{body}"""'.format(body=body))
 
         if confluence_body_content.strip() == body.strip():
-            log.warning("Content of {page_id} is exactly the same".format(page_id=page_id))
+            log.info("Content of {page_id} is exactly the same".format(page_id=page_id))
             return True
         else:
             log.info("Content of {page_id} differs".format(page_id=page_id))
@@ -1255,6 +1492,7 @@ class Confluence(AtlassianRestAPI):
         representation="storage",
         minor_edit=False,
         version_comment=None,
+        always_update=False,
     ):
         """
         Update page if already exist
@@ -1267,11 +1505,12 @@ class Confluence(AtlassianRestAPI):
         :param minor_edit: Indicates whether to notify watchers about changes.
             If False then notifications will be sent.
         :param version_comment: Version comment
+        :param always_update: Whether always to update (suppress content check)
         :return:
         """
         log.info('Updating {type} "{title}"'.format(title=title, type=type))
 
-        if body is not None and self.is_page_content_is_already_updated(page_id, body, title):
+        if not always_update and body is not None and self.is_page_content_is_already_updated(page_id, body, title):
             return self.get_page_by_id(page_id)
 
         try:
@@ -1349,7 +1588,7 @@ class Confluence(AtlassianRestAPI):
             previous_body = (
                 (self.get_page_by_id(page_id, expand="body.storage").get("body") or {}).get("storage").get("value")
             )
-            previous_body = previous_body.replace("&oacute;", u"ó")
+            previous_body = previous_body.replace("&oacute;", "ó")
             body = insert_body + previous_body if top_of_page else previous_body + insert_body
             data = {
                 "id": page_id,
@@ -1688,7 +1927,7 @@ class Confluence(AtlassianRestAPI):
         return response.get("ancestors")
 
     def clean_all_caches(self):
-        """ Clean all caches from cache management"""
+        """Clean all caches from cache management"""
         headers = self.form_token_headers
         return self.delete("rest/cacheManagement/1.0/cacheEntries", headers=headers)
 
@@ -1768,15 +2007,16 @@ class Confluence(AtlassianRestAPI):
             print("Did not get members from {} group, please check permissions or connectivity".format(group_name))
         return members
 
-    def get_space(self, space_key, expand="description.plain,homepage"):
+    def get_space(self, space_key, expand="description.plain,homepage", params=None):
         """
         Get information about a space through space key
         :param space_key: The unique space key name
         :param expand: OPTIONAL: additional info from description, homepage
+        :param params: OPTIONAL: dictionary of additional URL parameters
         :return: Returns the space along with its ID
         """
         url = "rest/api/space/{space_key}".format(space_key=space_key)
-        params = {}
+        params = params or {}
         if expand:
             params["expand"] = expand
         try:
@@ -1922,6 +2162,34 @@ class Confluence(AtlassianRestAPI):
             if e.response.status_code == 404:
                 raise ApiNotFoundError(
                     "The user with the given username or userkey does not exist",
+                    reason=e,
+                )
+
+            raise
+
+        return response
+
+    def get_user_details_by_accountid(self, accountid, expand=None):
+        """
+        Get information about a user through accountid
+        :param accountid: The account id
+        :param expand: OPTIONAL expand for get status of user.
+                Possible param is "status". Results are "Active, Deactivated"
+        :return: Returns the user details
+        """
+        url = "rest/api/user"
+        params = {"accountId": accountid}
+        if expand:
+            params["expand"] = expand
+
+        try:
+            response = self.get(url, params=params)
+        except HTTPError as e:
+            if e.response.status_code == 403:
+                raise ApiPermissionError("The calling user does not have permission to view users", reason=e)
+            if e.response.status_code == 404:
+                raise ApiNotFoundError(
+                    "The user with the given account does not exist",
                     reason=e,
                 )
 
@@ -2467,3 +2735,46 @@ class Confluence(AtlassianRestAPI):
         url = "rest/jira-metadata/1.0/metadata/cache"
         params = {"globalId": global_id}
         return self.delete(url, params=params)
+
+    def get_license_details(self):
+        """
+        Returns the license detailed information
+        """
+        url = "rest/license/1.0/license/details"
+        return self.get(url)
+
+    def get_license_user_count(self):
+        """
+        Returns the total used seats in the license
+        """
+        url = "rest/license/1.0/license/userCount"
+        return self.get(url)
+
+    def get_license_remaining(self):
+        """
+        Returns the available license seats remaining
+        """
+        url = "rest/license/1.0/license/remainingSeats"
+        return self.get(url)
+
+    def get_license_max_users(self):
+        """
+        Returns the license max users
+        """
+        url = "rest/license/1.0/license/maxUsers"
+        return self.get(url)
+
+    def raise_for_status(self, response):
+        """
+        Checks the response for an error status and raises an exception with the error message provided by the server
+        :param response:
+        :return:
+        """
+        if 400 <= response.status_code < 600:
+            try:
+                j = response.json()
+                error_msg = j["message"]
+            except Exception:
+                response.raise_for_status()
+            else:
+                raise HTTPError(error_msg, response=response)
