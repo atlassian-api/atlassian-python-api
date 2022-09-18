@@ -39,7 +39,7 @@ class Projects(BitbucketServerBase):
         """
         data = {"name": name, "key": key, "description": description}
         if avatar:
-            data['avatar'] = avatar
+            data["avatar"] = avatar
         return self.__get_object(self.post(None, data=data))
 
     def each(self, name=None, permission=None):

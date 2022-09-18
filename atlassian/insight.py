@@ -3,6 +3,7 @@ import logging
 
 from .rest_client import AtlassianRestAPI
 from deprecated import deprecated
+
 log = logging.getLogger(__name__)
 
 
@@ -197,7 +198,7 @@ class Insight(AtlassianRestAPI):
         :param import_id:
         :return:
         """
-        url = self.url_joiner(self.api_root, "import/start/{import_id}")
+        url = self.url_joiner(self.api_root, "import/start/{import_id}".format(import_id=import_id))
         return self.post(url)
 
     # Index
@@ -279,22 +280,22 @@ class Insight(AtlassianRestAPI):
         url = self.url_joiner(self.api_root, "object/{id}".format(id=object_id))
         return self.get(url)
 
-    def update_object(self, object_id, objectTypeId, attributes, hasAvatar=False, avatarUUID=""):
+    def update_object(self, object_id, object_type_id, attributes, has_avatar=False, avatar_UUID=""):
         """
         Update an existing object in Insight
 
         :param object_id:
-        :param objectTypeId:
+        :param object_type_id:
         :param attributes:
-        :param hasAvatar:
-        :param avatarUUID:
+        :param has_avatar:
+        :param avatar_UUID:
         :return:
         """
         body = {
             "attributes": attributes,
-            "objectTypeId": objectTypeId,
-            "avatarUUID": avatarUUID,
-            "hasAvatar": hasAvatar,
+            "objectTypeId": object_type_id,
+            "avatarUUID": avatar_UUID,
+            "hasAvatar": has_avatar,
         }
         url = self.url_joiner(self.api_root, "object/{id}".format(id=object_id))
         return self.put(url, data=body)
@@ -445,7 +446,7 @@ class Insight(AtlassianRestAPI):
         url = self.url_joiner(self.api_root, "objectschema/list")
         return self.get(url)
 
-    def create_objectschema(self, objectSchemaKey, description):
+    def create_objectschema(self, object_schema_key, description):
         raise NotImplementedError
 
     def get_objectschema(self, schema_id):

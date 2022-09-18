@@ -1653,6 +1653,7 @@ class Jira(AtlassianRestAPI):
         :param key_property:
         :return:
         """
+        params = {}
         if username or not self.cloud:
             params = {"username": username}
         elif account_id or self.cloud:
