@@ -2,7 +2,7 @@
 import logging
 
 from .rest_client import AtlassianRestAPI
-
+from deprecated import deprecated
 log = logging.getLogger(__name__)
 
 
@@ -313,7 +313,7 @@ class Insight(AtlassianRestAPI):
         """
         List all attributes for the given object
 
-        :param id:
+        :param object_id:
         :return:
         """
         url = self.url_joiner(self.api_root, "object/{id}/attributes".format(id=object_id))
@@ -323,7 +323,7 @@ class Insight(AtlassianRestAPI):
         """
         Retrieve the history entries for this object
 
-        :param id:
+        :param object_id:
         :param asc:
         :param abbreviate:
         :return:
@@ -332,11 +332,17 @@ class Insight(AtlassianRestAPI):
         url = self.url_joiner(self.api_root, "object/{id}/history".format(id=object_id))
         return self.get(url, params=params)
 
+    @deprecated(version="3.29.0", reason="Use get_object_reference_info()")
     def get_object_referenceinfo(self, object_id):
+        """Let's use the get_object_reference_info()"""
+        log.warning("Please, be informed that is deprecated as typo naming")
+        self.get_object_reference_info(object_id)
+
+    def get_object_reference_info(self, object_id):
         """
         Find all references for an object
 
-        :param id:
+        :param object_id:
         :return:
         """
         url = self.url_joiner(self.api_root, "object/{id}/referenceinfo".format(id=object_id))

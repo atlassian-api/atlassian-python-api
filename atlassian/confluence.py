@@ -1493,6 +1493,7 @@ class Confluence(AtlassianRestAPI):
         minor_edit=False,
         version_comment=None,
         always_update=False,
+        full_width=False,
     ):
         """
         Update page if already exist
@@ -1506,9 +1507,10 @@ class Confluence(AtlassianRestAPI):
             If False then notifications will be sent.
         :param version_comment: Version comment
         :param always_update: Whether always to update (suppress content check)
+        :param full_width: OPTIONAL: Default False
         :return:
         """
-        log.info('Updating {type} "{title}"'.format(title=title, type=type))
+        log.info('Updating {type} "{title}" with {parent_id}'.format(title=title, type=type, parent_id=parent_id))
 
         if not always_update and body is not None and self.is_page_content_is_already_updated(page_id, body, title):
             return self.get_page_by_id(page_id)
@@ -1537,6 +1539,9 @@ class Confluence(AtlassianRestAPI):
         if version_comment:
             data["version"]["message"] = version_comment
 
+        if full_width is True:
+            data["metadata"]["properties"]["content-appearance-draft"] = {"value": "full-width"}
+            data["metadata"]["properties"]["content-appearance-published"] = {"value": "full-width"}
         try:
             response = self.put("rest/api/content/{0}".format(page_id), data=data)
         except HTTPError as e:
@@ -1699,6 +1704,7 @@ class Confluence(AtlassianRestAPI):
         minor_edit=False,
         version_comment=None,
         editor=None,
+        full_width=False,
     ):
         """
         Update page or create a page if it is not exists
@@ -1709,6 +1715,7 @@ class Confluence(AtlassianRestAPI):
         :param minor_edit: Update page without notification
         :param version_comment: Version comment
         :param editor: OPTIONAL: v2 to be created in the new editor
+        :param full_width: OPTIONAL: Default is False
         :return:
         """
         space = self.get_page_space(parent_id)
@@ -1724,6 +1731,7 @@ class Confluence(AtlassianRestAPI):
                 representation=representation,
                 minor_edit=minor_edit,
                 version_comment=version_comment,
+                full_width=full_width,
             )
         else:
             result = self.create_page(
@@ -1733,6 +1741,7 @@ class Confluence(AtlassianRestAPI):
                 body=body,
                 representation=representation,
                 editor=editor,
+                full_width=full_width,
             )
 
         log.info(
