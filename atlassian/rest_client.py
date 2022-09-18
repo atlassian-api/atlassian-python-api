@@ -304,6 +304,14 @@ class AtlassianRestAPI(object):
         advanced_mode=False,
     ):
         """
+        :param path:
+        :param data:
+        :param json:
+        :param headers:
+        :param files:
+        :param params:
+        :param trailing:
+        :param absolute:
         :param advanced_mode: bool, OPTIONAL: Return the raw response
         :return: if advanced_mode is not set - returns dictionary. If it is set - returns raw response.
         """
@@ -334,6 +342,13 @@ class AtlassianRestAPI(object):
         advanced_mode=False,
     ):
         """
+        :param path: Path of request
+        :param data:
+        :param headers: adjusted headers, usually it's default
+        :param files:
+        :param trailing:
+        :param params:
+        :param absolute:
         :param advanced_mode: bool, OPTIONAL: Return the raw response
         :return: if advanced_mode is not set - returns dictionary. If it is set - returns raw response.
         """
@@ -363,6 +378,12 @@ class AtlassianRestAPI(object):
     ):
         """
         Deletes resources at given paths.
+        :param path:
+        :param data:
+        :param headers:
+        :param params:
+        :param trailing:
+        :param absolute:
         :param advanced_mode: bool, OPTIONAL: Return the raw response
         :rtype: dict
         :return: Empty dictionary to have consistent interface.

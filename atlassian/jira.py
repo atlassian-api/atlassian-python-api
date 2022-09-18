@@ -1653,6 +1653,7 @@ class Jira(AtlassianRestAPI):
         :param key_property:
         :return:
         """
+        params = {}
         if username or not self.cloud:
             params = {"username": username}
         elif account_id or self.cloud:
@@ -2731,7 +2732,7 @@ class Jira(AtlassianRestAPI):
     Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/search
     """
 
-    def jql(self, jql, fields="*all", start=0, limit=None, expand=None, validate_query=None, advanced_mode=None):
+    def jql(self, jql, fields="*all", start=0, limit=None, expand=None, validate_query=None):
         """
         Get issues from jql search result with all related fields
         :param jql:
@@ -2740,7 +2741,7 @@ class Jira(AtlassianRestAPI):
         :param limit: OPTIONAL: The limit of the number of issues to return, this may be restricted by
                 fixed system limits. Default by built-in method: 50
         :param expand: OPTIONAL: expand the search result
-        :param validate_query: Whether to validate the JQL query
+        :param validate_query: OPTIONAL: Whether to validate the JQL query
         :return:
         """
         params = {}
@@ -3750,6 +3751,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         url = "rest/tempo-timesheets/3/worklogs/"
         return self.get(url, params=params)
 
+    # noinspection PyIncorrectDocstring
     def tempo_4_timesheets_find_worklogs(self, **params):
         """
         Find existing worklogs with searching parameters.

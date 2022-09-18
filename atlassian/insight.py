@@ -2,6 +2,7 @@
 import logging
 
 from .rest_client import AtlassianRestAPI
+from deprecated import deprecated
 
 log = logging.getLogger(__name__)
 
@@ -197,7 +198,7 @@ class Insight(AtlassianRestAPI):
         :param import_id:
         :return:
         """
-        url = self.url_joiner(self.api_root, "import/start/{import_id}")
+        url = self.url_joiner(self.api_root, "import/start/{import_id}".format(import_id=import_id))
         return self.post(url)
 
     # Index
@@ -279,22 +280,22 @@ class Insight(AtlassianRestAPI):
         url = self.url_joiner(self.api_root, "object/{id}".format(id=object_id))
         return self.get(url)
 
-    def update_object(self, object_id, objectTypeId, attributes, hasAvatar=False, avatarUUID=""):
+    def update_object(self, object_id, object_type_id, attributes, has_avatar=False, avatar_UUID=""):
         """
         Update an existing object in Insight
 
         :param object_id:
-        :param objectTypeId:
+        :param object_type_id:
         :param attributes:
-        :param hasAvatar:
-        :param avatarUUID:
+        :param has_avatar:
+        :param avatar_UUID:
         :return:
         """
         body = {
             "attributes": attributes,
-            "objectTypeId": objectTypeId,
-            "avatarUUID": avatarUUID,
-            "hasAvatar": hasAvatar,
+            "objectTypeId": object_type_id,
+            "avatarUUID": avatar_UUID,
+            "hasAvatar": has_avatar,
         }
         url = self.url_joiner(self.api_root, "object/{id}".format(id=object_id))
         return self.put(url, data=body)
@@ -313,7 +314,7 @@ class Insight(AtlassianRestAPI):
         """
         List all attributes for the given object
 
-        :param id:
+        :param object_id:
         :return:
         """
         url = self.url_joiner(self.api_root, "object/{id}/attributes".format(id=object_id))
@@ -323,7 +324,7 @@ class Insight(AtlassianRestAPI):
         """
         Retrieve the history entries for this object
 
-        :param id:
+        :param object_id:
         :param asc:
         :param abbreviate:
         :return:
@@ -332,11 +333,17 @@ class Insight(AtlassianRestAPI):
         url = self.url_joiner(self.api_root, "object/{id}/history".format(id=object_id))
         return self.get(url, params=params)
 
+    @deprecated(version="3.29.0", reason="Use get_object_reference_info()")
     def get_object_referenceinfo(self, object_id):
+        """Let's use the get_object_reference_info()"""
+        log.warning("Please, be informed that is deprecated as typo naming")
+        self.get_object_reference_info(object_id)
+
+    def get_object_reference_info(self, object_id):
         """
         Find all references for an object
 
-        :param id:
+        :param object_id:
         :return:
         """
         url = self.url_joiner(self.api_root, "object/{id}/referenceinfo".format(id=object_id))
@@ -439,7 +446,7 @@ class Insight(AtlassianRestAPI):
         url = self.url_joiner(self.api_root, "objectschema/list")
         return self.get(url)
 
-    def create_objectschema(self, objectSchemaKey, description):
+    def create_objectschema(self, object_schema_key, description):
         raise NotImplementedError
 
     def get_objectschema(self, schema_id):

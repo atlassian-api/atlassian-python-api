@@ -37,7 +37,10 @@ class Projects(BitbucketServerBase):
 
         API docs: https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp148
         """
-        return self.__get_object(self.post(None, data={"name": name, "key": key, "description": description}))
+        data = {"name": name, "key": key, "description": description}
+        if avatar:
+            data["avatar"] = avatar
+        return self.__get_object(self.post(None, data=data))
 
     def each(self, name=None, permission=None):
         """
