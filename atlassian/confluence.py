@@ -1543,7 +1543,7 @@ class Confluence(AtlassianRestAPI):
             data["metadata"]["properties"]["content-appearance-draft"] = {"value": "full-width"}
             data["metadata"]["properties"]["content-appearance-published"] = {"value": "full-width"}
         try:
-            response = self.put("rest/api/content/{0}".format(page_id), data=data)
+            response = self.put("rest/api/content/{0}?status=current".format(page_id), data=data)
         except HTTPError as e:
             if e.response.status_code == 400:
                 raise ApiValueError(
