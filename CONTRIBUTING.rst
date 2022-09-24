@@ -136,7 +136,7 @@ All methods based on docs from: https://developer.atlassian.com/docs/
     - https://developer.atlassian.com/server/bitbucket/how-tos/command-line-rest/
     - https://developer.atlassian.com/bitbucket/api/2/reference/resource/
 * Bamboo:
-    - https://docs.atlassian.com/atlassian-bamboo/REST/latest/
+    - https://developer.atlassian.com/server/bamboo/rest/
 * Tempo:
     - https://www.tempo.io/server-api-documentation
     - http://tempo.io/doc/core/api/rest/latest/
