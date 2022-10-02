@@ -70,7 +70,7 @@ Page actions
 .. code-block:: python
 
     # Create page from scratch
-    confluence.create_page(space, title, body, parent_id=None, type='page', representation='storage', editor='v2')
+    confluence.create_page(space, title, body, parent_id=None, type='page', representation='storage', editor='v2', full_width=False)
 
     # This method removes a page, if it has recursive flag, method removes including child pages
     confluence.remove_page(page_id, status=None, recursive=False)
@@ -85,10 +85,10 @@ Page actions
     confluence.remove_page_as_draft(page_id)
 
     # Update page if already exist
-    confluence.update_page(page_id, title, body, parent_id=None, type='page', representation='storage', minor_edit=False)
+    confluence.update_page(page_id, title, body, parent_id=None, type='page', representation='storage', minor_edit=False, full_width=False)
 
     # Update page or create page if it is not exists
-    confluence.update_or_create(parent_id, title, body, representation='storage')
+    confluence.update_or_create(parent_id, title, body, representation='storage', full_width=False)
 
     # Append body to page if already exist
     confluence.append_page(page_id, title, append_body, parent_id=None, type='page', representation='storage', minor_edit=False)

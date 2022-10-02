@@ -51,6 +51,9 @@ Manage users
     # Fuzzy search using emailAddress or displayName
     jira.user_find_by_user_string(query, start=0, limit=50, include_inactive_users=False)
 
+    # Get groups of a user. This API is only available for Jira Cloud platform.
+    jira.get_user_groups(account_id)
+
 Manage groups
 -------------
 
@@ -229,7 +232,7 @@ Manage issues
     jira.remove_issue_link(link_id)
 
     # Create or Update Issue Remote Links
-    jira.create_or_update_issue_remote_links(issue_key, link_url, title, global_id=None, relationship=None)
+    jira.create_or_update_issue_remote_links(issue_key, link_url, title, global_id=None, relationship=None, icon_url=None, icon_title=None)
 
     # Get Issue Remote Link by link ID
     jira.get_issue_remote_link_by_id(issue_key, link_id)

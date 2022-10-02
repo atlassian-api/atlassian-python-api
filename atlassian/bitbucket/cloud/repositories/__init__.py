@@ -4,6 +4,7 @@ from requests import HTTPError
 from ..base import BitbucketCloudBase
 from .issues import Issues
 from .branchRestrictions import BranchRestrictions
+from .commits import Commits
 from .defaultReviewers import DefaultReviewers
 from .pipelines import Pipelines
 from .pullRequests import PullRequests
@@ -61,6 +62,23 @@ class Repositories(RepositoriesBase):
             params["sort"] = sort
         for repository in self._get_paged(None, params):
             yield self._get_object(repository)
+
+    def get(self, workspace, repo_slug):
+        """
+        Returns the requested repository.
+
+        Since this method accesses the repository endpoint
+        directly it is usable if you do not have permission
+        to access the workspace endpoint.
+
+        :param workspace: string: The workspace of the repository
+        :param repo_slug: string: The requested repository.
+
+        :return: The requested Repository object
+
+        API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-repositories/#api-repositories-workspace-repo-slug-get
+        """
+        return self._get_object(super(Repositories, self).get("{}/{}".format(workspace, repo_slug)))
 
 
 class WorkspaceRepositories(RepositoriesBase):
@@ -227,6 +245,11 @@ class Repository(BitbucketCloudBase):
             "{}/branch-restrictions".format(self.url), **self._new_session_args
         )
         self.__branches = Branches("{}/refs/branches".format(self.url), **self._new_session_args)
+        self.__commits = Commits(
+            "{}/commits".format(self.url),
+            data={"links": {"commit": {"href": "{}/commit".format(self.url)}}},
+            **self._new_session_args,
+        )
         self.__default_reviewers = DefaultReviewers("{}/default-reviewers".format(self.url), **self._new_session_args)
         self.__issues = Issues("{}/issues".format(self.url), **self._new_session_args)
         self.__pipelines = Pipelines("{}/pipelines".format(self.url), **self._new_session_args)
@@ -336,6 +359,11 @@ class Repository(BitbucketCloudBase):
     def branches(self):
         """The repository branches."""
         return self.__branches
+
+    @property
+    def commits(self):
+        """The repository commits."""
+        return self.__commits
 
     @property
     def default_reviewers(self):

@@ -492,7 +492,11 @@ class ServiceDesk(AtlassianRestAPI):
         experimental_headers["X-Atlassian-Token"] = "no-check"
 
         with open(filename, "rb") as file:
-            result = self.post(path=url, headers=experimental_headers, files={"file": file}).get("temporaryAttachments")
+            result = (
+                self.post(path=url, headers=experimental_headers, files={"file": file})
+                .json()
+                .get("temporaryAttachments")
+            )
             temp_attachment_id = result[0].get("temporaryAttachmentId")
 
             return temp_attachment_id

@@ -3,7 +3,7 @@ import logging
 from json import dumps
 
 import requests
-from oauthlib.oauth1 import SIGNATURE_RSA
+from oauthlib.oauth1 import SIGNATURE_RSA_SHA512
 from requests import HTTPError
 from requests_oauthlib import OAuth1, OAuth2
 from six.moves.urllib.parse import urlencode
@@ -103,7 +103,7 @@ class AtlassianRestAPI(object):
         oauth = OAuth1(
             oauth_dict["consumer_key"],
             rsa_key=oauth_dict["key_cert"],
-            signature_method=SIGNATURE_RSA,
+            signature_method=SIGNATURE_RSA_SHA512,
             resource_owner_key=oauth_dict["access_token"],
             resource_owner_secret=oauth_dict["access_token_secret"],
         )
@@ -304,6 +304,14 @@ class AtlassianRestAPI(object):
         advanced_mode=False,
     ):
         """
+        :param path:
+        :param data:
+        :param json:
+        :param headers:
+        :param files:
+        :param params:
+        :param trailing:
+        :param absolute:
         :param advanced_mode: bool, OPTIONAL: Return the raw response
         :return: if advanced_mode is not set - returns dictionary. If it is set - returns raw response.
         """
@@ -334,6 +342,13 @@ class AtlassianRestAPI(object):
         advanced_mode=False,
     ):
         """
+        :param path: Path of request
+        :param data:
+        :param headers: adjusted headers, usually it's default
+        :param files:
+        :param trailing:
+        :param params:
+        :param absolute:
         :param advanced_mode: bool, OPTIONAL: Return the raw response
         :return: if advanced_mode is not set - returns dictionary. If it is set - returns raw response.
         """
@@ -363,6 +378,12 @@ class AtlassianRestAPI(object):
     ):
         """
         Deletes resources at given paths.
+        :param path:
+        :param data:
+        :param headers:
+        :param params:
+        :param trailing:
+        :param absolute:
         :param advanced_mode: bool, OPTIONAL: Return the raw response
         :rtype: dict
         :return: Empty dictionary to have consistent interface.

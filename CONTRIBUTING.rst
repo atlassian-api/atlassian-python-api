@@ -13,10 +13,26 @@ Getting Started
 * Install pyenv_
 * Install related atlassian product for testing through SDK_ or use the cloud instance
 * `apt install libkrb5-dev`
-* Install Kerberos Dependency: `pip install -r requirements-dev.txt`
+* Install Kerberos Dependency:
+
+::
+
+   pip install -r requirements-dev.txt
+
 * Start up related product:
-  - Standalone product atlas-run-standalone_
-  - For cloud product, just do registration
+    - Standalone product atlas-run-standalone_
+    - For cloud product, just do registration
+    - Atlassian SDK in doker
+        - Build the image
+        ::
+
+            make docker-atlassian-standalone
+
+        - Run an Atlassian standalone product
+        ::
+
+            docker run -i -t -p 6990:6990 atlassian-sdk:latest atlas-run-standalone --product bamboo
+
 * Run the quality checks with `make qa` or if you have docker installed with `make docker-qa`
 * Send pull request
 
@@ -120,7 +136,7 @@ All methods based on docs from: https://developer.atlassian.com/docs/
     - https://developer.atlassian.com/server/bitbucket/how-tos/command-line-rest/
     - https://developer.atlassian.com/bitbucket/api/2/reference/resource/
 * Bamboo:
-    - https://docs.atlassian.com/atlassian-bamboo/REST/latest/
+    - https://developer.atlassian.com/server/bamboo/rest/
 * Tempo:
     - https://www.tempo.io/server-api-documentation
     - http://tempo.io/doc/core/api/rest/latest/

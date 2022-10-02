@@ -132,7 +132,7 @@ class Bitbucket(BitbucketBase):
     def get_current_license(self):
         """
         Retrieves details about the current license, as well as the current status of the system with
-        regards to the installed license. The status includes the current number of users applied
+        regard to the installed license. The status includes the current number of users applied
         toward the license limit, as well as any status messages about the license (warnings about expiry
         or user counts exceeding license limits).
         The authenticated user must have ADMIN permission. Unauthenticated users, and non-administrators,
@@ -414,7 +414,7 @@ class Bitbucket(BitbucketBase):
 
     def project_users(self, key, start=0, limit=None, filter_str=None):
         """
-        Get users who has permission in project
+        Get users with permission in project
         :param key: The project key
         :param filter_str:  OPTIONAL: users filter string
         :param start:
@@ -447,9 +447,9 @@ class Bitbucket(BitbucketBase):
 
     def project_grant_user_permissions(self, project_key, username, permission):
         """
-        Grant the specified project permission to an specific user
+        Grant the specified project permission to a specific user
         :param project_key: The project key
-        :param username: user name to be granted
+        :param username: username to be granted
         :param permission: the project permissions available are 'PROJECT_ADMIN', 'PROJECT_WRITE' and 'PROJECT_READ'
         :return:
         """
@@ -464,7 +464,7 @@ class Bitbucket(BitbucketBase):
         the specified project or a higher global permission to call this resource.
         In addition, a user may not revoke their own project permissions if they do not have a higher global permission.
         :param project_key: The project key
-        :param username: user name to be granted
+        :param username: username to be granted
         :return:
         """
         url = self._url_project_users(project_key)
@@ -496,7 +496,7 @@ class Bitbucket(BitbucketBase):
 
     def project_grant_group_permissions(self, project_key, group_name, permission):
         """
-        Grant the specified project permission to an specific group
+        Grant the specified project permission to a specific group
         :param project_key: The project key
         :param group_name: group to be granted
         :param permission: the project permissions available are 'PROJECT_ADMIN', 'PROJECT_WRITE' and 'PROJECT_READ'
@@ -801,7 +801,7 @@ class Bitbucket(BitbucketBase):
 
     def reindex_repo_dev_panel(self, project_key, repository_slug):
         """
-        Reindex all of the Jira issues related to this repository_slug, including branches and pull requests.
+        Reindex all the Jira issues related to this repository_slug, including branches and pull requests.
         This automatically happens as part of an upgrade, and calling this manually should only be required
         if something unforeseen happens and the index becomes out of sync.
         The authenticated user must have REPO_ADMIN permission for the specified repository to call this resource.
@@ -917,7 +917,7 @@ class Bitbucket(BitbucketBase):
 
     def repo_users(self, project_key, repo_key, start=0, limit=None, filter_str=None):
         """
-        Get users who has permission in repository
+        Get users with permission in repository
         :param start:
         :param limit:
         :param project_key: The project key
@@ -937,7 +937,7 @@ class Bitbucket(BitbucketBase):
 
     def repo_grant_user_permissions(self, project_key, repo_key, username, permission):
         """
-        Grant the specified repository permission to an specific user
+        Grant the specified repository permission to a specific user
         :param project_key: The project key
         :param repo_key: The repository key (slug)
         :param username: user name to be granted
@@ -1032,7 +1032,7 @@ class Bitbucket(BitbucketBase):
 
     def repo_grant_group_permissions(self, project_key, repo_key, groupname, permission):
         """
-        Grant the specified repository permission to an specific group
+        Grant the specified repository permission to a specific group
         Promote or demote a group's permission level for the specified repository. Available repository permissions are:
             REPO_READ
             REPO_WRITE
@@ -1830,9 +1830,9 @@ class Bitbucket(BitbucketBase):
         Delete a comment.
         Only the repository admin or user who created a comment may update it.
 
-        Note: the supplied supplied JSON object must contain a version
+        Note: the supplied JSON object must contain a version
         that must match the server's version of the comment
-        or the delete will fail.
+        or delete will fail.
         """
         url = self._url_pull_request_comment(project_key, repository_slug, pull_request_id, comment_id)
         data = {"version": comment_version}

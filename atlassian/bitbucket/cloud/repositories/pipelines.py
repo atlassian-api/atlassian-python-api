@@ -256,4 +256,4 @@ class Step(BitbucketCloudBase):
 
         if start is None:
             return response.content
-        return (response.headers["Content-Range"].split("/")[1], response.content)
+        return response.headers["Content-Range"].split("/")[1], response.content
