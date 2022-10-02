@@ -166,6 +166,16 @@ class Jira(AtlassianRestAPI):
         url = "{base_url}/{attachment_id}".format(base_url=base_url, attachment_id=attachment_id)
         return self.get(url)
 
+    def get_attachment_content(self, attachment_id):
+        """
+        Returns the content for an attachment
+        :param attachment_id: int
+        :return: json
+        """
+        base_url = self.resource_url("attachment")
+        url = "{base_url}/content/{attachment_id}".format(base_url=base_url, attachment_id=attachment_id)
+        return self.get(url)
+
     def remove_attachment(self, attachment_id):
         """
         Remove an attachment from an issue
