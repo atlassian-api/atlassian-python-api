@@ -427,11 +427,14 @@ class Insight(AtlassianRestAPI):
         url = self.url_joiner(self.api_root, "objectconnectedtickets/{id}/tickets".format(id=object_id))
         return self.get(url)
 
-    # Objectschema
+    # Object schema
+    @deprecated(version="3.29.1", reason="Use list_object_schema()")
     def list_objectschema(self):
+        return self.list_object_schema()
+
+    def list_object_schema(self):
         """
         Resource to find object schemas in Insight
-
         :return:
         {
             "objectschemas": [
@@ -451,43 +454,43 @@ class Insight(AtlassianRestAPI):
         url = self.url_joiner(self.api_root, "objectschema/list")
         return self.get(url)
 
-    def create_objectschema(self, object_schema_key, description):
+    def create_object_schema(self, object_schema_key, description):
         raise NotImplementedError
 
+    @deprecated(version="3.29.1", reason="Use get_objectschema()")
     def get_objectschema(self, schema_id):
+        return self.get_objectschema(schema_id=schema_id)
+
+    def get_object_schema(self, schema_id):
         """
         Find a schema by id
-
         :param schema_id:
         """
         url = self.url_joiner(self.api_root, "objectschema/{id}".format(id=schema_id))
         return self.get(url)
 
-    def update_objectschema(self, schema_id):
+    def update_object_schema(self, schema_id):
         """
         Update an object schema
-
         """
         raise NotImplementedError
 
-    def delete_objectschema(self, schema_id):
+    def delete_object_schema(self, schema_id):
         """
         Delete a schema
 
         """
         raise NotImplementedError
 
-    def get_objectschema_attributes(self, schema_id):
+    def get_object_schema_attributes(self, schema_id):
         """
         Find all object type attributes for this object schema
-
         """
         raise NotImplementedError
 
-    def get_objectschema_objecttypes_flat(self, schema_id):
+    def get_object_schema_object_types_flat(self, schema_id):
         """
         Find all object types for this object schema
-
         """
         raise NotImplementedError
 

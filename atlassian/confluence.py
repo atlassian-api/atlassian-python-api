@@ -1510,6 +1510,8 @@ class Confluence(AtlassianRestAPI):
         :param full_width: OPTIONAL: Default False
         :return:
         """
+        # update current page
+        params = {'status': 'current'}
         log.info('Updating {type} "{title}" with {parent_id}'.format(title=title, type=type, parent_id=parent_id))
 
         if not always_update and body is not None and self.is_page_content_is_already_updated(page_id, body, title):
@@ -1543,7 +1545,7 @@ class Confluence(AtlassianRestAPI):
             data["metadata"]["properties"]["content-appearance-draft"] = {"value": "full-width"}
             data["metadata"]["properties"]["content-appearance-published"] = {"value": "full-width"}
         try:
-            response = self.put("rest/api/content/{0}?status=current".format(page_id), data=data)
+            response = self.put("rest/api/content/{0}".format(page_id), data=data, params=params)
         except HTTPError as e:
             if e.response.status_code == 400:
                 raise ApiValueError(
