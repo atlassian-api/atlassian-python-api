@@ -420,7 +420,8 @@ class AtlassianRestAPI(object):
                     error_msg = "\n".join(
                         j.get("errorMessages", list()) + [k + ": " + v for k, v in j.get("errors", dict()).items()]
                     )
-            except Exception:
+            except Exception as e:
+                log.error(e)
                 response.raise_for_status()
             else:
                 raise HTTPError(error_msg, response=response)

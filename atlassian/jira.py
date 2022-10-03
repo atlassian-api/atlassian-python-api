@@ -902,6 +902,8 @@ class Jira(AtlassianRestAPI):
         base_url = self.resource_url("epic", api_root="rest/agile", api_version="1.0")
         url = "{base_url}/{key}/issue?fields={fields}".format(base_url=base_url, key=epic, fields=fields)
         params = {}
+        if expand:
+            params["expand"] = expand
         return self.get(url, params=params)
 
     def bulk_issue(self, issue_list, fields="*all"):
@@ -1048,7 +1050,8 @@ class Jira(AtlassianRestAPI):
         try:
             for key in key_list:
                 self.put("{base_url}/{key}".format(base_url=base_url, key=key), data={"fields": fields})
-        except Exception:
+        except Exception as e:
+            log.error(e)
             return False
         return True
 
@@ -1183,7 +1186,7 @@ class Jira(AtlassianRestAPI):
     def issue_get_watchers(self, issue_key):
         """
         Get watchers for an issue
-        :param issue_key: Issue Id or Key
+        :param issue_key: Issue ID or Key
         :return: List of watchers for issue
         """
         base_url = self.resource_url("issue")
@@ -2938,14 +2941,14 @@ class Jira(AtlassianRestAPI):
         url = self.resource_url("workflow")
         return self.get(url)
 
-    def get_workflows_paginated(self, startAt=None, maxResults=None, workflowName=None, expand=None):
+    def get_workflows_paginated(self, start_at=None, max_results=None, workflow_name=None, expand=None):
         """
         Provide all workflows paginated (see https://developer.atlassian.com/cloud/jira/platform/rest/v2/\
 api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param expand:
-        :param startAt: OPTIONAL The index of the first item to return in a page of results (page offset).
-        :param maxResults: OPTIONAL The maximum number of items to return per page.
-        :param workflowName: OPTIONAL The name of a workflow to return.
+        :param start_at: OPTIONAL The index of the first item to return in a page of results (page offset).
+        :param max_results: OPTIONAL The maximum number of items to return per page.
+        :param workflow_name: OPTIONAL The name of a workflow to return.
         :param: expand: OPTIONAL Use expand to include additional information in the response. This parameter accepts a
             comma-separated list. Expand options include: transitions, transitions.rules, statuses, statuses.properties
         :return:
@@ -2953,12 +2956,12 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         url = self.resource_url("workflow/search")
 
         params = {}
-        if startAt:
-            params["startAt"] = startAt
-        if maxResults:
-            params["maxResults"] = maxResults
-        if workflowName:
-            params["workflowName"] = workflowName
+        if start_at:
+            params["startAt"] = start_at
+        if max_results:
+            params["maxResults"] = max_results
+        if workflow_name:
+            params["workflowName"] = workflow_name
         if expand:
             params["expand"] = expand
 

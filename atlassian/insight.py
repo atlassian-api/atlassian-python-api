@@ -8,7 +8,6 @@ log = logging.getLogger(__name__)
 
 
 class Insight(AtlassianRestAPI):
-
     """Insight for Jira API wrapper."""
 
     # https://insight-javadoc.riada.io/insight-javadoc-8.6/insight-rest/
@@ -285,7 +284,7 @@ class Insight(AtlassianRestAPI):
         url = self.url_joiner(self.api_root, "object/{id}".format(id=object_id))
         return self.get(url)
 
-    def update_object(self, object_id, object_type_id, attributes, has_avatar=False, avatar_UUID=""):
+    def update_object(self, object_id, object_type_id, attributes, has_avatar=False, avatar_uuid=""):
         """
         Update an existing object in Insight
 
@@ -293,13 +292,13 @@ class Insight(AtlassianRestAPI):
         :param object_type_id:
         :param attributes:
         :param has_avatar:
-        :param avatar_UUID:
+        :param avatar_uuid:
         :return:
         """
         body = {
             "attributes": attributes,
             "objectTypeId": object_type_id,
-            "avatarUUID": avatar_UUID,
+            "avatarUUID": avatar_uuid,
             "hasAvatar": has_avatar,
         }
         url = self.url_joiner(self.api_root, "object/{id}".format(id=object_id))
@@ -337,7 +336,7 @@ class Insight(AtlassianRestAPI):
         params = {"asc": asc, "abbreviate": abbreviate}
         url = self.url_joiner(self.api_root, "object/{id}/history".format(id=object_id))
         return self.get(url, params=params)
-        
+
     @deprecated(version="3.29.0", reason="Use get_object_reference_info()")
     def get_object_referenceinfo(self, object_id):
         """Let's use the get_object_reference_info()"""
@@ -354,22 +353,22 @@ class Insight(AtlassianRestAPI):
         url = self.url_joiner(self.api_root, "object/{id}/referenceinfo".format(id=object_id))
         return self.get(url)
 
-    def create_object(self, objectTypeId, attributes, hasAvatar=False, avatarUUID=""):
+    def create_object(self, object_type_id, attributes, has_avatar=False, avatar_uuid=""):
         """
         Create a new object in Insight
 
-        :param objectTypeId:
+        :param object_type_id:
         :param attributes:
-        :param hasAvatar:
-        :param avatarUUID:
+        :param has_avatar:
+        :param avatar_uuid:
         :return:
         :return:
         """
         data = {
             "attributes": attributes,
-            "objectTypeId": objectTypeId,
-            "avatarUUID": avatarUUID,
-            "hasAvatar": hasAvatar,
+            "objectTypeId": object_type_id,
+            "avatarUUID": avatar_uuid,
+            "hasAvatar": has_avatar,
         }
         url = self.url_joiner(self.api_root, "object/create")
         return self.post(url, data=data)
@@ -377,42 +376,48 @@ class Insight(AtlassianRestAPI):
     def create_object_navlist_iql(
         self,
         iql,
-        objectTypeId,
-        resultsPerPage,
-        orderByTypeAttrId,
-        objectId,
-        objectSchemaId,
-        includeAttributes,
-        attributesToDisplay,
+        object_type_id,
+        results_per_page,
+        order_by_type_attr_id,
+        object_id,
+        object_schema_id,
+        include_attributes,
+        attributes_to_display,
         page=1,
         asc=0,
     ):
         """
-        A filter object that is used to find a paginatad result set based on an object type and an IQL query
+        A filter object that is used to find a paginated result set based on an object type and an IQL query
 
         :param iql:
-        :param objectTypeId:
+        :param object_type_id:
         :param page:
-        :param resultsPerPage:
-        :param orderByTypeAttrId:
+        :param results_per_page:
+        :param order_by_type_attr_id:
         :param asc:
-        :param objectId:
-        :param objectSchemaId:
-        :param includeAttributes:
-        :param attributesToDisplay:
+        :param object_id:
+        :param object_schema_id:
+        :param include_attributes:
+        :param attributes_to_display:
         :return:
         """
-        data = {"objectTypeId": objectTypeId, "iql": iql, "resultsPerPage": resultsPerPage, "page": page, "asc": asc}
-        if attributesToDisplay is not None:
-            data["attributesToDisplay"] = attributesToDisplay
-        if includeAttributes is not None:
-            data["includeAttributes"] = includeAttributes
-        if objectSchemaId is not None:
-            data["objectSchemaId"] = objectSchemaId
-        if orderByTypeAttrId is not None:
-            data["orderByTypeAttrId"] = orderByTypeAttrId
-        if objectId is not None:
-            data["objectId"] = objectId
+        data = {
+            "objectTypeId": object_type_id,
+            "iql": iql,
+            "resultsPerPage": results_per_page,
+            "page": page,
+            "asc": asc,
+        }
+        if attributes_to_display is not None:
+            data["attributesToDisplay"] = attributes_to_display
+        if include_attributes is not None:
+            data["includeAttributes"] = include_attributes
+        if object_schema_id is not None:
+            data["objectSchemaId"] = object_schema_id
+        if order_by_type_attr_id is not None:
+            data["orderByTypeAttrId"] = order_by_type_attr_id
+        if object_id is not None:
+            data["objectId"] = object_id
         url = self.url_joiner(self.api_root, "iql/objects")
         return self.post(url, data=data)
 
@@ -494,7 +499,67 @@ class Insight(AtlassianRestAPI):
         """
         raise NotImplementedError
 
-    # Objecttype
-    # Objecttypeattribute
-    # Progress
-    # Config
+    def get_object_type_attributes(
+        self,
+        type_id,
+        only_value_editable=None,
+        order_by_name=None,
+        query=None,
+        include_values_exist=None,
+        exclude_parent_attributes=None,
+        include_children=None,
+        order_by_required=None,
+    ):
+        """
+        Find all attributes for this object type
+        https://developer.atlassian.com/cloud/insight/rest/api-group-objecttype/#api-objecttype-id-attributes-get
+        Args:
+            type_id (str): id of the object type
+            only_value_editable (bool, optional): only return editable values, defaults to None (Use API default)
+            order_by_name (bool, optional): values, defaults to None (Use API default)
+            query (str, optional): Not documented in API, defaults to None (Use API default)
+            include_values_exist (bool, optional): Include only where values exist, defaults to None (Use API default)
+            exclude_parent_attributes (bool, optional): Exclude parent attributes, defaults to None (Use API default)
+            include_children (bool, optional): include attributes from children, defaults to None (Use API default)
+            order_by_required (bool, optional): Order by required fields, defaults to None (Use API default)
+        """
+
+        kwargs = locals().items()
+        params = dict()
+        params.update({k: v for k, v in kwargs if v is not None and k not in ["self", "type_id"]})
+
+        return self.get(
+            "{0}objecttype/{1}/attributes".format(self.api_root, type_id),
+            headers=self.experimental_headers,
+            params=params,
+        )
+
+    ### Objecttype
+    # TODO: Post objecttype {id} position:
+    #       https://developer.atlassian.com/cloud/insight/rest/api-group-objecttype/#api-objecttype-id-position-post
+    # TODO: Post objecttype create:
+    #       https://developer.atlassian.com/cloud/insight/rest/api-group-objecttype/#api-objecttype-create-post
+
+    ### Insight ObjectTypeAttribute API
+    # TODO: Post objecttypeattribute {objectTypeId}:
+    #       https://developer.atlassian.com/cloud/insight/rest/api-group-objecttypeattribute/#api-objecttypeattribute-objecttypeid-post
+    # TODO: Put objecttypeattribute {objectTypeId} {id}:
+    #       https://developer.atlassian.com/cloud/insight/rest/api-group-objecttypeattribute/#api-objecttypeattribute-objecttypeid-id-put
+    # TODO: Delete objecttypeattribute {id}:
+    #       https://developer.atlassian.com/cloud/insight/rest/api-group-objecttypeattribute/#api-objecttypeattribute-id-delete
+
+    ### Insight Progress API
+    # TODO: Get progress category imports {id}:
+    #       https://developer.atlassian.com/cloud/insight/rest/api-group-progress/#api-progress-category-imports-id-get
+
+    ### Insight Config API
+    # TODO: Get config statustype:
+    #       https://developer.atlassian.com/cloud/insight/rest/api-group-config/#api-config-statustype-get
+    # TODO: Post config statustype:
+    #       https://developer.atlassian.com/cloud/insight/rest/api-group-config/#api-config-statustype-post
+    # TODO: Get config statustype {id}:
+    #       https://developer.atlassian.com/cloud/insight/rest/api-group-config/#api-config-statustype-id-get
+    # TODO: Put config statustype {id}:
+    #       https://developer.atlassian.com/cloud/insight/rest/api-group-config/#api-config-statustype-id-put
+    # TODO: Delete config statustype {id}:
+    #       https://developer.atlassian.com/cloud/insight/rest/api-group-config/#api-config-statustype-id-delete

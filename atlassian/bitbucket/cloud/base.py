@@ -1,8 +1,11 @@
 # coding=utf-8
 
+import logging
 from ..base import BitbucketBase
 
 from requests import HTTPError
+
+log = logging.getLogger(__name__)
 
 
 class BitbucketCloudBase(BitbucketBase):
@@ -104,7 +107,8 @@ class BitbucketCloudBase(BitbucketBase):
                 error_msg = e["message"]
                 if e.get("detail"):
                     error_msg += "\n" + e["detail"]
-            except Exception:
+            except Exception as e:
+                log.error(e)
                 response.raise_for_status()
             else:
                 raise HTTPError(error_msg, response=response)
