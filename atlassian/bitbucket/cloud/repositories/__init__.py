@@ -76,7 +76,8 @@ class Repositories(RepositoriesBase):
 
         :return: The requested Repository object
 
-        API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-repositories/#api-repositories-workspace-repo-slug-get
+        API docs:
+        https://developer.atlassian.com/cloud/bitbucket/rest/api-group-repositories/#api-repositories-workspace-repo-slug-get
         """
         return self._get_object(super(Repositories, self).get("{}/{}".format(workspace, repo_slug)))
 
@@ -107,7 +108,8 @@ class WorkspaceRepositories(RepositoriesBase):
 
         :return: The created project object
 
-        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D#post
+        API docs:
+        https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D#post
         """
 
         data = {"scm": "git"}
@@ -159,7 +161,8 @@ class WorkspaceRepositories(RepositoriesBase):
 
         :return: The requested Repository object
 
-        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D#get
+        API docs:
+        https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D#get
         """
         if by == "slug":
             return self._get_object(super(WorkspaceRepositories, self).get(repository))
@@ -181,7 +184,8 @@ class WorkspaceRepositories(RepositoriesBase):
 
         :return: True if the repository exists
 
-        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D#get
+        API docs:
+        https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D#get
         """
         exists = False
         try:
@@ -209,7 +213,8 @@ class ProjectRepositories(RepositoriesBase):
 
         :return: A generator for the repository objects
 
-        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/workspaces/%7Bworkspace%7D/projects/%7Bproject_key%7D#get
+        API docs:
+        https://developer.atlassian.com/bitbucket/api/2/reference/resource/workspaces/%7Bworkspace%7D/projects/%7Bproject_key%7D#get
         """
         params = {}
         if sort is not None:
@@ -226,7 +231,8 @@ class ProjectRepositories(RepositoriesBase):
 
         :return: The requested Repository object
 
-        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/workspaces/%7Bworkspace%7D/projects/%7Bproject_key%7D#get
+        API docs:
+        https://developer.atlassian.com/bitbucket/api/2/reference/resource/workspaces/%7Bworkspace%7D/projects/%7Bproject_key%7D#get
         """
         if by not in ("slug", "name"):
             ValueError("Unknown value '{}' for argument [by], expected 'slug' or 'name'".format(by))
@@ -264,7 +270,8 @@ class Repository(BitbucketCloudBase):
 
         :return: The updated repository
 
-        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D#put
+        API docs:
+        https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D#put
         """
         return self._update_data(self.put(None, data=kwargs))
 
@@ -279,7 +286,8 @@ class Repository(BitbucketCloudBase):
 
         :return: The response on success
 
-        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D#delete
+        API docs:
+        https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D#delete
         """
         params = {}
         if redirect_to is not None:

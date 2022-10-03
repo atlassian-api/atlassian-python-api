@@ -561,7 +561,8 @@ class Bitbucket(BitbucketBase):
         :param start:
         :param limit: OPTIONAL: The limit of the number of changes to return, this may be restricted by
                 fixed system limits. Default by built-in method: None
-        :param filter_type: OPTIONAL: PRE_RECEIVE|POST_RECEIVE if present, controls how repository hooks should be filtered.
+        :param filter_type: OPTIONAL: PRE_RECEIVE|POST_RECEIVE if present,
+                                    controls how repository hooks should be filtered.
         :return:
         """
         url = self._url_project_repo_hook_settings(project_key)
@@ -1335,7 +1336,8 @@ class Bitbucket(BitbucketBase):
         :param start:
         :param limit: OPTIONAL: The limit of the number of changes to return, this may be restricted by
                 fixed system limits. Default by built-in method: None
-        :param filter_type: OPTIONAL: PRE_RECEIVE|POST_RECEIVE if present, controls how repository hooks should be filtered.
+        :param filter_type: OPTIONAL: PRE_RECEIVE|POST_RECEIVE if present,
+                                    controls how repository hooks should be filtered.
         :return:
         """
         url = self._url_repo_hook_settings(project_key, repository_slug)
@@ -2716,11 +2718,14 @@ class Bitbucket(BitbucketBase):
         :param project_key:
         :param repository_slug:
         :param dest_fd: a file-like object to which the archive will be written
-        :param at: string: Optional, the commit to download an archive of; if not supplied, an archive of the default branch is downloaded
+        :param at: string: Optional, the commit to download an archive of; if not supplied,
+                         an archive of the default branch is downloaded
         :param filename: string: Optional, a filename to include the "Content-Disposition" header
-        :param format: string: Optional, the format to stream the archive in; must be one of: zip, tar, tar.gz or tgz. If not specified, then the archive will be in zip format.
+        :param format: string: Optional, the format to stream the archive in; must be one of: zip, tar, tar.gz or tgz.
+                    If not specified, then the archive will be in zip format.
         :param path: string: Optional, path to include in the streamed archive
-        :param prefix: string: Optional, a prefix to apply to all entries in the streamed archive; if the supplied prefix does not end with a trailing /, one will be added automatically
+        :param prefix: string: Optional, a prefix to apply to all entries in the streamed archive;
+                    if the supplied prefix does not end with a trailing /, one will be added automatically
         :param chunk_size: int: Optional, download chunk size. Defeault is 128
         """
         url = "{}/archive".format(self._url_repo(project_key, repository_slug))

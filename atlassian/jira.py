@@ -3149,7 +3149,6 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         url = "{base_url}/{project_id_or_key}/issuesecuritylevelscheme".format(
             base_url=base_url, project_id_or_key=project_id_or_key
         )
-        response = None
         try:
             response = self.get(url)
         except HTTPError as e:

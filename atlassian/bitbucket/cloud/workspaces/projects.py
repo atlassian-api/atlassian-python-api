@@ -47,6 +47,8 @@ class Projects(BitbucketCloudBase):
             "description": description,
             "is_private": is_private,
         }
+        if avatar:
+            data["avatar"] = avatar
         return self.__get_object(self.post(None, data=data))
 
     def each(self, q=None, sort=None):
