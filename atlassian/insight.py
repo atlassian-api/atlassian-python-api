@@ -534,13 +534,13 @@ class Insight(AtlassianRestAPI):
             params=params,
         )
 
-    ### Objecttype
+    # Objecttype
     # TODO: Post objecttype {id} position:
     #       https://developer.atlassian.com/cloud/insight/rest/api-group-objecttype/#api-objecttype-id-position-post
     # TODO: Post objecttype create:
     #       https://developer.atlassian.com/cloud/insight/rest/api-group-objecttype/#api-objecttype-create-post
 
-    ### Insight ObjectTypeAttribute API
+    # Insight ObjectTypeAttribute API
     # TODO: Post objecttypeattribute {objectTypeId}:
     #       https://developer.atlassian.com/cloud/insight/rest/api-group-objecttypeattribute/#api-objecttypeattribute-objecttypeid-post
     # TODO: Put objecttypeattribute {objectTypeId} {id}:
@@ -548,11 +548,11 @@ class Insight(AtlassianRestAPI):
     # TODO: Delete objecttypeattribute {id}:
     #       https://developer.atlassian.com/cloud/insight/rest/api-group-objecttypeattribute/#api-objecttypeattribute-id-delete
 
-    ### Insight Progress API
+    # Insight Progress API
     # TODO: Get progress category imports {id}:
     #       https://developer.atlassian.com/cloud/insight/rest/api-group-progress/#api-progress-category-imports-id-get
 
-    ### Insight Config API
+    # Insight Config API
     # TODO: Get config statustype:
     #       https://developer.atlassian.com/cloud/insight/rest/api-group-config/#api-config-statustype-get
     # TODO: Post config statustype:

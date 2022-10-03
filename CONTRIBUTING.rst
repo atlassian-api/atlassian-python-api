@@ -126,11 +126,11 @@ All methods based on docs from: https://developer.atlassian.com/docs/
 * Crowd
     - `Crowd Server`_
 * Advanced Roadmaps (formerly Portfolio for Jira)
-    - `Portfolio for Jira`_
-    - `Portfolio for Jira Teams`_
+    - `Portfolio for Jira`_ - Advanced Roadmaps
+    - `Portfolio for Jira Teams`_ - Advanced Roadmaps
 * Insight
-    _`Insight Server`_
-    _`Insight Cloud`_
+    - `Insight Server`_ - Insight for Jira on-premises installation
+    - `Insight Cloud`_ - Insight for Jira in Atlassian Cloud
 *  Bitbucket:
     - https://developer.atlassian.com/server/bitbucket/reference/rest-api/
     - https://developer.atlassian.com/server/bitbucket/how-tos/command-line-rest/
