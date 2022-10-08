@@ -258,7 +258,7 @@ Other actions
     # Get page history
     confluence.history(page_id)
 
-    # Get content history by version number. It works as experimental method
+    # Get content history by version number
     confluence.get_content_history_by_version_number(content_id, version_number)
 
     # Remove content history. It works as experimental method
