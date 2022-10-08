@@ -4,7 +4,7 @@ pytest
 pytest-cov
 flake8
 flake8-no-fstring
-black==22.3.0
+black
 tox
 coverage
 codecov
