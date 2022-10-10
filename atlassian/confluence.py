@@ -1587,6 +1587,8 @@ class Confluence(AtlassianRestAPI):
         :return:
         """
         log.info('Updating {type} "{title}"'.format(title=title, type=type))
+        # update current page
+        params = {"status": "current"}
 
         if self.is_page_content_is_already_updated(page_id, insert_body, title):
             return self.get_page_by_id(page_id)
@@ -1611,7 +1613,7 @@ class Confluence(AtlassianRestAPI):
                 data["version"]["message"] = version_comment
 
             try:
-                response = self.put("rest/api/content/{0}".format(page_id), data=data)
+                response = self.put("rest/api/content/{0}".format(page_id), data=data, params=params)
             except HTTPError as e:
                 if e.response.status_code == 400:
                     raise ApiValueError(
