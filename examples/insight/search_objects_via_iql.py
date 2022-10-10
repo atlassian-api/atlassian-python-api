@@ -1,4 +1,3 @@
-from pprint import pprint
 from atlassian import Insight
 
 
