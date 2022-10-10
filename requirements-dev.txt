@@ -10,3 +10,4 @@ coverage
 codecov
 # used for example confluence attach file
 python-magic
+importlib-metadata==4.13.0
