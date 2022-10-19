@@ -4,7 +4,7 @@ import os
 import time
 import json
 
-from requests import HTTPError
+from requests import HTTPError, get
 from deprecated import deprecated
 from atlassian import utils
 from .errors import (
@@ -2296,6 +2296,7 @@ class Confluence(AtlassianRestAPI):
         url = "spaces/flyingpdf/pdfpageexport.action?pageId={pageId}".format(pageId=page_id)
         if self.api_version == "cloud":
             url = self.get_pdf_download_url_for_confluence_cloud(url)
+            return get(url).content
 
         return self.get(url, headers=headers, not_json_response=True)
 
@@ -2485,9 +2486,9 @@ class Confluence(AtlassianRestAPI):
         export is initiated. Instead it starts a process in the background
         and provides a link to download the PDF once the process completes.
         This functions polls the long running task page and returns the
-        download url of the PDF.
+        download s3 url of the PDF.
         :param url: URL to initiate PDF export
-        :return: Download url for PDF file
+        :return: Download s3 url for PDF file
         """
         download_url = None
         try:
@@ -2497,29 +2498,27 @@ class Confluence(AtlassianRestAPI):
             response = self.get(url, headers=headers, not_json_response=True)
             response_string = response.decode(encoding="utf-8", errors="strict")
             task_id = response_string.split('name="ajs-taskId" content="')[1].split('">')[0]
-            poll_url = "runningtaskxml.action?taskId={0}".format(task_id)
+            poll_url = "/services/api/v1/task/{0}/progress".format(task_id)
             while long_running_task:
                 long_running_task_response = self.get(poll_url, headers=headers, not_json_response=True)
-                long_running_task_response_parts = long_running_task_response.decode(
-                    encoding="utf-8", errors="strict"
-                ).split("\n")
-                percentage_complete = long_running_task_response_parts[6].strip()
-                is_successful = long_running_task_response_parts[7].strip()
-                is_complete = long_running_task_response_parts[8].strip()
+                long_running_task_response_parts = json.loads(
+                    long_running_task_response.decode(encoding="utf-8", errors="strict")
+                )
+                percentage_complete = long_running_task_response_parts["progress"]
+                is_update = long_running_task_response_parts["progress"] == 100
+                current_state = long_running_task_response_parts["state"]
                 log.info("Sleep for 5s.")
                 time.sleep(5)
                 log.info("Check if export task has completed.")
-                if is_complete == "<isComplete>true</isComplete>":
-                    if is_successful == "<isSuccessful>true</isSuccessful>":
-                        log.info(percentage_complete)
-                        log.info("Downloading content...")
-                        log.debug("Extract taskId and download PDF.")
-                        current_status = long_running_task_response_parts[3]
-                        download_url = current_status.split("href=&quot;/wiki/")[1].split("&quot")[0]
-                        long_running_task = False
-                    elif is_successful == "<isSuccessful>false</isSuccessful>":
-                        log.error("PDF conversion not successful.")
-                        return None
+                if is_update and current_state == "UPLOADED_TO_S3":
+                    log.info(percentage_complete)
+                    log.info("Downloading content...")
+                    log.debug("Extract taskId and download PDF.")
+                    download_url = self.get(long_running_task_response_parts["result"][6:], headers=headers)
+                    long_running_task = False
+                elif not is_update and current_state == "FAILED":
+                    log.error("PDF conversion not successful.")
+                    return None
                 else:
                     log.info(percentage_complete)
         except IndexError as e:
