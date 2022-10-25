@@ -373,8 +373,8 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         if not all([isinstance(i, int) for i in args]):
-            raise TypeError('Arguments to `issues_get_comments_by_id` must be int')
-        data = {'ids': list(args)}
+            raise TypeError("Arguments to `issues_get_comments_by_id` must be int")
+        data = {"ids": list(args)}
         base_url = self.resource_url("comment")
         url = "{base_url}/list".format(base_url=base_url)
         return self.post(url, data=data)
@@ -388,15 +388,16 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         base_url = self.resource_url("issue")
-        url = "{base_url}/{issue_id}/comment/{comment_id}".format(base_url=base_url,
-                                                                  issue_id=issue_id,
-                                                                  comment_id=comment_id)
+        url = "{base_url}/{issue_id}/comment/{comment_id}".format(
+            base_url=base_url, issue_id=issue_id, comment_id=comment_id
+        )
         return self.get(url)
 
     """
     Comments properties
     Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/comment/{commentId}/properties
     """
+
     def get_comment_properties_keys(self, comment_id):
         """
         Returns the keys of all properties for the comment identified by the key or by the id.

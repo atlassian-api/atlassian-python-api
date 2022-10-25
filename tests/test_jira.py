@@ -31,7 +31,7 @@ class TestJira(TestCase):
     def test_get_issue_comments(self):
         """Can retrieve issue comments"""
         resp = self.jira.issue_get_comments("FOO-123")
-        self.assertEqual(len(resp['comments']), 2)
+        self.assertEqual(len(resp["comments"]), 2)
         self.assertEqual(resp["total"], 2)
 
     def test_get_issue_comment(self):
