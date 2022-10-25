@@ -261,6 +261,14 @@ Manage issues
     # Restore an issue
     issue_restore(issue_id_or_key)
 
+    # Issue Comments
+    jira.issue_get_comments(issue_id_or_key)
+
+    jira.issue_get_comment(issue_id_or_key, comment_id)
+
+    jira.issues_get_comments_by_id(comment_id, [comment_id...])
+
+
 Epic Issues
 -------------
 
