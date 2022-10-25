@@ -1,8 +1,7 @@
 # coding=utf-8
 from atlassian import Jira
 
-""" Get Comments on an Issue
-"""
+"""Example: Get Comments on a Jira Issue"""
 
 
 def main():
