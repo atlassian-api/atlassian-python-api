@@ -145,7 +145,7 @@ If you want to see the response in pretty print format JSON. Feel free for use c
     from pprint import pprint
     # you code here
     # and then print using pprint(result) instead of print(result)
-    pprint(response)
+    print(response)
 
 How to contribute?
 __________________
