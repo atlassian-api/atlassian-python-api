@@ -353,6 +353,46 @@ class Jira(AtlassianRestAPI):
         url = self.resource_url("cluster/zdu/state")
         return self.get(url)
 
+    # Issue Comments
+    def issue_get_comments(self, issue_id):
+        """
+        Get Comments on an Issue
+        :param issue_id: Issue ID
+        :raises: requests.exceptions.HTTPError
+        :return:
+        """
+        base_url = self.resource_url("issue")
+        url = "{base_url}/{issue_id}/comment".format(base_url=base_url, issue_id=issue_id)
+        return self.get(url)
+
+    def issues_get_comments_by_id(self, *args):
+        """
+        Get Comments on Multiple Issues
+        :param *args: int Issue ID's
+        :raises: requests.exceptions.HTTPError
+        :return:
+        """
+        if not all([isinstance(i, int) for i in args]):
+            raise TypeError("Arguments to `issues_get_comments_by_id` must be int")
+        data = {"ids": list(args)}
+        base_url = self.resource_url("comment")
+        url = "{base_url}/list".format(base_url=base_url)
+        return self.post(url, data=data)
+
+    def issue_get_comment(self, issue_id, comment_id):
+        """
+        Get a single comment
+        :param issue_id: int or str
+        :param comment_id: int
+        :raises: requests.exceptions.HTTPError
+        :return:
+        """
+        base_url = self.resource_url("issue")
+        url = "{base_url}/{issue_id}/comment/{comment_id}".format(
+            base_url=base_url, issue_id=issue_id, comment_id=comment_id
+        )
+        return self.get(url)
+
     """
     Comments properties
     Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/comment/{commentId}/properties
