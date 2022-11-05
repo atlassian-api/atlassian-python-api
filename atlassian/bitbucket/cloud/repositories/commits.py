@@ -80,7 +80,7 @@ class Commit(BitbucketCloudBase):
     @property
     def author(self):
         """User object of the author."""
-        return User(None, self.get_data("author"))
+        return User(None, self.get_data("author").get("user"))
 
     def parents(self):
         """Return a generator object of parent commits."""
