@@ -35,7 +35,7 @@ class Commits(BitbucketCloudBase):
         if q is not None:
             params["q"] = q
         for commit in self._get_paged(top, trailing=True, params=params):
-            yield self.__get_object(super(Commits, self).get(commit.get("hash")))
+            yield self.get(commit.get("hash"))
 
     def get(self, commit_hash):
         """
