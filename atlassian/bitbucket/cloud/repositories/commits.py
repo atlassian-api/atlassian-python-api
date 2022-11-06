@@ -70,7 +70,7 @@ class Commit(BitbucketCloudBase):
     @property
     def message(self):
         """Commit message."""
-        return self.get_data("title")
+        return self.get_data("message")
 
     @property
     def date(self):
