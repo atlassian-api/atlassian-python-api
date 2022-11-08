@@ -35,7 +35,7 @@ class Commits(BitbucketCloudBase):
         if q is not None:
             params["q"] = q
         for commit in self._get_paged(top, trailing=True, params=params):
-            yield self.__get_object(super(Commits, self).get(commit.get("hash")))
+            yield self.__get_object(commit)
 
     def get(self, commit_hash):
         """
@@ -70,7 +70,7 @@ class Commit(BitbucketCloudBase):
     @property
     def message(self):
         """Commit message."""
-        return self.get_data("title")
+        return self.get_data("message")
 
     @property
     def date(self):
@@ -80,7 +80,7 @@ class Commit(BitbucketCloudBase):
     @property
     def author(self):
         """User object of the author."""
-        return User(None, self.get_data("author"))
+        return User(None, self.get_data("author").get("user"))
 
     def parents(self):
         """Return a generator object of parent commits."""
