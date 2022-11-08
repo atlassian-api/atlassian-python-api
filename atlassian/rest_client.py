@@ -190,6 +190,7 @@ class AtlassianRestAPI(object):
         files=None,
         trailing=None,
         absolute=False,
+        advanced_mode=False,
     ):
         """
 
@@ -203,6 +204,7 @@ class AtlassianRestAPI(object):
         :param files:
         :param trailing: bool
         :param absolute: bool, OPTIONAL: Do not prefix url, url is absolute
+        :param advanced_mode: bool, OPTIONAL: Return the raw response
         :return:
         """
         url = self.url_joiner(None if absolute else self.url, path, trailing)
@@ -237,7 +239,7 @@ class AtlassianRestAPI(object):
 
         log.debug("HTTP: {} {} -> {} {}".format(method, path, response.status_code, response.reason))
         log.debug("HTTP: Response text -> {}".format(response.text))
-        if self.advanced_mode:
+        if self.advanced_mode or advanced_mode:
             return response
 
         self.raise_for_status(response)
@@ -277,6 +279,7 @@ class AtlassianRestAPI(object):
             headers=headers,
             trailing=trailing,
             absolute=absolute,
+            advanced_mode=advanced_mode,
         )
         if self.advanced_mode or advanced_mode:
             return response
