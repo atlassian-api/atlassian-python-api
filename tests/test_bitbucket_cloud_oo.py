@@ -92,6 +92,7 @@ class TestBasic:
         assert result["uuid"] == "{PipelineStep1Uuid}", "Result of [get_pipeline_step(...)]"
 
     def test_get_pipeline_step_log_1(self):
+        """Test Not Found"""
         result = BITBUCKET.get_pipeline_step_log(
             "TestWorkspace1", "testrepository1", "{PipelineUuid}", "{PipelineStep1Uuid}"
         )
