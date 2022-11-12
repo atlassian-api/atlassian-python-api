@@ -92,7 +92,7 @@ class TestConfluenceAttach(unittest.TestCase):
         fd, filename = tempfile.mkstemp("w")
         os.write(fd, b"Hello World - Version 1")
 
-        name = os.path.basename(tempfile.mktemp()) + ".txt"
+        name = os.path.basename(tempfile.mkstemp()) + ".txt"
 
         # upload a new file
         result = confluence.attach_file(
@@ -148,7 +148,7 @@ class TestConfluenceAttach(unittest.TestCase):
         space = "SAN"
         title = "atlassian-python-rest-api-wrapper"
 
-        attachment_name = os.path.basename(tempfile.mktemp())
+        attachment_name = os.path.basename(tempfile.mkstemp())
 
         # upload a new file
         content = b"Hello World - Version 1"
