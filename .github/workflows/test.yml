@@ -21,7 +21,7 @@ jobs:
         python-version: ['3.6', '3.7', '3.8', '3.9', '3.10']
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Build Docker
       run: |
         make docker-qa-build PYTHON_VERSION=${{matrix.python-version}}
@@ -31,7 +31,7 @@ jobs:
         make docker-qa PYTHON_VERSION=${{matrix.python-version}}
     - name: Creating coverage report
       if: ${{ ( matrix.python-version == '3.8' ) }}
-      uses: codecov/codecov-action@v1
+      uses: codecov/codecov-action@v3
       with:
         files: ./coverage.xml
         fail_ci_if_error: true
