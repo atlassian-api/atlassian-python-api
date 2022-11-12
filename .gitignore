@@ -116,7 +116,7 @@ venv_/
 
 #
 *.secret
-
+.secrets/
 #visual studio code
 .vscode
 

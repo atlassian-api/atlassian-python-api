@@ -1,8 +1,6 @@
 # coding=utf-8
 import logging
 
-from requests import HTTPError
-
 from .rest_client import AtlassianRestAPI
 
 log = logging.getLogger(__name__)
@@ -97,7 +95,7 @@ class ServiceDesk(AtlassianRestAPI):
         :param request_participants: list
         :return: New request
         """
-        log.warning("Creating request...")
+        log.info("Creating request...")
         data = {
             "serviceDeskId": service_desk_id,
             "requestTypeId": request_type_id,
@@ -238,24 +236,43 @@ class ServiceDesk(AtlassianRestAPI):
         :param public: OPTIONAL: bool (default is True)
         :return: New comment
         """
-        log.warning("Creating comment...")
+        log.info("Creating comment...")
         data = {"body": body, "public": public}
         url = "rest/servicedeskapi/request/{}/comment".format(issue_id_or_key)
 
         return self.post(path=url, data=data, headers=self.experimental_headers)
 
-    def get_request_comments(self, issue_id_or_key):
+    def get_request_comments(self, issue_id_or_key, start=0, limit=50, public=True, internal=True):
         """
         Get all comments in issue
 
         :param issue_id_or_key: str
+        :param start: OPTIONAL: int
+        :param limit: OPTIONAL: int
+        :param public: OPTIONAL: bool
+        :param internal: OPTIONAL: bool
         :return: Issue comments
         """
+        url = "rest/servicedeskapi/request/{}/comment".format(issue_id_or_key)
+        params = {}
+        if start is not None:
+            params["start"] = int(start)
+        if limit is not None:
+            params["limit"] = int(limit)
+        if public is not None:
+            params["public"] = bool(public)
+        if internal is not None:
+            params["internal"] = bool(internal)
 
-        return self.get(
-            "rest/servicedeskapi/request/{}/comment".format(issue_id_or_key),
-            headers=self.experimental_headers,
-        )
+        response = self.get(url, params=params, headers=self.experimental_headers)
+        if self.advanced_mode:
+            return response
+        return (response or {}).get("values")
+
+        # return self.get(
+        #     "rest/servicedeskapi/request/{}/comment".format(issue_id_or_key),
+        #     headers=self.experimental_headers,
+        # )
 
     def get_request_comment_by_id(self, issue_id_or_key, comment_id):
         """
@@ -475,7 +492,11 @@ class ServiceDesk(AtlassianRestAPI):
         experimental_headers["X-Atlassian-Token"] = "no-check"
 
         with open(filename, "rb") as file:
-            result = self.post(path=url, headers=experimental_headers, files={"file": file}).get("temporaryAttachments")
+            result = (
+                self.post(path=url, headers=experimental_headers, files={"file": file})
+                .json()
+                .get("temporaryAttachments")
+            )
             temp_attachment_id = result[0].get("temporaryAttachmentId")
 
             return temp_attachment_id
@@ -763,20 +784,4 @@ class ServiceDesk(AtlassianRestAPI):
         }
 
         url = "rest/servicedeskapi/servicedesk/{}/requesttype".format(service_desk_id)
-
         return self.post(url, headers=self.experimental_headers, data=data)
-
-    def raise_for_status(self, response):
-        """
-        Checks the response for an error status and raises an exception with the error message provided by the server
-        :param response:
-        :return:
-        """
-        if 400 <= response.status_code < 600:
-            try:
-                j = response.json()
-                error_msg = j["errorMessage"]
-            except Exception:
-                response.raise_for_status()
-            else:
-                raise HTTPError(error_msg, response=response)

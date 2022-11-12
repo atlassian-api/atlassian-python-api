@@ -10,7 +10,7 @@ Get page info
     confluence.page_exists(space, title)
 
     # Provide content by type (page, blog, comment)
-    confluence.get_page_child_by_type(page_id, type='page', start=None, limit=None)
+    confluence.get_page_child_by_type(page_id, type='page', start=None, limit=None, expand=None)
 
     # Provide content id from search result by title and space
     confluence.get_page_id(space, title)
@@ -33,7 +33,7 @@ Get page info
     #                   We can also specify some extensions such as extensions.inlineProperties
     #                   (for getting inline comment-specific properties) or extensions.resolution
     #                   for the resolution status of each comment in the results
-    confluence.get_page_by_id(self, page_id, expand=None, status=None, version=None)
+    confluence.get_page_by_id(page_id, expand=None, status=None, version=None)
 
     # The list of labels on a piece of Content
     confluence.get_page_labels(page_id, prefix=None, start=None, limit=None)
@@ -70,7 +70,7 @@ Page actions
 .. code-block:: python
 
     # Create page from scratch
-    confluence.create_page(space, title, body, parent_id=None, type='page', representation='storage', editor='v2')
+    confluence.create_page(space, title, body, parent_id=None, type='page', representation='storage', editor='v2', full_width=False)
 
     # This method removes a page, if it has recursive flag, method removes including child pages
     confluence.remove_page(page_id, status=None, recursive=False)
@@ -85,13 +85,13 @@ Page actions
     confluence.remove_page_as_draft(page_id)
 
     # Update page if already exist
-    confluence.update_page(page_id, title, body, parent_id=None, type='page', representation='storage', minor_edit=False)
+    confluence.update_page(page_id, title, body, parent_id=None, type='page', representation='storage', minor_edit=False, full_width=False)
 
     # Update page or create page if it is not exists
-    confluence.update_or_create(parent_id, title, body, representation='storage')
+    confluence.update_or_create(parent_id, title, body, representation='storage', full_width=False)
 
     # Append body to page if already exist
-    confluence.append_page(self, page_id, title, append_body, parent_id=None, type='page', representation='storage', minor_edit=False)
+    confluence.append_page(page_id, title, append_body, parent_id=None, type='page', representation='storage', minor_edit=False)
 
     # Set the page (content) property e.g. add hash parameters
     confluence.set_page_property(page_id, data)
@@ -258,7 +258,7 @@ Other actions
     # Get page history
     confluence.history(page_id)
 
-    # Get content history by version number. It works as experimental method
+    # Get content history by version number
     confluence.get_content_history_by_version_number(content_id, version_number)
 
     # Remove content history. It works as experimental method

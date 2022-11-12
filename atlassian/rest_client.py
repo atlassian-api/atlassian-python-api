@@ -5,7 +5,8 @@ from json import dumps
 import random
 import requests
 import time
-from oauthlib.oauth1 import SIGNATURE_RSA
+from oauthlib.oauth1 import SIGNATURE_RSA_SHA512
+from requests import HTTPError
 from requests_oauthlib import OAuth1, OAuth2
 from six.moves.urllib.parse import urlencode
 
@@ -139,7 +140,7 @@ class AtlassianRestAPI(object):
         self._update_header("Authorization", "Bearer {token}".format(token=token))
 
     def _create_kerberos_session(self, _):
-        from requests_kerberos import HTTPKerberosAuth, OPTIONAL
+        from requests_kerberos import OPTIONAL, HTTPKerberosAuth
 
         self._session.auth = HTTPKerberosAuth(mutual_authentication=OPTIONAL)
 
@@ -147,7 +148,7 @@ class AtlassianRestAPI(object):
         oauth = OAuth1(
             oauth_dict["consumer_key"],
             rsa_key=oauth_dict["key_cert"],
-            signature_method=SIGNATURE_RSA,
+            signature_method=SIGNATURE_RSA_SHA512,
             resource_owner_key=oauth_dict["access_token"],
             resource_owner_secret=oauth_dict["access_token_secret"],
         )
@@ -234,6 +235,7 @@ class AtlassianRestAPI(object):
         files=None,
         trailing=None,
         absolute=False,
+        advanced_mode=False,
     ):
         """
 
@@ -247,6 +249,7 @@ class AtlassianRestAPI(object):
         :param files:
         :param trailing: bool
         :param absolute: bool, OPTIONAL: Do not prefix url, url is absolute
+        :param advanced_mode: bool, OPTIONAL: Return the raw response
         :return:
         """
         url = self.url_joiner(None if absolute else self.url, path, trailing)
@@ -299,9 +302,9 @@ class AtlassianRestAPI(object):
 
         response.encoding = "utf-8"
 
-        log.debug(u"HTTP: {} {} -> {} {}".format(method, path, response.status_code, response.reason))
-        log.debug(u"HTTP: Response text -> {}".format(response.text))
-        if self.advanced_mode:
+        log.debug("HTTP: {} {} -> {} {}".format(method, path, response.status_code, response.reason))
+        log.debug("HTTP: Response text -> {}".format(response.text))
+        if self.advanced_mode or advanced_mode:
             return response
 
         self.raise_for_status(response)
@@ -341,6 +344,7 @@ class AtlassianRestAPI(object):
             headers=headers,
             trailing=trailing,
             absolute=absolute,
+            advanced_mode=advanced_mode,
         )
         if self.advanced_mode or advanced_mode:
             return response
@@ -368,6 +372,14 @@ class AtlassianRestAPI(object):
         advanced_mode=False,
     ):
         """
+        :param path:
+        :param data:
+        :param json:
+        :param headers:
+        :param files:
+        :param params:
+        :param trailing:
+        :param absolute:
         :param advanced_mode: bool, OPTIONAL: Return the raw response
         :return: if advanced_mode is not set - returns dictionary. If it is set - returns raw response.
         """
@@ -398,6 +410,13 @@ class AtlassianRestAPI(object):
         advanced_mode=False,
     ):
         """
+        :param path: Path of request
+        :param data:
+        :param headers: adjusted headers, usually it's default
+        :param files:
+        :param trailing:
+        :param params:
+        :param absolute:
         :param advanced_mode: bool, OPTIONAL: Return the raw response
         :return: if advanced_mode is not set - returns dictionary. If it is set - returns raw response.
         """
@@ -427,6 +446,12 @@ class AtlassianRestAPI(object):
     ):
         """
         Deletes resources at given paths.
+        :param path:
+        :param data:
+        :param headers:
+        :param params:
+        :param trailing:
+        :param absolute:
         :param advanced_mode: bool, OPTIONAL: Return the raw response
         :rtype: dict
         :return: Empty dictionary to have consistent interface.
@@ -454,4 +479,19 @@ class AtlassianRestAPI(object):
         :param response:
         :return:
         """
-        response.raise_for_status()
+        if 400 <= response.status_code < 600:
+            try:
+                j = response.json()
+                if self.url == "https://api.atlassian.com":
+                    error_msg = "\n".join([k + ": " + v for k, v in j.items()])
+                else:
+                    error_msg = "\n".join(
+                        j.get("errorMessages", list()) + [k + ": " + v for k, v in j.get("errors", dict()).items()]
+                    )
+            except Exception as e:
+                log.error(e)
+                response.raise_for_status()
+            else:
+                raise HTTPError(error_msg, response=response)
+        else:
+            response.raise_for_status()

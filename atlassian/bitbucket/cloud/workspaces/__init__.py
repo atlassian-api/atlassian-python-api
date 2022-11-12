@@ -18,16 +18,19 @@ class Workspaces(BitbucketCloudBase):
         """
         Get all workspaces matching the criteria.
 
-        :param role: string (default is None): Filters the workspaces based on the authenticated user"s role on each workspace.
-                                               * member: returns a list of all the workspaces which the caller is a member of
-                                                 at least one workspace group or repository
-                                               * collaborator: returns a list of workspaces which the caller has write access
-                                                 to at least one repository in the workspace
-                                               * owner: returns a list of workspaces which the caller has administrator access
-        :param q: string (default is None):    Query string to narrow down the response.
-                                               See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
-        :param sort: string (default is None): Name of a response property to sort results.
-                                               See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
+        :param role: string (default is None):
+                    Filters the workspaces based on the authenticated user's role on each workspace.
+                    * member: returns a list of all the workspaces which the caller is a member of
+                                at least one workspace group or repository
+                    * collaborator: returns a list of workspaces which the caller has written access
+                            to at least one repository in the workspace
+                    * owner: returns a list of workspaces which the caller has administrator access
+        :param q: string (default is None):
+                        Query string to narrow down the response.
+                        See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
+        :param sort: string (default is None):
+                        Name of a response property to sort results.
+                        See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
 
         :return: A generator for the Workspace objects
 

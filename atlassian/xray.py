@@ -1,7 +1,6 @@
 # coding=utf-8
 import logging
 import re
-from requests import HTTPError
 from .rest_client import AtlassianRestAPI
 
 log = logging.getLogger(__name__)
@@ -565,17 +564,3 @@ class Xray(AtlassianRestAPI):
         data = {"add": add, "remove": remove}
         url = "rest/raven/1.0/api/testrepository/{0}/folders/{1}/tests".format(project_key, folder_id)
         return self.put(url, data=data)
-
-    def raise_for_status(self, response):
-        """
-        Checks the response for an error status and raises an exception with the error message provided by the server
-        :param response:
-        :return:
-        """
-        if 400 <= response.status_code < 600:
-            try:
-                error_msg = response.text
-            except Exception:
-                response.raise_for_status()
-            else:
-                raise HTTPError(error_msg, response=response)

@@ -4,9 +4,11 @@ from requests import HTTPError
 from ..base import BitbucketCloudBase
 from .issues import Issues
 from .branchRestrictions import BranchRestrictions
+from .commits import Commits
 from .defaultReviewers import DefaultReviewers
 from .pipelines import Pipelines
 from .pullRequests import PullRequests
+from .refs import Branches, Tags
 
 
 class RepositoriesBase(BitbucketCloudBase):
@@ -61,6 +63,24 @@ class Repositories(RepositoriesBase):
         for repository in self._get_paged(None, params):
             yield self._get_object(repository)
 
+    def get(self, workspace, repo_slug):
+        """
+        Returns the requested repository.
+
+        Since this method accesses the repository endpoint
+        directly it is usable if you do not have permission
+        to access the workspace endpoint.
+
+        :param workspace: string: The workspace of the repository
+        :param repo_slug: string: The requested repository.
+
+        :return: The requested Repository object
+
+        API docs:
+        https://developer.atlassian.com/cloud/bitbucket/rest/api-group-repositories/#api-repositories-workspace-repo-slug-get
+        """
+        return self._get_object(super(Repositories, self).get("{}/{}".format(workspace, repo_slug)))
+
 
 class WorkspaceRepositories(RepositoriesBase):
     ALLOW_FORKS = "allow_forks"
@@ -88,7 +108,8 @@ class WorkspaceRepositories(RepositoriesBase):
 
         :return: The created project object
 
-        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D#post
+        API docs:
+        https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D#post
         """
 
         data = {"scm": "git"}
@@ -140,7 +161,8 @@ class WorkspaceRepositories(RepositoriesBase):
 
         :return: The requested Repository object
 
-        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D#get
+        API docs:
+        https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D#get
         """
         if by == "slug":
             return self._get_object(super(WorkspaceRepositories, self).get(repository))
@@ -162,7 +184,8 @@ class WorkspaceRepositories(RepositoriesBase):
 
         :return: True if the repository exists
 
-        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D#get
+        API docs:
+        https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D#get
         """
         exists = False
         try:
@@ -190,7 +213,8 @@ class ProjectRepositories(RepositoriesBase):
 
         :return: A generator for the repository objects
 
-        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/workspaces/%7Bworkspace%7D/projects/%7Bproject_key%7D#get
+        API docs:
+        https://developer.atlassian.com/bitbucket/api/2/reference/resource/workspaces/%7Bworkspace%7D/projects/%7Bproject_key%7D#get
         """
         params = {}
         if sort is not None:
@@ -207,7 +231,8 @@ class ProjectRepositories(RepositoriesBase):
 
         :return: The requested Repository object
 
-        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/workspaces/%7Bworkspace%7D/projects/%7Bproject_key%7D#get
+        API docs:
+        https://developer.atlassian.com/bitbucket/api/2/reference/resource/workspaces/%7Bworkspace%7D/projects/%7Bproject_key%7D#get
         """
         if by not in ("slug", "name"):
             ValueError("Unknown value '{}' for argument [by], expected 'slug' or 'name'".format(by))
@@ -225,10 +250,17 @@ class Repository(BitbucketCloudBase):
         self.__branch_restrictions = BranchRestrictions(
             "{}/branch-restrictions".format(self.url), **self._new_session_args
         )
+        self.__branches = Branches("{}/refs/branches".format(self.url), **self._new_session_args)
+        self.__commits = Commits(
+            "{}/commits".format(self.url),
+            data={"links": {"commit": {"href": "{}/commit".format(self.url)}}},
+            **self._new_session_args,
+        )
         self.__default_reviewers = DefaultReviewers("{}/default-reviewers".format(self.url), **self._new_session_args)
         self.__issues = Issues("{}/issues".format(self.url), **self._new_session_args)
         self.__pipelines = Pipelines("{}/pipelines".format(self.url), **self._new_session_args)
         self.__pullrequests = PullRequests("{}/pullrequests".format(self.url), **self._new_session_args)
+        self.__tags = Tags("{}/refs/tags".format(self.url), **self._new_session_args)
 
     def update(self, **kwargs):
         """
@@ -238,7 +270,8 @@ class Repository(BitbucketCloudBase):
 
         :return: The updated repository
 
-        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D#put
+        API docs:
+        https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D#put
         """
         return self._update_data(self.put(None, data=kwargs))
 
@@ -253,7 +286,8 @@ class Repository(BitbucketCloudBase):
 
         :return: The response on success
 
-        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D#delete
+        API docs:
+        https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D#delete
         """
         params = {}
         if redirect_to is not None:
@@ -330,6 +364,16 @@ class Repository(BitbucketCloudBase):
         return self.__branch_restrictions
 
     @property
+    def branches(self):
+        """The repository branches."""
+        return self.__branches
+
+    @property
+    def commits(self):
+        """The repository commits."""
+        return self.__commits
+
+    @property
     def default_reviewers(self):
         """The repository default reviewers"""
         return self.__default_reviewers
@@ -348,3 +392,8 @@ class Repository(BitbucketCloudBase):
     def pullrequests(self):
         """The repository pull requests"""
         return self.__pullrequests
+
+    @property
+    def tags(self):
+        """The repository tags."""
+        return self.__tags

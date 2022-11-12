@@ -243,17 +243,19 @@ class Step(BitbucketCloudBase):
         response = None
         try:
             response = self.get("log", headers=headers, advanced_mode=True)
+            response.raise_for_status()
         except HTTPError as e:
             # A 404 indicates that no log is present.
             if not e.response.status_code == 404:
                 # Rethrow the exception
                 raise
+            return None
 
         if response is None:
             if start is None:
                 return None
-            return (None, None)
+            return None, None
 
         if start is None:
             return response.content
-        return (response.headers["Content-Range"].split("/")[1], response.content)
+        return response.headers["Content-Range"].split("/")[1], response.content

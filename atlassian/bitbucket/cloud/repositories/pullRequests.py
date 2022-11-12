@@ -1,7 +1,10 @@
 # coding=utf-8
 
 from ..base import BitbucketCloudBase
-from ..common.users import User
+from .diffstat import DiffStat
+from ..common.builds import Build
+from ..common.comments import Comment
+from ..common.users import User, Participant
 
 
 class PullRequests(BitbucketCloudBase):
@@ -178,6 +181,16 @@ class PullRequest(BitbucketCloudBase):
         return self.get_data("destination")["branch"]["name"]
 
     @property
+    def source_commit(self):
+        """Source commit."""
+        return self.get_data("source")["commit"]["hash"]
+
+    @property
+    def destination_commit(self):
+        """Destination commit."""
+        return self.get_data("destination")["commit"]["hash"]
+
+    @property
     def comment_count(self):
         """number of comments"""
         return self.get_data("comment_count")
@@ -196,6 +209,41 @@ class PullRequest(BitbucketCloudBase):
     def author(self):
         """User object of the author"""
         return User(None, self.get_data("author"))
+
+    @property
+    def has_conflict(self):
+        """Returns True if any of the changes in the PR cause conflicts."""
+        for diffstat in self.diffstat():
+            if diffstat.has_conflict:
+                return True
+        return False
+
+    def diffstat(self):
+        """
+        Returns a generator object of diffstats
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D/diffstat
+        """
+        for diffstat in self._get_paged("diffstat"):
+            yield DiffStat(diffstat, **self._new_session_args)
+
+        return
+
+    def diff(self, encoding="utf-8"):
+        """
+        Returns PR diff
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D/diff
+        """
+        return str(self.get("diff", not_json_response=True), encoding=encoding)
+
+    def patch(self, encoding="utf-8"):
+        """
+        Returns PR patch
+
+        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D/patch
+        """
+        return str(self.get("patch", not_json_response=True), encoding=encoding)
 
     def statuses(self):
         """
@@ -351,168 +399,6 @@ class PullRequest(BitbucketCloudBase):
         return self.post("merge", data)
 
 
-class Participant(BitbucketCloudBase):
-    ROLE_REVIEWER = "REVIEWER"
-    ROLE_PARTICIPANT = "PARTICIPANT"
-    CHANGES_REQUESTED = "changes_requested"
-
-    def __init__(self, data, *args, **kwargs):
-        super(Participant, self).__init__(None, None, *args, data=data, expected_type="participant", **kwargs)
-
-    @property
-    def user(self):
-        """User object with user information of the participant"""
-        return User(None, self.get_data("user"), **self._new_session_args)
-
-    @property
-    def is_participant(self):
-        """True if the user is a pull request participant"""
-        return self.get_data("role") == self.ROLE_PARTICIPANT
-
-    @property
-    def is_reviewer(self):
-        """True if the user is a pull request reviewer"""
-        return self.get_data("role") == self.ROLE_REVIEWER
-
-    @property
-    def is_default_reviewer(self):
-        """True if the user is a default reviewer"""
-
-    @property
-    def has_changes_requested(self):
-        """True if user requested changes"""
-        return str(self.get_data("state")) == self.CHANGES_REQUESTED
-
-    @property
-    def has_approved(self):
-        """True if user approved the pull request"""
-        return self.get_data("approved")
-
-    @property
-    def participated_on(self):
-        """time of last participation"""
-        return self.get_time("participated_on")
-
-
-class Comment(BitbucketCloudBase):
-    def __init__(self, data, *args, **kwargs):
-        super(Comment, self).__init__(None, None, *args, data=data, expected_type="pullrequest_comment", **kwargs)
-
-    @property
-    def raw(self):
-        """The raw comment"""
-        return self.get_data("content")["raw"]
-
-    @property
-    def html(self):
-        """The html comment"""
-        return self.get_data("content")["html"]
-
-    @property
-    def markup(self):
-        """The markup type"""
-        return self.get_data("content")["markup"]
-
-    @property
-    def user(self):
-        """User object with user information of the comment"""
-        return User(None, self.get_data("user"), **self._new_session_args)
-
-    def update(self, **kwargs):
-        """
-        Update the pullrequest properties. Fields not present in the request body are ignored.
-
-        :param kwargs: dict: The data to update.
-
-        :return: The updated repository
-
-        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D/comments/%7Bcomment_id%7D#put
-        """
-        return self._update_data(self.put(None, data=kwargs))
-
-    def delete(self):
-        """
-        Delete the pullrequest comment.
-
-        :return: The response on success
-
-        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D/comments/%7Bcomment_id%7D#delete
-        """
-        return super(Comment, self).delete(None)
-
-
-class Build(BitbucketCloudBase):
-    STATE_FAILED = "FAILED"
-    STATE_INPROGRESS = "INPROGRESS"
-    STATE_STOPPED = "STOPPED"
-    STATE_SUCCESSFUL = "SUCCESSFUL"
-
-    def __init__(self, data, *args, **kwargs):
-        super(Build, self).__init__(None, None, *args, data=data, expected_type="build", **kwargs)
-
-    @property
-    def key(self):
-        """Key of the build"""
-        return self.get_data("key")
-
-    @property
-    def name(self):
-        """Name of the build"""
-        return self.get_data("name")
-
-    @property
-    def description(self):
-        """Build description"""
-        return self.get_data("description")
-
-    @property
-    def failed(self):
-        """True if the build was stopped"""
-        return self.get_data("state") == self.STATE_FAILED
-
-    @property
-    def inprogress(self):
-        """True if the build is inprogress"""
-        return self.get_data("state") == self.STATE_INPROGRESS
-
-    @property
-    def successful(self):
-        """True if the build was successful"""
-        return self.get_data("state") == self.STATE_SUCCESSFUL
-
-    @property
-    def stopped(self):
-        """True if the build was stopped"""
-        return self.get_data("state") == self.STATE_STOPPED
-
-    @property
-    def created_on(self):
-        """time of creation"""
-        return self.get_time("created_on")
-
-    @property
-    def updated_on(self):
-        """time of last update"""
-        return self.get_time("updated_on")
-
-    @property
-    def commit(self):
-        """Returns the hash key of the commit"""
-        return self.get_data("commit")["hash"]
-
-    @property
-    def website(self):
-        """Returns the url to the builds webpage.
-        This url points to the build's frontend website (Pipelines, Jenkins ...)
-        """
-        return self.get_data("url")
-
-    @property
-    def refname(self):
-        """Returns the refname"""
-        return self.get_data("refname")
-
-
 class Task(BitbucketCloudBase):
     STATE_RESOLVED = "RESOLVED"
     STATE_UNRESOLVED = "UNRESOLVED"
@@ -573,7 +459,7 @@ class Task(BitbucketCloudBase):
 
     def delete(self):
         """
-        Delete the pullrequest tasl.
+        Delete the pullrequest task.
 
         This is feature currently undocumented.
         """

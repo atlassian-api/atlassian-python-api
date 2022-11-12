@@ -1,0 +1,17 @@
+FROM openjdk:11
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+# Add Atlassian SDK repo
+RUN echo "deb https://packages.atlassian.com/debian/atlassian-sdk-deb/ stable contrib" >>/etc/apt/sources.list \
+    && wget https://packages.atlassian.com/api/gpg/key/public  \
+    && apt-key add public \
+    && apt-get update
+
+# Install Atlassian plugin SDK
+RUN apt-get install -y atlassian-plugin-sdk
+
+# Clean
+RUN apt-get clean
+
+WORKDIR /opt/atlassian
