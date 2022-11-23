@@ -364,6 +364,16 @@ Issue security schemes
     # Use only_levels=True for get the only levels entries
     jira.get_issue_security_scheme(scheme_id, only_levels=False)
 
+Cluster methods (only for DC edition)
+----------------------
+.. code-block:: python
+
+    # Get all cluster nodes.
+    jira.get_cluster_all_nodes()
+
+    # Request current index from node (the request is processed asynchronously).
+    jira.request_current_index_from_node(node_id)
+
 TEMPO
 ----------------------
 .. code-block:: python
