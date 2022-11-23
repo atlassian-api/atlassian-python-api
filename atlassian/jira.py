@@ -317,7 +317,7 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         base_url = self.resource_url("cluster/index-snapshot")
-        url = f"{base_url}/{node_id}"
+        url = "{base_url}/{node_id}".format(base_url=base_url, node_id=node_id)
         return self.put(url)
 
     """
