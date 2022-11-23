@@ -365,7 +365,7 @@ Issue security schemes
     jira.get_issue_security_scheme(scheme_id, only_levels=False)
 
 Cluster methods (only for DC edition)
-----------------------
+-------------------------------------
 .. code-block:: python
 
     # Get all cluster nodes.
