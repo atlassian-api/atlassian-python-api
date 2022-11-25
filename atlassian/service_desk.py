@@ -78,12 +78,12 @@ class ServiceDesk(AtlassianRestAPI):
         return (response or {}).get("values")
 
     def create_customer_request(
-        self,
-        service_desk_id,
-        request_type_id,
-        values_dict,
-        raise_on_behalf_of=None,
-        request_participants=None,
+            self,
+            service_desk_id,
+            request_type_id,
+            values_dict,
+            raise_on_behalf_of=None,
+            request_participants=None,
     ):
         """
         Creating customer request
@@ -494,8 +494,8 @@ class ServiceDesk(AtlassianRestAPI):
         with open(filename, "rb") as file:
             result = (
                 self.post(path=url, headers=experimental_headers, files={"file": file})
-                .json()
-                .get("temporaryAttachments")
+                    .json()
+                    .get("temporaryAttachments")
             )
             temp_attachment_id = result[0].get("temporaryAttachmentId")
 
@@ -743,6 +743,30 @@ class ServiceDesk(AtlassianRestAPI):
 
         return self.get(url, headers=self.experimental_headers, params=params)
 
+    def get_plugins_info(self):
+        """
+        Provide plugins info
+        :return a json of installed plugins
+        """
+        url = "rest/plugins/1.0/"
+        return self.get(url, headers=self.no_check_headers, trailing=True)
+
+    def get_plugin_info(self, plugin_key):
+        """
+        Provide plugin info
+        :return a json of installed plugins
+        """
+        url = "rest/plugins/1.0/{plugin_key}-key".format(plugin_key=plugin_key)
+        return self.get(url, headers=self.no_check_headers, trailing=True)
+
+    def get_plugin_license_info(self, plugin_key):
+        """
+        Provide plugin license info
+        :return a json specific License query
+        """
+        url = "rest/plugins/1.0/{plugin_key}-key/license".format(plugin_key=plugin_key)
+        return self.get(url, headers=self.no_check_headers, trailing=True)
+
     def upload_plugin(self, plugin_path):
         """
         Provide plugin path for upload into Jira e.g. useful for auto deploy
@@ -759,13 +783,41 @@ class ServiceDesk(AtlassianRestAPI):
         url = "rest/plugins/1.0/?token={upm_token}".format(upm_token=upm_token)
         return self.post(url, files=files, headers=self.no_check_headers)
 
+    def delete_plugin(self, plugin_key):
+        """
+        Delete plugin
+        :param plugin_key:
+        :return:
+        """
+        url = "rest/plugins/1.0/{}-key".format(plugin_key)
+        return self.delete(url)
+
+    def check_plugin_manager_status(self):
+        url = "rest/plugins/latest/safe-mode"
+        return self.request(method="GET", path=url, headers=self.safe_mode_headers)
+
+    def update_plugin_license(self, plugin_key, raw_license):
+        """
+        Update license for plugin
+        :param plugin_key:
+        :param raw_license:
+        :return:
+        """
+        app_headers = {
+            "X-Atlassian-Token": "nocheck",
+            "Content-Type": "application/vnd.atl.plugins+json",
+        }
+        url = "/plugins/1.0/{plugin_key}/license".format(plugin_key=plugin_key)
+        data = {"rawLicense": raw_license}
+        return self.put(url, data=data, headers=app_headers)
+
     def create_request_type(
-        self,
-        service_desk_id,
-        request_type_id,
-        request_name,
-        request_description,
-        request_help_text,
+            self,
+            service_desk_id,
+            request_type_id,
+            request_name,
+            request_description,
+            request_help_text,
     ):
         """
         Creating a request type
