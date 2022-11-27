@@ -208,6 +208,9 @@ Manage code
     # Add comment into pull request
     bitbucket.add_pull_request_comment(project, repository, pull_request_id, text)
 
+    # Reply to a comment of a pull request
+    bitbucket.add_pull_request_comment(project, repository, pull_request_id, text, parent_id=None)
+
     # Create a new pull request between two branches.
     bitbucket.open_pull_request(source_project, source_repo, dest_project, dest_repo, source_branch, destination_branch, title, description)
 
