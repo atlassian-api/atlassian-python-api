@@ -3,7 +3,10 @@ import logging
 from json import dumps
 
 import requests
-from oauthlib.oauth1 import SIGNATURE_RSA_SHA512
+try:
+    from oauthlib.oauth1 import SIGNATURE_RSA_SHA512 as SIGNATURE_RSA
+except ImportError:
+    from oauthlib.oauth1 import SIGNATURE_RSA_SHA512
 from requests import HTTPError
 from requests_oauthlib import OAuth1, OAuth2
 from six.moves.urllib.parse import urlencode
@@ -103,7 +106,7 @@ class AtlassianRestAPI(object):
         oauth = OAuth1(
             oauth_dict["consumer_key"],
             rsa_key=oauth_dict["key_cert"],
-            signature_method=SIGNATURE_RSA_SHA512,
+            signature_method=SIGNATURE_RSA,
             resource_owner_key=oauth_dict["access_token"],
             resource_owner_secret=oauth_dict["access_token_secret"],
         )
