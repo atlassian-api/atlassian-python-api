@@ -3,6 +3,7 @@ import logging
 from json import dumps
 
 import requests
+
 try:
     from oauthlib.oauth1 import SIGNATURE_RSA_SHA512 as SIGNATURE_RSA
 except ImportError:

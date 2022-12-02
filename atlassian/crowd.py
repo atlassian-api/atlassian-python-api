@@ -199,4 +199,3 @@ class Crowd(AtlassianRestAPI):
         url = "/plugins/1.0/{plugin_key}/license".format(plugin_key=plugin_key)
         data = {"rawLicense": raw_license}
         return self.put(url, data=data, headers=app_headers)
-

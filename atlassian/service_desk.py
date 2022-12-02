@@ -78,12 +78,12 @@ class ServiceDesk(AtlassianRestAPI):
         return (response or {}).get("values")
 
     def create_customer_request(
-            self,
-            service_desk_id,
-            request_type_id,
-            values_dict,
-            raise_on_behalf_of=None,
-            request_participants=None,
+        self,
+        service_desk_id,
+        request_type_id,
+        values_dict,
+        raise_on_behalf_of=None,
+        request_participants=None,
     ):
         """
         Creating customer request
@@ -494,8 +494,8 @@ class ServiceDesk(AtlassianRestAPI):
         with open(filename, "rb") as file:
             result = (
                 self.post(path=url, headers=experimental_headers, files={"file": file})
-                    .json()
-                    .get("temporaryAttachments")
+                .json()
+                .get("temporaryAttachments")
             )
             temp_attachment_id = result[0].get("temporaryAttachmentId")
 
@@ -812,12 +812,12 @@ class ServiceDesk(AtlassianRestAPI):
         return self.put(url, data=data, headers=app_headers)
 
     def create_request_type(
-            self,
-            service_desk_id,
-            request_type_id,
-            request_name,
-            request_description,
-            request_help_text,
+        self,
+        service_desk_id,
+        request_type_id,
+        request_name,
+        request_description,
+        request_help_text,
     ):
         """
         Creating a request type

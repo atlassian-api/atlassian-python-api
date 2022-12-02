@@ -2479,7 +2479,6 @@ class Confluence(AtlassianRestAPI):
         data = {"rawLicense": raw_license}
         return self.put(url, data=data, headers=app_headers)
 
-
     def check_long_tasks_result(self, start=None, limit=None, expand=None):
         """
         Get result of long tasks
