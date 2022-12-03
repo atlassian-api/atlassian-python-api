@@ -117,12 +117,12 @@ class Project(BitbucketServerBase):
         self.__groups = Groups(
             self._sub_url("permissions/groups"),
             "PROJECT",
-            **self._new_session_args
+            **self._new_session_args,
         )
         self.__users = Users(
             self._sub_url("permissions/users"),
             "PROJECT",
-            **self._new_session_args
+            **self._new_session_args,
         )
         self.__repos = Repositories(
             self._sub_url("repos"), **self._new_session_args

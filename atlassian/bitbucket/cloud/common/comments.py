@@ -10,7 +10,7 @@ class Comment(BitbucketCloudBase):
             *args,
             data=data,
             expected_type="pullrequest_comment",
-            **kwargs
+            **kwargs,
         )
 
     @property

@@ -88,12 +88,12 @@ class Repository(BitbucketServerBase):
         self.__groups = Groups(
             self._sub_url("permissions/groups"),
             "REPO",
-            **self._new_session_args
+            **self._new_session_args,
         )
         self.__users = Users(
             self._sub_url("permissions/users"),
             "REPO",
-            **self._new_session_args
+            **self._new_session_args,
         )
 
     def __get_object(self, data):

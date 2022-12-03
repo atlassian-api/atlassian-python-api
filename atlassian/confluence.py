@@ -242,7 +242,8 @@ class Confluence(AtlassianRestAPI):
             parent_content_id = (
                 self.get_page_by_id(page_id=page_id, expand="ancestors").get(
                     "ancestors"
-                ) or {}
+                )
+                or {}
             )[-1].get("id") or None
         except Exception as e:
             log.error(e)
@@ -257,8 +258,10 @@ class Confluence(AtlassianRestAPI):
         parent_content_title = None
         try:
             parent_content_title = (
-                self.get_page_by_id(page_id=page_id, expand="ancestors")
-                .get("ancestors") or {}
+                self.get_page_by_id(page_id=page_id, expand="ancestors").get(
+                    "ancestors"
+                )
+                or {}
             )[-1].get("title") or None
         except Exception as e:
             log.error(e)
@@ -271,8 +274,9 @@ class Confluence(AtlassianRestAPI):
         :return:
         """
         return (
-            (self.get_page_by_id(page_id, expand="space") or {})
-            .get("space") or {}).get("key") or None
+            (self.get_page_by_id(page_id, expand="space") or {}).get("space")
+            or {}
+        ).get("key") or None
 
     def get_pages_by_title(
         self, space, title, start=0, limit=200, expand=None
@@ -1609,13 +1613,16 @@ class Confluence(AtlassianRestAPI):
                 (
                     self.get_page_by_id(page_id, expand="body.storage").json()
                     or {}
-                ).get("body") or {}
+                ).get("body")
+                or {}
             ).get("storage") or {}
         else:
             confluence_content = (
                 (
                     self.get_page_by_id(page_id, expand="body.storage") or {}
-                ).get("body") or {}).get("storage") or {}
+                ).get("body")
+                or {}
+            ).get("storage") or {}
 
         confluence_body_content = confluence_content.get("value")
 
@@ -1803,7 +1810,8 @@ class Confluence(AtlassianRestAPI):
                 (
                     self.get_page_by_id(page_id, expand="body.storage").get(
                         "body"
-                    ) or {}
+                    )
+                    or {}
                 )
                 .get("storage")
                 .get("value")

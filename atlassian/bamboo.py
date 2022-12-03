@@ -70,7 +70,7 @@ class Bamboo(AtlassianRestAPI):
         max_results,
         label=None,
         start_index=0,
-        **kwargs
+        **kwargs,
     ):
         flags = []
         params = {"max-results": max_results}
@@ -404,7 +404,7 @@ class Bamboo(AtlassianRestAPI):
             elements_key="results",
             element_key="result",
             label=label,
-            **params
+            **params,
         )
 
     def latest_results(
@@ -605,7 +605,7 @@ class Bamboo(AtlassianRestAPI):
         stage=None,
         execute_all_stages=True,
         custom_revision=None,
-        **bamboo_variables
+        **bamboo_variables,
     ):
         """
         Fire build execution for specified plan.

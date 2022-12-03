@@ -14,7 +14,7 @@ class DefaultReviewers(BitbucketCloudBase):
         return DefaultReviewer(
             self.url_joiner(self.url, data["uuid"]),
             data,
-            **self._new_session_args
+            **self._new_session_args,
         )
 
     def add(self, user):

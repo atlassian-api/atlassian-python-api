@@ -2553,7 +2553,7 @@ class Bitbucket(BitbucketBase):
         commit_id,
         report_key,
         report_title,
-        **report_params
+        **report_params,
     ):
         """
         Create a new insight report, or replace the existing one

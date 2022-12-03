@@ -142,7 +142,7 @@ class Commit(BitbucketCloudBase):
         """
         return Build(
             super(Commit, self).get(self.url_joiner("statuses/build", key)),
-            **self._new_session_args
+            **self._new_session_args,
         )
 
     def comments(self):
@@ -163,7 +163,7 @@ class Commit(BitbucketCloudBase):
         if not raw_message:
             raise ValueError("No message set")
 
-        data = {"content": {"raw": raw_message, }}
+        data = {"content": {"raw": raw_message,}}
 
         return self.post("comments", data)
 

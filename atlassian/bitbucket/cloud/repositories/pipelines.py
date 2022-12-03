@@ -14,7 +14,7 @@ class Pipelines(BitbucketCloudBase):
         return Pipeline(
             self.url_joiner(self.url, data["uuid"]),
             data,
-            **self._new_session_args
+            **self._new_session_args,
         )
 
     def trigger(
@@ -111,7 +111,7 @@ class Pipeline(BitbucketCloudBase):
         return Step(
             "{}/steps/{}".format(self.url, data["uuid"]),
             data,
-            **self._new_session_args
+            **self._new_session_args,
         )
 
     @property
@@ -147,7 +147,7 @@ class Pipeline(BitbucketCloudBase):
             return PullRequest(
                 target["pullrequest"]["links"]["self"]["href"],
                 target["pullrequest"],
-                **self._new_session_args
+                **self._new_session_args,
             )
         else:
             return None

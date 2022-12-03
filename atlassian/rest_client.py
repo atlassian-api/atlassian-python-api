@@ -456,7 +456,8 @@ class AtlassianRestAPI(object):
                     error_msg = "\n".join([k + ": " + v for k, v in j.items()])
                 else:
                     error_msg = "\n".join(
-                        j.get("errorMessages", list()) + [
+                        j.get("errorMessages", list())
+                        + [
                             k + ": " + v
                             for k, v in j.get("errors", dict()).items()
                         ]

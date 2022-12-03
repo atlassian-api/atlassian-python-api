@@ -299,7 +299,7 @@ class PullRequest(BitbucketCloudBase):
         if not raw_message:
             raise ValueError("No message set")
 
-        data = {"content": {"raw": raw_message, }}
+        data = {"content": {"raw": raw_message,}}
 
         return self.post("comments", data)
 
@@ -323,7 +323,7 @@ class PullRequest(BitbucketCloudBase):
         if not raw_message:
             raise ValueError("No message set")
 
-        data = {"content": {"raw": raw_message, }}
+        data = {"content": {"raw": raw_message,}}
 
         return Task(self.post("tasks", data), **self._new_session_args)
 
@@ -387,14 +387,16 @@ class PullRequest(BitbucketCloudBase):
         self._check_if_open()
 
         if (
-            merge_strategy is not None and merge_strategy not in self.MERGE_STRATEGIES
+            merge_strategy is not None
+            and merge_strategy not in self.MERGE_STRATEGIES
         ):
             raise ValueError(
                 "merge_strategy must be {}".format(self.MERGE_STRATEGIES)
             )
 
         data = {
-            "close_source_branch": close_source_branch or self.close_source_branch,
+            "close_source_branch": close_source_branch
+            or self.close_source_branch,
             "merge_strategy": merge_strategy,
         }
 
@@ -454,7 +456,7 @@ class Task(BitbucketCloudBase):
         if not raw_message:
             raise ValueError("No message set")
 
-        data = {"content": {"raw": raw_message, }}
+        data = {"content": {"raw": raw_message,}}
         return self._update_data(self.put(None, data=data))
 
     def delete(self):

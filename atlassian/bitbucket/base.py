@@ -116,7 +116,8 @@ class BitbucketBase(AtlassianRestAPI):
         """
         LAMBDA = lambda: 0  # noqa: E731
         if self.timeformat_lambda is None or (
-            isinstance(self.timeformat_lambda, type(LAMBDA)) and self.timeformat_lambda.__name__ == LAMBDA.__name__
+            isinstance(self.timeformat_lambda, type(LAMBDA))
+            and self.timeformat_lambda.__name__ == LAMBDA.__name__
         ):
             return True
         else:
