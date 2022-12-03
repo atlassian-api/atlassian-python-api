@@ -3,9 +3,7 @@ from ..base import BitbucketCloudBase
 
 class User(BitbucketCloudBase):
     def __init__(self, url, data, *args, **kwargs):
-        super(User, self).__init__(
-            url, *args, data=data, expected_type="user", **kwargs
-        )
+        super(User, self).__init__(url, *args, data=data, expected_type="user", **kwargs)
 
     @property
     def display_name(self):
@@ -39,9 +37,7 @@ class Participant(BitbucketCloudBase):
     CHANGES_REQUESTED = "changes_requested"
 
     def __init__(self, data, *args, **kwargs):
-        super(Participant, self).__init__(
-            None, None, *args, data=data, expected_type="participant", **kwargs
-        )
+        super(Participant, self).__init__(None, None, *args, data=data, expected_type="participant", **kwargs)
 
     @property
     def user(self):

@@ -19,13 +19,7 @@ class PullRequests(BitbucketCloudBase):
         return PullRequest(data, **self._new_session_args)
 
     def create(
-        self,
-        title,
-        source_branch,
-        destination_branch=None,
-        description=None,
-        close_source_branch=None,
-        reviewers=None,
+        self, title, source_branch, destination_branch=None, description=None, close_source_branch=None, reviewers=None,
     ):
         """
         Creates a new pull requests for a given source branch
@@ -75,9 +69,7 @@ class PullRequests(BitbucketCloudBase):
         if q is not None:
             params["q"] = q
         for pr in self._get_paged(None, trailing=True, params=params):
-            yield self.__get_object(
-                super(PullRequests, self).get(pr.get("id"))
-            )
+            yield self.__get_object(super(PullRequests, self).get(pr.get("id")))
 
         return
 
@@ -115,9 +107,7 @@ class PullRequest(BitbucketCloudBase):
     STATE_SUPERSEDED = "SUPERSEDED"
 
     def __init__(self, data, *args, **kwargs):
-        super(PullRequest, self).__init__(
-            None, *args, data=data, expected_type="pullrequest", **kwargs
-        )
+        super(PullRequest, self).__init__(None, *args, data=data, expected_type="pullrequest", **kwargs)
 
     def _check_if_open(self):
         if not self.is_open:
@@ -247,9 +237,7 @@ class PullRequest(BitbucketCloudBase):
 
         API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D/patch
         """
-        return str(
-            self.get("patch", not_json_response=True), encoding=encoding
-        )
+        return str(self.get("patch", not_json_response=True), encoding=encoding)
 
     def statuses(self):
         """
@@ -386,17 +374,11 @@ class PullRequest(BitbucketCloudBase):
         """
         self._check_if_open()
 
-        if (
-            merge_strategy is not None
-            and merge_strategy not in self.MERGE_STRATEGIES
-        ):
-            raise ValueError(
-                "merge_strategy must be {}".format(self.MERGE_STRATEGIES)
-            )
+        if merge_strategy is not None and merge_strategy not in self.MERGE_STRATEGIES:
+            raise ValueError("merge_strategy must be {}".format(self.MERGE_STRATEGIES))
 
         data = {
-            "close_source_branch": close_source_branch
-            or self.close_source_branch,
+            "close_source_branch": close_source_branch or self.close_source_branch,
             "merge_strategy": merge_strategy,
         }
 
@@ -443,9 +425,7 @@ class Task(BitbucketCloudBase):
     @property
     def resolved_by(self):
         """User object with user information of the task resolver"""
-        return User(
-            None, self.get_data("resolved_by"), **self._new_session_args
-        )
+        return User(None, self.get_data("resolved_by"), **self._new_session_args)
 
     def update(self, raw_message):
         """

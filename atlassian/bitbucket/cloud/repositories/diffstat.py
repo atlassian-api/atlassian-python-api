@@ -22,9 +22,7 @@ class DiffStat(BitbucketCloudBase):
 
     def __init__(self, data, *args, **kwargs):
         """See BitbucketCloudBase."""
-        super(DiffStat, self).__init__(
-            None, None, *args, data=data, expected_type="diffstat", **kwargs
-        )
+        super(DiffStat, self).__init__(None, None, *args, data=data, expected_type="diffstat", **kwargs)
 
     @property
     def lines_removed(self):
@@ -77,9 +75,7 @@ class CommitFile(BitbucketCloudBase):
                 "links": {},
                 "type": "commit_file",
             }
-        super(CommitFile, self).__init__(
-            None, None, *args, data=data, expected_type="commit_file", **kwargs
-        )
+        super(CommitFile, self).__init__(None, None, *args, data=data, expected_type="commit_file", **kwargs)
 
     @property
     def path(self):

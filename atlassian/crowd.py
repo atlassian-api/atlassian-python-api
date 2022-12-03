@@ -12,24 +12,13 @@ class Crowd(AtlassianRestAPI):
     not user credentials, in order to access Crowd APIs"""
 
     def __init__(
-        self,
-        url,
-        username,
-        password,
-        timeout=60,
-        api_root="rest",
-        api_version="latest",
+        self, url, username, password, timeout=60, api_root="rest", api_version="latest",
     ):
-        super(Crowd, self).__init__(
-            url, username, password, timeout, api_root, api_version
-        )
+        super(Crowd, self).__init__(url, username, password, timeout, api_root, api_version)
 
     def _crowd_api_url(self, api, resource):
         return "/{api_root}/{api}/{version}/{resource}".format(
-            api_root=self.api_root,
-            api=api,
-            version=self.api_version,
-            resource=resource,
+            api_root=self.api_root, api=api, version=self.api_version, resource=resource,
         )
 
     def _user_change_status(self, username, active):
@@ -54,17 +43,11 @@ class Crowd(AtlassianRestAPI):
 
         params = {"username": username}
 
-        return self.put(
-            self._crowd_api_url("usermanagement", "user"),
-            params=params,
-            data=user_object,
-        )
+        return self.put(self._crowd_api_url("usermanagement", "user"), params=params, data=user_object,)
 
     def user(self, username):
         params = {"username": username}
-        return self.get(
-            self._crowd_api_url("usermanagement", "user"), params=params
-        )
+        return self.get(self._crowd_api_url("usermanagement", "user"), params=params)
 
     def user_activate(self, username):
         """
@@ -74,14 +57,7 @@ class Crowd(AtlassianRestAPI):
         return self._user_change_status(username, True)
 
     def user_create(
-        self,
-        username,
-        active,
-        first_name,
-        last_name,
-        display_name,
-        email,
-        password,
+        self, username, active, first_name, last_name, display_name, email, password,
     ):
         """
         Create new user method
@@ -106,9 +82,7 @@ class Crowd(AtlassianRestAPI):
             "email": email,
         }
 
-        return self.post(
-            self._crowd_api_url("usermanagement", "user"), data=user_object
-        )
+        return self.post(self._crowd_api_url("usermanagement", "user"), data=user_object)
 
     def user_deactivate(self, username):
         """
@@ -128,9 +102,7 @@ class Crowd(AtlassianRestAPI):
 
         params = {"username": username}
 
-        return self.delete(
-            self._crowd_api_url("usermanagement", "user"), params=params
-        )
+        return self.delete(self._crowd_api_url("usermanagement", "user"), params=params)
 
     def group_add_user(self, username, groupname):
         """
@@ -142,11 +114,7 @@ class Crowd(AtlassianRestAPI):
 
         params = {"username": username}
 
-        return self.post(
-            self._crowd_api_url("usermanagement", "user/group/direct"),
-            params=params,
-            json=data,
-        )
+        return self.post(self._crowd_api_url("usermanagement", "user/group/direct"), params=params, json=data,)
 
     def group_nested_members(self, group):
         params = {"groupname": group}
@@ -186,9 +154,7 @@ class Crowd(AtlassianRestAPI):
         Provide plugin license info
         :return a json specific License query
         """
-        url = "rest/plugins/1.0/{plugin_key}-key/license".format(
-            plugin_key=plugin_key
-        )
+        url = "rest/plugins/1.0/{plugin_key}-key/license".format(plugin_key=plugin_key)
         return self.get(url, headers=self.no_check_headers, trailing=True)
 
     def upload_plugin(self, plugin_path):
@@ -199,10 +165,7 @@ class Crowd(AtlassianRestAPI):
         """
         files = {"plugin": open(plugin_path, "rb")}
         upm_token = self.request(
-            method="GET",
-            path="rest/plugins/1.0/",
-            headers=self.no_check_headers,
-            trailing=True,
+            method="GET", path="rest/plugins/1.0/", headers=self.no_check_headers, trailing=True,
         ).headers["upm-token"]
         url = "rest/plugins/1.0/?token={upm_token}".format(upm_token=upm_token)
         return self.post(url, files=files, headers=self.no_check_headers)
@@ -218,9 +181,7 @@ class Crowd(AtlassianRestAPI):
 
     def check_plugin_manager_status(self):
         url = "rest/plugins/latest/safe-mode"
-        return self.request(
-            method="GET", path=url, headers=self.safe_mode_headers
-        )
+        return self.request(method="GET", path=url, headers=self.safe_mode_headers)
 
     def update_plugin_license(self, plugin_key, raw_license):
         """

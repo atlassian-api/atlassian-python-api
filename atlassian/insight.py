@@ -37,9 +37,7 @@ class Insight(AtlassianRestAPI):
         del kwargs["cloud"]
         temp = Insight(*args, **kwargs)
         # retrieve cloud workspace id and generate the api_root
-        kwargs["api_root"] = "/jsm/insight/workspace/{}/v1/".format(
-            temp.__get_workspace_id()
-        )
+        kwargs["api_root"] = "/jsm/insight/workspace/{}/v1/".format(temp.__get_workspace_id())
         # insight cloud uses the atlassian base url, not custom instnace urls
         kwargs["url"] = "https://api.atlassian.com"
         # set cloud back to true and return
@@ -49,10 +47,9 @@ class Insight(AtlassianRestAPI):
         return args, kwargs
 
     def __get_workspace_id(self):
-        return self.get(
-            "rest/servicedeskapi/insight/workspace",
-            headers=self.default_headers,
-        )["values"][0]["workspaceId"]
+        return self.get("rest/servicedeskapi/insight/workspace", headers=self.default_headers,)["values"][0][
+            "workspaceId"
+        ]
 
     # Attachments
     def get_attachments_of_objects(self, object_id):
@@ -87,10 +84,7 @@ class Insight(AtlassianRestAPI):
         """
         if self.cloud:
             raise NotImplementedError
-        url = self.url_joiner(
-            self.api_root,
-            "attachments/object/{objectId}".format(objectId=object_id),
-        )
+        url = self.url_joiner(self.api_root, "attachments/object/{objectId}".format(objectId=object_id),)
         return self.get(url)
 
     def upload_attachment_to_object(self, object_id, filename):
@@ -102,9 +96,7 @@ class Insight(AtlassianRestAPI):
         if self.cloud:
             raise NotImplementedError
         log.warning("Adding attachment...")
-        url = "rest/insight/1.0/attachments/object/{objectId}".format(
-            objectId=object_id
-        )
+        url = "rest/insight/1.0/attachments/object/{objectId}".format(objectId=object_id)
         with open(filename, "rb") as attachment:
             files = {"file": attachment}
             return self.post(url, headers=self.no_check_headers, files=files)
@@ -117,9 +109,7 @@ class Insight(AtlassianRestAPI):
         if self.cloud:
             raise NotImplementedError
         log.warning("Adding attachment...")
-        url = "rest/insight/1.0/attachments/{attachmentId}".format(
-            attachmentId=attachment_id
-        )
+        url = "rest/insight/1.0/attachments/{attachmentId}".format(attachmentId=attachment_id)
         return self.delete(url)
 
     # Comments
@@ -171,9 +161,7 @@ class Insight(AtlassianRestAPI):
         """
         if self.cloud:
             raise NotImplementedError
-        url = "rest/insight/1.0/comment/object/{objectId}".format(
-            objectId=object_id
-        )
+        url = "rest/insight/1.0/comment/object/{objectId}".format(objectId=object_id)
         return self.get(url)
 
     # Icon
@@ -212,10 +200,7 @@ class Insight(AtlassianRestAPI):
         :param import_id:
         :return:
         """
-        url = self.url_joiner(
-            self.api_root,
-            "import/start/{import_id}".format(import_id=import_id),
-        )
+        url = self.url_joiner(self.api_root, "import/start/{import_id}".format(import_id=import_id),)
         return self.post(url)
 
     # Index
@@ -296,18 +281,11 @@ class Insight(AtlassianRestAPI):
         :param object_id:
         :return:
         """
-        url = self.url_joiner(
-            self.api_root, "object/{id}".format(id=object_id)
-        )
+        url = self.url_joiner(self.api_root, "object/{id}".format(id=object_id))
         return self.get(url)
 
     def update_object(
-        self,
-        object_id,
-        object_type_id,
-        attributes,
-        has_avatar=False,
-        avatar_uuid="",
+        self, object_id, object_type_id, attributes, has_avatar=False, avatar_uuid="",
     ):
         """
         Update an existing object in Insight
@@ -325,9 +303,7 @@ class Insight(AtlassianRestAPI):
             "avatarUUID": avatar_uuid,
             "hasAvatar": has_avatar,
         }
-        url = self.url_joiner(
-            self.api_root, "object/{id}".format(id=object_id)
-        )
+        url = self.url_joiner(self.api_root, "object/{id}".format(id=object_id))
         return self.put(url, data=body)
 
     def delete_object(self, object_id):
@@ -337,9 +313,7 @@ class Insight(AtlassianRestAPI):
         :param object_id:
         :return:
         """
-        url = self.url_joiner(
-            self.api_root, "object/{id}".format(id=object_id)
-        )
+        url = self.url_joiner(self.api_root, "object/{id}".format(id=object_id))
         return self.delete(url)
 
     def get_object_attributes(self, object_id):
@@ -349,9 +323,7 @@ class Insight(AtlassianRestAPI):
         :param object_id:
         :return:
         """
-        url = self.url_joiner(
-            self.api_root, "object/{id}/attributes".format(id=object_id)
-        )
+        url = self.url_joiner(self.api_root, "object/{id}/attributes".format(id=object_id))
         return self.get(url)
 
     def get_object_history(self, object_id, asc=False, abbreviate=True):
@@ -364,9 +336,7 @@ class Insight(AtlassianRestAPI):
         :return:
         """
         params = {"asc": asc, "abbreviate": abbreviate}
-        url = self.url_joiner(
-            self.api_root, "object/{id}/history".format(id=object_id)
-        )
+        url = self.url_joiner(self.api_root, "object/{id}/history".format(id=object_id))
         return self.get(url, params=params)
 
     @deprecated(version="3.29.0", reason="Use get_object_reference_info()")
@@ -382,14 +352,10 @@ class Insight(AtlassianRestAPI):
         :param object_id:
         :return:
         """
-        url = self.url_joiner(
-            self.api_root, "object/{id}/referenceinfo".format(id=object_id)
-        )
+        url = self.url_joiner(self.api_root, "object/{id}/referenceinfo".format(id=object_id))
         return self.get(url)
 
-    def create_object(
-        self, object_type_id, attributes, has_avatar=False, avatar_uuid=""
-    ):
+    def create_object(self, object_type_id, attributes, has_avatar=False, avatar_uuid=""):
         """
         Create a new object in Insight
 
@@ -465,10 +431,7 @@ class Insight(AtlassianRestAPI):
         :param object_id:
         :return:
         """
-        url = self.url_joiner(
-            self.api_root,
-            "objectconnectedtickets/{id}/tickets".format(id=object_id),
-        )
+        url = self.url_joiner(self.api_root, "objectconnectedtickets/{id}/tickets".format(id=object_id),)
         return self.get(url)
 
     # Object schema
@@ -510,9 +473,7 @@ class Insight(AtlassianRestAPI):
         Find a schema by id
         :param schema_id:
         """
-        url = self.url_joiner(
-            self.api_root, "objectschema/{id}".format(id=schema_id)
-        )
+        url = self.url_joiner(self.api_root, "objectschema/{id}".format(id=schema_id))
         return self.get(url)
 
     def update_object_schema(self, schema_id):
@@ -567,13 +528,7 @@ class Insight(AtlassianRestAPI):
 
         kwargs = locals().items()
         params = dict()
-        params.update(
-            {
-                k: v
-                for k, v in kwargs
-                if v is not None and k not in ["self", "type_id"]
-            }
-        )
+        params.update({k: v for k, v in kwargs if v is not None and k not in ["self", "type_id"]})
 
         return self.get(
             "{0}objecttype/{1}/attributes".format(self.api_root, type_id),

@@ -110,9 +110,7 @@ class Branch(Ref):
 
     def __init__(self, data, *args, **kwargs):
         """See BitbucketCloudBase."""
-        super(Branch, self).__init__(
-            None, *args, data=data, expected_type="branch", **kwargs
-        )
+        super(Branch, self).__init__(None, *args, data=data, expected_type="branch", **kwargs)
 
     @property
     def author(self):
@@ -129,9 +127,7 @@ class Tag(Ref):
 
     def __init__(self, data, *args, **kwargs):
         """See BitbucketCloudBase."""
-        super(Tag, self).__init__(
-            None, *args, data=data, expected_type="tag", **kwargs
-        )
+        super(Tag, self).__init__(None, *args, data=data, expected_type="tag", **kwargs)
 
     @property
     def author(self):

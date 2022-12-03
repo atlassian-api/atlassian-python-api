@@ -21,14 +21,8 @@ class BitbucketCloudBase(BitbucketBase):
         """
         expected_type = kwargs.pop("expected_type", None)
         super(BitbucketCloudBase, self).__init__(url, *args, **kwargs)
-        if expected_type is not None and not expected_type == self.get_data(
-            "type"
-        ):
-            raise ValueError(
-                "Expected type of data is [{}], got [{}].".format(
-                    expected_type, self.get_data("type")
-                )
-            )
+        if expected_type is not None and not expected_type == self.get_data("type"):
+            raise ValueError("Expected type of data is [{}], got [{}].".format(expected_type, self.get_data("type")))
 
     def get_link(self, link):
         """
@@ -44,14 +38,7 @@ class BitbucketCloudBase(BitbucketBase):
         return links[link]["href"]
 
     def _get_paged(
-        self,
-        url,
-        params=None,
-        data=None,
-        flags=None,
-        trailing=None,
-        absolute=False,
-        paging_workaround=False,
+        self, url, params=None, data=None, flags=None, trailing=None, absolute=False, paging_workaround=False,
     ):
         """
         Used to get the paged data
@@ -75,12 +62,7 @@ class BitbucketCloudBase(BitbucketBase):
 
         while True:
             response = super(BitbucketCloudBase, self).get(
-                url,
-                trailing=trailing,
-                params=params,
-                data=data,
-                flags=flags,
-                absolute=absolute,
+                url, trailing=trailing, params=params, data=data, flags=flags, absolute=absolute,
             )
             if len(response.get("values", [])) == 0:
                 return

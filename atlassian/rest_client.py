@@ -99,9 +99,7 @@ class AtlassianRestAPI(object):
         self._session.auth = (username, password)
 
     def _create_token_session(self, token):
-        self._update_header(
-            "Authorization", "Bearer {token}".format(token=token)
-        )
+        self._update_header("Authorization", "Bearer {token}".format(token=token))
 
     def _create_kerberos_session(self, _):
         from requests_kerberos import OPTIONAL, HTTPKerberosAuth
@@ -128,9 +126,7 @@ class AtlassianRestAPI(object):
         """
         if "client" not in oauth_dict:
             oauth_dict["client"] = None
-        oauth = OAuth2(
-            oauth_dict["client_id"], oauth_dict["client"], oauth_dict["token"]
-        )
+        oauth = OAuth2(oauth_dict["client_id"], oauth_dict["client"], oauth_dict["token"])
         self._session.auth = oauth
 
     def _update_header(self, key, value):
@@ -153,9 +149,7 @@ class AtlassianRestAPI(object):
             log.error(e)
             return None
 
-    def log_curl_debug(
-        self, method, url, data=None, headers=None, level=logging.DEBUG
-    ):
+    def log_curl_debug(self, method, url, data=None, headers=None, level=logging.DEBUG):
         """
 
         :param method:
@@ -168,12 +162,7 @@ class AtlassianRestAPI(object):
         headers = headers or self.default_headers
         message = "curl --silent -X {method} -H {headers} {data} '{url}'".format(
             method=method,
-            headers=" -H ".join(
-                [
-                    "'{0}: {1}'".format(key, value)
-                    for key, value in headers.items()
-                ]
-            ),
+            headers=" -H ".join(["'{0}: {1}'".format(key, value) for key, value in headers.items()]),
             data="" if not data else "--data '{0}'".format(dumps(data)),
             url=url,
         )
@@ -184,17 +173,11 @@ class AtlassianRestAPI(object):
             api_root = self.api_root
         if api_version is None:
             api_version = self.api_version
-        return "/".join(
-            s.strip("/")
-            for s in [api_root, api_version, resource]
-            if s is not None
-        )
+        return "/".join(s.strip("/") for s in [api_root, api_version, resource] if s is not None)
 
     @staticmethod
     def url_joiner(url, path, trailing=None):
-        url_link = "/".join(
-            str(s).strip("/") for s in [url, path] if s is not None
-        )
+        url_link = "/".join(str(s).strip("/") for s in [url, path] if s is not None)
         if trailing:
             url_link += "/"
         return url_link
@@ -241,18 +224,13 @@ class AtlassianRestAPI(object):
         if params:
             url += urlencode(params or {})
         if flags:
-            url += ("&" if params or params_already_in_url else "") + "&".join(
-                flags or []
-            )
+            url += ("&" if params or params_already_in_url else "") + "&".join(flags or [])
         json_dump = None
         if files is None:
             data = None if not data else dumps(data)
             json_dump = None if not json else dumps(json)
         self.log_curl_debug(
-            method=method,
-            url=url,
-            headers=headers,
-            data=data if data else json_dump,
+            method=method, url=url, headers=headers, data=data if data else json_dump,
         )
         headers = headers or self.default_headers
         response = self._session.request(
@@ -268,11 +246,7 @@ class AtlassianRestAPI(object):
         )
         response.encoding = "utf-8"
 
-        log.debug(
-            "HTTP: {} {} -> {} {}".format(
-                method, path, response.status_code, response.reason
-            )
-        )
+        log.debug("HTTP: {} {} -> {} {}".format(method, path, response.status_code, response.reason))
         log.debug("HTTP: Response text -> {}".format(response.text))
         if self.advanced_mode or advanced_mode:
             return response
@@ -405,14 +379,7 @@ class AtlassianRestAPI(object):
         return self._response_handler(response)
 
     def delete(
-        self,
-        path,
-        data=None,
-        headers=None,
-        params=None,
-        trailing=None,
-        absolute=False,
-        advanced_mode=False,
+        self, path, data=None, headers=None, params=None, trailing=None, absolute=False, advanced_mode=False,
     ):
         """
         Deletes resources at given paths.
@@ -429,13 +396,7 @@ class AtlassianRestAPI(object):
         If advanced_mode is set - returns raw response.
         """
         response = self.request(
-            "DELETE",
-            path=path,
-            data=data,
-            headers=headers,
-            params=params,
-            trailing=trailing,
-            absolute=absolute,
+            "DELETE", path=path, data=data, headers=headers, params=params, trailing=trailing, absolute=absolute,
         )
         if self.advanced_mode or advanced_mode:
             return response
@@ -456,11 +417,7 @@ class AtlassianRestAPI(object):
                     error_msg = "\n".join([k + ": " + v for k, v in j.items()])
                 else:
                     error_msg = "\n".join(
-                        j.get("errorMessages", list())
-                        + [
-                            k + ": " + v
-                            for k, v in j.get("errors", dict()).items()
-                        ]
+                        j.get("errorMessages", list()) + [k + ": " + v for k, v in j.get("errors", dict()).items()]
                     )
             except Exception as e:
                 log.error(e)
