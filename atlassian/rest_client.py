@@ -230,7 +230,10 @@ class AtlassianRestAPI(object):
             data = None if not data else dumps(data)
             json_dump = None if not json else dumps(json)
         self.log_curl_debug(
-            method=method, url=url, headers=headers, data=data if data else json_dump,
+            method=method,
+            url=url,
+            headers=headers,
+            data=data if data else json_dump,
         )
         headers = headers or self.default_headers
         response = self._session.request(
@@ -379,7 +382,14 @@ class AtlassianRestAPI(object):
         return self._response_handler(response)
 
     def delete(
-        self, path, data=None, headers=None, params=None, trailing=None, absolute=False, advanced_mode=False,
+        self,
+        path,
+        data=None,
+        headers=None,
+        params=None,
+        trailing=None,
+        absolute=False,
+        advanced_mode=False,
     ):
         """
         Deletes resources at given paths.
@@ -396,7 +406,13 @@ class AtlassianRestAPI(object):
         If advanced_mode is set - returns raw response.
         """
         response = self.request(
-            "DELETE", path=path, data=data, headers=headers, params=params, trailing=trailing, absolute=absolute,
+            "DELETE",
+            path=path,
+            data=data,
+            headers=headers,
+            params=params,
+            trailing=trailing,
+            absolute=absolute,
         )
         if self.advanced_mode or advanced_mode:
             return response

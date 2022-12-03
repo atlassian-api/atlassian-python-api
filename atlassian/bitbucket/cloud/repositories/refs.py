@@ -16,7 +16,9 @@ class Refs(BitbucketCloudBase):
         super(Refs, self).__init__(url, *args, **kwargs)
 
     def create(
-        self, name, commit,
+        self,
+        name,
+        commit,
     ):
         """
         Creates a ref with the given target commit

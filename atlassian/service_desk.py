@@ -24,7 +24,10 @@ class ServiceDesk(AtlassianRestAPI):
 
         :return: Service Desks
         """
-        service_desks_list = self.get("rest/servicedeskapi/servicedesk", headers=self.experimental_headers,)
+        service_desks_list = self.get(
+            "rest/servicedeskapi/servicedesk",
+            headers=self.experimental_headers,
+        )
         if self.advanced_mode:
             return service_desks_list
         else:
@@ -39,7 +42,8 @@ class ServiceDesk(AtlassianRestAPI):
         """
 
         return self.get(
-            "rest/servicedeskapi/servicedesk/{}".format(service_desk_id), headers=self.experimental_headers,
+            "rest/servicedeskapi/servicedesk/{}".format(service_desk_id),
+            headers=self.experimental_headers,
         )
 
     # Customers actions
@@ -54,7 +58,11 @@ class ServiceDesk(AtlassianRestAPI):
         log.warning("Creating customer...")
         data = {"fullName": full_name, "email": email}
 
-        return self.post("rest/servicedeskapi/customer", headers=self.experimental_headers, data=data,)
+        return self.post(
+            "rest/servicedeskapi/customer",
+            headers=self.experimental_headers,
+            data=data,
+        )
 
     def get_customer_request(self, issue_id_or_key):
         """
@@ -64,7 +72,10 @@ class ServiceDesk(AtlassianRestAPI):
         :return: Customer request
         """
 
-        return self.get("rest/servicedeskapi/request/{}".format(issue_id_or_key), headers=self.experimental_headers,)
+        return self.get(
+            "rest/servicedeskapi/request/{}".format(issue_id_or_key),
+            headers=self.experimental_headers,
+        )
 
     def get_my_customer_requests(self):
         """Returning requests where you are the assignee"""
@@ -74,7 +85,12 @@ class ServiceDesk(AtlassianRestAPI):
         return (response or {}).get("values")
 
     def create_customer_request(
-        self, service_desk_id, request_type_id, values_dict, raise_on_behalf_of=None, request_participants=None,
+        self,
+        service_desk_id,
+        request_type_id,
+        values_dict,
+        raise_on_behalf_of=None,
+        request_participants=None,
     ):
         """
         Creating customer request
@@ -116,7 +132,8 @@ class ServiceDesk(AtlassianRestAPI):
         :return: Status name
         """
         request = self.get(
-            "rest/servicedeskapi/request/{}/status".format(issue_id_or_key), headers=self.experimental_headers,
+            "rest/servicedeskapi/request/{}/status".format(issue_id_or_key),
+            headers=self.experimental_headers,
         )
         if self.advanced_mode:
             return request
@@ -145,7 +162,8 @@ class ServiceDesk(AtlassianRestAPI):
         """
 
         return self.get(
-            "rest/servicedeskapi/servicedesk/{}/requesttype".format(service_desk_id), headers=self.experimental_headers,
+            "rest/servicedeskapi/servicedesk/{}/requesttype".format(service_desk_id),
+            headers=self.experimental_headers,
         )
 
     # Participants actions
@@ -299,7 +317,11 @@ class ServiceDesk(AtlassianRestAPI):
             params["limit"] = int(limit)
 
         if service_desk_id is None:
-            return self.get(url_without_sd_id, headers=self.experimental_headers, params=params,)
+            return self.get(
+                url_without_sd_id,
+                headers=self.experimental_headers,
+                params=params,
+            )
         return self.get(url_with_sd_id, headers=self.experimental_headers, params=params)
 
     def get_organization(self, organization_id):
@@ -421,7 +443,12 @@ class ServiceDesk(AtlassianRestAPI):
 
     # Attachments actions
     def create_attachments(
-        self, service_desk_id, issue_id_or_key, filenames, public=True, comment=None,
+        self,
+        service_desk_id,
+        issue_id_or_key,
+        filenames,
+        public=True,
+        comment=None,
     ):
         """
         Add attachment as a comment.
@@ -450,7 +477,12 @@ class ServiceDesk(AtlassianRestAPI):
         return self.add_attachments(issue_id_or_key, temp_attachment_ids, public, comment)
 
     def create_attachment(
-        self, service_desk_id, issue_id_or_key, filename, public=True, comment=None,
+        self,
+        service_desk_id,
+        issue_id_or_key,
+        filename,
+        public=True,
+        comment=None,
     ):
         """
         Add attachment as a comment.
@@ -467,7 +499,13 @@ class ServiceDesk(AtlassianRestAPI):
         :return: Request info
         """
         log.info("Creating attachment...")
-        return self.create_attachments(service_desk_id, issue_id_or_key, filename, public=public, comment=comment,)
+        return self.create_attachments(
+            service_desk_id,
+            issue_id_or_key,
+            filename,
+            public=public,
+            comment=comment,
+        )
 
     def attach_temporary_file(self, service_desk_id, filename):
         """
@@ -486,7 +524,11 @@ class ServiceDesk(AtlassianRestAPI):
 
         with open(filename, "rb") as file:
             result = (
-                self.post(path=url, headers=experimental_headers, files={"file": file},)
+                self.post(
+                    path=url,
+                    headers=experimental_headers,
+                    files={"file": file},
+                )
                 .json()
                 .get("temporaryAttachments")
             )
@@ -522,7 +564,12 @@ class ServiceDesk(AtlassianRestAPI):
         :return:
         """
         log.info("Adding attachment")
-        return self.add_attachments(issue_id_or_key, [temp_attachment_id], public=public, comment=comment,)
+        return self.add_attachments(
+            issue_id_or_key,
+            [temp_attachment_id],
+            public=public,
+            comment=comment,
+        )
 
     # SLA actions
     def get_sla(self, issue_id_or_key, start=0, limit=50):
@@ -774,7 +821,10 @@ class ServiceDesk(AtlassianRestAPI):
         """
         files = {"plugin": open(plugin_path, "rb")}
         upm_token = self.request(
-            method="GET", path="rest/plugins/1.0/", headers=self.no_check_headers, trailing=True,
+            method="GET",
+            path="rest/plugins/1.0/",
+            headers=self.no_check_headers,
+            trailing=True,
         ).headers["upm-token"]
         url = "rest/plugins/1.0/?token={upm_token}".format(upm_token=upm_token)
         return self.post(url, files=files, headers=self.no_check_headers)
@@ -808,7 +858,12 @@ class ServiceDesk(AtlassianRestAPI):
         return self.put(url, data=data, headers=app_headers)
 
     def create_request_type(
-        self, service_desk_id, request_type_id, request_name, request_description, request_help_text,
+        self,
+        service_desk_id,
+        request_type_id,
+        request_name,
+        request_description,
+        request_help_text,
     ):
         """
         Creating a request type

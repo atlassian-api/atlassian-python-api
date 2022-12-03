@@ -52,7 +52,13 @@ class Confluence(AtlassianRestAPI):
         return {representation: {"value": body, "representation": representation}}
 
     def _get_paged(
-        self, url, params=None, data=None, flags=None, trailing=None, absolute=False,
+        self,
+        url,
+        params=None,
+        data=None,
+        flags=None,
+        trailing=None,
+        absolute=False,
     ):
         """
         Used to get the paged data
@@ -71,7 +77,14 @@ class Confluence(AtlassianRestAPI):
             params = {}
 
         while True:
-            response = self.get(url, trailing=trailing, params=params, data=data, flags=flags, absolute=absolute,)
+            response = self.get(
+                url,
+                trailing=trailing,
+                params=params,
+                data=data,
+                flags=flags,
+                absolute=absolute,
+            )
             if "results" not in response:
                 return
 
@@ -112,7 +125,8 @@ class Confluence(AtlassianRestAPI):
         except HTTPError as e:
             if e.response.status_code == 404:
                 raise ApiPermissionError(
-                    "The calling user does not have permission to view the content", reason=e,
+                    "The calling user does not have permission to view the content",
+                    reason=e,
                 )
 
             raise
@@ -291,7 +305,8 @@ class Confluence(AtlassianRestAPI):
         except HTTPError as e:
             if e.response.status_code == 404:
                 raise ApiPermissionError(
-                    "The calling user does not have permission to view the content", reason=e,
+                    "The calling user does not have permission to view the content",
+                    reason=e,
                 )
 
             raise
@@ -378,7 +393,14 @@ class Confluence(AtlassianRestAPI):
         return response
 
     def get_page_comments(
-        self, content_id, expand=None, parent_version=None, start=0, limit=25, location=None, depth=None,
+        self,
+        content_id,
+        expand=None,
+        parent_version=None,
+        start=0,
+        limit=25,
+        location=None,
+        depth=None,
     ):
         """
 
@@ -431,7 +453,8 @@ class Confluence(AtlassianRestAPI):
         except HTTPError as e:
             if e.response.status_code == 404:
                 raise ApiPermissionError(
-                    "The calling user does not have permission to view the content", reason=e,
+                    "The calling user does not have permission to view the content",
+                    reason=e,
                 )
 
             raise
@@ -467,7 +490,13 @@ class Confluence(AtlassianRestAPI):
         return response.get("results")
 
     def get_all_pages_from_space(
-        self, space, start=0, limit=50, status=None, expand=None, content_type="page",
+        self,
+        space,
+        start=0,
+        limit=50,
+        status=None,
+        expand=None,
+        content_type="page",
     ):
         """
         Get all pages from space
@@ -505,7 +534,8 @@ class Confluence(AtlassianRestAPI):
         except HTTPError as e:
             if e.response.status_code == 404:
                 raise ApiPermissionError(
-                    "The calling user does not have permission to view the content", reason=e,
+                    "The calling user does not have permission to view the content",
+                    reason=e,
                 )
 
             raise
@@ -561,7 +591,8 @@ class Confluence(AtlassianRestAPI):
         except HTTPError as e:
             if e.response.status_code == 404:
                 raise ApiPermissionError(
-                    "The calling user does not have permission to view the content", reason=e,
+                    "The calling user does not have permission to view the content",
+                    reason=e,
                 )
 
             raise
@@ -617,7 +648,8 @@ class Confluence(AtlassianRestAPI):
                 )
             if e.response.status_code == 409:
                 raise ApiConflictError(
-                    "There is a stale data object conflict when trying to delete a draft", reason=e,
+                    "There is a stale data object conflict when trying to delete a draft",
+                    reason=e,
                 )
 
             raise
@@ -653,7 +685,8 @@ class Confluence(AtlassianRestAPI):
                 )
             if e.response.status_code == 409:
                 raise ApiConflictError(
-                    "There is a stale data object conflict when trying to delete a draft", reason=e,
+                    "There is a stale data object conflict when trying to delete a draft",
+                    reason=e,
                 )
 
             raise
@@ -661,7 +694,15 @@ class Confluence(AtlassianRestAPI):
         return response
 
     def create_page(
-        self, space, title, body, parent_id=None, type="page", representation="storage", editor=None, full_width=False,
+        self,
+        space,
+        title,
+        body,
+        parent_id=None,
+        type="page",
+        representation="storage",
+        editor=None,
+        full_width=False,
     ):
         """
         Create page from scratch
@@ -696,7 +737,8 @@ class Confluence(AtlassianRestAPI):
         except HTTPError as e:
             if e.response.status_code == 404:
                 raise ApiPermissionError(
-                    "The calling user does not have permission to view the content", reason=e,
+                    "The calling user does not have permission to view the content",
+                    reason=e,
                 )
 
             raise
@@ -704,7 +746,12 @@ class Confluence(AtlassianRestAPI):
         return response
 
     def move_page(
-        self, space_key, page_id, target_id=None, target_title=None, position="append",
+        self,
+        space_key,
+        page_id,
+        target_id=None,
+        target_title=None,
+        position="append",
     ):
         """
         Move page method
@@ -726,7 +773,14 @@ class Confluence(AtlassianRestAPI):
         return self.post(url, params=params, headers=self.no_check_headers)
 
     def create_or_update_template(
-        self, name, body, template_type="page", template_id=None, description=None, labels=None, space=None,
+        self,
+        name,
+        body,
+        template_type="page",
+        template_id=None,
+        description=None,
+        labels=None,
+        space=None,
     ):
         """
         Creates a new or updates an existing content template.
@@ -852,7 +906,8 @@ class Confluence(AtlassianRestAPI):
         except HTTPError as e:
             if e.response.status_code == 403:
                 raise ApiPermissionError(
-                    "The calling user does not have permission to view the content", reason=e,
+                    "The calling user does not have permission to view the content",
+                    reason=e,
                 )
 
             raise
@@ -887,7 +942,8 @@ class Confluence(AtlassianRestAPI):
         except HTTPError as e:
             if e.response.status_code == 403:
                 raise ApiPermissionError(
-                    "The calling user does not have permission to view the content", reason=e,
+                    "The calling user does not have permission to view the content",
+                    reason=e,
                 )
 
             raise
@@ -922,7 +978,8 @@ class Confluence(AtlassianRestAPI):
         except HTTPError as e:
             if e.response.status_code == 403:
                 raise ApiPermissionError(
-                    "The calling user does not have permission to view the content", reason=e,
+                    "The calling user does not have permission to view the content",
+                    reason=e,
                 )
             raise
 
@@ -956,7 +1013,8 @@ class Confluence(AtlassianRestAPI):
         except HTTPError as e:
             if e.response.status_code == 403:
                 raise ApiPermissionError(
-                    "The calling user does not have permission to view the content", reason=e,
+                    "The calling user does not have permission to view the content",
+                    reason=e,
                 )
 
             raise
@@ -981,7 +1039,12 @@ class Confluence(AtlassianRestAPI):
         return self.delete("rest/api/template/{}".format(template_id))
 
     def get_all_spaces(
-        self, start=0, limit=500, expand=None, space_type=None, space_status=None,
+        self,
+        start=0,
+        limit=500,
+        expand=None,
+        space_type=None,
+        space_status=None,
     ):
         """
         Get all spaces with provided limit
@@ -1023,7 +1086,8 @@ class Confluence(AtlassianRestAPI):
         except HTTPError as e:
             if e.response.status_code == 404:
                 raise ApiPermissionError(
-                    "The calling user does not have permission to view the content", reason=e,
+                    "The calling user does not have permission to view the content",
+                    reason=e,
                 )
 
             raise
@@ -1031,7 +1095,14 @@ class Confluence(AtlassianRestAPI):
         return response
 
     def attach_content(
-        self, content, name, content_type="application/binary", page_id=None, title=None, space=None, comment=None,
+        self,
+        content,
+        name,
+        content_type="application/binary",
+        page_id=None,
+        title=None,
+        space=None,
+        comment=None,
     ):
         """
         Attach (upload) a file to a page, if it exists it will update the
@@ -1074,7 +1145,10 @@ class Confluence(AtlassianRestAPI):
 
             try:
                 response = self.post(
-                    path=path, data=data, headers=headers, files={"file": (name, content, content_type)},
+                    path=path,
+                    data=data,
+                    headers=headers,
+                    files={"file": (name, content, content_type)},
                 )
             except HTTPError as e:
                 if e.response.status_code == 403:
@@ -1101,7 +1175,14 @@ class Confluence(AtlassianRestAPI):
             return None
 
     def attach_file(
-        self, filename, name=None, content_type=None, page_id=None, title=None, space=None, comment=None,
+        self,
+        filename,
+        name=None,
+        content_type=None,
+        page_id=None,
+        title=None,
+        space=None,
+        comment=None,
     ):
         """
         Attach (upload) a file to a page, if it exists it will update the
@@ -1132,7 +1213,13 @@ class Confluence(AtlassianRestAPI):
         with open(filename, "rb") as infile:
             content = infile.read()
         return self.attach_content(
-            content, name, content_type, page_id=page_id, title=title, space=space, comment=comment,
+            content,
+            name,
+            content_type,
+            page_id=page_id,
+            title=title,
+            space=space,
+            comment=comment,
         )
 
     def delete_attachment(self, page_id, filename, version=None):
@@ -1146,7 +1233,11 @@ class Confluence(AtlassianRestAPI):
         params = {"pageId": page_id, "fileName": filename}
         if version:
             params["version"] = version
-        return self.post("json/removeattachment.action", params=params, headers=self.form_token_headers,)
+        return self.post(
+            "json/removeattachment.action",
+            params=params,
+            headers=self.form_token_headers,
+        )
 
     def delete_attachment_by_id(self, attachment_id, version):
         """
@@ -1174,7 +1265,8 @@ class Confluence(AtlassianRestAPI):
         while len(attachment_versions) > keep_last_versions:
             remove_version_attachment_number = attachment_versions[keep_last_versions].get("number")
             self.delete_attachment_by_id(
-                attachment_id=attachment.get("id"), version=remove_version_attachment_number,
+                attachment_id=attachment.get("id"),
+                version=remove_version_attachment_number,
             )
             log.info(
                 "Removed oldest version for {}, now versions equal more than {}".format(
@@ -1198,7 +1290,13 @@ class Confluence(AtlassianRestAPI):
 
     # @todo prepare more attachments info
     def get_attachments_from_content(
-        self, page_id, start=0, limit=50, expand=None, filename=None, media_type=None,
+        self,
+        page_id,
+        start=0,
+        limit=50,
+        expand=None,
+        filename=None,
+        media_type=None,
     ):
         """
         Get attachments for page
@@ -1278,7 +1376,8 @@ class Confluence(AtlassianRestAPI):
         except HTTPError as e:
             if e.response.status_code == 403:
                 raise ApiPermissionError(
-                    "The user has view permission, " "but no edit permission to the content", reason=e,
+                    "The user has view permission, " "but no edit permission to the content",
+                    reason=e,
                 )
             if e.response.status_code == 404:
                 # Raise ApiError as the documented reason is ambiguous
@@ -1423,7 +1522,14 @@ class Confluence(AtlassianRestAPI):
             return False
 
     def update_existing_page(
-        self, page_id, title, body, type="page", representation="storage", minor_edit=False, version_comment=None,
+        self,
+        page_id,
+        title,
+        body,
+        type="page",
+        representation="storage",
+        minor_edit=False,
+        version_comment=None,
     ):
         """Duplicate update_page. Left for the people who used it before. Use update_page instead"""
         return self.update_page(
@@ -1500,7 +1606,11 @@ class Confluence(AtlassianRestAPI):
             data["metadata"]["properties"]["content-appearance-draft"] = {"value": "full-width"}
             data["metadata"]["properties"]["content-appearance-published"] = {"value": "full-width"}
         try:
-            response = self.put("rest/api/content/{0}".format(page_id), data=data, params=params,)
+            response = self.put(
+                "rest/api/content/{0}".format(page_id),
+                data=data,
+                params=params,
+            )
         except HTTPError as e:
             if e.response.status_code == 400:
                 raise ApiValueError(
@@ -1568,7 +1678,11 @@ class Confluence(AtlassianRestAPI):
                 data["version"]["message"] = version_comment
 
             try:
-                response = self.put("rest/api/content/{0}".format(page_id), data=data, params=params,)
+                response = self.put(
+                    "rest/api/content/{0}".format(page_id),
+                    data=data,
+                    params=params,
+                )
             except HTTPError as e:
                 if e.response.status_code == 400:
                     raise ApiValueError(
@@ -1585,7 +1699,14 @@ class Confluence(AtlassianRestAPI):
             return response
 
     def append_page(
-        self, page_id, title, append_body, parent_id=None, type="page", representation="storage", minor_edit=False,
+        self,
+        page_id,
+        title,
+        append_body,
+        parent_id=None,
+        type="page",
+        representation="storage",
+        minor_edit=False,
     ):
         """
         Append body to page if already exist
@@ -1613,7 +1734,14 @@ class Confluence(AtlassianRestAPI):
         )
 
     def prepend_page(
-        self, page_id, title, prepend_body, parent_id=None, type="page", representation="storage", minor_edit=False,
+        self,
+        page_id,
+        title,
+        prepend_body,
+        parent_id=None,
+        type="page",
+        representation="storage",
+        minor_edit=False,
     ):
         """
         Append body to page if already exist
@@ -1691,7 +1819,8 @@ class Confluence(AtlassianRestAPI):
 
         log.info(
             "You may access your page at: {host}{url}".format(
-                host=self.url, url=((result or {}).get("_links") or {}).get("tinyui"),
+                host=self.url,
+                url=((result or {}).get("_links") or {}).get("tinyui"),
             )
         )
         return result
@@ -1736,7 +1865,8 @@ class Confluence(AtlassianRestAPI):
                 )
             if e.response.status_code == 403:
                 raise ApiPermissionError(
-                    "The user does not have permission to " "edit the content with the given id", reason=e,
+                    "The user does not have permission to " "edit the content with the given id",
+                    reason=e,
                 )
             if e.response.status_code == 413:
                 raise ApiValueError("The value is too long", reason=e)
@@ -1767,7 +1897,8 @@ class Confluence(AtlassianRestAPI):
                 )
             if e.response.status_code == 403:
                 raise ApiPermissionError(
-                    "The user does not have permission to " "edit the content with the given id", reason=e,
+                    "The user does not have permission to " "edit the content with the given id",
+                    reason=e,
                 )
             if e.response.status_code == 404:
                 raise ApiNotFoundError(
@@ -1870,7 +2001,8 @@ class Confluence(AtlassianRestAPI):
         except HTTPError as e:
             if e.response.status_code == 404:
                 raise ApiPermissionError(
-                    "The calling user does not have permission to view the content", reason=e,
+                    "The calling user does not have permission to view the content",
+                    reason=e,
                 )
 
             raise
@@ -1907,7 +2039,8 @@ class Confluence(AtlassianRestAPI):
         except HTTPError as e:
             if e.response.status_code == 403:
                 raise ApiPermissionError(
-                    "The calling user does not have permission to view groups", reason=e,
+                    "The calling user does not have permission to view groups",
+                    reason=e,
                 )
 
             raise
@@ -1933,7 +2066,8 @@ class Confluence(AtlassianRestAPI):
         except HTTPError as e:
             if e.response.status_code == 403:
                 raise ApiPermissionError(
-                    "The calling user does not have permission to view users", reason=e,
+                    "The calling user does not have permission to view users",
+                    reason=e,
                 )
 
             raise
@@ -1952,7 +2086,12 @@ class Confluence(AtlassianRestAPI):
         step = 0
         members = []
         while flag:
-            values = self.get_group_members(group_name=group_name, start=len(members), limit=limit, expand=expand,)
+            values = self.get_group_members(
+                group_name=group_name,
+                start=len(members),
+                limit=limit,
+                expand=expand,
+            )
             step += 1
             if len(values) == 0:
                 flag = False
@@ -1988,7 +2127,13 @@ class Confluence(AtlassianRestAPI):
         return response
 
     def get_space_content(
-        self, space_key, depth="all", start=0, limit=500, content_type=None, expand="body.storage",
+        self,
+        space_key,
+        depth="all",
+        start=0,
+        limit=500,
+        content_type=None,
+        expand="body.storage",
     ):
         """
         Get space content.
@@ -2108,11 +2253,13 @@ class Confluence(AtlassianRestAPI):
         except HTTPError as e:
             if e.response.status_code == 403:
                 raise ApiPermissionError(
-                    "The calling user does not have permission to view users", reason=e,
+                    "The calling user does not have permission to view users",
+                    reason=e,
                 )
             if e.response.status_code == 404:
                 raise ApiNotFoundError(
-                    "The user with the given username or userkey does not exist", reason=e,
+                    "The user with the given username or userkey does not exist",
+                    reason=e,
                 )
 
             raise
@@ -2137,11 +2284,13 @@ class Confluence(AtlassianRestAPI):
         except HTTPError as e:
             if e.response.status_code == 403:
                 raise ApiPermissionError(
-                    "The calling user does not have permission to view users", reason=e,
+                    "The calling user does not have permission to view users",
+                    reason=e,
                 )
             if e.response.status_code == 404:
                 raise ApiNotFoundError(
-                    "The user with the given account does not exist", reason=e,
+                    "The user with the given account does not exist",
+                    reason=e,
                 )
 
             raise
@@ -2166,11 +2315,13 @@ class Confluence(AtlassianRestAPI):
         except HTTPError as e:
             if e.response.status_code == 403:
                 raise ApiPermissionError(
-                    "The calling user does not have permission to view users", reason=e,
+                    "The calling user does not have permission to view users",
+                    reason=e,
                 )
             if e.response.status_code == 404:
                 raise ApiNotFoundError(
-                    "The user with the given username or userkey does not exist", reason=e,
+                    "The user with the given username or userkey does not exist",
+                    reason=e,
                 )
 
             raise
@@ -2178,7 +2329,13 @@ class Confluence(AtlassianRestAPI):
         return response
 
     def cql(
-        self, cql, start=0, limit=None, expand=None, include_archived_spaces=None, excerpt=None,
+        self,
+        cql,
+        start=0,
+        limit=None,
+        expand=None,
+        include_archived_spaces=None,
+        excerpt=None,
     ):
         """
         Get results from cql search result with all related fields
@@ -2336,7 +2493,8 @@ class Confluence(AtlassianRestAPI):
         except HTTPError as e:
             if e.response.status_code == 403:
                 raise ApiPermissionError(
-                    "The calling user does not have permission to use Confluence", reason=e,
+                    "The calling user does not have permission to use Confluence",
+                    reason=e,
                 )
 
             raise
@@ -2375,7 +2533,10 @@ class Confluence(AtlassianRestAPI):
         """
         files = {"plugin": open(plugin_path, "rb")}
         upm_token = self.request(
-            method="GET", path="rest/plugins/1.0/", headers=self.no_check_headers, trailing=True,
+            method="GET",
+            path="rest/plugins/1.0/",
+            headers=self.no_check_headers,
+            trailing=True,
         ).headers["upm-token"]
         url = "rest/plugins/1.0/?token={upm_token}".format(upm_token=upm_token)
         return self.post(url, files=files, headers=self.no_check_headers)
@@ -2501,7 +2662,12 @@ class Confluence(AtlassianRestAPI):
         return download_url
 
     def audit(
-        self, start_date=None, end_date=None, start=None, limit=None, search_string=None,
+        self,
+        start_date=None,
+        end_date=None,
+        start=None,
+        limit=None,
+        search_string=None,
     ):
         """
         Fetch a paginated list of AuditRecord instances dating back to a certain time
@@ -2632,7 +2798,12 @@ class Confluence(AtlassianRestAPI):
         return self.post(url, params=params, data=data)
 
     def add_space_permissions(
-        self, space_key, subject_type, subject_id, operation_key, operation_target,
+        self,
+        space_key,
+        subject_type,
+        subject_id,
+        operation_key,
+        operation_target,
     ):
         """
         Add permissions to a space

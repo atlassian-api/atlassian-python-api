@@ -18,7 +18,13 @@ class BitbucketServerBase(BitbucketBase):
         return [x["href"] for x in links[link]]
 
     def _get_paged(
-        self, url, params=None, data=None, flags=None, trailing=False, absolute=False,
+        self,
+        url,
+        params=None,
+        data=None,
+        flags=None,
+        trailing=False,
+        absolute=False,
     ):
         """
         Used to get the paged data
@@ -37,7 +43,12 @@ class BitbucketServerBase(BitbucketBase):
 
         while True:
             response = super(BitbucketServerBase, self).get(
-                url, trailing=trailing, params=params, data=data, flags=flags, absolute=absolute,
+                url,
+                trailing=trailing,
+                params=params,
+                data=data,
+                flags=flags,
+                absolute=absolute,
             )
             if "values" not in response:
                 return

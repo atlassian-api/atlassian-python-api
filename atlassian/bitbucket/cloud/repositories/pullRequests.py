@@ -19,7 +19,13 @@ class PullRequests(BitbucketCloudBase):
         return PullRequest(data, **self._new_session_args)
 
     def create(
-        self, title, source_branch, destination_branch=None, description=None, close_source_branch=None, reviewers=None,
+        self,
+        title,
+        source_branch,
+        destination_branch=None,
+        description=None,
+        close_source_branch=None,
+        reviewers=None,
     ):
         """
         Creates a new pull requests for a given source branch
@@ -287,7 +293,11 @@ class PullRequest(BitbucketCloudBase):
         if not raw_message:
             raise ValueError("No message set")
 
-        data = {"content": {"raw": raw_message,}}
+        data = {
+            "content": {
+                "raw": raw_message,
+            }
+        }
 
         return self.post("comments", data)
 
@@ -311,7 +321,11 @@ class PullRequest(BitbucketCloudBase):
         if not raw_message:
             raise ValueError("No message set")
 
-        data = {"content": {"raw": raw_message,}}
+        data = {
+            "content": {
+                "raw": raw_message,
+            }
+        }
 
         return Task(self.post("tasks", data), **self._new_session_args)
 
@@ -436,7 +450,11 @@ class Task(BitbucketCloudBase):
         if not raw_message:
             raise ValueError("No message set")
 
-        data = {"content": {"raw": raw_message,}}
+        data = {
+            "content": {
+                "raw": raw_message,
+            }
+        }
         return self._update_data(self.put(None, data=data))
 
     def delete(self):

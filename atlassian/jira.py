@@ -24,7 +24,12 @@ class Jira(AtlassianRestAPI):
         super(Jira, self).__init__(url, *args, **kwargs)
 
     def get_permissions(
-        self, permissions, project_id=None, project_key=None, issue_id=None, issue_key=None,
+        self,
+        permissions,
+        project_id=None,
+        project_key=None,
+        issue_id=None,
+        issue_key=None,
     ):
         """
         Returns a list of permissions indicating which permissions the user has. Details of the user's permissions can
@@ -223,7 +228,12 @@ class Jira(AtlassianRestAPI):
     """
 
     def get_audit_records(
-        self, offset=None, limit=None, filter=None, from_date=None, to_date=None,
+        self,
+        offset=None,
+        limit=None,
+        filter=None,
+        from_date=None,
+        to_date=None,
     ):
         """
         Returns auditing records filtered using provided parameters
@@ -495,7 +505,10 @@ class Jira(AtlassianRestAPI):
     def update_component_lead(self, component_id, lead):
         data = {"id": component_id, "leadUserName": lead}
         base_url = self.resource_url("component")
-        return self.put("{base_url}/{component_id}".format(base_url=base_url, component_id=component_id), data=data,)
+        return self.put(
+            "{base_url}/{component_id}".format(base_url=base_url, component_id=component_id),
+            data=data,
+        )
 
     """
     Configurations of Jira
@@ -913,7 +926,11 @@ class Jira(AtlassianRestAPI):
         return self.get(url, params=params)
 
     def get_issue(
-        self, issue_id_or_key, fields=None, properties=None, update_history=True,
+        self,
+        issue_id_or_key,
+        fields=None,
+        properties=None,
+        update_history=True,
     ):
         """
         Returns a full representation of the issue for the given issue key
@@ -1093,7 +1110,10 @@ class Jira(AtlassianRestAPI):
 
     def update_issue_field(self, key, fields="*all"):
         base_url = self.resource_url("issue")
-        return self.put("{base_url}/{key}".format(base_url=base_url, key=key), data={"fields": fields},)
+        return self.put(
+            "{base_url}/{key}".format(base_url=base_url, key=key),
+            data={"fields": fields},
+        )
 
     def bulk_update_issue_field(self, key_list, fields="*all"):
         """
@@ -1105,7 +1125,8 @@ class Jira(AtlassianRestAPI):
         try:
             for key in key_list:
                 self.put(
-                    "{base_url}/{key}".format(base_url=base_url, key=key), data={"fields": fields},
+                    "{base_url}/{key}".format(base_url=base_url, key=key),
+                    data={"fields": fields},
                 )
         except Exception as e:
             log.error(e)
@@ -1220,7 +1241,10 @@ class Jira(AtlassianRestAPI):
         log.warning('Adding user {user} to "{issue_key}" watchers'.format(issue_key=issue_key, user=user))
         data = user
         base_url = self.resource_url("issue")
-        return self.post("{base_url}/{issue_key}/watchers".format(base_url=base_url, issue_key=issue_key), data=data,)
+        return self.post(
+            "{base_url}/{issue_key}/watchers".format(base_url=base_url, issue_key=issue_key),
+            data=data,
+        )
 
     def issue_delete_watcher(self, issue_key, user):
         """
@@ -1233,7 +1257,8 @@ class Jira(AtlassianRestAPI):
         params = {"username": user}
         base_url = self.resource_url("issue")
         return self.delete(
-            "{base_url}/{issue_key}/watchers".format(base_url=base_url, issue_key=issue_key), params=params,
+            "{base_url}/{issue_key}/watchers".format(base_url=base_url, issue_key=issue_key),
+            params=params,
         )
 
     def issue_get_watchers(self, issue_key):
@@ -1391,7 +1416,14 @@ class Jira(AtlassianRestAPI):
         return self.get(url, params=params)
 
     def create_or_update_issue_remote_links(
-        self, issue_key, link_url, title, global_id=None, relationship=None, icon_url=None, icon_title=None,
+        self,
+        issue_key,
+        link_url,
+        title,
+        global_id=None,
+        relationship=None,
+        icon_url=None,
+        icon_title=None,
     ):
         """
         Add Remote Link to Issue, update url if global_id is passed
@@ -1463,12 +1495,20 @@ class Jira(AtlassianRestAPI):
     def get_issue_transitions(self, issue_key):
         if self.advanced_mode:
             return [
-                {"name": transition["name"], "id": int(transition["id"]), "to": transition["to"]["name"],}
+                {
+                    "name": transition["name"],
+                    "id": int(transition["id"]),
+                    "to": transition["to"]["name"],
+                }
                 for transition in (self.get_issue_transitions_full(issue_key).json() or {}).get("transitions")
             ]
         else:
             return [
-                {"name": transition["name"], "id": int(transition["id"]), "to": transition["to"]["name"],}
+                {
+                    "name": transition["name"],
+                    "id": int(transition["id"]),
+                    "to": transition["to"]["name"],
+                }
                 for transition in (self.get_issue_transitions_full(issue_key) or {}).get("transitions")
             ]
 
@@ -1722,11 +1762,16 @@ class Jira(AtlassianRestAPI):
             params = {"accountId": account_id}
         base_url = self.resource_url("user/properties")
         return self.get(
-            "{base_url}/{key_property}".format(base_url=base_url, key_property=key_property), params=params,
+            "{base_url}/{key_property}".format(base_url=base_url, key_property=key_property),
+            params=params,
         )
 
     def user_set_property(
-        self, username=None, account_id=None, key_property=None, value_property=None,
+        self,
+        username=None,
+        account_id=None,
+        key_property=None,
+        value_property=None,
     ):
         """
         Set property for user
@@ -1744,7 +1789,9 @@ class Jira(AtlassianRestAPI):
             )
         elif account_id or self.cloud:
             url = "{base_url}/{key_property}?accountId={account_id}".format(
-                base_url=base_url, key_property=key_property, account_id=account_id,
+                base_url=base_url,
+                key_property=key_property,
+                account_id=account_id,
             )
 
         return self.put(url, data=value_property)
@@ -1794,7 +1841,10 @@ class Jira(AtlassianRestAPI):
         return self.user_deactivate(username)
 
     def user_disable_throw_rest_endpoint(
-        self, username, url="rest/scriptrunner/latest/custom/disableUser", param="userName",
+        self,
+        username,
+        url="rest/scriptrunner/latest/custom/disableUser",
+        param="userName",
     ):
         """The disable method throw own rest endpoint"""
         url = "{}?{}={}".format(url, param, username)
@@ -1982,7 +2032,10 @@ class Jira(AtlassianRestAPI):
         """
         json = {"key": key, "name": name, "lead": lead}
 
-        return self.post("rest/project-templates/1.0/createshared/{}".format(project_id), json=json,)
+        return self.post(
+            "rest/project-templates/1.0/createshared/{}".format(project_id),
+            json=json,
+        )
 
     def delete_project(self, key):
         """
@@ -2037,7 +2090,14 @@ class Jira(AtlassianRestAPI):
         return self.get(url, params=params)
 
     def get_project_versions_paginated(
-        self, key, start=None, limit=None, order_by=None, expand=None, query=None, status=None,
+        self,
+        key,
+        start=None,
+        limit=None,
+        order_by=None,
+        expand=None,
+        query=None,
+        status=None,
     ):
         """
         Returns all versions for the specified project. Results are paginated.
@@ -2075,7 +2135,12 @@ class Jira(AtlassianRestAPI):
         return self.get(url, params=params)
 
     def add_version(
-        self, project_key, project_id, version, is_archived=False, is_released=False,
+        self,
+        project_key,
+        project_id,
+        version,
+        is_archived=False,
+        is_released=False,
     ):
         """
         Add missing version to project
@@ -2494,7 +2559,10 @@ class Jira(AtlassianRestAPI):
         """
         base_url = self.resource_url("user/assignable/search")
         url = "{base_url}?project={project_key}&startAt={start}&maxResults={limit}".format(
-            base_url=base_url, project_key=project_key, start=start, limit=limit,
+            base_url=base_url,
+            project_key=project_key,
+            start=start,
+            limit=limit,
         )
         return self.get(url)
 
@@ -2798,7 +2866,13 @@ class Jira(AtlassianRestAPI):
     """
 
     def jql(
-        self, jql, fields="*all", start=0, limit=None, expand=None, validate_query=None,
+        self,
+        jql,
+        fields="*all",
+        start=0,
+        limit=None,
+        expand=None,
+        validate_query=None,
     ):
         """
         Get issues from jql search result with all related fields
@@ -2830,7 +2904,13 @@ class Jira(AtlassianRestAPI):
         return self.get(url, params=params)
 
     def jql_get_list_of_tickets(
-        self, jql, fields="*all", start=0, limit=None, expand=None, validate_query=None,
+        self,
+        jql,
+        fields="*all",
+        start=0,
+        limit=None,
+        expand=None,
+        validate_query=None,
     ):
         """
         Get issues from jql search result with all related fields
@@ -2901,7 +2981,12 @@ class Jira(AtlassianRestAPI):
         else:
             url = "sr/jira.issueviews:searchrequest-csv-current-fields/temp/SearchRequest.csv"
         # fmt: on
-        return self.get(url, params=params, not_json_response=True, headers={"Accept": "application/csv"},)
+        return self.get(
+            url,
+            params=params,
+            not_json_response=True,
+            headers={"Accept": "application/csv"},
+        )
 
     def excel(self, jql, limit=1000, all_fields=True, start=None):
         """
@@ -2925,7 +3010,12 @@ class Jira(AtlassianRestAPI):
         else:
             url = "sr/jira.issueviews:searchrequest-excel-current-fields/temp/SearchRequest.xls"
         # fmt: on
-        return self.get(url, params=params, not_json_response=True, headers={"Accept": "application/vnd.ms-excel"},)
+        return self.get(
+            url,
+            params=params,
+            not_json_response=True,
+            headers={"Accept": "application/vnd.ms-excel"},
+        )
 
     def export_html(self, jql, limit=None, all_fields=True, start=None):
         """
@@ -2949,7 +3039,12 @@ class Jira(AtlassianRestAPI):
         else:
             url = "sr/jira.issueviews:searchrequest-html-current-fields/temp/SearchRequest.html"
         # fmt: on
-        return self.get(url, params=params, not_json_response=True, headers={"Accept": "application/xhtml+xml"},)
+        return self.get(
+            url,
+            params=params,
+            not_json_response=True,
+            headers={"Accept": "application/xhtml+xml"},
+        )
 
     def get_all_priorities(self):
         """
@@ -3048,7 +3143,10 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         """
         files = {"plugin": open(plugin_path, "rb")}
         upm_token = self.request(
-            method="GET", path="rest/plugins/1.0/", headers=self.no_check_headers, trailing=True,
+            method="GET",
+            path="rest/plugins/1.0/",
+            headers=self.no_check_headers,
+            trailing=True,
         ).headers["upm-token"]
         url = "rest/plugins/1.0/?token={upm_token}".format(upm_token=upm_token)
         return self.post(url, files=files, headers=self.no_check_headers)
@@ -3196,7 +3294,8 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
                 raise ApiPermissionError("User doesn't have administrative permissions", reason=e)
             elif e.response.status_code == 404:
                 raise ApiNotFoundError(
-                    "Returned if the project does not exist, or is not visible to the calling user", reason=e,
+                    "Returned if the project does not exist, or is not visible to the calling user",
+                    reason=e,
                 )
             raise
         if only_levels is True and response:
@@ -3381,7 +3480,11 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
     """
 
     def reindex(
-        self, comments=True, change_history=True, worklogs=True, indexing_type="BACKGROUND_PREFERRED",
+        self,
+        comments=True,
+        change_history=True,
+        worklogs=True,
+        indexing_type="BACKGROUND_PREFERRED",
     ):
         """
         Reindex the Jira instance
@@ -3762,7 +3865,13 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         return self.get(url, params=params)
 
     def tempo_timesheets_get_worklogs(
-        self, date_from=None, date_to=None, username=None, project_key=None, account_key=None, team_id=None,
+        self,
+        date_from=None,
+        date_to=None,
+        username=None,
+        project_key=None,
+        account_key=None,
+        team_id=None,
     ):
         """
 
@@ -4019,7 +4128,12 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         return self.post(url, data=data)
 
     def get_all_agile_boards(
-        self, board_name=None, project_key=None, board_type=None, start=0, limit=50,
+        self,
+        board_name=None,
+        project_key=None,
+        board_type=None,
+        start=0,
+        limit=50,
     ):
         """
         Returns all boards. This only includes boards that the user has permission to view.
@@ -4317,7 +4431,11 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         """
         return self.put(
             "rest/agile/1.0/issue/rank",
-            data={"issues": issues_to_rank, "rankBeforeIssue": rank_before, "rankCustomFieldId": customfield_number,},
+            data={
+                "issues": issues_to_rank,
+                "rankBeforeIssue": rank_before,
+                "rankCustomFieldId": customfield_number,
+            },
         )
 
     def dvcs_get_linked_repos(self):

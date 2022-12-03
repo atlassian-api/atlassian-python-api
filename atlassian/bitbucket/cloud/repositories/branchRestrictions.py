@@ -11,7 +11,14 @@ class BranchRestrictions(BitbucketCloudBase):
         return BranchRestriction(data, **self._new_session_args)
 
     def create(
-        self, kind, branch_match_kind="glob", branch_pattern="*", branch_type=None, users=None, groups=None, value=None,
+        self,
+        kind,
+        branch_match_kind="glob",
+        branch_pattern="*",
+        branch_type=None,
+        users=None,
+        groups=None,
+        value=None,
     ):
         """
         Add a new branch restriction.

@@ -62,7 +62,15 @@ class Bamboo(AtlassianRestAPI):
             yield response
 
     def base_list_call(
-        self, resource, expand, favourite, clover_enabled, max_results, label=None, start_index=0, **kwargs,
+        self,
+        resource,
+        expand,
+        favourite,
+        clover_enabled,
+        max_results,
+        label=None,
+        start_index=0,
+        **kwargs,
     ):
         flags = []
         params = {"max-results": max_results}
@@ -90,7 +98,11 @@ class Bamboo(AtlassianRestAPI):
     """ Projects & Plans """
 
     def projects(
-        self, expand=None, favourite=False, clover_enabled=False, max_results=25,
+        self,
+        expand=None,
+        favourite=False,
+        clover_enabled=False,
+        max_results=25,
     ):
         return self.base_list_call(
             "project",
@@ -134,7 +146,12 @@ class Bamboo(AtlassianRestAPI):
         )
 
     def plans(
-        self, expand=None, favourite=False, clover_enabled=False, start_index=0, max_results=25,
+        self,
+        expand=None,
+        favourite=False,
+        clover_enabled=False,
+        start_index=0,
+        max_results=25,
     ):
         return self.base_list_call(
             "plan",
@@ -184,7 +201,7 @@ class Bamboo(AtlassianRestAPI):
         resource = "rest/api/latest/search/plans"
         return self.get(
             resource,
-            params={"fuzzy": fuzzy, "searchTerm": search_term, "max-results": max_results, "start-index": start_index,},
+            params={"fuzzy": fuzzy, "searchTerm": search_term, "max-results": max_results, "start-index": start_index},
         )
 
     def delete_plan(self, plan_key):
@@ -232,12 +249,23 @@ class Bamboo(AtlassianRestAPI):
             params["start-index"] += results["max-result"]
 
     def plan_branches(
-        self, plan_key, expand=None, favourite=False, clover_enabled=False, max_results=25,
+        self,
+        plan_key,
+        expand=None,
+        favourite=False,
+        clover_enabled=False,
+        max_results=25,
     ):
         """api/1.0/plan/{projectKey}-{buildKey}/branch"""
         resource = "plan/{}/branch".format(plan_key)
         return self.base_list_call(
-            resource, expand, favourite, clover_enabled, max_results, elements_key="branches", element_key="branch",
+            resource,
+            expand,
+            favourite,
+            clover_enabled,
+            max_results,
+            elements_key="branches",
+            element_key="branch",
         )
 
     def get_branch_info(self, plan_key, branch_name):
@@ -251,7 +279,12 @@ class Bamboo(AtlassianRestAPI):
         return self.get(self.resource_url(resource))
 
     def create_branch(
-        self, plan_key, branch_name, vcs_branch=None, enabled=False, cleanup_enabled=False,
+        self,
+        plan_key,
+        branch_name,
+        vcs_branch=None,
+        enabled=False,
+        cleanup_enabled=False,
     ):
         """
         Method for creating branch for a specified plan.
@@ -284,7 +317,12 @@ class Bamboo(AtlassianRestAPI):
         """
         resource = "plan/{plan_key}/vcsBranches".format(plan_key=plan_key)
         return self.base_list_call(
-            resource, start_index=0, max_results=max_results, clover_enabled=None, expand=None, favourite=None,
+            resource,
+            start_index=0,
+            max_results=max_results,
+            clover_enabled=None,
+            expand=None,
+            favourite=None,
         )
 
     """ Build results """
@@ -460,7 +498,12 @@ class Bamboo(AtlassianRestAPI):
         )
 
     def build_result(
-        self, build_key, expand=None, include_all_states=False, start=0, max_results=25,
+        self,
+        build_key,
+        expand=None,
+        include_all_states=False,
+        start=0,
+        max_results=25,
     ):
         """
         Returns details of a specific build result
@@ -524,7 +567,12 @@ class Bamboo(AtlassianRestAPI):
         return self.post(custom_resource, params=params, headers=self.form_token_headers)
 
     def execute_build(
-        self, plan_key, stage=None, execute_all_stages=True, custom_revision=None, **bamboo_variables,
+        self,
+        plan_key,
+        stage=None,
+        execute_all_stages=True,
+        custom_revision=None,
+        **bamboo_variables,
     ):
         """
         Fire build execution for specified plan.
@@ -562,7 +610,12 @@ class Bamboo(AtlassianRestAPI):
     """ Comments & Labels """
 
     def comments(
-        self, project_key, plan_key, build_number, start_index=0, max_results=25,
+        self,
+        project_key,
+        plan_key,
+        build_number,
+        start_index=0,
+        max_results=25,
     ):
         resource = "result/{}-{}-{}/comment".format(project_key, plan_key, build_number)
         params = {"start-index": start_index, "max-results": max_results}
@@ -577,7 +630,12 @@ class Bamboo(AtlassianRestAPI):
         return self.post(self.resource_url(resource), data=comment_data)
 
     def labels(
-        self, project_key, plan_key, build_number, start_index=0, max_results=25,
+        self,
+        project_key,
+        plan_key,
+        build_number,
+        start_index=0,
+        max_results=25,
     ):
         resource = "result/{}-{}-{}/label".format(project_key, plan_key, build_number)
         params = {"start-index": start_index, "max-results": max_results}
@@ -1002,7 +1060,8 @@ class Bamboo(AtlassianRestAPI):
         :return: agents
         """
         return self.get(
-            self.resource_url("agent/{}/capability".format(agent_id)), params={"includeShared": include_shared},
+            self.resource_url("agent/{}/capability".format(agent_id)),
+            params={"includeShared": include_shared},
         )
 
     def activity(self):
@@ -1020,7 +1079,10 @@ class Bamboo(AtlassianRestAPI):
     def reports(self, max_results=25):
         params = {"max-results": max_results}
         return self._get_generator(
-            self.resource_url("chart/reports"), elements_key="reports", element_key="report", params=params,
+            self.resource_url("chart/reports"),
+            elements_key="reports",
+            element_key="report",
+            params=params,
         )
 
     def chart(
@@ -1170,7 +1232,10 @@ class Bamboo(AtlassianRestAPI):
         """
         files = {"plugin": open(plugin_path, "rb")}
         upm_token = self.request(
-            method="GET", path="rest/plugins/1.0/", headers=self.no_check_headers, trailing=True,
+            method="GET",
+            path="rest/plugins/1.0/",
+            headers=self.no_check_headers,
+            trailing=True,
         ).headers["upm-token"]
         url = "rest/plugins/1.0/?token={upm_token}".format(upm_token=upm_token)
         return self.post(url, files=files, headers=self.no_check_headers)
