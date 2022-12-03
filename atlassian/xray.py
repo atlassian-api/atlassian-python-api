@@ -123,7 +123,12 @@ class Xray(AtlassianRestAPI):
         :param result: Test Step results (eg. 'Example results').
         :return:
         """
-        create = {"step": step, "data": data, "result": result, "attachments": []}
+        create = {
+            "step": step,
+            "data": data,
+            "result": result,
+            "attachments": [],
+        }
         url = "rest/raven/1.0/api/test/{0}/step".format(test_key)
         return self.put(url, create)
 

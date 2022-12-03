@@ -4,7 +4,14 @@ from ..common.users import User
 
 class Comment(BitbucketCloudBase):
     def __init__(self, data, *args, **kwargs):
-        super(Comment, self).__init__(None, None, *args, data=data, expected_type="pullrequest_comment", **kwargs)
+        super(Comment, self).__init__(
+            None,
+            None,
+            *args,
+            data=data,
+            expected_type="pullrequest_comment",
+            **kwargs,
+        )
 
     @property
     def raw(self):

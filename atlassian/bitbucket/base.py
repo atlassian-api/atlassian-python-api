@@ -38,7 +38,15 @@ class BitbucketBase(AtlassianRestAPI):
     def __str__(self):
         return PrettyPrinter(indent=4).pformat(self.__data if self.__data else self)
 
-    def _get_paged(self, url, params=None, data=None, flags=None, trailing=None, absolute=False):
+    def _get_paged(
+        self,
+        url,
+        params=None,
+        data=None,
+        flags=None,
+        trailing=None,
+        absolute=False,
+    ):
         """
         Used to get the paged data
 
@@ -56,7 +64,14 @@ class BitbucketBase(AtlassianRestAPI):
             params = {}
 
         while True:
-            response = self.get(url, trailing=trailing, params=params, data=data, flags=flags, absolute=absolute)
+            response = self.get(
+                url,
+                trailing=trailing,
+                params=params,
+                data=data,
+                flags=flags,
+                absolute=absolute,
+            )
             if "values" not in response:
                 return
 
@@ -93,7 +108,7 @@ class BitbucketBase(AtlassianRestAPI):
 
     def _check_timeformat_lambda(self):
         """
-        Check the lambda for for the time format. Raise an exception if the the value is wrong
+        Check the lambda for the time format. Raise an exception if the value is wrong
         """
         LAMBDA = lambda: 0  # noqa: E731
         if self.timeformat_lambda is None or (

@@ -3,10 +3,11 @@ import logging
 from json import dumps
 
 import requests
+
 try:
-    from oauthlib.oauth1 import SIGNATURE_RSA_SHA512 as SIGNATURE_RSA
+    from oauthlib.oauth1 import SIGNATURE_RSA_SHA512 as SIGNATURE_RSA_SHA
 except ImportError:
-    from oauthlib.oauth1 import SIGNATURE_RSA_SHA512
+    from oauthlib.oauth1 import SIGNATURE_RSA_SHA
 from requests import HTTPError
 from requests_oauthlib import OAuth1, OAuth2
 from six.moves.urllib.parse import urlencode
@@ -17,7 +18,10 @@ log = get_default_logger(__name__)
 
 
 class AtlassianRestAPI(object):
-    default_headers = {"Content-Type": "application/json", "Accept": "application/json"}
+    default_headers = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    }
     experimental_headers = {
         "Content-Type": "application/json",
         "Accept": "application/json",
@@ -106,7 +110,7 @@ class AtlassianRestAPI(object):
         oauth = OAuth1(
             oauth_dict["consumer_key"],
             rsa_key=oauth_dict["key_cert"],
-            signature_method=SIGNATURE_RSA,
+            signature_method=SIGNATURE_RSA_SHA,
             resource_owner_key=oauth_dict["access_token"],
             resource_owner_secret=oauth_dict["access_token_secret"],
         )
@@ -225,7 +229,12 @@ class AtlassianRestAPI(object):
         if files is None:
             data = None if not data else dumps(data)
             json_dump = None if not json else dumps(json)
-        self.log_curl_debug(method=method, url=url, headers=headers, data=data if data else json_dump)
+        self.log_curl_debug(
+            method=method,
+            url=url,
+            headers=headers,
+            data=data if data else json_dump,
+        )
         headers = headers or self.default_headers
         response = self._session.request(
             method=method,
