@@ -48,7 +48,10 @@ class Commits(BitbucketCloudBase):
         API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-commits/#api-repositories-workspace-repo-slug-commit-commit-get
         """
         return self.__get_object(
-            super(Commits, self).get(self.url_joiner(self.get_link("commit"), commit_hash), absolute=True)
+            super(Commits, self).get(
+                self.url_joiner(self.get_link("commit"), commit_hash),
+                absolute=True,
+            )
         )
 
 
@@ -60,7 +63,9 @@ class Commit(BitbucketCloudBase):
     """
 
     def __init__(self, data, *args, **kwargs):
-        super(Commit, self).__init__(None, *args, data=data, expected_type="commit", **kwargs)
+        super(Commit, self).__init__(
+            None, *args, data=data, expected_type="commit", **kwargs
+        )
 
     @property
     def hash(self):
@@ -106,7 +111,14 @@ class Commit(BitbucketCloudBase):
         for build in builds:
             yield Build(build, **self._new_session_args)
 
-    def add_build(self, key, url=None, description=None, refname=None, state=Build.STATE_INPROGRESS):
+    def add_build(
+        self,
+        key,
+        url=None,
+        description=None,
+        refname=None,
+        state=Build.STATE_INPROGRESS,
+    ):
         """
         Add new build status to commit.
 
@@ -128,7 +140,10 @@ class Commit(BitbucketCloudBase):
 
         API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-commit-statuses/#api-repositories-workspace-repo-slug-commit-commit-statuses-build-key-get
         """
-        return Build(super(Commit, self).get(self.url_joiner("statuses/build", key)), **self._new_session_args)
+        return Build(
+            super(Commit, self).get(self.url_joiner("statuses/build", key)),
+            **self._new_session_args
+        )
 
     def comments(self):
         """
@@ -148,11 +163,7 @@ class Commit(BitbucketCloudBase):
         if not raw_message:
             raise ValueError("No message set")
 
-        data = {
-            "content": {
-                "raw": raw_message,
-            }
-        }
+        data = {"content": {"raw": raw_message, }}
 
         return self.post("comments", data)
 

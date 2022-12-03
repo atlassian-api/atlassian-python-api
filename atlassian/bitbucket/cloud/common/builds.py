@@ -8,7 +8,9 @@ class Build(BitbucketCloudBase):
     STATE_SUCCESSFUL = "SUCCESSFUL"
 
     def __init__(self, data, *args, **kwargs):
-        super(Build, self).__init__(None, None, *args, data=data, expected_type="build", **kwargs)
+        super(Build, self).__init__(
+            None, None, *args, data=data, expected_type="build", **kwargs
+        )
 
     @property
     def key(self):

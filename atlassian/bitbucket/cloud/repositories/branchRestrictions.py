@@ -110,7 +110,9 @@ class BranchRestrictions(BitbucketCloudBase):
 
 class BranchRestriction(BitbucketCloudBase):
     def __init__(self, data, *args, **kwargs):
-        super(BranchRestriction, self).__init__(None, *args, data=data, expected_type="branchrestriction", **kwargs)
+        super(BranchRestriction, self).__init__(
+            None, *args, data=data, expected_type="branchrestriction", **kwargs
+        )
 
     def update(self, **kwargs):
         """

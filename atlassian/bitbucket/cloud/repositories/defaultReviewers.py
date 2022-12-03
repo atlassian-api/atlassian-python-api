@@ -11,7 +11,11 @@ class DefaultReviewers(BitbucketCloudBase):
         super(DefaultReviewers, self).__init__(url, *args, **kwargs)
 
     def __get_object(self, data):
-        return DefaultReviewer(self.url_joiner(self.url, data["uuid"]), data, **self._new_session_args)
+        return DefaultReviewer(
+            self.url_joiner(self.url, data["uuid"]),
+            data,
+            **self._new_session_args
+        )
 
     def add(self, user):
         """
@@ -65,7 +69,9 @@ class DefaultReviewers(BitbucketCloudBase):
         """
         default_reviewer = None
         try:
-            default_reviewer = self.__get_object(super(DefaultReviewers, self).get(user))
+            default_reviewer = self.__get_object(
+                super(DefaultReviewers, self).get(user)
+            )
         except HTTPError as e:
             # A 404 indicates that the specified user is not a default reviewer.
             if not e.response.status_code == 404:

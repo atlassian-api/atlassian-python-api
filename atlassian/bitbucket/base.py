@@ -31,14 +31,26 @@ class BitbucketBase(AtlassianRestAPI):
             url = self.get_link("self")
             if isinstance(url, list):  # Server has a list of links
                 url = url[0]
-        self.timeformat_lambda = kwargs.pop("timeformat_lambda", lambda x: self._default_timeformat_lambda(x))
+        self.timeformat_lambda = kwargs.pop(
+            "timeformat_lambda", lambda x: self._default_timeformat_lambda(x)
+        )
         self._check_timeformat_lambda()
         super(BitbucketBase, self).__init__(url, *args, **kwargs)
 
     def __str__(self):
-        return PrettyPrinter(indent=4).pformat(self.__data if self.__data else self)
+        return PrettyPrinter(indent=4).pformat(
+            self.__data if self.__data else self
+        )
 
-    def _get_paged(self, url, params=None, data=None, flags=None, trailing=None, absolute=False):
+    def _get_paged(
+        self,
+        url,
+        params=None,
+        data=None,
+        flags=None,
+        trailing=None,
+        absolute=False,
+    ):
         """
         Used to get the paged data
 
@@ -56,7 +68,14 @@ class BitbucketBase(AtlassianRestAPI):
             params = {}
 
         while True:
-            response = self.get(url, trailing=trailing, params=params, data=data, flags=flags, absolute=absolute)
+            response = self.get(
+                url,
+                trailing=trailing,
+                params=params,
+                data=data,
+                flags=flags,
+                absolute=absolute,
+            )
             if "values" not in response:
                 return
 
@@ -101,7 +120,9 @@ class BitbucketBase(AtlassianRestAPI):
         ):
             return True
         else:
-            ValueError("Expected [None] or [lambda function] for argument [timeformat_func]")
+            ValueError(
+                "Expected [None] or [lambda function] for argument [timeformat_func]"
+            )
 
     def _sub_url(self, url):
         """

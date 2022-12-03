@@ -81,7 +81,11 @@ class Projects(BitbucketServerBase):
                 if p.name == project:
                     return p
         else:
-            ValueError("Unknown value '{}' for argument [by], expected 'key' or 'name'".format(by))
+            ValueError(
+                "Unknown value '{}' for argument [by], expected 'key' or 'name'".format(
+                    by
+                )
+            )
 
         raise Exception("Unknown project {} '{}'".format(by, project))
 
@@ -110,9 +114,19 @@ class Projects(BitbucketServerBase):
 class Project(BitbucketServerBase):
     def __init__(self, data, *args, **kwargs):
         super(Project, self).__init__(None, *args, data=data, **kwargs)
-        self.__groups = Groups(self._sub_url("permissions/groups"), "PROJECT", **self._new_session_args)
-        self.__users = Users(self._sub_url("permissions/users"), "PROJECT", **self._new_session_args)
-        self.__repos = Repositories(self._sub_url("repos"), **self._new_session_args)
+        self.__groups = Groups(
+            self._sub_url("permissions/groups"),
+            "PROJECT",
+            **self._new_session_args
+        )
+        self.__users = Users(
+            self._sub_url("permissions/users"),
+            "PROJECT",
+            **self._new_session_args
+        )
+        self.__repos = Repositories(
+            self._sub_url("repos"), **self._new_session_args
+        )
 
     def delete(self):
         """

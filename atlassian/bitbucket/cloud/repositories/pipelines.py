@@ -11,9 +11,15 @@ class Pipelines(BitbucketCloudBase):
         super(Pipelines, self).__init__(url, *args, **kwargs)
 
     def __get_object(self, data):
-        return Pipeline(self.url_joiner(self.url, data["uuid"]), data, **self._new_session_args)
+        return Pipeline(
+            self.url_joiner(self.url, data["uuid"]),
+            data,
+            **self._new_session_args
+        )
 
-    def trigger(self, branch="master", commit=None, pattern=None, variables=None):
+    def trigger(
+        self, branch="master", commit=None, pattern=None, variables=None
+    ):
         """
         Trigger a new pipeline. The following options are possible (1 and 2
         trigger the pipeline that the branch is associated with in the Pipelines
@@ -76,10 +82,7 @@ class Pipelines(BitbucketCloudBase):
         if q is not None:
             params["q"] = q
         for pipeline in self._get_paged(
-            None,
-            trailing=True,
-            paging_workaround=True,
-            params=params,
+            None, trailing=True, paging_workaround=True, params=params,
         ):
             yield self.__get_object(pipeline)
 
@@ -100,10 +103,16 @@ class Pipelines(BitbucketCloudBase):
 
 class Pipeline(BitbucketCloudBase):
     def __init__(self, url, data, *args, **kwargs):
-        super(Pipeline, self).__init__(url, *args, data=data, expected_type="pipeline", **kwargs)
+        super(Pipeline, self).__init__(
+            url, *args, data=data, expected_type="pipeline", **kwargs
+        )
 
     def __get_object(self, data):
-        return Step("{}/steps/{}".format(self.url, data["uuid"]), data, **self._new_session_args)
+        return Step(
+            "{}/steps/{}".format(self.url, data["uuid"]),
+            data,
+            **self._new_session_args
+        )
 
     @property
     def uuid(self):
@@ -136,7 +145,9 @@ class Pipeline(BitbucketCloudBase):
         target = self.get_data("target")
         if target["type"] == "pipeline_pullrequest_target":
             return PullRequest(
-                target["pullrequest"]["links"]["self"]["href"], target["pullrequest"], **self._new_session_args
+                target["pullrequest"]["links"]["self"]["href"],
+                target["pullrequest"],
+                **self._new_session_args
             )
         else:
             return None
@@ -175,7 +186,9 @@ class Pipeline(BitbucketCloudBase):
 
 class Step(BitbucketCloudBase):
     def __init__(self, url, data, *args, **kwargs):
-        super(Step, self).__init__(url, *args, data=data, expected_type="pipeline_step", **kwargs)
+        super(Step, self).__init__(
+            url, *args, data=data, expected_type="pipeline_step", **kwargs
+        )
 
     @property
     def uuid(self):
@@ -230,7 +243,9 @@ class Step(BitbucketCloudBase):
         API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pipelines/%7Bpipeline_uuid%7D/steps/%7Bstep_uuid%7D/log#get
         """
         headers = {"Accept": "application/octet-stream"}
-        if ((start is not None) and (end is None)) or ((start is None) and (end is not None)):
+        if ((start is not None) and (end is None)) or (
+            (start is None) and (end is not None)
+        ):
             raise ValueError("For a range [start] and [end] are needed.")
         if start is not None:
             start = int(start)
@@ -238,7 +253,9 @@ class Step(BitbucketCloudBase):
             if (start >= 0) and (start < end):
                 headers["Range"] = "bytes={}-{}".format(start, end)
             else:
-                raise ValueError("Value of [start] must be o or greater and [end] must be greater than [start].")
+                raise ValueError(
+                    "Value of [start] must be o or greater and [end] must be greater than [start]."
+                )
 
         response = None
         try:
@@ -258,4 +275,7 @@ class Step(BitbucketCloudBase):
 
         if start is None:
             return response.content
-        return response.headers["Content-Range"].split("/")[1], response.content
+        return (
+            response.headers["Content-Range"].split("/")[1],
+            response.content,
+        )

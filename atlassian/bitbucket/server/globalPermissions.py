@@ -123,16 +123,26 @@ class PermissionBase(BitbucketServerBase):
     @property
     def permission(self):
         if self.url is None:
-            raise NotImplementedError("Permission not implemented for this object type.")
+            raise NotImplementedError(
+                "Permission not implemented for this object type."
+            )
         return self.get_data("permission")
 
     @property
     def is_licensed_user(self):
-        return True if self.permission == GlobalPermissions.LICENSED_USER else False
+        return (
+            True
+            if self.permission == GlobalPermissions.LICENSED_USER
+            else False
+        )
 
     @property
     def is_project_create(self):
-        return True if self.permission == GlobalPermissions.PROJECT_CREATE else False
+        return (
+            True
+            if self.permission == GlobalPermissions.PROJECT_CREATE
+            else False
+        )
 
     @property
     def is_admin(self):
@@ -140,7 +150,9 @@ class PermissionBase(BitbucketServerBase):
 
     @property
     def is_sys_admin(self):
-        return True if self.permission == GlobalPermissions.SYS_ADMIN else False
+        return (
+            True if self.permission == GlobalPermissions.SYS_ADMIN else False
+        )
 
     def delete(self):
         """
@@ -149,8 +161,12 @@ class PermissionBase(BitbucketServerBase):
         :return: The response on success
         """
         if self.url is None:
-            raise NotImplementedError("Delete not implemented for this object type.")
-        return super(PermissionBase, self).delete(None, params={"name": self.name})
+            raise NotImplementedError(
+                "Delete not implemented for this object type."
+            )
+        return super(PermissionBase, self).delete(
+            None, params={"name": self.name}
+        )
 
 
 class Group(PermissionBase):

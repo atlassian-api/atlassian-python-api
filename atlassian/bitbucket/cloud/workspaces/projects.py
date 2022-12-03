@@ -92,7 +92,11 @@ class Projects(BitbucketCloudBase):
                 if p.name == project:
                     return p
         else:
-            ValueError("Unknown value '{}' for argument [by], expected 'key' or 'name'".format(by))
+            ValueError(
+                "Unknown value '{}' for argument [by], expected 'key' or 'name'".format(
+                    by
+                )
+            )
 
         raise Exception("Unknown project {} '{}'".format(by, project))
 
@@ -122,13 +126,19 @@ class Projects(BitbucketCloudBase):
 
 class Project(BitbucketCloudBase):
     def __init__(self, data, *args, **kwargs):
-        super(Project, self).__init__(None, *args, data=data, expected_type="project", **kwargs)
+        super(Project, self).__init__(
+            None, *args, data=data, expected_type="project", **kwargs
+        )
         try:
             url = self.get_link("repositories")
         except KeyError:
             workspace = self.get_data("workspace")
-            url = '{}/?q=project.key="{}"'.format(workspace["links"]["self"], workspace["slug"])
-        self.__repositories = ProjectRepositories(url, **self._new_session_args)
+            url = '{}/?q=project.key="{}"'.format(
+                workspace["links"]["self"], workspace["slug"]
+            )
+        self.__repositories = ProjectRepositories(
+            url, **self._new_session_args
+        )
 
     def update(self, **kwargs):
         """

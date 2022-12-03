@@ -27,7 +27,9 @@ def html_email(email, title=None):
     if not title:
         title = email
 
-    return '<a href="mailto:{email}">{title}</a>'.format(email=email, title=title)
+    return '<a href="mailto:{email}">{title}</a>'.format(
+        email=email, title=title
+    )
 
 
 def html_list(data):

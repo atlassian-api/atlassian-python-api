@@ -79,7 +79,9 @@ class Repositories(RepositoriesBase):
         API docs:
         https://developer.atlassian.com/cloud/bitbucket/rest/api-group-repositories/#api-repositories-workspace-repo-slug-get
         """
-        return self._get_object(super(Repositories, self).get("{}/{}".format(workspace, repo_slug)))
+        return self._get_object(
+            super(Repositories, self).get("{}/{}".format(workspace, repo_slug))
+        )
 
 
 class WorkspaceRepositories(RepositoriesBase):
@@ -95,7 +97,9 @@ class WorkspaceRepositories(RepositoriesBase):
     def __init__(self, url, *args, **kwargs):
         super(WorkspaceRepositories, self).__init__(url, *args, **kwargs)
 
-    def create(self, repo_slug, project_key=None, is_private=None, fork_policy=None):
+    def create(
+        self, repo_slug, project_key=None, is_private=None, fork_policy=None
+    ):
         """
         Creates a new repository with the given repo_slug.
 
@@ -119,7 +123,9 @@ class WorkspaceRepositories(RepositoriesBase):
             data["is_private"] = is_private
         if fork_policy is not None:
             if fork_policy not in self.FORK_POLICIES:
-                raise ValueError("fork_policy must be one of {}".format(self.FORK_POLICIES))
+                raise ValueError(
+                    "fork_policy must be one of {}".format(self.FORK_POLICIES)
+                )
             data["fork_policy"] = fork_policy
         return self._get_object(self.post(repo_slug, data=data))
 
@@ -165,13 +171,19 @@ class WorkspaceRepositories(RepositoriesBase):
         https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D#get
         """
         if by == "slug":
-            return self._get_object(super(WorkspaceRepositories, self).get(repository))
+            return self._get_object(
+                super(WorkspaceRepositories, self).get(repository)
+            )
         elif by == "name":
             for r in self.each():
                 if r.name == repository:
                     return r
         else:
-            ValueError("Unknown value '{}' for argument [by], expected 'key' or 'name'".format(by))
+            ValueError(
+                "Unknown value '{}' for argument [by], expected 'key' or 'name'".format(
+                    by
+                )
+            )
 
         raise Exception("Unknown repository {} '{}'".format(by, repository))
 
@@ -235,10 +247,16 @@ class ProjectRepositories(RepositoriesBase):
         https://developer.atlassian.com/bitbucket/api/2/reference/resource/workspaces/%7Bworkspace%7D/projects/%7Bproject_key%7D#get
         """
         if by not in ("slug", "name"):
-            ValueError("Unknown value '{}' for argument [by], expected 'slug' or 'name'".format(by))
+            ValueError(
+                "Unknown value '{}' for argument [by], expected 'slug' or 'name'".format(
+                    by
+                )
+            )
 
         for r in self.each():
-            if ((by == "slug") and (r.slug == repository)) or ((by == "name") and (r.name == repository)):
+            if ((by == "slug") and (r.slug == repository)) or (
+                (by == "name") and (r.name == repository)
+            ):
                 return r
 
         raise Exception("Unknown repository {} '{}'".format(by, repository))
@@ -246,21 +264,35 @@ class ProjectRepositories(RepositoriesBase):
 
 class Repository(BitbucketCloudBase):
     def __init__(self, data, *args, **kwargs):
-        super(Repository, self).__init__(None, *args, data=data, expected_type="repository", **kwargs)
+        super(Repository, self).__init__(
+            None, *args, data=data, expected_type="repository", **kwargs
+        )
         self.__branch_restrictions = BranchRestrictions(
             "{}/branch-restrictions".format(self.url), **self._new_session_args
         )
-        self.__branches = Branches("{}/refs/branches".format(self.url), **self._new_session_args)
+        self.__branches = Branches(
+            "{}/refs/branches".format(self.url), **self._new_session_args
+        )
         self.__commits = Commits(
             "{}/commits".format(self.url),
             data={"links": {"commit": {"href": "{}/commit".format(self.url)}}},
             **self._new_session_args
         )
-        self.__default_reviewers = DefaultReviewers("{}/default-reviewers".format(self.url), **self._new_session_args)
-        self.__issues = Issues("{}/issues".format(self.url), **self._new_session_args)
-        self.__pipelines = Pipelines("{}/pipelines".format(self.url), **self._new_session_args)
-        self.__pullrequests = PullRequests("{}/pullrequests".format(self.url), **self._new_session_args)
-        self.__tags = Tags("{}/refs/tags".format(self.url), **self._new_session_args)
+        self.__default_reviewers = DefaultReviewers(
+            "{}/default-reviewers".format(self.url), **self._new_session_args
+        )
+        self.__issues = Issues(
+            "{}/issues".format(self.url), **self._new_session_args
+        )
+        self.__pipelines = Pipelines(
+            "{}/pipelines".format(self.url), **self._new_session_args
+        )
+        self.__pullrequests = PullRequests(
+            "{}/pullrequests".format(self.url), **self._new_session_args
+        )
+        self.__tags = Tags(
+            "{}/refs/tags".format(self.url), **self._new_session_args
+        )
 
     def update(self, **kwargs):
         """

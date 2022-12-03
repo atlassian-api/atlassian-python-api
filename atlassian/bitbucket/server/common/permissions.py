@@ -131,13 +131,19 @@ class PermissionBase(BitbucketServerBase):
         :return: The response on success
         """
         if self.url is None:
-            raise NotImplementedError("Delete not implemented for this object type.")
-        return super(BitbucketServerBase, self).delete(None, params={"name": self.name})
+            raise NotImplementedError(
+                "Delete not implemented for this object type."
+            )
+        return super(BitbucketServerBase, self).delete(
+            None, params={"name": self.name}
+        )
 
     @property
     def permission(self):
         if self.url is None:
-            raise NotImplementedError("Pemission not implemented for this object type.")
+            raise NotImplementedError(
+                "Pemission not implemented for this object type."
+            )
         return self.get_data("permission")
 
     @property
@@ -158,7 +164,11 @@ class PermissionBase(BitbucketServerBase):
     @property
     def can_write(self):
         """True if group/user can write"""
-        return True if self.permission in (Permissions.ADMIN, Permissions.WRITE) else False
+        return (
+            True
+            if self.permission in (Permissions.ADMIN, Permissions.WRITE)
+            else False
+        )
 
 
 class Group(PermissionBase):
