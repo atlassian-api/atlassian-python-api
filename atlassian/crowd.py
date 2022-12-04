@@ -11,7 +11,15 @@ class Crowd(AtlassianRestAPI):
     Important to note that you will have to use an application credentials,
     not user credentials, in order to access Crowd APIs"""
 
-    def __init__(self, url, username, password, timeout=60, api_root="rest", api_version="latest"):
+    def __init__(
+        self,
+        url,
+        username,
+        password,
+        timeout=60,
+        api_root="rest",
+        api_version="latest",
+    ):
         super(Crowd, self).__init__(url, username, password, timeout, api_root, api_version)
 
     def _crowd_api_url(self, api, resource):
@@ -44,7 +52,11 @@ class Crowd(AtlassianRestAPI):
 
         params = {"username": username}
 
-        return self.put(self._crowd_api_url("usermanagement", "user"), params=params, data=user_object)
+        return self.put(
+            self._crowd_api_url("usermanagement", "user"),
+            params=params,
+            data=user_object,
+        )
 
     def user(self, username):
         params = {"username": username}
@@ -57,7 +69,16 @@ class Crowd(AtlassianRestAPI):
 
         return self._user_change_status(username, True)
 
-    def user_create(self, username, active, first_name, last_name, display_name, email, password):
+    def user_create(
+        self,
+        username,
+        active,
+        first_name,
+        last_name,
+        display_name,
+        email,
+        password,
+    ):
         """
         Create new user method
         :param  active: bool:
@@ -113,7 +134,11 @@ class Crowd(AtlassianRestAPI):
 
         params = {"username": username}
 
-        return self.post(self._crowd_api_url("usermanagement", "user/group/direct"), params=params, json=data)
+        return self.post(
+            self._crowd_api_url("usermanagement", "user/group/direct"),
+            params=params,
+            json=data,
+        )
 
     def group_nested_members(self, group):
         params = {"groupname": group}
@@ -199,4 +224,3 @@ class Crowd(AtlassianRestAPI):
         url = "/plugins/1.0/{plugin_key}/license".format(plugin_key=plugin_key)
         data = {"rawLicense": raw_license}
         return self.put(url, data=data, headers=app_headers)
-
