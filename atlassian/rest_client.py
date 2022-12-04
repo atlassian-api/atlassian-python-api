@@ -3,6 +3,7 @@ import logging
 from json import dumps
 
 import requests
+
 try:
     from oauthlib.oauth1 import SIGNATURE_RSA_SHA512 as SIGNATURE_RSA
 except ImportError:
@@ -17,7 +18,10 @@ log = get_default_logger(__name__)
 
 
 class AtlassianRestAPI(object):
-    default_headers = {"Content-Type": "application/json", "Accept": "application/json"}
+    default_headers = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    }
     experimental_headers = {
         "Content-Type": "application/json",
         "Accept": "application/json",
@@ -225,7 +229,12 @@ class AtlassianRestAPI(object):
         if files is None:
             data = None if not data else dumps(data)
             json_dump = None if not json else dumps(json)
-        self.log_curl_debug(method=method, url=url, headers=headers, data=data if data else json_dump)
+        self.log_curl_debug(
+            method=method,
+            url=url,
+            headers=headers,
+            data=data if data else json_dump,
+        )
         headers = headers or self.default_headers
         response = self._session.request(
             method=method,

@@ -81,8 +81,16 @@ class Repositories(BitbucketServerBase):
 class Repository(BitbucketServerBase):
     def __init__(self, data, *args, **kwargs):
         super(Repository, self).__init__(None, *args, data=data, **kwargs)
-        self.__groups = Groups(self._sub_url("permissions/groups"), "REPO", **self._new_session_args)
-        self.__users = Users(self._sub_url("permissions/users"), "REPO", **self._new_session_args)
+        self.__groups = Groups(
+            self._sub_url("permissions/groups"),
+            "REPO",
+            **self._new_session_args,
+        )
+        self.__users = Users(
+            self._sub_url("permissions/users"),
+            "REPO",
+            **self._new_session_args,
+        )
 
     def __get_object(self, data):
         return Repository(data, **self._new_session_args)
@@ -276,7 +284,16 @@ class Repository(BitbucketServerBase):
         """
         return self.__users
 
-    def download_archive(self, dest_fd, at=None, filename=None, format=None, path=None, prefix=None, chunk_size=128):
+    def download_archive(
+        self,
+        dest_fd,
+        at=None,
+        filename=None,
+        format=None,
+        path=None,
+        prefix=None,
+        chunk_size=128,
+    ):
         """
         Downloads a repository archive.
         Note that the data is written to the specified file-like object,
