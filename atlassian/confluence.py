@@ -106,11 +106,12 @@ class Confluence(AtlassianRestAPI):
 
         return
 
-    def page_exists(self, space, title):
+    def page_exists(self, space, title, type=None):
         """
         Check if title exists as page.
         :param space: Space key
         :param title: Title of the page
+        :param type: type of the page, 'page' or 'blogpost'. Defaults to 'page'
         :return:
         """
         url = "rest/api/content"
@@ -119,6 +120,8 @@ class Confluence(AtlassianRestAPI):
             params["spaceKey"] = str(space)
         if title is not None:
             params["title"] = str(title)
+        if type is not None:
+            params["type"] = str(type)
 
         try:
             response = self.get(url, params=params)
