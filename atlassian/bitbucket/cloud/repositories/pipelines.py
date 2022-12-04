@@ -11,7 +11,11 @@ class Pipelines(BitbucketCloudBase):
         super(Pipelines, self).__init__(url, *args, **kwargs)
 
     def __get_object(self, data):
-        return Pipeline(self.url_joiner(self.url, data["uuid"]), data, **self._new_session_args)
+        return Pipeline(
+            self.url_joiner(self.url, data["uuid"]),
+            data,
+            **self._new_session_args,
+        )
 
     def trigger(self, branch="master", commit=None, pattern=None, variables=None):
         """
@@ -103,7 +107,11 @@ class Pipeline(BitbucketCloudBase):
         super(Pipeline, self).__init__(url, *args, data=data, expected_type="pipeline", **kwargs)
 
     def __get_object(self, data):
-        return Step("{}/steps/{}".format(self.url, data["uuid"]), data, **self._new_session_args)
+        return Step(
+            "{}/steps/{}".format(self.url, data["uuid"]),
+            data,
+            **self._new_session_args,
+        )
 
     @property
     def uuid(self):
@@ -136,7 +144,9 @@ class Pipeline(BitbucketCloudBase):
         target = self.get_data("target")
         if target["type"] == "pipeline_pullrequest_target":
             return PullRequest(
-                target["pullrequest"]["links"]["self"]["href"], target["pullrequest"], **self._new_session_args
+                target["pullrequest"]["links"]["self"]["href"],
+                target["pullrequest"],
+                **self._new_session_args,
             )
         else:
             return None
@@ -258,4 +268,7 @@ class Step(BitbucketCloudBase):
 
         if start is None:
             return response.content
-        return response.headers["Content-Range"].split("/")[1], response.content
+        return (
+            response.headers["Content-Range"].split("/")[1],
+            response.content,
+        )

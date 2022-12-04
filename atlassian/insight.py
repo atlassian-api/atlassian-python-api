@@ -84,7 +84,10 @@ class Insight(AtlassianRestAPI):
         """
         if self.cloud:
             raise NotImplementedError
-        url = self.url_joiner(self.api_root, "attachments/object/{objectId}".format(objectId=object_id))
+        url = self.url_joiner(
+            self.api_root,
+            "attachments/object/{objectId}".format(objectId=object_id),
+        )
         return self.get(url)
 
     def upload_attachment_to_object(self, object_id, filename):
@@ -200,7 +203,10 @@ class Insight(AtlassianRestAPI):
         :param import_id:
         :return:
         """
-        url = self.url_joiner(self.api_root, "import/start/{import_id}".format(import_id=import_id))
+        url = self.url_joiner(
+            self.api_root,
+            "import/start/{import_id}".format(import_id=import_id),
+        )
         return self.post(url)
 
     # Index
@@ -284,7 +290,14 @@ class Insight(AtlassianRestAPI):
         url = self.url_joiner(self.api_root, "object/{id}".format(id=object_id))
         return self.get(url)
 
-    def update_object(self, object_id, object_type_id, attributes, has_avatar=False, avatar_uuid=""):
+    def update_object(
+        self,
+        object_id,
+        object_type_id,
+        attributes,
+        has_avatar=False,
+        avatar_uuid="",
+    ):
         """
         Update an existing object in Insight
 
@@ -429,7 +442,10 @@ class Insight(AtlassianRestAPI):
         :param object_id:
         :return:
         """
-        url = self.url_joiner(self.api_root, "objectconnectedtickets/{id}/tickets".format(id=object_id))
+        url = self.url_joiner(
+            self.api_root,
+            "objectconnectedtickets/{id}/tickets".format(id=object_id),
+        )
         return self.get(url)
 
     # Object schema
