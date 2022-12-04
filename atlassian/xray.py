@@ -26,7 +26,6 @@ class Xray(AtlassianRestAPI):
             api_version = self.api_version
         return "/".join(s.strip("/") for s in [api_root, api_version, "api", resource] if s is not None)
 
-
     # Tests API
     def get_tests(self, test_keys):
         """
