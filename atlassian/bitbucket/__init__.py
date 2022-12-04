@@ -2649,7 +2649,7 @@ class Bitbucket(BitbucketBase):
         """
         url = self._url_file(project_key, repository_slug, filename)
         data = {"content": content, "message": message, "branch": branch}
-        return self.put(url, files=data)
+        return self.put(url, files=data, headers={"Accept": "application/json"})
 
     def update_file(
         self,
@@ -2679,7 +2679,7 @@ class Bitbucket(BitbucketBase):
             "branch": branch,
             "sourceCommitId": source_commit_id,
         }
-        return self.put(url, files=data)
+        return self.put(url, files=data, headers={"Accept": "application/json"})
 
     def search_code(self, team, search_query, page=1, limit=10):
         """

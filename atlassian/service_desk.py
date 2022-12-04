@@ -524,11 +524,7 @@ class ServiceDesk(AtlassianRestAPI):
 
         with open(filename, "rb") as file:
             result = (
-                self.post(
-                    path=url,
-                    headers=experimental_headers,
-                    files={"file": file},
-                )
+                self.post(path=url, headers=experimental_headers, files={"file": file})
                 .json()
                 .get("temporaryAttachments")
             )
