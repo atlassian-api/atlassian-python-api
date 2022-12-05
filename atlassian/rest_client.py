@@ -5,7 +5,7 @@ from json import dumps
 import requests
 
 try:
-    from oauthlib.oauth1 import SIGNATURE_RSA_SHA512 as SIGNATURE_RSA
+    from oauthlib.oauth1.rfc5849 import SIGNATURE_RSA_SHA512 as SIGNATURE_RSA
 except ImportError:
     from oauthlib.oauth1 import SIGNATURE_RSA
 from requests import HTTPError
