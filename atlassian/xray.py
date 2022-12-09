@@ -53,17 +53,31 @@ class Xray(AtlassianRestAPI):
         url = self.resource_url("test/{0}/testruns".format(test_key))
         return self.get(url)
 
-    def get_test_runs(self, testExecKey=None, testKey=None, testPlanKey=None, includeTestFields=None, savedFilterId=None, limit=None, page=None):
+    def get_test_runs_in_context(self, testExecKey=None, testKey=None, 
+        testPlanKey=None, includeTestFields=None, savedFilterId=None, 
+        limit=None, page=None):
         """
-        Retrieve test runs of a test.
-        :param testExecKey: Test Execution key (eg. 'TEST-001').
-        :param testKey: Test Execution key (eg. 'TEST-001').
-        :param testPlanKey: Test Execution key (eg. 'TEST-001').
-        :param includeTestFields: Test Execution key (eg. 'TEST-001').
-        :param savedFilterId: Test Execution key (eg. 'TEST-001').
-        :param limit: Test Execution key (eg. 'TEST-001').
-        :param page: Test Execution key (eg. 'TEST-001').
-        :return: Returns all the Test Runs from a given context Test Execution | Test Plan | Saved Filter of Test Executions
+        Retrieves all the Test Runs from a given context. 
+        With this endpoint you can obtain all the Test Runs (paginated)
+        in one of the following contexts:
+        * In a Test Execution issue (use testKey to limit to single test)
+        * In a Test Plan issue
+        * In a JQL filter that returns several Test Execution issue
+        In case the Test Run has iterations, steps will not appear.
+        However, if the Test has parameters but executed one time, 
+        it will show the steps and the parameters info
+        :param testExecKey: The Test Execution issue key
+        :param testKey: The Test issue key 
+        (may only be used when using the "testExecKey" param)
+        :param testPlanKey: The Test Plan issue key
+        :param includeTestFields: List of custom fields of the Test issue 
+        to be return in the responde 
+        (several custom fields can be requested by separating them with ',')
+        :param savedFilterId: The Jira JQL filter ID or 
+        name containing Test Executions issues
+        :param limit: The number of maximum Test Runs to be returned
+        :param page: The number of the results page
+        :return: Returns the exported test runs.
         """
         if self.api_version == "1.0":
             raise Exception("Not supported in API version 1.0 ")
