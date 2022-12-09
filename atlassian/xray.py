@@ -53,6 +53,37 @@ class Xray(AtlassianRestAPI):
         url = self.resource_url("test/{0}/testruns".format(test_key))
         return self.get(url)
 
+    def get_test_runs(self, testExecKey=None, testKey=None, testPlanKey=None, includeTestFields=None, savedFilterId=None, limit=None, page=None):
+        """
+        Retrieve test runs of a test.
+        :param testExecKey: Test Execution key (eg. 'TEST-001').
+        :param testKey: Test Execution key (eg. 'TEST-001').
+        :param testPlanKey: Test Execution key (eg. 'TEST-001').
+        :param includeTestFields: Test Execution key (eg. 'TEST-001').
+        :param savedFilterId: Test Execution key (eg. 'TEST-001').
+        :param limit: Test Execution key (eg. 'TEST-001').
+        :param page: Test Execution key (eg. 'TEST-001').
+        :return: Returns all the Test Runs from a given context Test Execution | Test Plan | Saved Filter of Test Executions
+        """
+        if self.api_version == "1.0":
+            raise Exception("Not supported in API version 1.0 ")
+        params={}
+        if testExecKey:
+            params["testExecKey"] = testExecKey
+        if testKey:
+            params["testKey"] = testKey
+        if testPlanKey:
+            params["testPlanKey"] = testPlanKey
+        if includeTestFields:
+            params["includeTestFields"] = includeTestFields
+        if savedFilterId:
+            params["savedFilterId"] = savedFilterId
+        if limit:
+            params["limit"] = limit
+        if page:
+            params["page"] = page
+        return self.get(self.url, params=params)
+
     def get_test_runs_with_environment(self, test_key, test_environments):
         # TODO
         """
