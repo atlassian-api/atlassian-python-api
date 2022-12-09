@@ -82,7 +82,8 @@ class Xray(AtlassianRestAPI):
             params["limit"] = limit
         if page:
             params["page"] = page
-        return self.get(self.url, params=params)
+        url = self.resource_url("testruns")
+        return self.get(url, params=params)
 
     def get_test_runs_with_environment(self, test_key, test_environments):
         # TODO
