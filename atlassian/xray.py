@@ -53,45 +53,45 @@ class Xray(AtlassianRestAPI):
         url = self.resource_url("test/{0}/testruns".format(test_key))
         return self.get(url)
 
-    def get_test_runs_in_context(self, testExecKey=None, testKey=None, 
-        testPlanKey=None, includeTestFields=None, savedFilterId=None, 
+    def get_test_runs_in_context(self, test_exec_key=None, test_key=None,
+        test_plan_key=None, include_test_fields=None, saved_filter_id=None,
         limit=None, page=None):
         """
-        Retrieves all the Test Runs from a given context. 
+        Retrieves all the Test Runs from a given context.
         With this endpoint you can obtain all the Test Runs (paginated)
         in one of the following contexts:
         * In a Test Execution issue (use testKey to limit to single test)
         * In a Test Plan issue
         * In a JQL filter that returns several Test Execution issue
         In case the Test Run has iterations, steps will not appear.
-        However, if the Test has parameters but executed one time, 
+        However, if the Test has parameters but executed one time,
         it will show the steps and the parameters info
         :param testExecKey: The Test Execution issue key
-        :param testKey: The Test issue key 
+        :param testKey: The Test issue key
         (may only be used when using the "testExecKey" param)
         :param testPlanKey: The Test Plan issue key
-        :param includeTestFields: List of custom fields of the Test issue 
-        to be return in the responde 
+        :param includeTestFields: List of custom fields of the Test issue
+        to be return in the responde
         (several custom fields can be requested by separating them with ',')
-        :param savedFilterId: The Jira JQL filter ID or 
+        :param savedFilterId: The Jira JQL filter ID or
         name containing Test Executions issues
         :param limit: The number of maximum Test Runs to be returned
         :param page: The number of the results page
         :return: Returns the exported test runs.
         """
         if self.api_version == "1.0":
-            raise Exception("Not supported in API version 1.0 ")
+            raise Exception("Not supported in API version 1.0")
         params={}
-        if testExecKey:
-            params["testExecKey"] = testExecKey
-        if testKey:
-            params["testKey"] = testKey
-        if testPlanKey:
-            params["testPlanKey"] = testPlanKey
-        if includeTestFields:
-            params["includeTestFields"] = includeTestFields
-        if savedFilterId:
-            params["savedFilterId"] = savedFilterId
+        if test_exec_key:
+            params["testExecKey"] = test_exec_key
+        if test_key:
+            params["testKey"] = test_key
+        if test_plan_key:
+            params["testPlanKey"] = test_plan_key
+        if include_test_fields:
+            params["includeTestFields"] = include_test_fields
+        if saved_filter_id:
+            params["savedFilterId"] = saved_filter_id
         if limit:
             params["limit"] = limit
         if page:
