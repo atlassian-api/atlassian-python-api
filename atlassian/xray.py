@@ -53,6 +53,58 @@ class Xray(AtlassianRestAPI):
         url = self.resource_url("test/{0}/testruns".format(test_key))
         return self.get(url)
 
+    def get_test_runs_in_context(self,
+                                 test_exec_key=None,
+                                 test_key=None,
+                                 test_plan_key=None,
+                                 include_test_fields=None,
+                                 saved_filter_id=None,
+                                 limit=None,
+                                 page=None
+                                 ):
+        """
+        Retrieves all the Test Runs from a given context.
+        With this endpoint you can obtain all the Test Runs (paginated)
+        in one of the following contexts:
+        * In a Test Execution issue (use testKey to limit to single test)
+        * In a Test Plan issue
+        * In a JQL filter that returns several Test Execution issue
+        In case the Test Run has iterations, steps will not appear.
+        However, if the Test has parameters but executed one time,
+        it will show the steps and the parameters info
+        :param test_exec_key: The Test Execution issue key
+        :param test_key: The Test issue key
+        (may only be used when using the "test_exec_key" param)
+        :param test_plan_key: The Test Plan issue key
+        :param include_test_fields: List of custom fields of the Test issue
+        to be return in the responde
+        (several custom fields can be requested by separating them with ',')
+        :param saved_filter_id: The Jira JQL filter ID or
+        name containing Test Executions issues
+        :param limit: The number of maximum Test Runs to be returned
+        :param page: The number of the results page
+        :return: Returns the exported test runs.
+        """
+        if self.api_version == "1.0":
+            raise Exception("Not supported in API version 1.0")
+        params = {}
+        if test_exec_key:
+            params["testExecKey"] = test_exec_key
+        if test_key:
+            params["testKey"] = test_key
+        if test_plan_key:
+            params["testPlanKey"] = test_plan_key
+        if include_test_fields:
+            params["includeTestFields"] = include_test_fields
+        if saved_filter_id:
+            params["savedFilterId"] = saved_filter_id
+        if limit:
+            params["limit"] = limit
+        if page:
+            params["page"] = page
+        url = self.resource_url("testruns")
+        return self.get(url, params=params)
+
     def get_test_runs_with_environment(self, test_key, test_environments):
         # TODO
         """
