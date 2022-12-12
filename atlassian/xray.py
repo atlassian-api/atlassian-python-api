@@ -53,15 +53,16 @@ class Xray(AtlassianRestAPI):
         url = self.resource_url("test/{0}/testruns".format(test_key))
         return self.get(url)
 
-    def get_test_runs_in_context(self,
-                                 test_exec_key=None,
-                                 test_key=None,
-                                 test_plan_key=None,
-                                 include_test_fields=None,
-                                 saved_filter_id=None,
-                                 limit=None,
-                                 page=None
-                                 ):
+    def get_test_runs_in_context(
+        self,
+        test_exec_key=None,
+        test_key=None,
+        test_plan_key=None,
+        include_test_fields=None,
+        saved_filter_id=None,
+        limit=None,
+        page=None,
+    ):
         """
         Retrieves all the Test Runs from a given context.
         With this endpoint you can obtain all the Test Runs (paginated)
