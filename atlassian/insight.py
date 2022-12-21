@@ -567,6 +567,28 @@ class Insight(AtlassianRestAPI):
     # Insight Progress API
     # TODO: Get progress category imports {id}:
     #       https://developer.atlassian.com/cloud/insight/rest/api-group-progress/#api-progress-category-imports-id-get
+    def get_progress_of_reindex(self):
+        """
+        Show ongoing insight processes
+        :return:
+        """
+        if self.cloud:
+            raise NotImplementedError
+        url = self.url_joiner(self.api_root, "progress/category/insight-reindex/reindex")
+        return self.get(url)
+
+    def get_progress_of_import(self, import_id):
+        """
+        Show ongoing insight processes
+        :type import_id: int: The id of the import source configuration
+                              that the progress should be fetched for
+        :return:
+        """
+        if self.cloud:
+            raise NotImplementedError
+        url = self.url_joiner(self.api_root, "progress/category/imports/{id}".format(id=import_id))
+        return self.get(url)
+
 
     # Insight Config API
     # TODO: Get config statustype:
