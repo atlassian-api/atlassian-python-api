@@ -4221,7 +4221,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         """
         :param board_id: int, str
         """
-        url = "rest/agile/1.0/{board_id}/backlog".format(board_id=board_id)
+        url = "rest/agile/1.0/board/{board_id}/backlog".format(board_id=board_id)
         return self.get(url)
 
     def get_issues_for_board(self, board_id, jql, fields="*all", start=0, limit=None, expand=None):
