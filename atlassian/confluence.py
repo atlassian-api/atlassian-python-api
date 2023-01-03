@@ -1625,6 +1625,7 @@ class Confluence(AtlassianRestAPI):
             "type": type,
             "title": title,
             "version": {"number": version, "minorEdit": minor_edit},
+            "metadata": {"properties": {}},
         }
         if body is not None:
             data["body"] = self._create_body(body, representation)
