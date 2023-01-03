@@ -51,6 +51,24 @@ class Insight(AtlassianRestAPI):
             0
         ]["workspaceId"]
 
+    def _get_insight_workspace_ids(self):
+        """
+        Returns all Insight workspace Ids.
+        :return: List
+        """
+        result = self.get(
+            "rest/servicedeskapi/insight/workspace",
+            headers=self.experimental_headers,
+        )
+        return [i["workspaceId"] for i in result["values"]]
+
+    def _get_insight_workspace_id(self):
+        """
+        Returns the first Insight workspace ID.
+        :return: str
+        """
+        return next(iter(self._get_insight_workspace_ids()))
+
     # Attachments
     def get_attachments_of_objects(self, object_id):
         """
@@ -600,3 +618,27 @@ class Insight(AtlassianRestAPI):
     #       https://developer.atlassian.com/cloud/insight/rest/api-group-config/#api-config-statustype-id-put
     # TODO: Delete config statustype {id}:
     #       https://developer.atlassian.com/cloud/insight/rest/api-group-config/#api-config-statustype-id-delete
+
+    # Update Issue with Insight Field
+    def update_issue_insight_field(self, key, field_id, insight_keys, add=False):
+        """
+        Set the value of an Insight field.
+        Args:
+            key (str): Jira issue key, eg. SFT-446
+            field_id (str): The internal Jira name of the Insight field, eg. customfield_10200
+            insight_keys (list): List of Insight objects to associate with the field. Limited
+                to 20 objects. If the field only takes a single object pass a single value list.
+            add (bool, optional): Add to the existing field rather than setting the field value.
+                Defaults to False.
+        Returns:
+            [type]: The insight object updated.
+        """
+        base_url = self.resource_url("issue")
+        action = "add" if add else "set"
+        data = {
+            "update": {
+                field_id: [{action: [{"key": i} for i in insight_keys]}],
+            }
+        }
+        data = {"fields": {field_id: [{"key": i} for i in insight_keys]}}
+        return self.put("{base_url}/{key}".format(base_url=base_url, key=key), data=data)

@@ -1872,9 +1872,26 @@ class Jira(AtlassianRestAPI):
 
     def invalidate_websudo(self):
         """
-        This method invalidates the any current WebSudo session.
+        This method invalidates any current WebSudo session.
         """
         return self.delete("rest/auth/1/websudo")
+
+    def users_get_all(
+        self,
+        start=0,
+        limit=50,
+    ):
+        """
+        :param start:
+        :param limit:
+        :return:
+        """
+        url = self.resource_url("users/search")
+        params = {
+            "startAt": start,
+            "maxResults": limit,
+        }
+        return self.get(url, params=params)
 
     def user_find_by_user_string(
         self,
@@ -1909,8 +1926,8 @@ class Jira(AtlassianRestAPI):
         """
         url = self.resource_url("user/search")
         params = {
-            "includeActive": include_active_users,
-            "includeInactive": include_inactive_users,
+            "includeActive": str(include_active_users).lower(),
+            "includeInactive": str(include_inactive_users).lower(),
             "startAt": start,
             "maxResults": limit,
         }
