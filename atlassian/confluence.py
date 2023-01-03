@@ -1450,7 +1450,12 @@ class Confluence(AtlassianRestAPI):
         :param version_number:
         :return:
         """
-        url = "rest/api/content/{id}/version/{versionNumber}".format(id=content_id, versionNumber=version_number)
+        if self.cloud:
+            url = "rest/api/content/{id}/version/{versionNumber}".format(id=content_id, versionNumber=version_number)
+        else:
+            url = "rest/experimental/content/{id}/version/{versionNumber}".format(
+                id=content_id, versionNumber=version_number
+            )
         return self.get(url)
 
     def remove_content_history(self, page_id, version_number):
@@ -1460,7 +1465,12 @@ class Confluence(AtlassianRestAPI):
         :param version_number: version number
         :return:
         """
-        url = "rest/api/content/{id}/version/{versionNumber}".format(id=page_id, versionNumber=version_number)
+        if self.cloud:
+            url = "rest/api/content/{id}/version/{versionNumber}".format(id=page_id, versionNumber=version_number)
+        else:
+            url = "rest/experimental/content/{id}/version/{versionNumber}".format(
+                id=page_id, versionNumber=version_number
+            )
         self.delete(url)
 
     def remove_page_history(self, page_id, version_number):
