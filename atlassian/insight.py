@@ -589,7 +589,6 @@ class Insight(AtlassianRestAPI):
         url = self.url_joiner(self.api_root, "progress/category/imports/{id}".format(id=import_id))
         return self.get(url)
 
-
     # Insight Config API
     # TODO: Get config statustype:
     #       https://developer.atlassian.com/cloud/insight/rest/api-group-config/#api-config-statustype-get
