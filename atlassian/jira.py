@@ -517,8 +517,10 @@ class Jira(AtlassianRestAPI):
 
         Reference: https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-issue-custom-field-options/#api-rest-api-2-field-fieldid-context-contextid-option-get
         """
-        url = self.resource_url("field/{field_id}/context/{context_id}/option"
-                                .format(field_id=field_id, context_id=context_id), api_version=2)
+        url = self.resource_url(
+            "field/{field_id}/context/{context_id}/option".format(field_id=field_id, context_id=context_id),
+            api_version=2,
+        )
         return self.get(url)
 
     def add_custom_field_option(self, field_id, context_id, options):
@@ -536,8 +538,10 @@ class Jira(AtlassianRestAPI):
         for i in options:
             data["options"].append({"disabled": "false", "value": i})
 
-        url = self.resource_url("field/{field_id}/context/{context_id}/option"
-                                .format(field_id=field_id, context_id=context_id), api_version=2)
+        url = self.resource_url(
+            "field/{field_id}/context/{context_id}/option".format(field_id=field_id, context_id=context_id),
+            api_version=2,
+        )
         return self.post(url, data=data)
 
     """
