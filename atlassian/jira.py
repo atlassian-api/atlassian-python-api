@@ -508,6 +508,39 @@ class Jira(AtlassianRestAPI):
             data["description"] = description
         return self.post(url, data=data)
 
+    def get_custom_field_option_context(self, field_id, context_id):
+        """
+        Gets the current values of a custom field
+        :param field_id:
+        :param context_id:
+        :return:
+
+        Reference: https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-issue-custom-field-options/#api-rest-api-2-field-fieldid-context-contextid-option-get
+        """
+        url = self.resource_url(f"field/{field_id}/context/{context_id}/option", api_version=2)
+        return self.get(url)
+
+    def add_custom_field_option(self, field_id, context_id, options):
+        """
+        Adds the values given to the custom field
+        Administrator permission required
+        :param field_id:
+        :param context_id:
+        :param options: List of values to be added
+        :return:
+
+       Reference: https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-issue-custom-field-options/#api-rest-api-2-field-fieldid-context-contextid-option-post
+       """
+        data = {"options": []}
+        for i in options:
+            data["options"].append({
+                "disabled": "false",
+                "value": i
+            })
+
+        url = self.resource_url(f"field/{field_id}/context/{context_id}/option", api_version=2)
+        return self.post(url, data=data)
+
     """
     Dashboards
     Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/dashboard
