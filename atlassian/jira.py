@@ -656,7 +656,7 @@ class Jira(AtlassianRestAPI):
         :param dashboard_id: Dashboard ID Int
         :return:
         """
-        url = self.resource_url(f'dashboard/{dashboard_id}')
+        url = self.resource_url("dashboard/{dashboard_id}".format(dashboard_id=dashboard_id))
         return self.get(url)
 
     """
