@@ -649,6 +649,16 @@ class Jira(AtlassianRestAPI):
         url = self.resource_url("dashboard")
         return self.get(url, params=params)
 
+    def get_dashboard(self, dashboard_id):
+        """
+        Returns a single dashboard
+
+        :param dashboard_id: Dashboard ID Int
+        :return:
+        """
+        url = self.resource_url("dashboard/{dashboard_id}".format(dashboard_id=dashboard_id))
+        return self.get(url)
+
     """
     Filters. Resource for searches
     Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/filter
