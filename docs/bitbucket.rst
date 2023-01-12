@@ -117,7 +117,7 @@ Manage repositories
     fork_repository(project_key, repository_slug, new_repository_slug)
 
     # Fork repo to new project
-    fork_repository(project_key, repository_slug, new_repository_slug, new_project_key)
+    fork_repository_new_project(project_key, repository_slug, new_project_key, new_repository_slug)
 
 Manage Code Insights
 --------------------
@@ -207,6 +207,9 @@ Manage code
 
     # Add comment into pull request
     bitbucket.add_pull_request_comment(project, repository, pull_request_id, text)
+
+    # Reply to a comment of a pull request
+    bitbucket.add_pull_request_comment(project, repository, pull_request_id, text, parent_id=None)
 
     # Create a new pull request between two branches.
     bitbucket.open_pull_request(source_project, source_repo, dest_project, dest_repo, source_branch, destination_branch, title, description)
