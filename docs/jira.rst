@@ -293,6 +293,15 @@ Manage Boards
     # Add/Move Issues to sprint
     jira.add_issues_to_sprint(sprint_id, issues_list)
 
+
+Manage dashboards
+-----------------
+
+.. code-block:: python
+
+    # Get dashboard by ID
+    jira.get_dashboard(dashboard_id)
+
 Attachments actions
 -------------------
 
