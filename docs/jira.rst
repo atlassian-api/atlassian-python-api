@@ -293,6 +293,15 @@ Manage Boards
     # Add/Move Issues to sprint
     jira.add_issues_to_sprint(sprint_id, issues_list)
 
+
+Manage dashboards
+-----------------
+
+.. code-block:: python
+
+    # Get dashboard by ID
+    jira.get_dashboard(dashboard_id)
+
 Attachments actions
 -------------------
 
@@ -363,6 +372,16 @@ Issue security schemes
     # user has the administrative permission.
     # Use only_levels=True for get the only levels entries
     jira.get_issue_security_scheme(scheme_id, only_levels=False)
+
+Cluster methods (only for DC edition)
+-------------------------------------
+.. code-block:: python
+
+    # Get all cluster nodes.
+    jira.get_cluster_all_nodes()
+
+    # Request current index from node (the request is processed asynchronously).
+    jira.request_current_index_from_node(node_id)
 
 TEMPO
 ----------------------

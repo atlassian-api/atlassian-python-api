@@ -7,7 +7,8 @@ Get page info
 .. code-block:: python
 
     # Check page exists
-    confluence.page_exists(space, title)
+    # type of the page, 'page' or 'blogpost'. Defaults to 'page'
+    confluence.page_exists(space, title, type=None)
 
     # Provide content by type (page, blog, comment)
     confluence.get_page_child_by_type(page_id, type='page', start=None, limit=None, expand=None)

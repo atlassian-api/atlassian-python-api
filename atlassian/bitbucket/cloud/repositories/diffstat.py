@@ -69,7 +69,12 @@ class CommitFile(BitbucketCloudBase):
     def __init__(self, data, *args, **kwargs):
         """See BitbucketCloudBase."""
         if data is None:  # handles add/remove
-            data = {"path": None, "escaped_path": None, "links": {}, "type": "commit_file"}
+            data = {
+                "path": None,
+                "escaped_path": None,
+                "links": {},
+                "type": "commit_file",
+            }
         super(CommitFile, self).__init__(None, None, *args, data=data, expected_type="commit_file", **kwargs)
 
     @property

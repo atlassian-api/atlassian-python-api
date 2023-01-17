@@ -5,9 +5,19 @@ Atlassian Python API wrapper
 
 What is it?
 ___________
-This package is used to provide a **simple** python interface for interacting with Atlassian products
-(Server, Data Center and Cloud) and apps from ecosystem (Portfolio, XRay).
-It is based on the official public Rest API documentation and private methods (+ xml+rpc, raw http request).
+The **atlassian-python-api** library provides a **simple** and convenient way to interact with Atlassian products
+(such as Jira Service management, Jira Software, Confluence, Bitbucket and apps Insight, X-Ray) using Python.
+It is based on the official REST APIs of these products, as well as additional private methods and protocols
+(such as xml+rpc and raw HTTP requests).
+This library can be used to automate tasks, integrate with other tools and systems,
+and build custom applications that interact with Atlassian products.
+It supports a wide range of Atlassian products, including Jira, Confluence, Bitbucket, and others,
+and is compatible with both Atlassian Server and Cloud instances.
+
+Overall, the **atlassian-python-api** is a useful tool for Python developers who want to work with Atlassian products.
+It is well-documented and actively maintained, and provides a convenient way to access the full range of
+functionality offered by the Atlassian REST APIs.
+
 
 Documentation
 _____________
