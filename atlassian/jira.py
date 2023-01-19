@@ -1693,6 +1693,10 @@ class Jira(AtlassianRestAPI):
         url = self.resource_url("user")
         return self.get(url, params=params)
 
+    def myself(self):
+        url = self.resource_url("myself")
+        return self.get(url)
+
     def is_active_user(self, username):
         """
         Check status of user
