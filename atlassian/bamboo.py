@@ -1200,6 +1200,22 @@ class Bamboo(AtlassianRestAPI):
         resource = "elasticConfiguration/{configuration_id}".format(configuration_id=configuration_id)
         return self.delete(self.resource_url(resource))
 
+    def get_elastic_bamboo(self):
+        """
+        Get elastic bamboo configuration
+        :return:
+        """
+        response = self.get("rest/admin/latest/elastic/config")
+        return response
+
+    def set_elastic_bamboo(self, data):
+        """
+        Set elastic bamboo configuration
+        :return:
+        """
+        response = self.put("rest/admin/latest/elastic/config", data=data)
+        return response
+
     def get_plugins_info(self):
         """
         Provide plugins info
