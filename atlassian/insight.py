@@ -47,11 +47,11 @@ class Insight(AtlassianRestAPI):
         return args, kwargs
 
     def __get_workspace_id(self):
-        return self.get(
+        result = self.get(
             "rest/servicedeskapi/insight/workspace",
-            headers=self.default_headers,)["values"][
-            0
-        ]["workspaceId"]
+            headers=self.default_headers,
+        )
+        return result["values"][0]["workspaceId"]
 
     def _get_insight_workspace_ids(self):
         """
