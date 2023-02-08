@@ -8,12 +8,9 @@ log = logging.getLogger(__name__)
 
 class Xray(AtlassianRestAPI):
     def __init__(self, *args, **kwargs):
-
         if "api_version" not in kwargs:
             kwargs["api_version"] = "1.0"
-
         kwargs["api_root"] = "rest/raven"
-
         super(Xray, self).__init__(*args, **kwargs)
 
     def resource_url(self, resource, api_root=None, api_version=None):

@@ -2124,6 +2124,12 @@ class Jira(AtlassianRestAPI):
         return self.put(url)
 
     def project(self, key, expand=None):
+        """
+        Get project with details
+        :param key:
+        :param expand:
+        :return:
+        """
         params = {}
         if expand:
             params["expand"] = expand
