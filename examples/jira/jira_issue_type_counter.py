@@ -7,7 +7,6 @@ print("Enter projects category:")
 category = input()
 
 for i in issue_types:
-
     issue_type = i["name"]
     jql_all = 'issuetype = "{0}"'.format(issue_type)
     number = jira.jql(jql_all)["total"]
