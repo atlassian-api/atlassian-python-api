@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG PYTHON_VERSION
@@ -29,13 +29,6 @@ RUN if [ $PYTHON_VERSION = '3.7' ] ; then \
   else \
   apt-get install -y python$PYTHON_VERSION-distutils python3-distutils-extra python3-apt --reinstall ; \
   curl -sS https://bootstrap.pypa.io/get-pip.py | python3.10 ; \
-  fi
-
-# install setuptools
-RUN if [ $PYTHON_VERSION = '2.7' ] ; then \
-  apt-get install python-setuptools -reinstall ;\
-  else \
-  apt-get install python3-setuptools ;\
   fi
 
 # Register the version in alternatives
