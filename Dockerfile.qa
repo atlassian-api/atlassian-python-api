@@ -33,9 +33,9 @@ RUN if [ $PYTHON_VERSION = '3.7' ] ; then \
 
 # install setuptools
 RUN if [ $PYTHON_VERSION = '2.7' ] ; then \
-  apt-get install python-setuptools
+  apt-get install python-setuptools -reinstall ;\
   else \
-  apt-get install python3-setuptools
+  apt-get install python3-setuptools ;\
   fi
 
 # Register the version in alternatives
