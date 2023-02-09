@@ -1,7 +1,6 @@
 # coding=utf-8
 import logging
 from enum import Enum
-from typing import TypedDict
 
 from .rest_client import AtlassianRestAPI
 
@@ -24,6 +23,12 @@ class StatusPage(AtlassianRestAPI):
         """
         Get a list of pages
 
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exception.response.content)` to get API error info
+
+
         Notes
         -----
         Available fields: https://developer.statuspage.io/#operation/getPages
@@ -43,6 +48,11 @@ class StatusPage(AtlassianRestAPI):
         ----------
         page_id : str
             Your page unique ID
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exception.response.content)` to get API error info
 
         Notes
         -----
@@ -68,6 +78,11 @@ class StatusPage(AtlassianRestAPI):
         page : dict[str,any]
             Your page values that you want to change
 
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exception.response.content)` to get API error info
+
         Notes
         -----
         Available fields: https://developer.statuspage.io/#operation/patchPagesPageId
@@ -78,3 +93,115 @@ class StatusPage(AtlassianRestAPI):
         """
         url = "v1/pages/{}".format(page_id)
         return self.put(url, data={'page': page})
+
+    def organization_get_users(self,
+                               organization_id: str,
+                               page_offset: int = 0,
+                               per_page: int = 100):
+        """
+        Get a list of users
+
+        Notes
+        -----
+        Available fields: https://developer.statuspage.io/#operation/getOrganizationsOrganizationIdUsers
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exception.response.content)` to get API error info
+
+        Parameters
+        ----------
+        organization_id : str
+            Unique organization ID
+        page_offset : int
+            Page offset to fetch. Beginning February 28, 2023,
+            this endpoint will return paginated data even if this query parameter is not provided.
+        per_page : int
+            Number of results to return per page. Beginning February 28, 2023,
+            a default and maximum limit of 100 will be imposed and this endpoint will return paginated data
+            even if this query parameter is not provided.
+        Returns
+        -------
+        any
+        """
+        url = "v1/organizations/{}/users".format(organization_id)
+        return self.get(url, params={"page_offset": page_offset, "per_page": per_page})
+
+    def organization_user_permissions(self,
+                                      organization_id: str,
+                                      user_id: str):
+        """
+        Get a user's permissions in organization
+
+        Parameters
+        ----------
+        organization_id : str
+            Unique organization ID
+        user_id : str
+            Unique user ID
+
+        Notes
+        -----
+        Available fields: https://developer.statuspage.io/#operation/getOrganizationsOrganizationIdPermissionsUserId
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exception.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/organizations/{}/permissions/{}".format(organization_id, user_id)
+        return self.get(url)
+
+    def organization_set_user_permissions(self,
+                                          organization_id: str,
+                                          user_id: str,
+                                          pages: dict[str, any]):
+        """
+        Update a user's role permissions. Payload should contain a mapping of pages to a set of the desired roles,
+        if the page has Role Based Access Control. Otherwise, the pages should map to an empty hash.
+        User will lose access to any pages omitted from the payload.
+
+        Parameters
+        ----------
+        organization_id : str
+            Unique organization ID
+        user_id : str
+            Unique user ID
+        pages : dict[str, any]
+            You can specify "page_configuration", "incident_manager" and "maintenance_manager" booleans here
+
+        Notes
+        -----
+        Available fields: https://developer.statuspage.io/#operation/putOrganizationsOrganizationIdPermissionsUserId
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exception.response.content)` to get API error info
+
+        Examples
+        --------
+        >>> client = StatusPage(url="https://api.statuspage.io", token="YOUR-TOKEN")
+        >>> client.organization_set_user_permissions(
+        ...    "ORGANIZATION-ID",
+        ...    "USER-ID",
+        ...     {
+        ...         "PAGE-ID": {
+        ...             "page_configuration": True,
+        ...             "incident_manager": True,
+        ...             "maintenance_manager": True
+        ...         }
+        ...     }
+        ... )
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/organizations/{}/permissions/{}".format(organization_id, user_id)
+        return self.put(url, data={"pages": pages})
