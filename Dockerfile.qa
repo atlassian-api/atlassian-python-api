@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:20.04
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG PYTHON_VERSION
@@ -24,11 +24,11 @@ RUN if [ $PYTHON_VERSION = '3.7' ] ; then \
   apt-get install -y python$PYTHON_VERSION-distutils python3-distutils-extra python3-apt --reinstall ;\
   elif [ $PYTHON_VERSION = '3.6' ] ; then \
   apt-get install -y python$PYTHON_VERSION-distutils python3-distutils-extra python3-apt --reinstall ;\
-  elif [ $PYTHON_VERSION != '3.10' ] ; then \
-  apt-get install -y python3-distutils python3-distutils-extra python3-apt --reinstall ; \
-  else \
+  elif [ $PYTHON_VERSION = '3.10' ] ; then \
   apt-get install -y python$PYTHON_VERSION-distutils python3-distutils-extra python3-apt --reinstall ; \
-  curl -sS https://bootstrap.pypa.io/get-pip.py | python3.10 ; \
+  curl -sS https://bootstrap.pypa.io/get-pip.py | python$PYTHON_VERSION ; \
+  else \
+  apt-get install -y python3-distutils python3-distutils-extra python3-apt --reinstall ; \
   fi
 
 # Register the version in alternatives
