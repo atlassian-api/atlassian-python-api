@@ -43,7 +43,7 @@ class StatusPage(AtlassianRestAPI):
         url = "v1/pages"
         return self.get(url)
 
-    def get_page(self, page_id: str):
+    def get_page(self, page_id):
         """
         Get page information
 
@@ -68,7 +68,7 @@ class StatusPage(AtlassianRestAPI):
         url = "v1/pages/{}".format(page_id)
         return self.get(url)
 
-    def update_page(self, page_id: str, page: typing.Dict[str, typing.Any]):
+    def update_page(self, page_id, page):
         """
         Update a page
 
@@ -95,7 +95,7 @@ class StatusPage(AtlassianRestAPI):
         url = "v1/pages/{}".format(page_id)
         return self.put(url, data={"page": page})
 
-    def organization_get_users(self, organization_id: str, page_offset: int = 0, per_page: int = 100):
+    def organization_get_users(self, organization_id, page_offset=0, per_page=100):
         """
         Get a list of users
 
@@ -126,7 +126,7 @@ class StatusPage(AtlassianRestAPI):
         url = "v1/organizations/{}/users".format(organization_id)
         return self.get(url, params={"page_offset": page_offset, "per_page": per_page})
 
-    def organization_user_permissions(self, organization_id: str, user_id: str):
+    def organization_user_permissions(self, organization_id, user_id):
         """
         Get a user's permissions in organization
 
@@ -153,9 +153,7 @@ class StatusPage(AtlassianRestAPI):
         url = "v1/organizations/{}/permissions/{}".format(organization_id, user_id)
         return self.get(url)
 
-    def organization_set_user_permissions(
-        self, organization_id: str, user_id: str, pages: typing.Dict[str, typing.Any]
-    ):
+    def organization_set_user_permissions(self, organization_id, user_id, pages):
         """
         Update a user's role permissions. Payload should contain a mapping of pages to a set of the desired roles,
         if the page has Role Based Access Control. Otherwise, the pages should map to an empty hash.
