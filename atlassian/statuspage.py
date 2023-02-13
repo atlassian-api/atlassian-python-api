@@ -2,8 +2,6 @@
 import logging
 from enum import Enum
 
-import typing
-
 from .rest_client import AtlassianRestAPI
 
 log = logging.getLogger(__name__)
@@ -124,7 +122,7 @@ class StatusPage(AtlassianRestAPI):
         any
         """
         url = "v1/organizations/{}/users".format(organization_id)
-        return self.get(url, params={"page_offset": page_offset, "per_page": per_page})
+        return self.get(url, params={"page": page_offset, "per_page": per_page})
 
     def organization_user_permissions(self, organization_id, user_id):
         """
@@ -263,3 +261,130 @@ class StatusPage(AtlassianRestAPI):
         """
         url = "v1/pages/{}/status_embed_config".format(page_id)
         return self.put(url, status_embed_config)
+
+    def page_access_users_list(self, page_id, email, page_offset=0, per_page=100):
+        """
+        Get a list of page access users
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        email : str
+            Email address to search for
+        page_offset : int
+            Page offset to fetch. Beginning February 28, 2023,
+            this endpoint will return paginated data even if this query parameter is not provided.
+        per_page : int
+            Number of results to return per page. Beginning February 28, 2023,
+            a default and maximum limit of 100 will be imposed and this endpoint will return paginated data
+            even if this query parameter is not provided.
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/getPagesPageIdPageAccessUsers
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/page_access_users".format(page_id)
+        return self.get(url, params={"email": email, "page": page_offset, "per_page": per_page})
+
+    def page_get_access_user(self, page_id, page_access_user_id):
+        """
+        Get page access user
+        
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        page_access_user_id : str
+            Page Access User Identifier
+        
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/getPagesPageIdPageAccessUsersPageAccessUserId
+        
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+            
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/page_access_users/{}".format(page_id, page_access_user_id)
+        return self.get(url)
+
+    def page_set_access_user(self, page_id, page_access_user_id, external_login, email, page_access_group_ids):
+        """
+        Update page access user
+
+        Warnings
+        --------
+        TODO: Fields that can be updated are undocumented as well as their descriptions.
+        
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        page_access_user_id : str
+            Page Access User Identifier
+        external_login : str
+            IDP login user id. Key is typically "uid".
+        email : str
+            Email address
+        page_access_group_ids : list[str]
+            Group IDs
+        
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/patchPagesPageIdPageAccessUsersPageAccessUserId
+        
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+            
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/page_access_users/{}".format(page_id, page_access_user_id)
+        return self.put(url, data={"external_login": external_login, "email": email,
+                                   "page_access_group_ids": page_access_group_ids})
+
+    def page_delete_access_user(self, page_id, page_access_user_id):
+        """
+        Delete page access user
+        
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        page_access_user_id : str
+            Page Access User Identifier
+        
+        Notes
+        -----
+        See available fields:
+        https://developer.statuspage.io/#operation/deletePagesPageIdPageAccessUsersPageAccessUserId
+        
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+            
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/page_access_users/{}".format(page_id, page_access_user_id)
+        return self.delete(url)
