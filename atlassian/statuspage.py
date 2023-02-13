@@ -198,3 +198,68 @@ class StatusPage(AtlassianRestAPI):
         """
         url = "v1/organizations/{}/permissions/{}".format(organization_id, user_id)
         return self.put(url, data={"pages": pages})
+
+    def get_embed_config_settings(self, page_id):
+        """
+        Get status embed config settings
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exception.response.content)` to get API error info
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/getPagesPageIdStatusEmbedConfig
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/status_embed_config".format(page_id)
+        return self.get(url)
+
+    def update_embed_config_settings(self, page_id, status_embed_config):
+        """
+        Update status embed config settings
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        status_embed_config : dict[str, any]
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Examples
+        --------
+        >>> client = StatusPage(url="https://api.statuspage.io", token="YOUR-TOKEN")
+        >>> client.update_embed_config_settings(
+        ...    "PAGE-ID",
+        ...     {
+        ...         "position": "string",
+        ...         "incident_background_color": "string",
+        ...         "incident_text_color": "string",
+        ...         "maintenance_background_color": "string",
+        ...         "maintenance_text_color": "string"
+        ...     }
+        ... )
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/putPagesPageIdStatusEmbedConfig
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/status_embed_config".format(page_id)
+        return self.put(url, status_embed_config)
