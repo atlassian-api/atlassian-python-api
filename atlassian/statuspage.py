@@ -539,3 +539,146 @@ class StatusPage(AtlassianRestAPI):
         """
         url = "v1/pages/{}/page_access_users/{}/components/{}".format(page_id, page_access_user_id, component_id)
         return self.delete(url)
+
+    def page_get_metrics_access_user(self, page_id, page_access_user_id):
+        """
+        Get metrics for page access user
+        
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        page_access_user_id : str
+            Page Access User Identifier
+        
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/getPagesPageIdPageAccessUsersPageAccessUserIdMetrics
+        
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+            
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/page_access_users/{}/metrics".format(page_id, page_access_user_id)
+        return self.get(url)
+
+    def page_add_metrics_access_user(self, page_id, page_access_user_id, metric_ids):
+        """
+        Add metrics for page access user
+        
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        page_access_user_id : str
+            Page Access User Identifier
+        metric_ids : list[str]
+            List of metrics to add
+        
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/putPagesPageIdPageAccessUsersPageAccessUserIdMetrics
+        
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+            
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/page_access_users/{}/metrics".format(page_id, page_access_user_id)
+        return self.put(url, data={"metric_ids": metric_ids})
+
+    def page_replace_metrics_access_user(self, page_id, page_access_user_id, metric_ids):
+        """
+        Replace metrics for page access user
+        
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        page_access_user_id : str
+            Page Access User Identifier
+        metric_ids : list[str]
+            List of metrics to replace
+        
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/postPagesPageIdPageAccessUsersPageAccessUserIdMetrics
+        
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+            
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/page_access_users/{}/metrics".format(page_id, page_access_user_id)
+        return self.post(url, data={"metric_ids": metric_ids})
+
+    def page_delete_metrics_access_user(self, page_id, page_access_user_id, metric_ids):
+        """
+        Delete metrics for page access user
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        page_access_user_id : str
+            Page Access User Identifier
+        metric_ids : list[str]
+            List of metrics to remove
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/deletePagesPageIdPageAccessUsersPageAccessUserIdMetrics
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/page_access_users/{}/metrics".format(page_id, page_access_user_id)
+        return self.delete(url, data={"metric_ids": metric_ids})
+
+    def page_delete_metric_access_user(self, page_id, page_access_user_id, metric_id):
+        """
+        Delete metric for page access user
+        
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        page_access_user_id : str
+            Page Access User Identifier
+        metric_id : str
+            Identifier of metric requested
+        
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/deletePagesPageIdPageAccessUsersPageAccessUserIdMetricsMetricId
+        
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+            
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/page_access_users/{}/metrics/{}".format(page_id, page_access_user_id, metric_id)
+        return self.delete(url)
