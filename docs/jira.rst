@@ -268,14 +268,19 @@ Manage issues
     jira.issue_archive(issue_id_or_key)
 
     # Restore an issue
-    issue_restore(issue_id_or_key)
+    jira.issue_restore(issue_id_or_key)
 
     # Issue Comments
     jira.issue_get_comments(issue_id_or_key)
 
+    # Get issue comment by id
     jira.issue_get_comment(issue_id_or_key, comment_id)
 
+    # Get comments over all issues by ids
     jira.issues_get_comments_by_id(comment_id, [comment_id...])
+    
+    # Get change history for an issue
+    jira.get_issue_changelog(issue_key)
 
 
 Epic Issues
