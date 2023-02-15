@@ -20,7 +20,7 @@ class StatusPage(AtlassianRestAPI):
     def __init__(self, *args, **kwargs):
         super(StatusPage, self).__init__(*args, **kwargs)
 
-    def list_pages(self):
+    def page_list_pages(self):
         """
         Get a list of pages
 
@@ -41,7 +41,7 @@ class StatusPage(AtlassianRestAPI):
         url = "v1/pages"
         return self.get(url)
 
-    def get_page(self, page_id):
+    def page_get(self, page_id):
         """
         Get page information
 
@@ -66,7 +66,7 @@ class StatusPage(AtlassianRestAPI):
         url = "v1/pages/{}".format(page_id)
         return self.get(url)
 
-    def update_page(self, page_id, page):
+    def page_update(self, page_id, page):
         """
         Update a page
 
@@ -197,7 +197,7 @@ class StatusPage(AtlassianRestAPI):
         url = "v1/organizations/{}/permissions/{}".format(organization_id, user_id)
         return self.put(url, data={"pages": pages})
 
-    def get_embed_config_settings(self, page_id):
+    def page_get_embed_config_settings(self, page_id):
         """
         Get status embed config settings
 
@@ -222,7 +222,7 @@ class StatusPage(AtlassianRestAPI):
         url = "v1/pages/{}/status_embed_config".format(page_id)
         return self.get(url)
 
-    def update_embed_config_settings(self, page_id, status_embed_config):
+    def page_update_embed_config_settings(self, page_id, status_embed_config):
         """
         Update status embed config settings
 
