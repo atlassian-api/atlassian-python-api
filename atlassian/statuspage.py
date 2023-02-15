@@ -848,3 +848,153 @@ class StatusPage(AtlassianRestAPI):
         """
         url = "v1/pages/{}/page_access_groups/{}".format(page_id, page_access_group_id)
         return self.delete(url)
+
+    def page_add_components_to_access_group(self, page_id, page_access_group_id, component_ids):
+        """
+        Add components to page access group
+        
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        page_access_group_id : str
+            Page Access Group Identifier
+        component_ids : list[str]
+            List of Component identifiers
+        
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#tag/page-access-group-components
+        
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+            
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/page_access_groups/{}/components".format(page_id, page_access_group_id)
+        return self.put(url, data={"component_ids": component_ids})
+
+    def page_replace_components_for_access_page(self, page_id, page_access_group_id, component_ids):
+        """
+        Replace components for a page access group
+        
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        page_access_group_id : str
+            Page Access Group Identifier
+        component_ids : list[str]
+            List of components codes to set on the page access group
+        
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/postPagesPageIdPageAccessGroupsPageAccessGroupIdComponents
+        
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+            
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/page_access_groups/{}/components".format(page_id, page_access_group_id)
+        return self.post(url, data={"component_ids": component_ids})
+
+    def page_delete_components_for_access_page(self, page_id, page_access_group_id, component_ids):
+        """
+        Delete components for a page access group
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        page_access_group_id : str
+            Page Access Group Identifier
+        component_ids : list[str]
+            List of Component identifiers
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/deletePagesPageIdPageAccessGroupsPageAccessGroupIdComponents
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/page_access_groups/{}/components".format(page_id, page_access_group_id)
+        return self.delete(url, data={"component_ids": component_ids})
+
+    def page_delete_component_for_access_page(self, page_id, page_access_group_id, component_id):
+        """
+        Remove a component from a page access group
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        page_access_group_id : str
+            Page Access Group Identifier
+        component_id : str
+            Component identifier
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/deletePagesPageIdPageAccessGroupsPageAccessGroupIdComponentsComponentId
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/page_access_groups/{}/components/{}".format(page_id, page_access_group_id, component_id)
+        return self.delete(url)
+
+    def page_get_components_for_access_group(self, page_id, page_access_group_id, page_offset=0, per_page=100):
+        """
+        Add components to page access group
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        page_access_group_id : str
+            Page Access Group Identifier
+        page_offset : int
+            Page offset to fetch. Beginning February 28, 2023,
+            this endpoint will return paginated data even if this query parameter is not provided.
+        per_page : int
+            Number of results to return per page. Beginning February 28, 2023,
+            a default and maximum limit of 100 will be imposed and this endpoint will return paginated data
+            even if this query parameter is not provided.
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/getPagesPageIdPageAccessGroupsPageAccessGroupIdComponents
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/page_access_groups/{}/components".format(page_id, page_access_group_id)
+        return self.get(url)
