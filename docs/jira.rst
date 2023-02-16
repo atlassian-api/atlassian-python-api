@@ -278,13 +278,13 @@ Manage issues
 
     # Get comments over all issues by ids
     jira.issues_get_comments_by_id(comment_id, [comment_id...])
-    
+
     # Get change history for an issue
     jira.get_issue_changelog(issue_key)
-    
+
     # Get worklog for an issue
     jira.issue_get_worklog(issue_key)
-    
+
     # Create a new worklog entry for an issue
     # started is a date string in the format %Y-%m-%dT%H:%M:%S.000+0000%z
     jira.issue_worklog(issue_key, started, time_in_sec)
