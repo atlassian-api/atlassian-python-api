@@ -523,11 +523,19 @@ class ServiceDesk(AtlassianRestAPI):
         experimental_headers["X-Atlassian-Token"] = "no-check"
 
         with open(filename, "rb") as file:
-            result = (
-                self.post(path=url, headers=experimental_headers, files={"file": file})
-                .json()
-                .get("temporaryAttachments")
-            )
+            # bug https://github.com/atlassian-api/atlassian-python-api/issues/1056
+            # in advanced_mode it returns the raw response therefore .json() is needed
+            # in normal mode this is not needed and would fail
+            if self.advanced_mode:
+                result = (
+                    self.post(path=url, headers=experimental_headers, files={"file": file})
+                    .json()
+                    .get("temporaryAttachments")
+                )
+            else:
+                result = self.post(path=url, headers=experimental_headers, files={"file": file}).get(
+                    "temporaryAttachments"
+                )
             temp_attachment_id = result[0].get("temporaryAttachmentId")
 
             return temp_attachment_id
