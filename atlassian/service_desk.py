@@ -79,7 +79,9 @@ class ServiceDesk(AtlassianRestAPI):
 
     def get_my_customer_requests(self):
         """Returning requests where you are the assignee"""
-        response = self.get("rest/servicedeskapi/request", headers=self.experimental_headers)
+        response = self.get(
+            "rest/servicedeskapi/request", headers=self.experimental_headers
+        )
         if self.advanced_mode:
             return response
         return (response or {}).get("values")
@@ -249,7 +251,9 @@ class ServiceDesk(AtlassianRestAPI):
 
         return self.post(path=url, data=data, headers=self.experimental_headers)
 
-    def get_request_comments(self, issue_id_or_key, start=0, limit=50, public=True, internal=True):
+    def get_request_comments(
+        self, issue_id_or_key, start=0, limit=50, public=True, internal=True
+    ):
         """
         Get all comments in issue
 
@@ -291,7 +295,9 @@ class ServiceDesk(AtlassianRestAPI):
         """
 
         return self.get(
-            "rest/servicedeskapi/request/{}/comment/{}".format(issue_id_or_key, comment_id),
+            "rest/servicedeskapi/request/{}/comment/{}".format(
+                issue_id_or_key, comment_id
+            ),
             headers=self.experimental_headers,
         )
 
@@ -309,7 +315,9 @@ class ServiceDesk(AtlassianRestAPI):
         :return:
         """
         url_without_sd_id = "rest/servicedeskapi/organization"
-        url_with_sd_id = "rest/servicedeskapi/servicedesk/{}/organization".format(service_desk_id)
+        url_with_sd_id = "rest/servicedeskapi/servicedesk/{}/organization".format(
+            service_desk_id
+        )
         params = {}
         if start is not None:
             params["start"] = int(start)
@@ -322,7 +330,9 @@ class ServiceDesk(AtlassianRestAPI):
                 headers=self.experimental_headers,
                 params=params,
             )
-        return self.get(url_with_sd_id, headers=self.experimental_headers, params=params)
+        return self.get(
+            url_with_sd_id, headers=self.experimental_headers, params=params
+        )
 
     def get_organization(self, organization_id):
         """
@@ -407,7 +417,9 @@ class ServiceDesk(AtlassianRestAPI):
 
         return self.delete(url, headers=self.experimental_headers)
 
-    def add_users_to_organization(self, organization_id, users_list=[], account_list=[]):
+    def add_users_to_organization(
+        self, organization_id, users_list=[], account_list=[]
+    ):
         """
         Adds users to an organization
         users_list is a list of strings
@@ -424,7 +436,9 @@ class ServiceDesk(AtlassianRestAPI):
 
         return self.post(url, headers=self.experimental_headers, data=data)
 
-    def remove_users_from_organization(self, organization_id, users_list=[], account_list=[]):
+    def remove_users_from_organization(
+        self, organization_id, users_list=[], account_list=[]
+    ):
         """
         Removes users from an organization
         users_list is a list of strings
@@ -474,7 +488,9 @@ class ServiceDesk(AtlassianRestAPI):
             temp_attachment_ids.append(temp_attachment_id)
 
         # Add attachments
-        return self.add_attachments(issue_id_or_key, temp_attachment_ids, public, comment)
+        return self.add_attachments(
+            issue_id_or_key, temp_attachment_ids, public, comment
+        )
 
     def create_attachment(
         self,
@@ -514,7 +530,9 @@ class ServiceDesk(AtlassianRestAPI):
         :param filename: str
         :return: Temporary Attachment ID
         """
-        url = "rest/servicedeskapi/servicedesk/{}/attachTemporaryFile".format(service_desk_id)
+        url = "rest/servicedeskapi/servicedesk/{}/attachTemporaryFile".format(
+            service_desk_id
+        )
 
         # no application/json content type and an additional X-Atlassian-Token header
         # https://docs.atlassian.com/jira-servicedesk/REST/4.14.1/#servicedeskapi/servicedesk/{serviceDeskId}/attachTemporaryFile-attachTemporaryFile
@@ -528,20 +546,23 @@ class ServiceDesk(AtlassianRestAPI):
             # in normal mode this is not needed and would fail
             if self.advanced_mode:
                 result = (
-                    self.post(path=url, headers=experimental_headers, files={"file": file})
+                    self.post(
+                        path=url, headers=experimental_headers, files={"file": file}
+                    )
                     .json()
                     .get("temporaryAttachments")
                 )
             else:
-                result = (
-                    self.post(path=url, headers=experimental_headers, files={"file": file})
-                    .get("temporaryAttachments")
-                )
+                result = self.post(
+                    path=url, headers=experimental_headers, files={"file": file}
+                ).get("temporaryAttachments")
             temp_attachment_id = result[0].get("temporaryAttachmentId")
 
             return temp_attachment_id
 
-    def add_attachments(self, issue_id_or_key, temp_attachment_ids, public=True, comment=None):
+    def add_attachments(
+        self, issue_id_or_key, temp_attachment_ids, public=True, comment=None
+    ):
         """
         Adds temporary attachment to customer request using attach_temporary_file function
         :param issue_id_or_key: str
@@ -559,7 +580,9 @@ class ServiceDesk(AtlassianRestAPI):
 
         return self.post(url, headers=self.experimental_headers, data=data)
 
-    def add_attachment(self, issue_id_or_key, temp_attachment_id, public=True, comment=None):
+    def add_attachment(
+        self, issue_id_or_key, temp_attachment_id, public=True, comment=None
+    ):
         """
         Adds temporary attachment to customer request using attach_temporary_file function
         :param issue_id_or_key: str
@@ -644,7 +667,9 @@ class ServiceDesk(AtlassianRestAPI):
         :param approval_id: str
         :return:
         """
-        url = "rest/servicedeskapi/request/{0}/approval/{1}".format(issue_id_or_key, approval_id)
+        url = "rest/servicedeskapi/request/{0}/approval/{1}".format(
+            issue_id_or_key, approval_id
+        )
 
         return self.get(url, headers=self.experimental_headers)
 
@@ -657,7 +682,9 @@ class ServiceDesk(AtlassianRestAPI):
         :param decision: str
         :return:
         """
-        url = "rest/servicedeskapi/request/{0}/approval/{1}".format(issue_id_or_key, approval_id)
+        url = "rest/servicedeskapi/request/{0}/approval/{1}".format(
+            issue_id_or_key, approval_id
+        )
         data = {"decision": decision}
 
         return self.post(url, headers=self.experimental_headers, data=data)
@@ -699,7 +726,9 @@ class ServiceDesk(AtlassianRestAPI):
 
         return self.get(url, headers=self.experimental_headers, params=params)
 
-    def add_customers(self, service_desk_id, list_of_usernames=[], list_of_accountids=[]):
+    def add_customers(
+        self, service_desk_id, list_of_usernames=[], list_of_accountids=[]
+    ):
         """
         Adds one or more existing customers to the given service desk.
         If you need to create a customer, see Create customer method.
@@ -721,7 +750,9 @@ class ServiceDesk(AtlassianRestAPI):
         log.info("Adding customers...")
         return self.post(url, headers=self.experimental_headers, data=data)
 
-    def remove_customers(self, service_desk_id, list_of_usernames=[], list_of_accountids=[]):
+    def remove_customers(
+        self, service_desk_id, list_of_usernames=[], list_of_accountids=[]
+    ):
         """
         Removes one or more customers from a service desk. The service
         desk must have closed access. If any of the passed customers are
@@ -784,7 +815,9 @@ class ServiceDesk(AtlassianRestAPI):
         :param limit: int
         :return: a page of issues
         """
-        url = "rest/servicedeskapi/servicedesk/{0}/queue/{1}/issue".format(service_desk_id, queue_id)
+        url = "rest/servicedeskapi/servicedesk/{0}/queue/{1}/issue".format(
+            service_desk_id, queue_id
+        )
         params = {}
 
         if start is not None:
