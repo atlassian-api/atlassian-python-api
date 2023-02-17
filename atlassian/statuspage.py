@@ -14,6 +14,54 @@ class Branding(Enum):
     BASIC = "basic"
 
 
+class SubscriberType(Enum):
+    """The type of subscriber"""
+
+    EMAIL = "email"
+    SMS = "sms"
+    WEBHOOK = "webhook"
+    SLACK = "slack"
+    INTEGRATION_PARTNER = "integration_partner"
+
+
+class SubscriberState(Enum):
+    """The state of the subscriber"""
+
+    ACTIVE = "active"
+    PENDING = "pending"
+    QUARANTINED = "quarantined"
+    ALL = "all"
+
+
+class SortField(Enum):
+    """The field to sort by
+
+    Attributes
+    ----------
+    PRIMARY : str
+        to indicate sorting by the identifying field
+    CREATED_AT : str
+        for sorting by creation timestamp
+    QUARANTINED_AT : str
+        for sorting by quarantine timestamp
+    RELEVANCE : str
+        which sorts by the relevancy of the search text
+    """
+
+    "to indicate sorting by the identifying field"
+    PRIMARY = "primary"
+    CREATED_AT = "created_at"
+    QUARANTINED_AT = "quarantined_at"
+    RELEVANCE = "relevance"
+
+
+class SortOrder(Enum):
+    """The order to sort by"""
+
+    ASC = "asc"
+    DESC = "desc"
+
+
 class StatusPage(AtlassianRestAPI):
     """StatusPage API wrapper."""
 
@@ -998,3 +1046,384 @@ class StatusPage(AtlassianRestAPI):
         """
         url = "v1/pages/{}/page_access_groups/{}/components".format(page_id, page_access_group_id)
         return self.get(url)
+
+    def page_get_subscriber(self, page_id, subscriber_id):
+        """
+        Get a subscriber
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        subscriber_id : str
+            Subscriber identifier
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/getPagesPageIdSubscribersSubscriberId
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/subscribers/{}".format(page_id, subscriber_id)
+        return self.get(url)
+
+    def page_get_subscribers(self, page_id, q, subscriber_type, subscriber_state, sort_field, sort_direction,
+                             page_offset=0, per_page=100):
+        """
+        Get all subscribers
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        page_offset : int
+            Page offset to fetch. Beginning February 28, 2023,
+            this endpoint will return paginated data even if this query parameter is not provided.
+        per_page : int
+            Number of results to return per page. Beginning February 28, 2023,
+            a default and maximum limit of 100 will be imposed and this endpoint will return paginated data
+            even if this query parameter is not provided.
+        q : str
+            If this is specified, search the contact information (email, endpoint, or phone number) for the provided value.
+            This parameter doesn't support searching for Slack subscribers.
+        subscriber_type : SubscriberType
+            If this is specified, only return subscribers of the specified type.
+        subscriber_state : SubscriberState
+            If this is specified, only return subscribers of the specified state.
+            Specify state "all" to find subscribers in any states.
+        sort_field : SortField
+            The field on which to sort
+        sort_direction : SortOrder
+            The direction in which to sort the results.
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/getPagesPageIdSubscribers
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/subscribers".format(page_id)
+        return self.get(url, params={
+            "page": page_offset,
+            "per_page": per_page,
+            "q": q,
+            "type": subscriber_type,
+            "state": subscriber_state,
+            "sort_field": sort_field,
+            "sort_direction": sort_direction
+        })
+
+    def page_update_subscriber(self, page_id, subscriber_id, component_ids):
+        """
+        Update a subscriber
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        subscriber_id : str
+            Subscriber identifier
+        component_ids : list[str]
+            A list of component ids for which the subscriber should receive updates for.
+            Components must be an array with at least one element if it is passed at all.
+            Each component must belong to the page indicated in the path.
+            To set the subscriber to be subscribed to all components on the page, exclude this parameter.
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/patchPagesPageIdSubscribersSubscriberId
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/subscribers/{}".format(page_id, subscriber_id)
+        return self.patch(url, data={"component_ids": component_ids})
+
+    def page_unsubscribe_subscriber(self, page_id, subscriber_id, skip_unsubscription_notifications=False):
+        """
+        Unsubscribe a subscriber
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        subscriber_id : str
+            Subscriber identifier
+        skip_unsubscription_notifications : bool
+            If true, the subscriber will not receive an email notification when they are unsubscribed.
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/deletePagesPageIdSubscribersSubscriberId
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/subscribers/{}".format(page_id, subscriber_id)
+        return self.delete(url, params={"skip_unsubscription_notifications": skip_unsubscription_notifications})
+
+    def page_resend_confirmation_subscribers(self, page_id, subscriber_id):
+        """
+        Resend confirmation email to a subscriber
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        subscriber_id : str
+            Subscriber identifier
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/postPagesPageIdSubscribersSubscriberIdResendConfirmation
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/subscribers/{}/resend_confirmation".format(page_id, subscriber_id)
+        return self.post(url)
+
+    def page_create_subscriber(self, page_id, subscriber):
+        """
+        Create a subscriber
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        subscriber : dict[str, any]
+            Subscriber object. You can specify email, endpoint, phone_country, phone_number,
+            skip_confirmation_notification, page_access_user and component_ids. Check notes for all available fields.
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/postPagesPageIdSubscribers
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/subscribers".format(page_id)
+        return self.post(url, data={"subscriber": subscriber})
+
+    def page_get_list_unsubscribed(self, page_id, page_offset=0, per_page=100):
+        """
+        Get a list of unsubscribed subscribers
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        page_offset : int
+            Page offset to fetch. Beginning February 28, 2023,
+            this endpoint will return paginated data even if this query parameter is not provided.
+        per_page : int
+            Number of results to return per page. Beginning February 28, 2023,
+            a default and maximum limit of 100 will be imposed and this endpoint will return paginated data
+            even if this query parameter is not provided.
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/getPagesPageIdSubscribersUnsubscribed
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/unsubscribed".format(page_id)
+        return self.get(url, params={
+            "page": page_offset,
+            "per_page": per_page
+        })
+
+    def page_count_subscribers_by_type(self, page_id, subscriber_type, subscriber_state):
+        """
+        Count subscribers by type
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        subscriber_type : SubscriberType
+            If this is specified, only return subscribers of the specified type.
+        subscriber_state : SubscriberState
+            If this is specified, only return subscribers of the specified state.
+            Specify state "all" to find subscribers in any states.
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/getPagesPageIdSubscribersCount
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/subscribers/count".format(page_id)
+        return self.get(url, params={
+            "type": subscriber_type,
+            "state": subscriber_state
+        })
+
+    def page_get_histogram_of_subscribers_with_state(self, page_id):
+        """
+        Get a histogram of subscribers with state
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/getPagesPageIdSubscribersHistogramByState
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/subscribers/histogram".format(page_id)
+        return self.get(url)
+
+    def page_reactivate_subscribers(self, page_id, subscriber_ids, subscriber_type):
+        """
+        Reactivate a list of quarantined subscribers
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        subscriber_ids : list[str]
+            A list of subscriber ids to reactivate.
+        subscriber_type : SubscriberType
+            If this is present, only reactivate subscribers of this type.
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/postPagesPageIdSubscribersReactivate
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/subscribers/reactivate".format(page_id)
+        return self.post(url, data={"subscribers": subscriber_ids, "type": subscriber_type})
+
+    def page_unsubscribe_subscribers(self, page_id, subscriber_ids, subscriber_type,
+                                     skip_unsubscription_notification=False):
+        """
+        Unsubscribe a list of subscribers
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        subscriber_ids : str | list[str]
+            The array of subscriber codes to unsubscribe (limited to 100),
+            or "all" to unsubscribe all subscribers if the number of subscribers is less than 100.
+        subscriber_type : SubscriberType
+            If this is present, only unsubscribe subscribers of this type.
+        skip_unsubscription_notification : bool
+            If this is true, do not send an unsubscription notification to the subscriber.
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/postPagesPageIdSubscribersUnsubscribe
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/subscribers/unsubscribe".format(page_id)
+        return self.post(url, data={"subscribers": subscriber_ids, "type": subscriber_type,
+                                    "skip_unsubscription_notification": skip_unsubscription_notification})
+
+    def page_resend_confirmations_to_subscribers(self, page_id, subscriber_ids):
+        """
+        Resend confirmation emails to a list of subscribers
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        subscriber_ids : str | list[str]
+            The array of subscriber codes to resend confirmations for,
+            or "all" to resend confirmations to all subscribers.
+            Only unconfirmed email subscribers will receive this notification.
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/postPagesPageIdSubscribersResendConfirmation
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/subscribers/resend_confirmation".format(page_id)
+        return self.post(url, data={"subscribers": subscriber_ids})
