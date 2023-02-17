@@ -381,6 +381,42 @@ class AtlassianRestAPI(object):
             return response
         return self._response_handler(response)
 
+    def patch(
+        self,
+        path,
+        data=None,
+        headers=None,
+        files=None,
+        trailing=None,
+        params=None,
+        absolute=False,
+        advanced_mode=False,
+    ):
+        """
+        :param path: Path of request
+        :param data:
+        :param headers: adjusted headers, usually it's default
+        :param files:
+        :param trailing:
+        :param params:
+        :param absolute:
+        :param advanced_mode: bool, OPTIONAL: Return the raw response
+        :return: if advanced_mode is not set - returns dictionary. If it is set - returns raw response.
+        """
+        response = self.request(
+            "PATCH",
+            path=path,
+            data=data,
+            headers=headers,
+            files=files,
+            params=params,
+            trailing=trailing,
+            absolute=absolute,
+        )
+        if self.advanced_mode or advanced_mode:
+            return response
+        return self._response_handler(response)
+
     def delete(
         self,
         path,
