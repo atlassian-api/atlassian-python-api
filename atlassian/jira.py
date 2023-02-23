@@ -1197,12 +1197,24 @@ class Jira(AtlassianRestAPI):
         :param issue_key: str
         :param filename: str, name, if file in current directory or full path to file
         """
+        with open(filename, "rb") as attachment:
+            return self.add_attachment_object (issue_key, attachment)
+
+    def add_attachment_object(self, issue_key, attachment):
+        """
+        Add attachment to Issue
+        :param issue_key: str
+        :param attachment: IO object 
+        """
         log.warning("Adding attachment...")
         base_url = self.resource_url("issue")
         url = "{base_url}/{issue_key}/attachments".format(base_url=base_url, issue_key=issue_key)
-        with open(filename, "rb") as attachment:
+        if attachment:
             files = {"file": attachment}
-            return self.post(url, headers=self.no_check_headers, files=files)
+        else:
+            log.error("Empty attachment")
+            return None
+        return self.post(url, headers=self.no_check_headers, files=files)
 
     def issue_exists(self, issue_key):
         original_value = self.advanced_mode
