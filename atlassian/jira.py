@@ -1191,7 +1191,7 @@ class Jira(AtlassianRestAPI):
             return self.get(url)
         return (self.get(url) or {}).get("fields").get("labels")
 
-    def add_attachment(self, issue_key, filename):
+    def add_attachment(self, issue_key, attachment):
         """
         Add attachment to Issue
         :param issue_key: str
@@ -1200,7 +1200,7 @@ class Jira(AtlassianRestAPI):
         log.warning("Adding attachment...")
         base_url = self.resource_url("issue")
         url = "{base_url}/{issue_key}/attachments".format(base_url=base_url, issue_key=issue_key)
-        with open(filename, "rb") as attachment:
+        if attachment:
             files = {"file": attachment}
             return self.post(url, headers=self.no_check_headers, files=files)
 
