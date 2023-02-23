@@ -331,6 +331,9 @@ Attachments actions
     # Add attachment to issue
     jira.add_attachment(issue_key, filename)
 
+    # Add attachment (IO Object) to issue
+    jira.add_attachment_object(issue_key, attachment)
+
 Manage components
 -----------------
 

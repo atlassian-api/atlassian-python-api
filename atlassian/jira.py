@@ -1198,13 +1198,13 @@ class Jira(AtlassianRestAPI):
         :param filename: str, name, if file in current directory or full path to file
         """
         with open(filename, "rb") as attachment:
-            return self.add_attachment_object (issue_key, attachment)
+            return self.add_attachment_object(issue_key, attachment)
 
     def add_attachment_object(self, issue_key, attachment):
         """
         Add attachment to Issue
         :param issue_key: str
-        :param attachment: IO object 
+        :param attachment: IO Object
         """
         log.warning("Adding attachment...")
         base_url = self.resource_url("issue")
