@@ -7,13 +7,7 @@ import json
 from requests import HTTPError
 from deprecated import deprecated
 from atlassian import utils
-from .errors import (
-    ApiError,
-    ApiNotFoundError,
-    ApiPermissionError,
-    ApiValueError,
-    ApiConflictError,
-)
+from .errors import ApiError, ApiNotFoundError, ApiPermissionError, ApiValueError, ApiConflictError, ApiNotAcceptable
 from .rest_client import AtlassianRestAPI
 
 log = logging.getLogger(__name__)
@@ -1572,17 +1566,18 @@ class Confluence(AtlassianRestAPI):
         representation="storage",
         minor_edit=False,
         version_comment=None,
+        full_width=False,
     ):
         """Duplicate update_page. Left for the people who used it before. Use update_page instead"""
         return self.update_page(
             page_id=page_id,
             title=title,
             body=body,
-            parent_id=None,
             type=type,
             representation=representation,
             minor_edit=minor_edit,
             version_comment=version_comment,
+            full_width=full_width,
         )
 
     def update_page(
@@ -2942,6 +2937,101 @@ class Confluence(AtlassianRestAPI):
         url = "rest/jira-metadata/1.0/metadata/cache"
         params = {"globalId": global_id}
         return self.delete(url, params=params)
+
+    # Collaborative editing
+    def collaborative_editing_get_configuration(self):
+        """
+        Get collaborative editing configuration
+        Related to the on-prem setup Confluence Data Center
+        :return:
+        """
+        if self.cloud:
+            return ApiNotAcceptable
+        url = "rest/synchrony-interop/configuration"
+        return self.get(url, headers=self.no_check_headers)
+
+    def collaborative_editing_disable(self):
+        """
+        Disable collaborative editing
+        Related to the on-prem setup Confluence Data Center
+        :return:
+        """
+        if self.cloud:
+            return ApiNotAcceptable
+        url = "rest/synchrony-interop/disable"
+        return self.post(url, headers=self.no_check_headers)
+
+    def collaborative_editing_enable(self):
+        """
+        Disable collaborative editing
+        Related to the on-prem setup Confluence Data Center
+        :return:
+        """
+        if self.cloud:
+            return ApiNotAcceptable
+        url = "rest/synchrony-interop/enable"
+        return self.post(url, headers=self.no_check_headers)
+
+    def collaborative_editing_restart(self):
+        """
+        Disable collaborative editing
+        Related to the on-prem setup Confluence Data Center
+        :return:
+        """
+        if self.cloud:
+            return ApiNotAcceptable
+        url = "rest/synchrony-interop/restart"
+        return self.post(url, headers=self.no_check_headers)
+
+    def collaborative_editing_shared_draft_status(self):
+        """
+        Status of collaborative editing
+        Related to the on-prem setup Confluence Data Center
+        :return: false or true parameter in json
+                {
+                     "sharedDraftsEnabled": false
+                }
+        """
+        if self.cloud:
+            return ApiNotAcceptable
+        url = "rest/synchrony-interop/status"
+        return self.get(url, headers=self.no_check_headers)
+
+    def collaborative_editing_synchrony_status(self):
+        """
+        Status of collaborative editing
+        Related to the on-prem setup Confluence Data Center
+        :return: stopped or running parameter in json
+            {
+                "status": "stopped"
+            }
+        """
+        if self.cloud:
+            return ApiNotAcceptable
+        url = "rest/synchrony-interop/synchrony-status"
+        return self.get(url, headers=self.no_check_headers)
+
+    def synchrony_get_configuration(self):
+        """
+        Status of collaborative editing
+        Related to the on-prem setup Confluence Data Center
+        :return:
+        """
+        if self.cloud:
+            return ApiNotAcceptable
+        url = "rest/synchrony/1.0/config/status"
+        return self.get(url, headers=self.no_check_headers)
+
+    def synchrony_remove_draft(self, page_id):
+        """
+        Status of collaborative editing
+        Related to the on-prem setup Confluence Data Center
+        :return:
+        """
+        if self.cloud:
+            return ApiNotAcceptable
+        url = "rest/synchrony/1.0/content/{pageId}/changes/unpublished".format(pageId=page_id)
+        return self.delete(url)
 
     def get_license_details(self):
         """
