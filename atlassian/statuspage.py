@@ -1511,3 +1511,288 @@ class StatusPage(AtlassianRestAPI):
             "page": page_offset,
             "per_page": per_page
         })
+
+    def page_create_incident(self, page_id, incident):
+        """
+        Create an incident. "name" is required in the incident.
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        incident : dict[str, any]
+            The incident to create
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/postPagesPageIdIncidents
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/incidents".format(page_id)
+        return self.post(url, data={"incident": incident})
+
+    def page_list_incidents(self, page_id, q, page_offset=1, per_page=100):
+        """
+        Get a list of incidents
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        q : str
+            The search query to filter incidents by. If this is specified, search for the text query string in
+            the incident's name, status, postmortem_body, and incident_updates fields.
+        page_offset : int
+            The page offset to return. Defaults to 1.
+        per_page : int
+            The number of incidents to return per page. Defaults to 100.
+            If this is set to 0, a default and maximum limit of 100
+            will be imposed and this endpoint will return paginated data
+            even if this query parameter is not provided.
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/getPagesPageIdIncidents
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/incidents".format(page_id)
+        return self.get(url, params={
+            "q": q,
+            "page": page_offset,
+            "per_page": per_page
+        })
+
+    def page_list_active_maintances(self, page_id, page_offset=1, per_page=100):
+        """
+        Get a list of active maintenances
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        page_offset : int
+            The page offset to return. Defaults to 1.
+        per_page : int
+            The number of maintenances to return per page. Defaults to 100.
+            If this is set to 0, a default and maximum limit of 100
+            will be imposed and this endpoint will return paginated data
+            even if this query parameter is not provided.
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/getPagesPageIdIncidentsActiveMaintenance
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/incidents/active_maintenance".format(page_id)
+        return self.get(url, params={
+            "page": page_offset,
+            "per_page": per_page
+        })
+
+    def page_list_upcoming_incidents(self, page_id, page_offset=1, per_page=100):
+        """
+        Get a list of upcoming incidents
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        page_offset : int
+            The page offset to return. Defaults to 1.
+        per_page : int
+            The number of incidents to return per page. Defaults to 100.
+            If this is set to 0, a default and maximum limit of 100
+            will be imposed and this endpoint will return paginated data
+            even if this query parameter is not provided.
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/getPagesPageIdIncidentsUpcoming
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/incidents/upcoming".format(page_id)
+        return self.get(url, params={
+            "page": page_offset,
+            "per_page": per_page
+        })
+
+    def page_list_scheduled_incidents(self, page_id, page_offset=1, per_page=100):
+        """
+        Get a list of scheduled incidents
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        page_offset : int
+            The page offset to return. Defaults to 1.
+        per_page : int
+            The number of incidents to return per page. Defaults to 100.
+            If this is set to 0, a default and maximum limit of 100
+            will be imposed and this endpoint will return paginated data
+            even if this query parameter is not provided.
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/getPagesPageIdIncidentsScheduled
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/incidents/scheduled".format(page_id)
+        return self.get(url, params={
+            "page": page_offset,
+            "per_page": per_page
+        })
+
+    def page_list_unresolved_incidents(self, page_id, page_offset=1, per_page=100):
+        """
+        Get a list of unresolved incidents
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        page_offset : int
+            The page offset to return. Defaults to 1.
+        per_page : int
+            The number of incidents to return per page. Defaults to 100.
+            If this is set to 0, a default and maximum limit of 100
+            will be imposed and this endpoint will return paginated data
+            even if this query parameter is not provided.
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/getPagesPageIdIncidentsUnresolved
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/incidents/unresolved".format(page_id)
+        return self.get(url, params={
+            "page": page_offset,
+            "per_page": per_page
+        })
+
+    def page_delete_incident(self, page_id, incident_id):
+        """
+        Delete an incident
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        incident_id : str
+            The incident unique ID
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/incidents/{}".format(page_id, incident_id)
+        return self.delete(url)
+
+    def page_update_incident(self, page_id, incident_id, incident):
+        """
+        Update an incident
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        incident_id : str
+            The incident unique ID
+        incident : dict[str, any]
+            The incident data to update
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/patchPagesPageIdIncidentsIncidentId
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/incidents/{}".format(page_id, incident_id)
+        return self.patch(url, data={"incident": incident})
+
+    def page_get_incident(self, page_id, incident_id):
+        """
+        Get an incident
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        incident_id : str
+            The incident unique ID
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/getPagesPageIdIncidentsIncidentId
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/incidents/{}".format(page_id, incident_id)
+        return self.get(url)
