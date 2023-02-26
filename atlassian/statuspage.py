@@ -2111,3 +2111,302 @@ class StatusPage(AtlassianRestAPI):
         """
         url = "v1/pages/{}/incidents/{}/postmortem/revert".format(page_id, incident_id)
         return self.post(url)
+
+    def page_create_component(self, page_id, component):
+        """
+        Create a component
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        component : dict[str, any]
+            The component to create
+            Available fields: "name", "description", "status", "group_id", "showcase", "only_show_if_degraded",
+            and "start_date"
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/postPagesPageIdComponents
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/components".format(page_id)
+        return self.post(url, data={"component": component})
+
+    def page_get_components(self, page_id, per_page=100, page=1):
+        """
+        Get all components
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        per_page : int
+            Number of components to return per page (default is 100)
+        page : int
+            Page number to return (default is 1)
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/getPagesPageIdComponents
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/components".format(page_id)
+        return self.get(url)
+
+    def page_update_component(self, page_id, component_id, component):
+        """
+        Update a component
+
+        Warnings
+        --------
+        If "group_id" is Null then the component will be removed from a group
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        component_id : str
+            The component unique ID
+        component : dict[str, any]
+            The component to update
+            Available fields: "name", "description", "status", "group_id", "showcase", "only_show_if_degraded",
+            and "start_date"
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/patchPagesPageIdComponentsComponentId
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/components/{}".format(page_id, component_id)
+        return self.patch(url, data={"component": component})
+
+    def page_delete_component(self, page_id, component_id):
+        """
+        Delete a component
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        component_id : str
+            The component unique ID
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/deletePagesPageIdComponentsComponentId
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/components/{}".format(page_id, component_id)
+        return self.delete(url)
+
+    def page_get_component(self, page_id, component_id):
+        """
+        Get a component
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        component_id : str
+            The component unique ID
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/getPagesPageIdComponentsComponentId
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/components/{}".format(page_id, component_id)
+        return self.get(url)
+
+    def page_get_uptime_component(self, page_id, component_id, start, end):
+        """
+        Get a component's uptime
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        component_id : str
+            The component unique ID
+        start : str
+            The start date for uptime calculation
+            (defaults to the component's start_date field or 90 days ago, whichever is more recent).
+             The maximum supported date range is six calendar months.
+             If the year is given, the date defaults to the first day of the year.
+             If the year and month are given, the start date defaults to the first day of that month.
+             The earliest supported date is January 1, 1970.
+        end : str
+            The end date for uptime calculation (defaults to today in the page's time zone).
+            The maximum supported date range is six calendar months.
+            If the year is given, the date defaults to the last day of the year.
+            If the year and month are given, the date defaults to the last day of that month.
+            The earliest supported date is January 1, 1970.
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/getPagesPageIdComponentsComponentIdUptime
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/components/{}/uptime".format(page_id, component_id)
+        return self.get(url, params={"start": start, "end": end})
+
+    def page_remove_access_users_from_component(self, page_id, component_id):
+        """
+        Remove access users from a component
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        component_id : str
+            The component unique ID
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/deletePagesPageIdComponentsComponentIdPageAccessUsers
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/components/{}/page_access_users".format(page_id, component_id)
+        return self.delete(url)
+
+    def page_add_access_users_to_component(self, page_id, component_id, page_access_user_ids):
+        """
+        Add access users to a component
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        component_id : str
+            The component unique ID
+        page_access_user_ids : list[str]
+            The users to add
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/postPagesPageIdComponentsComponentIdPageAccessUsers
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/components/{}/page_access_users".format(page_id, component_id)
+        return self.post(url, data={"page_access_user_ids": page_access_user_ids})
+
+    def page_remove_access_users_from_group(self, page_id, component_id):
+        """
+        Remove access users from a group
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        component_id : str
+            The component unique ID
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/deletePagesPageIdComponentsComponentIdPageAccessGroups
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/components/{}/page_access_groups".format(page_id, component_id)
+        return self.delete(url)
+
+    def page_add_access_users_to_group(self, page_id, component_id, page_access_group_ids):
+        """
+        Add page access groups to a component
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        component_id : str
+            The component unique ID
+        page_access_group_ids : list[str]
+            The groups to add
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/postPagesPageIdComponentsComponentIdPageAccessGroups
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/components/{}/page_access_groups".format(page_id, component_id)
+        return self.post(url, data={"page_access_group_ids": page_access_group_ids})
