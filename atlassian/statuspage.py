@@ -48,7 +48,6 @@ class SortField(Enum):
         which sorts by the relevancy of the search text
     """
 
-    "to indicate sorting by the identifying field"
     PRIMARY = "primary"
     CREATED_AT = "created_at"
     QUARANTINED_AT = "quarantined_at"
@@ -781,7 +780,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/page_access_groups".format(page_id)
+        url = "v1/pages/{}/page_access_groups".format(page_id)
         return self.get(url, params={"page": page_offset, "per_page": per_page})
 
     def page_get_access_group(self, page_id, page_access_group_id):
