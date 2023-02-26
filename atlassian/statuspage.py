@@ -62,8 +62,8 @@ class SortOrder(Enum):
     DESC = "desc"
 
 
-class UpdateStatus(Enum):
-    """The status the incident or maintenance should transition to when selecting this template"""
+class Status(Enum):
+    """The status of the incident"""
     INVESTIGATING = "investigating"
     IDENTIFIED = "identified"
     MONITORING = "monitoring"
@@ -72,6 +72,15 @@ class UpdateStatus(Enum):
     IN_PROGRESS = "in_progress"
     VERIFYING = "verifying"
     COMPLETED = "completed"
+
+
+class Impact(Enum):
+    """The impact of the incident"""
+    CRITICAL = "critical"
+    MAJOR = "major"
+    MINOR = "minor"
+    MAINTENANCE = "maintenance"
+    NONE = "none"
 
 
 class StatusPage(AtlassianRestAPI):
@@ -300,7 +309,7 @@ class StatusPage(AtlassianRestAPI):
         Examples
         --------
         >>> client = StatusPage(url="https://api.statuspage.io", token="YOUR-TOKEN")
-        >>> client.update_embed_config_settings(
+        >>> client.page_update_embed_config_settings(
         ...    "PAGE-ID",
         ...     {
         ...         "position": "string",
