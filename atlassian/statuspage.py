@@ -1970,3 +1970,145 @@ class StatusPage(AtlassianRestAPI):
         """
         url = "v1/pages/{}/incidents/{}/subscribers/{}/resend_confirmation".format(page_id, incident_id, subscriber_id)
         return self.post(url)
+
+    def page_get_postmortem(self, page_id, incident_id):
+        """
+        Get a postmortem
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        incident_id : str
+            The incident unique ID
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/getPagesPageIdIncidentsIncidentIdPostmortem
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/incidents/{}/postmortem".format(page_id, incident_id)
+        return self.get(url)
+
+    def page_create_postmortem(self, page_id, incident_id, postmortem):
+        """
+        Create a postmortem
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        incident_id : str
+            The incident unique ID
+        postmortem : str
+            Body of Postmortem to create.
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/putPagesPageIdIncidentsIncidentIdPostmortem
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/incidents/{}/postmortem".format(page_id, incident_id)
+        return self.post(url, data={"postmortem": {
+            "body_draft": postmortem
+        }})
+
+    def page_delete_postmortem(self, page_id, incident_id):
+        """
+        Delete a postmortem
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        incident_id : str
+            The incident unique ID
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/deletePagesPageIdIncidentsIncidentIdPostmortem
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/incidents/{}/postmortem".format(page_id, incident_id)
+        return self.delete(url)
+
+    def page_publish_postmortem(self, page_id, incident_id, postmortem):
+        """
+        Publish a postmortem
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        incident_id : str
+            The incident unique ID
+        postmortem : dict[str, any]
+            Body of Postmortem to publish
+            Available fields: "notify_twitter", "notify_subscribers", and "custom_tweet"
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/putPagesPageIdIncidentsIncidentIdPostmortemPublish
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/incidents/{}/postmortem/publish".format(page_id, incident_id)
+        return self.post(url, data={"postmortem": postmortem})
+
+    def page_revert_postmortem(self, page_id, incident_id):
+        """
+        Revert a postmortem
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        incident_id : str
+            The incident unique ID
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/putPagesPageIdIncidentsIncidentIdPostmortemRevert
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/incidents/{}/postmortem/revert".format(page_id, incident_id)
+        return self.post(url)
