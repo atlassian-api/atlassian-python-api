@@ -1796,3 +1796,35 @@ class StatusPage(AtlassianRestAPI):
         """
         url = "v1/pages/{}/incidents/{}".format(page_id, incident_id)
         return self.get(url)
+
+    def page_update_incident_updates(self, page_id, incident_id, incident_update_id, incident_update):
+        """
+        Update a previous incident update
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        incident_id : str
+            The incident unique ID
+        incident_update_id : str
+            The incident update unique ID
+        incident_update : dict[str, any]
+            The incident update data to update
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/patchPagesPageIdIncidentsIncidentIdIncidentUpdatesIncidentUpdateId
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/incidents/{}/incidents_update/{}".format(page_id, incident_id, incident_update_id)
+        return self.patch(url, data={"incident_update": incident_update})
+
