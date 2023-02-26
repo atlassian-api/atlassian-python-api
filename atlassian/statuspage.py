@@ -62,6 +62,18 @@ class SortOrder(Enum):
     DESC = "desc"
 
 
+class UpdateStatus(Enum):
+    """The status the incident or maintenance should transition to when selecting this template"""
+    INVESTIGATING = "investigating"
+    IDENTIFIED = "identified"
+    MONITORING = "monitoring"
+    RESOLVED = "resolved"
+    SCHEDULED = "scheduled"
+    IN_PROGRESS = "in_progress"
+    VERIFYING = "verifying"
+    COMPLETED = "completed"
+
+
 class StatusPage(AtlassianRestAPI):
     """StatusPage API wrapper."""
 
@@ -1427,3 +1439,66 @@ class StatusPage(AtlassianRestAPI):
         """
         url = "v1/pages/{}/subscribers/resend_confirmation".format(page_id)
         return self.post(url, data={"subscribers": subscriber_ids})
+
+    def page_create_template(self, page_id, template):
+        """
+        Create a template. "name", "title" and "body" is required in the template.
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        template : dict[str, any]
+            The template to create
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/postPagesPageIdIncidentTemplates
+
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/templates".format(page_id)
+        return self.post(url, data={"template": template})
+
+    def page_get_templates(self, page_id, page_offset=1, per_page=100):
+        """
+        Get a list of templates
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        page_offset : int
+            The page offset to return. Defaults to 1.
+        per_page : int
+            The number of templates to return per page. Defaults to 100.
+            If this is set to 0, a default and maximum limit of 100
+            will be imposed and this endpoint will return paginated data
+            even if this query parameter is not provided.
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/getPagesPageIdIncidentTemplates
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/templates".format(page_id)
+        return self.get(url, params={
+            "page": page_offset,
+            "per_page": per_page
+        })
