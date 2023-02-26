@@ -1828,3 +1828,145 @@ class StatusPage(AtlassianRestAPI):
         url = "v1/pages/{}/incidents/{}/incidents_update/{}".format(page_id, incident_id, incident_update_id)
         return self.patch(url, data={"incident_update": incident_update})
 
+    def page_create_incident_subscriber(self, page_id, incident_id, subscriber):
+        """
+        Create a subscriber for an incident
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        incident_id : str
+            The incident unique ID
+        subscriber : dict[str, any]
+            The subscriber data to create
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/postPagesPageIdIncidentsIncidentIdSubscribers
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/incidents/{}/subscribers".format(page_id, incident_id)
+        return self.post(url, data={"subscriber": subscriber})
+
+    def page_list_incident_subscribers(self, page_id, incident_id, page_offset=1, per_page=100):
+        """
+        Get a list of subscribers for an incident
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        incident_id : str
+            The incident unique ID
+        page_offset : int
+            The page offset to return. Defaults to 1.
+        per_page : int
+            The number of subscribers to return per page. Defaults to 100.
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/getPagesPageIdIncidentsIncidentIdSubscribers
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/incidents/{}/subscribers".format(page_id, incident_id)
+        return self.get(url)
+
+    def page_unsubscribe_incident_subscriber(self, page_id, incident_id, subscriber_id):
+        """
+        Unsubscribe a subscriber from an incident
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        incident_id : str
+            The incident unique ID
+        subscriber_id : str
+            The subscriber unique ID
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/incidents/{}/subscribers/{}".format(page_id, incident_id, subscriber_id)
+        return self.delete(url)
+
+    def page_get_incident_subscriber(self, page_id, incident_id, subscriber_id):
+        """
+        Get a subscriber for an incident
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        incident_id : str
+            The incident unique ID
+        subscriber_id : str
+            The subscriber unique ID
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/getPagesPageIdIncidentsIncidentIdSubscribersSubscriberId
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/incidents/{}/subscribers/{}".format(page_id, incident_id, subscriber_id)
+        return self.get(url)
+
+    def page_resend_confirmation_incident_subscriber(self, page_id, incident_id, subscriber_id):
+        """
+        Resend the confirmation email for a subscriber
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        incident_id : str
+            The incident unique ID
+        subscriber_id : str
+            The subscriber unique ID
+
+        Warnings
+        --------
+        Only returns 201 code
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/incidents/{}/subscribers/{}/resend_confirmation".format(page_id, incident_id, subscriber_id)
+        return self.post(url)
