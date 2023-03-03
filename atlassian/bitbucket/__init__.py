@@ -2190,7 +2190,41 @@ class Bitbucket(BitbucketBase):
         if limit:
             params["limit"] = limit
         return self._get_paged(url, params=params)
-
+    
+   def get_commit_changes(
+        self,
+        project_key,
+        repository_slug,
+        hash_newest=None,
+        merges="include",
+        commitId=None
+    ):
+        """
+        Get commit list from repo
+        :param project_key:
+        :param repository_slug:
+        :param hash_newest:
+        :param merges: OPTIONAL: include|exclude|only if present, controls how merge commits should be filtered.
+        :param commitId
+        :return:
+        """
+        url = self._url_commit_c(project_key, repository_slug, commitId=commitId)
+        params = {"merges": merges}
+        if hash_newest:
+            params["until"] = hash_newest
+        return self.get(url, params=params)
+    
+    def _url_commit_c(self, project_key, repository_slug, api_root=None, api_version=None, commitId=None):
+        return "{}/commits/{}/changes".format(
+            self._url_repo(
+                project_key,
+                repository_slug,
+                api_root=api_root,
+                api_version=api_version,
+            ),
+            commitId
+        )
+    
     def _url_commit(
         self,
         project_key,
