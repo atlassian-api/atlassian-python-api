@@ -2410,3 +2410,187 @@ class StatusPage(AtlassianRestAPI):
         """
         url = "v1/pages/{}/components/{}/page_access_groups".format(page_id, component_id)
         return self.post(url, data={"page_access_group_ids": page_access_group_ids})
+
+    def page_create_component_group(self, page_id, description, components_group):
+        """
+        Create a component group
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        description : str
+            The description of the component group
+        components_group : dick[str, any]
+            The components to add to the group
+            Available fields: "components" (array of strings), "name"
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/postPagesPageIdComponentGroups
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/component_groups".format(page_id)
+        return self.post(url, data={"description": description, "components_group": components_group})
+
+    def page_get_list_of_component_groups(self, page_id, per_page=100, page=1):
+        """
+        Get a list of component groups
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        per_page : int
+            The number of results to return per page (defaults to 100)
+        page : int
+            The page to return (defaults to 1)
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/getPagesPageIdComponentGroups
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/component_groups".format(page_id)
+        return self.get(url, params={"per_page": per_page, "page": page})
+
+    def page_update_component_group(self, page_id, id, description, component_group):
+        """
+        Update a component group
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        id : str
+            Component group identifier
+        description : str
+            The description of the component group
+        component_group : dict[str, any]
+            The components to update
+            Available fields: "name", "components" (array of strings)
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/patchPagesPageIdComponentGroupsId
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/component_groups/{}".format(page_id, id)
+        return self.patch(url, data={"description": description, "component_group": component_group})
+
+    def page_delete_component_group(self, page_id, id):
+        """
+        Delete a component group
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        id : str
+            Component group identifier
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/deletePagesPageIdComponentGroupsId
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/component_groups/{}".format(page_id, id)
+        return self.delete(url)
+
+    def page_get_component_group(self, page_id, id):
+        """
+        Get a component group
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        id : str
+            Component group identifier
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/getPagesPageIdComponentGroupsId
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/component_groups/{}".format(page_id, id)
+        return self.get(url)
+
+    def page_get_uptime_for_component_group(self, page_id, id, start, end):
+        """
+        Get uptime for a component group
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        id : str
+            Component group identifier
+        start : str
+            The start date for uptime calculation (defaults to the date of the component in the group with the earliest start_date, or 90 days ago, whichever is more recent).
+            The maximum supported date range is six calendar months.
+            If the year is given, the date defaults to the first day of the year.
+            If the year and month are given, the start date defaults to the first day of that month.
+            The earliest supported date is January 1, 1970.
+        end : str
+            The end date for uptime calculation (defaults to today in the page's time zone).
+            The maximum supported date range is six calendar months.
+            If the year is given, the date defaults to the last day of the year.
+            If the year and month are given, the date defaults to the last day of that month.
+            The earliest supported date is January 1, 1970.
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/getPagesPageIdComponentGroupsIdUptime
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/component_groups/{}/uptime".format(page_id, id)
+        return self.get(url, params={"start": start, "end": end})
