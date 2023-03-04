@@ -63,6 +63,7 @@ class SortOrder(Enum):
 
 class Status(Enum):
     """The status of the incident"""
+
     INVESTIGATING = "investigating"
     IDENTIFIED = "identified"
     MONITORING = "monitoring"
@@ -75,11 +76,22 @@ class Status(Enum):
 
 class Impact(Enum):
     """The impact of the incident"""
+
     CRITICAL = "critical"
     MAJOR = "major"
     MINOR = "minor"
     MAINTENANCE = "maintenance"
     NONE = "none"
+
+
+class Transform(Enum):
+    """The transform to apply to the metric"""
+
+    AVERAGE = "average"
+    COUNT = "count"
+    MAX = "max"
+    MIN = "min"
+    SUM = "sum"
 
 
 class StatusPage(AtlassianRestAPI):
@@ -611,23 +623,23 @@ class StatusPage(AtlassianRestAPI):
     def page_get_metrics_access_user(self, page_id, page_access_user_id):
         """
         Get metrics for page access user
-        
+
         Parameters
         ----------
         page_id : str
             Your page unique ID
         page_access_user_id : str
             Page Access User Identifier
-        
+
         Notes
         -----
         See available fields: https://developer.statuspage.io/#operation/getPagesPageIdPageAccessUsersPageAccessUserIdMetrics
-        
+
         Raises
         ------
         requests.exceptions.HTTPError
             Use `json.loads(exceptions.response.content)` to get API error info
-            
+
         Returns
         -------
         any
@@ -638,7 +650,7 @@ class StatusPage(AtlassianRestAPI):
     def page_add_metrics_access_user(self, page_id, page_access_user_id, metric_ids):
         """
         Add metrics for page access user
-        
+
         Parameters
         ----------
         page_id : str
@@ -647,16 +659,16 @@ class StatusPage(AtlassianRestAPI):
             Page Access User Identifier
         metric_ids : list[str]
             List of metrics to add
-        
+
         Notes
         -----
         See available fields: https://developer.statuspage.io/#operation/putPagesPageIdPageAccessUsersPageAccessUserIdMetrics
-        
+
         Raises
         ------
         requests.exceptions.HTTPError
             Use `json.loads(exceptions.response.content)` to get API error info
-            
+
         Returns
         -------
         any
@@ -667,7 +679,7 @@ class StatusPage(AtlassianRestAPI):
     def page_replace_metrics_access_user(self, page_id, page_access_user_id, metric_ids):
         """
         Replace metrics for page access user
-        
+
         Parameters
         ----------
         page_id : str
@@ -676,16 +688,16 @@ class StatusPage(AtlassianRestAPI):
             Page Access User Identifier
         metric_ids : list[str]
             List of metrics to replace
-        
+
         Notes
         -----
         See available fields: https://developer.statuspage.io/#operation/postPagesPageIdPageAccessUsersPageAccessUserIdMetrics
-        
+
         Raises
         ------
         requests.exceptions.HTTPError
             Use `json.loads(exceptions.response.content)` to get API error info
-            
+
         Returns
         -------
         any
@@ -725,7 +737,7 @@ class StatusPage(AtlassianRestAPI):
     def page_delete_metric_access_user(self, page_id, page_access_user_id, metric_id):
         """
         Delete metric for page access user
-        
+
         Parameters
         ----------
         page_id : str
@@ -734,16 +746,16 @@ class StatusPage(AtlassianRestAPI):
             Page Access User Identifier
         metric_id : str
             Identifier of metric requested
-        
+
         Notes
         -----
         See available fields: https://developer.statuspage.io/#operation/deletePagesPageIdPageAccessUsersPageAccessUserIdMetricsMetricId
-        
+
         Raises
         ------
         requests.exceptions.HTTPError
             Use `json.loads(exceptions.response.content)` to get API error info
-            
+
         Returns
         -------
         any
@@ -754,7 +766,7 @@ class StatusPage(AtlassianRestAPI):
     def page_get_access_groups(self, page_id, page_offset=0, per_page=100):
         """
         Get a list of page access groups
-        
+
         Parameters
         ----------
         page_id : str
@@ -766,16 +778,16 @@ class StatusPage(AtlassianRestAPI):
             Number of results to return per page. Beginning February 28, 2023,
             a default and maximum limit of 100 will be imposed and this endpoint will return paginated data
             even if this query parameter is not provided.
-        
+
         Notes
         -----
         See available fields: https://developer.statuspage.io/#operation/getPagesPageIdPageAccessGroups
-        
+
         Raises
         ------
         requests.exceptions.HTTPError
             Use `json.loads(exceptions.response.content)` to get API error info
-            
+
         Returns
         -------
         any
@@ -810,16 +822,17 @@ class StatusPage(AtlassianRestAPI):
         url = "v1/pages/{}/page_access_groups/{}".format(page_id, page_access_group_id)
         return self.get(url)
 
-    def page_create_access_group(self, page_id, name, external_identifier, component_ids, metric_ids,
-                                 page_access_user_ids):
+    def page_create_access_group(
+        self, page_id, name, external_identifier, component_ids, metric_ids, page_access_user_ids
+    ):
         """
         Create a page access group
-        
+
         Parameters
         ----------
         page_id : str
             Your page unique ID
-        name : str 
+        name : str
             Name for this Group
         external_identifier : str
             Associates group with external group
@@ -830,30 +843,36 @@ class StatusPage(AtlassianRestAPI):
         Notes
         -----
         See available fields: https://developer.statuspage.io/#operation/postPagesPageIdPageAccessGroups
-        
+
         Raises
         ------
         requests.exceptions.HTTPError
             Use `json.loads(exceptions.response.content)` to get API error info
-            
+
         Returns
         -------
         any
         """
         url = "v1/pages/{}/page_access_groups".format(page_id)
-        return self.post(url, data={"page_access_group": {
-            "name": name,
-            "external_identifier": external_identifier,
-            "component_ids": component_ids,
-            "metric_ids": metric_ids,
-            "page_access_user_ids": page_access_user_ids
-        }})
+        return self.post(
+            url,
+            data={
+                "page_access_group": {
+                    "name": name,
+                    "external_identifier": external_identifier,
+                    "component_ids": component_ids,
+                    "metric_ids": metric_ids,
+                    "page_access_user_ids": page_access_user_ids,
+                }
+            },
+        )
 
-    def page_replace_access_group(self, page_id, page_access_group_id, name, external_identifier, component_ids,
-                                  metric_ids, page_access_user_ids):
+    def page_replace_access_group(
+        self, page_id, page_access_group_id, name, external_identifier, component_ids, metric_ids, page_access_user_ids
+    ):
         """
         Update a page access group
-        
+
         Parameters
         ----------
         page_id : str
@@ -867,49 +886,54 @@ class StatusPage(AtlassianRestAPI):
         component_ids : list[str]
         metric_ids : list[str]
         page_access_user_ids : list[str]
-        
+
         Notes
         -----
         See available fields: https://developer.statuspage.io/#operation/putPagesPageIdPageAccessGroupsPageAccessGroupId
-        
+
         Raises
         ------
         requests.exceptions.HTTPError
             Use `json.loads(exceptions.response.content)` to get API error info
-            
+
         Returns
         -------
         any
         """
         url = "v1/pages/{}/page_access_groups/{}".format(page_id, page_access_group_id)
-        return self.put(url, data={"page_access_group": {
-            "name": name,
-            "external_identifier": external_identifier,
-            "component_ids": component_ids,
-            "metric_ids": metric_ids,
-            "page_access_user_ids": page_access_user_ids
-        }})
+        return self.put(
+            url,
+            data={
+                "page_access_group": {
+                    "name": name,
+                    "external_identifier": external_identifier,
+                    "component_ids": component_ids,
+                    "metric_ids": metric_ids,
+                    "page_access_user_ids": page_access_user_ids,
+                }
+            },
+        )
 
     def page_delete_access_group(self, page_id, page_access_group_id):
         """
         Remove a page access group
-        
+
         Parameters
         ----------
         page_id : str
             Your page unique ID
         page_access_group_id : str
             Page Access Group Identifier
-        
+
         Notes
         -----
         See available fields: https://developer.statuspage.io/#operation/deletePagesPageIdPageAccessGroupsPageAccessGroupId
-        
+
         Raises
         ------
         requests.exceptions.HTTPError
             Use `json.loads(exceptions.response.content)` to get API error info
-            
+
         Returns
         -------
         any
@@ -920,7 +944,7 @@ class StatusPage(AtlassianRestAPI):
     def page_add_components_to_access_group(self, page_id, page_access_group_id, component_ids):
         """
         Add components to page access group
-        
+
         Parameters
         ----------
         page_id : str
@@ -929,16 +953,16 @@ class StatusPage(AtlassianRestAPI):
             Page Access Group Identifier
         component_ids : list[str]
             List of Component identifiers
-        
+
         Notes
         -----
         See available fields: https://developer.statuspage.io/#tag/page-access-group-components
-        
+
         Raises
         ------
         requests.exceptions.HTTPError
             Use `json.loads(exceptions.response.content)` to get API error info
-            
+
         Returns
         -------
         any
@@ -949,7 +973,7 @@ class StatusPage(AtlassianRestAPI):
     def page_replace_components_for_access_page(self, page_id, page_access_group_id, component_ids):
         """
         Replace components for a page access group
-        
+
         Parameters
         ----------
         page_id : str
@@ -958,16 +982,16 @@ class StatusPage(AtlassianRestAPI):
             Page Access Group Identifier
         component_ids : list[str]
             List of components codes to set on the page access group
-        
+
         Notes
         -----
         See available fields: https://developer.statuspage.io/#operation/postPagesPageIdPageAccessGroupsPageAccessGroupIdComponents
-        
+
         Raises
         ------
         requests.exceptions.HTTPError
             Use `json.loads(exceptions.response.content)` to get API error info
-            
+
         Returns
         -------
         any
@@ -1065,7 +1089,7 @@ class StatusPage(AtlassianRestAPI):
         any
         """
         url = "v1/pages/{}/page_access_groups/{}/components".format(page_id, page_access_group_id)
-        return self.get(url)
+        return self.get(url, params={"page": page_offset, "per_page": per_page})
 
     def page_get_subscriber(self, page_id, subscriber_id):
         """
@@ -1094,8 +1118,9 @@ class StatusPage(AtlassianRestAPI):
         url = "v1/pages/{}/subscribers/{}".format(page_id, subscriber_id)
         return self.get(url)
 
-    def page_get_subscribers(self, page_id, q, subscriber_type, subscriber_state, sort_field, sort_direction,
-                             page_offset=0, per_page=100):
+    def page_get_subscribers(
+        self, page_id, q, subscriber_type, subscriber_state, sort_field, sort_direction, page_offset=0, per_page=100
+    ):
         """
         Get all subscribers
 
@@ -1137,15 +1162,18 @@ class StatusPage(AtlassianRestAPI):
         any
         """
         url = "v1/pages/{}/subscribers".format(page_id)
-        return self.get(url, params={
-            "page": page_offset,
-            "per_page": per_page,
-            "q": q,
-            "type": subscriber_type,
-            "state": subscriber_state,
-            "sort_field": sort_field,
-            "sort_direction": sort_direction
-        })
+        return self.get(
+            url,
+            params={
+                "page": page_offset,
+                "per_page": per_page,
+                "q": q,
+                "type": subscriber_type,
+                "state": subscriber_state,
+                "sort_field": sort_field,
+                "sort_direction": sort_direction,
+            },
+        )
 
     def page_update_subscriber(self, page_id, subscriber_id, component_ids):
         """
@@ -1293,10 +1321,7 @@ class StatusPage(AtlassianRestAPI):
         any
         """
         url = "v1/pages/{}/unsubscribed".format(page_id)
-        return self.get(url, params={
-            "page": page_offset,
-            "per_page": per_page
-        })
+        return self.get(url, params={"page": page_offset, "per_page": per_page})
 
     def page_count_subscribers_by_type(self, page_id, subscriber_type, subscriber_state):
         """
@@ -1326,10 +1351,7 @@ class StatusPage(AtlassianRestAPI):
         any
         """
         url = "v1/pages/{}/subscribers/count".format(page_id)
-        return self.get(url, params={
-            "type": subscriber_type,
-            "state": subscriber_state
-        })
+        return self.get(url, params={"type": subscriber_type, "state": subscriber_state})
 
     def page_get_histogram_of_subscribers_with_state(self, page_id):
         """
@@ -1385,8 +1407,9 @@ class StatusPage(AtlassianRestAPI):
         url = "v1/pages/{}/subscribers/reactivate".format(page_id)
         return self.post(url, data={"subscribers": subscriber_ids, "type": subscriber_type})
 
-    def page_unsubscribe_subscribers(self, page_id, subscriber_ids, subscriber_type,
-                                     skip_unsubscription_notification=False):
+    def page_unsubscribe_subscribers(
+        self, page_id, subscriber_ids, subscriber_type, skip_unsubscription_notification=False
+    ):
         """
         Unsubscribe a list of subscribers
 
@@ -1416,8 +1439,14 @@ class StatusPage(AtlassianRestAPI):
         any
         """
         url = "v1/pages/{}/subscribers/unsubscribe".format(page_id)
-        return self.post(url, data={"subscribers": subscriber_ids, "type": subscriber_type,
-                                    "skip_unsubscription_notification": skip_unsubscription_notification})
+        return self.post(
+            url,
+            data={
+                "subscribers": subscriber_ids,
+                "type": subscriber_type,
+                "skip_unsubscription_notification": skip_unsubscription_notification,
+            },
+        )
 
     def page_resend_confirmations_to_subscribers(self, page_id, subscriber_ids):
         """
@@ -1506,10 +1535,7 @@ class StatusPage(AtlassianRestAPI):
         any
         """
         url = "v1/pages/{}/templates".format(page_id)
-        return self.get(url, params={
-            "page": page_offset,
-            "per_page": per_page
-        })
+        return self.get(url, params={"page": page_offset, "per_page": per_page})
 
     def page_create_incident(self, page_id, incident):
         """
@@ -1571,11 +1597,7 @@ class StatusPage(AtlassianRestAPI):
         any
         """
         url = "v1/pages/{}/incidents".format(page_id)
-        return self.get(url, params={
-            "q": q,
-            "page": page_offset,
-            "per_page": per_page
-        })
+        return self.get(url, params={"q": q, "page": page_offset, "per_page": per_page})
 
     def page_list_active_maintances(self, page_id, page_offset=1, per_page=100):
         """
@@ -1607,10 +1629,7 @@ class StatusPage(AtlassianRestAPI):
         any
         """
         url = "v1/pages/{}/incidents/active_maintenance".format(page_id)
-        return self.get(url, params={
-            "page": page_offset,
-            "per_page": per_page
-        })
+        return self.get(url, params={"page": page_offset, "per_page": per_page})
 
     def page_list_upcoming_incidents(self, page_id, page_offset=1, per_page=100):
         """
@@ -1642,10 +1661,7 @@ class StatusPage(AtlassianRestAPI):
         any
         """
         url = "v1/pages/{}/incidents/upcoming".format(page_id)
-        return self.get(url, params={
-            "page": page_offset,
-            "per_page": per_page
-        })
+        return self.get(url, params={"page": page_offset, "per_page": per_page})
 
     def page_list_scheduled_incidents(self, page_id, page_offset=1, per_page=100):
         """
@@ -1677,10 +1693,7 @@ class StatusPage(AtlassianRestAPI):
         any
         """
         url = "v1/pages/{}/incidents/scheduled".format(page_id)
-        return self.get(url, params={
-            "page": page_offset,
-            "per_page": per_page
-        })
+        return self.get(url, params={"page": page_offset, "per_page": per_page})
 
     def page_list_unresolved_incidents(self, page_id, page_offset=1, per_page=100):
         """
@@ -1712,10 +1725,7 @@ class StatusPage(AtlassianRestAPI):
         any
         """
         url = "v1/pages/{}/incidents/unresolved".format(page_id)
-        return self.get(url, params={
-            "page": page_offset,
-            "per_page": per_page
-        })
+        return self.get(url, params={"page": page_offset, "per_page": per_page})
 
     def page_delete_incident(self, page_id, incident_id):
         """
@@ -1885,7 +1895,7 @@ class StatusPage(AtlassianRestAPI):
         any
         """
         url = "v1/pages/{}/incidents/{}/subscribers".format(page_id, incident_id)
-        return self.get(url)
+        return self.get(url, params={"page": page_offset, "per_page": per_page})
 
     def page_unsubscribe_incident_subscriber(self, page_id, incident_id, subscriber_id):
         """
@@ -2024,9 +2034,7 @@ class StatusPage(AtlassianRestAPI):
         any
         """
         url = "v1/pages/{}/incidents/{}/postmortem".format(page_id, incident_id)
-        return self.post(url, data={"postmortem": {
-            "body_draft": postmortem
-        }})
+        return self.post(url, data={"postmortem": {"body_draft": postmortem}})
 
     def page_delete_postmortem(self, page_id, incident_id):
         """
@@ -2168,7 +2176,7 @@ class StatusPage(AtlassianRestAPI):
         any
         """
         url = "v1/pages/{}/components".format(page_id)
-        return self.get(url)
+        return self.get(url, params={"per_page": per_page, "page": page})
 
     def page_update_component(self, page_id, component_id, component):
         """
@@ -2594,3 +2602,325 @@ class StatusPage(AtlassianRestAPI):
         """
         url = "v1/pages/{}/component_groups/{}/uptime".format(page_id, id)
         return self.get(url, params={"start": start, "end": end})
+
+    def page_add_data_points_to_metric(self, page_id, data):
+        """
+        Add data points to a metric
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        data : dict[str, any]
+            The data points to add
+            Requires "metric_id", which specifies identifier to add data to
+            In "metric_id" you should have array of "timestamp" and "value"
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/postPagesPageIdMetricsData
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/metrics/data".format(page_id)
+        return self.post(url, data={"data": data})
+
+    def page_get_list_of_metrics(self, page_id, per_page=100, page=1):
+        """
+        Get a list of metrics
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        per_page : int
+            The number of results to return per page (defaults to 100)
+        page : int
+            The page to return (defaults to 1)
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/getPagesPageIdMetrics
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/metrics".format(page_id)
+        return self.get(url, params={"per_page": per_page, "page": page})
+
+    def page_update_metric(self, page_id, metric_id, metric):
+        """
+        Update a metric
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        metric_id : str
+            Metric identifier
+        metric : dict[str, any]
+            The metric to update
+
+            Available fields in metric: "name", "metric_identifier"
+            "name" - Name of metric,
+            "metric_identifier" - Metric Display identifier used to look up the metric data from the provider
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/patchPagesPageIdMetricsMetricId
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/metrics/{}".format(page_id, metric_id)
+        return self.patch(url, data={"metric": metric})
+
+    def page_update_metric_data(self, page_id, metric_id, metric):
+        """
+        Update metric data
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        metric_id : str
+            Metric identifier
+        metric : dict[str, any]
+            The metric to update
+
+            Available fields in metric: "name", "metric_identifier"
+            "name" - Name of metric,
+            "metric_identifier" - Metric Display identifier used to look up the metric data from the provider
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/patchPagesPageIdMetricsMetricId
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/metrics/{}".format(page_id, metric_id)
+        return self.patch(url, data={"metric": metric})
+
+    def page_delete_metric(self, page_id, metric_id):
+        """
+        Delete a metric
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        metric_id : str
+            Metric identifier
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/deletePagesPageIdMetricsMetricId
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/metrics/{}".format(page_id, metric_id)
+        return self.delete(url)
+
+    def page_get_metric(self, page_id, metric_id):
+        """
+        Get a metric
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        metric_id : str
+            Metric identifier
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/getPagesPageIdMetricsMetricId
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/metrics/{}".format(page_id, metric_id)
+        return self.get(url)
+
+    def page_reset_data_for_metric(self, page_id, metric_id):
+        """
+        Reset data for a metric
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        metric_id : str
+            Metric identifier
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/deletePagesPageIdMetricsMetricIdData
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/metrics/{}/data".format(page_id, metric_id)
+        return self.delete(url)
+
+    def page_add_data_to_metric(self, page_id, metric_id, data):
+        """
+        Add data to a metric
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        metric_id : str
+            Metric identifier
+        data : dict[str, any]
+            The data to add
+
+            Requires "timestamp" and "value"
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/postPagesPageIdMetricsMetricIdData
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/metrics/{}/data".format(page_id, metric_id)
+        return self.post(url, data={"data": data})
+
+    def page_list_metric_for_metric_provider(self, page_id, metric_provider_id, per_page=100, page=1):
+        """
+        List metrics for a metric provider
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        metric_provider_id : str
+            Metric provider identifier
+        per_page : int
+            The number of results to return per page (defaults to 100)
+        page : int
+            The page to return (defaults to 1)
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/getPagesPageIdMetricsProvidersMetricsProviderIdMetrics
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/metrics_providers/{}/metrics".format(page_id, metric_provider_id)
+        return self.get(url, params={"per_page": per_page, "page": page})
+
+    def page_create_metric_for_metric_provider(self, page_id, metric_provider_id, metric):
+        """
+        Create a metric for a metric provider
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        metric_provider_id : str
+            Metric provider identifier
+        metric : dict[str, any]
+            The metric to create
+
+            Available fields in metric: "name", "metric_identifier", "transform", "suffix",
+            "y_axis_min", "y_axis_max", "y_axis_hidden", "display",
+            "decimal_places", "tooltip_description"
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/postPagesPageIdMetricsProvidersMetricsProviderIdMetrics
+
+        Descriptions of the fields that can be added to the metric:
+            "name" - Name of metric,
+
+            "metric_identifier" - The identifier used to look up the metric data from the provider
+
+            "transform" - The transform to apply to metric before pulling into Statuspage.
+            See transform enum for available values
+
+            "suffix" - Suffix to describe the units on the graph
+
+            "y_axis_min" - Minimum value for the y-axis
+
+            "y_axis_max" - Maximum value for the y-axis
+
+            "y_axis_hidden" - Should the values on the y-axis be hidden on render
+
+            "display" - Should the metric be displayed on the status page
+
+            "decimal_places" - How many decimal places to render on the graph
+
+            "tooltip_description" - Description to show on the tooltip
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/metrics_providers/{}/metrics".format(page_id, metric_provider_id)
+        return self.post(url, data={"metric": metric})
