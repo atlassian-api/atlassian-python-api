@@ -95,6 +95,16 @@ class Transform(Enum):
     SUM = "sum"
 
 
+class MetricProviderType(Enum):
+    """The type of metric provider"""
+
+    PINGDOM = "Pingdom"
+    NEW_RELIC = "NewRelic"
+    LIBRATO = "Librato"
+    DATADOG = "Datadog"
+    SELF = "Self"
+
+
 class StatusPage(AtlassianRestAPI):
     """StatusPage API wrapper."""
 
@@ -2925,3 +2935,162 @@ class StatusPage(AtlassianRestAPI):
         """
         url = "v1/pages/{}/metrics_providers/{}/metrics".format(page_id, metric_provider_id)
         return self.post(url, data={"metric": metric})
+
+    def page_list_metric_providers(self, page_id):
+        """
+        Get a list of metric providers
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/getPagesPageIdMetricsProviders
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/metrics_providers".format(page_id)
+        return self.get(url)
+
+    def page_create_metric_provider(self, page_id, metric_provider):
+        """
+        Create a metric provider
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        metric_provider : dict[str, any]
+            The metric provider to create
+
+            Available fields in metric_provider: "email", "password", "api_key", "api_token",
+            "application_key", "type", "metric_base_uri"
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/postPagesPageIdMetricsProviders
+
+        Descriptions of the fields that can be added to the metric_provider:
+            "email" - Required by the Librato metrics provider
+
+            "password" - Just a password!
+
+            "api_key" - Required by the Datadog and NewRelic type metrics providers
+
+            "api_token" - Required by the Librato, Datadog and Pingdom type metrics providers
+
+            "application_key" - Required by the Pingdom-type metrics provider
+
+            "type" - The type of metrics provider. See MetricProviderType enum for available values
+
+            "metric_base_uri" - The base URI for the metrics provider.
+            Required by the Datadog and NewRelic type metrics providers.
+
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/metrics_providers".format(page_id)
+        return self.post(url, data={"metric_provider": metric_provider})
+
+    def page_get_metric_provider(self, page_id, metric_provider_id):
+        """
+        Get a metric provider
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        metric_provider_id : str
+            Metric provider identifier
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/getPagesPageIdMetricsProvidersMetricsProviderId
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/metrics_providers/{}".format(page_id, metric_provider_id)
+        return self.get(url)
+
+    def page_update_metric_provider(self, page_id, metric_provider_id, metric_provider):
+        """
+        Update a metric provider
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        metric_provider_id : str
+            Metric provider identifier
+        metric_provider : dict[str, any]
+            Metric provider to update
+
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Notes
+        -----
+        See available fields: https://developer.statuspage.io/#operation/getPagesPageIdMetricsProvidersMetricsProviderId
+
+        Available fields in metric_provider: "type", "metric_base_uri"
+
+        Descriptions of the fields that can be added to the metric_provider:
+            "type" - The type of metrics provider. See MetricProviderType enum for available values
+
+            "metric_base_uri" - The base URI for the metrics provider.
+            Required by the Datadog and NewRelic type metrics providers.
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/metrics_providers/{}".format(page_id, metric_provider_id)
+        return self.patch(url, data={"metric_provider": metric_provider})
+
+    def page_delete_metric_provider(self, page_id, metric_provider_id):
+        """
+        Delete a metric provider
+
+        Parameters
+        ----------
+        page_id : str
+            Your page unique ID
+        metric_provider_id : str
+            Metric provider identifier
+
+        Raises
+        ------
+        requests.exceptions.HTTPError
+            Use `json.loads(exceptions.response.content)` to get API error info
+
+        Returns
+        -------
+        any
+        """
+        url = "v1/pages/{}/metrics_providers/{}".format(page_id, metric_provider_id)
+        return self.delete(url)
