@@ -1,4 +1,5 @@
 # coding=utf-8
+"""Statuspage API wrapper."""
 import logging
 from enum import Enum
 
@@ -2478,7 +2479,7 @@ class StatusPage(AtlassianRestAPI):
         url = "v1/pages/{}/component_groups".format(page_id)
         return self.get(url, params={"per_page": per_page, "page": page})
 
-    def page_update_component_group(self, page_id, id, description, component_group):
+    def page_update_component_group(self, page_id, component_group_id, description, component_group):
         """
         Update a component group
 
@@ -2486,7 +2487,7 @@ class StatusPage(AtlassianRestAPI):
         ----------
         page_id : str
             Your page unique ID
-        id : str
+        component_group_id : str
             Component group identifier
         description : str
             The description of the component group
@@ -2507,10 +2508,10 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/component_groups/{}".format(page_id, id)
+        url = "v1/pages/{}/component_groups/{}".format(page_id, component_group_id)
         return self.patch(url, data={"description": description, "component_group": component_group})
 
-    def page_delete_component_group(self, page_id, id):
+    def page_delete_component_group(self, page_id, component_group_id):
         """
         Delete a component group
 
@@ -2518,7 +2519,7 @@ class StatusPage(AtlassianRestAPI):
         ----------
         page_id : str
             Your page unique ID
-        id : str
+        component_group_id : str
             Component group identifier
 
         Raises
@@ -2534,10 +2535,10 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/component_groups/{}".format(page_id, id)
+        url = "v1/pages/{}/component_groups/{}".format(page_id, component_group_id)
         return self.delete(url)
 
-    def page_get_component_group(self, page_id, id):
+    def page_get_component_group(self, page_id, component_group_id):
         """
         Get a component group
 
@@ -2545,7 +2546,7 @@ class StatusPage(AtlassianRestAPI):
         ----------
         page_id : str
             Your page unique ID
-        id : str
+        component_group_id : str
             Component group identifier
 
         Raises
@@ -2561,10 +2562,10 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/component_groups/{}".format(page_id, id)
+        url = "v1/pages/{}/component_groups/{}".format(page_id, component_group_id)
         return self.get(url)
 
-    def page_get_uptime_for_component_group(self, page_id, id, start, end):
+    def page_get_uptime_for_component_group(self, page_id, component_group_id, start, end):
         """
         Get uptime for a component group
 
@@ -2572,7 +2573,7 @@ class StatusPage(AtlassianRestAPI):
         ----------
         page_id : str
             Your page unique ID
-        id : str
+        component_group_id : str
             Component group identifier
         start : str
             The start date for uptime calculation (defaults to the date of the component in the group with the earliest start_date, or 90 days ago, whichever is more recent).
@@ -2600,7 +2601,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/component_groups/{}/uptime".format(page_id, id)
+        url = "v1/pages/{}/component_groups/{}/uptime".format(page_id, component_group_id)
         return self.get(url, params={"start": start, "end": end})
 
     def page_add_data_points_to_metric(self, page_id, data):
