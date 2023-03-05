@@ -177,6 +177,11 @@ class StatusPage(AtlassianRestAPI):
         -----
         Available fields: https://developer.statuspage.io/#operation/patchPagesPageId
 
+        Description of fields:
+
+        name : str
+            The name of your page
+
         Returns
         -------
         any
@@ -2288,7 +2293,7 @@ class StatusPage(AtlassianRestAPI):
         url = "v1/pages/{}/components/{}".format(page_id, component_id)
         return self.get(url)
 
-    def page_get_uptime_component(self, page_id, component_id, start, end):
+    def page_get_uptime_component(self, page_id, component_id, start=None, end=None):
         """
         Get a component's uptime
 
@@ -2301,10 +2306,10 @@ class StatusPage(AtlassianRestAPI):
         start : str
             The start date for uptime calculation
             (defaults to the component's start_date field or 90 days ago, whichever is more recent).
-             The maximum supported date range is six calendar months.
-             If the year is given, the date defaults to the first day of the year.
-             If the year and month are given, the start date defaults to the first day of that month.
-             The earliest supported date is January 1, 1970.
+            The maximum supported date range is six calendar months.
+            If the year is given, the date defaults to the first day of the year.
+            If the year and month are given, the start date defaults to the first day of that month.
+            The earliest supported date is January 1, 1970.
         end : str
             The end date for uptime calculation (defaults to today in the page's time zone).
             The maximum supported date range is six calendar months.
@@ -2326,7 +2331,14 @@ class StatusPage(AtlassianRestAPI):
         any
         """
         url = "v1/pages/{}/components/{}/uptime".format(page_id, component_id)
-        return self.get(url, params={"start": start, "end": end})
+
+        params = {}
+        if start is not None:
+            params["start"] = start
+        if end is not None:
+            params["end"] = end
+
+        return self.get(url, params=params)
 
     def page_remove_access_users_from_component(self, page_id, component_id):
         """
@@ -2589,7 +2601,7 @@ class StatusPage(AtlassianRestAPI):
         url = "v1/pages/{}/component_groups/{}".format(page_id, component_group_id)
         return self.get(url)
 
-    def page_get_uptime_for_component_group(self, page_id, component_group_id, start, end):
+    def page_get_uptime_for_component_group(self, page_id, component_group_id, start=None, end=None):
         """
         Get uptime for a component group
 
@@ -2628,7 +2640,14 @@ class StatusPage(AtlassianRestAPI):
         any
         """
         url = "v1/pages/{}/component_groups/{}/uptime".format(page_id, component_group_id)
-        return self.get(url, params={"start": start, "end": end})
+
+        params = {}
+        if start is not None:
+            params["start"] = start
+        if end is not None:
+            params["end"] = end
+
+        return self.get(url, params=params)
 
     def page_add_data_points_to_metric(self, page_id, data):
         """
