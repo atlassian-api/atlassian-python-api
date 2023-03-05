@@ -1589,7 +1589,7 @@ class StatusPage(AtlassianRestAPI):
         url = "v1/pages/{}/incidents".format(page_id)
         return self.get(url, params={"q": q, "page": page, "per_page": per_page})
 
-    def page_list_active_maintances(self, page_id, page=1, per_page=100):
+    def page_list_active_maintenances(self, page_id, page=1, per_page=100):
         """
         Get a list of active maintenances
 
