@@ -104,7 +104,6 @@ class MetricProviderType(Enum):
     DATADOG = "Datadog"
     SELF = "Self"
 
-
 class StatusPage(AtlassianRestAPI):
     """StatusPage API wrapper."""
 
@@ -132,7 +131,7 @@ class StatusPage(AtlassianRestAPI):
         url = "v1/pages"
         return self.get(url)
 
-    def page_get(self, page_id):
+    def get_page(self, page_id):
         """
         Get page information
 
