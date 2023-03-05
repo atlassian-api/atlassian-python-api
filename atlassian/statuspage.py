@@ -104,6 +104,7 @@ class MetricProviderType(Enum):
     DATADOG = "Datadog"
     SELF = "Self"
 
+
 class StatusPage(AtlassianRestAPI):
     """StatusPage API wrapper."""
 
@@ -1128,9 +1129,7 @@ class StatusPage(AtlassianRestAPI):
         url = "v1/pages/{}/subscribers/{}".format(page_id, subscriber_id)
         return self.get(url)
 
-    def page_get_subscribers(
-        self, page_id, q, subscriber_type, subscriber_state, sort_field, sort_direction, page=1, per_page=100
-    ):
+    def page_get_subscribers(self, page_id, search_by=None, sort_direction="asc", page=1, per_page=100):
         """
         Get all subscribers
 
@@ -1142,16 +1141,23 @@ class StatusPage(AtlassianRestAPI):
             Page offset to fetch. Defaults to 1.
         per_page : int
             Number of results to return per page. Defaults to 100.
-        q : str
+        search_by : dict[str, any]
+            What to search by.
+
+            "q" : str
             If this is specified, search the contact information (email, endpoint, or phone number)
             for the provided value. This parameter doesn't support searching for Slack subscribers.
-        subscriber_type : SubscriberType
+
+            "subscriber_type" : SubscriberType
             If this is specified, only return subscribers of the specified type.
-        subscriber_state : SubscriberState
+
+            "subscriber_state" : SubscriberState
             If this is specified, only return subscribers of the specified state.
             Specify state "all" to find subscribers in any states.
-        sort_field : SortField
-            The field on which to sort
+
+            "sort_field" : SortField
+            The field on which to sort the results.
+
         sort_direction : SortOrder
             The direction in which to sort the results.
 
@@ -1169,18 +1175,24 @@ class StatusPage(AtlassianRestAPI):
         any
         """
         url = "v1/pages/{}/subscribers".format(page_id)
-        return self.get(
-            url,
-            params={
-                "page": page,
-                "per_page": per_page,
-                "q": q,
-                "type": subscriber_type,
-                "state": subscriber_state,
-                "sort_field": sort_field,
-                "sort_direction": sort_direction,
-            },
-        )
+
+        params = {}
+
+        if search_by:
+            if "q" in search_by:
+                params["q"] = search_by["q"]
+            if "subscriber_type" in search_by:
+                params["type"] = search_by["subscriber_type"]
+            if "subscriber_state" in search_by:
+                params["state"] = search_by["subscriber_state"]
+            if "sort_field" in search_by:
+                params["sort_field"] = search_by["sort_field"]
+
+        params["sort_direction"] = sort_direction
+        params["page"] = page
+        params["per_page"] = per_page
+
+        return self.get(url, params=params)
 
     def page_update_subscriber(self, page_id, subscriber_id, component_ids):
         """
