@@ -184,7 +184,7 @@ class StatusPage(AtlassianRestAPI):
         url = "v1/pages/{}".format(page_id)
         return self.put(url, data={"page": page})
 
-    def organization_get_users(self, organization_id, page_offset=0, per_page=100):
+    def organization_get_users(self, organization_id, page=1, per_page=100):
         """
         Get a list of users
 
@@ -201,19 +201,16 @@ class StatusPage(AtlassianRestAPI):
         ----------
         organization_id : str
             Unique organization ID
-        page_offset : int
-            Page offset to fetch. Beginning February 28, 2023,
-            this endpoint will return paginated data even if this query parameter is not provided.
+        page : int
+            Page offset to fetch. Defaults to 1.
         per_page : int
-            Number of results to return per page. Beginning February 28, 2023,
-            a default and maximum limit of 100 will be imposed and this endpoint will return paginated data
-            even if this query parameter is not provided.
+            Number of results to return per page. Defaults to 100.
         Returns
         -------
         any
         """
         url = "v1/organizations/{}/users".format(organization_id)
-        return self.get(url, params={"page": page_offset, "per_page": per_page})
+        return self.get(url, params={"page": page, "per_page": per_page})
 
     def organization_user_permissions(self, organization_id, user_id):
         """
@@ -353,7 +350,7 @@ class StatusPage(AtlassianRestAPI):
         url = "v1/pages/{}/status_embed_config".format(page_id)
         return self.put(url, status_embed_config)
 
-    def page_access_users_list(self, page_id, email, page_offset=0, per_page=100):
+    def page_access_users_list(self, page_id, email, page=1, per_page=100):
         """
         Get a list of page access users
 
@@ -363,13 +360,10 @@ class StatusPage(AtlassianRestAPI):
             Your page unique ID
         email : str
             Email address to search for
-        page_offset : int
-            Page offset to fetch. Beginning February 28, 2023,
-            this endpoint will return paginated data even if this query parameter is not provided.
+        page : int
+            Page offset to fetch. Defaults to 1.
         per_page : int
-            Number of results to return per page. Beginning February 28, 2023,
-            a default and maximum limit of 100 will be imposed and this endpoint will return paginated data
-            even if this query parameter is not provided.
+            Number of results to return per page. Defaults to 100.
 
         Notes
         -----
@@ -385,7 +379,7 @@ class StatusPage(AtlassianRestAPI):
         any
         """
         url = "v1/pages/{}/page_access_users".format(page_id)
-        return self.get(url, params={"email": email, "page": page_offset, "per_page": per_page})
+        return self.get(url, params={"email": email, "page": page, "per_page": per_page})
 
     def page_get_access_user(self, page_id, page_access_user_id):
         """
@@ -481,7 +475,7 @@ class StatusPage(AtlassianRestAPI):
         url = "v1/pages/{}/page_access_users/{}".format(page_id, page_access_user_id)
         return self.delete(url)
 
-    def page_get_components_access_user(self, page_id, page_access_user_id, page_offset=0, per_page=100):
+    def page_get_components_access_user(self, page_id, page_access_user_id, page=1, per_page=100):
         """
         Get components for page access user
 
@@ -491,13 +485,10 @@ class StatusPage(AtlassianRestAPI):
             Your page unique ID
         page_access_user_id : str
             Page Access User Identifier
-        page_offset : int
-            Page offset to fetch. Beginning February 28, 2023,
-            this endpoint will return paginated data even if this query parameter is not provided.
+        page : int
+            Page offset to fetch. Defaults to 1.
         per_page : int
-            Number of results to return per page. Beginning February 28, 2023,
-            a default and maximum limit of 100 will be imposed and this endpoint will return paginated data
-            even if this query parameter is not provided.
+            Number of results to return per page. Defaults to 100.
 
         Notes
         -----
@@ -513,7 +504,7 @@ class StatusPage(AtlassianRestAPI):
         any
         """
         url = "v1/pages/{}/page_access_users/{}/components".format(page_id, page_access_user_id)
-        return self.get(url, params={"page": page_offset, "per_page": per_page})
+        return self.get(url, params={"page": page, "per_page": per_page})
 
     def page_add_components_access_user(self, page_id, page_access_user_id, component_ids):
         """
@@ -774,7 +765,7 @@ class StatusPage(AtlassianRestAPI):
         url = "v1/pages/{}/page_access_users/{}/metrics/{}".format(page_id, page_access_user_id, metric_id)
         return self.delete(url)
 
-    def page_get_access_groups(self, page_id, page_offset=0, per_page=100):
+    def page_get_access_groups(self, page_id, page=1, per_page=100):
         """
         Get a list of page access groups
 
@@ -782,13 +773,10 @@ class StatusPage(AtlassianRestAPI):
         ----------
         page_id : str
             Your page unique ID
-        page_offset : int
-            Page offset to fetch. Beginning February 28, 2023,
-            this endpoint will return paginated data even if this query parameter is not provided.
+        page : int
+            Page offset to fetch. Defaults to 1.
         per_page : int
-            Number of results to return per page. Beginning February 28, 2023,
-            a default and maximum limit of 100 will be imposed and this endpoint will return paginated data
-            even if this query parameter is not provided.
+            Number of results to return per page. Defaults to 100.
 
         Notes
         -----
@@ -804,7 +792,7 @@ class StatusPage(AtlassianRestAPI):
         any
         """
         url = "v1/pages/{}/page_access_groups".format(page_id)
-        return self.get(url, params={"page": page_offset, "per_page": per_page})
+        return self.get(url, params={"page": page, "per_page": per_page})
 
     def page_get_access_group(self, page_id, page_access_group_id):
         """
@@ -1068,7 +1056,7 @@ class StatusPage(AtlassianRestAPI):
         url = "v1/pages/{}/page_access_groups/{}/components/{}".format(page_id, page_access_group_id, component_id)
         return self.delete(url)
 
-    def page_get_components_for_access_group(self, page_id, page_access_group_id, page_offset=0, per_page=100):
+    def page_get_components_for_access_group(self, page_id, page_access_group_id, page=1, per_page=100):
         """
         Add components to page access group
 
@@ -1078,13 +1066,10 @@ class StatusPage(AtlassianRestAPI):
             Your page unique ID
         page_access_group_id : str
             Page Access Group Identifier
-        page_offset : int
-            Page offset to fetch. Beginning February 28, 2023,
-            this endpoint will return paginated data even if this query parameter is not provided.
+        page : int
+            Page offset to fetch. Defaults to 1.
         per_page : int
-            Number of results to return per page. Beginning February 28, 2023,
-            a default and maximum limit of 100 will be imposed and this endpoint will return paginated data
-            even if this query parameter is not provided.
+            Number of results to return per page. Defaults to 100.
 
         Notes
         -----
@@ -1100,7 +1085,7 @@ class StatusPage(AtlassianRestAPI):
         any
         """
         url = "v1/pages/{}/page_access_groups/{}/components".format(page_id, page_access_group_id)
-        return self.get(url, params={"page": page_offset, "per_page": per_page})
+        return self.get(url, params={"page": page, "per_page": per_page})
 
     def page_get_subscriber(self, page_id, subscriber_id):
         """
@@ -1130,7 +1115,7 @@ class StatusPage(AtlassianRestAPI):
         return self.get(url)
 
     def page_get_subscribers(
-        self, page_id, q, subscriber_type, subscriber_state, sort_field, sort_direction, page_offset=0, per_page=100
+        self, page_id, q, subscriber_type, subscriber_state, sort_field, sort_direction, page=1, per_page=100
     ):
         """
         Get all subscribers
@@ -1139,13 +1124,10 @@ class StatusPage(AtlassianRestAPI):
         ----------
         page_id : str
             Your page unique ID
-        page_offset : int
-            Page offset to fetch. Beginning February 28, 2023,
-            this endpoint will return paginated data even if this query parameter is not provided.
+        page : int
+            Page offset to fetch. Defaults to 1.
         per_page : int
-            Number of results to return per page. Beginning February 28, 2023,
-            a default and maximum limit of 100 will be imposed and this endpoint will return paginated data
-            even if this query parameter is not provided.
+            Number of results to return per page. Defaults to 100.
         q : str
             If this is specified, search the contact information (email, endpoint, or phone number) for the provided value.
             This parameter doesn't support searching for Slack subscribers.
@@ -1176,7 +1158,7 @@ class StatusPage(AtlassianRestAPI):
         return self.get(
             url,
             params={
-                "page": page_offset,
+                "page": page,
                 "per_page": per_page,
                 "q": q,
                 "type": subscriber_type,
@@ -1302,7 +1284,7 @@ class StatusPage(AtlassianRestAPI):
         url = "v1/pages/{}/subscribers".format(page_id)
         return self.post(url, data={"subscriber": subscriber})
 
-    def page_get_list_unsubscribed(self, page_id, page_offset=0, per_page=100):
+    def page_get_list_unsubscribed(self, page_id, page=1, per_page=100):
         """
         Get a list of unsubscribed subscribers
 
@@ -1310,13 +1292,10 @@ class StatusPage(AtlassianRestAPI):
         ----------
         page_id : str
             Your page unique ID
-        page_offset : int
-            Page offset to fetch. Beginning February 28, 2023,
-            this endpoint will return paginated data even if this query parameter is not provided.
+        page : int
+            Page offset to fetch. Defaults to 1.
         per_page : int
-            Number of results to return per page. Beginning February 28, 2023,
-            a default and maximum limit of 100 will be imposed and this endpoint will return paginated data
-            even if this query parameter is not provided.
+            Number of results to return per page. Defaults to 100.
 
         Notes
         -----
@@ -1332,7 +1311,7 @@ class StatusPage(AtlassianRestAPI):
         any
         """
         url = "v1/pages/{}/unsubscribed".format(page_id)
-        return self.get(url, params={"page": page_offset, "per_page": per_page})
+        return self.get(url, params={"page": page, "per_page": per_page})
 
     def page_count_subscribers_by_type(self, page_id, subscriber_type, subscriber_state):
         """
@@ -1516,7 +1495,7 @@ class StatusPage(AtlassianRestAPI):
         url = "v1/pages/{}/templates".format(page_id)
         return self.post(url, data={"template": template})
 
-    def page_get_templates(self, page_id, page_offset=1, per_page=100):
+    def page_get_templates(self, page_id, page=1, per_page=100):
         """
         Get a list of templates
 
@@ -1524,7 +1503,7 @@ class StatusPage(AtlassianRestAPI):
         ----------
         page_id : str
             Your page unique ID
-        page_offset : int
+        page : int
             The page offset to return. Defaults to 1.
         per_page : int
             The number of templates to return per page. Defaults to 100.
@@ -1546,7 +1525,7 @@ class StatusPage(AtlassianRestAPI):
         any
         """
         url = "v1/pages/{}/templates".format(page_id)
-        return self.get(url, params={"page": page_offset, "per_page": per_page})
+        return self.get(url, params={"page": page, "per_page": per_page})
 
     def page_create_incident(self, page_id, incident):
         """
@@ -1575,7 +1554,7 @@ class StatusPage(AtlassianRestAPI):
         url = "v1/pages/{}/incidents".format(page_id)
         return self.post(url, data={"incident": incident})
 
-    def page_list_incidents(self, page_id, q, page_offset=1, per_page=100):
+    def page_list_incidents(self, page_id, q, page=1, per_page=100):
         """
         Get a list of incidents
 
@@ -1586,7 +1565,7 @@ class StatusPage(AtlassianRestAPI):
         q : str
             The search query to filter incidents by. If this is specified, search for the text query string in
             the incident's name, status, postmortem_body, and incident_updates fields.
-        page_offset : int
+        page : int
             The page offset to return. Defaults to 1.
         per_page : int
             The number of incidents to return per page. Defaults to 100.
@@ -1608,9 +1587,9 @@ class StatusPage(AtlassianRestAPI):
         any
         """
         url = "v1/pages/{}/incidents".format(page_id)
-        return self.get(url, params={"q": q, "page": page_offset, "per_page": per_page})
+        return self.get(url, params={"q": q, "page": page, "per_page": per_page})
 
-    def page_list_active_maintances(self, page_id, page_offset=1, per_page=100):
+    def page_list_active_maintances(self, page_id, page=1, per_page=100):
         """
         Get a list of active maintenances
 
@@ -1618,7 +1597,7 @@ class StatusPage(AtlassianRestAPI):
         ----------
         page_id : str
             Your page unique ID
-        page_offset : int
+        page : int
             The page offset to return. Defaults to 1.
         per_page : int
             The number of maintenances to return per page. Defaults to 100.
@@ -1640,9 +1619,9 @@ class StatusPage(AtlassianRestAPI):
         any
         """
         url = "v1/pages/{}/incidents/active_maintenance".format(page_id)
-        return self.get(url, params={"page": page_offset, "per_page": per_page})
+        return self.get(url, params={"page": page, "per_page": per_page})
 
-    def page_list_upcoming_incidents(self, page_id, page_offset=1, per_page=100):
+    def page_list_upcoming_incidents(self, page_id, page=1, per_page=100):
         """
         Get a list of upcoming incidents
 
@@ -1650,7 +1629,7 @@ class StatusPage(AtlassianRestAPI):
         ----------
         page_id : str
             Your page unique ID
-        page_offset : int
+        page : int
             The page offset to return. Defaults to 1.
         per_page : int
             The number of incidents to return per page. Defaults to 100.
@@ -1672,9 +1651,9 @@ class StatusPage(AtlassianRestAPI):
         any
         """
         url = "v1/pages/{}/incidents/upcoming".format(page_id)
-        return self.get(url, params={"page": page_offset, "per_page": per_page})
+        return self.get(url, params={"page": page, "per_page": per_page})
 
-    def page_list_scheduled_incidents(self, page_id, page_offset=1, per_page=100):
+    def page_list_scheduled_incidents(self, page_id, page=1, per_page=100):
         """
         Get a list of scheduled incidents
 
@@ -1682,7 +1661,7 @@ class StatusPage(AtlassianRestAPI):
         ----------
         page_id : str
             Your page unique ID
-        page_offset : int
+        page : int
             The page offset to return. Defaults to 1.
         per_page : int
             The number of incidents to return per page. Defaults to 100.
@@ -1704,9 +1683,9 @@ class StatusPage(AtlassianRestAPI):
         any
         """
         url = "v1/pages/{}/incidents/scheduled".format(page_id)
-        return self.get(url, params={"page": page_offset, "per_page": per_page})
+        return self.get(url, params={"page": page, "per_page": per_page})
 
-    def page_list_unresolved_incidents(self, page_id, page_offset=1, per_page=100):
+    def page_list_unresolved_incidents(self, page_id, page=1, per_page=100):
         """
         Get a list of unresolved incidents
 
@@ -1714,7 +1693,7 @@ class StatusPage(AtlassianRestAPI):
         ----------
         page_id : str
             Your page unique ID
-        page_offset : int
+        page : int
             The page offset to return. Defaults to 1.
         per_page : int
             The number of incidents to return per page. Defaults to 100.
@@ -1736,7 +1715,7 @@ class StatusPage(AtlassianRestAPI):
         any
         """
         url = "v1/pages/{}/incidents/unresolved".format(page_id)
-        return self.get(url, params={"page": page_offset, "per_page": per_page})
+        return self.get(url, params={"page": page, "per_page": per_page})
 
     def page_delete_incident(self, page_id, incident_id):
         """
@@ -1877,7 +1856,7 @@ class StatusPage(AtlassianRestAPI):
         url = "v1/pages/{}/incidents/{}/subscribers".format(page_id, incident_id)
         return self.post(url, data={"subscriber": subscriber})
 
-    def page_list_incident_subscribers(self, page_id, incident_id, page_offset=1, per_page=100):
+    def page_list_incident_subscribers(self, page_id, incident_id, page=1, per_page=100):
         """
         Get a list of subscribers for an incident
 
@@ -1887,7 +1866,7 @@ class StatusPage(AtlassianRestAPI):
             Your page unique ID
         incident_id : str
             The incident unique ID
-        page_offset : int
+        page : int
             The page offset to return. Defaults to 1.
         per_page : int
             The number of subscribers to return per page. Defaults to 100.
@@ -1906,7 +1885,7 @@ class StatusPage(AtlassianRestAPI):
         any
         """
         url = "v1/pages/{}/incidents/{}/subscribers".format(page_id, incident_id)
-        return self.get(url, params={"page": page_offset, "per_page": per_page})
+        return self.get(url, params={"page": page, "per_page": per_page})
 
     def page_unsubscribe_incident_subscriber(self, page_id, incident_id, subscriber_id):
         """
