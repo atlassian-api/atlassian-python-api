@@ -187,7 +187,7 @@ class StatusPage(AtlassianRestAPI):
         any
         """
         url = "v1/pages/{}".format(page_id)
-        return self.put(url, data={"page": page})
+        return self.patch(url, data={"page": page})
 
     def organization_get_users(self, organization_id, page=1, per_page=100):
         """
@@ -217,7 +217,7 @@ class StatusPage(AtlassianRestAPI):
         url = "v1/organizations/{}/users".format(organization_id)
         return self.get(url, params={"page": page, "per_page": per_page})
 
-    def organization_user_permissions(self, organization_id, user_id):
+    def organization_get_user_permissions(self, organization_id, user_id):
         """
         Get a user's permissions in organization
 
@@ -288,7 +288,7 @@ class StatusPage(AtlassianRestAPI):
         any
         """
         url = "v1/organizations/{}/permissions/{}".format(organization_id, user_id)
-        return self.put(url, data={"pages": pages})
+        return self.patch(url, data={"pages": pages})
 
     def page_get_embed_config_settings(self, page_id):
         """
@@ -353,7 +353,7 @@ class StatusPage(AtlassianRestAPI):
         any
         """
         url = "v1/pages/{}/status_embed_config".format(page_id)
-        return self.put(url, status_embed_config)
+        return self.patch(url, status_embed_config)
 
     def page_access_users_list(self, page_id, email, page=1, per_page=100):
         """
@@ -448,7 +448,7 @@ class StatusPage(AtlassianRestAPI):
         any
         """
         url = "v1/pages/{}/page_access_users/{}".format(page_id, page_access_user_id)
-        return self.put(
+        return self.patch(
             url, data={"external_login": external_login, "email": email, "page_access_group_ids": page_access_group_ids}
         )
 
@@ -540,7 +540,7 @@ class StatusPage(AtlassianRestAPI):
         any
         """
         url = "v1/pages/{}/page_access_users/{}/components".format(page_id, page_access_user_id)
-        return self.put(url, data={"component_ids": component_ids})
+        return self.patch(url, data={"component_ids": component_ids})
 
     def page_replace_components_access_user(self, page_id, page_access_user_id, component_ids):
         """
@@ -688,7 +688,7 @@ class StatusPage(AtlassianRestAPI):
         any
         """
         url = "v1/pages/{}/page_access_users/{}/metrics".format(page_id, page_access_user_id)
-        return self.put(url, data={"metric_ids": metric_ids})
+        return self.patch(url, data={"metric_ids": metric_ids})
 
     def page_replace_metrics_access_user(self, page_id, page_access_user_id, metric_ids):
         """
@@ -915,7 +915,7 @@ class StatusPage(AtlassianRestAPI):
         any
         """
         url = "v1/pages/{}/page_access_groups/{}".format(page_id, page_access_group_id)
-        return self.put(
+        return self.patch(
             url,
             data={
                 "page_access_group": {
@@ -983,7 +983,7 @@ class StatusPage(AtlassianRestAPI):
         any
         """
         url = "v1/pages/{}/page_access_groups/{}/components".format(page_id, page_access_group_id)
-        return self.put(url, data={"component_ids": component_ids})
+        return self.patch(url, data={"component_ids": component_ids})
 
     def page_replace_components_for_access_page(self, page_id, page_access_group_id, component_ids):
         """
