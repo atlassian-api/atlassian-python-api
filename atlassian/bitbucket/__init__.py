@@ -65,7 +65,7 @@ class Bitbucket(BitbucketBase):
         :return: A generator object containing a map with the project_key, project_name and project_administrators
         """
         for project in self.project_list():
-            log.info("Processing project: {0} - {1}".format(project.get("key"), project.get("name")))
+            log.info("Processing project: %s - %s", project.get("key"), project.get("name"))
             yield {
                 "project_key": project.get("key"),
                 "project_name": project.get("name"),

@@ -745,7 +745,7 @@ class Confluence(AtlassianRestAPI):
         :param full_width: DEFAULT: False
         :return:
         """
-        log.info('Creating {type} "{space}" -> "{title}"'.format(space=space, title=title, type=type))
+        log.info('Creating %s "%s" -> "%s"', type, space, title)
         url = "rest/api/content/"
         data = {
             "type": type,
@@ -1302,12 +1302,12 @@ class Confluence(AtlassianRestAPI):
                 version=remove_version_attachment_number,
             )
             log.info(
-                "Removed oldest version for {}, now versions equal more than {}".format(
-                    attachment.get("title"), len(attachment_versions)
-                )
+                "Removed oldest version for %s, now versions equal more than %s",
+                attachment.get("title"),
+                len(attachment_versions),
             )
             attachment_versions = self.get_attachment_history(attachment.get("id"))
-        log.info("Kept versions {} for {}".format(keep_last_versions, attachment.get("title")))
+        log.info("Kept versions %s for %s", keep_last_versions, attachment.get("title"))
 
     def get_attachment_history(self, attachment_id, limit=200, start=0):
         """
@@ -1506,8 +1506,8 @@ class Confluence(AtlassianRestAPI):
             self.remove_page_history(page_id=page_id, version_number=1)
             page = self.get_page_by_id(page_id=page_id, expand="version")
             page_number = page.get("version").get("number")
-            log.info("Removed oldest version for {}, now it's {}".format(page.get("title"), page_number))
-        log.info("Kept versions {} for {}".format(keep_last_versions, page.get("title")))
+            log.info("Removed oldest version for %s, now it's %s", page.get("title"), page_number)
+        log.info("Kept versions %s for %s", keep_last_versions, page.get("title"))
 
     def has_unknown_attachment_error(self, page_id):
         """
@@ -1536,7 +1536,7 @@ class Confluence(AtlassianRestAPI):
         if title:
             current_title = confluence_content.get("title", None)
             if title != current_title:
-                log.info("Title of {page_id} is different".format(page_id=page_id))
+                log.info("Title of %s is different", page_id)
                 return False
 
         if self.advanced_mode:
@@ -1558,10 +1558,10 @@ class Confluence(AtlassianRestAPI):
         log.debug('New Content: """%s"""', body)
 
         if confluence_body_content.strip() == body.strip():
-            log.info("Content of {page_id} is exactly the same".format(page_id=page_id))
+            log.info("Content of %s is exactly the same", page_id)
             return True
         else:
-            log.info("Content of {page_id} differs".format(page_id=page_id))
+            log.info("Content of %s differs", page_id)
             return False
 
     def update_existing_page(
@@ -1617,7 +1617,7 @@ class Confluence(AtlassianRestAPI):
         """
         # update current page
         params = {"status": "current"}
-        log.info('Updating {type} "{title}" with {parent_id}'.format(title=title, type=type, parent_id=parent_id))
+        log.info('Updating %s "%s" with %s', type, title, parent_id)
 
         if not always_update and body is not None and self.is_page_content_is_already_updated(page_id, body, title):
             return self.get_page_by_id(page_id)
@@ -1699,7 +1699,7 @@ class Confluence(AtlassianRestAPI):
         :param top_of_page: Option to add the content to the end of page body
         :return:
         """
-        log.info('Updating {type} "{title}"'.format(title=title, type=type))
+        log.info('Updating %s "%s"', type, title)
         # update current page
         params = {"status": "current"}
 
@@ -1768,7 +1768,7 @@ class Confluence(AtlassianRestAPI):
             If False then notifications will be sent.
         :return:
         """
-        log.info('Updating {type} "{title}"'.format(title=title, type=type))
+        log.info('Updating %s "%s"', type, title)
 
         return self._insert_to_existing_page(
             page_id,
@@ -1803,7 +1803,7 @@ class Confluence(AtlassianRestAPI):
             If False then notifications will be sent.
         :return:
         """
-        log.info('Updating {type} "{title}"'.format(title=title, type=type))
+        log.info('Updating %s "%s"', type, title)
 
         return self._insert_to_existing_page(
             page_id,
@@ -1866,10 +1866,9 @@ class Confluence(AtlassianRestAPI):
             )
 
         log.info(
-            "You may access your page at: {host}{url}".format(
-                host=self.url,
-                url=((result or {}).get("_links") or {}).get("tinyui"),
-            )
+            "You may access your page at: %s%s",
+            self.url,
+            ((result or {}).get("_links") or {}).get("tinyui"),
         )
         return result
 
@@ -2725,7 +2724,7 @@ class Confluence(AtlassianRestAPI):
                 task_state = progress_response.get("state")
                 if percentage_complete == 100:
                     running_task = False
-                    log.info("Task completed - {task_state}".format(task_state=task_state))
+                    log.info("Task completed - %s", task_state)
                     if task_state == "FAILED":
                         log.error("PDF conversion not successful.")
                         return None

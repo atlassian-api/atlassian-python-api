@@ -1249,10 +1249,10 @@ class Jira(AtlassianRestAPI):
         try:
             resp = self.issue(issue_key, fields="*none")
             if resp.status_code == 404:
-                log.info('Issue "{issue_key}" does not exists'.format(issue_key=issue_key))
+                log.info('Issue "%s" does not exists', issue_key)
                 return False
             resp.raise_for_status()
-            log.info('Issue "{issue_key}" exists'.format(issue_key=issue_key))
+            log.info('Issue "%s" exists', issue_key)
             return True
         finally:
             self.advanced_mode = original_value
@@ -1260,9 +1260,9 @@ class Jira(AtlassianRestAPI):
     def issue_deleted(self, issue_key):
         exists = self.issue_exists(issue_key)
         if exists:
-            log.info('Issue "{issue_key}" is not deleted'.format(issue_key=issue_key))
+            log.info('Issue "%s" is not deleted', issue_key)
         else:
-            log.info('Issue "{issue_key}" is deleted'.format(issue_key=issue_key))
+            log.info('Issue "%s" is deleted', issue_key)
         return not exists
 
     def delete_issue(self, issue_id_or_key, delete_subtasks=True):
@@ -1440,7 +1440,7 @@ class Jira(AtlassianRestAPI):
             log.warning('Issue "{issue_key}" deleted, skipping'.format(issue_key=issue_key))
             return None
 
-        log.info('Issue "{issue_key}" exists, will update'.format(issue_key=issue_key))
+        log.info('Issue "%s" exists, will update', issue_key)
         fields.pop("issuekey", None)
         return self.issue_update(issue_key, fields)
 
@@ -2771,9 +2771,7 @@ class Jira(AtlassianRestAPI):
         }
         :return:
         """
-        log.info(
-            "Linking issue {inward} and {outward}".format(inward=data["inwardIssue"], outward=data["outwardIssue"])
-        )
+        log.info("Linking issue %s and %s", data["inwardIssue"], data["outwardIssue"])
         url = self.resource_url("issueLink")
         return self.post(url, data=data)
 
