@@ -381,6 +381,10 @@ class AtlassianRestAPI(object):
             return response
         return self._response_handler(response)
 
+    """
+        Partial modification of resource by PATCH Method
+        LINK: https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/PATCH
+    """
     def patch(
         self,
         path,
