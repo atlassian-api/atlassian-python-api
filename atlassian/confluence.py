@@ -1554,8 +1554,8 @@ class Confluence(AtlassianRestAPI):
             # @todo move into utils
             confluence_body_content = utils.symbol_normalizer(confluence_body_content)
 
-        log.debug('Old Content: """{body}"""'.format(body=confluence_body_content))
-        log.debug('New Content: """{body}"""'.format(body=body))
+        log.debug('Old Content: """%s"""', confluence_body_content)
+        log.debug('New Content: """%s"""', body)
 
         if confluence_body_content.strip() == body.strip():
             log.info("Content of {page_id} is exactly the same".format(page_id=page_id))
