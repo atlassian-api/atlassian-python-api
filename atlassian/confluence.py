@@ -313,7 +313,7 @@ class Confluence(AtlassianRestAPI):
         try:
             return response.get("results")[0]
         except (IndexError, TypeError) as e:
-            log.error("Can't find '{title}' page on the {url}!".format(title=title, url=self.url))
+            log.error("Can't find '%s' page on the %s!", title, self.url)
             log.debug(e)
             return None
 
@@ -1628,7 +1628,7 @@ class Confluence(AtlassianRestAPI):
             else:
                 version = self.history(page_id)["lastUpdated"]["number"] + 1
         except (IndexError, TypeError) as e:
-            log.error("Can't find '{title}' {type}!".format(title=title, type=type))
+            log.error("Can't find '%s' %s!", title, type)
             log.debug(e)
             return None
 
