@@ -385,6 +385,7 @@ class AtlassianRestAPI(object):
         Partial modification of resource by PATCH Method
         LINK: https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/PATCH
     """
+
     def patch(
         self,
         path,

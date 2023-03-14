@@ -2190,31 +2190,24 @@ class Bitbucket(BitbucketBase):
         if limit:
             params["limit"] = limit
         return self._get_paged(url, params=params)
-    
-   def get_commit_changes(
-        self,
-        project_key,
-        repository_slug,
-        hash_newest=None,
-        merges="include",
-        commitId=None
-    ):
+
+    def get_commit_changes(self, project_key, repository_slug, hash_newest=None, merges="include", commit_id=None):
         """
         Get commit list from repo
         :param project_key:
         :param repository_slug:
         :param hash_newest:
         :param merges: OPTIONAL: include|exclude|only if present, controls how merge commits should be filtered.
-        :param commitId
+        :param commit_id
         :return:
         """
-        url = self._url_commit_c(project_key, repository_slug, commitId=commitId)
+        url = self._url_commit_c(project_key, repository_slug, commit_id=commit_id)
         params = {"merges": merges}
         if hash_newest:
             params["until"] = hash_newest
         return self.get(url, params=params)
-    
-    def _url_commit_c(self, project_key, repository_slug, api_root=None, api_version=None, commitId=None):
+
+    def _url_commit_c(self, project_key, repository_slug, api_root=None, api_version=None, commit_id=None):
         return "{}/commits/{}/changes".format(
             self._url_repo(
                 project_key,
@@ -2222,9 +2215,9 @@ class Bitbucket(BitbucketBase):
                 api_root=api_root,
                 api_version=api_version,
             ),
-            commitId
+            commit_id,
         )
-    
+
     def _url_commit(
         self,
         project_key,
@@ -2347,7 +2340,7 @@ class Bitbucket(BitbucketBase):
         Retrieve the specified code-insights report.
         :projectKey: str
         :repositorySlug: str
-        :commitId: str
+        :commit_id: str
         :report_key: str
         """
         url = self._url_code_insights_report(project_key, repository_slug, commit_id, report_key)
@@ -2358,7 +2351,7 @@ class Bitbucket(BitbucketBase):
         Delete a report for the given commit. Also deletes any annotations associated with this report.
         :projectKey: str
         :repositorySlug: str
-        :commitId: str
+        :commit_id: str
         :report_key: str
         """
         url = self._url_code_insights_report(project_key, repository_slug, commit_id, report_key)
