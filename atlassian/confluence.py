@@ -758,6 +758,10 @@ class Confluence(AtlassianRestAPI):
         if full_width is True:
             data["metadata"]["properties"]["content-appearance-draft"] = {"value": "full-width"}
             data["metadata"]["properties"]["content-appearance-published"] = {"value": "full-width"}
+        else:
+            data["metadata"]["properties"]["content-appearance-draft"] = {"value": "fixed-width"}
+            data["metadata"]["properties"]["content-appearance-published"] = {"value": "fixed-width"}
+
         try:
             response = self.post(url, data=data)
         except HTTPError as e:
@@ -1643,6 +1647,9 @@ class Confluence(AtlassianRestAPI):
         if full_width is True:
             data["metadata"]["properties"]["content-appearance-draft"] = {"value": "full-width"}
             data["metadata"]["properties"]["content-appearance-published"] = {"value": "full-width"}
+        else:
+            data["metadata"]["properties"]["content-appearance-draft"] = {"value": "fixed-width"}
+            data["metadata"]["properties"]["content-appearance-published"] = {"value": "fixed-width"}
         try:
             response = self.put(
                 "rest/api/content/{0}".format(page_id),
