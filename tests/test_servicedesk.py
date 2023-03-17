@@ -1,6 +1,7 @@
 # coding: utf8
-import pytest
 import sys
+
+import pytest
 
 from atlassian import ServiceDesk
 
@@ -25,6 +26,10 @@ class TestBasic:
         result = [x["name"] for x in SERVICEDESK.get_organisations()["values"]]
         assert result == ["Charlie Cakes Franchises"], "Result of [get_organisations()]"
 
+    def test_get_organizations(self):
+        result = [x["name"] for x in SERVICEDESK.get_organizations()["values"]]
+        assert result == ["Charlie Cakes Franchises"], "Result of [get_organizations()]"
+
     def test_get_organisations_servicedesk_id(self):
         result = [x["name"] for x in SERVICEDESK.get_organisations(service_desk_id="{serviceDeskId}")["values"]]
         assert result == [
@@ -32,6 +37,14 @@ class TestBasic:
             "Atlas Coffee Co",
             "The Adjustment Bureau",
         ], "Result of [get_organisations(service_desk_id)]"
+
+    def test_get_organizations_servicedesk_id(self):
+        result = [x["name"] for x in SERVICEDESK.get_organizations(service_desk_id="{serviceDeskId}")["values"]]
+        assert result == [
+            "Charlie Cakes Franchises",
+            "Atlas Coffee Co",
+            "The Adjustment Bureau",
+        ], "Result of [get_organizations(service_desk_id)]"
 
     def test_get_organization(self):
         result = SERVICEDESK.get_organization("{organizationId}")

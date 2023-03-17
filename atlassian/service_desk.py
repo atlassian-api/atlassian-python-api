@@ -323,10 +323,10 @@ class ServiceDesk(AtlassianRestAPI):
                 params=params,
             )
         return self.get(url_with_sd_id, headers=self.experimental_headers, params=params)
-    
+
     # add alias for spelling consistency
     get_organizations = get_organisations
-    
+
     def get_organization(self, organization_id):
         """
         Get an organization for a given organization ID
