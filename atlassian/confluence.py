@@ -207,14 +207,15 @@ class Confluence(AtlassianRestAPI):
         """
         return self.get_page_child_by_type(page_id=page_id, type="page")
 
-    def get_page_id(self, space, title):
+    def get_page_id(self, space, title, type='page'):
         """
         Provide content id from search result by title and space
         :param space: SPACE key
         :param title: title
+        :param type: type of content: Page or Blogpost. Defaults to page
         :return:
         """
-        return (self.get_page_by_title(space, title) or {}).get("id")
+        return (self.get_page_by_title(space, title, type=type) or {}).get("id")
 
     def get_parent_content_id(self, page_id):
         """
