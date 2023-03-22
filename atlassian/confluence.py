@@ -269,7 +269,7 @@ class Confluence(AtlassianRestAPI):
         """
         return self.get_page_by_title(space, title, start, limit, expand)
 
-    def get_page_by_title(self, space, title, start=0, limit=1, expand=None):
+    def get_page_by_title(self, space, title, start=0, limit=1, expand=None, type='page'):
         """
         Returns the first page  on a piece of Content.
         :param space: Space key
@@ -278,12 +278,13 @@ class Confluence(AtlassianRestAPI):
         :param limit: OPTIONAL: The limit of the number of labels to return, this may be restricted by
                             fixed system limits. Default: 1.
         :param expand: OPTIONAL: expand e.g. history
+        :param type: OPTIONAL: Type of content: Page or Blogpost. Defaults to page
         :return: The JSON data returned from searched results the content endpoint, or the results of the
                  callback. Will raise requests.HTTPError on bad input, potentially.
                  If it has IndexError then return the None.
         """
         url = "rest/api/content"
-        params = {}
+        params = {"type": type}
         if start is not None:
             params["start"] = int(start)
         if limit is not None:
