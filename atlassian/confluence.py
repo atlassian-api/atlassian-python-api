@@ -207,7 +207,7 @@ class Confluence(AtlassianRestAPI):
         """
         return self.get_page_child_by_type(page_id=page_id, type="page")
 
-    def get_page_id(self, space, title, type='page'):
+    def get_page_id(self, space, title, type="page"):
         """
         Provide content id from search result by title and space
         :param space: SPACE key
@@ -270,7 +270,7 @@ class Confluence(AtlassianRestAPI):
         """
         return self.get_page_by_title(space, title, start, limit, expand)
 
-    def get_page_by_title(self, space, title, start=0, limit=1, expand=None, type='page'):
+    def get_page_by_title(self, space, title, start=0, limit=1, expand=None, type="page"):
         """
         Returns the first page  on a piece of Content.
         :param space: Space key

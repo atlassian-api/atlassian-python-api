@@ -11,7 +11,7 @@ It is based on the official REST APIs of these products, as well as additional p
 (such as xml+rpc and raw HTTP requests).
 This library can be used to automate tasks, integrate with other tools and systems,
 and build custom applications that interact with Atlassian products.
-It supports a wide range of Atlassian products, including Jira, Confluence, Bitbucket, and others,
+It supports a wide range of Atlassian products, including Jira, Confluence, Bitbucket, StatusPage and others,
 and is compatible with both Atlassian Server and Cloud instances.
 
 Overall, the **atlassian-python-api** is a useful tool for Python developers who want to work with Atlassian products.
@@ -63,6 +63,7 @@ Here's a short example of how to create a Confluence page:
 
     print(status)
 
+Please, note Confluence Cloud need to be used via token parameter.
 And here's another example of how to get issues from Jira using JQL Query:
 
 .. code-block:: python

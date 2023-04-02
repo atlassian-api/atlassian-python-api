@@ -8,7 +8,7 @@ from .insight import Insight
 from .jira import Jira
 from .marketplace import MarketPlace
 from .portfolio import Portfolio
-from .service_desk import ServiceDesk
+from .service_desk import ServiceDesk as ServiceManagement
 from .xray import Xray
 
 
