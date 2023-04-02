@@ -1191,6 +1191,33 @@ class Jira(AtlassianRestAPI):
             return self.get(url)
         return (self.get(url) or {}).get("fields").get("labels")
 
+    def update_issue(self, issue_key, update):
+        """
+        :param issue: the issue to update
+        :param update: the update to make
+        :return: True if successful, False if not
+        """
+        endpoint = "/rest/api/2/issue/{issue_key}".format(issue_key=issue_key)
+        return self.put(endpoint, data=update)
+
+    def label_issue(self, issue_key, labels):
+        """
+        :param issue: the issue to update
+        :param labels: the labels to add
+        :return: True if successful, False if not
+        """
+        labels = [{"add": label} for label in labels]
+        return self.update_issue(issue_key, {"update": {"labels": labels}})
+
+    def unlabel_issue(self, issue_key, labels):
+        """
+        :param issue: the issue to update
+        :param labels: the labels to remove
+        :return: True if successful, False if not
+        """
+        labels = [{"remove": label} for label in labels]
+        return self.update_issue(issue_key, {"update": {"labels": labels}})
+
     def add_attachment(self, issue_key, filename):
         """
         Add attachment to Issue
