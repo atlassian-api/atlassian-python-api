@@ -24,6 +24,7 @@ __all__ = [
     "Stash",
     "Crowd",
     "ServiceDesk",
+    "ServiceManagement",
     "MarketPlace",
     "Xray",
     "Insight",
