@@ -276,3 +276,12 @@ Elastic Bamboo
     # Delete elastic bamboo configuration
     delete_elastic_configuration('123456')
 
+    # Get elastic bamboo configuration
+    get_elastic_bamboo()
+
+    # Set elastic bamboo configuration
+    set_elastic_bamboo({"enabled": True, "awsCredentialsType": "INSTANCE_PROFILE", "region": "ASIA_PACIFIC_SE_2",
+    "privateKeyFile": "", "certificateFile": "", "maxNumOfElasticInstances": 1, "allocatePublicIpToVpcInstances": False,
+    "elasticInstanceManagement": {"type": "Disabled"}, "uploadAwsAccountIdentifierToElasticInstances": False,
+    "elasticAutoTermination": { "enabled": True, "shutdownDelay": 300}})
+

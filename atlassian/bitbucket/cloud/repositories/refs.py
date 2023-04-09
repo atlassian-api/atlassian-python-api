@@ -22,7 +22,6 @@ class Refs(BitbucketCloudBase):
     ):
         """
         Creates a ref with the given target commit
-
         :param name: string: name
         :param commit: string: commit hash
 

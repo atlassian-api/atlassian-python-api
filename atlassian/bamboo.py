@@ -62,7 +62,15 @@ class Bamboo(AtlassianRestAPI):
             yield response
 
     def base_list_call(
-        self, resource, expand, favourite, clover_enabled, max_results, label=None, start_index=0, **kwargs
+        self,
+        resource,
+        expand,
+        favourite,
+        clover_enabled,
+        max_results,
+        label=None,
+        start_index=0,
+        **kwargs,
     ):
         flags = []
         params = {"max-results": max_results}
@@ -89,7 +97,13 @@ class Bamboo(AtlassianRestAPI):
 
     """ Projects & Plans """
 
-    def projects(self, expand=None, favourite=False, clover_enabled=False, max_results=25):
+    def projects(
+        self,
+        expand=None,
+        favourite=False,
+        clover_enabled=False,
+        max_results=25,
+    ):
         return self.base_list_call(
             "project",
             expand=expand,
@@ -483,7 +497,14 @@ class Bamboo(AtlassianRestAPI):
             include_all_states=include_all_states,
         )
 
-    def build_result(self, build_key, expand=None, include_all_states=False, start=0, max_results=25):
+    def build_result(
+        self,
+        build_key,
+        expand=None,
+        include_all_states=False,
+        start=0,
+        max_results=25,
+    ):
         """
         Returns details of a specific build result
         :param expand: expands build result details on request. Possible values are: artifacts, comments, labels,
@@ -545,7 +566,14 @@ class Bamboo(AtlassianRestAPI):
         params = {"buildKey": plan_key, "buildNumber": build_number}
         return self.post(custom_resource, params=params, headers=self.form_token_headers)
 
-    def execute_build(self, plan_key, stage=None, execute_all_stages=True, custom_revision=None, **bamboo_variables):
+    def execute_build(
+        self,
+        plan_key,
+        stage=None,
+        execute_all_stages=True,
+        custom_revision=None,
+        **bamboo_variables,
+    ):
         """
         Fire build execution for specified plan.
         !IMPORTANT! NOTE: for some reason, this method always execute all stages
@@ -581,7 +609,14 @@ class Bamboo(AtlassianRestAPI):
 
     """ Comments & Labels """
 
-    def comments(self, project_key, plan_key, build_number, start_index=0, max_results=25):
+    def comments(
+        self,
+        project_key,
+        plan_key,
+        build_number,
+        start_index=0,
+        max_results=25,
+    ):
         resource = "result/{}-{}-{}/comment".format(project_key, plan_key, build_number)
         params = {"start-index": start_index, "max-results": max_results}
         return self.get(self.resource_url(resource), params=params)
@@ -594,7 +629,14 @@ class Bamboo(AtlassianRestAPI):
         }
         return self.post(self.resource_url(resource), data=comment_data)
 
-    def labels(self, project_key, plan_key, build_number, start_index=0, max_results=25):
+    def labels(
+        self,
+        project_key,
+        plan_key,
+        build_number,
+        start_index=0,
+        max_results=25,
+    ):
         resource = "result/{}-{}-{}/label".format(project_key, plan_key, build_number)
         params = {"start-index": start_index, "max-results": max_results}
         return self.get(self.resource_url(resource), params=params)
@@ -1018,7 +1060,8 @@ class Bamboo(AtlassianRestAPI):
         :return: agents
         """
         return self.get(
-            self.resource_url("agent/{}/capability".format(agent_id)), params={"includeShared": include_shared}
+            self.resource_url("agent/{}/capability".format(agent_id)),
+            params={"includeShared": include_shared},
         )
 
     def activity(self):
@@ -1100,22 +1143,6 @@ class Bamboo(AtlassianRestAPI):
             response = self.get("rest/supportHealthCheck/1.0/check/")
         return response
 
-    def upload_plugin(self, plugin_path):
-        """
-        Provide plugin path for upload into Jira e.g. useful for auto deploy
-        :param plugin_path:
-        :return:
-        """
-        files = {"plugin": open(plugin_path, "rb")}
-        upm_token = self.request(
-            method="GET",
-            path="rest/plugins/1.0/",
-            headers=self.no_check_headers,
-            trailing=True,
-        ).headers["upm-token"]
-        url = "rest/plugins/1.0/?token={upm_token}".format(upm_token=upm_token)
-        return self.post(url, files=files, headers=self.no_check_headers)
-
     def get_elastic_instance_logs(self, instance_id):
         """
         Get logs from an EC2 instance
@@ -1172,3 +1199,87 @@ class Bamboo(AtlassianRestAPI):
 
         resource = "elasticConfiguration/{configuration_id}".format(configuration_id=configuration_id)
         return self.delete(self.resource_url(resource))
+
+    def get_elastic_bamboo(self):
+        """
+        Get elastic bamboo configuration
+        :return:
+        """
+        response = self.get("rest/admin/latest/elastic/config")
+        return response
+
+    def set_elastic_bamboo(self, data):
+        """
+        Set elastic bamboo configuration
+        :return:
+        """
+        response = self.put("rest/admin/latest/elastic/config", data=data)
+        return response
+
+    def get_plugins_info(self):
+        """
+        Provide plugins info
+        :return a json of installed plugins
+        """
+        url = "rest/plugins/1.0/"
+        return self.get(url, headers=self.no_check_headers, trailing=True)
+
+    def get_plugin_info(self, plugin_key):
+        """
+        Provide plugin info
+        :return a json of installed plugins
+        """
+        url = "rest/plugins/1.0/{plugin_key}-key".format(plugin_key=plugin_key)
+        return self.get(url, headers=self.no_check_headers, trailing=True)
+
+    def get_plugin_license_info(self, plugin_key):
+        """
+        Provide plugin license info
+        :return a json specific License query
+        """
+        url = "rest/plugins/1.0/{plugin_key}-key/license".format(plugin_key=plugin_key)
+        return self.get(url, headers=self.no_check_headers, trailing=True)
+
+    def upload_plugin(self, plugin_path):
+        """
+        Provide plugin path for upload into Jira e.g. useful for auto deploy
+        :param plugin_path:
+        :return:
+        """
+        files = {"plugin": open(plugin_path, "rb")}
+        upm_token = self.request(
+            method="GET",
+            path="rest/plugins/1.0/",
+            headers=self.no_check_headers,
+            trailing=True,
+        ).headers["upm-token"]
+        url = "rest/plugins/1.0/?token={upm_token}".format(upm_token=upm_token)
+        return self.post(url, files=files, headers=self.no_check_headers)
+
+    def delete_plugin(self, plugin_key):
+        """
+        Delete plugin
+        :param plugin_key:
+        :return:
+        """
+        url = "rest/plugins/1.0/{}-key".format(plugin_key)
+        return self.delete(url)
+
+    def check_plugin_manager_status(self):
+        url = "rest/plugins/latest/safe-mode"
+        return self.request(method="GET", path=url, headers=self.safe_mode_headers)
+
+    def update_plugin_license(self, plugin_key, raw_license):
+        """
+        Update license for plugin
+        :param plugin_key:
+        :param raw_license:
+        :return:
+        """
+        app_headers = {
+            "X-Atlassian-Token": "nocheck",
+            "Content-Type": "application/vnd.atl.plugins+json",
+        }
+        url = "/plugins/1.0/{plugin_key}/license".format(plugin_key=plugin_key)
+        data = {"rawLicense": raw_license}
+        return self.put(url, data=data, headers=app_headers)

@@ -21,3 +21,7 @@ class ApiValueError(ApiError):
 
 class ApiConflictError(ApiError):
     pass
+
+
+class ApiNotAcceptable(ApiError):
+    pass

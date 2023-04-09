@@ -45,7 +45,6 @@ def sync_labels_pages(pages, destination_space):
 
 
 if __name__ == "__main__":
-
     # Setting the logging level. INFO|ERROR|DEBUG are the most common.
     logging.basicConfig(level=logging.INFO)
     # Initialize argparse module with some program name and additional information

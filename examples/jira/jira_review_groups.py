@@ -6,7 +6,7 @@ jira = Jira(url="http://localhost:8080", username="admin", password="admin")
 
 def get_all_users(group, include_inactive=True):
     """
-    Get all users for group. If there more, than 50 users in group:
+    Get all users for group. If their more, than 50 users in group:
     go through the pages and append other users to the list
     :param group:
     :param include_inactive:
@@ -97,9 +97,7 @@ def find_group(groups, group_name):
     :return:
     """
     for group in groups:
-
         if group["group_name"] == group_name:
-
             return group
         else:
             return "Group {} not in list".format(group_name)

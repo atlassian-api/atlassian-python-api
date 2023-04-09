@@ -33,15 +33,12 @@ def review():
     names = []
 
     for notification_schemes_id in notification_schemes_ids["values"]:
-
         notification_id = notification_schemes_id["id"]
         notification_schemes = jira.get_notification_scheme(notification_id, "all")
         names.append(notification_schemes["name"])
         notification_scheme_dict = {}
-
         for scheme in notification_schemes["notificationSchemeEvents"]:
             notification_types = []
-
             for notificationType in scheme["notifications"]:
                 notification_types.append(notificationType["notificationType"])
                 notification_scheme_dict[scheme["event"]["name"]] = notification_types

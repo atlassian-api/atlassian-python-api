@@ -40,9 +40,7 @@ def html_list(data):
     </ul>'
     """
     html = "<ul>"
-
     for item in data:
-
         if isinstance(item, dict):
             if item.get("email"):
                 item = html_email(item.get("email"), item.get("name", None))
@@ -51,9 +49,7 @@ def html_list(data):
 
         if is_email(item):
             item = html_email(item, item)
-
         html += "<li>{}</li>".format(item)
-
     return html + "</ul>"
 
 
@@ -65,11 +61,9 @@ def html_table_header_row(data):
     '\\n\\t<tr><th>Key</th><th>Project</th><th>Leader</th><th>Administrators</th></tr>'
     """
     html = "\n\t<tr>"
-
     for th in data:
         title = th.replace("_", " ").title()
         html += "<th>{}</th>".format(title)
-
     return html + "</tr>"
 
 
@@ -94,20 +88,16 @@ def html_row_with_ordered_headers(data, col_headers, row_header=None):
                 </ul></td></tr>'
     """
     html = "\n\t<tr>"
-
     if row_header:
         html += "<th>{}</th>".format(row_header.replace("_", " ").title())
     for header in col_headers:
         element = data[header]
-
         if isinstance(element, list):
             element = html_list(element)
 
         if is_email(element):
             element = html_email(element)
-
         html += "<td>{}</td>".format(element)
-
     return html + "</tr>"
 
 
@@ -165,10 +155,8 @@ def html_table_from_dict(data, ordering):
     """
     html = "<table><tbody>"
     html += html_table_header_row(ordering)
-
     for row in data:
         html += html_row_with_ordered_headers(row, ordering)
-
     return html + "\n</tbody></table>"
 
 

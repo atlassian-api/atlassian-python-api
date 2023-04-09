@@ -1,5 +1,4 @@
-.. Atlassian Python API documentation master file, created by
-   sphinx-quickstart on Thu Sep 13 13:43:20 2018.
+.. Atlassian Python API documentation is linked to HEAD commit,
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 

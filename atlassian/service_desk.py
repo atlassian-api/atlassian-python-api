@@ -24,7 +24,10 @@ class ServiceDesk(AtlassianRestAPI):
 
         :return: Service Desks
         """
-        service_desks_list = self.get("rest/servicedeskapi/servicedesk", headers=self.experimental_headers)
+        service_desks_list = self.get(
+            "rest/servicedeskapi/servicedesk",
+            headers=self.experimental_headers,
+        )
         if self.advanced_mode:
             return service_desks_list
         else:
@@ -55,7 +58,11 @@ class ServiceDesk(AtlassianRestAPI):
         log.warning("Creating customer...")
         data = {"fullName": full_name, "email": email}
 
-        return self.post("rest/servicedeskapi/customer", headers=self.experimental_headers, data=data)
+        return self.post(
+            "rest/servicedeskapi/customer",
+            headers=self.experimental_headers,
+            data=data,
+        )
 
     def get_customer_request(self, issue_id_or_key):
         """
@@ -310,8 +317,15 @@ class ServiceDesk(AtlassianRestAPI):
             params["limit"] = int(limit)
 
         if service_desk_id is None:
-            return self.get(url_without_sd_id, headers=self.experimental_headers, params=params)
+            return self.get(
+                url_without_sd_id,
+                headers=self.experimental_headers,
+                params=params,
+            )
         return self.get(url_with_sd_id, headers=self.experimental_headers, params=params)
+
+    # add alias for spelling consistency
+    get_organizations = get_organisations
 
     def get_organization(self, organization_id):
         """
@@ -431,7 +445,14 @@ class ServiceDesk(AtlassianRestAPI):
         return self.delete(url, headers=self.experimental_headers, data=data)
 
     # Attachments actions
-    def create_attachments(self, service_desk_id, issue_id_or_key, filenames, public=True, comment=None):
+    def create_attachments(
+        self,
+        service_desk_id,
+        issue_id_or_key,
+        filenames,
+        public=True,
+        comment=None,
+    ):
         """
         Add attachment as a comment.
         Setting attachment visibility is dependent on the user's permission. For example,
@@ -458,7 +479,14 @@ class ServiceDesk(AtlassianRestAPI):
         # Add attachments
         return self.add_attachments(issue_id_or_key, temp_attachment_ids, public, comment)
 
-    def create_attachment(self, service_desk_id, issue_id_or_key, filename, public=True, comment=None):
+    def create_attachment(
+        self,
+        service_desk_id,
+        issue_id_or_key,
+        filename,
+        public=True,
+        comment=None,
+    ):
         """
         Add attachment as a comment.
         Setting attachment visibility is dependent on the user's permission. For example,
@@ -474,7 +502,13 @@ class ServiceDesk(AtlassianRestAPI):
         :return: Request info
         """
         log.info("Creating attachment...")
-        return self.create_attachments(service_desk_id, issue_id_or_key, filename, public=public, comment=comment)
+        return self.create_attachments(
+            service_desk_id,
+            issue_id_or_key,
+            filename,
+            public=public,
+            comment=comment,
+        )
 
     def attach_temporary_file(self, service_desk_id, filename):
         """
@@ -492,11 +526,19 @@ class ServiceDesk(AtlassianRestAPI):
         experimental_headers["X-Atlassian-Token"] = "no-check"
 
         with open(filename, "rb") as file:
-            result = (
-                self.post(path=url, headers=experimental_headers, files={"file": file})
-                .json()
-                .get("temporaryAttachments")
-            )
+            # bug https://github.com/atlassian-api/atlassian-python-api/issues/1056
+            # in advanced_mode it returns the raw response therefore .json() is needed
+            # in normal mode this is not needed and would fail
+            if self.advanced_mode:
+                result = (
+                    self.post(path=url, headers=experimental_headers, files={"file": file})
+                    .json()
+                    .get("temporaryAttachments")
+                )
+            else:
+                result = self.post(path=url, headers=experimental_headers, files={"file": file}).get(
+                    "temporaryAttachments"
+                )
             temp_attachment_id = result[0].get("temporaryAttachmentId")
 
             return temp_attachment_id
@@ -529,7 +571,12 @@ class ServiceDesk(AtlassianRestAPI):
         :return:
         """
         log.info("Adding attachment")
-        return self.add_attachments(issue_id_or_key, [temp_attachment_id], public=public, comment=comment)
+        return self.add_attachments(
+            issue_id_or_key,
+            [temp_attachment_id],
+            public=public,
+            comment=comment,
+        )
 
     # SLA actions
     def get_sla(self, issue_id_or_key, start=0, limit=50):
@@ -567,6 +614,18 @@ class ServiceDesk(AtlassianRestAPI):
         url = "rest/servicedeskapi/request/{0}/sla/{1}".format(issue_id_or_key, sla_id)
 
         return self.get(url, headers=self.experimental_headers)
+
+    def sla_rebuild(self, tickets=None):
+        """
+        Fix corrupted or missing sla
+        https://confluence.atlassian.com/jirakb/missing-or-corrupted-sla-data-in-jira-service-management-828790603.html
+        :param tickets: list of tickets like [XXX-123, XXX-124]
+        :return:
+        """
+        if tickets is None:
+            tickets = []
+        url = "rest/servicedesk/1/servicedesk/sla/admin/task/destructive/reconstruct"
+        return self.post(url, data=tickets)
 
     # Approvals
 
@@ -668,7 +727,10 @@ class ServiceDesk(AtlassianRestAPI):
         :return: the customers added to the service desk
         """
         url = "rest/servicedeskapi/servicedesk/{}/customer".format(service_desk_id)
-        data = {"usernames": list_of_usernames, "accountIds": list_of_accountids}
+        data = {
+            "usernames": list_of_usernames,
+            "accountIds": list_of_accountids,
+        }
 
         log.info("Adding customers...")
         return self.post(url, headers=self.experimental_headers, data=data)
@@ -686,7 +748,10 @@ class ServiceDesk(AtlassianRestAPI):
         :return: the customers added to the service desk
         """
         url = "rest/servicedeskapi/servicedesk/{}/customer".format(service_desk_id)
-        data = {"usernames": list_of_usernames, "accountIds": list_of_accountids}
+        data = {
+            "usernames": list_of_usernames,
+            "accountIds": list_of_accountids,
+        }
 
         log.info("Removing customers...")
         return self.delete(url, headers=self.experimental_headers, data=data)
@@ -743,6 +808,30 @@ class ServiceDesk(AtlassianRestAPI):
 
         return self.get(url, headers=self.experimental_headers, params=params)
 
+    def get_plugins_info(self):
+        """
+        Provide plugins info
+        :return a json of installed plugins
+        """
+        url = "rest/plugins/1.0/"
+        return self.get(url, headers=self.no_check_headers, trailing=True)
+
+    def get_plugin_info(self, plugin_key):
+        """
+        Provide plugin info
+        :return a json of installed plugins
+        """
+        url = "rest/plugins/1.0/{plugin_key}-key".format(plugin_key=plugin_key)
+        return self.get(url, headers=self.no_check_headers, trailing=True)
+
+    def get_plugin_license_info(self, plugin_key):
+        """
+        Provide plugin license info
+        :return a json specific License query
+        """
+        url = "rest/plugins/1.0/{plugin_key}-key/license".format(plugin_key=plugin_key)
+        return self.get(url, headers=self.no_check_headers, trailing=True)
+
     def upload_plugin(self, plugin_path):
         """
         Provide plugin path for upload into Jira e.g. useful for auto deploy
@@ -758,6 +847,34 @@ class ServiceDesk(AtlassianRestAPI):
         ).headers["upm-token"]
         url = "rest/plugins/1.0/?token={upm_token}".format(upm_token=upm_token)
         return self.post(url, files=files, headers=self.no_check_headers)
+
+    def delete_plugin(self, plugin_key):
+        """
+        Delete plugin
+        :param plugin_key:
+        :return:
+        """
+        url = "rest/plugins/1.0/{}-key".format(plugin_key)
+        return self.delete(url)
+
+    def check_plugin_manager_status(self):
+        url = "rest/plugins/latest/safe-mode"
+        return self.request(method="GET", path=url, headers=self.safe_mode_headers)
+
+    def update_plugin_license(self, plugin_key, raw_license):
+        """
+        Update license for plugin
+        :param plugin_key:
+        :param raw_license:
+        :return:
+        """
+        app_headers = {
+            "X-Atlassian-Token": "nocheck",
+            "Content-Type": "application/vnd.atl.plugins+json",
+        }
+        url = "/plugins/1.0/{plugin_key}/license".format(plugin_key=plugin_key)
+        data = {"rawLicense": raw_license}
+        return self.put(url, data=data, headers=app_headers)
 
     def create_request_type(
         self,

@@ -47,9 +47,29 @@ class Insight(AtlassianRestAPI):
         return args, kwargs
 
     def __get_workspace_id(self):
-        return self.get("rest/servicedeskapi/insight/workspace", headers=self.default_headers,)["values"][
-            0
-        ]["workspaceId"]
+        result = self.get(
+            "rest/servicedeskapi/insight/workspace",
+            headers=self.default_headers,
+        )
+        return result["values"][0]["workspaceId"]
+
+    def _get_insight_workspace_ids(self):
+        """
+        Returns all Insight workspace Ids.
+        :return: List
+        """
+        result = self.get(
+            "rest/servicedeskapi/insight/workspace",
+            headers=self.experimental_headers,
+        )
+        return [i["workspaceId"] for i in result["values"]]
+
+    def _get_insight_workspace_id(self):
+        """
+        Returns the first Insight workspace ID.
+        :return: str
+        """
+        return next(iter(self._get_insight_workspace_ids()))
 
     # Attachments
     def get_attachments_of_objects(self, object_id):
@@ -84,7 +104,10 @@ class Insight(AtlassianRestAPI):
         """
         if self.cloud:
             raise NotImplementedError
-        url = self.url_joiner(self.api_root, "attachments/object/{objectId}".format(objectId=object_id))
+        url = self.url_joiner(
+            self.api_root,
+            "attachments/object/{objectId}".format(objectId=object_id),
+        )
         return self.get(url)
 
     def upload_attachment_to_object(self, object_id, filename):
@@ -200,7 +223,10 @@ class Insight(AtlassianRestAPI):
         :param import_id:
         :return:
         """
-        url = self.url_joiner(self.api_root, "import/start/{import_id}".format(import_id=import_id))
+        url = self.url_joiner(
+            self.api_root,
+            "import/start/{import_id}".format(import_id=import_id),
+        )
         return self.post(url)
 
     # Index
@@ -284,7 +310,14 @@ class Insight(AtlassianRestAPI):
         url = self.url_joiner(self.api_root, "object/{id}".format(id=object_id))
         return self.get(url)
 
-    def update_object(self, object_id, object_type_id, attributes, has_avatar=False, avatar_uuid=""):
+    def update_object(
+        self,
+        object_id,
+        object_type_id,
+        attributes,
+        has_avatar=False,
+        avatar_uuid="",
+    ):
         """
         Update an existing object in Insight
 
@@ -429,7 +462,10 @@ class Insight(AtlassianRestAPI):
         :param object_id:
         :return:
         """
-        url = self.url_joiner(self.api_root, "objectconnectedtickets/{id}/tickets".format(id=object_id))
+        url = self.url_joiner(
+            self.api_root,
+            "objectconnectedtickets/{id}/tickets".format(id=object_id),
+        )
         return self.get(url)
 
     # Object schema
@@ -529,7 +565,7 @@ class Insight(AtlassianRestAPI):
         params.update({k: v for k, v in kwargs if v is not None and k not in ["self", "type_id"]})
 
         return self.get(
-            "{0}objecttype/{1}/attributes".format(self.api_root, type_id),
+            "{0}/objecttype/{1}/attributes".format(self.api_root, type_id),
             headers=self.experimental_headers,
             params=params,
         )
@@ -551,6 +587,27 @@ class Insight(AtlassianRestAPI):
     # Insight Progress API
     # TODO: Get progress category imports {id}:
     #       https://developer.atlassian.com/cloud/insight/rest/api-group-progress/#api-progress-category-imports-id-get
+    def get_progress_of_reindex(self):
+        """
+        Show ongoing insight processes
+        :return:
+        """
+        if self.cloud:
+            raise NotImplementedError
+        url = self.url_joiner(self.api_root, "progress/category/insight-reindex/reindex")
+        return self.get(url)
+
+    def get_progress_of_import(self, import_id):
+        """
+        Show ongoing insight processes
+        :type import_id: int: The id of the import source configuration
+                              that the progress should be fetched for
+        :return:
+        """
+        if self.cloud:
+            raise NotImplementedError
+        url = self.url_joiner(self.api_root, "progress/category/imports/{id}".format(id=import_id))
+        return self.get(url)
 
     # Insight Config API
     # TODO: Get config statustype:
@@ -563,3 +620,27 @@ class Insight(AtlassianRestAPI):
     #       https://developer.atlassian.com/cloud/insight/rest/api-group-config/#api-config-statustype-id-put
     # TODO: Delete config statustype {id}:
     #       https://developer.atlassian.com/cloud/insight/rest/api-group-config/#api-config-statustype-id-delete
+
+    # Update Issue with Insight Field
+    def update_issue_insight_field(self, key, field_id, insight_keys, add=False):
+        """
+        Set the value of an Insight field.
+        Args:
+            key (str): Jira issue key, eg. SFT-446
+            field_id (str): The internal Jira name of the Insight field, eg. customfield_10200
+            insight_keys (list): List of Insight objects to associate with the field. Limited
+                to 20 objects. If the field only takes a single object pass a single value list.
+            add (bool, optional): Add to the existing field rather than setting the field value.
+                Defaults to False.
+        Returns:
+            [type]: The insight object updated.
+        """
+        base_url = self.resource_url("issue")
+        action = "add" if add else "set"
+        data = {
+            "update": {
+                field_id: [{action: [{"key": i} for i in insight_keys]}],
+            }
+        }
+        data = {"fields": {field_id: [{"key": i} for i in insight_keys]}}
+        return self.put("{base_url}/{key}".format(base_url=base_url, key=key), data=data)

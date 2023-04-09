@@ -90,8 +90,17 @@ Manage projects
     # Returns all projects which are visible for the currently logged in user.
     jira.get_all_projects(included_archived=None)
 
+    # Delete project
+    jira.delete_project(key)
+
+    # Archive Project
+    jira.archive_project(key)
+
     # Get project
-    jira.project(key)
+    jira.project(key, expand=None)
+
+    # Get project info
+    jira.get_project(key, expand=None)
 
     # Get project components using project key
     jira.get_project_components(key)
@@ -259,14 +268,26 @@ Manage issues
     jira.issue_archive(issue_id_or_key)
 
     # Restore an issue
-    issue_restore(issue_id_or_key)
+    jira.issue_restore(issue_id_or_key)
 
     # Issue Comments
     jira.issue_get_comments(issue_id_or_key)
 
+    # Get issue comment by id
     jira.issue_get_comment(issue_id_or_key, comment_id)
 
+    # Get comments over all issues by ids
     jira.issues_get_comments_by_id(comment_id, [comment_id...])
+
+    # Get change history for an issue
+    jira.get_issue_changelog(issue_key)
+
+    # Get worklog for an issue
+    jira.issue_get_worklog(issue_key)
+
+    # Create a new worklog entry for an issue
+    # started is a date string in the format %Y-%m-%dT%H:%M:%S.000+0000%z
+    jira.issue_worklog(issue_key, started, time_in_sec)
 
 
 Epic Issues
@@ -293,6 +314,15 @@ Manage Boards
     # Add/Move Issues to sprint
     jira.add_issues_to_sprint(sprint_id, issues_list)
 
+
+Manage dashboards
+-----------------
+
+.. code-block:: python
+
+    # Get dashboard by ID
+    jira.get_dashboard(dashboard_id)
+
 Attachments actions
 -------------------
 
@@ -300,6 +330,9 @@ Attachments actions
 
     # Add attachment to issue
     jira.add_attachment(issue_key, filename)
+
+    # Add attachment (IO Object) to issue
+    jira.add_attachment_object(issue_key, attachment)
 
 Manage components
 -----------------
@@ -363,6 +396,16 @@ Issue security schemes
     # user has the administrative permission.
     # Use only_levels=True for get the only levels entries
     jira.get_issue_security_scheme(scheme_id, only_levels=False)
+
+Cluster methods (only for DC edition)
+-------------------------------------
+.. code-block:: python
+
+    # Get all cluster nodes.
+    jira.get_cluster_all_nodes()
+
+    # Request current index from node (the request is processed asynchronously).
+    jira.request_current_index_from_node(node_id)
 
 TEMPO
 ----------------------

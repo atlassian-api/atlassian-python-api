@@ -275,13 +275,23 @@ class PullRequest(BitbucketCloudBase):
 
         return
 
-    def comments(self):
+    def comments(self, q=None, sort=None):
         """
         Returns generator object of the comments endpoint
 
+        :param q: string: Query string to narrow down the response.
+        :param sort: string: Name of a response property to sort results.
+            See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering
+            for details on filtering and sorting.
+
         API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pullrequests/%7Bpull_request_id%7D/comments#get
         """
-        for comment in self._get_paged("comments"):
+        params = {}
+        if sort is not None:
+            params["sort"] = sort
+        if q is not None:
+            params["q"] = q
+        for comment in self._get_paged("comments", params=params):
             yield Comment(comment, **self._new_session_args)
 
     def comment(self, raw_message):

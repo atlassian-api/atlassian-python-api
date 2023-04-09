@@ -8,7 +8,20 @@ log = logging.getLogger(__name__)
 
 class Xray(AtlassianRestAPI):
     def __init__(self, *args, **kwargs):
+        if "api_version" not in kwargs:
+            kwargs["api_version"] = "1.0"
+        kwargs["api_root"] = "rest/raven"
         super(Xray, self).__init__(*args, **kwargs)
+
+    def resource_url(self, resource, api_root=None, api_version=None):
+        """
+        Overloading the method from AtlassianRestAPI to be compatible with the "middle man" version used by Xray.
+        """
+        if api_root is None:
+            api_root = self.api_root
+        if api_version is None:
+            api_version = self.api_version
+        return "/".join(s.strip("/") for s in [api_root, api_version, "api", resource] if s is not None)
 
     # Tests API
     def get_tests(self, test_keys):
@@ -17,7 +30,7 @@ class Xray(AtlassianRestAPI):
         :param test_keys: list of tests (eg. `['TEST-001', 'TEST-002']`) to retrieve.
         :return: Returns the retrieved tests.
         """
-        url = "rest/raven/1.0/api/test?keys={0}".format(";".join(test_keys))
+        url = self.resource_url("test?keys={0}".format(";".join(test_keys)))
         return self.get(url)
 
     def get_test_statuses(self):
@@ -25,7 +38,7 @@ class Xray(AtlassianRestAPI):
         Retrieve a list of all Test Statuses available in Xray sorted by rank.
         :return: Returns the test statuses.
         """
-        url = "rest/raven/1.0/api/settings/teststatuses"
+        url = self.resource_url("settings/teststatuses")
         return self.get(url)
 
     def get_test_runs(self, test_key):
@@ -34,8 +47,61 @@ class Xray(AtlassianRestAPI):
         :param test_key: Test key (eg. 'TEST-001').
         :return: Returns the exported test runs.
         """
-        url = "rest/raven/1.0/api/test/{0}/testruns".format(test_key)
+        url = self.resource_url("test/{0}/testruns".format(test_key))
         return self.get(url)
+
+    def get_test_runs_in_context(
+        self,
+        test_exec_key=None,
+        test_key=None,
+        test_plan_key=None,
+        include_test_fields=None,
+        saved_filter_id=None,
+        limit=None,
+        page=None,
+    ):
+        """
+        Retrieves all the Test Runs from a given context.
+        With this endpoint you can obtain all the Test Runs (paginated)
+        in one of the following contexts:
+        * In a Test Execution issue (use testKey to limit to single test)
+        * In a Test Plan issue
+        * In a JQL filter that returns several Test Execution issue
+        In case the Test Run has iterations, steps will not appear.
+        However, if the Test has parameters but executed one time,
+        it will show the steps and the parameters info
+        :param test_exec_key: The Test Execution issue key
+        :param test_key: The Test issue key
+        (may only be used when using the "test_exec_key" param)
+        :param test_plan_key: The Test Plan issue key
+        :param include_test_fields: List of custom fields of the Test issue
+        to be return in the responde
+        (several custom fields can be requested by separating them with ',')
+        :param saved_filter_id: The Jira JQL filter ID or
+        name containing Test Executions issues
+        :param limit: The number of maximum Test Runs to be returned
+        :param page: The number of the results page
+        :return: Returns the exported test runs.
+        """
+        if self.api_version == "1.0":
+            raise Exception("Not supported in API version 1.0")
+        params = {}
+        if test_exec_key:
+            params["testExecKey"] = test_exec_key
+        if test_key:
+            params["testKey"] = test_key
+        if test_plan_key:
+            params["testPlanKey"] = test_plan_key
+        if include_test_fields:
+            params["includeTestFields"] = include_test_fields
+        if saved_filter_id:
+            params["savedFilterId"] = saved_filter_id
+        if limit:
+            params["limit"] = limit
+        if page:
+            params["page"] = page
+        url = self.resource_url("testruns")
+        return self.get(url, params=params)
 
     def get_test_runs_with_environment(self, test_key, test_environments):
         # TODO
@@ -46,7 +112,7 @@ class Xray(AtlassianRestAPI):
         :return: Returns the exported test runs.
         """
         env = "?testEnvironments={0}".format(",".join([re.escape(env) for env in test_environments]))
-        url = "rest/raven/1.0/api/test/{0}/testruns{1}".format(test_key, env)
+        url = self.resource_url("test/{0}/testruns{1}".format(test_key, env))
         return self.get(url)
 
     def get_test_preconditions(self, test_key):
@@ -55,7 +121,7 @@ class Xray(AtlassianRestAPI):
         :param test_key: Test key (eg. 'TEST-001').
         :return: Returns the test pre-conditions of a given test.
         """
-        url = "rest/raven/1.0/api/test/{0}/preconditions".format(test_key)
+        url = self.resource_url("test/{0}/preconditions".format(test_key))
         return self.get(url)
 
     def get_test_sets(self, test_key):
@@ -64,7 +130,7 @@ class Xray(AtlassianRestAPI):
         :param test_key: Test key (eg. 'TEST-001').
         :return: Returns the exported test sets.
         """
-        url = "rest/raven/1.0/api/test/{0}/testsets".format(test_key)
+        url = self.resource_url("test/{0}/testsets".format(test_key))
         return self.get(url)
 
     def get_test_executions(self, test_key):
@@ -73,7 +139,7 @@ class Xray(AtlassianRestAPI):
         :param test_key: Test key (eg. 'TEST-001').
         :return: Returns the exported test executions.
         """
-        url = "rest/raven/1.0/api/test/{0}/testexecutions".format(test_key)
+        url = self.resource_url("test/{0}/testexecutions".format(test_key))
         return self.get(url)
 
     def get_test_plans(self, test_key):
@@ -82,7 +148,7 @@ class Xray(AtlassianRestAPI):
         :param test_key: Test key (eg. 'TEST-001').
         :return: Returns the exported test plans.
         """
-        url = "rest/raven/1.0/api/test/{0}/testplans".format(test_key)
+        url = self.resource_url("test/{0}/testplans".format(test_key))
         return self.get(url)
 
     # Test Steps API
@@ -91,7 +157,7 @@ class Xray(AtlassianRestAPI):
         Retrieve the test step statuses available in Xray sorted by rank.
         :return: Returns the test step statuses available in Xray sorted by rank.
         """
-        url = "rest/raven/1.0/api/settings/teststepstatuses"
+        url = self.resource_url("settings/teststepstatuses")
         return self.get(url)
 
     def get_test_step(self, test_key, test_step_id):
@@ -101,7 +167,7 @@ class Xray(AtlassianRestAPI):
         :param test_step_id: ID of the test step.
         :return: Return the test step with the given id.
         """
-        url = "rest/raven/1.0/api/test/{0}/step/{1}".format(test_key, test_step_id)
+        url = self.resource_url("test/{0}/step/{1}".format(test_key, test_step_id))
         return self.get(url)
 
     def get_test_steps(self, test_key):
@@ -110,7 +176,7 @@ class Xray(AtlassianRestAPI):
         :param test_key: Test key (eg. 'TEST-001').
         :return: Return the test steps of a given test.
         """
-        url = "rest/raven/1.0/api/test/{0}/step".format(test_key)
+        url = self.resource_url("test/{0}/step".format(test_key))
         return self.get(url)
 
     def create_test_step(self, test_key, step, data, result):
@@ -124,7 +190,7 @@ class Xray(AtlassianRestAPI):
         :return:
         """
         create = {"step": step, "data": data, "result": result, "attachments": []}
-        url = "rest/raven/1.0/api/test/{0}/step".format(test_key)
+        url = self.resource_url("test/{0}/step".format(test_key))
         return self.put(url, create)
 
     def update_test_step(self, test_key, test_step_id, step, data, result):
@@ -144,7 +210,7 @@ class Xray(AtlassianRestAPI):
             "result": result,
             "attachments": {"add": [], "remove": []},
         }
-        url = "rest/raven/1.0/api/test/{0}/step/{1}".format(test_key, test_step_id)
+        url = self.resource_url("test/{0}/step/{1}".format(test_key, test_step_id))
         return self.post(url, update)
 
     def delete_test_step(self, test_key, test_step_id):
@@ -154,7 +220,7 @@ class Xray(AtlassianRestAPI):
         :param test_step_id: ID of the test step.
         :return:
         """
-        url = "rest/raven/1.0/api/test/{0}/step/{1}".format(test_key, test_step_id)
+        url = self.resource_url("test/{0}/step/{1}".format(test_key, test_step_id))
         return self.delete(url)
 
     # Pre-Conditions API
@@ -164,7 +230,7 @@ class Xray(AtlassianRestAPI):
         :param precondition_key: Precondition key (eg. 'TEST-001').
         :return: Return a list of the test associated with the pre-condition.
         """
-        url = "rest/raven/1.0/api/precondition/{0}/test".format(precondition_key)
+        url = self.resource_url("precondition/{0}/test".format(precondition_key))
         return self.get(url)
 
     def update_precondition(self, precondition_key, add=None, remove=None):
@@ -180,7 +246,7 @@ class Xray(AtlassianRestAPI):
         if add is None:
             add = []
         update = {"add": add, "remove": remove}
-        url = "rest/raven/1.0/api/precondition/{0}/test".format(precondition_key)
+        url = self.resource_url("precondition/{0}/test".format(precondition_key))
         return self.post(url, update)
 
     def delete_test_from_precondition(self, precondition_key, test_key):
@@ -190,7 +256,7 @@ class Xray(AtlassianRestAPI):
         :param test_key: Test Key which should no longer be associate with the pre-condition (eg. 'TEST-100')
         :return:
         """
-        url = "rest/raven/1.0/api/precondition/{0}/test/{1}".format(precondition_key, test_key)
+        url = self.resource_url("precondition/{0}/test/{1}".format(precondition_key, test_key))
         return self.delete(url)
 
     # Test Set API
@@ -202,7 +268,7 @@ class Xray(AtlassianRestAPI):
         :param page: OPTIONAL: Number of the page to be returned.
         :return: Return a list of the test associated with the test set.
         """
-        url = "rest/raven/1.0/api/testset/{0}/test".format(test_set_key)
+        url = self.resource_url("testset/{0}/test".format(test_set_key))
         params = {}
 
         if limit:
@@ -225,7 +291,7 @@ class Xray(AtlassianRestAPI):
         if remove is None:
             remove = []
         update = {"add": add, "remove": remove}
-        url = "rest/raven/1.0/api/testset/{0}/test".format(test_set_key)
+        url = self.resource_url("testset/{0}/test".format(test_set_key))
         return self.post(url, update)
 
     def delete_test_from_test_set(self, test_set_key, test_key):
@@ -235,7 +301,7 @@ class Xray(AtlassianRestAPI):
         :param test_key: Test Key which should no longer be associate with the test set (eg. 'TEST-100')
         :return:
         """
-        url = "rest/raven/1.0/api/testset/{0}/test/{1}".format(test_set_key, test_key)
+        url = self.resource_url("testset/{0}/test/{1}".format(test_set_key, test_key))
         return self.delete(url)
 
     # Test Plans API
@@ -247,7 +313,7 @@ class Xray(AtlassianRestAPI):
         :param page: OPTIONAL: Number of the page to be returned.
         :return: Return a list of the test associated with the test plan.
         """
-        url = "rest/raven/1.0/api/testplan/{0}/test".format(test_plan_key)
+        url = self.resource_url("testplan/{0}/test".format(test_plan_key))
         params = {}
 
         if limit:
@@ -270,7 +336,7 @@ class Xray(AtlassianRestAPI):
         if remove is None:
             remove = []
         update = {"add": add, "remove": remove}
-        url = "rest/raven/1.0/api/testplan/{0}/test".format(test_plan_key)
+        url = self.resource_url("testplan/{0}/test".format(test_plan_key))
         return self.post(url, update)
 
     def delete_test_from_test_plan(self, test_plan_key, test_key):
@@ -280,7 +346,7 @@ class Xray(AtlassianRestAPI):
         :param test_key: Test Key which should no longer be associate with the test plan (eg. 'TEST-100')
         :return:
         """
-        url = "rest/raven/1.0/api/testplan/{0}/test/{1}".format(test_plan_key, test_key)
+        url = self.resource_url("testplan/{0}/test/{1}".format(test_plan_key, test_key))
         return self.delete(url)
 
     def get_test_executions_with_test_plan(self, test_plan_key):
@@ -289,7 +355,7 @@ class Xray(AtlassianRestAPI):
         :param test_plan_key: Test plan key (eg. 'PLAN-001').
         :return: Return a list of the test executions associated with the test plan.
         """
-        url = "rest/raven/1.0/api/testplan/{0}/testexecution".format(test_plan_key)
+        url = self.resource_url("testplan/{0}/testexecution".format(test_plan_key))
         return self.get(url)
 
     def update_test_plan_test_executions(self, test_plan_key, add=None, remove=None):
@@ -305,7 +371,7 @@ class Xray(AtlassianRestAPI):
         if remove is None:
             remove = []
         update = {"add": add, "remove": remove}
-        url = "rest/raven/1.0/api/testplan/{0}/testexecution".format(test_plan_key)
+        url = self.resource_url("testplan/{0}/testexecution".format(test_plan_key))
         return self.post(url, update)
 
     def delete_test_execution_from_test_plan(self, test_plan_key, test_exec_key):
@@ -315,7 +381,7 @@ class Xray(AtlassianRestAPI):
         :param test_exec_key: Test execution Key which should no longer be associate with the test plan (eg. 'TEST-100')
         :return:
         """
-        url = "rest/raven/1.0/api/testplan/{0}/testexecution/{1}".format(test_plan_key, test_exec_key)
+        url = self.resource_url("testplan/{0}/testexecution/{1}".format(test_plan_key, test_exec_key))
         return self.delete(url)
 
     # Test Executions API
@@ -328,7 +394,7 @@ class Xray(AtlassianRestAPI):
         :param page: OPTIONAL: Number of the page to be returned.
         :return: Return a list of the test associated with the test execution.
         """
-        url = "rest/raven/1.0/api/testexec/{0}/test".format(test_exec_key)
+        url = self.resource_url("testexec/{0}/test".format(test_exec_key))
         params = {}
 
         if detailed:
@@ -354,7 +420,7 @@ class Xray(AtlassianRestAPI):
         if remove is None:
             remove = []
         update = {"add": add, "remove": remove}
-        url = "rest/raven/1.0/api/testexec/{0}/test".format(test_exec_key)
+        url = self.resource_url("testexec/{0}/test".format(test_exec_key))
         return self.post(url, update)
 
     def delete_test_from_test_execution(self, test_exec_key, test_key):
@@ -364,7 +430,7 @@ class Xray(AtlassianRestAPI):
         :param test_key: Test Key which should no longer be associate with the test execution (eg. 'TEST-100')
         :return:
         """
-        url = "rest/raven/1.0/api/testexec/{0}/test/{1}".format(test_exec_key, test_key)
+        url = self.resource_url("testexec/{0}/test/{1}".format(test_exec_key, test_key))
         return self.delete(url)
 
     # Test Runs API
@@ -374,7 +440,7 @@ class Xray(AtlassianRestAPI):
         :param test_run_id: ID of the test run (eg. 100).
         :return: Returns detailed information about the test run.
         """
-        url = "rest/raven/1.0/api/testrun/{0}".format(test_run_id)
+        url = self.resource_url("testrun/{0}".format(test_run_id))
         return self.get(url)
 
     def get_test_run_assignee(self, test_run_id):
@@ -383,7 +449,7 @@ class Xray(AtlassianRestAPI):
         :param test_run_id: ID of the test run (eg. 100).
         :return: Returns the assignee for the given test run
         """
-        url = "rest/raven/1.0/api/testrun/{0}/assignee".format(test_run_id)
+        url = self.resource_url("testrun/{0}/assignee".format(test_run_id))
         return self.get(url)
 
     def update_test_run_assignee(self, test_run_id, assignee):
@@ -394,7 +460,7 @@ class Xray(AtlassianRestAPI):
         :return:
         """
         update = {"assignee": assignee}
-        url = "rest/raven/1.0/api/testrun/{0}".format(test_run_id)
+        url = self.resource_url("testrun/{0}".format(test_run_id))
         return self.put(url, update)
 
     def get_test_run_status(self, test_run_id):
@@ -403,7 +469,7 @@ class Xray(AtlassianRestAPI):
         :param test_run_id: ID of the test run (eg. 100).
         :return: Returns the status for the given test run
         """
-        url = "rest/raven/1.0/api/testrun/{0}/status".format(test_run_id)
+        url = self.resource_url("testrun/{0}/status".format(test_run_id))
         return self.get(url)
 
     def update_test_run_status(self, test_run_id, status):
@@ -414,7 +480,7 @@ class Xray(AtlassianRestAPI):
         :return:
         """
         update = {"status": status}
-        url = "rest/raven/1.0/api/testrun/{0}".format(test_run_id)
+        url = self.resource_url("testrun/{0}".format(test_run_id))
         return self.put(url, update)
 
     def get_test_run_defects(self, test_run_id):
@@ -423,7 +489,7 @@ class Xray(AtlassianRestAPI):
         :param test_run_id: ID of the test run (eg. 100).
         :return: Returns a list of defects for the given test run
         """
-        url = "rest/raven/1.0/api/testrun/{0}/defect".format(test_run_id)
+        url = self.resource_url("testrun/{0}/defect".format(test_run_id))
         return self.get(url)
 
     def update_test_run_defects(self, test_run_id, add=None, remove=None):
@@ -439,7 +505,7 @@ class Xray(AtlassianRestAPI):
         if remove is None:
             remove = []
         update = {"defects": {"add": add, "remove": remove}}
-        url = "rest/raven/1.0/api/testrun/{0}".format(test_run_id)
+        url = self.resource_url("testrun/{0}".format(test_run_id))
         return self.put(url, update)
 
     def get_test_run_comment(self, test_run_id):
@@ -448,7 +514,7 @@ class Xray(AtlassianRestAPI):
         :param test_run_id: ID of the test run (eg. 100).
         :return: Returns the comment for the given test run
         """
-        url = "rest/raven/1.0/api/testrun/{0}/comment".format(test_run_id)
+        url = self.resource_url("testrun/{0}/comment".format(test_run_id))
         return self.get(url)
 
     def update_test_run_comment(self, test_run_id, comment):
@@ -459,7 +525,7 @@ class Xray(AtlassianRestAPI):
         :return:
         """
         update = {"comment": comment}
-        url = "rest/raven/1.0/api/testrun/{0}".format(test_run_id)
+        url = self.resource_url("testrun/{0}".format(test_run_id))
         return self.put(url, update)
 
     def get_test_run_steps(self, test_run_id):
@@ -468,7 +534,7 @@ class Xray(AtlassianRestAPI):
         :param test_run_id: ID of the test run (eg. 100).
         :return: Returns the steps for the given test run
         """
-        url = "rest/raven/1.0/api/testrun/{0}/step".format(test_run_id)
+        url = self.resource_url("testrun/{0}/step".format(test_run_id))
         return self.get(url)
 
     def get_test_repo_folders(self, project_key):
@@ -477,7 +543,7 @@ class Xray(AtlassianRestAPI):
         :param project_key: Project key (eg. 'FOO').
         :return: Returns the list of test repository folders.
         """
-        url = "rest/raven/1.0/api/testrepository/{0}/folders".format(project_key)
+        url = self.resource_url("testrepository/{0}/folders".format(project_key))
         return self.get(url)
 
     def get_test_repo_folder(self, project_key, folder_id):
@@ -487,7 +553,7 @@ class Xray(AtlassianRestAPI):
         :param folder_id: Internal folder Id.
         :return: Returns the test repository folder.
         """
-        url = "rest/raven/1.0/api/testrepository/{0}/folders/{1}".format(project_key, folder_id)
+        url = self.resource_url("testrepository/{0}/folders/{1}".format(project_key, folder_id))
         return self.get(url)
 
     def create_test_repo_folder(self, project_key, folder_name, parent_folder_id=-1):
@@ -499,7 +565,7 @@ class Xray(AtlassianRestAPI):
         :return: Returns the created test repository folder.
         """
         data = {"name": folder_name}
-        url = "rest/raven/1.0/api/testrepository/{0}/folders/{1}".format(project_key, parent_folder_id)
+        url = self.resource_url("testrepository/{0}/folders/{1}".format(project_key, parent_folder_id))
         return self.post(url, data=data)
 
     def update_test_repo_folder(self, project_key, folder_id, folder_name, rank=1):
@@ -512,7 +578,7 @@ class Xray(AtlassianRestAPI):
         :return: Returns the updated test repository folder.
         """
         data = {"name": folder_name, "rank": rank}
-        url = "rest/raven/1.0/api/testrepository/{0}/folders/{1}".format(project_key, folder_id)
+        url = self.resource_url("testrepository/{0}/folders/{1}".format(project_key, folder_id))
         return self.put(url, data=data)
 
     def delete_test_repo_folder(self, project_key, folder_id):
@@ -522,7 +588,7 @@ class Xray(AtlassianRestAPI):
         :param folder_id: Internal folder Id.
         :return: Returns the delete results.
         """
-        url = "rest/raven/1.0/api/testrepository/{0}/folders/{1}".format(project_key, folder_id)
+        url = self.resource_url("testrepository/{0}/folders/{1}".format(project_key, folder_id))
         return self.delete(url)
 
     def get_test_repo_folder_tests(self, project_key, folder_id, all_descendants=False, page=1, limit=50):
@@ -536,7 +602,7 @@ class Xray(AtlassianRestAPI):
         :return: Returns list of the Tests contained in a given folder of the test repository.
         Note: param "page" and "limit" must coexist, otherwise rest api will raise 400
         """
-        url = "rest/raven/1.0/api/testrepository/{0}/folders/{1}/tests".format(project_key, folder_id)
+        url = self.resource_url("testrepository/{0}/folders/{1}/tests".format(project_key, folder_id))
         params = {}
 
         if all_descendants:
@@ -562,5 +628,5 @@ class Xray(AtlassianRestAPI):
         if remove is None:
             remove = []
         data = {"add": add, "remove": remove}
-        url = "rest/raven/1.0/api/testrepository/{0}/folders/{1}/tests".format(project_key, folder_id)
+        url = self.resource_url("testrepository/{0}/folders/{1}/tests".format(project_key, folder_id))
         return self.put(url, data=data)
