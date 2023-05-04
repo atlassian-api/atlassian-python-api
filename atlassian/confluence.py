@@ -2438,7 +2438,7 @@ class Confluence(AtlassianRestAPI):
                 log.error("Failed to get download PDF url.")
                 raise ApiNotFoundError("Failed to export page as PDF", reason="Failed to get download PDF url.")
             # To download the PDF file, the request should be with no headers of authentications.
-            return requests.get(url).content
+            return requests.get(url, timeout=75).content
         return self.get(url, headers=headers, not_json_response=True)
 
     def get_page_as_word(self, page_id):
