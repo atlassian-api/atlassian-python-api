@@ -5,6 +5,7 @@ import time
 import json
 
 from requests import HTTPError
+import requests
 from deprecated import deprecated
 from atlassian import utils
 from .errors import ApiError, ApiNotFoundError, ApiPermissionError, ApiValueError, ApiConflictError, ApiNotAcceptable
@@ -2433,7 +2434,11 @@ class Confluence(AtlassianRestAPI):
         url = "spaces/flyingpdf/pdfpageexport.action?pageId={pageId}".format(pageId=page_id)
         if self.api_version == "cloud":
             url = self.get_pdf_download_url_for_confluence_cloud(url)
-
+            if not url:
+                log.error("Failed to get download PDF url.")
+                raise ApiNotFoundError("Failed to export page as PDF", reason="Failed to get download PDF url.")
+            # To download the PDF file, the request should be with no headers of authentications.
+            return requests.get(url).content
         return self.get(url, headers=headers, not_json_response=True)
 
     def get_page_as_word(self, page_id):
@@ -2669,44 +2674,40 @@ class Confluence(AtlassianRestAPI):
         :param url: URL to initiate PDF export
         :return: Download url for PDF file
         """
-        download_url = None
         try:
-            long_running_task = True
+            running_task = True
             headers = self.form_token_headers
             log.info("Initiate PDF export from Confluence Cloud")
             response = self.get(url, headers=headers, not_json_response=True)
             response_string = response.decode(encoding="utf-8", errors="strict")
             task_id = response_string.split('name="ajs-taskId" content="')[1].split('">')[0]
-            poll_url = "runningtaskxml.action?taskId={0}".format(task_id)
-            while long_running_task:
-                long_running_task_response = self.get(poll_url, headers=headers, not_json_response=True)
-                long_running_task_response_parts = long_running_task_response.decode(
-                    encoding="utf-8", errors="strict"
-                ).split("\n")
-                percentage_complete = long_running_task_response_parts[6].strip()
-                is_successful = long_running_task_response_parts[7].strip()
-                is_complete = long_running_task_response_parts[8].strip()
-                log.info("Sleep for 5s.")
-                time.sleep(5)
+            poll_url = "/services/api/v1/task/{0}/progress".format(task_id)
+            while running_task:
                 log.info("Check if export task has completed.")
-                if is_complete == "<isComplete>true</isComplete>":
-                    if is_successful == "<isSuccessful>true</isSuccessful>":
-                        log.info(percentage_complete)
-                        log.info("Downloading content...")
-                        log.debug("Extract taskId and download PDF.")
-                        current_status = long_running_task_response_parts[3]
-                        download_url = current_status.split("href=&quot;/wiki/")[1].split("&quot")[0]
-                        long_running_task = False
-                    elif is_successful == "<isSuccessful>false</isSuccessful>":
+                progress_response = self.get(poll_url)
+                percentage_complete = int(progress_response.get("progress", 0))
+                task_state = progress_response.get("state")
+                if percentage_complete == 100:
+                    running_task = False
+                    log.info(f"Task completed - {task_state}")
+                    task_result_url = progress_response.get("result")
+                    log.debug("Extract task results to download PDF.")
+                    if not task_result_url or not task_result_url.startswith("/wiki/services/api/v1/download/pdf"):
                         log.error("PDF conversion not successful.")
                         return None
                 else:
-                    log.info(percentage_complete)
+                    time.sleep(3)
+                    log.info(f"{percentage_complete}% - {task_state}")
+            log.debug("Task successfully done, querying the task result for the download url")
+            # task result url starts with /wiki, remove it.
+            task_result_url = task_result_url[5:]
+            task_content = self.get(task_result_url, not_json_response=True)
+            download_url = task_content.decode(encoding="utf-8", errors="strict")
+            log.debug("Successfully got the download url")
+            return download_url
         except IndexError as e:
             log.error(e)
             return None
-
-        return download_url
 
     def audit(
         self,
