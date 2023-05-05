@@ -38,7 +38,7 @@ class Insight(AtlassianRestAPI):
         temp = Insight(*args, **kwargs)
         # retrieve cloud workspace id and generate the api_root
         kwargs["api_root"] = "/jsm/insight/workspace/{}/v1/".format(temp.__get_workspace_id())
-        # insight cloud uses the atlassian base url, not custom instnace urls
+        # insight cloud uses the atlassian base url, not custom instance urls
         kwargs["url"] = "https://api.atlassian.com"
         # set cloud back to true and return
         kwargs["cloud"] = True
