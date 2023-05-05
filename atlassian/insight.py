@@ -285,6 +285,8 @@ class Insight(AtlassianRestAPI):
         :param extended:
         :return:
         """
+        if self.cloud:
+            log.warning("Deprecated for cloud, please use aql()")
         params = {"iql": iql, "objectSchemaId": object_schema_id, "page": page}
         if order_by_attribute_id:
             params["orderByAttributeId"] = order_by_attribute_id
@@ -298,6 +300,32 @@ class Insight(AtlassianRestAPI):
             params["extended"] = extended
         url = self.url_joiner(self.api_root, "iql/objects")
         return self.get(url, params=params)
+
+    # AQL
+    def aql(
+        self,
+        aql,
+        start_at=0,
+        max_results=25,
+        include_attributes=True,
+    ):
+        """
+        Resource dedicated to finding objects based on the Asset Query Language (AQL)
+
+        :param aql:
+        :param start_at:
+        :param max_results:
+        :param include_attributes:
+        :return:
+        """
+        if not self.cloud:
+            raise NotImplementedError
+        data = {"qlQuery": aql}
+        params = {"startAt": start_at, "maxResults": max_results, "includeAttributes": include_attributes}
+        url = self.url_joiner(self.api_root, "object/aql")
+        return self.post(
+            url, data=data, params=params, headers={"Content-Type": "application/json", "Accept": "application/json"}
+        )
 
     # Object
     def get_object(self, object_id):
