@@ -2700,8 +2700,7 @@ class Confluence(AtlassianRestAPI):
                     time.sleep(3)
             log.debug("Task successfully done, querying the task result for the download url")
             # task result url starts with /wiki, remove it.
-            task_result_url = task_result_url[5:]
-            task_content = self.get(task_result_url, not_json_response=True)
+            task_content = self.get(task_result_url[5:], not_json_response=True)
             download_url = task_content.decode(encoding="utf-8", errors="strict")
             log.debug("Successfully got the download url")
             return download_url
