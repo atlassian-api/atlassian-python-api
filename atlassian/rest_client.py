@@ -110,7 +110,7 @@ class AtlassianRestAPI(object):
         oauth = OAuth1(
             oauth_dict["consumer_key"],
             rsa_key=oauth_dict["key_cert"],
-            signature_method=oauth_dict.get("signature_method",SIGNATURE_RSA),
+            signature_method=oauth_dict.get("signature_method", SIGNATURE_RSA),
             resource_owner_key=oauth_dict["access_token"],
             resource_owner_secret=oauth_dict["access_token_secret"],
         )
