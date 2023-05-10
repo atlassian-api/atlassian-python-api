@@ -1686,7 +1686,7 @@ class Bitbucket(BitbucketBase):
         Deprecated name since 1.15.1. Let's use the get_pull_request()
         """
 
-    def update_pullrequest(self, project_key, repository_slug, pull_request_id, data):
+    def update_pull_request(self, project_key, repository_slug, pull_request_id, data):
         """
         Update a pull request.
         The authenticated user must have REPO_WRITE permission
