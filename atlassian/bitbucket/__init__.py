@@ -1685,7 +1685,21 @@ class Bitbucket(BitbucketBase):
         """
         Deprecated name since 1.15.1. Let's use the get_pull_request()
         """
-        return self.get_pull_request(*args, **kwargs)
+
+    def update_pull_request(self, project_key, repository_slug, pull_request_id, data):
+        """
+        Update a pull request.
+        The authenticated user must have REPO_WRITE permission
+        for the repository that this pull request targets to call this resource.
+        :param project_key:
+        :param repository_slug:
+        :param pull_request_id: the ID of the pull request within the repository
+        :param data: json body
+        :return:
+        """
+
+        url = self._url_pull_request(project_key, repository_slug, pull_request_id)
+        return self.post(url, data=data)
 
     def delete_pull_request(
         self,
