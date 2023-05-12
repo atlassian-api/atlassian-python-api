@@ -4577,6 +4577,23 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         url = "rest/bitbucket/1.0/repositories/{}/sync".format(repository_id)
         return self.post(url)
 
+    def flag_issue(self, issueKeys, flag=True):
+        """
+        Flags or un-flags one or multiple issues in Jira with a flag indicator.
+        :param issueKeys: List of issue keys to flag or un-flag.
+        :type issueKeys: list[str]
+        :param flag: Flag indicating whether to flag or un-flag the issues (default is True for flagging).
+        :type flag: bool
+        :return: POST request response.
+        :rtype: dict
+        """
+        url = "rest/greenhopper/1.0/xboard/issue/flag/flag.json"
+        data = {
+            "issueKeys": issueKeys,
+            "flag": flag
+        }
+        return self.post(url, data)
+
     def health_check(self):
         """
         Get health status
