@@ -4588,10 +4588,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :rtype: dict
         """
         url = "rest/greenhopper/1.0/xboard/issue/flag/flag.json"
-        data = {
-            "issueKeys": issueKeys,
-            "flag": flag
-        }
+        data = {"issueKeys": issueKeys, "flag": flag}
         return self.post(url, data)
 
     def health_check(self):
