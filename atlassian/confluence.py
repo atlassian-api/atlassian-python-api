@@ -2689,14 +2689,18 @@ class Confluence(AtlassianRestAPI):
                 task_state = progress_response.get("state")
                 if percentage_complete == 100:
                     running_task = False
-                    log.info(f"Task completed - {task_state}")
+                    log.info("Task completed - {task_state}".format(task_state=task_state))
                     if task_state == "FAILED":
                         log.error("PDF conversion not successful.")
                         return None
                     log.debug("Extract task results to download PDF.")
                     task_result_url = progress_response.get("result")
                 else:
-                    log.info(f"{percentage_complete}% - {task_state}")
+                    log.info(
+                        "{percentage_complete}% - {task_state}".format(
+                            percentage_complete=percentage_complete, task_state=task_state
+                        )
+                    )
                     time.sleep(3)
             log.debug("Task successfully done, querying the task result for the download url")
             # task result url starts with /wiki, remove it.
