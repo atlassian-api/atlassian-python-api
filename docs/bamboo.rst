@@ -231,6 +231,9 @@ Other actions
     # Get build queue
     get_build_queue(expand='queuedBuilds')
 
+    # Get deployment queue
+    get_deployment_queue(expand='queuedDeployments')
+
     # Get server information
     server_info()
 
