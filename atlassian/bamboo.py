@@ -831,6 +831,14 @@ class Bamboo(AtlassianRestAPI):
         params = {"expand": expand}
         return self.get("rest/api/latest/queue", params=params)
 
+    def get_deployment_queue(self, expand="queuedDeployments"):
+        """
+        Provide list of deployment results scheduled for execution and waiting in queue.
+        :return:
+        """
+        params = {"expand": expand}
+        return self.get("rest/api/latest/queue/deployment", params=params)
+
     def get_deployment_users(self, deployment_id, filter_name=None, start=0, limit=25):
         """
         Retrieve a list of users with their explicit permissions to given resource.
