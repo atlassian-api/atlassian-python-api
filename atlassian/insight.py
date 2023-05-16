@@ -42,7 +42,7 @@ class Insight(AtlassianRestAPI):
         kwargs["url"] = "https://api.atlassian.com"
         # set cloud back to true and return
         kwargs["cloud"] = True
-        # Insight cloud is particular about its headers..
+        # Insight cloud is particular about its headers.
         self.default_headers = {"Accept": "application/json"}
         return args, kwargs
 
@@ -627,7 +627,7 @@ class Insight(AtlassianRestAPI):
         Set the value of an Insight field.
         Args:
             key (str): Jira issue key, eg. SFT-446
-            field_id (str): The internal Jira name of the Insight field, eg. customfield_10200
+            field_id (str): The internal Jira name of the Insight field, e.g. customfield_10200
             insight_keys (list): List of Insight objects to associate with the field. Limited
                 to 20 objects. If the field only takes a single object pass a single value list.
             add (bool, optional): Add to the existing field rather than setting the field value.

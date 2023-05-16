@@ -328,7 +328,7 @@ class Confluence(AtlassianRestAPI):
         :param version: (int)
         :param expand: OPTIONAL: Default value: history,space,version
                        We can also specify some extensions such as extensions.inlineProperties
-                       (for getting inline comment-specific properties) or extensions.resolution
+                       (for getting inline comment-specific properties) or extensions. Resolution
                        for the resolution status of each comment in the results
         :return:
         """
@@ -916,7 +916,7 @@ class Confluence(AtlassianRestAPI):
     @deprecated(version="3.7.0", reason="Use get_blueprint_templates()")
     def get_all_blueprints_from_space(self, space, start=0, limit=None, expand=None):
         """
-        Get all users blue prints from space. Experimental API
+        Get all users blueprints from space. Experimental API
         :param space: Space Key
         :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
         :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
@@ -2286,7 +2286,7 @@ class Confluence(AtlassianRestAPI):
     def get_user_details_by_username(self, username, expand=None):
         """
         Get information about a user through username
-        :param username: The user name
+        :param username: The username
         :param expand: OPTIONAL expand for get status of user.
                 Possible param is "status". Results are "Active, Deactivated"
         :return: Returns the user details
@@ -2537,7 +2537,7 @@ class Confluence(AtlassianRestAPI):
 
     def anonymous(self):
         """
-        Get information about the how anonymous is represented in confluence
+        Get information about how anonymous is represented in confluence
         :return:
         """
         try:
@@ -2667,9 +2667,9 @@ class Confluence(AtlassianRestAPI):
     def get_pdf_download_url_for_confluence_cloud(self, url):
         """
         Confluence cloud does not return the PDF document when the PDF
-        export is initiated. Instead it starts a process in the background
+        export is initiated. Instead, it starts a process in the background
         and provides a link to download the PDF once the process completes.
-        This functions polls the long running task page and returns the
+        This functions polls the long-running task page and returns the
         download url of the PDF.
         :param url: URL to initiate PDF export
         :return: Download url for PDF file
@@ -2895,7 +2895,7 @@ class Confluence(AtlassianRestAPI):
 
     def get_subtree_of_content_ids(self, page_id):
         """
-        Get sub tree of page ids
+        Get subtree of page ids
         :param page_id:
         :return: Set of page ID
         """

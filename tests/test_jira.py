@@ -11,7 +11,7 @@ class TestJira(TestCase):
         self.jira = jira.Jira("{}/jira".format(mockup_server()), username="username", password="password", cloud=True)
 
     def test_get_issue(self):
-        """Can retrieve an Issue by Id"""
+        """Can retrieve an Issue by ID"""
         resp = self.jira.issue("FOO-123")
         self.assertEqual(resp["key"], "FOO-123")
 

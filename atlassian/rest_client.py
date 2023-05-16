@@ -276,7 +276,7 @@ class AtlassianRestAPI(object):
         :param flags:
         :param params:
         :param headers:
-        :param not_json_response: OPTIONAL: For get content from raw requests packet
+        :param not_json_response: OPTIONAL: For get content from raw request's packet
         :param trailing: OPTIONAL: for wrap slash symbol in the end of string
         :param absolute: bool, OPTIONAL: Do not prefix url, url is absolute
         :param advanced_mode: bool, OPTIONAL: Return the raw response
@@ -483,3 +483,8 @@ class AtlassianRestAPI(object):
                 raise HTTPError(error_msg, response=response)
         else:
             response.raise_for_status()
+
+    @property
+    def session(self):
+        """Providing access to the restricted field"""
+        return self._session

@@ -23,7 +23,7 @@ def get_all_users(group, include_inactive=True):
         start += 50
         users = jira.get_all_users_from_group(group, include_inactive_users=include_inactive, start=start)
         user_list = [{"name": user["name"], "active": user["active"]} for user in users["values"]]
-        processed_data["users"] = processed_data["users"] + user_list
+        processed_data["users"] += user_list
 
     return processed_data
 

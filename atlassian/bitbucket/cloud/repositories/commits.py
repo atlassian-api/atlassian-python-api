@@ -92,8 +92,7 @@ class Commit(BitbucketCloudBase):
 
     def statuses(self):
         """
-        Return generator object of the statuses endpoint.
-
+        Return generator object of the status's endpoint.
         API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-commit-statuses/#api-repositories-workspace-repo-slug-commit-commit-statuses-get
         """
         return self._get_paged("statuses")
@@ -146,7 +145,6 @@ class Commit(BitbucketCloudBase):
     def comments(self):
         """
         Return generator object of the comments endpoint.
-
         API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-commits/#api-repositories-workspace-repo-slug-commit-commit-comments-get
         """
         for comment in self._get_paged("comments"):

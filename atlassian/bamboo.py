@@ -509,7 +509,7 @@ class Bamboo(AtlassianRestAPI):
         Returns details of a specific build result
         :param expand: expands build result details on request. Possible values are: artifacts, comments, labels,
         Jira Issues, stages. stages expand is available only for top level plans. It allows to drill down to job results
-        using stages.stage.results.result. All expand parameters should contain results.result prefix.
+        using stages.stage.results.result. All expand parameters should contain results. Result prefix.
         :param build_key: Should be in the form XX-YY[-ZZ]-99, that is, the last token should be an integer representing
         the build number
         :param include_all_states
@@ -536,7 +536,7 @@ class Bamboo(AtlassianRestAPI):
         Returns details of a latest build result
         :param expand: expands build result details on request. Possible values are: artifacts, comments, labels,
         Jira Issues, stages. stages expand is available only for top level plans. It allows to drill down to job results
-        using stages.stage.results.result. All expand parameters should contain results.result prefix.
+        using stages.stage.results.result. All expand parameters should contain results. Result prefix.
         :param plan_key: Should be in the form XX-YY[-ZZ]
         :param include_all_states:
         """

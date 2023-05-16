@@ -27,7 +27,7 @@ class Pipelines(BitbucketCloudBase):
         2. Specific commit on a branch (additionally specify ``commit``)
         3. Specific pipeline (additionally specify ``pattern``. ``commit`` is optional here)
 
-        Variables has to be a list of dictionaries:
+        Variables have to be a list of dictionaries:
 
         {
            "key": "var1key",

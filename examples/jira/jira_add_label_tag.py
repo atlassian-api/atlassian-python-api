@@ -1,8 +1,8 @@
 # coding=utf-8
 from atlassian import Jira
 
-# This example shoes how to add an additional value to the Labels field
-# without loosing the previously defined ones already defined
+# This example shoes how to add another value to the Labels field
+# without losing the previously defined ones already defined
 
 issue_key = "TST-1"
 new_tag = "label_to_add_for_test"

@@ -61,7 +61,7 @@ class DefaultReviewers(BitbucketCloudBase):
         """
         Returns the default reviewer in this repository.
 
-        :param user: string: The requested user name
+        :param user: string: The requested username
 
         :return: The requested DefaultReviewer object, None if not a default reviewer
 

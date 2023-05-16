@@ -695,10 +695,10 @@ class Bitbucket(BitbucketBase):
 
     def delete_project_condition(self, project_key, id_condition):
         """
-        Request type: DELETE
         Delete a specific condition for this repository slug inside project.
         For further information visit:
             https://docs.atlassian.com/bitbucket-server/rest/5.16.0/bitbucket-default-reviewers-rest.html#idm52264896304
+        Request type: DELETE
         :projectKey: str- project key involved
         :idCondition: int - condition id involved
         :return:
@@ -958,7 +958,7 @@ class Bitbucket(BitbucketBase):
         Grant the specified repository permission to a specific user
         :param project_key: The project key
         :param repo_key: The repository key (slug)
-        :param username: user name to be granted
+        :param username: username to be granted
         :param permission: the repository permissions available are 'REPO_ADMIN', 'REPO_WRITE' and 'REPO_READ'
         :return:
         """
@@ -975,7 +975,7 @@ class Bitbucket(BitbucketBase):
         if they do not have a higher project or global permission.
         :param project_key: The project key
         :param repo_key: The repository key (slug)
-        :param username: user name to be granted
+        :param username: username to be granted
         :return:
         """
         url = self._url_repo_users(project_key, repo_key)
@@ -1567,7 +1567,7 @@ class Bitbucket(BitbucketBase):
         :param project_key:
         :param repository_slug:
         :param state:
-        :param order: OPTIONAL: defaults to NEWEST) the order to return pull requests in, either OLDEST
+        :param order: OPTIONAL: defaults to NEWEST the order to return pull requests in, either OLDEST
                                 (as in: "oldest first") or NEWEST.
         :param limit:
         :param start:
@@ -1915,7 +1915,7 @@ class Bitbucket(BitbucketBase):
         Update the text of a comment.
         Only the user who created a comment may update it.
 
-        Note: the supplied supplied JSON object must contain a version
+        Note: the supplied JSON object must contain a version
         that must match the server's version of the comment
         or the update will fail.
         """
@@ -2410,7 +2410,7 @@ class Bitbucket(BitbucketBase):
     ):
         """
         Retrieve a page of files from particular directory of a repository.
-        The search is done recursively, so all files from any sub-directory of the specified directory will be returned.
+        The search is done recursively, so all files from any subdirectory of the specified directory will be returned.
         The authenticated user must have REPO_READ permission for the specified repository to call this resource.
         :param start:
         :param project_key:
@@ -2880,10 +2880,10 @@ class Bitbucket(BitbucketBase):
 
     def delete_repo_condition(self, project_key, repo_key, id_condition):
         """
-        Request type: DELETE
         Delete a specific condition for this repository slug inside project.
         For further information visit:
             https://docs.atlassian.com/bitbucket-server/rest/5.16.0/bitbucket-default-reviewers-rest.html#idm8287339888
+        Request type: DELETE
         :projectKey: str- project key involved
         :repoKey: str - repo key involved
         :idCondition: int - condition id involved

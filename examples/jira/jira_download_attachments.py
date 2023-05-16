@@ -32,7 +32,7 @@ if __name__ == "__main__":
             author = attachment.get("author").get("emailAddress")
             attachment_id = attachment.get("id")
             content_url = attachment.get("content")
-            session = jira._session
+            session = jira.session
             response = session.get(url=content_url)
 
             if response.status_code != 200:

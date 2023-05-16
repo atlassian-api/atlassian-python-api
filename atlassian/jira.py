@@ -241,11 +241,11 @@ class Jira(AtlassianRestAPI):
         :param limit: maximum number of returned results (if is limit is <= 0 or > 1000,
             it will be set do default value: 1000)
         :param str filter: text query; each record that will be returned must contain
-            the provided text in one of it's fields.
-        :param str from_date: timestamp in past; 'from' must be less or equal 'to',
+            the provided text in one of its fields.
+        :param str from_date: timestamp in the past; 'from' must be less or equal 'to',
             otherwise the result set will be empty only records that where created in the same moment or after
             the 'from' timestamp will be provided in response
-        :param str to_date: timestamp in past; 'from' must be less or equal 'to',
+        :param str to_date: timestamp in the past; 'from' must be less or equal 'to',
             otherwise the result set will be empty only records that where created in the same moment or earlier than
             the 'to' timestamp will be provided in response
         :return:
@@ -631,7 +631,7 @@ class Jira(AtlassianRestAPI):
                                 Valid values include "favourite" for returning only favourite dashboards,
                                 and "my" for returning dashboards that are owned by the calling user.
         :param start: the index of the first dashboard to return (0-based). must be 0 or a multiple of maxResults
-        :param limit: a hint as to the the maximum number of dashboards to return in each call.
+        :param limit: a hint as to the maximum number of dashboards to return in each call.
                       Note that the JIRA server reserves the right to impose a maxResults limit that is lower
                       than the value that a client provides, dues to lack or resources or any other condition.
                       When this happens, your results will be truncated.
@@ -683,7 +683,7 @@ class Jira(AtlassianRestAPI):
     def edit_filter(self, filter_id, name, jql=None, description=None, favourite=None):
         """
         Updates an existing filter.
-        :param filter_id: Filter Id
+        :param filter_id: Filter ID
         :param name: Filter Name
         :param jql: Filter JQL
         :param description: Filter description
@@ -740,7 +740,7 @@ class Jira(AtlassianRestAPI):
     def get_filter_share_permissions(self, filter_id):
         """
         Gets share permissions of a filter
-        :param filter_id: Filter Id
+        :param filter_id: Filter ID
         :return: Returns current share permissions of filter
         """
         base_url = self.resource_url("filter")
@@ -760,10 +760,10 @@ class Jira(AtlassianRestAPI):
     ):
         """
         Adds share permission for a filter
-        :param filter_id: Filter Id
+        :param filter_id: Filter ID
         :param type: What type of permission is granted (i.e. user, project)
-        :param project_id: Project Id, relevant for type 'project' and 'projectRole'
-        :param project_role_id: Project role Id, relevant for type 'projectRole'
+        :param project_id: Project ID, relevant for type 'project' and 'projectRole'
+        :param project_role_id: Project role ID, relevant for type 'projectRole'
         :param groupname: Group name, relevant for type 'group'
         :param user_key: User key, relevant for type 'user'
         :param view: Sets view permission
@@ -790,8 +790,8 @@ class Jira(AtlassianRestAPI):
     def delete_filter_share_permission(self, filter_id, permission_id):
         """
         Removes share permission
-        :param filter_id: Filter Id
-        :param permission_id: Permission Id to be removed
+        :param filter_id: Filter ID
+        :param permission_id: Permission ID to be removed
         :return:
         """
         base_url = self.resource_url("filter")
@@ -1602,7 +1602,7 @@ class Jira(AtlassianRestAPI):
 
     def set_issue_status(self, issue_key, status_name, fields=None, update=None):
         """
-        Setting status by status_name. fields defaults to None for transitions without mandatory fields.
+        Setting status by status_name. Field defaults to None for transitions without mandatory fields.
         If there are mandatory fields for the transition, these can be set using a dict in 'fields'.
         For updating screen properties that cannot be set/updated via the fields properties,
         they can set using a dict through 'update'
@@ -2090,7 +2090,7 @@ class Jira(AtlassianRestAPI):
         return self.projects(included_archived, expand)
 
     def projects(self, included_archived=None, expand=None):
-        """Returns all projects which are visible for the currently logged in user.
+        """Returns all projects which are visible for the currently logged-in user.
         If no user is logged in, it returns the list of projects that are visible when using anonymous access.
         :param included_archived: boolean whether to include archived projects in response, default: false
         :param expand:
@@ -2198,7 +2198,7 @@ class Jira(AtlassianRestAPI):
 
     def get_project_versions(self, key, expand=None):
         """
-        Contains a full representation of a the specified project's versions.
+        Contains a full representation of the specified project's versions.
         :param key:
         :param expand: the parameters to expand
         :return:
@@ -2405,7 +2405,7 @@ class Jira(AtlassianRestAPI):
     def update_project(self, project_key, data, expand=None):
         """
         Updates a project.
-        Only non null values sent in JSON will be updated in the project.
+        Only non-null values sent in JSON will be updated in the project.
         Values available for the assigneeType field are: "PROJECT_LEAD" and "UNASSIGNED".
         Update project: /rest/api/2/project/{projectIdOrKey}
 
@@ -2508,7 +2508,7 @@ class Jira(AtlassianRestAPI):
         The events can be JIRA system events or events configured by administrator.
         In case of the system events, data about theirs ids, names and descriptions is provided.
         In case of custom events, the template event is included as well.
-        :param notification_scheme_id: Id of scheme u wanna work with
+        :param notification_scheme_id: ID of scheme you want to work with
         :param expand: str
         :return: full representation of the notification scheme for the given id
         """
@@ -2754,7 +2754,7 @@ class Jira(AtlassianRestAPI):
         Creates an issue link between two issues.
         The user requires the link issue permission for the issue which will be linked to another issue.
         The specified link type in the request is used to create the link and will create a link from
-        the first issue to the second issue using the outward description. It also create a link from
+        the first issue to the second issue using the outward description. It also creates a link from
         the second issue to the first issue using the inward description of the issue link type.
         It will add the supplied comment to the first issue. The comment can have a restriction who can view it.
         If group is specified, only users of this group can view this comment, if roleLevel is specified only users
@@ -2903,7 +2903,7 @@ class Jira(AtlassianRestAPI):
 
     def get_all_global_project_roles(self):
         """
-        Get all the ProjectRoles available in Jira. Currently this list is global.
+        Get all the ProjectRoles available in Jira. Currently, this list is global.
         :return:
         """
         url = self.resource_url("role")
@@ -3303,7 +3303,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
     def get_all_permissionschemes(self, expand=None):
         """
         Returns a list of all permission schemes.
-        By default only shortened beans are returned.
+        By default, only shortened beans are returned.
         If you want to include permissions of all the schemes,
         then specify the permissions expand parameter.
         Permissions will be included also if you specify any other expand parameter.
@@ -3319,7 +3319,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
     def get_permissionscheme(self, permission_id, expand=None):
         """
         Returns a list of all permission schemes.
-        By default only shortened beans are returned.
+        By default, only shortened beans are returned.
         If you want to include permissions of all the schemes,
         then specify the permissions expand parameter.
         Permissions will be included also if you specify any other expand parameter.
@@ -3490,7 +3490,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         """
         Assigns project with priority scheme. Priority scheme assign with migration is possible from the UI.
         Operation will fail if migration is needed as a result of operation
-        eg. there are issues with priorities invalid in the destination scheme.
+        e.g. there are issues with priorities invalid in the destination scheme.
         All project keys associated with the priority scheme will only be returned
         if additional query parameter is provided expand=projectKeys.
         :param project_key_or_id:
@@ -3510,7 +3510,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
 
     def get_security_level_for_project(self, project_key_or_id):
         """
-        Returns all security levels for the project that the current logged in user has access to.
+        Returns all security levels for the project that the current logged-in user has access to.
         If the user does not have the Set Issue Security permission, the list will be empty.
         :param project_key_or_id:
         :return: Returns a list of all security levels in a project for which the current user has access.
@@ -3699,7 +3699,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
     #######################################################################
     def tempo_account_get_accounts(self, skip_archived=None, expand=None):
         """
-        Get all Accounts that the logged in user has permission to browse.
+        Get all Accounts that the logged-in user has permission to browse.
         :param skip_archived: bool OPTIONAL: skip archived Accounts, either true or false, default value true.
         :param expand: bool OPTIONAL: With expanded data or not
         :return:
@@ -3953,7 +3953,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
     def tempo_workload_scheme_set_member(self, scheme_id, member):
         """
         Provide a workload scheme members
-        :param member: user name of user
+        :param member: username of user
         :param scheme_id:
         :return:
         """
@@ -4054,7 +4054,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
     def tempo_timesheets_get_worklogs_by_issue(self, issue):
         """
         Get Tempo timesheet worklog by issue key or id.
-        :param issue: Issue key or Id
+        :param issue: Issue key or ID
         :return:
         """
         url = "rest/tempo-timesheets/4/worklogs/jira/issue/{issue}".format(issue=issue)
@@ -4314,7 +4314,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
     def get_agile_board_configuration(self, board_id):
         """
         Get the board configuration. The response contains the following fields:
-        id - Id of the board.
+        id - ID of the board.
         name - Name of the board.
         filter - Reference to the filter used by the given board.
         subQuery (Kanban only) - JQL subquery used by the given board.
@@ -4327,7 +4327,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
              in that column will be marked as already completed.
         estimation (Scrum only) - Contains information about type of estimation used for the board.
             Valid values: none, issueCount, field. If the estimation type is "field",
-            the Id and display name of the field used for estimation is also returned.
+            the ID and display name of the field used for estimation is also returned.
             Note, estimates for an issue can be updated by a PUT /rest/api/2/issue/{issueIdOrKey}
             request, however the fields must be on the screen. "timeoriginalestimate" field will never be
             on the screen, so in order to update it "originalEstimate" in "timetracking" field should be updated.
@@ -4423,7 +4423,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         Adding Issue(s) to Sprint
         :param sprint_id: int/str:  The ID for the Sprint.
                                     Sprint to be Active or Open only.
-                                    eg.  104
+                                    e.g.  104
         :param issues:       list:  List of Issue Keys
                                     eg. ['APA-1', 'APA-2']
         :return: Dictionary of response received from the API
@@ -4438,7 +4438,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
 
     def get_all_sprint(self, board_id, state=None, start=0, limit=50):
         """
-        Returns all sprints from a board, for a given board Id.
+        Returns all sprints from a board, for a given board ID.
         This only includes sprints that the user has permission to view.
         :param board_id:
         :param state: Filters results to sprints in specified states.
@@ -4464,7 +4464,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
 
     def get_sprint(self, sprint_id):
         """
-        Returns the sprint for a given sprint Id.
+        Returns the sprint for a given sprint ID.
         The sprint will only be returned if the user can view the board that the sprint was created on,
         or view at least one of the issues in the sprint.
         :param sprint_id:
@@ -4519,7 +4519,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
 
     def get_sprint_issues(self, sprint_id, start, limit):
         """
-        Returns all issues in a sprint, for a given sprint Id.
+        Returns all issues in a sprint, for a given sprint ID.
         This only includes issues that the user has permission to view.
         By default, the returned issues are ordered by rank.
         :param sprint_id:

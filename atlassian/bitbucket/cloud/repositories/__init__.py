@@ -127,7 +127,7 @@ class WorkspaceRepositories(RepositoriesBase):
         """
         Get all repositories in the workspace matching the criteria.
 
-        :param role: string: Filters the workspaces based on the authenticated user"s role on each workspace.
+        :param role: string: Filters the workspaces based on the authenticated user's role on each workspace.
                              * member: returns a list of all the workspaces which the caller is a member of
                                at least one workspace group or repository
                              * collaborator: returns a list of workspaces which the caller has write access
