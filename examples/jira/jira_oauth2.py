@@ -16,7 +16,6 @@ app.secret_key = ""
 authorization_base_url = "https://auth.atlassian.com/authorize"
 token_url = "https://auth.atlassian.com/oauth/token"
 
-
 # Create OAuth 2.0 Integration in Atlassian developer console
 # https://developer.atlassian.com/console/myapps/
 # Click Authorization →  “Configure” under OAuth 2.0 and
