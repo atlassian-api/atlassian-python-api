@@ -1699,7 +1699,7 @@ class Bitbucket(BitbucketBase):
         """
 
         url = self._url_pull_request(project_key, repository_slug, pull_request_id)
-        return self.post(url, data=data)
+        return self.put(url, data=data)
 
     def delete_pull_request(
         self,
