@@ -1,0 +1,5 @@
+responses['{"fields": {"issuetype": "foo", "summary": "summary", "project": "project"}}'] = {
+    "status_code": 400,
+    "errorMessages": [],
+    "errors": {"labels": "Field 'labels' cannot be set. It is not on the appropriate screen, or unknown."},
+}

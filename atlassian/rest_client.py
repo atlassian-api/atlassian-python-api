@@ -474,7 +474,11 @@ class AtlassianRestAPI(object):
                     error_msg = "\n".join([k + ": " + v for k, v in j.items()])
                 else:
                     error_msg = "\n".join(
-                        j.get("errorMessages", list()) + [k.get("message", "") for k in j.get("errors", dict())]
+                        j.get("errorMessages", list())
+                        + [
+                            k.get("message", "") if isinstance(k, dict) else v
+                            for k, v in j.get("errors", dict()).items()
+                        ]
                     )
             except Exception as e:
                 log.error(e)
