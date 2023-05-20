@@ -24,7 +24,8 @@ RUN if [ $PYTHON_VERSION = '2.7' ] ; then \
 # Install python development
 RUN apt-get install -y \
   python$PYTHON_VERSION-dev \
-  python3-pip
+  python3-pip   \
+  python3-wheel
 
 # install distutils.util
 RUN if [ $PYTHON_VERSION = '3.7' ] ; then \
