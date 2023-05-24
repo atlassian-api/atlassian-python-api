@@ -719,6 +719,28 @@ class Bamboo(AtlassianRestAPI):
         resource = "deploy/dashboard/{}".format(project_id) if project_id else "deploy/dashboard"
         return self.get(self.resource_url(resource))
 
+    def get_deployment_projects_for_plan(self, plan_key):
+        """
+        Returns deployment projects associated with a build plan.
+        :param plan_key: The key of the plan.
+        """
+        resource = "deploy/project/forPlan"
+        params = {"planKey": plan_key}
+        for deployment_project in self.get(self.resource_url(resource), params=params):
+            yield deployment_project
+
+    def trigger_deployment_for_version_on_environment(self, version_id, environment_id):
+        """
+        Triggers a deployment for a release version on the given environment.
+        Example: trigger_deployment_for_version_on_environment(version_id='3702785', environment_id='3637249')
+        :param version_id: str or int id of the release version.
+        :param environment_id: str or int id of the deployment environment.
+        :return:
+        """
+        resource = "queue/deployment"
+        params = {"versionId": version_id, "environmentId": environment_id}
+        return self.post(self.resource_url(resource), params=params)
+
     """ Users & Groups """
 
     def get_users_in_global_permissions(self, start=0, limit=25):
