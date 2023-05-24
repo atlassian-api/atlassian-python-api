@@ -47,5 +47,5 @@ class TestJira(TestCase):
 
     def test_post_issue_with_invalid_request(self):
         """Post an issue but receive a 400 error response"""
-        # with self.assertRaises(HTTPError):
-        self.jira.create_issue(fields={"issuetype": "foo", "summary": "summary", "project": "project"})
+        with self.assertRaises(HTTPError):
+            self.jira.create_issue(fields={"issuetype": "foo", "summary": "summary", "project": "project"})
