@@ -17,7 +17,7 @@ class Pipelines(BitbucketCloudBase):
             **self._new_session_args,
         )
 
-    def trigger(self, branch="master", commit=None, pattern=None, variables=None):
+    def trigger(self, branch="master", type="custom", commit=None, pattern=None, variables=None):
         """
         Trigger a new pipeline. The following options are possible (1 and 2
         trigger the pipeline that the branch is associated with in the Pipelines
@@ -48,7 +48,7 @@ class Pipelines(BitbucketCloudBase):
         }
         if commit is not None:
             data["target"]["commit"] = {
-                "type": "commit",
+                "type": type,
                 "hash": commit,
             }
         if pattern is not None:
