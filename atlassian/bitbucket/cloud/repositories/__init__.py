@@ -6,6 +6,7 @@ from .issues import Issues
 from .branchRestrictions import BranchRestrictions
 from .commits import Commits
 from .defaultReviewers import DefaultReviewers
+from .deploymentEnvironments import DeploymentEnvironments
 from .pipelines import Pipelines
 from .pullRequests import PullRequests
 from .refs import Branches, Tags
@@ -257,6 +258,9 @@ class Repository(BitbucketCloudBase):
             **self._new_session_args,
         )
         self.__default_reviewers = DefaultReviewers("{}/default-reviewers".format(self.url), **self._new_session_args)
+        self.__deployment_environments = DeploymentEnvironments(
+            "{}/environments".format(self.url), **self._new_session_args
+        )
         self.__issues = Issues("{}/issues".format(self.url), **self._new_session_args)
         self.__pipelines = Pipelines("{}/pipelines".format(self.url), **self._new_session_args)
         self.__pullrequests = PullRequests("{}/pullrequests".format(self.url), **self._new_session_args)
@@ -377,6 +381,11 @@ class Repository(BitbucketCloudBase):
     def default_reviewers(self):
         """The repository default reviewers"""
         return self.__default_reviewers
+
+    @property
+    def deployment_environments(self):
+        """The repository deployment environments"""
+        return self.__deployment_environments
 
     @property
     def issues(self):
