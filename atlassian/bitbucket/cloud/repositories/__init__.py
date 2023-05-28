@@ -10,6 +10,7 @@ from .deploymentEnvironments import DeploymentEnvironments
 from .pipelines import Pipelines
 from .pullRequests import PullRequests
 from .refs import Branches, Tags
+from .repositoryVariables import RepositoryVariables
 
 
 class RepositoriesBase(BitbucketCloudBase):
@@ -264,6 +265,9 @@ class Repository(BitbucketCloudBase):
         self.__issues = Issues("{}/issues".format(self.url), **self._new_session_args)
         self.__pipelines = Pipelines("{}/pipelines".format(self.url), **self._new_session_args)
         self.__pullrequests = PullRequests("{}/pullrequests".format(self.url), **self._new_session_args)
+        self.__repository_variables = RepositoryVariables(
+            "{}/pipelines_config/variables".format(self.url), **self._new_session_args
+        )
         self.__tags = Tags("{}/refs/tags".format(self.url), **self._new_session_args)
 
     def update(self, **kwargs):
@@ -401,6 +405,11 @@ class Repository(BitbucketCloudBase):
     def pullrequests(self):
         """The repository pull requests"""
         return self.__pullrequests
+
+    @property
+    def repository_variables(self):
+        """The repository variables"""
+        return self.__repository_variables
 
     @property
     def tags(self):
