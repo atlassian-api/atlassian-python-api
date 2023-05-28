@@ -162,3 +162,6 @@ Manage Test Runs
 
     # Retrieve test repository folder of a project.
     xray.get_test_repo_folder(project_key, folder_id)
+
+    # Create test repository folder for a project.
+    xray.create_test_repo_folder(project_key, folder_name, parent_folder_id=-1)
