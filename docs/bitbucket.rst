@@ -350,6 +350,24 @@ Bitbucket Cloud
     # Get a list of repos from a project
     project.repositories.each():
 
+    # Get a repository
+    repository = workplace.repositories.get(repository_slug)
+
+    # Get a list of deployment environments from a repository
+    repository.deployment_environments.each():
+
+    # Get a single deployment environment from a repository by deployment environment key
+    deployment_environment = repository.deployment_environments.get(deployment_environment_key)
+
+    # Get a list of deployment environment variables from a deployment environment
+    deployment_environment.deployment_environment_variables.each():
+
+    # Get a list of repository variables from a repository
+    repository.repository_variables.each():
+
+    # Get a single repository variable from a repository by repository variable key
+    repository.repository_variables.get(repository_variable_key)
+
 Pipelines management
 --------------------
 
