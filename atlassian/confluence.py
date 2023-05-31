@@ -2095,6 +2095,43 @@ class Confluence(AtlassianRestAPI):
 
         return response.get("results")
 
+    def create_group(self, name):
+        """
+        Create a group by given group parameter
+
+        :param name: str
+        :return: New group params
+        """
+        url = "rest/api/admin/group"
+        data = { "name": name,
+                "type": "group" }
+        return self.post(url, data=data)
+
+    def remove_group(self, name):
+        """
+        Delete a group by given group parameter
+        If you delete a group and content is restricted to that group, the content will be hidden from all users
+
+        :param name: str
+        :return:
+        """
+        log.warning("Removing group...")
+        url = "rest/api/admin/group/{groupName}".format(groupName=name)
+
+        try:
+            response = self.delete(url)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                # Raise ApiError as the documented reason is ambiguous
+                raise ApiError(
+                    "There is no group with the given name, "
+                    "or the calling user does not have permission to delete it",
+                    reason=e,
+                )
+            raise
+
+        return response
+
     def get_group_members(self, group_name="confluence-users", start=0, limit=1000, expand=None):
         """
         Get a paginated collection of users in the given group
