@@ -2103,8 +2103,7 @@ class Confluence(AtlassianRestAPI):
         :return: New group params
         """
         url = "rest/api/admin/group"
-        data = { "name": name,
-                "type": "group" }
+        data = {"name": name, "type": "group"}
         return self.post(url, data=data)
 
     def remove_group(self, name):
