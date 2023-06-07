@@ -92,11 +92,6 @@ class Workspace(BitbucketCloudBase):
         """The workspace name"""
         return self.get_data("name")
 
-    @name.setter
-    def name(self, name):
-        """Setter for the workspace name"""
-        return self.update(name=name)
-
     @property
     def slug(self):
         """The workspace slug"""
