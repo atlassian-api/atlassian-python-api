@@ -1,7 +1,6 @@
 # coding=utf-8
 
 
-
 from ..base import BitbucketCloudBase
 
 
@@ -15,6 +14,9 @@ class Permissions(BitbucketCloudBase):
             data,
             **self._new_session_args,
         )
+
+    def __get_object_repository_permission(self, data):
+        return RepositoryPermission(self.url, data, **self._new_session_args)
 
     def each(self, q=None, sort=None, pagelen=10):
         """
@@ -44,6 +46,12 @@ class Permissions(BitbucketCloudBase):
             yield self.__get_object_workspace_membership(workspace_membership)
 
         return
+
+    def repositories(self, repo_slug="", pagelen=10):
+        for permissions in self._get_paged(
+            "repositories/{}".format(repo_slug), trailing=True, params={"pagelen": pagelen}
+        ):
+            yield self.__get_object_repository_permission(permissions)
 
 
 class WorkspaceMembership(BitbucketCloudBase):
@@ -89,3 +97,30 @@ class WorkspaceMembership(BitbucketCloudBase):
     def last_accessed(self):
         """The workspace_membership last accessed"""
         return self.get_time("last_accessed")
+
+
+class RepositoryPermission(BitbucketCloudBase):
+    def __init__(self, url, data, *args, **kwargs):
+        super(RepositoryPermission, self).__init__(
+            url, *args, data=data, expected_type="repository_permission", **kwargs
+        )
+
+    @property
+    def repository(self):
+        """The repository_permission uuid"""
+        return self.get_data("repository")
+
+    @property
+    def type(self):
+        """The repository_permission type"""
+        return self.get_data("type")
+
+    @property
+    def permission(self):
+        """The repository_permission permission"""
+        return self.get_data("permission")
+
+    @property
+    def user(self):
+        """The repository_permission workspace"""
+        return self.get_data("user")
