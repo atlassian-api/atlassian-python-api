@@ -362,6 +362,12 @@ Bitbucket Cloud
     # Get a list of deployment environment variables from a deployment environment
     deployment_environment.deployment_environment_variables.each():
 
+    # Get a list of group permissions from a repository
+    repository.group_permissions.each():
+
+    # Get a single group permission from a repository by group slug
+    repository.group_permissions.get(group_slug)
+
     # Get a list of repository variables from a repository
     repository.repository_variables.each():
 
