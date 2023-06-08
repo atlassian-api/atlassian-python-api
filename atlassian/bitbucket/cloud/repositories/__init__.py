@@ -7,6 +7,7 @@ from .branchRestrictions import BranchRestrictions
 from .commits import Commits
 from .defaultReviewers import DefaultReviewers
 from .deploymentEnvironments import DeploymentEnvironments
+from .groupPermissions import GroupPermissions
 from .pipelines import Pipelines
 from .pullRequests import PullRequests
 from .refs import Branches, Tags
@@ -262,6 +263,9 @@ class Repository(BitbucketCloudBase):
         self.__deployment_environments = DeploymentEnvironments(
             "{}/environments".format(self.url), **self._new_session_args
         )
+        self.__group_permissions = GroupPermissions(
+            "{}/permissions-config/groups".format(self.url), **self._new_session_args
+        )
         self.__issues = Issues("{}/issues".format(self.url), **self._new_session_args)
         self.__pipelines = Pipelines("{}/pipelines".format(self.url), **self._new_session_args)
         self.__pullrequests = PullRequests("{}/pullrequests".format(self.url), **self._new_session_args)
@@ -395,6 +399,11 @@ class Repository(BitbucketCloudBase):
     def issues(self):
         """The repository issues"""
         return self.__issues
+
+    @property
+    def group_permissions(self):
+        """The repository group permissions"""
+        return self.__group_permissions
 
     @property
     def pipelines(self):
