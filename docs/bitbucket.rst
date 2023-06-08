@@ -341,6 +341,15 @@ Bitbucket Cloud
     # Get a single workplace by workplace slug
     workplace = cloud.workspaces.get(workspace_slug)
 
+    # Get a list of permissions in a workspace (this may not work depending on the size of your workspace)
+    workplace.permissions.each():
+
+    # Get a list of repository permissions in a workspace (this may not work depending on the size of your workspace)
+    workplace.permissions.repositories():
+
+    # Get a single repository permissions in a workspace
+    workplace.permissions.repositories(repo_slug):
+
     # Get a list of projects in a workspace
     workplace.projects.each():
 

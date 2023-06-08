@@ -3,6 +3,7 @@
 from requests import HTTPError
 from ..base import BitbucketCloudBase
 
+from .permissions import Permissions
 from .projects import Projects
 from ..repositories import WorkspaceRepositories
 
@@ -84,6 +85,7 @@ class Workspaces(BitbucketCloudBase):
 class Workspace(BitbucketCloudBase):
     def __init__(self, data, *args, **kwargs):
         super(Workspace, self).__init__(None, *args, data=data, expected_type="workspace", **kwargs)
+        self.__permissions = Permissions(self.url_joiner(self.url, "permissions"), **self._new_session_args)
         self.__projects = Projects(self.get_link("projects"), **self._new_session_args)
         self.__repositories = WorkspaceRepositories(self.get_link("repositories"), **self._new_session_args)
 
@@ -91,11 +93,6 @@ class Workspace(BitbucketCloudBase):
     def name(self):
         """The workspace name"""
         return self.get_data("name")
-
-    @name.setter
-    def name(self, name):
-        """Setter for the workspace name"""
-        return self.update(name=name)
 
     @property
     def slug(self):
@@ -125,6 +122,11 @@ class Workspace(BitbucketCloudBase):
     def get_avatar(self):
         """The project avatar"""
         return self.get(self.get_link("avatar"), absolute=True)
+
+    @property
+    def permissions(self):
+        """The workspace permissions repositories"""
+        return self.__permissions
 
     @property
     def projects(self):
