@@ -78,6 +78,28 @@ class RepositoryVariable(BitbucketCloudBase):
     def __init__(self, url, data, *args, **kwargs):
         super(RepositoryVariable, self).__init__(url, *args, data=data, expected_type="pipeline_variable", **kwargs)
 
+    def update(self, **kwargs):
+        """
+        Update the repository variable properties. Fields not present in the request body are ignored.
+
+        :param kwargs: dict: The data to update.
+
+        :return: The updated repository variable
+
+        API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pipelines/#api-repositories-workspace-repo-slug-pipelines-config-variables-variable-uuid-put
+        """
+        return self._update_data(self.put(None, data=kwargs))
+
+    def delete(self):
+        """
+        Delete the repository variable.
+
+        :return: The response on success
+
+        API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pipelines/#api-repositories-workspace-repo-slug-pipelines-config-variables-variable-uuid-delete
+        """
+        return super(RepositoryVariable, self).delete(None)
+
     @property
     def uuid(self):
         """The repository variable uuid"""
@@ -87,6 +109,11 @@ class RepositoryVariable(BitbucketCloudBase):
     def key(self):
         """The repository variable key"""
         return self.get_data("key")
+
+    @key.setter
+    def key(self, key):
+        """Setter for the repository variable is key"""
+        return self.update(key=key)
 
     @property
     def scope(self):
@@ -112,3 +139,8 @@ class RepositoryVariable(BitbucketCloudBase):
     def value(self):
         """The repository variable value"""
         return self.get_data("value")
+
+    @value.setter
+    def value(self, value):
+        """Setter for the repository variable value"""
+        return self.update(value=value)
