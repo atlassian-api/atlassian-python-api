@@ -44,7 +44,7 @@ class RepositoryVariables(BitbucketCloudBase):
 
         :return: A generator for the RepositoryVariable objects
 
-        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pipelines_config/variables/#get
+        API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pipelines/#api-repositories-workspace-repo-slug-pipelines-config-variables-get
         """
         params = {}
         if sort is not None:
@@ -69,7 +69,7 @@ class RepositoryVariables(BitbucketCloudBase):
 
         :return: The requested RepositoryVariable objects
 
-        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pipelines_config/variables/%7Bvariable_uuid%7D#get
+        API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pipelines/#api-repositories-workspace-repo-slug-pipelines-config-variables-variable-uuid-get
         """
         return self.__get_object(super(RepositoryVariables, self).get(uuid))
 
