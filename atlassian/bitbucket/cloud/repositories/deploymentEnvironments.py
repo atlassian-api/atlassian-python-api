@@ -145,7 +145,6 @@ class DeploymentEnvironmentVariables(BitbucketCloudBase):
 
     def __get_object(self, data):
         return DeploymentEnvironmentVariable(
-            # self.url_joiner(super().get_deployment_environment_variable_url(), data["uuid"]),
             self.url,
             data,
             **self._new_session_args,
@@ -228,7 +227,7 @@ class DeploymentEnvironmentVariable(BitbucketCloudBase):
 
     @property
     def uuid(self):
-        """The deployment environment uuid"""
+        """The deployment environment variable uuid"""
         return self.get_data("uuid")
 
     @property
@@ -243,17 +242,17 @@ class DeploymentEnvironmentVariable(BitbucketCloudBase):
 
     @property
     def secured(self):
-        """The deployment environment secured"""
+        """The deployment environment variable is secured"""
         return self.get_data("secured")
 
     @property
     def type(self):
-        """The deployment environment deployment gate enabled"""
+        """The deployment environment variable type"""
         return self.get_data("type")
 
     @property
     def value(self):
-        """The deployment environment environment lock enabled"""
+        """The deployment environment variable value"""
         return self.get_data("value")
 
     @value.setter
