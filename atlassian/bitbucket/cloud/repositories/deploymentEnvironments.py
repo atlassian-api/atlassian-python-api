@@ -151,6 +151,21 @@ class DeploymentEnvironmentVariables(BitbucketCloudBase):
             **self._new_session_args,
         )
 
+    def create(self, key, value, secured):
+        """
+        Create a new deployment environment variable for the given repository.
+
+        :param key: string: The unique name of the variable.
+        :param value: string: The value of the variable. If the variable is secured, this will be empty.
+        :param secured: boolean: If true, this variable will be treated as secured. The value will never be exposed in the logs or the REST API.
+
+        :return: The created DeploymentEnvironment object
+
+        API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pipelines/#api-repositories-workspace-repo-slug-deployments-config-environments-environment-uuid-variables-post
+        """
+        data = {"key": key, "value": value, "secured": secured}
+        return self.__get_object(self.post(None, data=data))
+
     def each(self, q=None, sort=None):
         """
         Returns the list of deployment environment variables in this repository.
@@ -180,6 +195,11 @@ class DeploymentEnvironmentVariables(BitbucketCloudBase):
 
 class DeploymentEnvironmentVariable(BitbucketCloudBase):
     def __init__(self, url, data, *args, **kwargs):
+        # This is needed when creating a new environment variable
+        # since the API doesn't return a 'type'.
+        if data.get("type") is None:
+            data["type"] = "pipeline_variable"
+
         super(DeploymentEnvironmentVariable, self).__init__(
             url, *args, data=data, expected_type="pipeline_variable", **kwargs
         )
