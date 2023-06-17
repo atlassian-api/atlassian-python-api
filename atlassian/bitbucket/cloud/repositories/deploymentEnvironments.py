@@ -145,11 +145,25 @@ class DeploymentEnvironmentVariables(BitbucketCloudBase):
 
     def __get_object(self, data):
         return DeploymentEnvironmentVariable(
-            # self.url_joiner(super().get_deployment_environment_variable_url(), data["uuid"]),
             self.url,
             data,
             **self._new_session_args,
         )
+
+    def create(self, key, value, secured):
+        """
+        Create a new deployment environment variable for the given repository.
+
+        :param key: string: The unique name of the variable.
+        :param value: string: The value of the variable. If the variable is secured, this will be empty.
+        :param secured: boolean: If true, this variable will be treated as secured. The value will never be exposed in the logs or the REST API.
+
+        :return: The created DeploymentEnvironment object
+
+        API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pipelines/#api-repositories-workspace-repo-slug-deployments-config-environments-environment-uuid-variables-post
+        """
+        data = {"key": key, "value": value, "secured": secured}
+        return self.__get_object(self.post(None, data=data))
 
     def each(self, q=None, sort=None):
         """
@@ -180,26 +194,68 @@ class DeploymentEnvironmentVariables(BitbucketCloudBase):
 
 class DeploymentEnvironmentVariable(BitbucketCloudBase):
     def __init__(self, url, data, *args, **kwargs):
+        # This is needed when creating a new environment variable
+        # since the API doesn't return a 'type'.
+        if data.get("type") is None:
+            data["type"] = "pipeline_variable"
+
         super(DeploymentEnvironmentVariable, self).__init__(
             url, *args, data=data, expected_type="pipeline_variable", **kwargs
         )
 
+    def update(self, **kwargs):
+        """
+        Update the repository variable properties. Fields not present in the request body are ignored.
+
+        :param kwargs: dict: The data to update.
+
+        :return: The updated repository variable
+
+        API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pipelines/#api-repositories-workspace-repo-slug-deployments-config-environments-environment-uuid-variables-variable-uuid-put
+        """
+        return self._update_data(self.put("/{}".format(self.uuid), data=kwargs))
+
+    def delete(self):
+        """
+        Delete the repository variable.
+
+        :return: The response on success
+
+        API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pipelines/#api-repositories-workspace-repo-slug-deployments-config-environments-environment-uuid-variables-variable-uuid-delete
+        """
+        return super(DeploymentEnvironmentVariable, self).delete("/{}".format(self.uuid))
+
     @property
     def uuid(self):
-        """The deployment environment uuid"""
+        """The deployment environment variable uuid"""
         return self.get_data("uuid")
 
     @property
+    def key(self):
+        """The deployment environment variable key"""
+        return self.get_data("key")
+
+    @key.setter
+    def key(self, key):
+        """Setter for the deployment environment variable key"""
+        return self.update(key=key)
+
+    @property
     def secured(self):
-        """The deployment environment secured"""
+        """The deployment environment variable is secured"""
         return self.get_data("secured")
 
     @property
     def type(self):
-        """The deployment environment deployment gate enabled"""
+        """The deployment environment variable type"""
         return self.get_data("type")
 
     @property
     def value(self):
-        """The deployment environment environment lock enabled"""
+        """The deployment environment variable value"""
         return self.get_data("value")
+
+    @value.setter
+    def value(self, value):
+        """Setter for the deployment environment variable value"""
+        return self.update(value=value)
