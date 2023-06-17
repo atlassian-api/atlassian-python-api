@@ -14,6 +14,25 @@ class RepositoryVariables(BitbucketCloudBase):
             **self._new_session_args,
         )
 
+    def create(self, key, value, secured):
+        """
+        Create a new repository variable for the given repository.
+
+        :param key: string: The unique name of the variable.
+        :param value: string: The value of the variable. If the variable is secured, this will be empty.
+        :param secured: boolean: If true, this variable will be treated as secured. The value will never be exposed in the logs or the REST API.
+
+        :return: The created RepositoryVariable object
+
+        API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pipelines/#api-repositories-workspace-repo-slug-pipelines-config-variables-post
+        """
+        data = {
+            "key": key,
+            "value": value,
+            "secured": secured,
+        }
+        return self.__get_object(self.post(None, data=data))
+
     def each(self, q=None, sort=None):
         """
         Returns the list of repository variables in this repository.
@@ -25,7 +44,7 @@ class RepositoryVariables(BitbucketCloudBase):
 
         :return: A generator for the RepositoryVariable objects
 
-        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pipelines_config/variables/#get
+        API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pipelines/#api-repositories-workspace-repo-slug-pipelines-config-variables-get
         """
         params = {}
         if sort is not None:
@@ -50,7 +69,7 @@ class RepositoryVariables(BitbucketCloudBase):
 
         :return: The requested RepositoryVariable objects
 
-        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pipelines_config/variables/%7Bvariable_uuid%7D#get
+        API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pipelines/#api-repositories-workspace-repo-slug-pipelines-config-variables-variable-uuid-get
         """
         return self.__get_object(super(RepositoryVariables, self).get(uuid))
 
@@ -58,6 +77,28 @@ class RepositoryVariables(BitbucketCloudBase):
 class RepositoryVariable(BitbucketCloudBase):
     def __init__(self, url, data, *args, **kwargs):
         super(RepositoryVariable, self).__init__(url, *args, data=data, expected_type="pipeline_variable", **kwargs)
+
+    def update(self, **kwargs):
+        """
+        Update the repository variable properties. Fields not present in the request body are ignored.
+
+        :param kwargs: dict: The data to update.
+
+        :return: The updated repository variable
+
+        API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pipelines/#api-repositories-workspace-repo-slug-pipelines-config-variables-variable-uuid-put
+        """
+        return self._update_data(self.put(None, data=kwargs))
+
+    def delete(self):
+        """
+        Delete the repository variable.
+
+        :return: The response on success
+
+        API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pipelines/#api-repositories-workspace-repo-slug-pipelines-config-variables-variable-uuid-delete
+        """
+        return super(RepositoryVariable, self).delete(None)
 
     @property
     def uuid(self):
@@ -68,6 +109,11 @@ class RepositoryVariable(BitbucketCloudBase):
     def key(self):
         """The repository variable key"""
         return self.get_data("key")
+
+    @key.setter
+    def key(self, key):
+        """Setter for the repository variable is key"""
+        return self.update(key=key)
 
     @property
     def scope(self):
@@ -93,3 +139,8 @@ class RepositoryVariable(BitbucketCloudBase):
     def value(self):
         """The repository variable value"""
         return self.get_data("value")
+
+    @value.setter
+    def value(self, value):
+        """Setter for the repository variable value"""
+        return self.update(value=value)

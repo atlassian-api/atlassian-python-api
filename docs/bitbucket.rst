@@ -381,7 +381,19 @@ Bitbucket Cloud
     repository.repository_variables.each():
 
     # Get a single repository variable from a repository by repository variable key
-    repository.repository_variables.get(repository_variable_key)
+    repository_variable = repository.repository_variables.get(repository_variable_key)
+
+    # Create a new repository variable with a name of 'KEY', value of 'VALUE' and is not secured.
+    new_repository_variable = repository.repository_variables.create("KEY", "VALUE", False)
+
+    # Update the 'key' field of repository_variable
+    updated_repository_variable = repository_variable.update(key="UPDATED_REPOSITORY_VARIABLE_KEY")
+
+    # Update the 'value' field of repository_variable
+    updated_repository_variable = repository_variable.update(value="UPDATED_REPOSITORY_VARIABLE_VALUE")
+
+    # Delete repository_variable
+    repository_variable.delete()
 
 Pipelines management
 --------------------
