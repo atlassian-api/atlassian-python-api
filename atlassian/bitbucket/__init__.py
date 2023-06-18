@@ -2119,7 +2119,7 @@ class Bitbucket(BitbucketBase):
             params["limit"] = limit
         if role:
             params["role"] = role
-        return self.get(url, params=params)
+        return self._get_paged(url, params=params)
 
     def _url_repo_compare(self, project_key, repository_slug):
         url = "{}/compare".format(self._url_repo(project_key, repository_slug))
