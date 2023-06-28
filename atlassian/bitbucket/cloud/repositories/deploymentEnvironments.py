@@ -16,31 +16,25 @@ class DeploymentEnvironments(BitbucketCloudBase):
             **self._new_session_args,
         )
 
-    def each(self, q=None, sort=None):
+    def each(self):
         """
         Returns the list of environments in this repository.
 
-        :param q: string: Query string to narrow down the response.
-                          See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
-        :param sort: string: Name of a response property to sort results.
-                             See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
-
-        :return: A generator for the DeploymentEnvironment objects
+        :return: A list of the DeploymentEnvironment objects
 
         API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/environments/#get
         """
-        params = {}
-        if sort is not None:
-            params["sort"] = sort
-        if q is not None:
-            params["q"] = q
-        for deployment_environment in self._get_paged(
-            None,
-            params=params,
-        ):
-            yield self.__get_object(deployment_environment)
 
-        return
+        # workaround for this issue
+        # https://jira.atlassian.com/browse/BCLOUD-20796
+        response = super(BitbucketCloudBase, self).get(None)
+
+        deployment_environments = []
+
+        for value in response.get("values", []):
+            deployment_environments.append(self.__get_object(value))
+
+        return deployment_environments
 
     def get(self, uuid):
         """
