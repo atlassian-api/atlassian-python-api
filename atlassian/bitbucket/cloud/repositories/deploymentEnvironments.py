@@ -159,31 +159,43 @@ class DeploymentEnvironmentVariables(BitbucketCloudBase):
         data = {"key": key, "value": value, "secured": secured}
         return self.__get_object(self.post(None, data=data))
 
-    def each(self, q=None, sort=None):
+    def each(self, pagelen=10):
         """
         Returns the list of deployment environment variables in this repository.
 
-        :param q: string: Query string to narrow down the response.
+        :param pagelen: integer: Query string to return this number of items from api.
                           See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
-        :param sort: string: Name of a response property to sort results.
-                             See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
 
-        :return: A generator for the DeploymentEnvironmentVariable objects
+        :return: A list of DeploymentEnvironmentVariable objects
 
         API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pipelines/#api-repositories-workspace-repo-slug-deployments-config-environments-environment-uuid-variables-get
         """
         params = {}
-        if sort is not None:
-            params["sort"] = sort
-        if q is not None:
-            params["q"] = q
-        for deployment_environment_variable in self._get_paged(
-            None,
-            params=params,
-        ):
-            yield self.__get_object(deployment_environment_variable)
+        params["pagelen"] = pagelen
 
-        return
+        response = super(BitbucketCloudBase, self).get(None, params=params)
+
+        pagelen = response.get("pagelen")
+        size_total = response.get("size")
+        pagelen_total = response.get("pagelen")
+        page = 1
+
+        deployment_environment_variables = []
+
+        # workaround for this issue
+        # https://jira.atlassian.com/browse/BCLOUD-20796
+        while True:
+            for value in response.get("values", []):
+                deployment_environment_variables.append(self.__get_object(value))
+
+            if pagelen_total < size_total:
+                pagelen_total = pagelen_total + response["pagelen"]
+                page = page + 1
+                response = super(BitbucketCloudBase, self).get(None, params={"pagelen": pagelen, "page": page})
+            else:
+                break
+
+        return deployment_environment_variables
 
 
 class DeploymentEnvironmentVariable(BitbucketCloudBase):
