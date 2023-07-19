@@ -2871,6 +2871,31 @@ class Confluence(AtlassianRestAPI):
         }
         self.post(url, data=data)
 
+    def change_user_password(self, username, password):
+        """
+        That method related to changing user password via json rpc for Confluence Server
+        """
+        params = {"name": username}
+        url = "rpc/json-rpc/confluenceservice-v2"
+        data = {
+            "jsonrpc": "2.0",
+            "method": "changeUserPassword",
+            "params": [params, password],
+        }
+        self.post(url, data=data)
+
+    def change_my_password(self, oldpass, newpass):
+        """
+        That method related to changing calling user's own password via json rpc for Confluence Server
+        """
+        url = "rpc/json-rpc/confluenceservice-v2"
+        data = {
+            "jsonrpc": "2.0",
+            "method": "changeMyPassword",
+            "params": [oldpass, newpass],
+        }
+        self.post(url, data=data)
+
     def add_user_to_group(self, username, group_name):
         """
         Add given user to a group
