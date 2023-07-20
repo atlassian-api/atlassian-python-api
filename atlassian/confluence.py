@@ -2723,12 +2723,12 @@ class Confluence(AtlassianRestAPI):
                 progress_response = self.get(poll_url)
                 percentage_complete = int(progress_response.get("progress", 0))
                 task_state = progress_response.get("state")
-                if percentage_complete == 100:
+                if task_state == "FAILED":
+                    log.error("PDF conversion not successful.")
+                    return None
+                elif percentage_complete == 100:
                     running_task = False
                     log.info("Task completed - {task_state}".format(task_state=task_state))
-                    if task_state == "FAILED":
-                        log.error("PDF conversion not successful.")
-                        return None
                     log.debug("Extract task results to download PDF.")
                     task_result_url = progress_response.get("result")
                 else:
