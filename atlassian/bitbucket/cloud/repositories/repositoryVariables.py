@@ -11,8 +11,8 @@ class RepositoryVariables(BitbucketCloudBase):
         return RepositoryVariable(
             self.url_joiner(self.url, data["uuid"]),
             data,
-            **self._new_session_args,
-        )
+            **self._new_session_args
+        )  # fmt: skip
 
     def create(self, key, value, secured):
         """
