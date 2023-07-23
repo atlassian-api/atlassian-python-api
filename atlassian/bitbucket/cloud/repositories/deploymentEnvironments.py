@@ -2,7 +2,7 @@
 
 from ..base import BitbucketCloudBase
 
-from urllib.parse import urlunsplit, urlsplit
+from six.moves.urllib.parse import urlunsplit, urlsplit
 
 
 class DeploymentEnvironments(BitbucketCloudBase):
