@@ -139,8 +139,8 @@ class Commit(BitbucketCloudBase):
         """
         return Build(
             super(Commit, self).get(self.url_joiner("statuses/build", key)),
-            **self._new_session_args,
-        )
+            **self._new_session_args
+        )  # fmt: skip
 
     def comments(self):
         """

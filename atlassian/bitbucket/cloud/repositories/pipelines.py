@@ -14,8 +14,8 @@ class Pipelines(BitbucketCloudBase):
         return Pipeline(
             self.url_joiner(self.url, data["uuid"]),
             data,
-            **self._new_session_args,
-        )
+            **self._new_session_args
+        )  # fmt: skip
 
     def trigger(self, branch="master", type="custom", commit=None, pattern=None, variables=None):
         """
@@ -110,8 +110,8 @@ class Pipeline(BitbucketCloudBase):
         return Step(
             "{}/steps/{}".format(self.url, data["uuid"]),
             data,
-            **self._new_session_args,
-        )
+            **self._new_session_args
+        )  # fmt: skip
 
     @property
     def uuid(self):
@@ -146,8 +146,8 @@ class Pipeline(BitbucketCloudBase):
             return PullRequest(
                 target["pullrequest"]["links"]["self"]["href"],
                 target["pullrequest"],
-                **self._new_session_args,
-            )
+                **self._new_session_args
+            )  # fmt: skip
         else:
             return None
 

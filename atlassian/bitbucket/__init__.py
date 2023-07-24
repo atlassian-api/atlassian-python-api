@@ -2378,8 +2378,8 @@ class Bitbucket(BitbucketBase):
         commit_id,
         report_key,
         report_title,
-        **report_params,
-    ):
+        **report_params
+    ):  # fmt: skip
         """
         Create a new insight report, or replace the existing one
         if a report already exists for the given repository_slug, commit, and report key.

@@ -11,8 +11,8 @@ class GroupPermissions(BitbucketCloudBase):
         return GroupPermission(
             self.url,
             data,
-            **self._new_session_args,
-        )
+            **self._new_session_args
+        )  # fmt: skip
 
     def each(self, q=None, sort=None):
         """
