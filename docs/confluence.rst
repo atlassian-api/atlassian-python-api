@@ -231,6 +231,12 @@ Users and Groups
     # Get information about a user through user key
     confluence.get_user_details_by_userkey(userkey, expand=None)
 
+    # Change a user's password
+    confluence.change_user_password(username, password)
+
+    # Change calling user's password
+    confluence.change_my_password(oldpass, newpass)
+
 CQL
 ---
 
