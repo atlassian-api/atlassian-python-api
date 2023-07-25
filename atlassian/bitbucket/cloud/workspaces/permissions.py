@@ -12,8 +12,8 @@ class Permissions(BitbucketCloudBase):
         return WorkspaceMembership(
             self.url,
             data,
-            **self._new_session_args,
-        )
+            **self._new_session_args
+        )  # fmt: skip
 
     def __get_object_repository_permission(self, data):
         return RepositoryPermission(self.url, data, **self._new_session_args)

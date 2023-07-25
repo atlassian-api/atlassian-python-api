@@ -2,7 +2,7 @@
 
 from ..base import BitbucketCloudBase
 
-from urllib.parse import urlunsplit, urlsplit
+from six.moves.urllib.parse import urlunsplit, urlsplit
 
 
 class DeploymentEnvironments(BitbucketCloudBase):
@@ -13,8 +13,8 @@ class DeploymentEnvironments(BitbucketCloudBase):
         return DeploymentEnvironment(
             self.url_joiner(self.url, data["uuid"]),
             data,
-            **self._new_session_args,
-        )
+            **self._new_session_args
+        )  # fmt: skip
 
     def each(self):
         """
@@ -141,8 +141,8 @@ class DeploymentEnvironmentVariables(BitbucketCloudBase):
         return DeploymentEnvironmentVariable(
             self.url,
             data,
-            **self._new_session_args,
-        )
+            **self._new_session_args
+        )  # fmt: skip
 
     def create(self, key, value, secured):
         """

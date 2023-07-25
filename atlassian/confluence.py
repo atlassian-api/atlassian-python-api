@@ -2722,12 +2722,12 @@ class Confluence(AtlassianRestAPI):
                 progress_response = self.get(poll_url)
                 percentage_complete = int(progress_response.get("progress", 0))
                 task_state = progress_response.get("state")
-                if percentage_complete == 100:
+                if task_state == "FAILED":
+                    log.error("PDF conversion not successful.")
+                    return None
+                elif percentage_complete == 100:
                     running_task = False
-                    log.info("Task completed - %s", task_state)
-                    if task_state == "FAILED":
-                        log.error("PDF conversion not successful.")
-                        return None
+                    log.info("Task completed - {task_state}".format(task_state=task_state))
                     log.debug("Extract task results to download PDF.")
                     task_result_url = progress_response.get("result")
                 else:
@@ -2867,6 +2867,31 @@ class Confluence(AtlassianRestAPI):
             "jsonrpc": "2.0",
             "method": "addUser",
             "params": [params, password],
+        }
+        self.post(url, data=data)
+
+    def change_user_password(self, username, password):
+        """
+        That method related to changing user password via json rpc for Confluence Server
+        """
+        params = {"name": username}
+        url = "rpc/json-rpc/confluenceservice-v2"
+        data = {
+            "jsonrpc": "2.0",
+            "method": "changeUserPassword",
+            "params": [params, password],
+        }
+        self.post(url, data=data)
+
+    def change_my_password(self, oldpass, newpass):
+        """
+        That method related to changing calling user's own password via json rpc for Confluence Server
+        """
+        url = "rpc/json-rpc/confluenceservice-v2"
+        data = {
+            "jsonrpc": "2.0",
+            "method": "changeMyPassword",
+            "params": [oldpass, newpass],
         }
         self.post(url, data=data)
 

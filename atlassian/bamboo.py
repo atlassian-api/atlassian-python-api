@@ -70,8 +70,8 @@ class Bamboo(AtlassianRestAPI):
         max_results,
         label=None,
         start_index=0,
-        **kwargs,
-    ):
+        **kwargs
+    ):  # fmt: skip
         flags = []
         params = {"max-results": max_results}
         if expand:
@@ -383,8 +383,8 @@ class Bamboo(AtlassianRestAPI):
             elements_key="results",
             element_key="result",
             label=label,
-            **params,
-        )
+            **params
+        )  # fmt: skip
 
     def latest_results(
         self,
@@ -572,8 +572,8 @@ class Bamboo(AtlassianRestAPI):
         stage=None,
         execute_all_stages=True,
         custom_revision=None,
-        **bamboo_variables,
-    ):
+        **bamboo_variables
+    ):  # fmt: skip
         """
         Fire build execution for specified plan.
         !IMPORTANT! NOTE: for some reason, this method always execute all stages

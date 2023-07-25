@@ -257,8 +257,8 @@ class Repository(BitbucketCloudBase):
         self.__commits = Commits(
             "{}/commits".format(self.url),
             data={"links": {"commit": {"href": "{}/commit".format(self.url)}}},
-            **self._new_session_args,
-        )
+            **self._new_session_args
+        )  # fmt: skip
         self.__default_reviewers = DefaultReviewers("{}/default-reviewers".format(self.url), **self._new_session_args)
         self.__deployment_environments = DeploymentEnvironments(
             "{}/environments".format(self.url), **self._new_session_args
