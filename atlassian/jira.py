@@ -492,13 +492,13 @@ class Jira(AtlassianRestAPI):
         return self.get(url)
 
     def create_component(self, component):
-        log.warning('Creating component "{name}"'.format(name=component["name"]))
+        log.warning('Creating component "%s"', component["name"])
         base_url = self.resource_url("component")
         url = "{base_url}/".format(base_url=base_url)
         return self.post(url, data=component)
 
     def delete_component(self, component_id):
-        log.warning('Deleting component "{component_id}"'.format(component_id=component_id))
+        log.warning('Deleting component "%s"', component_id)
         base_url = self.resource_url("component")
         return self.delete("{base_url}/{component_id}".format(base_url=base_url, component_id=component_id))
 
@@ -1249,10 +1249,10 @@ class Jira(AtlassianRestAPI):
         try:
             resp = self.issue(issue_key, fields="*none")
             if resp.status_code == 404:
-                log.info('Issue "{issue_key}" does not exists'.format(issue_key=issue_key))
+                log.info('Issue "%s" does not exists', issue_key)
                 return False
             resp.raise_for_status()
-            log.info('Issue "{issue_key}" exists'.format(issue_key=issue_key))
+            log.info('Issue "%s" exists', issue_key)
             return True
         finally:
             self.advanced_mode = original_value
@@ -1260,9 +1260,9 @@ class Jira(AtlassianRestAPI):
     def issue_deleted(self, issue_key):
         exists = self.issue_exists(issue_key)
         if exists:
-            log.info('Issue "{issue_key}" is not deleted'.format(issue_key=issue_key))
+            log.info('Issue "%s" is not deleted', issue_key)
         else:
-            log.info('Issue "{issue_key}" is deleted'.format(issue_key=issue_key))
+            log.info('Issue "%s" is deleted', issue_key)
         return not exists
 
     def delete_issue(self, issue_id_or_key, delete_subtasks=True):
@@ -1283,13 +1283,13 @@ class Jira(AtlassianRestAPI):
         else:
             params["deleteSubtasks"] = "false"
 
-        log.warning("Removing issue {}...".format(issue_id_or_key))
+        log.warning("Removing issue %s...", issue_id_or_key)
 
         return self.delete(url, params=params)
 
     # @todo merge with edit_issue method
     def issue_update(self, issue_key, fields):
-        log.warning('Updating issue "{issue_key}" with "{fields}"'.format(issue_key=issue_key, fields=fields))
+        log.warning('Updating issue "%s" with "%s"', issue_key, fields)
         base_url = self.resource_url("issue")
         url = "{base_url}/{issue_key}".format(base_url=base_url, issue_key=issue_key)
         return self.put(url, data={"fields": fields})
@@ -1323,7 +1323,7 @@ class Jira(AtlassianRestAPI):
         :param user:
         :return:
         """
-        log.warning('Adding user {user} to "{issue_key}" watchers'.format(issue_key=issue_key, user=user))
+        log.warning('Adding user %s to "%s" watchers', user, issue_key)
         data = user
         base_url = self.resource_url("issue")
         return self.post(
@@ -1338,7 +1338,7 @@ class Jira(AtlassianRestAPI):
         :param user:
         :return:
         """
-        log.warning('Deleting user {user} from "{issue_key}" watchers'.format(issue_key=issue_key, user=user))
+        log.warning('Deleting user %s from "%s" watchers', user, issue_key)
         params = {"username": user}
         base_url = self.resource_url("issue")
         return self.delete(
@@ -1424,7 +1424,7 @@ class Jira(AtlassianRestAPI):
 
     # @todo refactor and merge with create_issue method
     def issue_create(self, fields):
-        log.warning('Creating issue "{summary}"'.format(summary=fields["summary"]))
+        log.warning('Creating issue "%s"', fields["summary"])
         url = self.resource_url("issue")
         return self.post(url, data={"fields": fields})
 
@@ -1437,10 +1437,10 @@ class Jira(AtlassianRestAPI):
             return self.issue_create(fields)
 
         if self.issue_deleted(issue_key):
-            log.warning('Issue "{issue_key}" deleted, skipping'.format(issue_key=issue_key))
+            log.warning('Issue "%s" deleted, skipping', issue_key)
             return None
 
-        log.info('Issue "{issue_key}" exists, will update'.format(issue_key=issue_key))
+        log.info('Issue "%s" exists, will update', issue_key)
         fields.pop("issuekey", None)
         return self.issue_update(issue_key, fields)
 
@@ -1804,7 +1804,7 @@ class Jira(AtlassianRestAPI):
                              Default:false.
         :return:
         """
-        log.warning("Creating user {}".format(display_name))
+        log.warning("Creating user %s", display_name)
         data = {
             "name": username,
             "emailAddress": email,
@@ -2771,9 +2771,7 @@ class Jira(AtlassianRestAPI):
         }
         :return:
         """
-        log.info(
-            "Linking issue {inward} and {outward}".format(inward=data["inwardIssue"], outward=data["outwardIssue"])
-        )
+        log.info("Linking issue %s and %s", data["inwardIssue"], data["outwardIssue"])
         url = self.resource_url("issueLink")
         return self.post(url, data=data)
 
