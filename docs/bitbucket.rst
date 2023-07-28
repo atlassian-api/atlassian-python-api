@@ -434,6 +434,9 @@ Pipelines management
         # Trigger specific Pipeline on a specific revision of the master branch
         r.pipelines.trigger(revision="<40-char hash>", name="style-check")
 
+        # Trigger specific Pipeline of the master branch with specific variables 
+        r.pipelines.trigger(name="style-check", variables=[{ "key": "var-name", "value": "var-value" }])
+
         # Get specific Pipeline by UUID
         pl = r.pipelines.get("{7d6c327d-6336-4721-bfeb-c24caf25045c}")
 
