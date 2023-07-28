@@ -295,7 +295,6 @@ class AtlassianRestAPI(object):
                 files=files,
                 proxies=self.proxies,
             )
-            responseloop = False
             if self.backoff_and_retry:
                 for em in self.retry_error_matches:
                     if retries > self.max_backoff_retries:
