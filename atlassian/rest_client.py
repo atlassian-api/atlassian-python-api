@@ -305,8 +305,8 @@ class AtlassianRestAPI(object):
                         time.sleep(backoff + (random.random() * backoff / 10))
                         backoff = min(2 * backoff, self.max_backoff_seconds)
                         retries += 1
-                        responseloop = True
-                        break
+            else:
+                break
 
         response.encoding = "utf-8"
 
