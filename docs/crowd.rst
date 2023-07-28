@@ -12,7 +12,7 @@ Manage users
     # Add user
     crowd.user_create(username, active, first_name, last_name, display_name, email, password)
 
-    # Deactive user
+    # Deactivate user
     crowd.user_deactivate(username)
 
     # Delete user

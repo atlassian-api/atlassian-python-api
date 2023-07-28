@@ -9,7 +9,7 @@ RUN echo "deb https://packages.atlassian.com/debian/atlassian-sdk-deb/ stable co
     && apt-get update
 
 # Install Atlassian plugin SDK
-RUN apt-get install -y atlassian-plugin-sdk
+RUN apt install -y atlassian-plugin-sdk
 
 # Clean
 RUN apt-get clean

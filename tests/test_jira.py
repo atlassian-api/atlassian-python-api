@@ -11,7 +11,7 @@ class TestJira(TestCase):
         self.jira = jira.Jira("{}/jira".format(mockup_server()), username="username", password="password", cloud=True)
 
     def test_get_issue(self):
-        """Can retrieve an Issue by Id"""
+        """Can retrieve an Issue by ID"""
         resp = self.jira.issue("FOO-123")
         self.assertEqual(resp["key"], "FOO-123")
 
@@ -44,3 +44,8 @@ class TestJira(TestCase):
         """Get comment on issue by id, but not found"""
         with self.assertRaises(HTTPError):
             self.jira.epic_issues("BAR-11")
+
+    def test_post_issue_with_invalid_request(self):
+        """Post an issue but receive a 400 error response"""
+        with self.assertRaises(HTTPError):
+            self.jira.create_issue(fields={"issuetype": "foo", "summary": "summary", "project": "project"})

@@ -2,7 +2,6 @@
     Update the Epic Link for issue(s)
 """
 
-
 from atlassian.jira import Jira
 
 # the Issues which we want to place to a certain EPIC

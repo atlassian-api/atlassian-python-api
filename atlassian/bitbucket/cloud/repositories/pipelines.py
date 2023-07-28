@@ -14,10 +14,10 @@ class Pipelines(BitbucketCloudBase):
         return Pipeline(
             self.url_joiner(self.url, data["uuid"]),
             data,
-            **self._new_session_args,
-        )
+            **self._new_session_args
+        )  # fmt: skip
 
-    def trigger(self, branch="master", commit=None, pattern=None, variables=None):
+    def trigger(self, branch="master", type="custom", commit=None, pattern=None, variables=None):
         """
         Trigger a new pipeline. The following options are possible (1 and 2
         trigger the pipeline that the branch is associated with in the Pipelines
@@ -27,7 +27,7 @@ class Pipelines(BitbucketCloudBase):
         2. Specific commit on a branch (additionally specify ``commit``)
         3. Specific pipeline (additionally specify ``pattern``. ``commit`` is optional here)
 
-        Variables has to be a list of dictionaries:
+        Variables have to be a list of dictionaries:
 
         {
            "key": "var1key",
@@ -48,7 +48,7 @@ class Pipelines(BitbucketCloudBase):
         }
         if commit is not None:
             data["target"]["commit"] = {
-                "type": "commit",
+                "type": type,
                 "hash": commit,
             }
         if pattern is not None:
@@ -110,8 +110,8 @@ class Pipeline(BitbucketCloudBase):
         return Step(
             "{}/steps/{}".format(self.url, data["uuid"]),
             data,
-            **self._new_session_args,
-        )
+            **self._new_session_args
+        )  # fmt: skip
 
     @property
     def uuid(self):
@@ -146,8 +146,8 @@ class Pipeline(BitbucketCloudBase):
             return PullRequest(
                 target["pullrequest"]["links"]["self"]["href"],
                 target["pullrequest"],
-                **self._new_session_args,
-            )
+                **self._new_session_args
+            )  # fmt: skip
         else:
             return None
 

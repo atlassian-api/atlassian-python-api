@@ -10,8 +10,8 @@ class Comment(BitbucketCloudBase):
             *args,
             data=data,
             expected_type="pullrequest_comment",
-            **kwargs,
-        )
+            **kwargs
+        )  # fmt: skip
 
     @property
     def raw(self):

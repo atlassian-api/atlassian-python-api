@@ -24,7 +24,7 @@ class Permissions(BitbucketServerBase):
 
     def write(self, name):
         """
-        Add the write permission for a group/user.
+        Add to write permission for a group/user.
         """
         return self.add(name, self.__permission(self.WRITE))
 
@@ -54,7 +54,7 @@ class Permissions(BitbucketServerBase):
         """
         Get all groups/users.
 
-        :params filter: string: If specified only group/user names containing the supplied string will be returned
+        :params filter: string: If specified only group/usernames containing the supplied string will be returned
 
         :return: A generator for the group/user permission objects
 
@@ -76,7 +76,7 @@ class Permissions(BitbucketServerBase):
         """
         Get all not granted groups/users.
 
-        :params filter: string: If specified only group/user names containing the supplied string will be returned
+        :params filter: string: If specified only group/usernames containing the supplied string will be returned
 
         :return: A generator for the group/user permission objects
 

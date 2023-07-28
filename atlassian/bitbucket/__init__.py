@@ -65,7 +65,7 @@ class Bitbucket(BitbucketBase):
         :return: A generator object containing a map with the project_key, project_name and project_administrators
         """
         for project in self.project_list():
-            log.info("Processing project: {0} - {1}".format(project.get("key"), project.get("name")))
+            log.info("Processing project: %s - %s", project.get("key"), project.get("name"))
             yield {
                 "project_key": project.get("key"),
                 "project_name": project.get("name"),
@@ -695,10 +695,10 @@ class Bitbucket(BitbucketBase):
 
     def delete_project_condition(self, project_key, id_condition):
         """
-        Request type: DELETE
         Delete a specific condition for this repository slug inside project.
         For further information visit:
             https://docs.atlassian.com/bitbucket-server/rest/5.16.0/bitbucket-default-reviewers-rest.html#idm52264896304
+        Request type: DELETE
         :projectKey: str- project key involved
         :idCondition: int - condition id involved
         :return:
@@ -958,7 +958,7 @@ class Bitbucket(BitbucketBase):
         Grant the specified repository permission to a specific user
         :param project_key: The project key
         :param repo_key: The repository key (slug)
-        :param username: user name to be granted
+        :param username: username to be granted
         :param permission: the repository permissions available are 'REPO_ADMIN', 'REPO_WRITE' and 'REPO_READ'
         :return:
         """
@@ -975,7 +975,7 @@ class Bitbucket(BitbucketBase):
         if they do not have a higher project or global permission.
         :param project_key: The project key
         :param repo_key: The repository key (slug)
-        :param username: user name to be granted
+        :param username: username to be granted
         :return:
         """
         url = self._url_repo_users(project_key, repo_key)
@@ -1567,7 +1567,7 @@ class Bitbucket(BitbucketBase):
         :param project_key:
         :param repository_slug:
         :param state:
-        :param order: OPTIONAL: defaults to NEWEST) the order to return pull requests in, either OLDEST
+        :param order: OPTIONAL: defaults to NEWEST the order to return pull requests in, either OLDEST
                                 (as in: "oldest first") or NEWEST.
         :param limit:
         :param start:
@@ -1685,7 +1685,21 @@ class Bitbucket(BitbucketBase):
         """
         Deprecated name since 1.15.1. Let's use the get_pull_request()
         """
-        return self.get_pull_request(*args, **kwargs)
+
+    def update_pull_request(self, project_key, repository_slug, pull_request_id, data):
+        """
+        Update a pull request.
+        The authenticated user must have REPO_WRITE permission
+        for the repository that this pull request targets to call this resource.
+        :param project_key:
+        :param repository_slug:
+        :param pull_request_id: the ID of the pull request within the repository
+        :param data: json body
+        :return:
+        """
+
+        url = self._url_pull_request(project_key, repository_slug, pull_request_id)
+        return self.put(url, data=data)
 
     def delete_pull_request(
         self,
@@ -1901,7 +1915,7 @@ class Bitbucket(BitbucketBase):
         Update the text of a comment.
         Only the user who created a comment may update it.
 
-        Note: the supplied supplied JSON object must contain a version
+        Note: the supplied JSON object must contain a version
         that must match the server's version of the comment
         or the update will fail.
         """
@@ -2105,7 +2119,7 @@ class Bitbucket(BitbucketBase):
             params["limit"] = limit
         if role:
             params["role"] = role
-        return self.get(url, params=params)
+        return self._get_paged(url, params=params)
 
     def _url_repo_compare(self, project_key, repository_slug):
         url = "{}/compare".format(self._url_repo(project_key, repository_slug))
@@ -2154,6 +2168,8 @@ class Bitbucket(BitbucketBase):
         avatar_size=None,
         avatar_scheme=None,
         limit=None,
+        until=None,
+        since=None,
     ):
         """
         Get commit list from repo
@@ -2169,6 +2185,8 @@ class Bitbucket(BitbucketBase):
         :param avatar_scheme: OPTIONAL: the desired scheme for the avatar URL
         :param limit: OPTIONAL: The limit of the number of commits to return, this may be restricted by
                fixed system limits. Default by built-in method: None
+        :param until: OPTIONAL: The commit ID or ref (inclusively) to retrieve commits before
+        :param since: OPTIONAL: The commit ID or ref (exclusively) to retrieve commits after
         :return:
         """
         url = self._url_commits(project_key, repository_slug)
@@ -2189,6 +2207,12 @@ class Bitbucket(BitbucketBase):
             params["avatarScheme"] = avatar_scheme
         if limit:
             params["limit"] = limit
+        if self.cloud and (since or until):
+            raise Exception("Not supported in Bitbucket Cloud")
+        if since:
+            params["since"] = since
+        if until:
+            params["until"] = until
         return self._get_paged(url, params=params)
 
     def get_commit_changes(self, project_key, repository_slug, hash_newest=None, merges="include", commit_id=None):
@@ -2364,8 +2388,8 @@ class Bitbucket(BitbucketBase):
         commit_id,
         report_key,
         report_title,
-        **report_params,
-    ):
+        **report_params
+    ):  # fmt: skip
         """
         Create a new insight report, or replace the existing one
         if a report already exists for the given repository_slug, commit, and report key.
@@ -2396,7 +2420,7 @@ class Bitbucket(BitbucketBase):
     ):
         """
         Retrieve a page of files from particular directory of a repository.
-        The search is done recursively, so all files from any sub-directory of the specified directory will be returned.
+        The search is done recursively, so all files from any subdirectory of the specified directory will be returned.
         The authenticated user must have REPO_READ permission for the specified repository to call this resource.
         :param start:
         :param project_key:
@@ -2866,10 +2890,10 @@ class Bitbucket(BitbucketBase):
 
     def delete_repo_condition(self, project_key, repo_key, id_condition):
         """
-        Request type: DELETE
         Delete a specific condition for this repository slug inside project.
         For further information visit:
             https://docs.atlassian.com/bitbucket-server/rest/5.16.0/bitbucket-default-reviewers-rest.html#idm8287339888
+        Request type: DELETE
         :projectKey: str- project key involved
         :repoKey: str - repo key involved
         :idCondition: int - condition id involved

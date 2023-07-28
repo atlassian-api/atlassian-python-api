@@ -5,47 +5,47 @@ ARG PYTHON_VERSION
 
 # Install add-apt-repository
 RUN apt-get update
-RUN apt-get install -y software-properties-common
+RUN apt install -y software-properties-common
 
 # Add python repo
 RUN add-apt-repository ppa:deadsnakes/ppa
 RUN apt-get update
 
 # Install apt-utils
-RUN apt-get install -y apt-utils
+RUN apt install -y apt-utils
 
 # install setuptools
 RUN if [ $PYTHON_VERSION = '2.7' ] ; then \
-  apt-get install -y python-setuptools -reinstall ;\
+  apt install -y python-setuptools -reinstall ;\
   else \
-  apt-get install -y python3-setuptools ;\
+  apt install -y python3-setuptools ;\
   fi
 
 # Install python development
-RUN apt-get install -y \
+RUN apt install -y \
   python$PYTHON_VERSION-dev \
   python3-pip
 
 # install distutils.util
 RUN if [ $PYTHON_VERSION = '3.7' ] ; then \
-  apt-get install -y python$PYTHON_VERSION-distutils python3-distutils-extra python3-apt --reinstall ;\
+  apt install -y python$PYTHON_VERSION-distutils python3-distutils-extra python3-apt --reinstall ;\
   elif [ $PYTHON_VERSION = '3.6' ] ; then \
-  apt-get install -y python$PYTHON_VERSION-distutils python3-distutils-extra python3-apt --reinstall ;\
+  apt install -y python$PYTHON_VERSION-distutils python3-distutils-extra python3-apt --reinstall ;\
   elif [ $PYTHON_VERSION = '3.10' ] ; then \
-  apt-get install -y python$PYTHON_VERSION-distutils python3-distutils-extra python3-apt --reinstall ; \
+  apt install -y python$PYTHON_VERSION-distutils python3-distutils-extra python3-apt --reinstall ; \
   curl -sS https://bootstrap.pypa.io/get-pip.py | python$PYTHON_VERSION ; \
   elif [ $PYTHON_VERSION = '3.11' ] ; then \
-  apt-get install -y python$PYTHON_VERSION-distutils python3-distutils-extra python3-apt --reinstall ; \
+  apt install -y python$PYTHON_VERSION-distutils python3-distutils-extra python3-apt --reinstall ; \
   curl -sS https://bootstrap.pypa.io/get-pip.py | python$PYTHON_VERSION ; \
   else \
-  apt-get install -y python3-distutils python3-distutils-extra python3-apt --reinstall ; \
+  apt install -y python3-distutils python3-distutils-extra python3-apt --reinstall ; \
   fi
 
 # Register the version in alternatives
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python$PYTHON_VERSION 1
 
 # Install kerberos development
-RUN apt-get install -y libkrb5-dev
+RUN apt install -y libkrb5-dev
 
 # Clean
 RUN apt-get clean
@@ -55,6 +55,7 @@ WORKDIR /atlassian-python-api
 COPY requirements.txt .
 COPY requirements-dev.txt .
 RUN python3 -m pip install --no-cache-dir --upgrade pip
+RUN python3 -m pip install --no-cache-dir --upgrade wheel
 RUN python3 -m pip install --no-cache-dir -r requirements-dev.txt
 
 ENV PYTHON_VERSION=$PYTHON_VERSION

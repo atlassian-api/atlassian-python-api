@@ -12,7 +12,6 @@ from .service_desk import ServiceDesk
 from .service_desk import ServiceDesk as ServiceManagement
 from .xray import Xray
 
-
 __all__ = [
     "Confluence",
     "Jira",

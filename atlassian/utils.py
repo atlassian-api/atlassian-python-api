@@ -313,7 +313,7 @@ def parse_cookie_file(cookie_file):
     return a dictionary of key value pairs
     compatible with requests.
     :param cookie_file: a cookie file
-    :return dict of cookies pair
+    :return dict of cookies pairs
     """
     cookies = {}
     with open(cookie_file, "r") as fp:

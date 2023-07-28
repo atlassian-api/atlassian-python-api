@@ -6,7 +6,7 @@ from six import PY3
 # Additional log methods
 def logger_has_handlers(logger):
     """Since Python 2 doesn't provide Logger.hasHandlers(), we have to
-    perform the lookup by ourself."""
+    perform the lookup by ourselves."""
 
     if PY3:
         return logger.hasHandlers()

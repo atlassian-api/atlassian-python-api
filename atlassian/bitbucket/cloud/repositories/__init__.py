@@ -6,9 +6,12 @@ from .issues import Issues
 from .branchRestrictions import BranchRestrictions
 from .commits import Commits
 from .defaultReviewers import DefaultReviewers
+from .deploymentEnvironments import DeploymentEnvironments
+from .groupPermissions import GroupPermissions
 from .pipelines import Pipelines
 from .pullRequests import PullRequests
 from .refs import Branches, Tags
+from .repositoryVariables import RepositoryVariables
 
 
 class RepositoriesBase(BitbucketCloudBase):
@@ -127,7 +130,7 @@ class WorkspaceRepositories(RepositoriesBase):
         """
         Get all repositories in the workspace matching the criteria.
 
-        :param role: string: Filters the workspaces based on the authenticated user"s role on each workspace.
+        :param role: string: Filters the workspaces based on the authenticated user's role on each workspace.
                              * member: returns a list of all the workspaces which the caller is a member of
                                at least one workspace group or repository
                              * collaborator: returns a list of workspaces which the caller has write access
@@ -254,12 +257,21 @@ class Repository(BitbucketCloudBase):
         self.__commits = Commits(
             "{}/commits".format(self.url),
             data={"links": {"commit": {"href": "{}/commit".format(self.url)}}},
-            **self._new_session_args,
-        )
+            **self._new_session_args
+        )  # fmt: skip
         self.__default_reviewers = DefaultReviewers("{}/default-reviewers".format(self.url), **self._new_session_args)
+        self.__deployment_environments = DeploymentEnvironments(
+            "{}/environments".format(self.url), **self._new_session_args
+        )
+        self.__group_permissions = GroupPermissions(
+            "{}/permissions-config/groups".format(self.url), **self._new_session_args
+        )
         self.__issues = Issues("{}/issues".format(self.url), **self._new_session_args)
         self.__pipelines = Pipelines("{}/pipelines".format(self.url), **self._new_session_args)
         self.__pullrequests = PullRequests("{}/pullrequests".format(self.url), **self._new_session_args)
+        self.__repository_variables = RepositoryVariables(
+            "{}/pipelines_config/variables".format(self.url), **self._new_session_args
+        )
         self.__tags = Tags("{}/refs/tags".format(self.url), **self._new_session_args)
 
     def update(self, **kwargs):
@@ -379,9 +391,19 @@ class Repository(BitbucketCloudBase):
         return self.__default_reviewers
 
     @property
+    def deployment_environments(self):
+        """The repository deployment environments"""
+        return self.__deployment_environments
+
+    @property
     def issues(self):
         """The repository issues"""
         return self.__issues
+
+    @property
+    def group_permissions(self):
+        """The repository group permissions"""
+        return self.__group_permissions
 
     @property
     def pipelines(self):
@@ -392,6 +414,11 @@ class Repository(BitbucketCloudBase):
     def pullrequests(self):
         """The repository pull requests"""
         return self.__pullrequests
+
+    @property
+    def repository_variables(self):
+        """The repository variables"""
+        return self.__repository_variables
 
     @property
     def tags(self):

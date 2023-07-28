@@ -69,7 +69,7 @@ class Xray(AtlassianRestAPI):
         * In a JQL filter that returns several Test Execution issue
         In case the Test Run has iterations, steps will not appear.
         However, if the Test has parameters but executed one time,
-        it will show the steps and the parameters info
+        it will show the steps and the parameters' info
         :param test_exec_key: The Test Execution issue key
         :param test_key: The Test issue key
         (may only be used when using the "test_exec_key" param)
@@ -521,7 +521,7 @@ class Xray(AtlassianRestAPI):
         """
         Update the comment for the given test run.
         :param test_run_id: ID of the test run (eg. 100).
-        :param comment: Comment (eg. 'Test needs to be reworked')
+        :param comment: Comment (e.g. 'Test needs to be reworked')
         :return:
         """
         update = {"comment": comment}
@@ -561,7 +561,7 @@ class Xray(AtlassianRestAPI):
         Create test repository folder for a project.
         :param project_key: Project key (eg. 'FOO').
         :param folder_name: Name of folder.
-        :param parent_folder_id: Internal folder Id; "-1" corresponds to the root folder of the test repository.
+        :param parent_folder_id: Internal folder ID; "-1" corresponds to the root folder of the test repository.
         :return: Returns the created test repository folder.
         """
         data = {"name": folder_name}
@@ -572,7 +572,7 @@ class Xray(AtlassianRestAPI):
         """
         Update test repository folder for a project.
         :param project_key: Project key (eg. 'FOO').
-        :param folder_id: Internal folder Id.
+        :param folder_id: Internal folder ID.
         :param folder_name: Name of folder.
         :param rank: Rank within the parent folder.
         :return: Returns the updated test repository folder.
@@ -595,7 +595,7 @@ class Xray(AtlassianRestAPI):
         """
         Retrieve tests of a test repository folder.
         :param project_key: Project key (eg. 'FOO').
-        :param folder_id: Internal folder Id.
+        :param folder_id: Internal folder ID.
         :param all_descendants: Include all descendants (i.e. all child Tests); "false", by default.
         :param page: Page of paginated data (first 1)
         :param limit: Amount of Tests per paginated data.

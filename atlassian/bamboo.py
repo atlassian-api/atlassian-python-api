@@ -70,8 +70,8 @@ class Bamboo(AtlassianRestAPI):
         max_results,
         label=None,
         start_index=0,
-        **kwargs,
-    ):
+        **kwargs
+    ):  # fmt: skip
         flags = []
         params = {"max-results": max_results}
         if expand:
@@ -383,8 +383,8 @@ class Bamboo(AtlassianRestAPI):
             elements_key="results",
             element_key="result",
             label=label,
-            **params,
-        )
+            **params
+        )  # fmt: skip
 
     def latest_results(
         self,
@@ -509,7 +509,7 @@ class Bamboo(AtlassianRestAPI):
         Returns details of a specific build result
         :param expand: expands build result details on request. Possible values are: artifacts, comments, labels,
         Jira Issues, stages. stages expand is available only for top level plans. It allows to drill down to job results
-        using stages.stage.results.result. All expand parameters should contain results.result prefix.
+        using stages.stage.results.result. All expand parameters should contain results. Result prefix.
         :param build_key: Should be in the form XX-YY[-ZZ]-99, that is, the last token should be an integer representing
         the build number
         :param include_all_states
@@ -536,7 +536,7 @@ class Bamboo(AtlassianRestAPI):
         Returns details of a latest build result
         :param expand: expands build result details on request. Possible values are: artifacts, comments, labels,
         Jira Issues, stages. stages expand is available only for top level plans. It allows to drill down to job results
-        using stages.stage.results.result. All expand parameters should contain results.result prefix.
+        using stages.stage.results.result. All expand parameters should contain results. Result prefix.
         :param plan_key: Should be in the form XX-YY[-ZZ]
         :param include_all_states:
         """
@@ -572,8 +572,8 @@ class Bamboo(AtlassianRestAPI):
         stage=None,
         execute_all_stages=True,
         custom_revision=None,
-        **bamboo_variables,
-    ):
+        **bamboo_variables
+    ):  # fmt: skip
         """
         Fire build execution for specified plan.
         !IMPORTANT! NOTE: for some reason, this method always execute all stages
@@ -719,6 +719,28 @@ class Bamboo(AtlassianRestAPI):
         resource = "deploy/dashboard/{}".format(project_id) if project_id else "deploy/dashboard"
         return self.get(self.resource_url(resource))
 
+    def get_deployment_projects_for_plan(self, plan_key):
+        """
+        Returns deployment projects associated with a build plan.
+        :param plan_key: The key of the plan.
+        """
+        resource = "deploy/project/forPlan"
+        params = {"planKey": plan_key}
+        for deployment_project in self.get(self.resource_url(resource), params=params):
+            yield deployment_project
+
+    def trigger_deployment_for_version_on_environment(self, version_id, environment_id):
+        """
+        Triggers a deployment for a release version on the given environment.
+        Example: trigger_deployment_for_version_on_environment(version_id='3702785', environment_id='3637249')
+        :param version_id: str or int id of the release version.
+        :param environment_id: str or int id of the deployment environment.
+        :return:
+        """
+        resource = "queue/deployment"
+        params = {"versionId": version_id, "environmentId": environment_id}
+        return self.post(self.resource_url(resource), params=params)
+
     """ Users & Groups """
 
     def get_users_in_global_permissions(self, start=0, limit=25):
@@ -830,6 +852,14 @@ class Bamboo(AtlassianRestAPI):
         """
         params = {"expand": expand}
         return self.get("rest/api/latest/queue", params=params)
+
+    def get_deployment_queue(self, expand="queuedDeployments"):
+        """
+        Provide list of deployment results scheduled for execution and waiting in queue.
+        :return:
+        """
+        params = {"expand": expand}
+        return self.get("rest/api/latest/queue/deployment", params=params)
 
     def get_deployment_users(self, deployment_id, filter_name=None, start=0, limit=25):
         """

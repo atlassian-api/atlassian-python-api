@@ -62,8 +62,8 @@ class Build(BitbucketCloudBase):
 
     @property
     def website(self):
-        """Return the url to the builds webpage.
-
+        """
+        Return the url to the build's webpage.
         This url points to the build's frontend website (Pipelines, Jenkins ...)
         """
         return self.get_data("url")
