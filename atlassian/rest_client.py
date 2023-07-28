@@ -282,8 +282,7 @@ class AtlassianRestAPI(object):
 
         backoff = 1
         retries = 0
-        responseloop = True
-        while responseloop:
+        while True:
             response = self._session.request(
                 method=method,
                 url=url,
