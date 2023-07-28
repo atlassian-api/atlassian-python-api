@@ -2168,6 +2168,8 @@ class Bitbucket(BitbucketBase):
         avatar_size=None,
         avatar_scheme=None,
         limit=None,
+        until=None,
+        since=None,
     ):
         """
         Get commit list from repo
@@ -2183,6 +2185,8 @@ class Bitbucket(BitbucketBase):
         :param avatar_scheme: OPTIONAL: the desired scheme for the avatar URL
         :param limit: OPTIONAL: The limit of the number of commits to return, this may be restricted by
                fixed system limits. Default by built-in method: None
+        :param until: OPTIONAL: The commit ID or ref (inclusively) to retrieve commits before
+        :param since: OPTIONAL: The commit ID or ref (exclusively) to retrieve commits after
         :return:
         """
         url = self._url_commits(project_key, repository_slug)
@@ -2203,6 +2207,12 @@ class Bitbucket(BitbucketBase):
             params["avatarScheme"] = avatar_scheme
         if limit:
             params["limit"] = limit
+        if self.cloud and (since or until):
+            raise Exception("Not supported in Bitbucket Cloud")
+        if since:
+            params["since"] = since
+        if until:
+            params["until"] = until
         return self._get_paged(url, params=params)
 
     def get_commit_changes(self, project_key, repository_slug, hash_newest=None, merges="include", commit_id=None):
