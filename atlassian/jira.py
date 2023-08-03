@@ -1533,7 +1533,7 @@ class Jira(AtlassianRestAPI):
                 icon_data["url16x16"] = icon_url
             if icon_title:
                 icon_data["title"] = icon_title
-            data["icon"] = icon_data
+            data["object"]["icon"] = icon_data
         return self.post(url, data=data)
 
     def get_issue_remote_link_by_id(self, issue_key, link_id):
