@@ -241,7 +241,7 @@ Manage issues
     jira.remove_issue_link(link_id)
 
     # Create or Update Issue Remote Links
-    jira.create_or_update_issue_remote_links(issue_key, link_url, title, global_id=None, relationship=None, icon_url=None, icon_title=None)
+    jira.create_or_update_issue_remote_links(issue_key, link_url, title, global_id=None, relationship=None, icon_url=None, icon_title=None, status_resolved=False)
 
     # Get Issue Remote Link by link ID
     jira.get_issue_remote_link_by_id(issue_key, link_id)
