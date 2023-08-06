@@ -1829,6 +1829,70 @@ class Bitbucket(BitbucketBase):
             params["limit"] = limit
         return self._get_paged(url, params)
 
+    def get_dashboard_pull_requests(
+        self,
+        start=0,
+        limit=None,
+        closed_since=None,
+        role=None,
+        participant_status=None,
+        state=None,
+        order=None,
+    ):
+        """
+        Get all pull requests where the current authenticated user is
+        involved as either a reviewer, author or a participant
+        :param start:
+        :param limit:
+        :param closed_since: OPTIONAL, defaults to returning pull
+                             requests regardless of closed since date. Permits
+                             returning only pull requests with a closed timestamp set more
+                             recently that (now - closedSince). Units are in seconds. So
+                             for example if closed since 86400 is set only pull requests
+                             closed in the previous 24 hours will be returned.
+        :param role: OPTIONAL, defaults to returning pull requests for
+                     any role. If a role is supplied only pull requests where the
+                     authenticated user is a participant in the given role will be
+                     returned. Either REVIEWER, AUTHOR or PARTICIPANT.
+        :param participant_status: OPTIONAL, defaults to returning
+                                   pull requests with any participant status. A comma separated
+                                   list of participant status. That is, one or more of
+                                   UNAPPROVED, NEEDS_WORK, or APPROVED.
+        :param state: OPTIONAL, defaults to returning pull requests in
+                      any state. If a state is supplied only pull requests in the
+                      specified state will be returned. Either OPEN, DECLINED or
+                      MERGED. Omit this parameter to return pull request in any
+                      state.
+
+        :param order: OPTIONAL, defaults to NEWEST, the order to
+                      return pull requests in, either OLDEST (as in: "oldest
+                      first"), NEWEST, PARTICIPANT_STATUS, or CLOSED_DATE. Where
+                      CLOSED_DATE is specified and the result set includes pull
+                      requests that are not in the closed state, these pull requests
+                      will appear first in the result set, followed by most recently
+                      closed pull requests.
+        :return:
+        """
+        if self.cloud:
+            raise Exception("Not supported in Bitbucket Cloud")
+        url = self.resource_url("dashboard/pull-requests")
+        params = {}
+        if start:
+            params["start"] = start
+        if limit is not None:
+            params["limit"] = limit
+        if closed_since is not None:
+            params["closedSince"] = closed_since
+        if role is not None:
+            params["role"] = role
+        if participant_status is not None:
+            params["participantStatus"] = participant_status
+        if state is not None:
+            params["state"] = state
+        if order is not None:
+            params["order"] = order
+        return self._get_paged(url, params=params)
+
     def change_reviewed_status(self, project_key, repository_slug, pull_request_id, status, user_slug):
         """
         Change the current user's status for a pull request.
