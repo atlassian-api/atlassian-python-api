@@ -35,6 +35,8 @@ redirect_uri = ""  # {server_url}/callback
     The server request to {server_url}/login is redirected to Jira.
     The user is asked to grant access permissions.
 """
+
+
 @app.route("/login")
 def login():
     scope = ["read:me", "read:jira-user", "read:jira-work"]
@@ -48,16 +50,20 @@ def login():
     session["oauth_state"] = state
     return redirect(authorization_url)
 
+
 """
     3. Jira redirects user to callback url with authorization code
     This should be set to {server_url}/callback.
     Access token is fetched using authorization code
 """
+
+
 @app.route("/callback")
 def callback():
     jira_oauth = OAuth2Session(client_id, state=session["oauth_state"], redirect_uri=redirect_uri)
     token_json = jira_oauth.fetch_token(token_url, client_secret=client_secret, authorization_response=request.url)
     return "Token: {}<p />Projects: {}".format(token_json, ", ".join(get_projects(token_json)))
+
 
 """
     4. Access Token used for Jira Python API
@@ -65,6 +71,8 @@ def callback():
     First resource id is taken as jira cloud id,
     Jira Client library is called with  jira cloud id and token information.
 """
+
+
 def get_projects(token_json):
     req = requests.get(
         "https://api.atlassian.com/oauth/token/accessible-resources",
