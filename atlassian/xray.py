@@ -437,7 +437,7 @@ class Xray(AtlassianRestAPI):
     def get_test_run(self, test_run_id):
         """
         Retrieve detailed information about the given test run.
-        :param test_run_id: ID of the test run (eg. 100).
+        :param test_run_id: ID of the test run (e.g. 100).
         :return: Returns detailed information about the test run.
         """
         url = self.resource_url("testrun/{0}".format(test_run_id))
@@ -446,7 +446,7 @@ class Xray(AtlassianRestAPI):
     def get_test_run_assignee(self, test_run_id):
         """
         Retrieve the assignee for the given test run.
-        :param test_run_id: ID of the test run (eg. 100).
+        :param test_run_id: ID of the test run (e.g. 100).
         :return: Returns the assignee for the given test run
         """
         url = self.resource_url("testrun/{0}/assignee".format(test_run_id))
@@ -466,7 +466,7 @@ class Xray(AtlassianRestAPI):
     def get_test_run_status(self, test_run_id):
         """
         Retrieve the status for the given test run.
-        :param test_run_id: ID of the test run (eg. 100).
+        :param test_run_id: ID of the test run (e.g. 100).
         :return: Returns the status for the given test run
         """
         url = self.resource_url("testrun/{0}/status".format(test_run_id))
@@ -475,7 +475,7 @@ class Xray(AtlassianRestAPI):
     def update_test_run_status(self, test_run_id, status):
         """
         Update the status for the given test run.
-        :param test_run_id: ID of the test run (eg. 100).
+        :param test_run_id: ID of the test run (e.g. 100).
         :param status: Status id (eg. 'PASS')
         :return:
         """
@@ -486,7 +486,7 @@ class Xray(AtlassianRestAPI):
     def get_test_run_defects(self, test_run_id):
         """
         Retrieve the defects for the given test run.
-        :param test_run_id: ID of the test run (eg. 100).
+        :param test_run_id: ID of the test run (e.g. 100).
         :return: Returns a list of defects for the given test run
         """
         url = self.resource_url("testrun/{0}/defect".format(test_run_id))
@@ -511,7 +511,7 @@ class Xray(AtlassianRestAPI):
     def get_test_run_comment(self, test_run_id):
         """
         Retrieve the comment for the given test run.
-        :param test_run_id: ID of the test run (eg. 100).
+        :param test_run_id: ID of the test run (e.g. 100).
         :return: Returns the comment for the given test run
         """
         url = self.resource_url("testrun/{0}/comment".format(test_run_id))
@@ -531,7 +531,7 @@ class Xray(AtlassianRestAPI):
     def get_test_run_steps(self, test_run_id):
         """
         Retrieve the steps for the given test run.
-        :param test_run_id: ID of the test run (eg. 100).
+        :param test_run_id: ID of the test run (e.g. 100).
         :return: Returns the steps for the given test run
         """
         url = self.resource_url("testrun/{0}/step".format(test_run_id))
@@ -550,7 +550,7 @@ class Xray(AtlassianRestAPI):
         """
         Retrieve test repository folder of a project.
         :param project_key: Project key (eg. 'FOO').
-        :param folder_id: Internal folder Id.
+        :param folder_id: Internal folder ID.
         :return: Returns the test repository folder.
         """
         url = self.resource_url("testrepository/{0}/folders/{1}".format(project_key, folder_id))

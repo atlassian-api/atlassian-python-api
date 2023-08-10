@@ -59,7 +59,7 @@ class Confluence(AtlassianRestAPI):
         Used to get the paged data
 
         :param url: string:                        The url to retrieve
-        :param params: dict (default is None):     The parameters
+        :param params: dict (default is None):     The parameter's
         :param data: dict (default is None):       The data
         :param flags: string[] (default is None):  The flags
         :param trailing: bool (default is None):   If True, a trailing slash is added to the url
@@ -210,7 +210,7 @@ class Confluence(AtlassianRestAPI):
 
     def get_page_id(self, space, title, type="page"):
         """
-        Provide content id from search result by title and space
+        Provide content id from search result by title and space.
         :param space: SPACE key
         :param title: title
         :param type: type of content: Page or Blogpost. Defaults to page
@@ -250,7 +250,7 @@ class Confluence(AtlassianRestAPI):
 
     def get_page_space(self, page_id):
         """
-        Provide space key from content id
+        Provide space key from content id.
         :param page_id: content ID
         :return:
         """
@@ -1138,8 +1138,8 @@ class Confluence(AtlassianRestAPI):
         comment=None,
     ):
         """
-        Attach (upload) a file to a page, if it exists it will update the
-        automatically version the new file and keep the old one.
+        Attach (upload) a file to a page, if it exists it will update automatically the
+        version the new file and keep the old one.
         :param title: The page name
         :type  title: ``str``
         :param space: The space name
@@ -1218,8 +1218,8 @@ class Confluence(AtlassianRestAPI):
         comment=None,
     ):
         """
-        Attach (upload) a file to a page, if it exists it will update the
-        automatically version the new file and keep the old one.
+        Attach (upload) a file to a page, if it exists it will update automatically the
+        version the new file and keep the old one.
         :param title: The page name
         :type  title: ``str``
         :param space: The space name
@@ -2899,8 +2899,8 @@ class Confluence(AtlassianRestAPI):
         """
         Add given user to a group
 
-        :param username: str
-        :param group_name: str
+        :param username: str - username of user to add to group
+        :param group_name: str - name of group to add user to
         :return: Current state of the group
         """
         url = "rest/api/2/group/user"
@@ -2919,11 +2919,11 @@ class Confluence(AtlassianRestAPI):
         """
         Add permissions to a space
 
-        :param space_key: str
-        :param subject_type: str
-        :param subject_id: str
-        :param operation_key: str
-        :param operation_target: str
+        :param space_key: str - key of space to add permissions to
+        :param subject_type: str - type of subject to add permissions for
+        :param subject_id: str - id of subject to add permissions for
+        :param operation_key: str - key of operation to add permissions for
+        :param operation_target: str - target of operation to add permissions for
         :return: Current permissions of space
         """
         url = "rest/api/space/{}/permission".format(space_key)

@@ -127,8 +127,8 @@ class Bamboo(AtlassianRestAPI):
 
     def project_plans(self, project_key, start_index=0, max_results=25):
         """
-        Returns a generator with the plans in a given project
-        :param project_key: Project key
+        Returns a generator with the plans in a given project.
+        :param project_key: project key
         :param start_index:
         :param max_results:
         :return: Generator with plans
@@ -295,7 +295,7 @@ class Bamboo(AtlassianRestAPI):
         :param branch_name: str new-shiny-branch
         :param vcs_branch: str feature/new-shiny-branch, /refs/heads/new-shiny-branch
         :param enabled: bool
-        :param cleanup_enabled: bool
+        :param cleanup_enabled: bool - enable/disable automatic cleanup of branch
         :return: PUT request
         """
         resource = "plan/{plan_key}/branch/{branch_name}".format(plan_key=plan_key, branch_name=branch_name)
@@ -398,7 +398,7 @@ class Bamboo(AtlassianRestAPI):
         include_all_states=False,
     ):
         """
-        Get latest Results
+        Get the latest Results
         :param expand:
         :param favourite:
         :param clover_enabled:
@@ -433,7 +433,7 @@ class Bamboo(AtlassianRestAPI):
         include_all_states=False,
     ):
         """
-        Get latest Project Results
+        Get the latest Project Results
         :param project_key:
         :param expand:
         :param favourite:
@@ -533,7 +533,7 @@ class Bamboo(AtlassianRestAPI):
 
     def build_latest_result(self, plan_key, expand=None, include_all_states=False):
         """
-        Returns details of a latest build result
+        Returns details of the latest build result
         :param expand: expands build result details on request. Possible values are: artifacts, comments, labels,
         Jira Issues, stages. stages expand is available only for top level plans. It allows to drill down to job results
         using stages.stage.results.result. All expand parameters should contain results. Result prefix.

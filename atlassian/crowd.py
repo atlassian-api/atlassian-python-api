@@ -32,10 +32,9 @@ class Crowd(AtlassianRestAPI):
 
     def _user_change_status(self, username, active):
         """
-        Change user status
-
-        :params active bool
-
+        Change user status.
+        :param username: str - username
+        :param active: bool - True/False
         :return:
         """
 
@@ -59,12 +58,18 @@ class Crowd(AtlassianRestAPI):
         )
 
     def user(self, username):
+        """
+        Get user information
+        :param username:
+        :return:
+        """
         params = {"username": username}
         return self.get(self._crowd_api_url("usermanagement", "user"), params=params)
 
     def user_activate(self, username):
         """
         Activate user
+        :param username: str - username
         """
 
         return self._user_change_status(username, True)
@@ -116,7 +121,7 @@ class Crowd(AtlassianRestAPI):
     def user_delete(self, username):
         """
         Delete user
-
+        :param username: str - username
         :return:
         """
 
@@ -141,6 +146,11 @@ class Crowd(AtlassianRestAPI):
         )
 
     def group_nested_members(self, group):
+        """
+        Get nested members of group
+        :param group:
+        :return:
+        """
         params = {"groupname": group}
         return self.get(self._crowd_api_url("group", "nested"), params=params)
 

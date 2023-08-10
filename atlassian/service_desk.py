@@ -49,10 +49,9 @@ class ServiceDesk(AtlassianRestAPI):
     # Customers actions
     def create_customer(self, full_name, email):
         """
-        Creating customer user
-
-        :param full_name: str
-        :param email: str
+        Creating customer user.
+        :param full_name: str - full name
+        :param email: str - email address
         :return: New customer
         """
         log.warning("Creating customer...")

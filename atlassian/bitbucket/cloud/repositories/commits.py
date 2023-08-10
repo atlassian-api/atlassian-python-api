@@ -144,7 +144,7 @@ class Commit(BitbucketCloudBase):
 
     def comments(self):
         """
-        Return generator object of the comments endpoint.
+        Return generator object endpoint of the comment.
         API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-commits/#api-repositories-workspace-repo-slug-commit-commit-comments-get
         """
         for comment in self._get_paged("comments"):

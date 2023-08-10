@@ -142,8 +142,8 @@ class Insight(AtlassianRestAPI):
         Add comment to Object
 
         :param comment: str
-        :param object_id: int
-        :param role: int
+        :param object_id: int - Object ID
+        :param role: int - Role ID
             0	Insight Users
             1	Insight Managers
             2	Insight Administrators

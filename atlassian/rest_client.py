@@ -209,7 +209,7 @@ class AtlassianRestAPI(object):
         :param params:
         :param headers:
         :param files:
-        :param trailing: bool
+        :param trailing: bool - OPTIONAL: Add trailing slash to url
         :param absolute: bool, OPTIONAL: Do not prefix url, url is absolute
         :param advanced_mode: bool, OPTIONAL: Return the raw response
         :return:

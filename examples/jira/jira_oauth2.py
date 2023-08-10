@@ -1,9 +1,10 @@
-# Example server with Flask demonstrating use of Jira OAuth 2.0.
-# Server needs to be deployed. Example code is requesting access token from
-# Jira. User has to grant access rights. After authorization the
-# token and Using access token, Jira cloud ID is identified and
-# the available projects are returned.
-
+"""
+    Example server with Flask demonstrating use of Jira OAuth 2.0.
+    Server needs to be deployed. Example code is requesting access token from
+    Jira. User has to grant access rights. After authorization the
+    token and Using access token, Jira cloud ID is identified and
+    the available projects are returned.
+"""
 from requests_oauthlib import OAuth2Session
 from atlassian.jira import Jira
 from flask import Flask, request, redirect, session
@@ -15,24 +16,25 @@ app.secret_key = ""
 # JIRA OAuth URLs
 authorization_base_url = "https://auth.atlassian.com/authorize"
 token_url = "https://auth.atlassian.com/oauth/token"
-
-# Create OAuth 2.0 Integration in Atlassian developer console
-# https://developer.atlassian.com/console/myapps/
-# Click Authorization →  “Configure” under OAuth 2.0 and
-# Enter callback url  {server}/callback and save
-# Click “Permissions” and Add “Jira platform REST API” and other required permissions.
-# Click “Configure” under Jira platform REST API and Add permissions like
-# “View user profiles“, “View Jira issue data“ and  “Create and manage issues”
-# Goto setting and copy client id and secret.
-
+"""
+ Create OAuth 2.0 Integration in Atlassian developer console
+ https://developer.atlassian.com/console/myapps/
+    - Click Authorization →  “Configure” under OAuth 2.0 and
+    - Enter callback url  {server}/callback and save
+    - Click “Permissions” and Add “Jira platform REST API” and other required permissions.
+    - Click “Configure” under Jira platform REST API and Add permissions like
+        "View user profiles", "View Jira issue data" and  “Create and manage issues”
+    - Goto setting and copy client id and secret.
+"""
 client_id = ""
 client_secret = ""
 redirect_uri = ""  # {server_url}/callback
 
-
-# 2. Redirect to Jira for authorization
-# The server request to {server_url}/login is redirected to Jira.
-# The user is asked to grant access permissions.
+"""
+    2. Redirect to Jira for authorization
+    The server request to {server_url}/login is redirected to Jira.
+    The user is asked to grant access permissions.
+"""
 @app.route("/login")
 def login():
     scope = ["read:me", "read:jira-user", "read:jira-work"]
@@ -46,21 +48,23 @@ def login():
     session["oauth_state"] = state
     return redirect(authorization_url)
 
-
-# 3. Jira redirects user to callback url with authorization code
-# This should be set to {server_url}/callback.
-# Access token is fetched using authorization code
+"""
+    3. Jira redirects user to callback url with authorization code
+    This should be set to {server_url}/callback.
+    Access token is fetched using authorization code
+"""
 @app.route("/callback")
 def callback():
     jira_oauth = OAuth2Session(client_id, state=session["oauth_state"], redirect_uri=redirect_uri)
     token_json = jira_oauth.fetch_token(token_url, client_secret=client_secret, authorization_response=request.url)
     return "Token: {}<p />Projects: {}".format(token_json, ", ".join(get_projects(token_json)))
 
-
-# 4. Access Token used for Jira Python API
-# Using access token, accessible resources are fetched and
-# First resource id is taken as jira cloud id,
-# Jira Client library is called with  jira cloud id and token information.
+"""
+    4. Access Token used for Jira Python API
+    Using access token, accessible resources are fetched and
+    First resource id is taken as jira cloud id,
+    Jira Client library is called with  jira cloud id and token information.
+"""
 def get_projects(token_json):
     req = requests.get(
         "https://api.atlassian.com/oauth/token/accessible-resources",

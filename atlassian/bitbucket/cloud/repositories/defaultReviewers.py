@@ -19,7 +19,7 @@ class DefaultReviewers(BitbucketCloudBase):
 
     def add(self, user):
         """
-        Adds the specified user to the repository"s list of default reviewers.
+        Adds the specified user to the repository's list of default reviewers.
 
         This method is idempotent. Adding a user a second time has no effect.
 
@@ -34,7 +34,7 @@ class DefaultReviewers(BitbucketCloudBase):
 
     def each(self, q=None, sort=None):
         """
-        Returns the repository"s default reviewers.
+        Returns the repository's default reviewers.
         These are the users that are automatically added as reviewers on every new pull request
         that is created.
 

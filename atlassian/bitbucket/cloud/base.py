@@ -51,7 +51,7 @@ class BitbucketCloudBase(BitbucketBase):
         Used to get the paged data
 
         :param url: string:                        The url to retrieve
-        :param params: dict (default is None):     The parameters
+        :param params: dict (default is None):     The parameter's
         :param data: dict (default is None):       The data
         :param flags: string[] (default is None):  The flags
         :param trailing: bool (default is None):   If True, a trailing slash is added to the url

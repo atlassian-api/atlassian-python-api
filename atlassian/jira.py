@@ -379,7 +379,7 @@ class Jira(AtlassianRestAPI):
     # Issue Comments
     def issue_get_comments(self, issue_id):
         """
-        Get Comments on an Issue
+        Get Comments on an Issue.
         :param issue_id: Issue ID
         :raises: requests.exceptions.HTTPError
         :return:
@@ -570,7 +570,7 @@ class Jira(AtlassianRestAPI):
     def create_custom_field(self, name, type, search_key=None, description=None):
         """
         Creates a custom field with the given name and type
-        :param name: str
+        :param name: str - name of the custom field
         :param type: str, like 'com.atlassian.jira.plugin.system.customfieldtypes:textfield'
         :param search_key: str, like above
         :param description: str
@@ -739,7 +739,7 @@ class Jira(AtlassianRestAPI):
 
     def get_filter_share_permissions(self, filter_id):
         """
-        Gets share permissions of a filter
+        Gets share permissions of a filter.
         :param filter_id: Filter ID
         :return: Returns current share permissions of filter
         """
@@ -759,7 +759,7 @@ class Jira(AtlassianRestAPI):
         edit=None,
     ):
         """
-        Adds share permission for a filter
+        Adds share permission for a filter. See the documentation of the sharePermissions.
         :param filter_id: Filter ID
         :param type: What type of permission is granted (i.e. user, project)
         :param project_id: Project ID, relevant for type 'project' and 'projectRole'
@@ -815,8 +815,8 @@ class Jira(AtlassianRestAPI):
         specifically Showing X of Y matching groups.
         The number of groups returned is limited by the system property "jira.ajax.autocomplete.limit"
         The groups will be unique and sorted.
-        :param query: str
-        :param exclude: str
+        :param query: str - Query of searching groups by name.
+        :param exclude: str - Exclude groups from search results.
         :param limit: int
         :return: Returned even if no groups match the given substring
         """
@@ -849,9 +849,8 @@ class Jira(AtlassianRestAPI):
         If you delete a group and content is restricted to that group, the content will be hidden from all users
         To prevent this, use this parameter to specify a different group to transfer the restrictions
         (comments and worklogs only) to
-
-        :param name: str
-        :param swap_group: str
+        :param name: str - name
+        :param swap_group: str - swap group
         :return:
         """
         log.warning("Removing group...")
@@ -1487,8 +1486,8 @@ class Jira(AtlassianRestAPI):
         """
         Finding all Remote Links on an issue, also with filtering by Global ID and internal ID
         :param issue_key:
-        :param global_id: str
-        :param internal_id: str
+        :param global_id: str - Global ID
+        :param internal_id: str - internal ID
         :return:
         """
         base_url = self.resource_url("issue")
@@ -1512,9 +1511,9 @@ class Jira(AtlassianRestAPI):
     ):
         """
         Add Remote Link to Issue, update url if global_id is passed
-        :param issue_key: str
-        :param link_url: str
-        :param title: str
+        :param issue_key: str - issue key
+        :param link_url: str - url of the link
+        :param title: str - title of the link
         :param global_id: str, OPTIONAL:
         :param relationship: str, OPTIONAL: Default by built-in method: 'Web Link'
         :param icon_url: str, OPTIONAL: Link to a 16x16 icon representing the type of the object in the remote system
@@ -4439,7 +4438,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         Returns all sprints from a board, for a given board ID.
         This only includes sprints that the user has permission to view.
         :param board_id:
-        :param state: Filters results to sprints in specified states.
+        :param state: Filter results to sprints in specified states.
                       Valid values: future, active, closed.
                       You can define multiple states separated by commas, e.g. state=active,closed
         :param start: The starting index of the returned sprints.
@@ -4575,23 +4574,23 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         url = "rest/bitbucket/1.0/repositories/{}/sync".format(repository_id)
         return self.post(url)
 
-    def flag_issue(self, issueKeys, flag=True):
+    def flag_issue(self, issue_keys, flag=True):
         """
         Flags or un-flags one or multiple issues in Jira with a flag indicator.
-        :param issueKeys: List of issue keys to flag or un-flag.
-        :type issueKeys: list[str]
+        :param issue_keys: List of issue keys to flag or un-flag.
+        :type issue_keys: list[str]
         :param flag: Flag indicating whether to flag or un-flag the issues (default is True for flagging).
         :type flag: bool
         :return: POST request response.
         :rtype: dict
         """
         url = "rest/greenhopper/1.0/xboard/issue/flag/flag.json"
-        data = {"issueKeys": issueKeys, "flag": flag}
+        data = {"issueKeys": issue_keys, "flag": flag}
         return self.post(url, data)
 
     def health_check(self):
         """
-        Get health status
+        Get health status of Jira.
         https://confluence.atlassian.com/jirakb/how-to-retrieve-health-check-results-using-rest-api-867195158.html
         :return:
         """
