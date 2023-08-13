@@ -1508,7 +1508,7 @@ class Jira(AtlassianRestAPI):
         relationship=None,
         icon_url=None,
         icon_title=None,
-        status_resolved=False
+        status_resolved=False,
     ):
         """
         Add Remote Link to Issue, update url if global_id is passed
