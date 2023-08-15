@@ -1154,6 +1154,7 @@ class Bitbucket(BitbucketBase):
         limit=None,
         details=True,
         order_by="MODIFICATION",
+        boost_matches=False,
     ):
         """
         Retrieve the branches matching the supplied filterText param.
@@ -1167,6 +1168,7 @@ class Bitbucket(BitbucketBase):
                     fixed system limits. Default by built-in method: None
         :param details: whether to retrieve plugin-provided metadata about each branch
         :param order_by: OPTIONAL: ordering of refs either ALPHABETICAL (by name) or MODIFICATION (last updated)
+        :param boost_matches: Controls whether exact and prefix matches will be boosted to the top
         :return:
         """
         url = self._url_repo_branches(project_key, repository_slug)
@@ -1182,6 +1184,7 @@ class Bitbucket(BitbucketBase):
         if order_by:
             params["orderBy"] = order_by
         params["details"] = details
+        params["boostMatches"] = boost_matches
         return self._get_paged(url, params=params)
 
     def _url_repo_default_branche(self, project_key, repository_slug):
