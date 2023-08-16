@@ -303,24 +303,42 @@ Epic Issues
     # Add issues to backlog
     jira.add_issues_to_backlog(issue_keys)
 
+    # Get agile board by filter id
+    jira.get_agile_board_by_filter_id(filter_id)
+
+    # Issues within an Epic
+    jira.epic_issues(epic_key)
+
+    # Returns all epics from the board, for the given board Id.
+    # This only includes epics that the user has permission to view.
+    # Note, if the user does not have permission to view the board, no epics will be returned at all.
+    jira.get_epics(board_id, done=False, start=0, limit=50, )
+
+    # Returns all issues that belong to an epic on the board,
+    # for the given epic Id and the board Id.
+    # This only includes issues that the user has permission to view.
+    # Issues returned from this resource include Agile fields, like sprint, closedSprints, flagged, and epic.
+    # By default, the returned issues are ordered by rank.
+    jira.get_issues_for_epic(board_id, epic_id, jql="", validate_query="", fields="*all", expand="", start=0, limit=50, )
+
+Manage Boards
+-------------
+
+.. code-block:: python
+
+   # Board
+    # Creates a new board. Board name, type and filter Id is required.
+    jira.create_agile_board(name, type, filter_id, location=None)
+
     # Returns all boards.
     # This only includes boards that the user has permission to view.
     jira.get_all_agile_boards(board_name=None, project_key=None, board_type=None, start=0, limit=50)
 
-    # Get agile board by id
-    jira.get_agile_board(board_id)
-
-    # Create an agile board
-    jira.create_agile_board(name, type, filter_id, location=None)
-
     # Delete agile board by id
     jira.delete_agile_board(board_id)
 
-    # Get agile board by filter id
-    jira.get_agile_board_by_filter_id(filter_id)
-
-    # Get agile board configuration by board id
-    jira.get_agile_board_configuration(board_id)
+    # Get agile board by id
+    jira.get_agile_board(board_id)
 
     # Get issues for backlog
     jira.get_issues_for_board(board_id, start_at=0, max_results=50, jql=None,
@@ -330,14 +348,29 @@ Epic Issues
     # Get issues for board
     jira.get_issues_for_board(board_id, jql, fields="*all", start=0, limit=None, expand=None)
 
+    # Get agile board configuration by board id
+    jira.get_agile_board_configuration(board_id)
+
     # Gets a list of all the board properties
     jira.get_agile_board_properties(board_id)
 
-    # Issues within an Epic
-    jira.epic_issues(epic_key)
+    # Sets the value of the specified board's property.
+    jira.set_agile_board_property(board_id, property_key)
 
-Manage Boards
--------------
+    # Get Agile board property
+    jira.get_agile_board_property(board_id, property_key)
+
+    # Delete Agile board property
+    jira.delete_agile_board_property(board_id, property_key)
+
+    # Get Agile board refined velocity
+    jira.get_agile_board_refined_velocity(board_id)
+
+    # Set Agile board refined velocity
+    jira.set_agile_board_refined_velocity(board_id, refined_velocity)
+
+Manage Sprints
+--------------
 
 .. code-block:: python
 

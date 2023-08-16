@@ -4232,6 +4232,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
     #   Agile (Formerly Greenhopper) REST API implements
     #   Resource: https://docs.atlassian.com/jira-software/REST/7.3.1/
     #######################################################################
+    # /rest/agile/1.0/backlog/issue
     def move_issues_to_backlog(self, issue_keys):
         """
         Move issues to backlog
@@ -4253,6 +4254,29 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
             raise ValueError("`issues` param should be List of Issue Keys")
         url = "/rest/agile/1.0/backlog/issue"
         data = dict(issues=issues)
+        return self.post(url, data=data)
+
+    def get_agile_board_by_filter_id(self, filter_id):
+        """
+        Gets an agile board by the filter id
+        :param filter_id: int, str
+        """
+        url = "rest/agile/1.0/board/filter/{filter_id}".format(filter_id=filter_id)
+        return self.get(url)
+
+    # /rest/agile/1.0/board
+    def create_agile_board(self, name, type, filter_id, location=None):
+        """
+        Create an agile board
+        :param name: str: Must be less than 255 characters.
+        :param type: str: "scrum" or "kanban"
+        :param filter_id: int
+        :param location: dict, Optional. Only specify this for Jira Cloud!
+        """
+        data = {"name": name, "type": type, "filterId": filter_id}
+        if location:
+            data["location"] = location
+        url = "rest/agile/1.0/board"
         return self.post(url, data=data)
 
     def get_all_agile_boards(
@@ -4287,29 +4311,6 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
 
         return self.get(url, params=params)
 
-    def get_agile_board(self, board_id):
-        """
-        Get agile board info by id
-        :param board_id:
-        :return:
-        """
-        url = "rest/agile/1.0/board/{}".format(str(board_id))
-        return self.get(url)
-
-    def create_agile_board(self, name, type, filter_id, location=None):
-        """
-        Create an agile board
-        :param name: str: Must be less than 255 characters.
-        :param type: str: "scrum" or "kanban"
-        :param filter_id: int
-        :param location: dict, Optional. Only specify this for Jira Cloud!
-        """
-        data = {"name": name, "type": type, "filterId": filter_id}
-        if location:
-            data["location"] = location
-        url = "rest/agile/1.0/board"
-        return self.post(url, data=data)
-
     def delete_agile_board(self, board_id):
         """
         Delete agile board by id
@@ -4319,12 +4320,26 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         url = "rest/agile/1.0/board/{}".format(str(board_id))
         return self.delete(url)
 
-    def get_agile_board_by_filter_id(self, filter_id):
+    def get_agile_board(self, board_id):
         """
-        Gets an agile board by the filter id
-        :param filter_id: int, str
+        Get agile board info by id
+        :param board_id:
+        :return:
         """
-        url = "rest/agile/1.0/board/filter/{filter_id}".format(filter_id=filter_id)
+        url = "rest/agile/1.0/board/{}".format(str(board_id))
+        return self.get(url)
+
+    def get_issues_for_backlog(self, board_id):
+        """
+        Returns all issues from the board's backlog, for the given board ID.
+        This only includes issues that the user has permission to view.
+        The backlog contains incomplete issues that are not assigned to any future or active sprint.
+        Note, if the user does not have permission to view the board, no issues will be returned at all.
+        Issues returned from this resource include Agile fields, like sprint, closedSprints, flagged, and epic.
+        By default, the returned issues are ordered by rank.
+        :param board_id: int, str
+        """
+        url = "rest/agile/1.0/board/{board_id}/backlog".format(board_id=board_id)
         return self.get(url)
 
     def get_agile_board_configuration(self, board_id):
@@ -4352,13 +4367,6 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :return:
         """
         url = "rest/agile/1.0/board/{}/configuration".format(str(board_id))
-        return self.get(url)
-
-    def get_issues_for_backlog(self, board_id):
-        """
-        :param board_id: int, str
-        """
-        url = "rest/agile/1.0/board/{board_id}/backlog".format(board_id=board_id)
         return self.get(url)
 
     def get_issues_for_board(self, board_id, jql, fields="*all", start=0, limit=None, expand=None):
@@ -4393,15 +4401,6 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
 
         url = "rest/agile/1.0/board/{board_id}/issue".format(board_id=board_id)
         return self.get(url, params=params)
-
-    def get_agile_board_properties(self, board_id):
-        """
-        Returns the keys of all properties for the board identified by the id.
-        The user who retrieves the property keys is required to have permissions to view the board.
-        :param board_id: int, str
-        """
-        url = "rest/agile/1.0/board/{board_id}/properties".format(board_id=board_id)
-        return self.get(url)
 
     # /rest/agile/1.0/board/{boardId}/epic
     def get_epics(
@@ -4525,6 +4524,105 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         if limit:
             params["maxResults"] = limit
         return self.get(url, params=params)
+
+    # rest/agile/1.0/board/{boardId}/project
+    def get_all_projects_associated_with_board(self, board_id, start=0, limit=50):
+        """
+        Returns all projects that are associated with the board,
+        for the given board ID. A project is associated with a board only
+        if the board filter explicitly filters issues by the project and guaranties that
+        all issues will come for one of those projects e.g. board's filter with
+        "project in (PR-1, PR-1) OR reporter = admin" jql Projects are returned only
+        if user can browse all projects that are associated with the board.
+        Note, if the user does not have permission to view the board,
+        no projects will be returned at all. Returned projects are ordered by the name.
+        :param board_id:
+        :param start: The starting index of the returned projects.
+                      Base index: 0.
+                      See the 'Pagination' section at the top of this page for more details.
+        :param limit: The maximum number of projects to return per page.
+                      Default: 50.
+                      See the 'Pagination' section at the top of this page for more details
+        :return:
+        """
+        url = "/rest/agile/1.0/board/{boardId}/project".format(boardId=board_id)
+        params = {}
+        if start:
+            params["startAt"] = start
+        if limit:
+            params["maxResults"] = limit
+        return self.get(url, params=params)
+
+    # /rest/agile/1.0/board/{boardId}/properties
+    def get_agile_board_properties(self, board_id):
+        """
+        Returns the keys of all properties for the board identified by the id.
+        The user who retrieves the property keys is required to have permissions to view the board.
+        :param board_id: int, str
+        """
+        url = "rest/agile/1.0/board/{boardId}/properties".format(boardId=board_id)
+        return self.get(url)
+
+    def set_agile_board_property(self, board_id, property_key):
+        """
+        Sets the value of the specified board's property.
+        You can use this resource to store a custom data
+        against the board identified by the id.
+        The user who stores the data is required to have permissions to modify the board.
+        :param board_id:
+        :param property_key:
+        :return:
+        """
+        url = "/rest/agile/1.0/board/{boardId}/properties/{propertyKey}".format(
+            boardId=board_id, propertyKey=property_key
+        )
+        return self.put(url)
+
+    def get_agile_board_property(self, board_id, property_key):
+        """
+        Returns the value of the property with a given key from the board identified by the provided id.
+        The user who retrieves the property is required to have permissions to view the board.
+        :param board_id:
+        :param property_key:
+        :return:
+        """
+        url = "/rest/agile/1.0/board/{boardId}/properties/{propertyKey}".format(
+            boardId=board_id, propertyKey=property_key
+        )
+        return self.get(url)
+
+    def delete_agile_board_property(self, board_id, property_key):
+        """
+        Removes the property from the board identified by the id.
+        Ths user removing the property is required to have permissions to modify the board.
+        :param board_id:
+        :param property_key:
+        :return:
+        """
+        url = "/rest/agile/1.0/board/{boardId}/properties/{propertyKey}".format(
+            boardId=board_id, propertyKey=property_key
+        )
+        return self.delete(url)
+
+    # /rest/agile/1.0/board/{boardId}/settings
+    def get_agile_board_refined_velocity(self, board_id):
+        """
+        Returns the estimation statistic settings of the board.
+        :param board_id:
+        :return:
+        """
+        url = "/rest/agile/1.0/board/{boardId}/settings".format(boardId=board_id)
+        return self.get(url)
+
+    def set_agile_board_refined_velocity(self, board_id, data):
+        """
+        Sets the estimation statistic settings of the board.
+        :param board_id:
+        :param data:
+        :return:
+        """
+        url = "/rest/agile/1.0/board/{boardId}/settings".format(boardId=board_id)
+        return self.put(url, data=data)
 
     def create_sprint(self, name, board_id, start_date=None, end_date=None, goal=None):
         """
