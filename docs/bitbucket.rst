@@ -211,6 +211,9 @@ Manage code
     # Reply to a comment of a pull request
     bitbucket.add_pull_request_comment(project, repository, pull_request_id, text, parent_id=None)
 
+    # Get required reviewers for PR creation
+    bitbucket.get_required_reviewers_for_pull_request(source_project, source_repo, dest_project, dest_repo, source_branch, dest_branch)
+
     # Create a new pull request between two branches.
     bitbucket.open_pull_request(source_project, source_repo, dest_project, dest_repo, source_branch, destination_branch, title, description)
 
@@ -219,6 +222,9 @@ Manage code
 
     # Create a new pull request between two branches with multiple reviewers.
     bitbucket.open_pull_request(source_project, source_repo, dest_project, dest_repo, source_branch, destination_branch, title, description, reviewers=['name1', 'name2'])
+
+    # Create a new pull request between two branches with required reviewers.
+    bitbucket.open_pull_request(source_project, source_repo, dest_project, dest_repo, source_branch, destination_branch, title, description, include_required_reviewers=True)
 
     # Delete a pull request
     bitbucket.delete_pull_request(project, repository, pull_request_id, pull_request_version)
