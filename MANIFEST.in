@@ -3,3 +3,4 @@ include LICENSE
 include README.rst
 include tox.ini
 include requirements.txt
+recursive-include tests *

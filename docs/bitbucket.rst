@@ -184,7 +184,7 @@ Manage code
     bitbucket.create_repo(project_key, repository, forkable=False, is_private=True)
 
     # Get branches from repo
-    bitbucket.get_branches(project, repository, filter='', limit=99999, details=True)
+    bitbucket.get_branches(project, repository, filter='', limit=99999, details=True, boost_matches=False)
 
     # Creates a branch using the information provided in the request.
     # The authenticated user must have REPO_WRITE permission for the context repository to call this resource.
@@ -211,6 +211,9 @@ Manage code
     # Reply to a comment of a pull request
     bitbucket.add_pull_request_comment(project, repository, pull_request_id, text, parent_id=None)
 
+    # Get required reviewers for PR creation
+    bitbucket.get_required_reviewers_for_pull_request(source_project, source_repo, dest_project, dest_repo, source_branch, dest_branch)
+
     # Create a new pull request between two branches.
     bitbucket.open_pull_request(source_project, source_repo, dest_project, dest_repo, source_branch, destination_branch, title, description)
 
@@ -219,6 +222,9 @@ Manage code
 
     # Create a new pull request between two branches with multiple reviewers.
     bitbucket.open_pull_request(source_project, source_repo, dest_project, dest_repo, source_branch, destination_branch, title, description, reviewers=['name1', 'name2'])
+
+    # Create a new pull request between two branches with required reviewers.
+    bitbucket.open_pull_request(source_project, source_repo, dest_project, dest_repo, source_branch, destination_branch, title, description, include_required_reviewers=True)
 
     # Delete a pull request
     bitbucket.delete_pull_request(project, repository, pull_request_id, pull_request_version)

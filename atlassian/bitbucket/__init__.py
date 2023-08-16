@@ -1154,6 +1154,7 @@ class Bitbucket(BitbucketBase):
         limit=None,
         details=True,
         order_by="MODIFICATION",
+        boost_matches=False,
     ):
         """
         Retrieve the branches matching the supplied filterText param.
@@ -1167,6 +1168,7 @@ class Bitbucket(BitbucketBase):
                     fixed system limits. Default by built-in method: None
         :param details: whether to retrieve plugin-provided metadata about each branch
         :param order_by: OPTIONAL: ordering of refs either ALPHABETICAL (by name) or MODIFICATION (last updated)
+        :param boost_matches: Controls whether exact and prefix matches will be boosted to the top
         :return:
         """
         url = self._url_repo_branches(project_key, repository_slug)
@@ -1182,6 +1184,7 @@ class Bitbucket(BitbucketBase):
         if order_by:
             params["orderBy"] = order_by
         params["details"] = details
+        params["boostMatches"] = boost_matches
         return self._get_paged(url, params=params)
 
     def _url_repo_default_branche(self, project_key, repository_slug):
@@ -1588,6 +1591,37 @@ class Bitbucket(BitbucketBase):
             params["at"] = at
         return self._get_paged(url, params=params)
 
+    def get_required_reviewers_for_pull_request(
+        self, source_project, source_repo, dest_project, dest_repo, source_branch, dest_branch
+    ):
+        """
+        Get required reviewers for PR creation
+        :param source_project: the project that the PR source is from
+        :param source_repo: the repository that the PR source is from
+        :param source_branch: the branch name of the PR
+        :param dest_project: the project that the PR destination is from
+        :param dest_repo: the repository that the PR destination is from
+        :param dest_branch: where the PR is being merged into
+        :return:
+        """
+        url = "{}/reviewers".format(
+            self._url_repo(
+                dest_project,
+                dest_repo,
+                api_root="rest/default-reviewers",
+                api_version="1.0",
+            )
+        )
+        source_repo_id = self.get_repo(source_project, source_repo)["id"]
+        dest_repo_id = self.get_repo(dest_project, dest_repo)["id"]
+        params = {
+            "sourceRepoId": source_repo_id,
+            "sourceRefId": source_branch,
+            "targetRepoId": dest_repo_id,
+            "targetRefId": dest_branch,
+        }
+        return self.get(url, params=params)
+
     def open_pull_request(
         self,
         source_project,
@@ -1599,6 +1633,7 @@ class Bitbucket(BitbucketBase):
         title,
         description,
         reviewers=None,
+        include_required_reviewers=False,
     ):
         """
         Create a new pull request between two branches.
@@ -1614,6 +1649,7 @@ class Bitbucket(BitbucketBase):
         :param title: the title of the PR
         :param description: the description of what the PR does
         :param reviewers: the list of reviewers or a single reviewer of the PR
+        :param include_required_reviewers: OPTIONAL defaults to False, include required reviewers for the PR
         :return:
         """
         body = {
@@ -1641,6 +1677,13 @@ class Bitbucket(BitbucketBase):
         def add_reviewer(reviewer_name):
             entry = {"user": {"name": reviewer_name}}
             body["reviewers"].append(entry)
+
+        if not self.cloud and include_required_reviewers:
+            required_reviewers = self.get_required_reviewers_for_pull_request(
+                source_project, source_repo, dest_project, dest_repo, source_branch, destination_branch
+            )
+            for required_reviewer in required_reviewers:
+                add_reviewer(required_reviewer["name"])
 
         if reviewers is not None:
             if isinstance(reviewers, str):
