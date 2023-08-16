@@ -190,7 +190,7 @@ class DeploymentEnvironmentVariables(BitbucketCloudBase):
 
             if pagelen_total < size_total:
                 pagelen_total = pagelen_total + response["pagelen"]
-                page = page + 1
+                page += 1
                 response = super(BitbucketCloudBase, self).get(None, params={"pagelen": pagelen, "page": page})
             else:
                 break
