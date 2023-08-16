@@ -170,8 +170,7 @@ class DeploymentEnvironmentVariables(BitbucketCloudBase):
 
         API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pipelines/#api-repositories-workspace-repo-slug-deployments-config-environments-environment-uuid-variables-get
         """
-        params = {}
-        params["pagelen"] = pagelen
+        params = {"pagelen": pagelen}
 
         response = super(BitbucketCloudBase, self).get(None, params=params)
 

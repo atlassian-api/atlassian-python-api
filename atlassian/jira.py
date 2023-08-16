@@ -1077,15 +1077,22 @@ class Jira(AtlassianRestAPI):
         url = "{}/{}/editmeta".format(base_url, key)
         return self.get(url)
 
-    def get_issue_changelog(self, issue_key):
+    def get_issue_changelog(self, issue_key, start=None, limit=None):
         """
         Get issue related change log
         :param issue_key:
+        :param start: start index, usually 0
+        :param limit: limit of the results, usually 50
         :return:
         """
         base_url = self.resource_url("issue")
         url = "{base_url}/{issue_key}?expand=changelog".format(base_url=base_url, issue_key=issue_key)
-        return (self.get(url) or {}).get("changelog")
+        params = {}
+        if start:
+            params["startAt"] = start
+        if limit:
+            params["maxResults"] = limit
+        return (self.get(url) or {}).get("changelog", params)
 
     def issue_add_json_worklog(self, key, worklog):
         """
