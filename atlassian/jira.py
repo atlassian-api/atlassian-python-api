@@ -128,7 +128,7 @@ class Jira(AtlassianRestAPI):
 
     def get_advanced_settings(self):
         """
-        Returns the properties that are displayed on the "General Configuration > Advanced Settings" page
+        Returns the properties that are displayed on the "General Configuration > Advanced Settings" page.
         :return:
         """
         url = self.resource_url("application-properties/advanced-settings")

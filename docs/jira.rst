@@ -31,6 +31,31 @@ Reindex Jira
                             If it's not possible (due to an inconsistent index), do a foreground reindexing.
     """
 
+Manage Permissions
+------------------
+
+.. code-block:: python
+
+    # Get permissions
+    jira.permissions(permissions, project_id=None, project_key=None, issue_id=None, issue_key=None,)
+
+    # Get all permissions
+    jira.get_all_permissions()
+
+Application properties
+----------------------
+
+.. code-block:: python
+
+    # Get an application property
+    jira.get_property(key=None, permission_level=None, key_filter=None)
+
+    # Set an application property
+    jira.set_property(property_id, value)
+
+    # Returns the properties that are displayed on the "General Configuration > Advanced Settings" page.
+    jira.get_advanced_settings()
+
 Manage users
 ------------
 
