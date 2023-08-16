@@ -184,7 +184,7 @@ Manage code
     bitbucket.create_repo(project_key, repository, forkable=False, is_private=True)
 
     # Get branches from repo
-    bitbucket.get_branches(project, repository, filter='', limit=99999, details=True)
+    bitbucket.get_branches(project, repository, filter='', limit=99999, details=True, boost_matches=False)
 
     # Creates a branch using the information provided in the request.
     # The authenticated user must have REPO_WRITE permission for the context repository to call this resource.
