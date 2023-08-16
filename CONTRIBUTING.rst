@@ -117,6 +117,9 @@ All methods based on docs from: https://developer.atlassian.com/docs/
 * Jira
     - `Jira Server`_
     - `Jira Cloud`_
+* Jira Software
+    - `Jira Software Server`_
+    - `Jira Software Cloud`_
 * Jira Service Desk
     - `Jira Service Desk Server`_
     - `Jira Service Desk Cloud`_
@@ -154,6 +157,8 @@ All methods based on docs from: https://developer.atlassian.com/docs/
 
 .. _`Jira Server`: https://docs.atlassian.com/software/jira/docs/api/REST/latest
 .. _`Jira Cloud`: https://developer.atlassian.com/cloud/jira/platform/rest/v3/
+.. _`Jira Software Server`: https://docs.atlassian.com/jira-software/REST/latest/
+.. _`Jira Software Cloud`: https://developer.atlassian.com/cloud/jira/software/rest/
 .. _`Confluence Server`: https://developer.atlassian.com/server/confluence/confluence-server-rest-api/
 .. _`Confluence Cloud`: https://developer.atlassian.com/cloud/confluence/rest/
 .. _`Crowd Server`: https://developer.atlassian.com/server/crowd/crowd-rest-apis/

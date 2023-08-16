@@ -297,6 +297,42 @@ Epic Issues
 
 .. code-block:: python
 
+    # Move issues to backlog
+    jira.move_issues_to_backlog(issue_keys)
+
+    # Add issues to backlog
+    jira.add_issues_to_backlog(issue_keys)
+
+    # Returns all boards.
+    # This only includes boards that the user has permission to view.
+    jira.get_all_agile_boards(board_name=None, project_key=None, board_type=None, start=0, limit=50)
+
+    # Get agile board by id
+    jira.get_agile_board(board_id)
+
+    # Create an agile board
+    jira.create_agile_board(name, type, filter_id, location=None)
+
+    # Delete agile board by id
+    jira.delete_agile_board(board_id)
+
+    # Get agile board by filter id
+    jira.get_agile_board_by_filter_id(filter_id)
+
+    # Get agile board configuration by board id
+    jira.get_agile_board_configuration(board_id)
+
+    # Get issues for backlog
+    jira.get_issues_for_board(board_id, start_at=0, max_results=50, jql=None,
+                              validate_query=True, fields=None, expand=None,
+                              override_screen_security=None, override_editable_flag=None)
+
+    # Get issues for board
+    jira.get_issues_for_board(board_id, jql, fields="*all", start=0, limit=None, expand=None)
+
+    # Gets a list of all the board properties
+    jira.get_agile_board_properties(board_id)
+
     # Issues within an Epic
     jira.epic_issues(epic_key)
 
