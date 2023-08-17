@@ -177,7 +177,7 @@ See the `Contribution Guidelines for this project`_ for details on how to make c
 .. |Codacy Badge| image:: https://app.codacy.com/project/badge/Grade/2cca43995cf041b8b181e2b2ff04cee6
    :target: https://app.codacy.com/gh/atlassian-api/atlassian-python-api/dashboard
    :alt: Codacy Badge
-.. |PyPI - Downloads| image:: https://pepy.tech/badge/atlassian-python-api/month
+.. |PyPI - Downloads| image:: https://static.pepy.tech/badge/atlassian-python-api/month
    :alt: PyPI - Downloads
 .. |Docs| image:: https://readthedocs.org/projects/atlassian-python-api/badge/?version=latest
    :target: https://atlassian-python-api.readthedocs.io/?badge=latest
