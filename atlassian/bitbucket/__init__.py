@@ -1642,9 +1642,9 @@ class Bitbucket(BitbucketBase):
         The authenticated user must have REPO_READ permission for the "from" and "to"repositories to call this resource.
         :param source_project: the project that the PR source is from
         :param source_repo: the repository that the PR source is from
-        :param source_branch: the branch name of the PR
         :param dest_project: the project that the PR destination is from
         :param dest_repo: the repository that the PR destination is from
+        :param source_branch: the branch name of the PR
         :param destination_branch: where the PR is being merged into
         :param title: the title of the PR
         :param description: the description of what the PR does
