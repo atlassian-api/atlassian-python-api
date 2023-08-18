@@ -2,7 +2,7 @@
 import logging
 import re
 from warnings import warn
-
+from deprecated import deprecated
 from requests import HTTPError
 
 from .errors import ApiNotFoundError, ApiPermissionError
@@ -4611,14 +4611,14 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         )
         return self.delete(url)
 
-    # /rest/agile/1.0/board/{boardId}/settings
+    # /rest/agile/1.0/board/{boardId}/settings/refined-velocity
     def get_agile_board_refined_velocity(self, board_id):
         """
         Returns the estimation statistic settings of the board.
         :param board_id:
         :return:
         """
-        url = "/rest/agile/1.0/board/{boardId}/settings".format(boardId=board_id)
+        url = "/rest/agile/1.0/board/{boardId}/settings/refined-velocity".format(boardId=board_id)
         return self.get(url)
 
     def set_agile_board_refined_velocity(self, board_id, data):
@@ -4628,8 +4628,120 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param data:
         :return:
         """
-        url = "/rest/agile/1.0/board/{boardId}/settings".format(boardId=board_id)
+        url = "/rest/agile/1.0/board/{boardId}/settings/refined-velocity".format(boardId=board_id)
         return self.put(url, data=data)
+
+    # /rest/agile/1.0/board/{boardId}/sprint
+
+    def get_all_sprints_from_board(self, board_id, state=None, start=0, limit=50):
+        """
+        Returns all sprints from a board, for a given board ID.
+        This only includes sprints that the user has permission to view.
+        :param board_id:
+        :param state: Filter results to sprints in specified states.
+                      Valid values: future, active, closed.
+                      You can define multiple states separated by commas, e.g. state=active,closed
+        :param start: The starting index of the returned sprints.
+                      Base index: 0.
+                      See the 'Pagination' section at the top of this page for more details.
+        :param limit: The maximum number of sprints to return per page.
+                      Default: 50.
+                      See the 'Pagination' section at the top of this page for more details.
+        :return:
+        """
+        params = {}
+        if start:
+            params["startAt"] = start
+        if limit:
+            params["maxResults"] = limit
+        if state:
+            params["state"] = state
+        url = "rest/agile/1.0/board/{boardId}/sprint".format(boardId=board_id)
+        return self.get(url, params=params)
+
+    @deprecated(version="3.42.0", reason="Use get_all_sprints_from_board instead")
+    def get_all_sprint(self, board_id, state=None, start=0, limit=50):
+        """
+        Returns all sprints from a board, for a given board ID.
+        :param board_id:
+        :param state:
+        :param start:
+        :param limit:
+        :return:
+        """
+        return self.get_all_sprints_from_board(board_id, state, start, limit)
+
+    def get_all_issues_for_sprint_in_board(
+        self, board_id, sprint_id, jql="", validateQuery=True, fields="", expand="", start=0, limit=50
+    ):
+        """
+        Get all issues you have access to that belong to the sprint from the board.
+        Issue returned from this resource contains additional fields like: sprint, closedSprints, flagged and epic.
+        Issues are returned ordered by rank. JQL order has higher priority than default rank.
+        :param board_id:
+        :param sprint_id:
+        :param jql: Filter results using a JQL query.
+                    If you define an order in your JQL query,
+                    it will override the default order of the returned issues.
+        :param validateQuery: Specifies whether to validate the JQL query or not. Default: true.
+        :param fields: The list of fields to return for each issue.
+                       By default, all navigable and Agile fields are returned.
+        :param expand: A comma-separated list of the parameters to expand.
+        :param start: The starting index of the returned issues.
+                      Base index: 0.
+                      See the 'Pagination' section at the top of this page for more details.
+        :param limit: The maximum number of issues to return per page.
+                      Default: 50.
+                      See the 'Pagination' section at the top of this page for more details.
+                      Note, the total number of issues returned is limited by the property
+                      'jira.search.views.default.max' in your JIRA instance.
+                      If you exceed this limit, your results will be truncated.
+        """
+        url = "/rest/agile/1.0/board/{boardId}/sprint/{sprintId}/issue".format(boardId=board_id, sprintId=sprint_id)
+        params = {}
+        if jql:
+            params["jql"] = jql
+        if validateQuery:
+            params["validateQuery"] = validateQuery
+        if fields:
+            params["fields"] = fields
+        if expand:
+            params["expand"] = expand
+        if start:
+            params["startAt"] = start
+        if limit:
+            params["maxResults"] = limit
+        return self.get(url, params=params)
+
+    # /rest/agile/1.0/board/{boardId}/version
+    def get_all_versions_from_board(self, board_id, released="true", start=0, limit=50):
+        """
+        Returns all versions from a board, for a given board ID.
+        This only includes versions that the user has permission to view.
+        Note, if the user does not have permission to view the board,
+        no versions will be returned at all.
+        Returned versions are ordered by the name of the project from which they belong and
+        then by sequence defined by user.
+        :param board_id:
+        :param released: Filter results to versions that are either released or
+                         unreleased.Valid values: true, false.
+        :param start: The starting index of the returned versions.
+                      Base index: 0.
+                      See the 'Pagination' section at the top of this page for more details.
+        :param limit: The maximum number of versions to return per page.
+                      Default: 50.
+                      See the 'Pagination' section at the top of this page for more details.
+        :return:
+        """
+        params = {}
+        if released:
+            params["released"] = released
+        if start:
+            params["startAt"] = start
+        if limit:
+            params["maxResults"] = limit
+        url = "rest/agile/1.0/board/{boardId}/version".format(boardId=board_id)
+        return self.get(url, params=params)
 
     def create_sprint(self, name, board_id, start_date=None, end_date=None, goal=None):
         """
@@ -4675,32 +4787,6 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         url = "/rest/agile/1.0/sprint/{sprint_id}/issue".format(sprint_id=sprint_id)
         data = dict(issues=issues)
         return self.post(url, data=data)
-
-    def get_all_sprint(self, board_id, state=None, start=0, limit=50):
-        """
-        Returns all sprints from a board, for a given board ID.
-        This only includes sprints that the user has permission to view.
-        :param board_id:
-        :param state: Filter results to sprints in specified states.
-                      Valid values: future, active, closed.
-                      You can define multiple states separated by commas, e.g. state=active,closed
-        :param start: The starting index of the returned sprints.
-                      Base index: 0.
-                      See the 'Pagination' section at the top of this page for more details.
-        :param limit: The maximum number of sprints to return per page.
-                      Default: 50.
-                      See the 'Pagination' section at the top of this page for more details.
-        :return:
-        """
-        params = {}
-        if start:
-            params["startAt"] = start
-        if limit:
-            params["maxResults"] = limit
-        if state:
-            params["state"] = state
-        url = "rest/agile/1.0/board/{boardId}/sprint".format(boardId=board_id)
-        return self.get(url, params=params)
 
     def get_sprint(self, sprint_id):
         """
