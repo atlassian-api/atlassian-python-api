@@ -399,6 +399,15 @@ Manage Sprints
 
 .. code-block:: python
 
+    # Get all sprints from board
+    jira.get_all_sprints_from_board(board_id, state=None, start=0, limit=50)
+
+    # Get all issues for sprint in board
+    jira.get_all_issues_for_sprint_in_board(board_id, state=None, start=0, limit=50)
+
+    # Get all versions for sprint in board
+    jira.get_all_versions_from_board(self, board_id, released="true", start=0, limit=50)
+
     # Create sprint
     jira.jira.create_sprint(sprint_name, origin_board_id,  start_datetime, end_datetime, goal)
 
