@@ -467,6 +467,16 @@ class AtlassianRestAPI(object):
         :param response:
         :return:
         """
+        if response.status_code == 401:
+            j = None
+            try:
+                j = response.json()
+            except requests.exceptions.JSONDecodeError:
+                pass
+
+            if not j:
+                raise HTTPError("Unauthorized (401)", response=response)
+
         if 400 <= response.status_code < 600:
             try:
                 j = response.json()
