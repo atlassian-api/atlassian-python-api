@@ -21,12 +21,11 @@ class Permissions(BitbucketCloudBase):
     def each(self, q=None, sort=None, pagelen=10):
         """
         Returns the list of pipelines in this repository.
-
         :param q: string: Query string to narrow down the response.
                           See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
         :param sort: string: Name of a response property to sort results.
                              See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
-
+        :param pagelen: page length
         :return: A generator for the Workspace Permission objects
 
         API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-workspaces/#api-workspaces-workspace-permissions-get

@@ -223,9 +223,7 @@ class DeploymentEnvironmentVariable(BitbucketCloudBase):
     def delete(self):
         """
         Delete the repository variable.
-
         :return: The response on success
-
         API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pipelines/#api-repositories-workspace-repo-slug-deployments-config-environments-environment-uuid-variables-variable-uuid-delete
         """
         return super(DeploymentEnvironmentVariable, self).delete("/{}".format(self.uuid))
