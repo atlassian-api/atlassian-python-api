@@ -3140,6 +3140,9 @@ class Confluence(AtlassianRestAPI):
         :param response:
         :return:
         """
+        if response.status_code == 401 and response.headers.get("Content-Type") != "application/json;charset=UTF-8":
+            raise HTTPError("Unauthorized (401)", response=response)
+
         if 400 <= response.status_code < 600:
             try:
                 j = response.json()
