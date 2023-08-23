@@ -1524,7 +1524,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/templates".format(page_id)
+        url = "v1/pages/{}/incident_templates".format(page_id)
         return self.post(url, data={"template": template})
 
     def page_get_templates(self, page_id, page=1, per_page=100):
@@ -1556,7 +1556,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/templates".format(page_id)
+        url = "v1/pages/{}/incident_templates".format(page_id)
         return self.get(url, params={"page": page, "per_page": per_page})
 
     def page_create_incident(self, page_id, incident):
