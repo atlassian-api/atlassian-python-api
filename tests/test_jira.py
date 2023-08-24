@@ -49,3 +49,8 @@ class TestJira(TestCase):
         """Post an issue but receive a 400 error response"""
         with self.assertRaises(HTTPError):
             self.jira.create_issue(fields={"issuetype": "foo", "summary": "summary", "project": "project"})
+
+    def test_post_issue_expect_failed_authentication(self):
+        """Post an issue but receive a 401 error response"""
+        with self.assertRaises(HTTPError):
+            self.jira.create_issue(fields={"issuetype": "fail", "summary": "authentication", "project": "project"})
