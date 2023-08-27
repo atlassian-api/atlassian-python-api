@@ -5,6 +5,12 @@ responses['{"fields": {"issuetype": "foo", "summary": "summary", "project": "pro
 }
 responses['{"fields": {"issuetype": "fail", "summary": "authentication", "project": "project"}}'] = {
     "status_code": 401,
-    "headers": {"Content-Type":	"application/json;charset=UTF-8"},
-    "errors": [{"context": None, "message": "Authentication failed. Please check your credentials and try again.", "exceptionName": "com.atlassian.bitbucket.auth.IncorrectPasswordAuthenticationException"}],
+    "headers": {"Content-Type": "application/json;charset=UTF-8"},
+    "errors": [
+        {
+            "context": None,
+            "message": "Authentication failed. Please check your credentials and try again.",
+            "exceptionName": "com.atlassian.bitbucket.auth.IncorrectPasswordAuthenticationException",
+        }
+    ],
 }
