@@ -476,13 +476,13 @@ class AtlassianRestAPI(object):
                 if self.url == "https://api.atlassian.com":
                     error_msg = "\n".join([k + ": " + v for k, v in j.items()])
                 else:
-                    error_msg = "\n".join(
-                        j.get("errorMessages", list())
-                        + [
-                            k.get("message", "") if isinstance(k, dict) else v
-                            for k, v in j.get("errors", dict()).items()
-                        ]
-                    )
+                    error_msg_list = j.get("errorMessages", list())
+                    errors = j.get("errors", dict())
+                    if isinstance(errors, dict):
+                        error_msg_list.append(errors.get("message", ""))
+                    elif isinstance(errors, list):
+                        error_msg_list.extend([v.get("message", "") if isinstance(v, dict) else v for v in errors])
+                    error_msg = "\n".join(error_msg_list)
             except Exception as e:
                 log.error(e)
                 response.raise_for_status()

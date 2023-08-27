@@ -39,6 +39,8 @@ def request_mockup(*args, **kwargs):
                     response.status_code = data.pop("status_code")
                 else:
                     response.status_code = 200
+                if "headers" in data:
+                    response.headers = data.pop("headers")
 
                 # Extend the links with the server
                 for item in [None, "owner", "project", "workspace"]:
