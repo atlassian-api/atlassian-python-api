@@ -102,6 +102,14 @@ The following command builds a package and uploads it to PIP repository.
 
    python setup.py sdist upload
 
+Alternative way
+
+::
+
+   python -m pip install build twine
+   python -m build
+   twine upload dist/*
+
 An alternative way you can use next command
 
 ::
