@@ -60,6 +60,7 @@ class AtlassianRestAPI(object):
         cloud=False,
         proxies=None,
         token=None,
+        cert=None,
     ):
         self.url = url
         self.username = username
@@ -72,6 +73,7 @@ class AtlassianRestAPI(object):
         self.advanced_mode = advanced_mode
         self.cloud = cloud
         self.proxies = proxies
+        self.cert = cert
         if session is None:
             self._session = requests.Session()
         else:
@@ -246,6 +248,7 @@ class AtlassianRestAPI(object):
             verify=self.verify_ssl,
             files=files,
             proxies=self.proxies,
+            cert=self.cert,
         )
         response.encoding = "utf-8"
 
