@@ -43,7 +43,7 @@ Manage projects
     bitbucket.project_grant_user_permissions(project_key, username, permission)
 
     # Grant project permission to a specific group
-    bitbucket.project_grant_group_permissions(project_key, groupname, permission)
+    bitbucket.project_grant_group_permissions(project_key, group_name, permission)
 
     # Remove default permission for project
     bitbucket.project_remove_default_permissions(project_key, permission)
