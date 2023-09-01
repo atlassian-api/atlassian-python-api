@@ -1689,6 +1689,18 @@ class Jira(AtlassianRestAPI):
 
         return self.get(url, params=params)
 
+    def get_deleted_worklogs(self, since):
+        """
+        Returns a list of IDs and timestamps for worklogs deleted after a date and time.
+        :param since: The date and time, as a UNIX timestamp in milliseconds, after which deleted worklogs are returned.
+        """
+        url = self.resource_url("worklog/deleted")
+        params = {}
+        if since:
+            params["since"] = str(int(since * 1000))
+
+        return self.get(url, params=params)
+
     def get_worklogs(self, ids, expand=None):
         """
         Returns worklog details for a list of worklog IDs.
