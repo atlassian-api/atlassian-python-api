@@ -1680,7 +1680,7 @@ class Jira(AtlassianRestAPI):
         :param expand: Use expand to include additional information about worklogs in the response.
             This parameter accepts properties that returns the properties of each worklog.
         """
-        url = "rest/api/3/worklog/updated"
+        url = self.resource_url("worklog/updated")
         params = {}
         if since:
             params["since"] = str(int(since * 1000))
@@ -1697,7 +1697,7 @@ class Jira(AtlassianRestAPI):
         :param ids: REQUIRED A list of worklog IDs.
         """
 
-        url = "rest/api/3/worklog/list"
+        url = self.resource_url("worklog/list")
         params = {}
         if expand:
             params["expand"] = expand
