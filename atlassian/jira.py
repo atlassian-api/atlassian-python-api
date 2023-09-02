@@ -1680,12 +1680,24 @@ class Jira(AtlassianRestAPI):
         :param expand: Use expand to include additional information about worklogs in the response.
             This parameter accepts properties that returns the properties of each worklog.
         """
-        url = "rest/api/3/worklog/updated"
+        url = self.resource_url("worklog/updated")
         params = {}
         if since:
             params["since"] = str(int(since * 1000))
         if expand:
             params["expand"] = expand
+
+        return self.get(url, params=params)
+
+    def get_deleted_worklogs(self, since):
+        """
+        Returns a list of IDs and timestamps for worklogs deleted after a date and time.
+        :param since: The date and time, as a UNIX timestamp in milliseconds, after which deleted worklogs are returned.
+        """
+        url = self.resource_url("worklog/deleted")
+        params = {}
+        if since:
+            params["since"] = str(int(since * 1000))
 
         return self.get(url, params=params)
 
@@ -1697,7 +1709,7 @@ class Jira(AtlassianRestAPI):
         :param ids: REQUIRED A list of worklog IDs.
         """
 
-        url = "rest/api/3/worklog/list"
+        url = self.resource_url("worklog/list")
         params = {}
         if expand:
             params["expand"] = expand
