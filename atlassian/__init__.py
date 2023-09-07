@@ -5,6 +5,7 @@ from .cloud_admin import CloudAdminOrgs, CloudAdminUsers
 from .confluence import Confluence
 from .crowd import Crowd
 from .insight import Insight
+from .insight import Insight as Assets
 from .jira import Jira
 from .marketplace import MarketPlace
 from .portfolio import Portfolio
@@ -27,4 +28,5 @@ __all__ = [
     "MarketPlace",
     "Xray",
     "Insight",
+    "Assets",
 ]
