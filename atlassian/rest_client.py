@@ -343,6 +343,7 @@ class AtlassianRestAPI(object):
             params=params,
             trailing=trailing,
             absolute=absolute,
+            advanced_mode=advanced_mode,
         )
         if self.advanced_mode or advanced_mode:
             return response
@@ -379,6 +380,7 @@ class AtlassianRestAPI(object):
             params=params,
             trailing=trailing,
             absolute=absolute,
+            advanced_mode=advanced_mode,
         )
         if self.advanced_mode or advanced_mode:
             return response
@@ -420,6 +422,7 @@ class AtlassianRestAPI(object):
             params=params,
             trailing=trailing,
             absolute=absolute,
+            advanced_mode=advanced_mode,
         )
         if self.advanced_mode or advanced_mode:
             return response
@@ -457,6 +460,7 @@ class AtlassianRestAPI(object):
             params=params,
             trailing=trailing,
             absolute=absolute,
+            advanced_mode=advanced_mode,
         )
         if self.advanced_mode or advanced_mode:
             return response
