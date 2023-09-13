@@ -529,11 +529,23 @@ class Insight(AtlassianRestAPI):
         """
         raise NotImplementedError
 
-    def get_object_schema_object_types_flat(self, schema_id):
+    def get_object_schema_object_types_flat(self, schema_id, query=None, exclude=None, includeObjectCounts=None):
         """
         Find all object types for this object schema
+        https://developer.atlassian.com/cloud/assets/rest/api-group-objectschema/#api-objectschema-id-objecttypes-flat-get
+        Args:
+            schema_id (str): id of the object schema
+            query (bool, optional): Object Type Names to search for, defaults to None (Use API default)
+            exclude (str, optional): Exclude objects with this name, defaults to None (Use API default)
+            includeObjectCounts (bool, optional): Populate objectCount attribute for each object type, defaults to None (Use API default)
         """
-        raise NotImplementedError
+        kwargs = locals().items()
+        params = dict()
+        params.update({k: v for k, v in kwargs if v is not None and k not in ["self", "schema_id"]})
+        return self.get(
+            "{0}/objectschema/{1}/objecttypes/flat".format(self.api_root, schema_id),
+            params=params,
+        )
 
     def get_object_type_attributes(
         self,
