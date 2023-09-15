@@ -295,6 +295,9 @@ Manage issues
     # Restore an issue
     jira.issue_restore(issue_id_or_key)
 
+    # Add Comments
+    jira.issue_add_comment(issue_id_or_key, "This is a sample comment string.")
+
     # Issue Comments
     jira.issue_get_comments(issue_id_or_key)
 
