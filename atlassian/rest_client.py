@@ -481,7 +481,7 @@ class AtlassianRestAPI(object):
             try:
                 j = response.json()
                 if self.url == "https://api.atlassian.com":
-                    error_msg = "\n".join([k + ": " + v for k, v in j.items()])
+                    error_msg = "\n".join(["{}: {}".format(k, v) for k, v in j.items()])
                 else:
                     error_msg_list = j.get("errorMessages", list())
                     errors = j.get("errors", dict())
