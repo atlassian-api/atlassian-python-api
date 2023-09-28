@@ -60,11 +60,11 @@ Manage a Participants
 
     # Add request participants
     # The calling user must have permission to manage participants for this customer request
-    sd.add_request_participants(issue_id_or_key, users_list)
+    sd.add_request_participants(issue_id_or_key, users_list=[], account_list=[])
 
     # Remove request participants
     # The calling user must have permission to manage participants for this customer request
-    sd.remove_request_participants(issue_id_or_key, users_list)
+    sd.remove_request_participants(issue_id_or_key, users_list=[], account_list=[])
 
 Transitions
 -----------
