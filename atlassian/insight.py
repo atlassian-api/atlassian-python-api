@@ -43,7 +43,7 @@ class Insight(AtlassianRestAPI):
         # set cloud back to true and return
         kwargs["cloud"] = True
         # Insight cloud is particular about its headers.
-        self.default_headers = {"Accept": "application/json"}
+        self.default_headers = {"Accept": "application/json", "Content-Type": "application/json"}
         return args, kwargs
 
     def __get_workspace_id(self):
