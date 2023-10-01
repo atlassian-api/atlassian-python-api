@@ -187,7 +187,7 @@ class ServiceDesk(AtlassianRestAPI):
             return response
         return (response or {}).get("values")
 
-    def add_request_participants(self, issue_id_or_key, users_list):
+    def add_request_participants(self, issue_id_or_key, users_list=None, account_list=None):
         """
         Add users as participants to an existing customer request
         The calling user must have permission to manage participants for this customer request
@@ -197,11 +197,15 @@ class ServiceDesk(AtlassianRestAPI):
         :return:
         """
         url = "rest/servicedeskapi/request/{}/participant".format(issue_id_or_key)
-        data = {"usernames": users_list}
+        data = {}
+        if users_list is not None:
+            data["usernames"] = users_list
+        if account_list is not None:
+            data["accountIds"] = account_list
 
         return self.post(url, data=data, headers=self.experimental_headers)
 
-    def remove_request_participants(self, issue_id_or_key, users_list):
+    def remove_request_participants(self, issue_id_or_key, users_list=None, account_list=None):
         """
         Remove participants from an existing customer request
         The calling user must have permission to manage participants for this customer request
@@ -211,7 +215,11 @@ class ServiceDesk(AtlassianRestAPI):
         :return:
         """
         url = "rest/servicedeskapi/request/{}/participant".format(issue_id_or_key)
-        data = {"usernames": users_list}
+        data = {}
+        if users_list is not None:
+            data["usernames"] = users_list
+        if account_list is not None:
+            data["accountIds"] = account_list
 
         return self.delete(url, data=data, headers=self.experimental_headers)
 
