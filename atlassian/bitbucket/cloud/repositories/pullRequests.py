@@ -2,6 +2,7 @@
 
 from ..base import BitbucketCloudBase
 from .diffstat import DiffStat
+from ...cloud.repositories.commits import Commit
 from ..common.builds import Build
 from ..common.comments import Comment
 from ..common.users import User, Participant
@@ -310,6 +311,12 @@ class PullRequest(BitbucketCloudBase):
         }
 
         return self.post("comments", data)
+
+    @property
+    def commits(self):
+        """Returns generator object for the Commits in the PullRequest"""
+        for commit in self._get_paged("commits"):
+            yield Commit(commit, **self._new_session_args)
 
     def tasks(self):
         """
