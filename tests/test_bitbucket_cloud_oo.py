@@ -7,7 +7,7 @@ from datetime import datetime
 from atlassian import Bitbucket
 from atlassian.bitbucket import Cloud
 from atlassian.bitbucket.cloud.common.users import User
-from atlassian.bitbucket.cloud.repositories.pullRequests import Comment, Participant, PullRequest, Build, Task
+from atlassian.bitbucket.cloud.repositories.pullRequests import Comment, Commit, Participant, PullRequest, Build, Task
 
 BITBUCKET = None
 try:
@@ -173,6 +173,10 @@ class TestPullRequests:
     def tc2(self):
         return CLOUD.workspaces.get("TestWorkspace1").repositories.get("testrepository1").pullrequests
 
+    @pytest.fixture(scope="module")
+    def tc3(self):
+        return CLOUD.workspaces.get("TestWorkspace1").repositories.get("testrepository1").pullrequests.get(1).commits
+
     def test_id(self, tc1):
         assert tc1.id == 1
 
@@ -262,6 +266,14 @@ class TestPullRequests:
         reviewers = list(tc1.reviewers())
         assert len(reviewers) == 3
         assert isinstance(reviewers[0], User)
+
+    def test_commits(self, tc1):
+        pr_commits = list(tc1.commits)
+        assert len(pr_commits) == 1
+        commit_1 = pr_commits[0]
+        assert isinstance(commit_1, Commit)
+        assert commit_1.message == 'src created online with Bitbucket'
+
 
     def test_comment(self, tc1):
         msg = "hello world"
