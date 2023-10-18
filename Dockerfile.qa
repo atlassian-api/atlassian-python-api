@@ -57,6 +57,7 @@ RUN apt-get clean
 WORKDIR /atlassian-python-api
 COPY requirements.txt .
 COPY requirements-dev.txt .
+RUN python3 -m pip install --no-cache-dir --upgrade setuptools
 RUN python3 -m pip install --no-cache-dir --upgrade pip
 RUN python3 -m pip install --no-cache-dir --upgrade wheel
 RUN python3 -m pip install --no-cache-dir -r requirements-dev.txt
