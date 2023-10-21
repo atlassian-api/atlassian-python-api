@@ -3,6 +3,7 @@
 from requests import HTTPError
 from ..base import BitbucketCloudBase
 
+from .members import WorkspaceMembers
 from .permissions import Permissions
 from .projects import Projects
 from ..repositories import WorkspaceRepositories
@@ -88,6 +89,7 @@ class Workspace(BitbucketCloudBase):
         self.__permissions = Permissions(self.url_joiner(self.url, "permissions"), **self._new_session_args)
         self.__projects = Projects(self.get_link("projects"), **self._new_session_args)
         self.__repositories = WorkspaceRepositories(self.get_link("repositories"), **self._new_session_args)
+        self.__members = WorkspaceMembers(self.get_link("members"), **self._new_session_args)
 
     @property
     def name(self):
@@ -137,3 +139,8 @@ class Workspace(BitbucketCloudBase):
     def repositories(self):
         """The workspace repositories"""
         return self.__repositories
+
+    @property
+    def members(self):
+        """The workspace members"""
+        return self.__members

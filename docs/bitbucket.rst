@@ -413,6 +413,13 @@ Bitbucket Cloud
     # Delete repository_variable
     repository_variable.delete()
 
+    # Get a list of workspace members
+    workplace.members.each()
+
+    # Get a specific workspace member
+    workplace.members.get("a-user-account-id")
+    workplace.members.get("{a-user-uuid}")
+
 Pipelines management
 --------------------
 
