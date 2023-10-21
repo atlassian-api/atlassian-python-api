@@ -74,7 +74,10 @@ Manage users
     jira.user_get_websudo()
 
     # Fuzzy search using emailAddress or displayName
-    jira.user_find_by_user_string(query, start=0, limit=50, include_inactive_users=False)
+    jira.user_find_by_user_string(query="a.user@example.com", start=0, limit=50, include_inactive_users=False)
+    jira.user_find_by_user_string(query="a.user", start=0, limit=50, include_inactive_users=False)
+    jira.user_find_by_user_string(query="a user")
+    jira.user_find_by_user_string(account_id="a-users-account-id")
 
     # Get groups of a user. This API is only available for Jira Cloud platform.
     jira.get_user_groups(account_id)
