@@ -112,11 +112,26 @@ Manage projects
 
     # Get all projects
     # Returns all projects which are visible for the currently logged in user.
-    jira.projects(included_archived=None)
+    jira.projects(included_archived=None, expand=None)
 
     # Get all project alternative call
     # Returns all projects which are visible for the currently logged in user.
-    jira.get_all_projects(included_archived=None)
+    jira.get_all_projects(included_archived=None, expand=None)
+
+    # Get all projects only for Jira Cloud
+    # Returns all projects which are visible for the currently logged in user.
+    jira.projects_from_cloud(included_archived=None, expand=None)
+
+    # Get one page of projects
+    # Returns a paginated list of projects visible for the currently logged in user.
+    # Use the url formatting to get a specific page as shown here:
+    # url = f"{self.resource_url("project/search")}?startAt={start_at}&maxResults={max_results}"
+    # Defaults to the first page, which returns a nextPage url when available.
+    jira.projects_paginated(included_archived=None, expand=None, url=None)
+
+    # Get all projects only for Jira Server
+    # Returns all projects which are visible for the currently logged in user.
+    jira.projects_from_server(included_archived=None, expand=None)
 
     # Delete project
     jira.delete_project(key)
