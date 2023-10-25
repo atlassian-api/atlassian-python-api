@@ -2173,7 +2173,8 @@ class Jira(AtlassianRestAPI):
         if expand:
             params["expand"] = expand
         page_url = url or self.resource_url("project/search")
-        return self.get(page_url, params=params)
+        is_url_absolute = bool(page_url.lower().startswith("http"))
+        return self.get(page_url, params=params, absolute=is_url_absolute)
 
     def projects_from_server(self, included_archived=None, expand=None):
         """
