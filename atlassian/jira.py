@@ -2110,12 +2110,83 @@ class Jira(AtlassianRestAPI):
         return self.projects(included_archived, expand)
 
     def projects(self, included_archived=None, expand=None):
-        """Returns all projects which are visible for the currently logged-in user.
+        """
+        Returns all projects which are visible for the currently logged-in user.
         If no user is logged in, it returns the list of projects that are visible when using anonymous access.
         :param included_archived: boolean whether to include archived projects in response, default: false
         :param expand:
         :return:
         """
+        if self.cloud:
+            return self.projects_from_cloud(
+                included_archived=included_archived,
+                expand=expand,
+            )
+        else:
+            return self.projects_from_server(
+                included_archived=included_archived,
+                expand=expand,
+            )
+
+    def projects_from_cloud(self, included_archived=None, expand=None):
+        """
+        Returns all projects which are visible for the currently logged-in user.
+        Cloud version should use the ``paginated``endpoint to get pages of projects, as the old endpoint is deprecated.
+        If no user is logged in, it returns the list of projects that are visible when using anonymous access.
+        :param included_archived: boolean whether to include archived projects in response, default: false
+        :param expand:
+        :return:
+        """
+        if not self.cloud:
+            raise ValueError("``projects_from_cloud`` method is only available for Jira Cloud platform")
+
+        projects = self.paginated_projects(
+            included_archived=included_archived,
+            expand=expand,
+        )
+        while not projects.get("isLast"):
+            projects["values"].extend(
+                self.paginated_projects(
+                    included_archived=included_archived,
+                    expand=expand,
+                    url=projects["nextPage"],
+                )["values"]
+            )
+        return projects["values"]
+
+    def paginated_projects(self, included_archived=None, expand=None, url=None):
+        """
+        Returns a page of projects which are visible for the currently logged-in user.
+        Method to be used only for Jira Cloud platform, until tests on Jira Server are executed.
+        If no user is logged in, it returns the list of projects that are visible when using anonymous access.
+        :param included_archived: boolean whether to include archived projects in response, default: false
+        :param expand:
+        :param url: url to get the next page of projects, default: false (first page)
+        :return:
+        """
+        if not self.cloud:
+            raise ValueError("``projects_from_cloud`` method is only available for Jira Cloud platform")
+
+        params = {}
+        if included_archived:
+            params["includeArchived"] = included_archived
+        if expand:
+            params["expand"] = expand
+        page_url = url or self.resource_url("project/search")
+        is_url_absolute = bool(page_url.lower().startswith("http"))
+        return self.get(page_url, params=params, absolute=is_url_absolute)
+
+    def projects_from_server(self, included_archived=None, expand=None):
+        """
+        Returns all projects which are visible for the currently logged-in user.
+        If no user is logged in, it returns the list of projects that are visible when using anonymous access.
+        :param included_archived: boolean whether to include archived projects in response, default: false
+        :param expand:
+        :return:
+        """
+        if self.cloud:
+            raise ValueError("``projects_from_server`` method is only available for Jira Server platform")
+
         params = {}
         if included_archived:
             params["includeArchived"] = included_archived
@@ -2180,7 +2251,7 @@ class Jira(AtlassianRestAPI):
         """
         base_url = self.resource_url("project")
         url = "{base_url}/{key}/archive".format(base_url=base_url, key=key)
-        return self.put(url)
+        return self.post(url)
 
     def project(self, key, expand=None):
         """
