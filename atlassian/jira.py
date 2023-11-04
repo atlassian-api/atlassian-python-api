@@ -1966,11 +1966,12 @@ class Jira(AtlassianRestAPI):
             "webSudoPassword": self.password,
             "webSudoIsPost": "false",
         }
-        answer = self.get("secure/admin/WebSudoAuthenticate.jspa", self.form_token_headers)
+        answer = self.get("secure/admin/WebSudoAuthenticate.jspa", self.form_token_headers, not_json_response=True)
+        decoded_answer = answer.decode()
         atl_token = None
-        if answer:
+        if decoded_answer:
             atl_token = (
-                answer.split('<meta id="atlassian-token" name="atlassian-token" content="')[1]
+                decoded_answer.split('<meta id="atlassian-token" name="atlassian-token" content="')[1]
                 .split("\n")[0]
                 .split('"')[0]
             )
