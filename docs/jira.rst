@@ -539,8 +539,8 @@ TEMPO
     # Look at the tempo docs for additional information:
     # https://www.tempo.io/server-api-documentation/timesheets#operation/searchWorklogs
     # NOTE: check if you are using correct types for the parameters!
-    #     :param from: string From Date
-    #     :param to: string To Date
+    #     :param date_from: string From Date
+    #     :param date_to: string To Date
     #     :param worker: Array of strings
     #     :param taskId: Array of integers
     #     :param taskKey: Array of strings
@@ -560,7 +560,7 @@ TEMPO
     #     :param pageNo: integer
     #     :param maxResults: integer
     #     :param offset: integer
-    jira.tempo_4_timesheets_find_worklogs(**params)
+    jira.tempo_4_timesheets_find_worklogs(date_from=None, date_to=None, **params)
 
     # :PRIVATE:
     # Get Tempo timesheet worklog by issue key or id.
