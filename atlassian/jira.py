@@ -4111,12 +4111,12 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         return self.get(url, params=params)
 
     # noinspection PyIncorrectDocstring
-    def tempo_4_timesheets_find_worklogs(self, **params):
+    def tempo_4_timesheets_find_worklogs(self, date_from=None, date_to=None, **params):
         """
         Find existing worklogs with searching parameters.
         NOTE: check if you are using correct types for the parameters!
-        :param from: string From Date
-        :param to: string To Date
+        :param date_from: string From Date
+        :param date_to: string To Date
         :param worker: Array of strings
         :param taskId: Array of integers
         :param taskKey: Array of strings
@@ -4137,6 +4137,11 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param maxResults: integer
         :param offset: integer
         """
+
+        if date_from:
+            params["from"] = date_from
+        if date_to:
+            params["to"] = date_to
 
         url = "rest/tempo-timesheets/4/worklogs/search"
         return self.post(url, data=params)
