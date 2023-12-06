@@ -1,6 +1,6 @@
 from atlassian.bitbucket import Cloud
 
-bitbucket = Cloud(url='https://api.bitbucket.org/', token='random_string_token')
+bitbucket = Cloud(url="https://api.bitbucket.org/", token="random_string_token")
 
 pr_id = 1
 

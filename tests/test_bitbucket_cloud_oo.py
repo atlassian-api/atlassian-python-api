@@ -272,8 +272,7 @@ class TestPullRequests:
         assert len(pr_commits) == 1
         commit_1 = pr_commits[0]
         assert isinstance(commit_1, Commit)
-        assert commit_1.message == 'src created online with Bitbucket'
-
+        assert commit_1.message == "src created online with Bitbucket"
 
     def test_comment(self, tc1):
         msg = "hello world"
