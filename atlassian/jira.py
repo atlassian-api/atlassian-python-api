@@ -1161,6 +1161,15 @@ class Jira(AtlassianRestAPI):
         return issue["fields"]
 
     def update_issue_field(self, key, fields="*all", notify_users=True):
+        """
+        Update an issue's fields.
+        :param key: str Issue id or issye key
+        :param fields: dict with target fields as keys and new contents as values
+        :param notify_users: bool OPTIONAL if True, use project's default notification scheme to notify users via email.
+                                           if False, do not send any email notifications. (only works with admin privilege)
+
+        Reference: https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-issues/#api-rest-api-2-issue-issueidorkey-put
+        """
         base_url = self.resource_url("issue")
         params = {"notifyUsers": "true" if notify_users else "false"}
         return self.put(
