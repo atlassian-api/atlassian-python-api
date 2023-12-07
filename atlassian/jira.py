@@ -1160,11 +1160,13 @@ class Jira(AtlassianRestAPI):
         issue = self.get("{base_url}/{key}".format(base_url=base_url, key=key))
         return issue["fields"]
 
-    def update_issue_field(self, key, fields="*all"):
+    def update_issue_field(self, key, fields="*all", notify_users=True):
         base_url = self.resource_url("issue")
+        params = {"notifyUsers": "true" if notify_users else "false"}
         return self.put(
             "{base_url}/{key}".format(base_url=base_url, key=key),
             data={"fields": fields},
+            params=params,
         )
 
     def bulk_update_issue_field(self, key_list, fields="*all"):
@@ -1465,13 +1467,14 @@ class Jira(AtlassianRestAPI):
             data["visibility"] = visibility
         return self.post(url, data=data)
 
-    def issue_edit_comment(self, issue_key, comment_id, comment, visibility=None):
+    def issue_edit_comment(self, issue_key, comment_id, comment, visibility=None, notify_users=True):
         """
         Updates an existing comment
         :param issue_key: str
         :param comment_id: int
         :param comment: str
         :param visibility: OPTIONAL
+        :param notify_users: bool OPTIONAL
         :return:
         """
         base_url = self.resource_url("issue")
@@ -1481,7 +1484,8 @@ class Jira(AtlassianRestAPI):
         data = {"body": comment}
         if visibility:
             data["visibility"] = visibility
-        return self.put(url, data=data)
+        params = {"notifyUsers": "true" if notify_users else "false"}
+        return self.put(url, data=data, params=params)
 
     def get_issue_remotelinks(self, issue_key, global_id=None, internal_id=None):
         """
