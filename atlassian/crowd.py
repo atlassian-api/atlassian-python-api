@@ -1,6 +1,8 @@
 # coding=utf-8
 import logging
 
+from jmespath import search
+
 from .rest_client import AtlassianRestAPI
 
 log = logging.getLogger(__name__)
@@ -128,6 +130,16 @@ class Crowd(AtlassianRestAPI):
         params = {"username": username}
 
         return self.delete(self._crowd_api_url("usermanagement", "user"), params=params)
+
+    def user_groups(self, username):
+        """
+        Get user's all group info
+        :param username: str - username
+        :return: The specify user's group info
+        """
+        path = self._crowd_api_url("usermanagement", "user/group/direct")
+        response = self.get(path, params={'username': username})
+        return search('groups[*].name', response)
 
     def group_add_user(self, username, groupname):
         """
