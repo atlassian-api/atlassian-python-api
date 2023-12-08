@@ -143,16 +143,18 @@ class Crowd(AtlassianRestAPI):
         response = self.get(path, params={'username': username})
         return search('groups[*].name', response)
 
-    def group_members(self, group, kind='direct'):
+    def group_members(self, group, kind='direct', max_results=99999):
         """
         Get group's all direct members
         :param group: str - group name
         :param kind: str - group type
+        :param max_results: int - maximum number of results
         :return: The specify group's direct members info
         """
         path = self._crowd_api_url("usermanagement",
                                    "group/user/{kind}".format(kind=kind))
-        response = self.get(path, params={'groupname': group})
+        params = {'groupname': group, 'max-results': max_results}
+        response = self.get(path, params=params)
         return search('users[*].name', response)
 
     def is_user_in_group(self, username, group, kind='direct'):
