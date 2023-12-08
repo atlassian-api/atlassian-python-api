@@ -131,15 +131,43 @@ class Crowd(AtlassianRestAPI):
 
         return self.delete(self._crowd_api_url("usermanagement", "user"), params=params)
 
-    def user_groups(self, username):
+    def user_groups(self, username, kind='direct'):
         """
         Get user's all group info
         :param username: str - username
+        :param kind: str - group type
         :return: The specify user's group info
         """
-        path = self._crowd_api_url("usermanagement", "user/group/direct")
+        path = self._crowd_api_url("usermanagement",
+                                   "user/group/{kind}".format(kind=kind))
         response = self.get(path, params={'username': username})
         return search('groups[*].name', response)
+
+    def group_members(self, group, kind='direct'):
+        """
+        Get group's all direct members
+        :param group: str - group name
+        :param kind: str - group type
+        :return: The specify group's direct members info
+        """
+        path = self._crowd_api_url("usermanagement",
+                                   "group/user/{kind}".format(kind=kind))
+        response = self.get(path, params={'groupname': group})
+        return search('users[*].name', response)
+
+    def is_user_in_group(self, username, group, kind='direct'):
+        """
+        Check if the user is a member of the group
+        :param username: str - username
+        :param group: str - group name
+        :param kind: str - group type
+        :return: bool - Return `True` or `False`
+        """
+        path = self._crowd_api_url("usermanagement",
+                                   "group/user/{kind}".format(kind=kind))
+        params = {'username': username, 'groupname': group}
+        response = self.get(path, params=params, advanced_mode=True)
+        return response.status_code == 200
 
     def group_add_user(self, username, groupname):
         """
@@ -156,15 +184,6 @@ class Crowd(AtlassianRestAPI):
             params=params,
             json=data,
         )
-
-    def group_nested_members(self, group):
-        """
-        Get nested members of group
-        :param group:
-        :return:
-        """
-        params = {"groupname": group}
-        return self.get(self._crowd_api_url("group", "nested"), params=params)
 
     def health_check(self):
         """
