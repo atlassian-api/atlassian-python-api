@@ -13,3 +13,6 @@ sphinx:
 # See https://docs.readthedocs.io/en/stable/config-file/v2.html#build-os
 build:
   os: ubuntu-22.04
+  # See https://docs.readthedocs.io/en/stable/config-file/v2.html#build-tools
+  tools:
+    python: "3"
