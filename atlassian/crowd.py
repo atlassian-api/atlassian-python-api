@@ -131,19 +131,18 @@ class Crowd(AtlassianRestAPI):
 
         return self.delete(self._crowd_api_url("usermanagement", "user"), params=params)
 
-    def user_groups(self, username, kind='direct'):
+    def user_groups(self, username, kind="direct"):
         """
         Get user's all group info
         :param username: str - username
         :param kind: str - group type
         :return: The specify user's group info
         """
-        path = self._crowd_api_url("usermanagement",
-                                   "user/group/{kind}".format(kind=kind))
-        response = self.get(path, params={'username': username})
-        return search('groups[*].name', response)
+        path = self._crowd_api_url("usermanagement", "user/group/{kind}".format(kind=kind))
+        response = self.get(path, params={"username": username})
+        return search("groups[*].name", response)
 
-    def group_members(self, group, kind='direct', max_results=99999):
+    def group_members(self, group, kind="direct", max_results=99999):
         """
         Get group's all direct members
         :param group: str - group name
@@ -151,13 +150,12 @@ class Crowd(AtlassianRestAPI):
         :param max_results: int - maximum number of results
         :return: The specify group's direct members info
         """
-        path = self._crowd_api_url("usermanagement",
-                                   "group/user/{kind}".format(kind=kind))
-        params = {'groupname': group, 'max-results': max_results}
+        path = self._crowd_api_url("usermanagement", "group/user/{kind}".format(kind=kind))
+        params = {"groupname": group, "max-results": max_results}
         response = self.get(path, params=params)
-        return search('users[*].name', response)
+        return search("users[*].name", response)
 
-    def is_user_in_group(self, username, group, kind='direct'):
+    def is_user_in_group(self, username, group, kind="direct"):
         """
         Check if the user is a member of the group
         :param username: str - username
@@ -165,9 +163,8 @@ class Crowd(AtlassianRestAPI):
         :param kind: str - group type
         :return: bool - Return `True` or `False`
         """
-        path = self._crowd_api_url("usermanagement",
-                                   "group/user/{kind}".format(kind=kind))
-        params = {'username': username, 'groupname': group}
+        path = self._crowd_api_url("usermanagement", "group/user/{kind}".format(kind=kind))
+        params = {"username": username, "groupname": group}
         response = self.get(path, params=params, advanced_mode=True)
         return response.status_code == 200
 
