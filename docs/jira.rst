@@ -219,7 +219,7 @@ Manage issues
 
     # Update issue field
     fields = {'summary': 'New summary'}
-    jira.update_issue_field(key, fields)
+    jira.update_issue_field(key, fields, notify_users=True)
 
     # Get existing custom fields or find by filter
     jira.get_custom_fields(self, search=None, start=1, limit=50):
@@ -315,6 +315,9 @@ Manage issues
 
     # Add Comments
     jira.issue_add_comment(issue_id_or_key, "This is a sample comment string.")
+
+    # Edit Comments
+    jira.issue_edit_comment(issue_key, comment_id, comment, visibility=None, notify_users=True)
 
     # Issue Comments
     jira.issue_get_comments(issue_id_or_key)
