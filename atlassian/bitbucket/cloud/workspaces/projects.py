@@ -38,7 +38,8 @@ class Projects(BitbucketCloudBase):
 
         :return: The created project object
 
-        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/workspaces/%7Bworkspace%7D/projects#post
+        API docs:
+            https://developer.atlassian.com/bitbucket/api/2/reference/resource/workspaces/%7Bworkspace%7D/projects#post
         """
         data = {
             "name": name,
@@ -46,17 +47,19 @@ class Projects(BitbucketCloudBase):
             "description": description,
             "is_private": is_private,
         }
+        if avatar:
+            data["avatar"] = avatar
         return self.__get_object(self.post(None, data=data))
 
     def each(self, q=None, sort=None):
         """
         Get all projects in the workspace matching the criteria.
-
         :param q: string (default is None):    Query string to narrow down the response.
-                                               See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
+                                               See for details:
+                                               https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering
         :param sort: string (default is None): Name of a response property to sort results.
-                                               See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
-
+                                               See for details:
+                                               https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering
         :return: A generator for the project objects
 
         API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/workspaces/%7Bworkspace%7D/projects#get

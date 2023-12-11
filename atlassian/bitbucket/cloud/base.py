@@ -1,6 +1,11 @@
 # coding=utf-8
 
+import logging
 from ..base import BitbucketBase
+
+from requests import HTTPError
+
+log = logging.getLogger(__name__)
 
 
 class BitbucketCloudBase(BitbucketBase):
@@ -33,13 +38,20 @@ class BitbucketCloudBase(BitbucketBase):
         return links[link]["href"]
 
     def _get_paged(
-        self, url, params=None, data=None, flags=None, trailing=None, absolute=False, paging_workaround=False
+        self,
+        url,
+        params=None,
+        data=None,
+        flags=None,
+        trailing=None,
+        absolute=False,
+        paging_workaround=False,
     ):
         """
         Used to get the paged data
 
         :param url: string:                        The url to retrieve
-        :param params: dict (default is None):     The parameters
+        :param params: dict (default is None):     The parameter's
         :param data: dict (default is None):       The data
         :param flags: string[] (default is None):  The flags
         :param trailing: bool (default is None):   If True, a trailing slash is added to the url
@@ -78,6 +90,34 @@ class BitbucketCloudBase(BitbucketBase):
                     break
                 # From now on we have absolute URLs with parameters
                 absolute = True
-                params = None
+                # Params are now provided by the url
+                params = {}
+                # Trailing should not be added as it is already part of the url
+                trailing = False
 
         return
+
+    def raise_for_status(self, response):
+        """
+        Checks the response for errors and throws an exception if return code >= 400
+
+        Implementation for Bitbucket Cloud according to
+        https://developer.atlassian.com/cloud/bitbucket/rest/intro/#standardized-error-responses
+
+        :param response:
+        :return:
+        """
+        if 400 <= response.status_code < 600:
+            try:
+                j = response.json()
+                e = j["error"]
+                error_msg = e["message"]
+                if e.get("detail"):
+                    error_msg += "\n" + e["detail"]
+            except Exception as e:
+                log.error(e)
+                response.raise_for_status()
+            else:
+                raise HTTPError(error_msg, response=response)
+        else:
+            response.raise_for_status()

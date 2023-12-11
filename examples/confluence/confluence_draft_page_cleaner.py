@@ -10,7 +10,7 @@ confluence = Confluence(url="http://localhost:8090", username="admin", password=
 
 def clean_draft_pages_from_space(space_key, count, date_now):
     """
-    Remove draft pages from space using datetime.now
+    Remove draft pages from space using datetime.now()
     :param space_key:
     :param count:
     :param date_now:

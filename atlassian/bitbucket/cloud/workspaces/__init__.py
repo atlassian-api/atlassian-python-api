@@ -3,6 +3,8 @@
 from requests import HTTPError
 from ..base import BitbucketCloudBase
 
+from .members import WorkspaceMembers
+from .permissions import Permissions
 from .projects import Projects
 from ..repositories import WorkspaceRepositories
 
@@ -18,16 +20,19 @@ class Workspaces(BitbucketCloudBase):
         """
         Get all workspaces matching the criteria.
 
-        :param role: string (default is None): Filters the workspaces based on the authenticated user"s role on each workspace.
-                                               * member: returns a list of all the workspaces which the caller is a member of
-                                                 at least one workspace group or repository
-                                               * collaborator: returns a list of workspaces which the caller has write access
-                                                 to at least one repository in the workspace
-                                               * owner: returns a list of workspaces which the caller has administrator access
-        :param q: string (default is None):    Query string to narrow down the response.
-                                               See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
-        :param sort: string (default is None): Name of a response property to sort results.
-                                               See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
+        :param role: string (default is None):
+                    Filters the workspaces based on the authenticated user's role on each workspace.
+                    * member: returns a list of all the workspaces which the caller is a member of
+                                at least one workspace group or repository
+                    * collaborator: returns a list of workspaces which the caller has written access
+                            to at least one repository in the workspace
+                    * owner: returns a list of workspaces which the caller has administrator access
+        :param q: string (default is None):
+                        Query string to narrow down the response.
+                        See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
+        :param sort: string (default is None):
+                        Name of a response property to sort results.
+                        See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
 
         :return: A generator for the Workspace objects
 
@@ -81,18 +86,15 @@ class Workspaces(BitbucketCloudBase):
 class Workspace(BitbucketCloudBase):
     def __init__(self, data, *args, **kwargs):
         super(Workspace, self).__init__(None, *args, data=data, expected_type="workspace", **kwargs)
+        self.__permissions = Permissions(self.url_joiner(self.url, "permissions"), **self._new_session_args)
         self.__projects = Projects(self.get_link("projects"), **self._new_session_args)
         self.__repositories = WorkspaceRepositories(self.get_link("repositories"), **self._new_session_args)
+        self.__members = WorkspaceMembers(self.get_link("members"), **self._new_session_args)
 
     @property
     def name(self):
         """The workspace name"""
         return self.get_data("name")
-
-    @name.setter
-    def name(self, name):
-        """Setter for the workspace name"""
-        return self.update(name=name)
 
     @property
     def slug(self):
@@ -124,6 +126,11 @@ class Workspace(BitbucketCloudBase):
         return self.get(self.get_link("avatar"), absolute=True)
 
     @property
+    def permissions(self):
+        """The workspace permissions repositories"""
+        return self.__permissions
+
+    @property
     def projects(self):
         """The workspace projects"""
         return self.__projects
@@ -132,3 +139,8 @@ class Workspace(BitbucketCloudBase):
     def repositories(self):
         """The workspace repositories"""
         return self.__repositories
+
+    @property
+    def members(self):
+        """The workspace members"""
+        return self.__members

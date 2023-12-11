@@ -1,0 +1,16 @@
+responses['{"fields": {"issuetype": "foo", "summary": "summary", "project": "project"}}'] = {
+    "status_code": 400,
+    "errorMessages": [],
+    "errors": {"labels": "Field 'labels' cannot be set. It is not on the appropriate screen, or unknown."},
+}
+responses['{"fields": {"issuetype": "fail", "summary": "authentication", "project": "project"}}'] = {
+    "status_code": 401,
+    "headers": {"Content-Type": "application/json;charset=UTF-8"},
+    "errors": [
+        {
+            "context": None,
+            "message": "Authentication failed. Please check your credentials and try again.",
+            "exceptionName": "com.atlassian.bitbucket.auth.IncorrectPasswordAuthenticationException",
+        }
+    ],
+}

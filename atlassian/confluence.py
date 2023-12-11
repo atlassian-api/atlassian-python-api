@@ -5,15 +5,10 @@ import time
 import json
 
 from requests import HTTPError
+import requests
 from deprecated import deprecated
 from atlassian import utils
-from .errors import (
-    ApiError,
-    ApiNotFoundError,
-    ApiPermissionError,
-    ApiValueError,
-    ApiConflictError,
-)
+from .errors import ApiError, ApiNotFoundError, ApiPermissionError, ApiValueError, ApiConflictError, ApiNotAcceptable
 from .rest_client import AtlassianRestAPI
 
 log = logging.getLogger(__name__)
@@ -40,30 +35,113 @@ class Confluence(AtlassianRestAPI):
 
     @staticmethod
     def _create_body(body, representation):
-        if representation not in ["editor", "export_view", "view", "storage", "wiki"]:
+        if representation not in [
+            "editor",
+            "export_view",
+            "view",
+            "storage",
+            "wiki",
+        ]:
             raise ValueError("Wrong value for representation, it should be either wiki or storage")
 
         return {representation: {"value": body, "representation": representation}}
 
-    def page_exists(self, space, title):
+    def _get_paged(
+        self,
+        url,
+        params=None,
+        data=None,
+        flags=None,
+        trailing=None,
+        absolute=False,
+    ):
+        """
+        Used to get the paged data
+
+        :param url: string:                        The url to retrieve
+        :param params: dict (default is None):     The parameter's
+        :param data: dict (default is None):       The data
+        :param flags: string[] (default is None):  The flags
+        :param trailing: bool (default is None):   If True, a trailing slash is added to the url
+        :param absolute: bool (default is False):  If True, the url is used absolute and not relative to the root
+
+        :return: A generator object for the data elements
+        """
+
+        if params is None:
+            params = {}
+
+        while True:
+            response = self.get(
+                url,
+                trailing=trailing,
+                params=params,
+                data=data,
+                flags=flags,
+                absolute=absolute,
+            )
+            if "results" not in response:
+                return
+
+            for value in response.get("results", []):
+                yield value
+
+            # According to Cloud and Server documentation the links are returned the same way:
+            # https://developer.atlassian.com/cloud/confluence/rest/api-group-content/#api-wiki-rest-api-content-get
+            # https://developer.atlassian.com/server/confluence/pagination-in-the-rest-api/
+            url = response.get("_links", {}).get("next")
+            if url is None:
+                break
+            # From now on we have relative URLs with parameters
+            absolute = False
+            # Params are now provided by the url
+            params = {}
+            # Trailing should not be added as it is already part of the url
+            trailing = False
+
+        return
+
+    def page_exists(self, space, title, type=None):
+        """
+        Check if title exists as page.
+        :param space: Space key
+        :param title: Title of the page
+        :param type: type of the page, 'page' or 'blogpost'. Defaults to 'page'
+        :return:
+        """
+        url = "rest/api/content"
+        params = {}
+        if space is not None:
+            params["spaceKey"] = str(space)
+        if title is not None:
+            params["title"] = str(title)
+        if type is not None:
+            params["type"] = str(type)
+
         try:
-            if self.get_page_by_title(space, title):
-                log.info('Page "{title}" already exists in space "{space}"'.format(space=space, title=title))
-                return True
-            else:
-                log.info("Page does not exist because did not find by title search")
-                return False
-        except (HTTPError, KeyError, IndexError):
-            log.info('Page "{title}" does not exist in space "{space}"'.format(space=space, title=title))
+            response = self.get(url, params=params)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                raise ApiPermissionError(
+                    "The calling user does not have permission to view the content",
+                    reason=e,
+                )
+
+            raise
+
+        if response.get("results"):
+            return True
+        else:
             return False
 
-    def get_page_child_by_type(self, page_id, type="page", start=None, limit=None):
+    def get_page_child_by_type(self, page_id, type="page", start=None, limit=None, expand=None):
         """
         Provide content by type (page, blog, comment)
         :param page_id: A string containing the id of the type content container.
         :param type:
         :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
         :param limit: OPTIONAL: how many items should be returned after the start index. Default: Site limit 200.
+        :param expand: OPTIONAL: expand e.g. history
         :return:
         """
         params = {}
@@ -71,12 +149,20 @@ class Confluence(AtlassianRestAPI):
             params["start"] = int(start)
         if limit is not None:
             params["limit"] = int(limit)
+        if expand is not None:
+            params["expand"] = expand
 
         url = "rest/api/content/{page_id}/child/{type}".format(page_id=page_id, type=type)
         log.info(url)
 
         try:
-            response = self.get(url, params=params)
+            if not self.advanced_mode and start is None and limit is None:
+                return self._get_paged(url, params=params)
+            else:
+                response = self.get(url, params=params)
+                if self.advanced_mode:
+                    return response
+                return response.get("results")
         except HTTPError as e:
             if e.response.status_code == 404:
                 # Raise ApiError as the documented reason is ambiguous
@@ -87,10 +173,6 @@ class Confluence(AtlassianRestAPI):
                 )
 
             raise
-
-        if self.advanced_mode:
-            return response
-        return response.get("results")
 
     def get_child_title_list(self, page_id, type="page", start=None, limit=None):
         """
@@ -126,14 +208,15 @@ class Confluence(AtlassianRestAPI):
         """
         return self.get_page_child_by_type(page_id=page_id, type="page")
 
-    def get_page_id(self, space, title):
+    def get_page_id(self, space, title, type="page"):
         """
-        Provide content id from search result by title and space
+        Provide content id from search result by title and space.
         :param space: SPACE key
         :param title: title
+        :param type: type of content: Page or Blogpost. Defaults to page
         :return:
         """
-        return (self.get_page_by_title(space, title) or {}).get("id")
+        return (self.get_page_by_title(space, title, type=type) or {}).get("id")
 
     def get_parent_content_id(self, page_id):
         """
@@ -167,11 +250,11 @@ class Confluence(AtlassianRestAPI):
 
     def get_page_space(self, page_id):
         """
-        Provide space key from content id
+        Provide space key from content id.
         :param page_id: content ID
         :return:
         """
-        return ((self.get_page_by_id(page_id, expand="space") or {}).get("space") or {}).get("key")
+        return ((self.get_page_by_id(page_id, expand="space") or {}).get("space") or {}).get("key") or None
 
     def get_pages_by_title(self, space, title, start=0, limit=200, expand=None):
         """
@@ -188,7 +271,7 @@ class Confluence(AtlassianRestAPI):
         """
         return self.get_page_by_title(space, title, start, limit, expand)
 
-    def get_page_by_title(self, space, title, start=0, limit=1, expand=None):
+    def get_page_by_title(self, space, title, start=0, limit=1, expand=None, type="page"):
         """
         Returns the first page  on a piece of Content.
         :param space: Space key
@@ -197,12 +280,13 @@ class Confluence(AtlassianRestAPI):
         :param limit: OPTIONAL: The limit of the number of labels to return, this may be restricted by
                             fixed system limits. Default: 1.
         :param expand: OPTIONAL: expand e.g. history
+        :param type: OPTIONAL: Type of content: Page or Blogpost. Defaults to page
         :return: The JSON data returned from searched results the content endpoint, or the results of the
                  callback. Will raise requests.HTTPError on bad input, potentially.
                  If it has IndexError then return the None.
         """
         url = "rest/api/content"
-        params = {}
+        params = {"type": type}
         if start is not None:
             params["start"] = int(start)
         if limit is not None:
@@ -229,7 +313,7 @@ class Confluence(AtlassianRestAPI):
         try:
             return response.get("results")[0]
         except (IndexError, TypeError) as e:
-            log.error("Can't find '{title}' page on the {url}!".format(title=title, url=self.url))
+            log.error("Can't find '%s' page on the %s!", title, self.url)
             log.debug(e)
             return None
 
@@ -244,7 +328,7 @@ class Confluence(AtlassianRestAPI):
         :param version: (int)
         :param expand: OPTIONAL: Default value: history,space,version
                        We can also specify some extensions such as extensions.inlineProperties
-                       (for getting inline comment-specific properties) or extensions.resolution
+                       (for getting inline comment-specific properties) or extensions. Resolution
                        for the resolution status of each comment in the results
         :return:
         """
@@ -405,7 +489,15 @@ class Confluence(AtlassianRestAPI):
 
         return response.get("results")
 
-    def get_all_pages_from_space(self, space, start=0, limit=50, status=None, expand=None, content_type="page"):
+    def get_all_pages_from_space_raw(
+        self,
+        space,
+        start=0,
+        limit=50,
+        status=None,
+        expand=None,
+        content_type="page",
+    ):
         """
         Get all pages from space
 
@@ -448,7 +540,36 @@ class Confluence(AtlassianRestAPI):
 
             raise
 
-        return response.get("results")
+        return response
+
+    def get_all_pages_from_space(
+        self,
+        space,
+        start=0,
+        limit=50,
+        status=None,
+        expand=None,
+        content_type="page",
+    ):
+        """
+        Get all pages from space
+
+        :param space:
+        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
+        :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
+                            fixed system limits. Default: 50
+        :param status: OPTIONAL: list of statuses the content to be found is in.
+                                 Defaults to current is not specified.
+                                 If set to 'any', content in 'current' and 'trashed' status will be fetched.
+                                 Does not support 'historical' status for now.
+        :param expand: OPTIONAL: a comma separated list of properties to expand on the content.
+                                 Default value: history,space,version.
+        :param content_type: the content type to return. Default value: page. Valid values: page, blogpost.
+        :return:
+        """
+        return self.get_all_pages_from_space_raw(
+            space=space, start=start, limit=limit, status=status, expand=expand, content_type=content_type
+        ).get("results")
 
     def get_all_pages_from_space_trash(self, space, start=0, limit=500, status="trashed", content_type="page"):
         """
@@ -610,6 +731,7 @@ class Confluence(AtlassianRestAPI):
         type="page",
         representation="storage",
         editor=None,
+        full_width=False,
     ):
         """
         Create page from scratch
@@ -620,20 +742,29 @@ class Confluence(AtlassianRestAPI):
         :param type:
         :param representation: OPTIONAL: either Confluence 'storage' or 'wiki' markup format
         :param editor: OPTIONAL: v2 to be created in the new editor
+        :param full_width: DEFAULT: False
         :return:
         """
-        log.info('Creating {type} "{space}" -> "{title}"'.format(space=space, title=title, type=type))
+        log.info('Creating %s "%s" -> "%s"', type, space, title)
         url = "rest/api/content/"
         data = {
             "type": type,
             "title": title,
             "space": {"key": space},
             "body": self._create_body(body, representation),
+            "metadata": {"properties": {}},
         }
         if parent_id:
             data["ancestors"] = [{"type": type, "id": parent_id}]
         if editor is not None and editor in ["v1", "v2"]:
-            data["metadata"] = {"properties": {"editor": {"value": editor}}}
+            data["metadata"]["properties"]["editor"] = {"value": editor}
+        if full_width is True:
+            data["metadata"]["properties"]["content-appearance-draft"] = {"value": "full-width"}
+            data["metadata"]["properties"]["content-appearance-published"] = {"value": "full-width"}
+        else:
+            data["metadata"]["properties"]["content-appearance-draft"] = {"value": "fixed-width"}
+            data["metadata"]["properties"]["content-appearance-published"] = {"value": "fixed-width"}
+
         try:
             response = self.post(url, data=data)
         except HTTPError as e:
@@ -647,7 +778,14 @@ class Confluence(AtlassianRestAPI):
 
         return response
 
-    def move_page(self, space_key, page_id, target_id=None, target_title=None, position="append"):
+    def move_page(
+        self,
+        space_key,
+        page_id,
+        target_id=None,
+        target_title=None,
+        position="append",
+    ):
         """
         Move page method
         :param space_key:
@@ -668,7 +806,14 @@ class Confluence(AtlassianRestAPI):
         return self.post(url, params=params, headers=self.no_check_headers)
 
     def create_or_update_template(
-        self, name, body, template_type="page", template_id=None, description=None, labels=None, space=None
+        self,
+        name,
+        body,
+        template_type="page",
+        template_id=None,
+        description=None,
+        labels=None,
+        space=None,
     ):
         """
         Creates a new or updates an existing content template.
@@ -716,9 +861,9 @@ class Confluence(AtlassianRestAPI):
 
         if template_id:
             data["templateId"] = template_id
-            return self.put("wiki/rest/api/template", data=json.dumps(data))
+            return self.put("rest/api/template", data=json.dumps(data))
 
-        return self.post("wiki/rest/api/template", json=data)
+        return self.post("rest/api/template", json=data)
 
     @deprecated(version="3.7.0", reason="Use get_content_template()")
     def get_template_by_id(self, template_id):
@@ -751,7 +896,7 @@ class Confluence(AtlassianRestAPI):
         :param str template_id: The ID of the content template to be returned
         :return:
         """
-        url = "wiki/rest/api/template/{template_id}".format(template_id=template_id)
+        url = "rest/api/template/{template_id}".format(template_id=template_id)
 
         try:
             response = self.get(url)
@@ -771,7 +916,7 @@ class Confluence(AtlassianRestAPI):
     @deprecated(version="3.7.0", reason="Use get_blueprint_templates()")
     def get_all_blueprints_from_space(self, space, start=0, limit=None, expand=None):
         """
-        Get all users blue prints from space. Experimental API
+        Get all users blueprints from space. Experimental API
         :param space: Space Key
         :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
         :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
@@ -814,7 +959,7 @@ class Confluence(AtlassianRestAPI):
                             fixed system limits. Default: 25
         :param expand: OPTIONAL: A multi-value parameter indicating which properties of the template to expand.
         """
-        url = "wiki/rest/api/template/blueprint"
+        url = "rest/api/template/blueprint"
         params = {}
         if space:
             params["spaceKey"] = space
@@ -885,7 +1030,7 @@ class Confluence(AtlassianRestAPI):
         :param expand: OPTIONAL: A multi-value parameter indicating which properties of the template to expand.
             e.g. ``body``
         """
-        url = "wiki/rest/api/template/page"
+        url = "rest/api/template/page"
         params = {}
         if space:
             params["spaceKey"] = space
@@ -924,9 +1069,16 @@ class Confluence(AtlassianRestAPI):
         :param str template_id: The ID of the template to be deleted.
         :return:
         """
-        return self.delete("wiki/rest/api/template/{}".format(template_id))
+        return self.delete("rest/api/template/{}".format(template_id))
 
-    def get_all_spaces(self, start=0, limit=500, expand=None, space_type=None, space_status=None):
+    def get_all_spaces(
+        self,
+        start=0,
+        limit=500,
+        expand=None,
+        space_type=None,
+        space_status=None,
+    ):
         """
         Get all spaces with provided limit
         :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
@@ -986,8 +1138,8 @@ class Confluence(AtlassianRestAPI):
         comment=None,
     ):
         """
-        Attach (upload) a file to a page, if it exists it will update the
-        automatically version the new file and keep the old one.
+        Attach (upload) a file to a page, if it exists it will update automatically the
+        version the new file and keep the old one.
         :param title: The page name
         :type  title: ``str``
         :param space: The space name
@@ -1014,7 +1166,10 @@ class Confluence(AtlassianRestAPI):
                 "comment": comment,
                 "minorEdit": "true",
             }
-            headers = {"X-Atlassian-Token": "no-check", "Accept": "application/json"}
+            headers = {
+                "X-Atlassian-Token": "no-check",
+                "Accept": "application/json",
+            }
             path = "rest/api/content/{page_id}/child/attachment".format(page_id=page_id)
             # Check if there is already a file with the same name
             attachments = self.get(path=path, headers=headers, params={"filename": name})
@@ -1063,8 +1218,8 @@ class Confluence(AtlassianRestAPI):
         comment=None,
     ):
         """
-        Attach (upload) a file to a page, if it exists it will update the
-        automatically version the new file and keep the old one.
+        Attach (upload) a file to a page, if it exists it will update automatically the
+        version the new file and keep the old one.
         :param title: The page name
         :type  title: ``str``
         :param space: The space name
@@ -1179,12 +1334,12 @@ class Confluence(AtlassianRestAPI):
                 version=remove_version_attachment_number,
             )
             log.info(
-                "Removed oldest version for {}, now versions equal more than {}".format(
-                    attachment.get("title"), len(attachment_versions)
-                )
+                "Removed oldest version for %s, now versions equal more than %s",
+                attachment.get("title"),
+                len(attachment_versions),
             )
             attachment_versions = self.get_attachment_history(attachment.get("id"))
-        log.info("Kept versions {} for {}".format(keep_last_versions, attachment.get("title")))
+        log.info("Kept versions %s for %s", keep_last_versions, attachment.get("title"))
 
     def get_attachment_history(self, attachment_id, limit=200, start=0):
         """
@@ -1199,7 +1354,15 @@ class Confluence(AtlassianRestAPI):
         return (self.get(url, params=params) or {}).get("results")
 
     # @todo prepare more attachments info
-    def get_attachments_from_content(self, page_id, start=0, limit=50, expand=None, filename=None, media_type=None):
+    def get_attachments_from_content(
+        self,
+        page_id,
+        start=0,
+        limit=50,
+        expand=None,
+        filename=None,
+        media_type=None,
+    ):
         """
         Get attachments for page
         :param page_id:
@@ -1320,7 +1483,12 @@ class Confluence(AtlassianRestAPI):
         :param version_number:
         :return:
         """
-        url = "rest/experimental/content/{0}/version/{1}".format(content_id, version_number)
+        if self.cloud:
+            url = "rest/api/content/{id}/version/{versionNumber}".format(id=content_id, versionNumber=version_number)
+        else:
+            url = "rest/experimental/content/{id}/version/{versionNumber}".format(
+                id=content_id, versionNumber=version_number
+            )
         return self.get(url)
 
     def remove_content_history(self, page_id, version_number):
@@ -1330,7 +1498,12 @@ class Confluence(AtlassianRestAPI):
         :param version_number: version number
         :return:
         """
-        url = "rest/experimental/content/{id}/version/{versionNumber}".format(id=page_id, versionNumber=version_number)
+        if self.cloud:
+            url = "rest/api/content/{id}/version/{versionNumber}".format(id=page_id, versionNumber=version_number)
+        else:
+            url = "rest/experimental/content/{id}/version/{versionNumber}".format(
+                id=page_id, versionNumber=version_number
+            )
         self.delete(url)
 
     def remove_page_history(self, page_id, version_number):
@@ -1365,8 +1538,8 @@ class Confluence(AtlassianRestAPI):
             self.remove_page_history(page_id=page_id, version_number=1)
             page = self.get_page_by_id(page_id=page_id, expand="version")
             page_number = page.get("version").get("number")
-            log.info("Removed oldest version for {}, now it's {}".format(page.get("title"), page_number))
-        log.info("Kept versions {} for {}".format(keep_last_versions, page.get("title")))
+            log.info("Removed oldest version for %s, now it's %s", page.get("title"), page_number)
+        log.info("Kept versions %s for %s", keep_last_versions, page.get("title"))
 
     def has_unknown_attachment_error(self, page_id):
         """
@@ -1395,7 +1568,7 @@ class Confluence(AtlassianRestAPI):
         if title:
             current_title = confluence_content.get("title", None)
             if title != current_title:
-                log.info("Title of {page_id} is different".format(page_id=page_id))
+                log.info("Title of %s is different", page_id)
                 return False
 
         if self.advanced_mode:
@@ -1413,14 +1586,14 @@ class Confluence(AtlassianRestAPI):
             # @todo move into utils
             confluence_body_content = utils.symbol_normalizer(confluence_body_content)
 
-        log.debug('Old Content: """{body}"""'.format(body=confluence_body_content))
-        log.debug('New Content: """{body}"""'.format(body=body))
+        log.debug('Old Content: """%s"""', confluence_body_content)
+        log.debug('New Content: """%s"""', body)
 
         if confluence_body_content.strip() == body.strip():
-            log.warning("Content of {page_id} is exactly the same".format(page_id=page_id))
+            log.info("Content of %s is exactly the same", page_id)
             return True
         else:
-            log.info("Content of {page_id} differs".format(page_id=page_id))
+            log.info("Content of %s differs", page_id)
             return False
 
     def update_existing_page(
@@ -1432,17 +1605,18 @@ class Confluence(AtlassianRestAPI):
         representation="storage",
         minor_edit=False,
         version_comment=None,
+        full_width=False,
     ):
         """Duplicate update_page. Left for the people who used it before. Use update_page instead"""
         return self.update_page(
             page_id=page_id,
             title=title,
             body=body,
-            parent_id=None,
             type=type,
             representation=representation,
             minor_edit=minor_edit,
             version_comment=version_comment,
+            full_width=full_width,
         )
 
     def update_page(
@@ -1456,6 +1630,7 @@ class Confluence(AtlassianRestAPI):
         minor_edit=False,
         version_comment=None,
         always_update=False,
+        full_width=False,
     ):
         """
         Update page if already exist
@@ -1469,9 +1644,12 @@ class Confluence(AtlassianRestAPI):
             If False then notifications will be sent.
         :param version_comment: Version comment
         :param always_update: Whether always to update (suppress content check)
+        :param full_width: OPTIONAL: Default False
         :return:
         """
-        log.info('Updating {type} "{title}"'.format(title=title, type=type))
+        # update current page
+        params = {"status": "current"}
+        log.info('Updating %s "%s" with %s', type, title, parent_id)
 
         if not always_update and body is not None and self.is_page_content_is_already_updated(page_id, body, title):
             return self.get_page_by_id(page_id)
@@ -1482,7 +1660,7 @@ class Confluence(AtlassianRestAPI):
             else:
                 version = self.history(page_id)["lastUpdated"]["number"] + 1
         except (IndexError, TypeError) as e:
-            log.error("Can't find '{title}' {type}!".format(title=title, type=type))
+            log.error("Can't find '%s' %s!", title, type)
             log.debug(e)
             return None
 
@@ -1491,6 +1669,7 @@ class Confluence(AtlassianRestAPI):
             "type": type,
             "title": title,
             "version": {"number": version, "minorEdit": minor_edit},
+            "metadata": {"properties": {}},
         }
         if body is not None:
             data["body"] = self._create_body(body, representation)
@@ -1500,8 +1679,18 @@ class Confluence(AtlassianRestAPI):
         if version_comment:
             data["version"]["message"] = version_comment
 
+        if full_width is True:
+            data["metadata"]["properties"]["content-appearance-draft"] = {"value": "full-width"}
+            data["metadata"]["properties"]["content-appearance-published"] = {"value": "full-width"}
+        else:
+            data["metadata"]["properties"]["content-appearance-draft"] = {"value": "fixed-width"}
+            data["metadata"]["properties"]["content-appearance-published"] = {"value": "fixed-width"}
         try:
-            response = self.put("rest/api/content/{0}".format(page_id), data=data)
+            response = self.put(
+                "rest/api/content/{0}".format(page_id),
+                data=data,
+                params=params,
+            )
         except HTTPError as e:
             if e.response.status_code == 400:
                 raise ApiValueError(
@@ -1542,7 +1731,9 @@ class Confluence(AtlassianRestAPI):
         :param top_of_page: Option to add the content to the end of page body
         :return:
         """
-        log.info('Updating {type} "{title}"'.format(title=title, type=type))
+        log.info('Updating %s "%s"', type, title)
+        # update current page
+        params = {"status": "current"}
 
         if self.is_page_content_is_already_updated(page_id, insert_body, title):
             return self.get_page_by_id(page_id)
@@ -1567,7 +1758,11 @@ class Confluence(AtlassianRestAPI):
                 data["version"]["message"] = version_comment
 
             try:
-                response = self.put("rest/api/content/{0}".format(page_id), data=data)
+                response = self.put(
+                    "rest/api/content/{0}".format(page_id),
+                    data=data,
+                    params=params,
+                )
             except HTTPError as e:
                 if e.response.status_code == 400:
                     raise ApiValueError(
@@ -1605,7 +1800,7 @@ class Confluence(AtlassianRestAPI):
             If False then notifications will be sent.
         :return:
         """
-        log.info('Updating {type} "{title}"'.format(title=title, type=type))
+        log.info('Updating %s "%s"', type, title)
 
         return self._insert_to_existing_page(
             page_id,
@@ -1640,7 +1835,7 @@ class Confluence(AtlassianRestAPI):
             If False then notifications will be sent.
         :return:
         """
-        log.info('Updating {type} "{title}"'.format(title=title, type=type))
+        log.info('Updating %s "%s"', type, title)
 
         return self._insert_to_existing_page(
             page_id,
@@ -1662,6 +1857,7 @@ class Confluence(AtlassianRestAPI):
         minor_edit=False,
         version_comment=None,
         editor=None,
+        full_width=False,
     ):
         """
         Update page or create a page if it is not exists
@@ -1672,6 +1868,7 @@ class Confluence(AtlassianRestAPI):
         :param minor_edit: Update page without notification
         :param version_comment: Version comment
         :param editor: OPTIONAL: v2 to be created in the new editor
+        :param full_width: OPTIONAL: Default is False
         :return:
         """
         space = self.get_page_space(parent_id)
@@ -1687,6 +1884,7 @@ class Confluence(AtlassianRestAPI):
                 representation=representation,
                 minor_edit=minor_edit,
                 version_comment=version_comment,
+                full_width=full_width,
             )
         else:
             result = self.create_page(
@@ -1696,12 +1894,13 @@ class Confluence(AtlassianRestAPI):
                 body=body,
                 representation=representation,
                 editor=editor,
+                full_width=full_width,
             )
 
         log.info(
-            "You may access your page at: {host}{url}".format(
-                host=self.url, url=((result or {}).get("_links") or {}).get("tinyui")
-            )
+            "You may access your page at: %s%s",
+            self.url,
+            ((result or {}).get("_links") or {}).get("tinyui"),
         )
         return result
 
@@ -1918,11 +2117,50 @@ class Confluence(AtlassianRestAPI):
             response = self.get(url)
         except HTTPError as e:
             if e.response.status_code == 403:
-                raise ApiPermissionError("The calling user does not have permission to view groups", reason=e)
+                raise ApiPermissionError(
+                    "The calling user does not have permission to view groups",
+                    reason=e,
+                )
 
             raise
 
         return response.get("results")
+
+    def create_group(self, name):
+        """
+        Create a group by given group parameter
+
+        :param name: str
+        :return: New group params
+        """
+        url = "rest/api/admin/group"
+        data = {"name": name, "type": "group"}
+        return self.post(url, data=data)
+
+    def remove_group(self, name):
+        """
+        Delete a group by given group parameter
+        If you delete a group and content is restricted to that group, the content will be hidden from all users
+
+        :param name: str
+        :return:
+        """
+        log.warning("Removing group...")
+        url = "rest/api/admin/group/{groupName}".format(groupName=name)
+
+        try:
+            response = self.delete(url)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                # Raise ApiError as the documented reason is ambiguous
+                raise ApiError(
+                    "There is no group with the given name, "
+                    "or the calling user does not have permission to delete it",
+                    reason=e,
+                )
+            raise
+
+        return response
 
     def get_group_members(self, group_name="confluence-users", start=0, limit=1000, expand=None):
         """
@@ -1942,7 +2180,10 @@ class Confluence(AtlassianRestAPI):
             response = self.get(url)
         except HTTPError as e:
             if e.response.status_code == 403:
-                raise ApiPermissionError("The calling user does not have permission to view users", reason=e)
+                raise ApiPermissionError(
+                    "The calling user does not have permission to view users",
+                    reason=e,
+                )
 
             raise
 
@@ -1960,7 +2201,12 @@ class Confluence(AtlassianRestAPI):
         step = 0
         members = []
         while flag:
-            values = self.get_group_members(group_name=group_name, start=len(members), limit=limit, expand=expand)
+            values = self.get_group_members(
+                group_name=group_name,
+                start=len(members),
+                limit=limit,
+                expand=expand,
+            )
             step += 1
             if len(values) == 0:
                 flag = False
@@ -2107,7 +2353,7 @@ class Confluence(AtlassianRestAPI):
     def get_user_details_by_username(self, username, expand=None):
         """
         Get information about a user through username
-        :param username: The user name
+        :param username: The username
         :param expand: OPTIONAL expand for get status of user.
                 Possible param is "status". Results are "Active, Deactivated"
         :return: Returns the user details
@@ -2121,7 +2367,10 @@ class Confluence(AtlassianRestAPI):
             response = self.get(url, params=params)
         except HTTPError as e:
             if e.response.status_code == 403:
-                raise ApiPermissionError("The calling user does not have permission to view users", reason=e)
+                raise ApiPermissionError(
+                    "The calling user does not have permission to view users",
+                    reason=e,
+                )
             if e.response.status_code == 404:
                 raise ApiNotFoundError(
                     "The user with the given username or userkey does not exist",
@@ -2149,7 +2398,10 @@ class Confluence(AtlassianRestAPI):
             response = self.get(url, params=params)
         except HTTPError as e:
             if e.response.status_code == 403:
-                raise ApiPermissionError("The calling user does not have permission to view users", reason=e)
+                raise ApiPermissionError(
+                    "The calling user does not have permission to view users",
+                    reason=e,
+                )
             if e.response.status_code == 404:
                 raise ApiNotFoundError(
                     "The user with the given account does not exist",
@@ -2177,7 +2429,10 @@ class Confluence(AtlassianRestAPI):
             response = self.get(url, params=params)
         except HTTPError as e:
             if e.response.status_code == 403:
-                raise ApiPermissionError("The calling user does not have permission to view users", reason=e)
+                raise ApiPermissionError(
+                    "The calling user does not have permission to view users",
+                    reason=e,
+                )
             if e.response.status_code == 404:
                 raise ApiNotFoundError(
                     "The user with the given username or userkey does not exist",
@@ -2246,7 +2501,11 @@ class Confluence(AtlassianRestAPI):
         url = "spaces/flyingpdf/pdfpageexport.action?pageId={pageId}".format(pageId=page_id)
         if self.api_version == "cloud":
             url = self.get_pdf_download_url_for_confluence_cloud(url)
-
+            if not url:
+                log.error("Failed to get download PDF url.")
+                raise ApiNotFoundError("Failed to export page as PDF", reason="Failed to get download PDF url.")
+            # To download the PDF file, the request should be with no headers of authentications.
+            return requests.get(url, timeout=75).content
         return self.get(url, headers=headers, not_json_response=True)
 
     def get_page_as_word(self, page_id):
@@ -2345,7 +2604,7 @@ class Confluence(AtlassianRestAPI):
 
     def anonymous(self):
         """
-        Get information about the how anonymous is represented in confluence
+        Get information about how anonymous is represented in confluence
         :return:
         """
         try:
@@ -2360,6 +2619,30 @@ class Confluence(AtlassianRestAPI):
             raise
 
         return response
+
+    def get_plugins_info(self):
+        """
+        Provide plugins info
+        :return a json of installed plugins
+        """
+        url = "rest/plugins/1.0/"
+        return self.get(url, headers=self.no_check_headers, trailing=True)
+
+    def get_plugin_info(self, plugin_key):
+        """
+        Provide plugin info
+        :return a json of installed plugins
+        """
+        url = "rest/plugins/1.0/{plugin_key}-key".format(plugin_key=plugin_key)
+        return self.get(url, headers=self.no_check_headers, trailing=True)
+
+    def get_plugin_license_info(self, plugin_key):
+        """
+        Provide plugin license info
+        :return a json specific License query
+        """
+        url = "rest/plugins/1.0/{plugin_key}-key/license".format(plugin_key=plugin_key)
+        return self.get(url, headers=self.no_check_headers, trailing=True)
 
     def upload_plugin(self, plugin_path):
         """
@@ -2385,6 +2668,25 @@ class Confluence(AtlassianRestAPI):
         """
         url = "rest/plugins/1.0/{}-key".format(plugin_key)
         return self.delete(url)
+
+    def check_plugin_manager_status(self):
+        url = "rest/plugins/latest/safe-mode"
+        return self.request(method="GET", path=url, headers=self.safe_mode_headers)
+
+    def update_plugin_license(self, plugin_key, raw_license):
+        """
+        Update license for plugin
+        :param plugin_key:
+        :param raw_license:
+        :return:
+        """
+        app_headers = {
+            "X-Atlassian-Token": "nocheck",
+            "Content-Type": "application/vnd.atl.plugins+json",
+        }
+        url = "/plugins/1.0/{plugin_key}/license".format(plugin_key=plugin_key)
+        data = {"rawLicense": raw_license}
+        return self.put(url, data=data, headers=app_headers)
 
     def check_long_tasks_result(self, start=None, limit=None, expand=None):
         """
@@ -2432,53 +2734,59 @@ class Confluence(AtlassianRestAPI):
     def get_pdf_download_url_for_confluence_cloud(self, url):
         """
         Confluence cloud does not return the PDF document when the PDF
-        export is initiated. Instead it starts a process in the background
+        export is initiated. Instead, it starts a process in the background
         and provides a link to download the PDF once the process completes.
-        This functions polls the long running task page and returns the
+        This functions polls the long-running task page and returns the
         download url of the PDF.
         :param url: URL to initiate PDF export
         :return: Download url for PDF file
         """
-        download_url = None
         try:
-            long_running_task = True
+            running_task = True
             headers = self.form_token_headers
             log.info("Initiate PDF export from Confluence Cloud")
             response = self.get(url, headers=headers, not_json_response=True)
             response_string = response.decode(encoding="utf-8", errors="strict")
             task_id = response_string.split('name="ajs-taskId" content="')[1].split('">')[0]
-            poll_url = "runningtaskxml.action?taskId={0}".format(task_id)
-            while long_running_task:
-                long_running_task_response = self.get(poll_url, headers=headers, not_json_response=True)
-                long_running_task_response_parts = long_running_task_response.decode(
-                    encoding="utf-8", errors="strict"
-                ).split("\n")
-                percentage_complete = long_running_task_response_parts[6].strip()
-                is_successful = long_running_task_response_parts[7].strip()
-                is_complete = long_running_task_response_parts[8].strip()
-                log.info("Sleep for 5s.")
-                time.sleep(5)
+            poll_url = "/services/api/v1/task/{0}/progress".format(task_id)
+            while running_task:
                 log.info("Check if export task has completed.")
-                if is_complete == "<isComplete>true</isComplete>":
-                    if is_successful == "<isSuccessful>true</isSuccessful>":
-                        log.info(percentage_complete)
-                        log.info("Downloading content...")
-                        log.debug("Extract taskId and download PDF.")
-                        current_status = long_running_task_response_parts[3]
-                        download_url = current_status.split("href=&quot;/wiki/")[1].split("&quot")[0]
-                        long_running_task = False
-                    elif is_successful == "<isSuccessful>false</isSuccessful>":
-                        log.error("PDF conversion not successful.")
-                        return None
+                progress_response = self.get(poll_url)
+                percentage_complete = int(progress_response.get("progress", 0))
+                task_state = progress_response.get("state")
+                if task_state == "FAILED":
+                    log.error("PDF conversion not successful.")
+                    return None
+                elif percentage_complete == 100:
+                    running_task = False
+                    log.info("Task completed - {task_state}".format(task_state=task_state))
+                    log.debug("Extract task results to download PDF.")
+                    task_result_url = progress_response.get("result")
                 else:
-                    log.info(percentage_complete)
+                    log.info(
+                        "{percentage_complete}% - {task_state}".format(
+                            percentage_complete=percentage_complete, task_state=task_state
+                        )
+                    )
+                    time.sleep(3)
+            log.debug("Task successfully done, querying the task result for the download url")
+            # task result url starts with /wiki, remove it.
+            task_content = self.get(task_result_url[5:], not_json_response=True)
+            download_url = task_content.decode(encoding="utf-8", errors="strict")
+            log.debug("Successfully got the download url")
+            return download_url
         except IndexError as e:
             log.error(e)
             return None
 
-        return download_url
-
-    def audit(self, start_date=None, end_date=None, start=None, limit=None, search_string=None):
+    def audit(
+        self,
+        start_date=None,
+        end_date=None,
+        start=None,
+        limit=None,
+        search_string=None,
+    ):
         """
         Fetch a paginated list of AuditRecord instances dating back to a certain time
         :param start_date:
@@ -2587,15 +2895,44 @@ class Confluence(AtlassianRestAPI):
         """
         params = {"email": email, "fullname": fullname, "name": username}
         url = "rpc/json-rpc/confluenceservice-v2"
-        data = {"jsonrpc": "2.0", "method": "addUser", "params": [params, password]}
+        data = {
+            "jsonrpc": "2.0",
+            "method": "addUser",
+            "params": [params, password],
+        }
+        self.post(url, data=data)
+
+    def change_user_password(self, username, password):
+        """
+        That method related to changing user password via json rpc for Confluence Server
+        """
+        params = {"name": username}
+        url = "rpc/json-rpc/confluenceservice-v2"
+        data = {
+            "jsonrpc": "2.0",
+            "method": "changeUserPassword",
+            "params": [params, password],
+        }
+        self.post(url, data=data)
+
+    def change_my_password(self, oldpass, newpass):
+        """
+        That method related to changing calling user's own password via json rpc for Confluence Server
+        """
+        url = "rpc/json-rpc/confluenceservice-v2"
+        data = {
+            "jsonrpc": "2.0",
+            "method": "changeMyPassword",
+            "params": [oldpass, newpass],
+        }
         self.post(url, data=data)
 
     def add_user_to_group(self, username, group_name):
         """
         Add given user to a group
 
-        :param username: str
-        :param group_name: str
+        :param username: str - username of user to add to group
+        :param group_name: str - name of group to add user to
         :return: Current state of the group
         """
         url = "rest/api/2/group/user"
@@ -2603,15 +2940,22 @@ class Confluence(AtlassianRestAPI):
         data = {"name": username}
         return self.post(url, params=params, data=data)
 
-    def add_space_permissions(self, space_key, subject_type, subject_id, operation_key, operation_target):
+    def add_space_permissions(
+        self,
+        space_key,
+        subject_type,
+        subject_id,
+        operation_key,
+        operation_target,
+    ):
         """
         Add permissions to a space
 
-        :param space_key: str
-        :param subject_type: str
-        :param subject_id: str
-        :param operation_key: str
-        :param operation_target: str
+        :param space_key: str - key of space to add permissions to
+        :param subject_type: str - type of subject to add permissions for
+        :param subject_id: str - id of subject to add permissions for
+        :param operation_key: str - key of operation to add permissions for
+        :param operation_target: str - target of operation to add permissions for
         :return: Current permissions of space
         """
         url = "rest/api/space/{}/permission".format(space_key)
@@ -2643,7 +2987,7 @@ class Confluence(AtlassianRestAPI):
 
     def get_subtree_of_content_ids(self, page_id):
         """
-        Get sub tree of page ids
+        Get subtree of page ids
         :param page_id:
         :return: Set of page ID
         """
@@ -2699,17 +3043,144 @@ class Confluence(AtlassianRestAPI):
         params = {"globalId": global_id}
         return self.delete(url, params=params)
 
+    # Collaborative editing
+    def collaborative_editing_get_configuration(self):
+        """
+        Get collaborative editing configuration
+        Related to the on-prem setup Confluence Data Center
+        :return:
+        """
+        if self.cloud:
+            return ApiNotAcceptable
+        url = "rest/synchrony-interop/configuration"
+        return self.get(url, headers=self.no_check_headers)
+
+    def collaborative_editing_disable(self):
+        """
+        Disable collaborative editing
+        Related to the on-prem setup Confluence Data Center
+        :return:
+        """
+        if self.cloud:
+            return ApiNotAcceptable
+        url = "rest/synchrony-interop/disable"
+        return self.post(url, headers=self.no_check_headers)
+
+    def collaborative_editing_enable(self):
+        """
+        Disable collaborative editing
+        Related to the on-prem setup Confluence Data Center
+        :return:
+        """
+        if self.cloud:
+            return ApiNotAcceptable
+        url = "rest/synchrony-interop/enable"
+        return self.post(url, headers=self.no_check_headers)
+
+    def collaborative_editing_restart(self):
+        """
+        Disable collaborative editing
+        Related to the on-prem setup Confluence Data Center
+        :return:
+        """
+        if self.cloud:
+            return ApiNotAcceptable
+        url = "rest/synchrony-interop/restart"
+        return self.post(url, headers=self.no_check_headers)
+
+    def collaborative_editing_shared_draft_status(self):
+        """
+        Status of collaborative editing
+        Related to the on-prem setup Confluence Data Center
+        :return: false or true parameter in json
+                {
+                     "sharedDraftsEnabled": false
+                }
+        """
+        if self.cloud:
+            return ApiNotAcceptable
+        url = "rest/synchrony-interop/status"
+        return self.get(url, headers=self.no_check_headers)
+
+    def collaborative_editing_synchrony_status(self):
+        """
+        Status of collaborative editing
+        Related to the on-prem setup Confluence Data Center
+        :return: stopped or running parameter in json
+            {
+                "status": "stopped"
+            }
+        """
+        if self.cloud:
+            return ApiNotAcceptable
+        url = "rest/synchrony-interop/synchrony-status"
+        return self.get(url, headers=self.no_check_headers)
+
+    def synchrony_get_configuration(self):
+        """
+        Status of collaborative editing
+        Related to the on-prem setup Confluence Data Center
+        :return:
+        """
+        if self.cloud:
+            return ApiNotAcceptable
+        url = "rest/synchrony/1.0/config/status"
+        return self.get(url, headers=self.no_check_headers)
+
+    def synchrony_remove_draft(self, page_id):
+        """
+        Status of collaborative editing
+        Related to the on-prem setup Confluence Data Center
+        :return:
+        """
+        if self.cloud:
+            return ApiNotAcceptable
+        url = "rest/synchrony/1.0/content/{pageId}/changes/unpublished".format(pageId=page_id)
+        return self.delete(url)
+
+    def get_license_details(self):
+        """
+        Returns the license detailed information
+        """
+        url = "rest/license/1.0/license/details"
+        return self.get(url)
+
+    def get_license_user_count(self):
+        """
+        Returns the total used seats in the license
+        """
+        url = "rest/license/1.0/license/userCount"
+        return self.get(url)
+
+    def get_license_remaining(self):
+        """
+        Returns the available license seats remaining
+        """
+        url = "rest/license/1.0/license/remainingSeats"
+        return self.get(url)
+
+    def get_license_max_users(self):
+        """
+        Returns the license max users
+        """
+        url = "rest/license/1.0/license/maxUsers"
+        return self.get(url)
+
     def raise_for_status(self, response):
         """
         Checks the response for an error status and raises an exception with the error message provided by the server
         :param response:
         :return:
         """
+        if response.status_code == 401 and response.headers.get("Content-Type") != "application/json;charset=UTF-8":
+            raise HTTPError("Unauthorized (401)", response=response)
+
         if 400 <= response.status_code < 600:
             try:
                 j = response.json()
                 error_msg = j["message"]
-            except Exception:
+            except Exception as e:
+                log.error(e)
                 response.raise_for_status()
-
-            raise HTTPError(error_msg, response=response)
+            else:
+                raise HTTPError(error_msg, response=response)

@@ -81,8 +81,16 @@ class Repositories(BitbucketServerBase):
 class Repository(BitbucketServerBase):
     def __init__(self, data, *args, **kwargs):
         super(Repository, self).__init__(None, *args, data=data, **kwargs)
-        self.__groups = Groups(self._sub_url("permissions/groups"), "REPO", **self._new_session_args)
-        self.__users = Users(self._sub_url("permissions/users"), "REPO", **self._new_session_args)
+        self.__groups = Groups(
+            self._sub_url("permissions/groups"),
+            "REPO",
+            **self._new_session_args
+        )  # fmt: skip
+        self.__users = Users(
+            self._sub_url("permissions/users"),
+            "REPO",
+            **self._new_session_args
+        )  # fmt: skip
 
     def __get_object(self, data):
         return Repository(data, **self._new_session_args)
@@ -276,7 +284,16 @@ class Repository(BitbucketServerBase):
         """
         return self.__users
 
-    def download_archive(self, dest_fd, at=None, filename=None, format=None, path=None, prefix=None, chunk_size=128):
+    def download_archive(
+        self,
+        dest_fd,
+        at=None,
+        filename=None,
+        format=None,
+        path=None,
+        prefix=None,
+        chunk_size=128,
+    ):
         """
         Downloads a repository archive.
         Note that the data is written to the specified file-like object,
@@ -286,9 +303,11 @@ class Repository(BitbucketServerBase):
         :param dest_fd: a file-like object to which the archive will be written
         :param at: string: Optional, the commit to download an archive of; if not supplied, an archive of the default branch is downloaded
         :param filename: string: Optional, a filename to include the "Content-Disposition" header
-        :param format: string: Optional, the format to stream the archive in; must be one of: zip, tar, tar.gz or tgz. If not specified, then the archive will be in zip format.
-        :param paths: string: Optional, path to include in the streamed archive
-        :param prefix: string: Optional, a prefix to apply to all entries in the streamed archive; if the supplied prefix does not end with a trailing /, one will be added automatically
+        :param format: string: Optional, the format to stream the archive in; must be one of: zip, tar, tar.gz or tgz.
+                        If not specified, then the archive will be in zip format.
+        :param path: string: Optional, path to include in the streamed archive
+        :param prefix: string: Optional, a prefix to apply to all entries in the streamed archive;
+                        if the supplied prefix does not end with a trailing /, one will be added automatically
         :param chunk_size: int: Optional, download chunk size. Defeault is 128
         """
         params = {}

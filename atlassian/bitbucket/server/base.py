@@ -17,12 +17,20 @@ class BitbucketServerBase(BitbucketBase):
             return None
         return [x["href"] for x in links[link]]
 
-    def _get_paged(self, url, params=None, data=None, flags=None, trailing=False, absolute=False):
+    def _get_paged(
+        self,
+        url,
+        params=None,
+        data=None,
+        flags=None,
+        trailing=False,
+        absolute=False,
+    ):
         """
         Used to get the paged data
 
         :param url: string:                        The url to retrieve
-        :param params: dict (default is None):     The parameters
+        :param params: dict (default is None):     The parameter's
         :param data: dict (default is None):       The data
         :param flags: string[] (default is None):  The flags
         :param trailing: bool (default is None):   If True, a trailing slash is added to the url

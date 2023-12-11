@@ -40,9 +40,7 @@ def html_list(data):
     </ul>'
     """
     html = "<ul>"
-
     for item in data:
-
         if isinstance(item, dict):
             if item.get("email"):
                 item = html_email(item.get("email"), item.get("name", None))
@@ -51,9 +49,7 @@ def html_list(data):
 
         if is_email(item):
             item = html_email(item, item)
-
         html += "<li>{}</li>".format(item)
-
     return html + "</ul>"
 
 
@@ -65,11 +61,9 @@ def html_table_header_row(data):
     '\\n\\t<tr><th>Key</th><th>Project</th><th>Leader</th><th>Administrators</th></tr>'
     """
     html = "\n\t<tr>"
-
     for th in data:
         title = th.replace("_", " ").title()
         html += "<th>{}</th>".format(title)
-
     return html + "</tr>"
 
 
@@ -94,20 +88,16 @@ def html_row_with_ordered_headers(data, col_headers, row_header=None):
                 </ul></td></tr>'
     """
     html = "\n\t<tr>"
-
     if row_header:
         html += "<th>{}</th>".format(row_header.replace("_", " ").title())
     for header in col_headers:
         element = data[header]
-
         if isinstance(element, list):
             element = html_list(element)
 
         if is_email(element):
             element = html_email(element)
-
         html += "<td>{}</td>".format(element)
-
     return html + "</tr>"
 
 
@@ -165,10 +155,8 @@ def html_table_from_dict(data, ordering):
     """
     html = "<table><tbody>"
     html += html_table_header_row(ordering)
-
     for row in data:
         html += html_row_with_ordered_headers(row, ordering)
-
     return html + "\n</tbody></table>"
 
 
@@ -273,49 +261,49 @@ def symbol_normalizer(text):
     if not text:
         return ""
     result = text
-    result = result.replace("&Auml;", u"Ä")
-    result = result.replace("&auml;", u"ä")
-    result = result.replace("&Euml;", u"Ë")
-    result = result.replace("&euml;", u"ë")
-    result = result.replace("&Iuml;", u"Ï")
-    result = result.replace("&iuml;", u"ï")
-    result = result.replace("&Ouml;", u"Ö")
-    result = result.replace("&ouml;", u"ö")
-    result = result.replace("&Uuml;", u"Ü")
-    result = result.replace("&uuml;", u"ü")
-    result = result.replace("&Aacute;", u"Á")
-    result = result.replace("&aacute;", u"á")
-    result = result.replace("&Eacute;", u"É")
-    result = result.replace("&eacute;", u"é")
-    result = result.replace("&Iacute;", u"Í")
-    result = result.replace("&iacute;", u"í")
-    result = result.replace("&Oacute;", u"Ó")
-    result = result.replace("&oacute;", u"ó")
-    result = result.replace("&Uacute;", u"Ú")
-    result = result.replace("&uacute;", u"ú")
-    result = result.replace("&Agrave;", u"À")
-    result = result.replace("&agrave;", u"à")
-    result = result.replace("&Egrave;", u"È")
-    result = result.replace("&egrave;", u"è")
-    result = result.replace("&Igrave;", u"Ì")
-    result = result.replace("&igrave;", u"ì")
-    result = result.replace("&Ograve;", u"Ò")
-    result = result.replace("&ograve;", u"ò")
-    result = result.replace("&Ugrave;", u"Ù")
-    result = result.replace("&ugrave;", u"ù")
-    result = result.replace("&Acirc;", u"Â")
-    result = result.replace("&acirc;", u"â")
-    result = result.replace("&Ecirc;", u"Ê")
-    result = result.replace("&ecirc;", u"ê")
-    result = result.replace("&Icirc;", u"Î")
-    result = result.replace("&icirc;", u"î")
-    result = result.replace("&Ocirc;", u"Ô")
-    result = result.replace("&ocirc;", u"ô")
-    result = result.replace("&Ucirc;", u"Û")
-    result = result.replace("&ucirc;", u"û")
-    result = result.replace("&Aring;", u"Å")
-    result = result.replace("&aring;", u"å")
-    result = result.replace("&deg;", u"°")
+    result = result.replace("&Auml;", "Ä")
+    result = result.replace("&auml;", "ä")
+    result = result.replace("&Euml;", "Ë")
+    result = result.replace("&euml;", "ë")
+    result = result.replace("&Iuml;", "Ï")
+    result = result.replace("&iuml;", "ï")
+    result = result.replace("&Ouml;", "Ö")
+    result = result.replace("&ouml;", "ö")
+    result = result.replace("&Uuml;", "Ü")
+    result = result.replace("&uuml;", "ü")
+    result = result.replace("&Aacute;", "Á")
+    result = result.replace("&aacute;", "á")
+    result = result.replace("&Eacute;", "É")
+    result = result.replace("&eacute;", "é")
+    result = result.replace("&Iacute;", "Í")
+    result = result.replace("&iacute;", "í")
+    result = result.replace("&Oacute;", "Ó")
+    result = result.replace("&oacute;", "ó")
+    result = result.replace("&Uacute;", "Ú")
+    result = result.replace("&uacute;", "ú")
+    result = result.replace("&Agrave;", "À")
+    result = result.replace("&agrave;", "à")
+    result = result.replace("&Egrave;", "È")
+    result = result.replace("&egrave;", "è")
+    result = result.replace("&Igrave;", "Ì")
+    result = result.replace("&igrave;", "ì")
+    result = result.replace("&Ograve;", "Ò")
+    result = result.replace("&ograve;", "ò")
+    result = result.replace("&Ugrave;", "Ù")
+    result = result.replace("&ugrave;", "ù")
+    result = result.replace("&Acirc;", "Â")
+    result = result.replace("&acirc;", "â")
+    result = result.replace("&Ecirc;", "Ê")
+    result = result.replace("&ecirc;", "ê")
+    result = result.replace("&Icirc;", "Î")
+    result = result.replace("&icirc;", "î")
+    result = result.replace("&Ocirc;", "Ô")
+    result = result.replace("&ocirc;", "ô")
+    result = result.replace("&Ucirc;", "Û")
+    result = result.replace("&ucirc;", "û")
+    result = result.replace("&Aring;", "Å")
+    result = result.replace("&aring;", "å")
+    result = result.replace("&deg;", "°")
     return result
 
 
@@ -325,7 +313,7 @@ def parse_cookie_file(cookie_file):
     return a dictionary of key value pairs
     compatible with requests.
     :param cookie_file: a cookie file
-    :return dict of cookies pair
+    :return dict of cookies pairs
     """
     cookies = {}
     with open(cookie_file, "r") as fp:

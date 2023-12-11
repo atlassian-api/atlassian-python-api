@@ -1,0 +1,88 @@
+responses[None] = {
+    "values": [
+        {
+            "type": "commit",
+            "hash": "3a8d6c7910f7bf68f7cf9cc1964998006fa8894b",
+            "date": "2023-10-08T17:31:20+00:00",
+            "author": {
+                "type": "author",
+                "raw": "user1Name <user@mail.com>",
+                "user": {
+                    "display_name": "user1Name",
+                    "links": {
+                        "self": {
+                            "href": "https://api.bitbucket.org/2.0/users/%7B34318d8b-6c8a-40a7-aea2-572fdd183917%7D"
+                        },
+                        "avatar": {
+                            "href": "https://secure.gravatar.com/avatar/679c684730037c1250b46c1781701f98?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIP-3.png"
+                        },
+                        "html": {"href": "https://bitbucket.org/%7B34318d8b-6c8a-40a7-aea2-572fdd183917%7D/"},
+                    },
+                    "type": "user",
+                    "uuid": "{34318d8b-6c8a-40a7-aea2-572fdd183917}",
+                    "account_id": "557058:e7042a01-54b7-447f-9da8-4ad1b1e4afa5",
+                    "nickname": "user1Name",
+                },
+            },
+            "message": "src created online with Bitbucket",
+            "summary": {
+                "type": "rendered",
+                "raw": "src created online with Bitbucket",
+                "markup": "markdown",
+                "html": "<p>src created online with Bitbucket</p>",
+            },
+            "links": {
+                "self": {
+                    "href": "https://api.bitbucket.org/2.0/repositories/TestWorkspace1/testrepository1/commit/3a8d6c7910f7bf68f7cf9cc1964998006fa8894b"
+                },
+                "html": {
+                    "href": "https://bitbucket.org/TestWorkspace1/testrepository1/commits/3a8d6c7910f7bf68f7cf9cc1964998006fa8894b"
+                },
+                "diff": {
+                    "href": "https://api.bitbucket.org/2.0/repositories/TestWorkspace1/testrepository1/diff/3a8d6c7910f7bf68f7cf9cc1964998006fa8894b"
+                },
+                "approve": {
+                    "href": "https://api.bitbucket.org/2.0/repositories/TestWorkspace1/testrepository1/commit/3a8d6c7910f7bf68f7cf9cc1964998006fa8894b/approve"
+                },
+                "comments": {
+                    "href": "https://api.bitbucket.org/2.0/repositories/TestWorkspace1/testrepository1/commit/3a8d6c7910f7bf68f7cf9cc1964998006fa8894b/comments"
+                },
+                "statuses": {
+                    "href": "https://api.bitbucket.org/2.0/repositories/TestWorkspace1/testrepository1/commit/3a8d6c7910f7bf68f7cf9cc1964998006fa8894b/statuses"
+                },
+                "patch": {
+                    "href": "https://api.bitbucket.org/2.0/repositories/TestWorkspace1/testrepository1/patch/3a8d6c7910f7bf68f7cf9cc1964998006fa8894b"
+                },
+            },
+            "parents": [
+                {
+                    "hash": "08b01c378b0c67999528bdb5d364d1960409cd99",
+                    "links": {
+                        "self": {
+                            "href": "https://api.bitbucket.org/2.0/repositories/TestWorkspace1/testrepository1/commit/08b01c378b0c67999528bdb5d364d1960409cd99"
+                        },
+                        "html": {
+                            "href": "https://bitbucket.org/TestWorkspace1/testrepository1/commits/08b01c378b0c67999528bdb5d364d1960409cd99"
+                        },
+                    },
+                    "type": "commit",
+                }
+            ],
+            "repository": {
+                "type": "repository",
+                "full_name": "TestWorkspace1/testrepository1",
+                "links": {
+                    "self": {"href": "https://api.bitbucket.org/2.0/repositories/TestWorkspace1/testrepository1"},
+                    "html": {"href": "https://bitbucket.org/TestWorkspace1/testrepository1"},
+                    "avatar": {
+                        "href": "https://bytebucket.org/ravatar/%7Bc4f5c559-de42-4b98-8502-4d73ee76c393%7D?ts=default"
+                    },
+                },
+                "name": "testrepository1",
+                "uuid": "{n789754-de42-4b98-8502-4d73ee76c393}",
+            },
+        }
+    ],
+    "pagelen": 10,
+    "page": 1,
+}

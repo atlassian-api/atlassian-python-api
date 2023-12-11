@@ -2,7 +2,7 @@
 
 if [[ ( -z ${1+x} ) || ( -z ${2+x} ) ]]; then
     cat << EOF
-        usage: $(basename ${0}) repo increment
+        usage: $(basename "${0}") repo increment
 
         Quick and dirty version bump script
         If a variable "BUILD_VERSION" is set, returns that variable as is
@@ -30,7 +30,7 @@ function autoversion(){
         BUILD_NUMBER="0"  # In the developer machine, this will build x.y.z.dev0
     fi
 
-    cd ${REPO_PATH} || exit 1
+    cd "${REPO_PATH}" || exit 1
 
     git fetch --tags 2>/dev/null
     last_tag=$(git tag | sort -Vr | head -1)

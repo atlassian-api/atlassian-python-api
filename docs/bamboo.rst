@@ -24,6 +24,9 @@ Projects & Plans
     # Get plan information
     get_plan(plan_key)
 
+    # Search for a plan by name
+    search_plans(name, name, fuzzy=True, start_index=0, max_results=25)
+
     # Delete a plan (or a plan branch)
     delete_plan(plan_key)
 
@@ -122,6 +125,9 @@ Deployments
 
     # Get deployment dashboard
     deployment_dashboard(project_id=None)
+
+    # Delete deployment project
+    delete_deployment_project(project_id)
 
 Users & Groups
 --------------
@@ -225,6 +231,9 @@ Other actions
     # Get build queue
     get_build_queue(expand='queuedBuilds')
 
+    # Get deployment queue
+    get_deployment_queue(expand='queuedDeployments')
+
     # Get server information
     server_info()
 
@@ -246,4 +255,36 @@ Other actions
 
     # Upload plugin
     upload_plugin(plugin_path)
+
+Elastic Bamboo
+--------------
+
+.. code-block:: python
+
+    # Get elastic bamboo instance logs
+    get_elastic_instance_logs('i-12ab34cd56ef')
+
+    # Get elastic bamboo configurations
+    get_elastic_configurations()
+
+    # Create elastic bamboo configuration
+    create_elastic_configuration({"name": "value"})
+
+    # Get elastic bamboo configuration
+    get_elastic_configuration('123456')
+
+    # Update elastic bamboo configuration
+    update_elastic_configuration('123456')
+
+    # Delete elastic bamboo configuration
+    delete_elastic_configuration('123456')
+
+    # Get elastic bamboo configuration
+    get_elastic_bamboo()
+
+    # Set elastic bamboo configuration
+    set_elastic_bamboo({"enabled": True, "awsCredentialsType": "INSTANCE_PROFILE", "region": "ASIA_PACIFIC_SE_2",
+    "privateKeyFile": "", "certificateFile": "", "maxNumOfElasticInstances": 1, "allocatePublicIpToVpcInstances": False,
+    "elasticInstanceManagement": {"type": "Disabled"}, "uploadAwsAccountIdentifierToElasticInstances": False,
+    "elasticAutoTermination": { "enabled": True, "shutdownDelay": 300}})
 

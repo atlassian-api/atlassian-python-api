@@ -1,7 +1,5 @@
 # coding=utf-8
 import logging
-import string
-import secrets
 
 from .rest_client import AtlassianRestAPI
 
@@ -13,7 +11,15 @@ class Crowd(AtlassianRestAPI):
     Important to note that you will have to use an application credentials,
     not user credentials, in order to access Crowd APIs"""
 
-    def __init__(self, url, username, password, timeout=60, api_root="rest", api_version="latest"):
+    def __init__(
+        self,
+        url,
+        username,
+        password,
+        timeout=60,
+        api_root="rest",
+        api_version="latest",
+    ):
         super(Crowd, self).__init__(url, username, password, timeout, api_root, api_version)
 
     def _crowd_api_url(self, api, resource):
@@ -26,10 +32,9 @@ class Crowd(AtlassianRestAPI):
 
     def _user_change_status(self, username, active):
         """
-        Change user status
-
-        :params active bool
-
+        Change user status.
+        :param username: str - username
+        :param active: bool - True/False
         :return:
         """
 
@@ -46,38 +51,51 @@ class Crowd(AtlassianRestAPI):
 
         params = {"username": username}
 
-        return self.put(self._crowd_api_url("usermanagement", "user"), params=params, data=user_object)
+        return self.put(
+            self._crowd_api_url("usermanagement", "user"),
+            params=params,
+            data=user_object,
+        )
 
     def user(self, username):
+        """
+        Get user information
+        :param username:
+        :return:
+        """
         params = {"username": username}
         return self.get(self._crowd_api_url("usermanagement", "user"), params=params)
 
     def user_activate(self, username):
         """
         Activate user
+        :param username: str - username
         """
 
         return self._user_change_status(username, True)
 
-    def user_create(self, username, active, first_name, last_name, display_name, email, password=None):
+    def user_create(
+        self,
+        username,
+        active,
+        first_name,
+        last_name,
+        display_name,
+        email,
+        password,
+    ):
         """
-        Create new user
-
-        :param active: bool, OPTIONAL: password can be auto-generated if not included
-            username (string)
-            active (bool)
-            first-name (string)
-            last-name (string)
-            display-name (string)
-            email (string)
-            password (string, optional)
-
+        Create new user method
+        :param  active: bool:
+        :param  username: string: username
+        :param  active: bool:
+        :param  first_name: string:
+        :param  last_name: string:
+        :param  display_name:  string:
+        :param  email: string:
+        :param  password: string:
         :return:
         """
-
-        if not password:
-            characters = string.ascii_letters + string.punctuation + string.digits
-            password = "".join(secrets.choice(characters) for x in range(30))
 
         user_object = {
             "name": username,
@@ -103,7 +121,7 @@ class Crowd(AtlassianRestAPI):
     def user_delete(self, username):
         """
         Delete user
-
+        :param username: str - username
         :return:
         """
 
@@ -121,9 +139,18 @@ class Crowd(AtlassianRestAPI):
 
         params = {"username": username}
 
-        return self.post(self._crowd_api_url("usermanagement", "user/group/direct"), params=params, json=data)
+        return self.post(
+            self._crowd_api_url("usermanagement", "user/group/direct"),
+            params=params,
+            json=data,
+        )
 
     def group_nested_members(self, group):
+        """
+        Get nested members of group
+        :param group:
+        :return:
+        """
         params = {"groupname": group}
         return self.get(self._crowd_api_url("group", "nested"), params=params)
 
@@ -140,6 +167,30 @@ class Crowd(AtlassianRestAPI):
             response = self.get("rest/supportHealthCheck/1.0/check/")
         return response
 
+    def get_plugins_info(self):
+        """
+        Provide plugins info
+        :return a json of installed plugins
+        """
+        url = "rest/plugins/1.0/"
+        return self.get(url, headers=self.no_check_headers, trailing=True)
+
+    def get_plugin_info(self, plugin_key):
+        """
+        Provide plugin info
+        :return a json of installed plugins
+        """
+        url = "rest/plugins/1.0/{plugin_key}-key".format(plugin_key=plugin_key)
+        return self.get(url, headers=self.no_check_headers, trailing=True)
+
+    def get_plugin_license_info(self, plugin_key):
+        """
+        Provide plugin license info
+        :return a json specific License query
+        """
+        url = "rest/plugins/1.0/{plugin_key}-key/license".format(plugin_key=plugin_key)
+        return self.get(url, headers=self.no_check_headers, trailing=True)
+
     def upload_plugin(self, plugin_path):
         """
         Provide plugin path for upload into Jira e.g. useful for auto deploy
@@ -155,3 +206,31 @@ class Crowd(AtlassianRestAPI):
         ).headers["upm-token"]
         url = "rest/plugins/1.0/?token={upm_token}".format(upm_token=upm_token)
         return self.post(url, files=files, headers=self.no_check_headers)
+
+    def delete_plugin(self, plugin_key):
+        """
+        Delete plugin
+        :param plugin_key:
+        :return:
+        """
+        url = "rest/plugins/1.0/{}-key".format(plugin_key)
+        return self.delete(url)
+
+    def check_plugin_manager_status(self):
+        url = "rest/plugins/latest/safe-mode"
+        return self.request(method="GET", path=url, headers=self.safe_mode_headers)
+
+    def update_plugin_license(self, plugin_key, raw_license):
+        """
+        Update license for plugin
+        :param plugin_key:
+        :param raw_license:
+        :return:
+        """
+        app_headers = {
+            "X-Atlassian-Token": "nocheck",
+            "Content-Type": "application/vnd.atl.plugins+json",
+        }
+        url = "/plugins/1.0/{plugin_key}/license".format(plugin_key=plugin_key)
+        data = {"rawLicense": raw_license}
+        return self.put(url, data=data, headers=app_headers)

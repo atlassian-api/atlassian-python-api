@@ -11,11 +11,15 @@ class DefaultReviewers(BitbucketCloudBase):
         super(DefaultReviewers, self).__init__(url, *args, **kwargs)
 
     def __get_object(self, data):
-        return DefaultReviewer(self.url_joiner(self.url, data["uuid"]), data, **self._new_session_args)
+        return DefaultReviewer(
+            self.url_joiner(self.url, data["uuid"]),
+            data,
+            **self._new_session_args
+        )  # fmt: skip
 
     def add(self, user):
         """
-        Adds the specified user to the repository"s list of default reviewers.
+        Adds the specified user to the repository's list of default reviewers.
 
         This method is idempotent. Adding a user a second time has no effect.
 
@@ -30,7 +34,7 @@ class DefaultReviewers(BitbucketCloudBase):
 
     def each(self, q=None, sort=None):
         """
-        Returns the repository"s default reviewers.
+        Returns the repository's default reviewers.
         These are the users that are automatically added as reviewers on every new pull request
         that is created.
 
@@ -57,7 +61,7 @@ class DefaultReviewers(BitbucketCloudBase):
         """
         Returns the default reviewer in this repository.
 
-        :param user: string: The requested user name
+        :param user: string: The requested username
 
         :return: The requested DefaultReviewer object, None if not a default reviewer
 

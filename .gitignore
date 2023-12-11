@@ -1,3 +1,4 @@
+# PyCharm
 .idea
 .sonarlint
 .pytest_cache
@@ -116,6 +117,9 @@ venv_/
 
 #
 *.secret
-
+.secrets/
 #visual studio code
 .vscode
+
+Pipfile
+Pipfile.lock

@@ -10,3 +10,8 @@ coverage
 codecov
 # used for example confluence attach file
 python-magic
+
+# On October 4, 2022 importlib-metadata released importlib-metadata 5.0.0 and in version 5.0.0
+# They have Deprecated EntryPoints and that's why you are facing this error.
+importlib-metadata<=4.13.0
+

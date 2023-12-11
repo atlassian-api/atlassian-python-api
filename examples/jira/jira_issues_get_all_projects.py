@@ -3,12 +3,9 @@
     Getting Project Issue(s) example
 """
 
-
 from atlassian import Jira
 
-
 jira = Jira(url="https://jirasite.co", username="ocean", password="seariver")
-
 
 if __name__ == "__main__":
     # default will return 50 issues in ascending order

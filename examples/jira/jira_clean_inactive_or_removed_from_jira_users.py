@@ -9,7 +9,6 @@ logging.basicConfig(level=logging.ERROR)
 
 jira = Jira(url="JIRA_URL", username="ATLASSIAN_USER", password="ATLASSIAN_PASSWORD")
 
-
 # Ger all role ids from Jira
 role_ids = []
 roles = jira.get_all_global_project_roles()

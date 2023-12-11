@@ -32,7 +32,7 @@ class GlobalPermissions(BitbucketServerBase):
 
     def sys_admin(self, name):
         """
-        Add the sys admin permission for a group/user.
+        Add the sysadmin permission for a group/user.
         """
         return self.add(name, self.__permission(self.SYS_ADMIN))
 
@@ -54,7 +54,7 @@ class GlobalPermissions(BitbucketServerBase):
         """
         Get all groups/users.
 
-        :params filter: string: If specified only group/user names containing the supplied string will be returned
+        :params filter: string: If specified only group/usernames containing the supplied string will be returned
 
         :return: A generator for the group/user permission objects
 
@@ -74,7 +74,7 @@ class GlobalPermissions(BitbucketServerBase):
         """
         Get all not granted groups/users.
 
-        :params filter: string: If specified only group/user names containing the supplied string will be returned
+        :params filter: string: If specified only group/usernames containing the supplied string will be returned
 
         :return: A generator for the group/user permission objects
 

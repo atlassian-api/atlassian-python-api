@@ -3,7 +3,12 @@ import logging
 from json import dumps
 
 import requests
-from oauthlib.oauth1 import SIGNATURE_RSA
+
+try:
+    from oauthlib.oauth1.rfc5849 import SIGNATURE_RSA_SHA512 as SIGNATURE_RSA
+except ImportError:
+    from oauthlib.oauth1 import SIGNATURE_RSA
+from requests import HTTPError
 from requests_oauthlib import OAuth1, OAuth2
 from six.moves.urllib.parse import urlencode
 
@@ -13,7 +18,10 @@ log = get_default_logger(__name__)
 
 
 class AtlassianRestAPI(object):
-    default_headers = {"Content-Type": "application/json", "Accept": "application/json"}
+    default_headers = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    }
     experimental_headers = {
         "Content-Type": "application/json",
         "Accept": "application/json",
@@ -52,6 +60,7 @@ class AtlassianRestAPI(object):
         cloud=False,
         proxies=None,
         token=None,
+        cert=None,
     ):
         self.url = url
         self.username = username
@@ -64,6 +73,7 @@ class AtlassianRestAPI(object):
         self.advanced_mode = advanced_mode
         self.cloud = cloud
         self.proxies = proxies
+        self.cert = cert
         if session is None:
             self._session = requests.Session()
         else:
@@ -94,7 +104,7 @@ class AtlassianRestAPI(object):
         self._update_header("Authorization", "Bearer {token}".format(token=token))
 
     def _create_kerberos_session(self, _):
-        from requests_kerberos import HTTPKerberosAuth, OPTIONAL
+        from requests_kerberos import OPTIONAL, HTTPKerberosAuth
 
         self._session.auth = HTTPKerberosAuth(mutual_authentication=OPTIONAL)
 
@@ -102,7 +112,7 @@ class AtlassianRestAPI(object):
         oauth = OAuth1(
             oauth_dict["consumer_key"],
             rsa_key=oauth_dict["key_cert"],
-            signature_method=SIGNATURE_RSA,
+            signature_method=oauth_dict.get("signature_method", SIGNATURE_RSA),
             resource_owner_key=oauth_dict["access_token"],
             resource_owner_secret=oauth_dict["access_token_secret"],
         )
@@ -165,7 +175,7 @@ class AtlassianRestAPI(object):
             api_root = self.api_root
         if api_version is None:
             api_version = self.api_version
-        return "/".join(s.strip("/") for s in [api_root, api_version, resource] if s is not None)
+        return "/".join(str(s).strip("/") for s in [api_root, api_version, resource] if s is not None)
 
     @staticmethod
     def url_joiner(url, path, trailing=None):
@@ -189,6 +199,7 @@ class AtlassianRestAPI(object):
         files=None,
         trailing=None,
         absolute=False,
+        advanced_mode=False,
     ):
         """
 
@@ -200,8 +211,9 @@ class AtlassianRestAPI(object):
         :param params:
         :param headers:
         :param files:
-        :param trailing: bool
+        :param trailing: bool - OPTIONAL: Add trailing slash to url
         :param absolute: bool, OPTIONAL: Do not prefix url, url is absolute
+        :param advanced_mode: bool, OPTIONAL: Return the raw response
         :return:
         """
         url = self.url_joiner(None if absolute else self.url, path, trailing)
@@ -219,7 +231,12 @@ class AtlassianRestAPI(object):
         if files is None:
             data = None if not data else dumps(data)
             json_dump = None if not json else dumps(json)
-        self.log_curl_debug(method=method, url=url, headers=headers, data=data if data else json_dump)
+        self.log_curl_debug(
+            method=method,
+            url=url,
+            headers=headers,
+            data=data if data else json_dump,
+        )
         headers = headers or self.default_headers
         response = self._session.request(
             method=method,
@@ -231,12 +248,13 @@ class AtlassianRestAPI(object):
             verify=self.verify_ssl,
             files=files,
             proxies=self.proxies,
+            cert=self.cert,
         )
         response.encoding = "utf-8"
 
-        log.debug(u"HTTP: {} {} -> {} {}".format(method, path, response.status_code, response.reason))
-        log.debug(u"HTTP: Response text -> {}".format(response.text))
-        if self.advanced_mode:
+        log.debug("HTTP: %s %s -> %s %s", method, path, response.status_code, response.reason)
+        log.debug("HTTP: Response text -> %s", response.text)
+        if self.advanced_mode or advanced_mode:
             return response
 
         self.raise_for_status(response)
@@ -261,7 +279,7 @@ class AtlassianRestAPI(object):
         :param flags:
         :param params:
         :param headers:
-        :param not_json_response: OPTIONAL: For get content from raw requests packet
+        :param not_json_response: OPTIONAL: For get content from raw request's packet
         :param trailing: OPTIONAL: for wrap slash symbol in the end of string
         :param absolute: bool, OPTIONAL: Do not prefix url, url is absolute
         :param advanced_mode: bool, OPTIONAL: Return the raw response
@@ -276,6 +294,7 @@ class AtlassianRestAPI(object):
             headers=headers,
             trailing=trailing,
             absolute=absolute,
+            advanced_mode=advanced_mode,
         )
         if self.advanced_mode or advanced_mode:
             return response
@@ -303,6 +322,14 @@ class AtlassianRestAPI(object):
         advanced_mode=False,
     ):
         """
+        :param path:
+        :param data:
+        :param json:
+        :param headers:
+        :param files:
+        :param params:
+        :param trailing:
+        :param absolute:
         :param advanced_mode: bool, OPTIONAL: Return the raw response
         :return: if advanced_mode is not set - returns dictionary. If it is set - returns raw response.
         """
@@ -316,6 +343,7 @@ class AtlassianRestAPI(object):
             params=params,
             trailing=trailing,
             absolute=absolute,
+            advanced_mode=advanced_mode,
         )
         if self.advanced_mode or advanced_mode:
             return response
@@ -333,6 +361,13 @@ class AtlassianRestAPI(object):
         advanced_mode=False,
     ):
         """
+        :param path: Path of request
+        :param data:
+        :param headers: adjusted headers, usually it's default
+        :param files:
+        :param trailing:
+        :param params:
+        :param absolute:
         :param advanced_mode: bool, OPTIONAL: Return the raw response
         :return: if advanced_mode is not set - returns dictionary. If it is set - returns raw response.
         """
@@ -345,6 +380,49 @@ class AtlassianRestAPI(object):
             params=params,
             trailing=trailing,
             absolute=absolute,
+            advanced_mode=advanced_mode,
+        )
+        if self.advanced_mode or advanced_mode:
+            return response
+        return self._response_handler(response)
+
+    """
+        Partial modification of resource by PATCH Method
+        LINK: https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/PATCH
+    """
+
+    def patch(
+        self,
+        path,
+        data=None,
+        headers=None,
+        files=None,
+        trailing=None,
+        params=None,
+        absolute=False,
+        advanced_mode=False,
+    ):
+        """
+        :param path: Path of request
+        :param data:
+        :param headers: adjusted headers, usually it's default
+        :param files:
+        :param trailing:
+        :param params:
+        :param absolute:
+        :param advanced_mode: bool, OPTIONAL: Return the raw response
+        :return: if advanced_mode is not set - returns dictionary. If it is set - returns raw response.
+        """
+        response = self.request(
+            "PATCH",
+            path=path,
+            data=data,
+            headers=headers,
+            files=files,
+            params=params,
+            trailing=trailing,
+            absolute=absolute,
+            advanced_mode=advanced_mode,
         )
         if self.advanced_mode or advanced_mode:
             return response
@@ -362,6 +440,12 @@ class AtlassianRestAPI(object):
     ):
         """
         Deletes resources at given paths.
+        :param path:
+        :param data:
+        :param headers:
+        :param params:
+        :param trailing:
+        :param absolute:
         :param advanced_mode: bool, OPTIONAL: Return the raw response
         :rtype: dict
         :return: Empty dictionary to have consistent interface.
@@ -376,6 +460,7 @@ class AtlassianRestAPI(object):
             params=params,
             trailing=trailing,
             absolute=absolute,
+            advanced_mode=advanced_mode,
         )
         if self.advanced_mode or advanced_mode:
             return response
@@ -389,4 +474,31 @@ class AtlassianRestAPI(object):
         :param response:
         :return:
         """
-        response.raise_for_status()
+        if response.status_code == 401 and response.headers.get("Content-Type") != "application/json;charset=UTF-8":
+            raise HTTPError("Unauthorized (401)", response=response)
+
+        if 400 <= response.status_code < 600:
+            try:
+                j = response.json()
+                if self.url == "https://api.atlassian.com":
+                    error_msg = "\n".join(["{}: {}".format(k, v) for k, v in j.items()])
+                else:
+                    error_msg_list = j.get("errorMessages", list())
+                    errors = j.get("errors", dict())
+                    if isinstance(errors, dict):
+                        error_msg_list.append(errors.get("message", ""))
+                    elif isinstance(errors, list):
+                        error_msg_list.extend([v.get("message", "") if isinstance(v, dict) else v for v in errors])
+                    error_msg = "\n".join(error_msg_list)
+            except Exception as e:
+                log.error(e)
+                response.raise_for_status()
+            else:
+                raise HTTPError(error_msg, response=response)
+        else:
+            response.raise_for_status()
+
+    @property
+    def session(self):
+        """Providing access to the restricted field"""
+        return self._session

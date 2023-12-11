@@ -18,20 +18,20 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.6', '3.7', '3.8', '3.9']
+        python-version: [ '3.6', '3.7', '3.8', '3.9', '3.11', '3.12' ]
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Build Docker
-      run: |
-        make docker-qa-build PYTHON_VERSION=${{matrix.python-version}}
-    - name: Run Docker
-      run: |
-        .github/bump_version ./ minor > atlassian/VERSION
-        make docker-qa PYTHON_VERSION=${{matrix.python-version}}
-    - name: Creating coverage report
-      if: ${{ ( matrix.python-version == '3.8' ) }}
-      uses: codecov/codecov-action@v1
-      with:
-        files: ./coverage.xml
-        fail_ci_if_error: true
+      - uses: actions/checkout@v3
+      - name: Build Docker
+        run: |
+          make docker-qa-build PYTHON_VERSION=${{matrix.python-version}}
+      - name: Run Docker
+        run: |
+          .github/bump_version ./ minor > atlassian/VERSION
+          make docker-qa PYTHON_VERSION=${{matrix.python-version}}
+      - name: Creating coverage report
+        if: ${{ ( matrix.python-version == '3.8' ) }}
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage.xml
+          fail_ci_if_error: true

@@ -5,9 +5,19 @@ Atlassian Python API wrapper
 
 What is it?
 ___________
-This package is used to provide a **simple** python interface for interacting with Atlassian products
-(Server, Data Center and Cloud) and apps from ecosystem (Portfolio, XRay).
-It is based on the official public Rest API documentation and private methods (+ xml+rpc, raw http request).
+The **atlassian-python-api** library provides a **simple** and convenient way to interact with Atlassian products
+(such as Jira Service management, Jira Software, Confluence, Bitbucket and apps Insight, X-Ray) using Python.
+It is based on the official REST APIs of these products, as well as additional private methods and protocols
+(such as xml+rpc and raw HTTP requests).
+This library can be used to automate tasks, integrate with other tools and systems,
+and build custom applications that interact with Atlassian products.
+It supports a wide range of Atlassian products, including Jira, Confluence, Bitbucket, StatusPage and others,
+and is compatible with both Atlassian Server and Cloud instances.
+
+Overall, the **atlassian-python-api** is a useful tool for Python developers who want to work with Atlassian products.
+It is well-documented and actively maintained, and provides a convenient way to access the full range of
+functionality offered by the Atlassian REST APIs.
+
 
 Documentation
 _____________
@@ -53,6 +63,7 @@ Here's a short example of how to create a Confluence page:
 
     print(status)
 
+Please, note Confluence Cloud need to be used via token parameter.
 And here's another example of how to get issues from Jira using JQL Query:
 
 .. code-block:: python
@@ -77,7 +88,7 @@ Also, you can use the Bitbucket module e.g. for getting project list
             url='http://localhost:7990',
             username='admin',
             password='admin')
-    
+
     data = bitbucket.project_list()
     print(data)
 
@@ -92,9 +103,24 @@ Example to get your requests:
             url='http://localhost:7990',
             username='admin',
             password='admin')
-    
+
     data = sd.get_my_customer_requests()
     print(data)
+
+Using Insight (CMDB Tool for Jira):
+
+.. code-block:: python
+
+    from atlassian import Insight
+
+    insight = Insight(
+            url='http://localhost:7990',
+            username='admin',
+            password='admin')
+
+    data = insight.get_object(88)
+    print(data)
+
 
 Using Xray (Test Management tool for Jira):
 
@@ -106,8 +132,21 @@ Using Xray (Test Management tool for Jira):
            url='http://localhost:7990',
             username='admin',
             password='admin')
-    
+
     data = xr.get_tests('TEST-001')
+    print(data)
+
+Using Bamboo:
+
+.. code-block:: python
+
+    from atlassian import Bamboo
+
+    bamboo = Bamboo(
+            url='http://localhost:6990/bamboo/',
+            token="<TOKEN>")
+
+    data = bamboo.get_elastic_configurations()
     print(data)
 
 If you want to see the response in pretty print format JSON. Feel free for use construction like:
@@ -135,10 +174,10 @@ See the `Contribution Guidelines for this project`_ for details on how to make c
 .. |License| image:: https://img.shields.io/pypi/l/atlassian-python-api.svg
    :target: https://pypi.python.org/pypi/atlassian-python-api
    :alt: License
-.. |Codacy Badge| image:: https://api.codacy.com/project/badge/Grade/c822908f507544fe98ae37b25518ae3d
-   :target: https://www.codacy.com/project/gonchik/atlassian-python-api/dashboard
+.. |Codacy Badge| image:: https://app.codacy.com/project/badge/Grade/2cca43995cf041b8b181e2b2ff04cee6
+   :target: https://app.codacy.com/gh/atlassian-api/atlassian-python-api/dashboard
    :alt: Codacy Badge
-.. |PyPI - Downloads| image:: https://pepy.tech/badge/atlassian-python-api/month
+.. |PyPI - Downloads| image:: https://static.pepy.tech/badge/atlassian-python-api/month
    :alt: PyPI - Downloads
 .. |Docs| image:: https://readthedocs.org/projects/atlassian-python-api/badge/?version=latest
    :target: https://atlassian-python-api.readthedocs.io/?badge=latest

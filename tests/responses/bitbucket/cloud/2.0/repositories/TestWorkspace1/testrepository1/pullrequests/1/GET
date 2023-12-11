@@ -158,9 +158,7 @@ responses[None] = {
                 "links": {
                     "self": {"href": "users/%7BUser03UUID%7D"},
                     "html": {"href": "https://bitbucket.org/%7BUser03UUID%7D/"},
-                    "avatar": {
-                        "href": "https://secure.gravatar.com/avatar/ad2424dafaasdssaew12232344434432?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FU3-0.png"
-                    },
+                    "avatar": {"href": "users/%7BUser03UUID%7D.png"},
                 },
                 "nickname": "User03Nickname",
                 "type": "user",
@@ -241,9 +239,7 @@ responses[None] = {
         "links": {
             "self": {"href": "users/%7BUser03UUID%7D"},
             "html": {"href": "https://bitbucket.org/%7BUser03UUID%7D/"},
-            "avatar": {
-                "href": "https://secure.gravatar.com/avatar/ad2424dafaasdssaew12232344434432?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FU3-0.png"
-            },
+            "avatar": {"href": "users/%7BUser03UUID%7D.png"},
         },
         "nickname": "User03Nickname",
         "type": "user",

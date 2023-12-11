@@ -31,6 +31,31 @@ Reindex Jira
                             If it's not possible (due to an inconsistent index), do a foreground reindexing.
     """
 
+Manage Permissions
+------------------
+
+.. code-block:: python
+
+    # Get permissions
+    jira.permissions(permissions, project_id=None, project_key=None, issue_id=None, issue_key=None,)
+
+    # Get all permissions
+    jira.get_all_permissions()
+
+Application properties
+----------------------
+
+.. code-block:: python
+
+    # Get an application property
+    jira.get_property(key=None, permission_level=None, key_filter=None)
+
+    # Set an application property
+    jira.set_property(property_id, value)
+
+    # Returns the properties that are displayed on the "General Configuration > Advanced Settings" page.
+    jira.get_advanced_settings()
+
 Manage users
 ------------
 
@@ -49,7 +74,13 @@ Manage users
     jira.user_get_websudo()
 
     # Fuzzy search using emailAddress or displayName
-    jira.user_find_by_user_string(query, start=0, limit=50, include_inactive_users=False)
+    jira.user_find_by_user_string(query="a.user@example.com", start=0, limit=50, include_inactive_users=False)
+    jira.user_find_by_user_string(query="a.user", start=0, limit=50, include_inactive_users=False)
+    jira.user_find_by_user_string(query="a user")
+    jira.user_find_by_user_string(account_id="a-users-account-id")
+
+    # Get groups of a user. This API is only available for Jira Cloud platform.
+    jira.get_user_groups(account_id)
 
 Manage groups
 -------------
@@ -69,10 +100,10 @@ Manage groups
     jira.get_all_users_from_group(group, include_inactive_users=False, start=0, limit=50)
 
     # Add given user to a group
-    jira.add_user_to_group(username, group_name)
+    jira.add_user_to_group(username=None, group_name=None, account_id=None)
 
     # Remove given user from a group
-    jira.remove_user_from_group(username, group_name)
+    jira.remove_user_from_group(username=None, group_name=None, account_id=None)
 
 Manage projects
 ---------------
@@ -81,14 +112,38 @@ Manage projects
 
     # Get all projects
     # Returns all projects which are visible for the currently logged in user.
-    jira.projects(included_archived=None)
+    jira.projects(included_archived=None, expand=None)
 
     # Get all project alternative call
     # Returns all projects which are visible for the currently logged in user.
-    jira.get_all_projects(included_archived=None)
+    jira.get_all_projects(included_archived=None, expand=None)
+
+    # Get all projects only for Jira Cloud
+    # Returns all projects which are visible for the currently logged in user.
+    jira.projects_from_cloud(included_archived=None, expand=None)
+
+    # Get one page of projects
+    # Returns a paginated list of projects visible for the currently logged in user.
+    # Use the url formatting to get a specific page as shown here:
+    # url = f"{self.resource_url("project/search")}?startAt={start_at}&maxResults={max_results}"
+    # Defaults to the first page, which returns a nextPage url when available.
+    jira.projects_paginated(included_archived=None, expand=None, url=None)
+
+    # Get all projects only for Jira Server
+    # Returns all projects which are visible for the currently logged in user.
+    jira.projects_from_server(included_archived=None, expand=None)
+
+    # Delete project
+    jira.delete_project(key)
+
+    # Archive Project
+    jira.archive_project(key)
 
     # Get project
-    jira.project(key)
+    jira.project(key, expand=None)
+
+    # Get project info
+    jira.get_project(key, expand=None)
 
     # Get project components using project key
     jira.get_project_components(key)
@@ -104,13 +159,19 @@ Manage projects
     # Add missing version to project
     jira.add_version(key, project_id, version, is_archived=False, is_released=False)
 
+    # Update an existing version
+    jira.update_version(version, name=None, description=None, is_archived=None, is_released=None, start_date=None, release_date=None)
+
     # Get project leaders
     jira.project_leaders()
 
     # Get last project issuekey
     jira.get_project_issuekey_last(project)
 
-    # Get all project issue keys
+    # Get all project issue keys.
+    # JIRA Cloud API can return up to  100 results  in one API call.
+    # If your project has more than 100 issues see following community discussion:
+    # https://community.atlassian.com/t5/Jira-Software-questions/Is-there-a-limit-to-the-number-of-quot-items-quot-returned-from/qaq-p/1317195
     jira.get_project_issuekey_all(project)
 
     # Get project issues count
@@ -141,6 +202,10 @@ Manage projects
     # Use 'expand' to get details (default is None)  possible values are notificationSchemeEvents,user,group,projectRole,field,all
     jira.get_priority_scheme_of_project(project_key_or_id, expand=None)
 
+    # Returns a list of active users who have browse permission for a project that matches the search string for username.
+    # Using " " string (space) for username gives All the active users who have browse permission for a project
+    jira.get_users_with_browse_permission_to_a_project(self, username, issue_key=None, project_key=None, start=0, limit=100)
+
 Manage issues
 -------------
 
@@ -154,10 +219,10 @@ Manage issues
 
     # Update issue field
     fields = {'summary': 'New summary'}
-    jira.update_issue_field(key, fields)
+    jira.update_issue_field(key, fields, notify_users=True)
 
     # Get existing custom fields or find by filter
-    get_custom_fields(self, search=None, start=1, limit=50):
+    jira.get_custom_fields(self, search=None, start=1, limit=50):
 
     # Check issue exists
     jira.issue_exists(issue_key)
@@ -201,6 +266,9 @@ Manage issues
     # Get Issue Link
     jira.get_issue_link(link_id)
 
+    # Get Issue Edit Meta
+    jira.issue_editmeta(issue_key)
+
     # Create Issue Link
     data = {
             "type": {"name": "Duplicate" },
@@ -216,7 +284,7 @@ Manage issues
     jira.remove_issue_link(link_id)
 
     # Create or Update Issue Remote Links
-    jira.create_or_update_issue_remote_links(issue_key, link_url, title, global_id=None, relationship=None)
+    jira.create_or_update_issue_remote_links(issue_key, link_url, title, global_id=None, relationship=None, icon_url=None, icon_title=None, status_resolved=False)
 
     # Get Issue Remote Link by link ID
     jira.get_issue_remote_link_by_id(issue_key, link_id)
@@ -230,11 +298,139 @@ Manage issues
     # Export Issues to csv
     jira.csv(jql, all_fields=False)
 
+    # Add watcher to an issue
+    jira.issue_add_watcher(issue_key, user)
+
+    # Remove watcher from an issue
+    jira.issue_delete_watcher(issue_key, user)
+
+    # Get watchers for an issue
+    jira.issue_get_watchers(issue_key)
+
+    # Archive an issue
+    jira.issue_archive(issue_id_or_key)
+
+    # Restore an issue
+    jira.issue_restore(issue_id_or_key)
+
+    # Add Comments
+    jira.issue_add_comment(issue_id_or_key, "This is a sample comment string.")
+
+    # Edit Comments
+    jira.issue_edit_comment(issue_key, comment_id, comment, visibility=None, notify_users=True)
+
+    # Issue Comments
+    jira.issue_get_comments(issue_id_or_key)
+
+    # Get issue comment by id
+    jira.issue_get_comment(issue_id_or_key, comment_id)
+
+    # Get comments over all issues by ids
+    jira.issues_get_comments_by_id(comment_id, [comment_id...])
+
+    # Get change history for an issue
+    jira.get_issue_changelog(issue_key)
+
+    # Get worklog for an issue
+    jira.issue_get_worklog(issue_key)
+
+    # Create a new worklog entry for an issue
+    # started is a date string in the format %Y-%m-%dT%H:%M:%S.000+0000%z
+    jira.issue_worklog(issue_key, started, time_in_sec)
+
+
+Epic Issues
+-------------
+
+*Uses the Jira Agile API*
+
+.. code-block:: python
+
+    # Move issues to backlog
+    jira.move_issues_to_backlog(issue_keys)
+
+    # Add issues to backlog
+    jira.add_issues_to_backlog(issue_keys)
+
+    # Get agile board by filter id
+    jira.get_agile_board_by_filter_id(filter_id)
+
+    # Issues within an Epic
+    jira.epic_issues(epic_key)
+
+    # Returns all epics from the board, for the given board Id.
+    # This only includes epics that the user has permission to view.
+    # Note, if the user does not have permission to view the board, no epics will be returned at all.
+    jira.get_epics(board_id, done=False, start=0, limit=50, )
+
+    # Returns all issues that belong to an epic on the board,
+    # for the given epic Id and the board Id.
+    # This only includes issues that the user has permission to view.
+    # Issues returned from this resource include Agile fields, like sprint, closedSprints, flagged, and epic.
+    # By default, the returned issues are ordered by rank.
+    jira.get_issues_for_epic(board_id, epic_id, jql="", validate_query="", fields="*all", expand="", start=0, limit=50, )
 
 Manage Boards
 -------------
 
 .. code-block:: python
+
+   # Board
+    # Creates a new board. Board name, type and filter Id is required.
+    jira.create_agile_board(name, type, filter_id, location=None)
+
+    # Returns all boards.
+    # This only includes boards that the user has permission to view.
+    jira.get_all_agile_boards(board_name=None, project_key=None, board_type=None, start=0, limit=50)
+
+    # Delete agile board by id
+    jira.delete_agile_board(board_id)
+
+    # Get agile board by id
+    jira.get_agile_board(board_id)
+
+    # Get issues for backlog
+    jira.get_issues_for_board(board_id, start_at=0, max_results=50, jql=None,
+                              validate_query=True, fields=None, expand=None,
+                              override_screen_security=None, override_editable_flag=None)
+
+    # Get issues for board
+    jira.get_issues_for_board(board_id, jql, fields="*all", start=0, limit=None, expand=None)
+
+    # Get agile board configuration by board id
+    jira.get_agile_board_configuration(board_id)
+
+    # Gets a list of all the board properties
+    jira.get_agile_board_properties(board_id)
+
+    # Sets the value of the specified board's property.
+    jira.set_agile_board_property(board_id, property_key)
+
+    # Get Agile board property
+    jira.get_agile_board_property(board_id, property_key)
+
+    # Delete Agile board property
+    jira.delete_agile_board_property(board_id, property_key)
+
+    # Get Agile board refined velocity
+    jira.get_agile_board_refined_velocity(board_id)
+
+    # Set Agile board refined velocity
+    jira.set_agile_board_refined_velocity(board_id, refined_velocity)
+
+Manage Sprints
+--------------
+
+.. code-block:: python
+
+    # Get all sprints from board
+    jira.get_all_sprints_from_board(board_id, state=None, start=0, limit=50)
+
+    # Get all issues for sprint in board
+    jira.get_all_issues_for_sprint_in_board(board_id, state=None, start=0, limit=50)
+
+    # Get all versions for sprint in board
+    jira.get_all_versions_from_board(self, board_id, released="true", start=0, limit=50)
 
     # Create sprint
     jira.jira.create_sprint(sprint_name, origin_board_id,  start_datetime, end_datetime, goal)
@@ -245,6 +441,15 @@ Manage Boards
     # Add/Move Issues to sprint
     jira.add_issues_to_sprint(sprint_id, issues_list)
 
+
+Manage dashboards
+-----------------
+
+.. code-block:: python
+
+    # Get dashboard by ID
+    jira.get_dashboard(dashboard_id)
+
 Attachments actions
 -------------------
 
@@ -252,6 +457,9 @@ Attachments actions
 
     # Add attachment to issue
     jira.add_attachment(issue_key, filename)
+
+    # Add attachment (IO Object) to issue
+    jira.add_attachment_object(issue_key, attachment)
 
 Manage components
 -----------------
@@ -316,6 +524,16 @@ Issue security schemes
     # Use only_levels=True for get the only levels entries
     jira.get_issue_security_scheme(scheme_id, only_levels=False)
 
+Cluster methods (only for DC edition)
+-------------------------------------
+.. code-block:: python
+
+    # Get all cluster nodes.
+    jira.get_cluster_all_nodes()
+
+    # Request current index from node (the request is processed asynchronously).
+    jira.request_current_index_from_node(node_id)
+
 TEMPO
 ----------------------
 .. code-block:: python
@@ -324,8 +542,8 @@ TEMPO
     # Look at the tempo docs for additional information:
     # https://www.tempo.io/server-api-documentation/timesheets#operation/searchWorklogs
     # NOTE: check if you are using correct types for the parameters!
-    #     :param from: string From Date
-    #     :param to: string To Date
+    #     :param date_from: string From Date
+    #     :param date_to: string To Date
     #     :param worker: Array of strings
     #     :param taskId: Array of integers
     #     :param taskKey: Array of strings
@@ -345,7 +563,7 @@ TEMPO
     #     :param pageNo: integer
     #     :param maxResults: integer
     #     :param offset: integer
-    jira.tempo_4_timesheets_find_worklogs(**params)
+    jira.tempo_4_timesheets_find_worklogs(date_from=None, date_to=None, **params)
 
     # :PRIVATE:
     # Get Tempo timesheet worklog by issue key or id.

@@ -1,6 +1,6 @@
 deprecated
-requests
+requests>=2.8.1
 six
 oauthlib
 requests_oauthlib
-requests-kerberos
+requests-kerberos==0.14.0

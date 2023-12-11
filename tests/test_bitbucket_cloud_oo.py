@@ -7,7 +7,7 @@ from datetime import datetime
 from atlassian import Bitbucket
 from atlassian.bitbucket import Cloud
 from atlassian.bitbucket.cloud.common.users import User
-from atlassian.bitbucket.cloud.repositories.pullRequests import Comment, Participant, PullRequest, Build
+from atlassian.bitbucket.cloud.repositories.pullRequests import Comment, Commit, Participant, PullRequest, Build, Task
 
 BITBUCKET = None
 try:
@@ -92,6 +92,7 @@ class TestBasic:
         assert result["uuid"] == "{PipelineStep1Uuid}", "Result of [get_pipeline_step(...)]"
 
     def test_get_pipeline_step_log_1(self):
+        """Test Not Found"""
         result = BITBUCKET.get_pipeline_step_log(
             "TestWorkspace1", "testrepository1", "{PipelineUuid}", "{PipelineStep1Uuid}"
         )
@@ -172,6 +173,10 @@ class TestPullRequests:
     def tc2(self):
         return CLOUD.workspaces.get("TestWorkspace1").repositories.get("testrepository1").pullrequests
 
+    @pytest.fixture(scope="module")
+    def tc3(self):
+        return CLOUD.workspaces.get("TestWorkspace1").repositories.get("testrepository1").pullrequests.get(1).commits
+
     def test_id(self, tc1):
         assert tc1.id == 1
 
@@ -223,6 +228,7 @@ class TestPullRequests:
         assert tc1.author.uuid == "{User03UUID}"
         assert tc1.author.account_id == "User03AccountID"
         assert tc1.author.nickname == "User03Nickname"
+        assert tc1.author.avatar == "users/%7BUser03UUID%7D.png"
 
     def test_participants(self, tc1):
         participants = list(tc1.participants())
@@ -231,10 +237,13 @@ class TestPullRequests:
         p1 = participants[1]
         assert isinstance(p1, Participant)
         assert isinstance(p1.user, User)
+        print(p1)
         assert p1.user.display_name == "User03DisplayName"
         assert p1.user.uuid == "{User03UUID}"
         assert p1.user.account_id == "User03AccountID"
         assert p1.user.nickname == "User03Nickname"
+        assert p1.user.avatar == "users/%7BUser03UUID%7D.png"
+
         assert _datetimetostr(p1.participated_on) == _datetimetostr(datetime(2020, 7, 9, 7, 0, 54, 416331))
         assert p1.is_participant
         assert not p1.is_reviewer
@@ -258,6 +267,13 @@ class TestPullRequests:
         assert len(reviewers) == 3
         assert isinstance(reviewers[0], User)
 
+    def test_commits(self, tc1):
+        pr_commits = list(tc1.commits)
+        assert len(pr_commits) == 1
+        commit_1 = pr_commits[0]
+        assert isinstance(commit_1, Commit)
+        assert commit_1.message == "src created online with Bitbucket"
+
     def test_comment(self, tc1):
         msg = "hello world"
         com = tc1.comment(msg)
@@ -276,6 +292,45 @@ class TestPullRequests:
         assert isinstance(c1.user, User)
         assert c1.user.display_name == "User04DisplayName"
         assert c2.html == "<p>Test comment 2</p>"
+
+    def test_add_task(self, tc1):
+        msg = "ToDo 1"
+        task = tc1.add_task(msg)
+        assert isinstance(task, Task)
+        assert task.id == 123456
+        assert task.description == msg
+        assert not task.is_resolved
+
+        with pytest.raises(ValueError):
+            tc1.add_task(None)
+
+    def test_update_task(self, tc1):
+        task = [t for t in tc1.tasks() if t.id == 123456][0]
+        task = task.update("ToDo 10")
+        assert task.description == "ToDo 10"
+
+        with pytest.raises(ValueError):
+            task.update(None)
+
+    def test_delete_task(self, tc1):
+        task = [t for t in tc1.tasks() if t.id == 123456][0]
+        assert task.delete() is None
+
+    def test_tasks(self, tc1):
+        tasks = list(tc1.tasks())
+        assert len(tasks) == 2
+        t1, t2 = tasks
+        assert isinstance(t1, Task)
+        assert isinstance(t2, Task)
+        assert t2.id == 123456
+        assert t1.id == 234567
+        assert not t2.is_resolved
+        assert t1.is_resolved
+        assert isinstance(t2.creator, User)
+        assert isinstance(t1.resolved_by, User)
+        assert t2.description == "ToDo 1"
+        assert _datetimetostr(t1.resolved_on) == _datetimetostr(datetime(2021, 10, 19, 20, 28, 47, 493275))
+        assert _datetimetostr(t2.created_on) == _datetimetostr(datetime(2021, 10, 19, 20, 20, 49, 288763))
 
     def test_approve(self, tc1):
         ap = tc1.approve()

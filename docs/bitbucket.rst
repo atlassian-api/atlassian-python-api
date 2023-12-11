@@ -43,7 +43,7 @@ Manage projects
     bitbucket.project_grant_user_permissions(project_key, username, permission)
 
     # Grant project permission to a specific group
-    bitbucket.project_grant_group_permissions(project_key, groupname, permission)
+    bitbucket.project_grant_group_permissions(project_key, group_name, permission)
 
     # Remove default permission for project
     bitbucket.project_remove_default_permissions(project_key, permission)
@@ -117,7 +117,7 @@ Manage repositories
     fork_repository(project_key, repository_slug, new_repository_slug)
 
     # Fork repo to new project
-    fork_repository(project_key, repository_slug, new_repository_slug, new_project_key, new_repository_slug)
+    fork_repository_new_project(project_key, repository_slug, new_project_key, new_repository_slug)
 
 Manage Code Insights
 --------------------
@@ -184,7 +184,7 @@ Manage code
     bitbucket.create_repo(project_key, repository, forkable=False, is_private=True)
 
     # Get branches from repo
-    bitbucket.get_branches(project, repository, filter='', limit=99999, details=True)
+    bitbucket.get_branches(project, repository, filter='', limit=99999, details=True, boost_matches=False)
 
     # Creates a branch using the information provided in the request.
     # The authenticated user must have REPO_WRITE permission for the context repository to call this resource.
@@ -208,6 +208,12 @@ Manage code
     # Add comment into pull request
     bitbucket.add_pull_request_comment(project, repository, pull_request_id, text)
 
+    # Reply to a comment of a pull request
+    bitbucket.add_pull_request_comment(project, repository, pull_request_id, text, parent_id=None)
+
+    # Get required reviewers for PR creation
+    bitbucket.get_required_reviewers_for_pull_request(source_project, source_repo, dest_project, dest_repo, source_branch, dest_branch)
+
     # Create a new pull request between two branches.
     bitbucket.open_pull_request(source_project, source_repo, dest_project, dest_repo, source_branch, destination_branch, title, description)
 
@@ -216,6 +222,9 @@ Manage code
 
     # Create a new pull request between two branches with multiple reviewers.
     bitbucket.open_pull_request(source_project, source_repo, dest_project, dest_repo, source_branch, destination_branch, title, description, reviewers=['name1', 'name2'])
+
+    # Create a new pull request between two branches with required reviewers.
+    bitbucket.open_pull_request(source_project, source_repo, dest_project, dest_repo, source_branch, destination_branch, title, description, include_required_reviewers=True)
 
     # Delete a pull request
     bitbucket.delete_pull_request(project, repository, pull_request_id, pull_request_version)
@@ -257,13 +266,13 @@ Branch permissions
 .. code-block:: python
 
     # Set branches permissions
-    bitbucket.set_branches_permissions(project_key, multiple_permissions=False, matcher_type=None, matcher_value=None, permission_type=None, repository=None, except_users=[], except_groups=[], except_access_keys=[], start=0, limit=25)
+    bitbucket.set_branches_permissions(project_key, multiple_permissions=False, matcher_type=None, matcher_value=None, permission_type=None, repository_slug=None, except_users=[], except_groups=[], except_access_keys=[], start=0, limit=25)
 
     # Delete a single branch permission by permission id
-    bitbucket.delete_branch_permission(project_key, permission_id, repository=None)
+    bitbucket.delete_branch_permission(project_key, permission_id, repository_slug=None)
 
     # Get a single branch permission by permission id
-    bitbucket.get_branch_permission(project_key, permission_id, repository=None)
+    bitbucket.get_branch_permission(project_key, permission_id, repository_slug=None)
 
 Pull Request management
 -----------------------
@@ -327,6 +336,90 @@ Conditions-Reviewers management
     # Delete a project condition for specific repository in project
     bitbucket.delete_repo_condition(project_key, repo_key, id_condition)
 
+Bitbucket Cloud
+---------------
+
+.. code-block:: python
+
+    # Get a list of workplaces:
+    cloud.workspaces.each()
+
+    # Get a single workplace by workplace slug
+    workplace = cloud.workspaces.get(workspace_slug)
+
+    # Get a list of permissions in a workspace (this may not work depending on the size of your workspace)
+    workplace.permissions.each():
+
+    # Get a list of repository permissions in a workspace (this may not work depending on the size of your workspace)
+    workplace.permissions.repositories():
+
+    # Get a single repository permissions in a workspace
+    workplace.permissions.repositories(repo_slug):
+
+    # Get a list of projects in a workspace
+    workplace.projects.each():
+
+    # Get a single project from a workplace by project key
+    project = workplace.projects.get(project_key)
+
+    # Get a list of repos from a project
+    project.repositories.each():
+
+    # Get a repository
+    repository = workplace.repositories.get(repository_slug)
+
+    # Get a list of deployment environments from a repository
+    repository.deployment_environments.each():
+
+    # Get a single deployment environment from a repository by deployment environment key
+    deployment_environment = repository.deployment_environments.get(deployment_environment_key)
+
+    # Get a list of deployment environment variables from a deployment environment
+    deployment_environment_variables = deployment_environment.deployment_environment_variables.each():
+
+    # Create a new deployment environment variable with a name of 'KEY', value of 'VALUE' and is not secured.
+    new_deployment_environment_variable = deployment_environment.deployment_environment_variables.create("KEY", "VALUE", False)
+
+    # Update the 'key' field of repository_variable
+    updated_deployment_environment_variable = new_deployment_environment_variable.update(key="UPDATED_DEPLOYMENT_ENVIRONMENT_VARIABLE_KEY")
+
+    # Update the 'value' field of repository_variable
+    updated_deployment_environment_variable = new_deployment_environment_variable.update(value="UPDATED_DEPLOYMENT_ENVIRONMENT_VARIABLE_VALUE")
+
+    # Delete deployment environment variable
+    updated_deployment_environment_variable.delete()
+
+    # Get a list of group permissions from a repository
+    repository.group_permissions.each():
+
+    # Get a single group permission from a repository by group slug
+    repository.group_permissions.get(group_slug)
+
+    # Get a list of repository variables from a repository
+    repository.repository_variables.each():
+
+    # Get a single repository variable from a repository by repository variable key
+    repository_variable = repository.repository_variables.get(repository_variable_key)
+
+    # Create a new repository variable with a name of 'KEY', value of 'VALUE' and is not secured.
+    new_repository_variable = repository.repository_variables.create("KEY", "VALUE", False)
+
+    # Update the 'key' field of repository_variable
+    updated_repository_variable = repository_variable.update(key="UPDATED_REPOSITORY_VARIABLE_KEY")
+
+    # Update the 'value' field of repository_variable
+    updated_repository_variable = repository_variable.update(value="UPDATED_REPOSITORY_VARIABLE_VALUE")
+
+    # Delete repository_variable
+    repository_variable.delete()
+
+    # Get a list of workspace members
+    workplace.members.each()
+
+    # Get a specific workspace member
+    workplace.members.get("a-user-account-id")
+    workplace.members.get("{a-user-uuid}")
+
 Pipelines management
 --------------------
 
@@ -353,6 +446,9 @@ Pipelines management
 
         # Trigger specific Pipeline on a specific revision of the master branch
         r.pipelines.trigger(revision="<40-char hash>", name="style-check")
+
+        # Trigger specific Pipeline of the master branch with specific variables
+        r.pipelines.trigger(name="style-check", variables=[{ "key": "var-name", "value": "var-value" }])
 
         # Get specific Pipeline by UUID
         pl = r.pipelines.get("{7d6c327d-6336-4721-bfeb-c24caf25045c}")

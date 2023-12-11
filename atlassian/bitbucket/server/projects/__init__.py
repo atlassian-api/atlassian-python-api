@@ -37,7 +37,10 @@ class Projects(BitbucketServerBase):
 
         API docs: https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp148
         """
-        return self.__get_object(self.post(None, data={"name": name, "key": key, "description": description}))
+        data = {"name": name, "key": key, "description": description}
+        if avatar:
+            data["avatar"] = avatar
+        return self.__get_object(self.post(None, data=data))
 
     def each(self, name=None, permission=None):
         """
@@ -107,8 +110,16 @@ class Projects(BitbucketServerBase):
 class Project(BitbucketServerBase):
     def __init__(self, data, *args, **kwargs):
         super(Project, self).__init__(None, *args, data=data, **kwargs)
-        self.__groups = Groups(self._sub_url("permissions/groups"), "PROJECT", **self._new_session_args)
-        self.__users = Users(self._sub_url("permissions/users"), "PROJECT", **self._new_session_args)
+        self.__groups = Groups(
+            self._sub_url("permissions/groups"),
+            "PROJECT",
+            **self._new_session_args
+        )  # fmt: skip
+        self.__users = Users(
+            self._sub_url("permissions/users"),
+            "PROJECT",
+            **self._new_session_args
+        )  # fmt: skip
         self.__repos = Repositories(self._sub_url("repos"), **self._new_session_args)
 
     def delete(self):
