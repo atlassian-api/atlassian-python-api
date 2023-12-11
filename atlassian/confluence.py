@@ -1100,6 +1100,38 @@ class Confluence(AtlassianRestAPI):
             comment=comment,
         )
 
+    def download_attachments_from_page(self, page_id, path=None):
+        """
+        Downloads all attachments from a page
+        :param page_id:
+        :param path: path to directory where attachments will be saved. If None, current working directory will be used.
+        :return info message: number of saved attachments + path to directory where attachments were saved:
+        """
+        if path is None:
+            path = os.getcwd()
+        try:
+            attachments = self.get_attachments_from_content(page_id=page_id)["results"]
+            if not attachments:
+                return "No attachments found"
+            for attachment in attachments:
+                file_name = attachment["title"]
+                if not file_name:
+                    file_name = attachment["id"]  # if the attachment has no title, use attachment_id as a filename
+                download_link = self.url + attachment["_links"]["download"]
+                r = self._session.get(f"{download_link}")
+                file_path = os.path.join(path, file_name)
+                with open(file_path, "wb") as f:
+                    f.write(r.content)
+        except NotADirectoryError:
+            raise NotADirectoryError("Verify if directory path is correct and/or if directory exists")
+        except PermissionError:
+            raise PermissionError(
+                "Directory found, but there is a problem with saving file to this directory. Check directory permissions"
+            )
+        except Exception as e:
+            raise e
+        return {"attachments downloaded": len(attachments), " to path ": path}
+
     def delete_attachment(self, page_id, filename, version=None):
         """
         Remove completely a file if version is None or delete version
@@ -1519,7 +1551,7 @@ class Confluence(AtlassianRestAPI):
             previous_body = (
                 (self.get_page_by_id(page_id, expand="body.storage").get("body") or {}).get("storage").get("value")
             )
-            previous_body = previous_body.replace("&oacute;", u"ó")
+            previous_body = previous_body.replace("&oacute;", "ó")
             body = insert_body + previous_body if top_of_page else previous_body + insert_body
             data = {
                 "id": page_id,
