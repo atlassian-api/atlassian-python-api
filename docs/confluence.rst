@@ -120,6 +120,9 @@ Page actions
     # automatically version the new file and keep the old one
     confluence.attach_content(content, name=None, content_type=None, page_id=None, title=None, space=None, comment=None)
 
+    # Download attachments from a page to local system.
+    confluence.download_attachments(page_id, download_path, path=None)
+
     # Remove completely a file if version is None or delete version
     confluence.delete_attachment(page_id, filename, version=None)
 
