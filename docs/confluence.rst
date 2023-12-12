@@ -152,6 +152,9 @@ Page actions
     # Add comment into page
     confluence.add_comment(page_id, text)
 
+     # Fetch tables from Confluence page
+    confluence.get_page_tables(page_id)
+
 Template actions
 ----------------
 
