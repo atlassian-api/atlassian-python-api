@@ -4,6 +4,7 @@ import os
 import time
 import json
 from bs4  import BeautifulSoup
+import lxml
 from requests import HTTPError
 import requests
 from deprecated import deprecated
