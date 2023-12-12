@@ -7,6 +7,7 @@ import json
 from requests import HTTPError
 import requests
 from deprecated import deprecated
+from bs4 import BeautifulSoup
 from atlassian import utils
 from .errors import ApiError, ApiNotFoundError, ApiPermissionError, ApiValueError, ApiConflictError, ApiNotAcceptable
 from .rest_client import AtlassianRestAPI
@@ -355,6 +356,46 @@ class Confluence(AtlassianRestAPI):
             raise
 
         return response
+
+    def get_tables_from_page(self, page_id):
+        """
+        Fetches html  tables added to  confluence page
+        :param page_id: integer confluence page_id
+        :return: json object with page_id, number_of_tables_in_page  and  list of list tables_content representing scrapepd tables
+        """
+        try:
+            page_content = self.get_page_by_id(page_id, expand="body.storage")["body"]["storage"]["value"]
+
+            if page_content:
+                tables_raw = [
+                    [[cell.text for cell in row("th") + row("td")] for row in table("tr")]
+                    for table in BeautifulSoup(page_content, features="lxml")("table")
+                ]
+                if len(tables_raw) > 0:
+                    return json.dumps(
+                        {
+                            "page_id": page_id,
+                            "number_of_tables_in_page": len(tables_raw),
+                            "tables_content": tables_raw,
+                        }
+                    )
+                else:
+                    return {
+                        "No tables found for page: ": page_id,
+                    }
+            else:
+                return {"Page content is empty"}
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                # Raise ApiError as the documented reason is ambiguous
+                log.error("Couldn't retrieve tables  from page", page_id)
+                raise ApiError(
+                    "There is no content with the given pageid, pageid params is not an integer "
+                    "or the calling user does not have permission to view the page",
+                    reason=e,
+                )
+        except Exception as e:
+            log.error("Error occured", e)
 
     def get_page_labels(self, page_id, prefix=None, start=None, limit=None):
         """
