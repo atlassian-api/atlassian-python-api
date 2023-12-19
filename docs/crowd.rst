@@ -21,6 +21,12 @@ Manage users
     # Get user
     crowd.user(username)
 
+    # Get user's all group info
+    crowd.user_groups(username, kind='direct')
+
+    # Check whether the user is a member of the group
+    crowd.is_user_in_group(username, group, kind='direct')
+
 Manage groups
 -------------
 
@@ -28,4 +34,7 @@ Manage groups
 
     # Add user to group
     crowd.group_add_user(username, groupname)
+
+    # Get group's members
+    crowd.group_members(group, kind='direct', max_results=99999)
 

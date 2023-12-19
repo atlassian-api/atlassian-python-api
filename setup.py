@@ -25,7 +25,7 @@ setup(
     package_dir={"atlassian": "atlassian"},
     include_package_data=True,
     zip_safe=False,
-    install_requires=["deprecated", "requests", "six", "oauthlib", "requests_oauthlib"],
+    install_requires=["deprecated", "requests", "six", "oauthlib", "requests_oauthlib", "jmespath"],
     extras_require={"kerberos": ["requests-kerberos"]},
     platforms="Platform Independent",
     classifiers=[
