@@ -161,7 +161,7 @@ Or reuse cookie file:
         cookies=cookie_dict)
 
 Or using Personal Access Token
-Note: this method is valid for Jira Data center / server editions only! For Jira cloud, see below.
+Note: this method is valid for Jira and Confluence (<7.9) Data center / server editions only! For Jira cloud, see below.
 
 First, create your access token (check https://confluence.atlassian.com/enterprise/using-personal-access-tokens-1026032365.html for details)
 Then, just provide the token to the constructor:
@@ -171,6 +171,11 @@ Then, just provide the token to the constructor:
    jira = Jira(
        url='https://your-jira-instance.company.com',
        token=jira_access_token
+   )
+
+   confluence = Confluence(
+       url='https://your-confluence-instance.company.com',
+       token=confluence_access_token
    )
 
 To authenticate to the Atlassian Cloud APIs Jira, Confluence, ServiceDesk:
