@@ -332,17 +332,17 @@ Manage issues
     jira.get_issue_changelog(issue_key)
 
     # Get property keys from an issue
-    get_issue_property_keys(issue_key)
+    jira.get_issue_property_keys(issue_key)
 
     # Set issue property
     data = { "Foo": "Bar" }
-    set_issue_property(issue_key, property_key, data)
+    jira.set_issue_property(issue_key, property_key, data)
 
     # Get issue property
-    get_issue_property(issue_key, property_key)
+    jira.get_issue_property(issue_key, property_key)
 
     # Delete issue property
-    delete_issue_property(issue_key, property_key)
+    jira.delete_issue_property(issue_key, property_key)
 
     # Get worklog for an issue
     jira.issue_get_worklog(issue_key)
