@@ -7,7 +7,7 @@ import json
 from requests import HTTPError
 import requests
 from deprecated import deprecated
-from bs4 import BeautifulSoup
+from beautifulsoup4 import BeautifulSoup
 from atlassian import utils
 from .errors import ApiError, ApiNotFoundError, ApiPermissionError, ApiValueError, ApiConflictError, ApiNotAcceptable
 from .rest_client import AtlassianRestAPI
