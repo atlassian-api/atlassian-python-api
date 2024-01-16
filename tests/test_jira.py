@@ -59,7 +59,9 @@ class TestJira(TestCase):
         """Can retrieve issue property keys"""
         resp = self.jira.get_issue_property_keys("FOO-123")
         self.assertEqual(resp["keys"][0]["key"], "Bar1")
-        self.assertEqual(resp["keys"][0]["self"], "https://sample.atlassian.net/rest/api/2/issue/FOO-123/properties/Bar1")
+        self.assertEqual(
+            resp["keys"][0]["self"], "https://sample.atlassian.net/rest/api/2/issue/FOO-123/properties/Bar1"
+        )
 
     def test_get_issue_property_keys_not_found(self):
         with self.assertRaises(HTTPError):
