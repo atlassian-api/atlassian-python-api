@@ -5,5 +5,5 @@ oauthlib
 requests_oauthlib
 requests-kerberos==0.14.0
 jmespath
-bs4
+beautifulsoup4
 lxml
