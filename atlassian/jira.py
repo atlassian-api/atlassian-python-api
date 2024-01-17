@@ -1686,6 +1686,38 @@ class Jira(AtlassianRestAPI):
             params["expand"] = expand
         return self.get(url, params=params)
 
+    def get_issue_property_keys(self, issue_key):
+        """
+        Get Property Keys on an Issue.
+        :param issue_key: Issue KEY
+        :raises: requests.exceptions.HTTPError
+        :return:
+        """
+        base_url = self.resource_url("issue")
+        url = "{base_url}/{issue_key}/properties".format(base_url=base_url, issue_key=issue_key)
+        return self.get(url)
+
+    def set_issue_property(self, issue_key, property_key, data):
+        base_url = self.resource_url("issue")
+        url = "{base_url}/{issue_key}/properties/{propertyKey}".format(
+            base_url=base_url, issue_key=issue_key, propertyKey=property_key
+        )
+        return self.put(url, data=data)
+
+    def get_issue_property(self, issue_key, property_key):
+        base_url = self.resource_url("issue")
+        url = "{base_url}/{issue_key}/properties/{propertyKey}".format(
+            base_url=base_url, issue_key=issue_key, propertyKey=property_key
+        )
+        return self.get(url)
+
+    def delete_issue_property(self, issue_key, property_key):
+        base_url = self.resource_url("issue")
+        url = "{base_url}/{issue_key}/properties/{propertyKey}".format(
+            base_url=base_url, issue_key=issue_key, propertyKey=property_key
+        )
+        return self.delete(url)
+
     def get_updated_worklogs(self, since, expand=None):
         """
         Returns a list of IDs and update timestamps for worklogs updated after a date and time.

@@ -331,12 +331,26 @@ Manage issues
     # Get change history for an issue
     jira.get_issue_changelog(issue_key)
 
+    # Get property keys from an issue
+    jira.get_issue_property_keys(issue_key)
+
+    # Set issue property
+    data = { "Foo": "Bar" }
+    jira.set_issue_property(issue_key, property_key, data)
+
+    # Get issue property
+    jira.get_issue_property(issue_key, property_key)
+
+    # Delete issue property
+    jira.delete_issue_property(issue_key, property_key)
+
     # Get worklog for an issue
     jira.issue_get_worklog(issue_key)
 
     # Create a new worklog entry for an issue
     # started is a date string in the format %Y-%m-%dT%H:%M:%S.000+0000%z
     jira.issue_worklog(issue_key, started, time_in_sec)
+
 
 
 Epic Issues

@@ -54,3 +54,41 @@ class TestJira(TestCase):
         """Post an issue but receive a 401 error response"""
         with self.assertRaises(HTTPError):
             self.jira.create_issue(fields={"issuetype": "fail", "summary": "authentication", "project": "project"})
+
+    def test_get_issue_property_keys(self):
+        """Can retrieve issue property keys"""
+        resp = self.jira.get_issue_property_keys("FOO-123")
+        self.assertEqual(resp["keys"][0]["key"], "Bar1")
+        self.assertEqual(
+            resp["keys"][0]["self"], "https://sample.atlassian.net/rest/api/2/issue/FOO-123/properties/Bar1"
+        )
+
+    def test_get_issue_property_keys_not_found(self):
+        with self.assertRaises(HTTPError):
+            self.jira.get_issue_property_keys("BAR-11")
+
+    def test_set_issue_property_create(self):
+        self.jira.set_issue_property("FOO-123", "Bar2New", data={"test.id": "123456", "test.mem": "250M"})
+
+    def test_set_issue_property_update(self):
+        self.jira.set_issue_property("FOO-123", "Bar1", data={"test.id": "123456", "test.mem": "250M"})
+
+    def test_get_issue_property(self):
+        resp = self.jira.get_issue_property("FOO-123", "Bar1")
+        self.assertEqual(resp["value"]["test.id"], "123")
+        self.assertEqual(resp["value"]["test.time"], "1m")
+
+    def test_get_issue_property_not_found(self):
+        with self.assertRaises(HTTPError):
+            self.jira.get_issue_property("FOO-123", "NotFoundBar1")
+        with self.assertRaises(HTTPError):
+            self.jira.get_issue_property("FOONotFound-123", "NotFoundBar1")
+
+    def test_delete_issue_property(self):
+        self.jira.delete_issue_property("FOO-123", "Bar1")
+
+    def test_delete_issue_property_not_found(self):
+        with self.assertRaises(HTTPError):
+            self.jira.get_issue_property("FOO-123", "NotFoundBar1")
+        with self.assertRaises(HTTPError):
+            self.jira.get_issue_property("FOONotFound-123", "NotFoundBar1")

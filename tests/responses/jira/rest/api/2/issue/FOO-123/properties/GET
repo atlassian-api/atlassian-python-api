@@ -1,0 +1,3 @@
+responses[None] = {
+    "keys": [{"key": "Bar1", "self": "https://sample.atlassian.net/rest/api/2/issue/FOO-123/properties/Bar1"}]
+}
