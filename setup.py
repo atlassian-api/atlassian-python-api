@@ -8,6 +8,7 @@ with open(os.path.join("atlassian", "VERSION")) as file:
 with open("README.rst") as file:
     long_description = file.read()
 
+
 setup(
     name="atlassian-python-api",
     description="Python Atlassian REST API Wrapper",
