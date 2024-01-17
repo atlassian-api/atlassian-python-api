@@ -9,17 +9,6 @@ with open("README.rst") as file:
     long_description = file.read()
 
 
-def get_install_requires():
-    """Lets read requirements.txt and properly set dependencies.
-    We keep only one source of required packages, no need to change this file here.
-
-    Another advantage: build will fail if requirements file contains wrong libraries"""
-
-    with open('requirements.txt', 'r') as f:
-        lines = [a.strip('\n').strip() for a in f.readlines() if not a.startswith('#')]
-    return [a for a in lines if a]
-
-
 setup(
     name="atlassian-python-api",
     description="Python Atlassian REST API Wrapper",
@@ -37,7 +26,7 @@ setup(
     package_dir={"atlassian": "atlassian"},
     include_package_data=True,
     zip_safe=False,
-    install_requires=get_install_requires(),
+    install_requires=["deprecated", "requests", "six", "oauthlib", "requests_oauthlib", "jmespath", "beautifulsoup4"],
     extras_require={"kerberos": ["requests-kerberos"]},
     platforms="Platform Independent",
     classifiers=[
