@@ -61,6 +61,9 @@ Manage users
 
 .. code-block:: python
 
+    # Get myself
+    jira.myself()
+
     # Get user
     jira.user(account_id)
 
