@@ -1798,6 +1798,10 @@ class Jira(AtlassianRestAPI):
         return self.get(url, params=params)
 
     def myself(self):
+        """
+        Currently logged user resource
+        :return:
+        """
         url = self.resource_url("myself")
         return self.get(url)
 
