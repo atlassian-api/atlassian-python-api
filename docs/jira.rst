@@ -272,6 +272,15 @@ Manage issues
     # Get Issue Edit Meta
     jira.issue_editmeta(issue_key)
 
+    # Get issue create meta, deprecated on Cloud and from Jira 9.0
+    jira.issue_createmeta(project, expand="projects.issuetypes.fields")
+
+    # Get create metadata issue types for a project
+    jira.issue_createmeta_issuetypes(project, start=None, limit=None)
+
+    # Get create field metadata for a project and issue type id
+    jira.issue_createmeta_fieldtypes(self, project, issue_type_id, start=None, limit=None)
+
     # Create Issue Link
     data = {
             "type": {"name": "Duplicate" },

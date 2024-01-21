@@ -1064,13 +1064,43 @@ class Jira(AtlassianRestAPI):
         url = self.resource_url("issue/createmeta?projectKeys={}".format(project))
         return self.get(url, params=params)
 
-    def issue_createmeta_issuetypes(self, project):
+    def issue_createmeta_issuetypes(self, project, start=None, limit=None):
+        """
+        Get create metadata issue types for a project
+        Returns a page of issue type metadata for a specified project.
+        Use the information to populate the requests in Create issue and Create issues.
+        :param project:
+        :param start: default: 0
+        :param limit: default: 50
+        :return:
+        """
         url = self.resource_url("issue/createmeta/{}/issuetypes".format(project))
-        return self.get(url)
+        params = {}
+        if start:
+            params["startAt"] = start
+        if limit:
+            params["maxResults"] = limit
+        return self.get(url, params=params)
 
-    def issue_createmeta_fieldtypes(self, project, issue_type_id):
+    def issue_createmeta_fieldtypes(self, project, issue_type_id, start=None, limit=None):
+        """
+        Get create field metadata for a project and issue type id
+        Returns a page of field metadata for a specified project and issuetype id.
+        Use the information to populate the requests in Create issue and Create issues.
+        This operation can be accessed anonymously.
+        :param project:
+        :param issue_type_id:
+        :param start: default: 0
+        :param limit: default: 50
+        :return:
+        """
         url = self.resource_url("issue/createmeta/{}/issuetypes/{}".format(project, issue_type_id))
-        return self.get(url)
+        params = {}
+        if start:
+            params["startAt"] = start
+        if limit:
+            params["maxResults"] = limit
+        return self.get(url, params=params)
 
     def issue_editmeta(self, key):
         base_url = self.resource_url("issue")

@@ -20,11 +20,11 @@ class Projects(BitbucketServerBase):
         Note that the avatar has to be embedded as either a data-url or a URL to an external image as shown in
         the examples below:
 
-            w.projects.create( "Mars Project", "MARS", "Software for colonizing mars.",
+            w.projects.create( "Mars Project", "MARS", "Software for colonizing Mars.",
                 avatar="data:image/gif;base64,R0lGODlhEAAQAMQAAORHHOVSKudfOulrSOp3WOyDZu6QdvCchPGolfO0o/..."
             )
 
-            w.projects.create( "Mars Project", "MARS", "Software for colonizing mars.",
+            w.projects.create( "Mars Project", "MARS", "Software for colonizing Mars.",
                 avatar="http://i.imgur.com/72tRx4w.gif"
             )
 
