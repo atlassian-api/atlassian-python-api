@@ -2787,7 +2787,7 @@ class Confluence(AtlassianRestAPI):
             headers = self.form_token_headers
             log.info("Initiate PDF export from Confluence Cloud")
             response = self.get(url, headers=headers, not_json_response=True)
-            response_string = response.decode(encoding="utf-8", errors="strict")
+            response_string = response.decode(encoding="utf-8", errors="ignore")
             task_id = response_string.split('name="ajs-taskId" content="')[1].split('">')[0]
             poll_url = "/services/api/v1/task/{0}/progress".format(task_id)
             while running_task:
