@@ -1160,15 +1160,20 @@ class Jira(AtlassianRestAPI):
 
         return self.get(url)
 
-    def issue_archive(self, issue_id_or_key):
+    def issue_archive(self, issue_id_or_key, notify_users=None):
         """
         Archives an issue.
         :param issue_id_or_key: Issue id or issue key
+        :param notify_users: shall users be notified by Jira about archival?
+                             The default value of None will apply the default behavior of Jira
         :return:
         """
+        params = {}
+        if notify_users is not None:
+            params["notifyUsers"] = notify_users
         base_url = self.resource_url("issue")
         url = "{base_url}/{issueIdOrKey}/archive".format(base_url=base_url, issueIdOrKey=issue_id_or_key)
-        return self.put(url)
+        return self.put(url, params=params)
 
     def issue_restore(self, issue_id_or_key):
         """
