@@ -452,7 +452,7 @@ class Insight(AtlassianRestAPI):
         if object_id is not None:
             data["objectId"] = object_id
         url = self.url_joiner(self.api_root, "iql/objects")
-        return self.post(url, data=data)
+        return self.get(url, data=data)
 
     # Objectconnectedtickets
     def get_object_connected_tickets(self, object_id):
