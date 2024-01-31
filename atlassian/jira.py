@@ -1409,7 +1409,7 @@ class Jira(AtlassianRestAPI):
 
     def assign_issue(self, issue, account_id=None):
         """Assign an issue to a user. None will set it to unassigned. -1 will set it to Automatic.
-        :param issue: the issue ID or key to assign
+        :param issue : the issue ID or key to assign
         :type issue: int or str
         :param account_id: the account ID of the user to assign the issue to;
                 for jira server the value for account_id should be a valid jira username
@@ -1530,6 +1530,44 @@ class Jira(AtlassianRestAPI):
             data["visibility"] = visibility
         params = {"notifyUsers": "true" if notify_users else "false"}
         return self.put(url, data=data, params=params)
+
+    def scrap_regex_from_issue(self, issue, regex):
+        """
+        This function scrapes the output of the given regex matches from the issue's description and comments.
+
+        Parameters:
+        issue (str): jira issue ide.
+        regex (str): The regex to match.
+
+        Returns:
+        list: A list of matches.
+        """
+        regex_output = []
+        issue_output = self.get_issue(issue)
+        description = issue_output["fields"]["description"]
+        comments = issue_output["fields"]["comment"]["comments"]
+
+        try:
+            description_matches = [x.group(0) for x in re.finditer(regex, description)]
+            if description_matches:
+                regex_output.extend(description_matches)
+
+            for comment in comments:
+                comment_html = comment["body"]
+                comment_matches = [x.group(0) for x in re.finditer(regex, comment_html)]
+                if comment_matches:
+                    regex_output.extend(comment_matches)
+
+            return regex_output
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                # Raise ApiError as the documented reason is ambiguous
+                log.error("couldn't find issue: ", issue["key"])
+                raise ApiNotFoundError(
+                    "There is no content with the given issue ud,"
+                    "or the calling user does not have permission to view the issue",
+                    reason=e,
+                )
 
     def get_issue_remotelinks(self, issue_key, global_id=None, internal_id=None):
         """
