@@ -5,6 +5,7 @@
     token and Using access token, Jira cloud ID is identified and
     the available projects are returned.
 """
+
 from requests_oauthlib import OAuth2Session
 from atlassian.jira import Jira
 from flask import Flask, request, redirect, session
