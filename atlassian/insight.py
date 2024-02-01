@@ -657,7 +657,6 @@ class Insight(AtlassianRestAPI):
         data = {"fields": {field_id: [{"key": i} for i in insight_keys]}}
         return self.put("{base_url}/{key}".format(base_url=base_url, key=key), data=data)
 
-
     def check_duplicate_attribute_values(self):
         """
         Check for duplicate attribute values in Insight objects with cardinality maximum 1
