@@ -363,6 +363,8 @@ Manage issues
     # started is a date string in the format %Y-%m-%dT%H:%M:%S.000+0000%z
     jira.issue_worklog(issue_key, started, time_in_sec)
 
+    # Scrap regex matches from issue description and comments:
+    jira.scrap_regex_from_issue(issue_key, regex)
 
 
 Epic Issues
@@ -497,6 +499,9 @@ Manage components
 
     # Create component
     jira.create_component(component)
+
+    # Update component
+    jira.update_component(component, component_id)
 
     # Delete component
     jira.delete_component(component_id)

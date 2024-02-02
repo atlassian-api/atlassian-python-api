@@ -1,5 +1,6 @@
 """ Example: Get Comments on a Jira Issue
 """
+
 # coding=utf-8
 from atlassian import Jira
 
