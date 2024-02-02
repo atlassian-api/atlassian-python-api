@@ -656,3 +656,23 @@ class Insight(AtlassianRestAPI):
         }
         data = {"fields": {field_id: [{"key": i} for i in insight_keys]}}
         return self.put("{base_url}/{key}".format(base_url=base_url, key=key), data=data)
+
+    def check_duplicate_attribute_values(self):
+        """
+        Check for duplicate attribute values in Insight objects with cardinality maximum 1
+        used for Data Center
+        link: https://confluence.atlassian.com/jirakb/duplicated-attribute-values-in-insight-objects-with-cardinality-maximum-1-1114816155.html
+        :return:
+        """
+        url = "rest/insight/1.0/health/consistency/duplicates/attributevalues"
+        return self.get(url)
+
+    def delete_duplicate_attribute_values(self):
+        """
+        Delete duplicate attribute values in Insight objects with cardinality maximum 1
+        used for Data Center
+        link: https://confluence.atlassian.com/jirakb/duplicated-attribute-values-in-insight-objects-with-cardinality-maximum-1-1114816155.html
+        :return:
+        """
+        url = "rest/insight/1.0/health/consistency/duplicates/attributevalues"
+        return self.delete(url)
