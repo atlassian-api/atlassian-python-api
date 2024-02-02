@@ -500,6 +500,9 @@ Manage components
     # Create component
     jira.create_component(component)
 
+    # Update component
+    jira.update_component(component, component_id)
+
     # Delete component
     jira.delete_component(component_id)
 
