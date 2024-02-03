@@ -34,9 +34,9 @@ class Commits(BitbucketCloudBase):
             params["sort"] = sort
         if q is not None:
             params["q"] = q
-        trailing=True
+        trailing = True
         if top is not None:
-            trailing=False
+            trailing = False
         for commit in self._get_paged(top, trailing=trailing, params=params):
             yield self.__get_object(commit)
 
