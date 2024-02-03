@@ -185,19 +185,19 @@ Template actions
     confluence.create_or_update_template(name, body, template_type, description=description, labels=labels, space=space)
 
     # Get a template by its ID
-    confluence.get_template_by_id(template_id)
+    confluence.get_content_template(template_id)
 
     # Get all global content templates
-    confluence.get_all_templates_from_space()
+    confluence.get_content_templates()
 
     # Get content templates in a space
-    confluence.get_all_templates_from_space(space)
+    confluence.get_content_templates(space)
 
     # Get all global blueprint templates
-    confluence.get_all_blueprints_from_space()
+    confluence.get_blueprint_templates()
 
     # Get all blueprint templates in a space
-    confluence.get_all_blueprints_from_space(space)
+    confluence.get_blueprint_templates(space)
 
     # Removing a template
     confluence.remove_template(template_id)
