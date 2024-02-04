@@ -34,7 +34,10 @@ class Commits(BitbucketCloudBase):
             params["sort"] = sort
         if q is not None:
             params["q"] = q
-        for commit in self._get_paged(top, trailing=True, params=params):
+        trailing = True
+        if top is not None:
+            trailing = False
+        for commit in self._get_paged(top, trailing=trailing, params=params):
             yield self.__get_object(commit)
 
     def get(self, commit_hash):

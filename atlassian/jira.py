@@ -497,6 +497,11 @@ class Jira(AtlassianRestAPI):
         url = "{base_url}/".format(base_url=base_url)
         return self.post(url, data=component)
 
+    def update_component(self, component, component_id):
+        base_url = self.resource_url("component")
+        url = "{base_url}/{component_id}".format(base_url=base_url, component_id=component_id)
+        return self.put(url, data=component)
+
     def delete_component(self, component_id):
         log.warning('Deleting component "%s"', component_id)
         base_url = self.resource_url("component")
