@@ -1553,15 +1553,16 @@ class Jira(AtlassianRestAPI):
         comments = issue_output["fields"]["comment"]["comments"]
 
         try:
-            description_matches = [x.group(0) for x in re.finditer(regex, description)]
-            if description_matches:
-                regex_output.extend(description_matches)
+            if description is not None:
+                description_matches = [x.group(0) for x in re.finditer(regex, description)]
+                if description_matches:
+                    regex_output.extend(description_matches)
 
-            for comment in comments:
-                comment_html = comment["body"]
-                comment_matches = [x.group(0) for x in re.finditer(regex, comment_html)]
-                if comment_matches:
-                    regex_output.extend(comment_matches)
+                for comment in comments:
+                    comment_html = comment["body"]
+                    comment_matches = [x.group(0) for x in re.finditer(regex, comment_html)]
+                    if comment_matches:
+                        regex_output.extend(comment_matches)
 
             return regex_output
         except HTTPError as e:

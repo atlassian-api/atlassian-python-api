@@ -156,7 +156,10 @@ Page actions
     confluence.add_comment(page_id, text)
 
      # Fetch tables from Confluence page
-    confluence.get_page_tables(page_id)
+    confluence.get_tables_from_page(page_id)
+
+    # Get regex matches from Confluence page
+    confluence.scrap_regex_from_page(page_id, regex)
 
 Template actions
 ----------------
