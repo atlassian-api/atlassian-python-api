@@ -162,7 +162,17 @@ class Jira(AtlassianRestAPI):
     Attachments
     Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/attachment
     """
-
+    def get_attachments_ids_from_page(self, issue_id):
+        """
+        Get attachments from page
+        :param issue_id: int
+        :return: list of attachments
+        """
+        test = self.get_issue(issue_id)['fields']['attachment']
+        output = []
+        for i in test:
+            output.append({"filename": i['filename'], "attachment_id": i['id']})
+        return output
     def get_attachment(self, attachment_id):
         """
         Returns the meta-data for an attachment, including the URI of the actual attached file
