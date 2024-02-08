@@ -1,6 +1,7 @@
 # coding=utf-8
 import logging
 import re
+import os
 from warnings import warn
 from deprecated import deprecated
 from requests import HTTPError
@@ -182,6 +183,30 @@ class Jira(AtlassianRestAPI):
         base_url = self.resource_url("attachment")
         url = "{base_url}/{attachment_id}".format(base_url=base_url, attachment_id=attachment_id)
         return self.get(url)
+
+    def downlaod_all_attachments_from_page(self, page_id, path=None):
+
+            """
+            Downloads all attachments from a page
+            :param page_id:
+            :param path: path to directory where attachments will be saved. If None, current working directory will be used.
+            :return info message: number of saved attachments + path to directory where attachments were saved:
+            """
+            if path is None:
+                path = os.getcwd()
+
+            issue_id = self.issue(page_id, fields='id')['id']
+            # test_ur https://gregstestinginstance666.atlassian.net/secure/issueAttachments/10003.zip
+            url = self.url + f"/secure/issueAttachments/{issue_id}.zip"
+            r = self._session.get(url)
+            attachment_name = f"{page_id}_attachments.zip"
+            print(path)
+            file_path = os.path.join(path, attachment_name)
+
+            with open(file_path, "wb") as f:
+                f.write(r.content)
+
+            return "test"
 
     def get_attachment_content(self, attachment_id):
         """
