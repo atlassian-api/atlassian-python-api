@@ -163,17 +163,19 @@ class Jira(AtlassianRestAPI):
     Attachments
     Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/attachment
     """
+
     def get_attachments_ids_from_page(self, issue_id):
         """
         Get attachments from page
         :param issue_id: int
         :return: list of attachments
         """
-        test = self.get_issue(issue_id)['fields']['attachment']
+        test = self.get_issue(issue_id)["fields"]["attachment"]
         output = []
         for i in test:
-            output.append({"filename": i['filename'], "attachment_id": i['id']})
+            output.append({"filename": i["filename"], "attachment_id": i["id"]})
         return output
+
     def get_attachment(self, attachment_id):
         """
         Returns the meta-data for an attachment, including the URI of the actual attached file
@@ -184,29 +186,41 @@ class Jira(AtlassianRestAPI):
         url = "{base_url}/{attachment_id}".format(base_url=base_url, attachment_id=attachment_id)
         return self.get(url)
 
-    def downlaod_all_attachments_from_page(self, page_id, path=None):
-
-            """
-            Downloads all attachments from a page
-            :param page_id:
-            :param path: path to directory where attachments will be saved. If None, current working directory will be used.
-            :return info message: number of saved attachments + path to directory where attachments were saved:
-            """
-            if path is None:
-                path = os.getcwd()
-
-            issue_id = self.issue(page_id, fields='id')['id']
-            # test_ur https://gregstestinginstance666.atlassian.net/secure/issueAttachments/10003.zip
+    def download_all_attachments_from_page(self, issue_id, path=None):
+        """
+        Downloads all attachments from a Jira issue.
+        :param issue_id: The ID of the Jira issue.
+        :param path: Path to directory where attachments will be saved. If None, current working directory will be used.
+        :return: A message indicating the result of the download operation.
+        """
+        try:
+            issue_id = self.issue(issue_id, fields="id")["id"]
             url = self.url + f"/secure/issueAttachments/{issue_id}.zip"
-            r = self._session.get(url)
-            attachment_name = f"{page_id}_attachments.zip"
-            print(path)
+            response = self._session.get(url)
+            attachment_name = f"{issue_id}_attachments.zip"
             file_path = os.path.join(path, attachment_name)
+            file_size = sum(len(chunk) for chunk in response.iter_content(8196))
+
+            # if Jira issue doesn't have any attachments _session.get request response will return 22 bytes of PK zip format
+            if file_size == 22:
+                return "No attachments found on the Jira issue"
+
+            if os.path.isfile(file_path):
+                return "File already exists"
 
             with open(file_path, "wb") as f:
-                f.write(r.content)
+                f.write(response.content)
 
-            return "test"
+            return "Attachments downloaded successfully"
+
+        except FileNotFoundError:
+            raise FileNotFoundError("Verify if directory path is correct and/or if directory exists")
+        except PermissionError:
+            raise PermissionError(
+                "Directory found, but there is a problem with saving file to this directory. Check directory permissions"
+            )
+        except Exception as e:
+            raise e
 
     def get_attachment_content(self, attachment_id):
         """
