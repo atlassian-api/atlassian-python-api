@@ -489,6 +489,12 @@ Attachments actions
     # Add attachment (IO Object) to issue
     jira.add_attachment_object(issue_key, attachment)
 
+    # Download attachments from the issue
+    jira.download_attachments_from_issue(issue, path=None, cloud=True):
+
+    # Get list of attachments ids from issue
+    jira.get_attachments_ids_from_issue(issue_key)
+
 Manage components
 -----------------
 
