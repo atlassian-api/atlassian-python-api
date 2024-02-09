@@ -164,17 +164,17 @@ class Jira(AtlassianRestAPI):
     Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/attachment
     """
 
-    def get_attachments_ids_from_page(self, issue_id):
+    def get_attachments_ids_from_issue(self, issue):
         """
-        Get attachments from page
-        :param issue_id: int
-        :return: list of attachments
+        Get attachments IDs from jira issue
+        :param jira issue key: str
+        :return: list of integers attachment IDs
         """
-        test = self.get_issue(issue_id)["fields"]["attachment"]
-        output = []
-        for i in test:
-            output.append({"filename": i["filename"], "attachment_id": i["id"]})
-        return output
+        issue_id = self.get_issue(issue)["fields"]["attachment"]
+        list_attachments_id = []
+        for attachment in issue_id:
+            list_attachments_id.append({"filename": attachment["filename"], "attachment_id": attachment["id"]})
+        return list_attachments_id
 
     def get_attachment(self, attachment_id):
         """
@@ -186,31 +186,33 @@ class Jira(AtlassianRestAPI):
         url = "{base_url}/{attachment_id}".format(base_url=base_url, attachment_id=attachment_id)
         return self.get(url)
 
-    def download_all_attachments_from_page(self, issue_id, path=None):
+    def download_attachments_from_issue(self, issue, path=None, cloud=True):
         """
         Downloads all attachments from a Jira issue.
-        :param issue_id: The ID of the Jira issue.
+        :param issue: The issue-key of the Jira issue
         :param path: Path to directory where attachments will be saved. If None, current working directory will be used.
+        :param cloud: Use True for Jira Cloud, false when using Jira Data Center or Server
         :return: A message indicating the result of the download operation.
         """
         try:
-            issue_id = self.issue(issue_id, fields="id")["id"]
-            url = self.url + f"/secure/issueAttachments/{issue_id}.zip"
+            if path is None:
+                path = os.getcwd()
+            issue_id = self.issue(issue, fields="id")["id"]
+            if cloud:
+                url = self.url + f"/secure/issueAttachments/{issue_id}.zip"
+            else:
+                url = self.url + f"/secure/attachmentzip/{issue_id}.zip"
             response = self._session.get(url)
             attachment_name = f"{issue_id}_attachments.zip"
             file_path = os.path.join(path, attachment_name)
+            # if Jira issue doesn't have any attachments _session.get request response will return 22 bytes of PKzip format
             file_size = sum(len(chunk) for chunk in response.iter_content(8196))
-
-            # if Jira issue doesn't have any attachments _session.get request response will return 22 bytes of PK zip format
             if file_size == 22:
                 return "No attachments found on the Jira issue"
-
             if os.path.isfile(file_path):
                 return "File already exists"
-
             with open(file_path, "wb") as f:
                 f.write(response.content)
-
             return "Attachments downloaded successfully"
 
         except FileNotFoundError:
