@@ -2569,15 +2569,17 @@ class Jira(AtlassianRestAPI):
         base_url = self.resource_url("version")
         url = "{base_url}/{version}/move".format(base_url=base_url, version=version)
         if after is None and position is None:
-            raise ValueError('Must provide one of `after` or `position`')
+            raise ValueError("Must provide one of `after` or `position`")
         if after:
-            after_url = self.get_version(after).get('self')
-            return self.post(url, data={'after': after_url})
+            after_url = self.get_version(after).get("self")
+            return self.post(url, data={"after": after_url})
         if position:
             position = position.lower().capitalize()
-            if position not in ['Earlier', 'Later', 'First', 'Last']:
-                raise ValueError('position must be one of Earlier, Later, First, or Last. Got {pos}'.format(pos=position))
-            return self.post(url, data={'position': position})
+            if position not in ["Earlier", "Later", "First", "Last"]:
+                raise ValueError(
+                    "position must be one of Earlier, Later, First, or Last. Got {pos}".format(pos=position)
+                )
+            return self.post(url, data={"position": position})
 
     def get_project_roles(self, project_key):
         """
