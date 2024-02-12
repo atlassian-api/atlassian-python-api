@@ -1781,7 +1781,10 @@ class Bitbucket(BitbucketBase):
         :param start:
         :return:
         """
-        url = "{}/activity".format(self._url_pull_request(project_key, repository_slug, pull_request_id))
+        if self.cloud:
+            url = "{}/activity".format(self._url_pull_request(project_key, repository_slug, pull_request_id))
+        else:
+            url = "{}/activities".format(self._url_pull_request(project_key, repository_slug, pull_request_id))
         params = {}
         if start:
             params["start"] = start
