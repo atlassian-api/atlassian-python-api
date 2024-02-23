@@ -101,7 +101,7 @@ class AtlassianRestAPI(object):
         self._session.auth = (username, password)
 
     def _create_token_session(self, token):
-        self._update_header("Authorization", "Bearer {token}".format(token=token))
+        self._update_header("Authorization", "Bearer {token}".format(token=token.strip()))
 
     def _create_kerberos_session(self, _):
         from requests_kerberos import OPTIONAL, HTTPKerberosAuth
