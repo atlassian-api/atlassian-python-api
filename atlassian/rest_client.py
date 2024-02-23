@@ -3,6 +3,7 @@ import logging
 from json import dumps
 
 import requests
+from requests.adapters import HTTPAdapter
 
 try:
     from oauthlib.oauth1.rfc5849 import SIGNATURE_RSA_SHA512 as SIGNATURE_RSA
@@ -11,6 +12,7 @@ except ImportError:
 from requests import HTTPError
 from requests_oauthlib import OAuth1, OAuth2
 from six.moves.urllib.parse import urlencode
+from urllib3.util import Retry
 
 from atlassian.request_utils import get_default_logger
 
@@ -61,7 +63,44 @@ class AtlassianRestAPI(object):
         proxies=None,
         token=None,
         cert=None,
+        backoff_and_retry=False,
+        retry_status_codes=[413, 429, 503],
+        max_backoff_seconds=1800,
+        max_backoff_retries=1000,
     ):
+        """
+        init function for the AtlassianRestAPI object.
+
+        :param url: The url to be used in the request.
+        :param username: Username. Defaults to None.
+        :param password: Password. Defaults to None.
+        :param timeout: Request timeout. Defaults to 75.
+        :param api_root: Root for the api requests. Defaults to "rest/api".
+        :param api_version: Version of the API to use. Defaults to "latest".
+        :param verify_ssl: Turn on / off SSL verification. Defaults to True.
+        :param session: Pass an existing Python requests session object. Defaults to None.
+        :param oauth: oauth. Defaults to None.
+        :param oauth2: oauth2. Defaults to None.
+        :param cookies: Cookies to send with the request. Defaults to None.
+        :param advanced_mode: Return results in advanced mode. Defaults to None.
+        :param kerberos: Kerberos. Defaults to None.
+        :param cloud: Specify if using Atlassian Cloud. Defaults to False.
+        :param proxies: Specify proxies to use. Defaults to None.
+        :param token: Atlassian / Jira auth token. Defaults to None.
+        :param cert: Client-side certificate to use. Defaults to None.
+        :param backoff_and_retry: Enable exponential backoff and retry.
+                This will retry the request if there is a predefined failure. Primarily
+                designed for Atlassian Cloud where API limits are commonly hit if doing
+                operations on many issues, and the limits require a cooling off period.
+                The wait period before the next request increases exponentially with each
+                failed retry. Defaults to False.
+        :param retry_status_codes: Errors to match, passed as a list of HTTP
+                response codes. Defaults to [413, 429, 503].
+        :param max_backoff_seconds: Max backoff seconds. When backing off, requests won't
+                wait any longer than this. Defaults to 1800.
+        :param max_backoff_retries: Maximum number of retries to try before
+                continuing. Defaults to 1000.
+        """
         self.url = url
         self.username = username
         self.password = password
@@ -78,6 +117,19 @@ class AtlassianRestAPI(object):
             self._session = requests.Session()
         else:
             self._session = session
+        if backoff_and_retry:
+            # Note: we only retry on status and not on any of the
+            # other supported reasons
+            retries = Retry(
+                total=None,
+                status=max_backoff_retries,
+                allowed_methods=None,
+                status_forcelist=retry_status_codes,
+                backoff_factor=1,
+                backoff_jitter=1,
+                backoff_max=max_backoff_seconds,
+            )
+            self._session.mount(self.url, HTTPAdapter(max_retries=retries))
         if username and password:
             self._create_basic_session(username, password)
         elif token is not None:
