@@ -2324,13 +2324,18 @@ class Jira(AtlassianRestAPI):
             included_archived=included_archived,
             expand=expand,
         )
-        while not projects.get("isLast"):
-            projects["values"].extend(
-                self.paginated_projects(
+        is_last_page = projects.get("isLast")
+        next_page_url = projects.get("nextPage")
+        while not is_last_page:
+            next_page_projects = self.paginated_projects(
                     included_archived=included_archived,
                     expand=expand,
-                    url=projects["nextPage"],
-                )["values"]
+                    url=next_page_url,
+                )
+            next_page_url = next_page_projects.get("nextPage")
+            is_last_page = next_page_projects.get("isLast")
+            projects["values"].extend(
+                next_page_projects["values"]
             )
         return projects["values"]
 
