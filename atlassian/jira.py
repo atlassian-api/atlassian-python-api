@@ -2334,9 +2334,7 @@ class Jira(AtlassianRestAPI):
             )
             next_page_url = next_page_projects.get("nextPage")
             is_last_page = next_page_projects.get("isLast")
-            projects["values"].extend(
-                next_page_projects["values"]
-            )
+            projects["values"].extend(next_page_projects["values"])
         return projects["values"]
 
     def paginated_projects(self, included_archived=None, expand=None, url=None):
