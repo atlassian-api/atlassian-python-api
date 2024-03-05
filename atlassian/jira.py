@@ -24,6 +24,70 @@ class Jira(AtlassianRestAPI):
 
         super(Jira, self).__init__(url, *args, **kwargs)
 
+    def _get_paged(
+        self,
+        url,
+        params=None,
+        data=None,
+        flags=None,
+        trailing=None,
+        absolute=False,
+        paging_workaround=False,
+    ):
+        """
+        Used to get the paged data
+
+        :param url: string:                        The url to retrieve
+        :param params: dict (default is None):     The parameter's
+        :param data: dict (default is None):       The data
+        :param flags: string[] (default is None):  The flags
+        :param trailing: bool (default is None):   If True, a trailing slash is added to the url
+        :param absolute: bool (default is False):  If True, the url is used absolute and not relative to the root
+        :param paging_workaround: bool (default is False): If True, the paging is done on our own because
+                                                           of https://jira.atlassian.com/browse/BCLOUD-13806
+
+        :return: A generator object for the data elements
+        """
+
+        if self.cloud:
+            if params is None:
+                params = {}
+            if paging_workaround:
+                params["startAt"] = 0
+
+            while True:
+                response = super(Jira, self).get(
+                    url,
+                    trailing=trailing,
+                    params=params,
+                    data=data,
+                    flags=flags,
+                    absolute=absolute,
+                )
+                values = response.get("values", [])
+                for value in values:
+                    yield value
+
+                if response.get("isLast", False) or len(values) == 0:
+                    break
+
+                if paging_workaround:
+                    params["startAt"] += response["maxResults"]
+                else:
+                    url = response.get("nextPage")
+                    if url is None:
+                        break
+                    # From now on we have absolute URLs with parameters
+                    absolute = True
+                    # Params are now provided by the url
+                    params = {}
+                    # Trailing should not be added as it is already part of the url
+                    trailing = False
+        else:
+            raise ValueError("``_get_paged`` method is only available for Jira Cloud platform")        
+
+        return
+    
     def get_permissions(
         self,
         permissions,
@@ -2297,83 +2361,23 @@ class Jira(AtlassianRestAPI):
         :param expand:
         :return:
         """
+
+        params = {}
+        if included_archived:
+            params["includeArchived"] = included_archived
+        if expand:
+            params["expand"] = expand
         if self.cloud:
-            return self.projects_from_cloud(
-                included_archived=included_archived,
-                expand=expand,
+            return list(
+                self._get_paged(
+                    self.resource_url("project/search"),
+                    params,
+                    paging_workaround=True,
+                )
             )
         else:
-            return self.projects_from_server(
-                included_archived=included_archived,
-                expand=expand,
-            )
-
-    def projects_from_cloud(self, included_archived=None, expand=None):
-        """
-        Returns all projects which are visible for the currently logged-in user.
-        Cloud version should use the ``paginated``endpoint to get pages of projects, as the old endpoint is deprecated.
-        If no user is logged in, it returns the list of projects that are visible when using anonymous access.
-        :param included_archived: boolean whether to include archived projects in response, default: false
-        :param expand:
-        :return:
-        """
-        if not self.cloud:
-            raise ValueError("``projects_from_cloud`` method is only available for Jira Cloud platform")
-
-        projects = self.paginated_projects(
-            included_archived=included_archived,
-            expand=expand,
-        )
-        while not projects.get("isLast"):
-            projects["values"].extend(
-                self.paginated_projects(
-                    included_archived=included_archived,
-                    expand=expand,
-                    url=projects["nextPage"],
-                )["values"]
-            )
-        return projects["values"]
-
-    def paginated_projects(self, included_archived=None, expand=None, url=None):
-        """
-        Returns a page of projects which are visible for the currently logged-in user.
-        Method to be used only for Jira Cloud platform, until tests on Jira Server are executed.
-        If no user is logged in, it returns the list of projects that are visible when using anonymous access.
-        :param included_archived: boolean whether to include archived projects in response, default: false
-        :param expand:
-        :param url: url to get the next page of projects, default: false (first page)
-        :return:
-        """
-        if not self.cloud:
-            raise ValueError("``projects_from_cloud`` method is only available for Jira Cloud platform")
-
-        params = {}
-        if included_archived:
-            params["includeArchived"] = included_archived
-        if expand:
-            params["expand"] = expand
-        page_url = url or self.resource_url("project/search")
-        is_url_absolute = bool(page_url.lower().startswith("http"))
-        return self.get(page_url, params=params, absolute=is_url_absolute)
-
-    def projects_from_server(self, included_archived=None, expand=None):
-        """
-        Returns all projects which are visible for the currently logged-in user.
-        If no user is logged in, it returns the list of projects that are visible when using anonymous access.
-        :param included_archived: boolean whether to include archived projects in response, default: false
-        :param expand:
-        :return:
-        """
-        if self.cloud:
-            raise ValueError("``projects_from_server`` method is only available for Jira Server platform")
-
-        params = {}
-        if included_archived:
-            params["includeArchived"] = included_archived
-        if expand:
-            params["expand"] = expand
-        url = self.resource_url("project")
-        return self.get(url, params=params)
+            url = self.resource_url("project")
+            return self.get(url, params=params)
 
     def create_project_from_raw_json(self, json):
         """
