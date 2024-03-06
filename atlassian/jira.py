@@ -32,7 +32,6 @@ class Jira(AtlassianRestAPI):
         flags=None,
         trailing=None,
         absolute=False,
-        paging_workaround=False,
     ):
         """
         Used to get the paged data
@@ -43,8 +42,6 @@ class Jira(AtlassianRestAPI):
         :param flags: string[] (default is None):  The flags
         :param trailing: bool (default is None):   If True, a trailing slash is added to the url
         :param absolute: bool (default is False):  If True, the url is used absolute and not relative to the root
-        :param paging_workaround: bool (default is False): If True, the paging is done on our own because
-                                                           of https://jira.atlassian.com/browse/BCLOUD-13806
 
         :return: A generator object for the data elements
         """
@@ -52,8 +49,6 @@ class Jira(AtlassianRestAPI):
         if self.cloud:
             if params is None:
                 params = {}
-            if paging_workaround:
-                params["startAt"] = 0
 
             while True:
                 response = super(Jira, self).get(
@@ -71,18 +66,15 @@ class Jira(AtlassianRestAPI):
                 if response.get("isLast", False) or len(values) == 0:
                     break
 
-                if paging_workaround:
-                    params["startAt"] += response["maxResults"]
-                else:
-                    url = response.get("nextPage")
-                    if url is None:
-                        break
-                    # From now on we have absolute URLs with parameters
-                    absolute = True
-                    # Params are now provided by the url
-                    params = {}
-                    # Trailing should not be added as it is already part of the url
-                    trailing = False
+                url = response.get("nextPage")
+                if url is None:
+                    break
+                # From now on we have absolute URLs with parameters
+                absolute = True
+                # Params are now provided by the url
+                params = {}
+                # Trailing should not be added as it is already part of the url
+                trailing = False
         else:
             raise ValueError("``_get_paged`` method is only available for Jira Cloud platform")        
 
