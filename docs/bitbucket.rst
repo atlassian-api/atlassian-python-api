@@ -413,6 +413,21 @@ Bitbucket Cloud
     # Delete repository_variable
     repository_variable.delete()
 
+    # Get a list of hooks from a repository
+    repository.hooks.each():
+
+    # Create a hook for a repository
+    hook  = repo.hooks.create(url="endpoint-url", description="description", active=True, events=["a-repository-event"])
+
+    # Get a single hook for a repository
+    hook = repo.hooks.get("a-webhook-id")
+
+    # Update a specific hook for a repository
+    hook.update(url="endpoint-url", description="description", active=True, events=["a-repository-event"])
+
+    # Delete a speicifc hook for a repository
+    hook.delete()
+
     # Get a list of workspace members
     workplace.members.each()
 
