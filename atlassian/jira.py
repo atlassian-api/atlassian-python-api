@@ -76,10 +76,10 @@ class Jira(AtlassianRestAPI):
                 # Trailing should not be added as it is already part of the url
                 trailing = False
         else:
-            raise ValueError("``_get_paged`` method is only available for Jira Cloud platform")        
+            raise ValueError("``_get_paged`` method is only available for Jira Cloud platform")
 
         return
-    
+
     def get_permissions(
         self,
         permissions,
