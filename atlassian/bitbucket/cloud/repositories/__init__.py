@@ -5,6 +5,7 @@ from ..base import BitbucketCloudBase
 from .issues import Issues
 from .branchRestrictions import BranchRestrictions
 from .commits import Commits
+from .hooks import Hooks
 from .defaultReviewers import DefaultReviewers
 from .deploymentEnvironments import DeploymentEnvironments
 from .groupPermissions import GroupPermissions
@@ -259,6 +260,11 @@ class Repository(BitbucketCloudBase):
             data={"links": {"commit": {"href": "{}/commit".format(self.url)}}},
             **self._new_session_args
         )  # fmt: skip
+        self.__hooks = Hooks(
+            "{}/hooks".format(self.url),
+            data={"links": {"hooks": {"href": "{}/hooks".format(self.url)}}},
+            **self._new_session_args,
+        )
         self.__default_reviewers = DefaultReviewers("{}/default-reviewers".format(self.url), **self._new_session_args)
         self.__deployment_environments = DeploymentEnvironments(
             "{}/environments".format(self.url), **self._new_session_args
@@ -384,6 +390,11 @@ class Repository(BitbucketCloudBase):
     def commits(self):
         """The repository commits."""
         return self.__commits
+
+    @property
+    def hooks(self):
+        """The repository hooks."""
+        return self.__hooks
 
     @property
     def default_reviewers(self):
