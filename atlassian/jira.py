@@ -1704,7 +1704,27 @@ class Jira(AtlassianRestAPI):
         if internal_id:
             url += "/" + internal_id
         return self.get(url, params=params)
+    def get_issue_tree(self, issue_key, tree=[]):
 
+            issue = self.get_issue(issue_key)
+            issue_links = issue['fields']['issuelinks']
+            for i in issue_links:
+                if i.get('inwardIssue') is not None:
+                    issue_key3 = issue['key']
+                    if not [d for d in tree if i['inwardIssue']['key'] in d.keys()]:
+                        print(issue_key3)
+                        tree.append({issue_key3: i['inwardIssue']['key']})
+                        self.get_issue_tree(i['inwardIssue']['key'], tree)
+            subtasks = issue['fields']['subtasks']
+
+            for j in subtasks:
+                if j.get('key') is not None:
+                    issue_key3 = issue['key']
+                    if not  [d for d in tree if j['key'] in d.keys()]:
+                        print(issue_key3)
+                        tree.append({issue_key3: j['key']})
+                        self.get_issue_tree(j['key'], tree)
+            return tree
     def create_or_update_issue_remote_links(
         self,
         issue_key,
