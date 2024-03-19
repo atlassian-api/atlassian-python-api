@@ -1707,7 +1707,7 @@ class Jira(AtlassianRestAPI):
 
     def get_issue_tree_recursive(self, issue_key, tree=[], depth=0):
         """
-        Return list that contains the tree of the issue, with all subtasks and inward linked issues.
+        Returns list that contains the  tree structure of the root issue, with all subtasks and inward linked issues.
         (!) Function only returns child issues from the same jira instance or from instance to which api key has access to.
         (!) User asssociated with API key must have access to the  all child issues in order to get them.
         :param  jira issue_key:
