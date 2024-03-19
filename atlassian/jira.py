@@ -1704,27 +1704,35 @@ class Jira(AtlassianRestAPI):
         if internal_id:
             url += "/" + internal_id
         return self.get(url, params=params)
-    def get_issue_tree(self, issue_key, tree=[]):
 
-            issue = self.get_issue(issue_key)
-            issue_links = issue['fields']['issuelinks']
-            for i in issue_links:
-                if i.get('inwardIssue') is not None:
-                    issue_key3 = issue['key']
-                    if not [d for d in tree if i['inwardIssue']['key'] in d.keys()]:
-                        print(issue_key3)
-                        tree.append({issue_key3: i['inwardIssue']['key']})
-                        self.get_issue_tree(i['inwardIssue']['key'], tree)
-            subtasks = issue['fields']['subtasks']
-
-            for j in subtasks:
-                if j.get('key') is not None:
-                    issue_key3 = issue['key']
-                    if not  [d for d in tree if j['key'] in d.keys()]:
-                        print(issue_key3)
-                        tree.append({issue_key3: j['key']})
-                        self.get_issue_tree(j['key'], tree)
+    def get_issue_tree(self, issue_key, tree=[], depth=0, max_depth=50):
+        '''
+        :param  jira issue_key:
+        :param tree: blank parameter used for recursion. Don't add anything to it when calling the function.
+        :return: list that contains the tree of the issue, with all subtasks and inward linked issues
+        example of the output get_issue_tree(INTEGRTEST-2): [{'INTEGRTEST-2': 'TEST-1'}, {'INTEGRTEST-2': 'INTEGRTEST-3'}, {'INTEGRTEST-2': 'INTEGRTEST-4'}, {'INTEGRTEST-4': 'INTEGRTEST-6'}]
+        '''
+        # Check the recursion depth
+        if depth > max_depth:
             return tree
+        issue = self.get_issue(issue_key)
+        issue_links = issue['fields']['issuelinks']
+        subtasks = issue['fields']['subtasks']
+
+        for issue_link in issue_links:
+            if issue_link.get('inwardIssue') is not None:
+                parent_issue_key = issue['key']
+                if not [x for x in tree if issue_link['inwardIssue']['key'] in x.keys()]: # condition to avoid infinite recursion
+                    tree.append({parent_issue_key: issue_link['inwardIssue']['key']})
+                    self.get_issue_tree(issue_link['inwardIssue']['key'], tree, depth+1) # recursive call of the function
+
+        for subtask in subtasks:
+            if subtask.get('key') is not None:
+                parent_issue_key = issue['key']
+                if not [x for x in tree if subtask['key'] in x.keys()]: # condition to avoid infinite recursion
+                    tree.append({parent_issue_key: subtask['key']})
+                    self.get_issue_tree(subtask['key'], tree, depth+1) # recursive call of the function
+        return tree
     def create_or_update_issue_remote_links(
         self,
         issue_key,
