@@ -11,8 +11,8 @@ jira_dc = Jira(url="url", token="<token>>")
  Return list that contains the tree of the issue, with all subtasks and inward linked issues.
  be aware of following limitations:
  (!) Function only returns child issues from the same jira instance or from instance to which api key has access to.
- (!) User asssociated with API key must have access to the  all child issues in order to get them.  
- """
+ (!) User asssociated with API key must have access to the  all child issues in order to get them.
+"""
 """
  Let's say we have a tree of issues:
  INTEGRTEST-2 is the root issue and it has 1 subtask from project TEST - TEST1
