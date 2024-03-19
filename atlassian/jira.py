@@ -2,6 +2,7 @@
 import logging
 import re
 import os
+from sys import setrecursionlimit
 from warnings import warn
 from deprecated import deprecated
 from requests import HTTPError
@@ -1705,34 +1706,35 @@ class Jira(AtlassianRestAPI):
             url += "/" + internal_id
         return self.get(url, params=params)
 
-    def get_issue_tree(self, issue_key, tree=[], depth=0, max_depth=50):
-        '''
-        :param  jira issue_key:
-        :param tree: blank parameter used for recursion. Don't add anything to it when calling the function.
-        :return: list that contains the tree of the issue, with all subtasks and inward linked issues
-        example of the output get_issue_tree(INTEGRTEST-2): [{'INTEGRTEST-2': 'TEST-1'}, {'INTEGRTEST-2': 'INTEGRTEST-3'}, {'INTEGRTEST-2': 'INTEGRTEST-4'}, {'INTEGRTEST-4': 'INTEGRTEST-6'}]
-        '''
-        # Check the recursion depth
-        if depth > max_depth:
+    def get_issue_tree_recursive(self, issue_key, tree=[], depth=0, depth_max=50):
+            '''
+            :param  jira issue_key:
+            :param tree: blank parameter used for recursion. Don't add anything to it when calling the function.
+            :param depth: blank parameter used for recursion. Don't add anything to it when calling the function.
+            :param depth_max: maximum depth of recursion if the tree is too big
+            :return: list that contains the tree of the issue, with all subtasks and inward linked issues
+            example of the output get_issue_tree(INTEGRTEST-2): [{'INTEGRTEST-2': 'TEST-1'}, {'INTEGRTEST-2': 'INTEGRTEST-3'}, {'INTEGRTEST-2': 'INTEGRTEST-4'}, {'INTEGRTEST-4': 'INTEGRTEST-6'}]
+            '''
+            # Check the recursion depth
+            if depth > depth_max:
+                raise Exception("Recursion depth exceeded")
+            issue = self.get_issue(issue_key)
+            issue_links = issue['fields']['issuelinks']
+            subtasks = issue['fields']['subtasks']
+            for issue_link in issue_links:
+                if issue_link.get('inwardIssue') is not None:
+                    parent_issue_key = issue['key']
+                    if not [x for x in tree if issue_link['inwardIssue']['key'] in x.keys()]: # condition to avoid infinite recursion
+                        tree.append({parent_issue_key: issue_link['inwardIssue']['key']})
+                        self.get_issue_tree(issue_link['inwardIssue']['key'], tree, depth + 1) # recursive call of the function
+            for subtask in subtasks:
+                if subtask.get('key') is not None:
+                    parent_issue_key = issue['key']
+                    if not [x for x in tree if subtask['key'] in x.keys()]: # condition to avoid infinite recursion
+                        tree.append({parent_issue_key: subtask['key']})
+                        self.get_issue_tree(subtask['key'], tree, depth + 1) # recursive call of the function
             return tree
-        issue = self.get_issue(issue_key)
-        issue_links = issue['fields']['issuelinks']
-        subtasks = issue['fields']['subtasks']
 
-        for issue_link in issue_links:
-            if issue_link.get('inwardIssue') is not None:
-                parent_issue_key = issue['key']
-                if not [x for x in tree if issue_link['inwardIssue']['key'] in x.keys()]: # condition to avoid infinite recursion
-                    tree.append({parent_issue_key: issue_link['inwardIssue']['key']})
-                    self.get_issue_tree(issue_link['inwardIssue']['key'], tree, depth+1) # recursive call of the function
-
-        for subtask in subtasks:
-            if subtask.get('key') is not None:
-                parent_issue_key = issue['key']
-                if not [x for x in tree if subtask['key'] in x.keys()]: # condition to avoid infinite recursion
-                    tree.append({parent_issue_key: subtask['key']})
-                    self.get_issue_tree(subtask['key'], tree, depth+1) # recursive call of the function
-        return tree
     def create_or_update_issue_remote_links(
         self,
         issue_key,
