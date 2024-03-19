@@ -366,6 +366,8 @@ Manage issues
     # Scrap regex matches from issue description and comments:
     jira.scrap_regex_from_issue(issue_key, regex)
 
+    # Get tree representation of issue and its subtasks + inward issue links
+    jira.get_issue_tree(issue_key)
 
 Epic Issues
 -------------
