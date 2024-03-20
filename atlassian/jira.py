@@ -1705,6 +1705,42 @@ class Jira(AtlassianRestAPI):
             url += "/" + internal_id
         return self.get(url, params=params)
 
+    def get_issue_tree_recursive(self, issue_key, tree=[], depth=0):
+        """
+        Returns list that contains the  tree structure of the root issue, with all subtasks and inward linked issues.
+        (!) Function only returns child issues from the same jira instance or from instance to which api key has access to.
+        (!) User asssociated with API key must have access to the  all child issues in order to get them.
+        :param  jira issue_key:
+        :param tree: blank parameter used for recursion. Don't change it.
+        :param depth: blank parameter used for recursion. Don't change it.
+        :return: list of dictioanries, key is the parent issue key, value is the child/linked issue key
+
+        """
+
+        # Check the recursion depth. In case of any bugs that would result in infinite recursion, this will prevent the function from crashing your app. Python default for REcursionError  is 1000
+        if depth > 50:
+            raise Exception("Recursion depth exceeded")
+        issue = self.get_issue(issue_key)
+        issue_links = issue["fields"]["issuelinks"]
+        subtasks = issue["fields"]["subtasks"]
+        for issue_link in issue_links:
+            if issue_link.get("inwardIssue") is not None:
+                parent_issue_key = issue["key"]
+                if not [
+                    x for x in tree if issue_link["inwardIssue"]["key"] in x.keys()
+                ]:  # condition to avoid infinite recursion
+                    tree.append({parent_issue_key: issue_link["inwardIssue"]["key"]})
+                    self.get_issue_tree(
+                        issue_link["inwardIssue"]["key"], tree, depth + 1
+                    )  # recursive call of the function
+        for subtask in subtasks:
+            if subtask.get("key") is not None:
+                parent_issue_key = issue["key"]
+                if not [x for x in tree if subtask["key"] in x.keys()]:  # condition to avoid infinite recursion
+                    tree.append({parent_issue_key: subtask["key"]})
+                    self.get_issue_tree(subtask["key"], tree, depth + 1)  # recursive call of the function
+        return tree
+
     def create_or_update_issue_remote_links(
         self,
         issue_key,
