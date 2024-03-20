@@ -1730,7 +1730,7 @@ class Jira(AtlassianRestAPI):
                     x for x in tree if issue_link["inwardIssue"]["key"] in x.keys()
                 ]:  # condition to avoid infinite recursion
                     tree.append({parent_issue_key: issue_link["inwardIssue"]["key"]})
-                    self.get_issue_tree(
+                    self.get_issue_tree_recursive(
                         issue_link["inwardIssue"]["key"], tree, depth + 1
                     )  # recursive call of the function
         for subtask in subtasks:
@@ -1738,7 +1738,7 @@ class Jira(AtlassianRestAPI):
                 parent_issue_key = issue["key"]
                 if not [x for x in tree if subtask["key"] in x.keys()]:  # condition to avoid infinite recursion
                     tree.append({parent_issue_key: subtask["key"]})
-                    self.get_issue_tree(subtask["key"], tree, depth + 1)  # recursive call of the function
+                    self.get_issue_tree_recursive(subtask["key"], tree, depth + 1)  # recursive call of the function
         return tree
 
     def create_or_update_issue_remote_links(
