@@ -39,6 +39,26 @@ class Bitbucket(BitbucketBase):
     def _url_admin(self, api_version=None):
         return self.resource_url("admin", api_version=api_version)
 
+    def get_groups(self, group_filter=None, limit=25, start=0):
+        """
+        Get list of bitbucket groups.
+        Use 'group_filter' for get specific group or get all group if necessary.
+
+        :param group_filter: str - groupname
+        :param limit: int - paginated limit to retrieve
+        :param start: int - paginated point to start retrieving
+        :return: The collection as JSON with all relevant information about the group
+        """
+        url = self.resource_url("groups", api_version="1.0")
+        params = {}
+        if group_filter:
+            params["filter"] = group_filter
+        if limit:
+            params["limit"] = limit
+        if start:
+            params["start"] = start
+        return self._get_paged(url, params=params)
+
     def group_members(self, group, start=0, limit=None):
         """
         Get group of members
