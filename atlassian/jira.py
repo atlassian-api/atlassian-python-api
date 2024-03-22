@@ -1091,6 +1091,7 @@ class Jira(AtlassianRestAPI):
         :param fields: str
         :param properties: str
         :param update_history: bool
+        :param expand: str
         :return: issue
         """
         base_url = self.resource_url("issue")
