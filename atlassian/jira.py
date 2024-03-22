@@ -1082,14 +1082,7 @@ class Jira(AtlassianRestAPI):
             params["expand"] = expand
         return self.get(url, params=params)
 
-    def get_issue(
-        self,
-        issue_id_or_key,
-        fields=None,
-        properties=None,
-        update_history=True,
-        expand=None
-    ):
+    def get_issue(self, issue_id_or_key, fields=None, properties=None, update_history=True, expand=None):
         """
         Returns a full representation of the issue for the given issue key
         By default, all fields are returned in this get-issue resource
@@ -1869,21 +1862,21 @@ class Jira(AtlassianRestAPI):
         if update is not None:
             data["update"] = update
         return self.post(url, data=data)
-    def get_issue_status_changlog(self, issue):
+
+    def get_issue_status_changelog(self, issue_id):
         # Get the issue details with changelog
-        issue =  self.get_issue(issue, expand="changelog")
+        issue_id = self.get_issue(issue_id, expand="changelog")
         status_change_history = []
-        for history in issue['changelog']['histories']:
-            for item in history['items']:
+        for history in issue_id["changelog"]["histories"]:
+            for item in history["items"]:
                 # Check if the item is a status change
-                if item['field'] == 'status':
-                    status_change_history.append({
-                        'from': item['fromString'],
-                        'to': item['toString'],
-                        'date': history['created']
-                    })
+                if item["field"] == "status":
+                    status_change_history.append(
+                        {"from": item["fromString"], "to": item["toString"], "date": history["created"]}
+                    )
 
         return status_change_history
+
     def set_issue_status_by_transition_id(self, issue_key, transition_id):
         """
         Setting status by transition_id
