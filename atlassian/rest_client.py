@@ -13,6 +13,7 @@ from requests import HTTPError
 from requests_oauthlib import OAuth1, OAuth2
 from six.moves.urllib.parse import urlencode
 from urllib3.util import Retry
+import urllib3
 
 from atlassian.request_utils import get_default_logger
 
@@ -117,7 +118,7 @@ class AtlassianRestAPI(object):
             self._session = requests.Session()
         else:
             self._session = session
-        if backoff_and_retry:
+        if backoff_and_retry and int(urllib3.__version__.split(".")[0]) >= 2:
             # Note: we only retry on status and not on any of the
             # other supported reasons
             retries = Retry(
