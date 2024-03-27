@@ -160,6 +160,9 @@ Groups and admins
 
 .. code-block:: python
 
+    # Get groups. Use 'group_filter' parameter to get specific groups.
+    bitbucket.groups(group_filter="group", limit=99999)
+
     # Get group of members
     bitbucket.group_members(group, limit=99999)
 
