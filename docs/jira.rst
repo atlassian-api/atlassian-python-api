@@ -248,6 +248,9 @@ Manage issues
     # Get issue transitions
     jira.get_issue_transitions(issue_key)
 
+    # Get issue status change log
+    jira.get_issue_status_changelog(issue_key)
+
     # Get status ID from name
     jira.get_status_id_from_name(status_name)
 
