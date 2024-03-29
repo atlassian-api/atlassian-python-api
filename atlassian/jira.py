@@ -1106,11 +1106,7 @@ class Jira(AtlassianRestAPI):
             params["properties"] = properties
         if expand:
             params["expand"] = expand
-        if update_history is True:
-            params["updateHistory"] = "true"
-        if update_history is False:
-            params["updateHistory"] = "false"
-
+        params["updateHistory"] = str(update_history).lower()
         return self.get(url, params=params)
 
     def epic_issues(self, epic, fields="*all", expand=None):
@@ -1866,9 +1862,9 @@ class Jira(AtlassianRestAPI):
 
     def get_issue_status_changelog(self, issue_id):
         # Get the issue details with changelog
-        issue_id = self.get_issue(issue_id, expand="changelog")
+        response_get_issue = self.get_issue(issue_id, expand="changelog")
         status_change_history = []
-        for history in issue_id["changelog"]["histories"]:
+        for history in response_get_issue["changelog"]["histories"]:
             for item in history["items"]:
                 # Check if the item is a status change
                 if item["field"] == "status":
