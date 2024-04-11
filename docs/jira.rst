@@ -76,11 +76,15 @@ Manage users
     # Get web sudo cookies using normal http request
     jira.user_get_websudo()
 
-    # Fuzzy search using emailAddress or displayName
+    # Fuzzy search using emailAddress or displayName for Jira Cloud
     jira.user_find_by_user_string(query="a.user@example.com", start=0, limit=50, include_inactive_users=False)
     jira.user_find_by_user_string(query="a.user", start=0, limit=50, include_inactive_users=False)
     jira.user_find_by_user_string(query="a user")
     jira.user_find_by_user_string(account_id="a-users-account-id")
+    # for DC edition
+    jira.user_find_by_user_string(username="a.user")
+    jira.user_find_by_user_string(username="a user")
+    jira.user_find_by_user_string(username="a")
 
     # Get groups of a user. This API is only available for Jira Cloud platform.
     jira.get_user_groups(account_id)
