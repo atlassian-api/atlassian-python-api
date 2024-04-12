@@ -187,20 +187,20 @@ To authenticate to the Atlassian Cloud APIs Jira, Confluence, ServiceDesk:
 
     jira = Jira(
         url='https://your-domain.atlassian.net',
-        username=jira_username,
-        password=jira_api_token,
+        username=atlassian_username,
+        password=atlassian_api_token,
         cloud=True)
 
     confluence = Confluence(
         url='https://your-domain.atlassian.net',
-        username=jira_username,
-        password=jira_api_token,
+        username=atlassian_username,
+        password=atlassian_api_token,
         cloud=True)
 
     service_desk = ServiceDesk(
         url='https://your-domain.atlassian.net',
-        username=jira_username,
-        password=jira_api_token,
+        username=atlassian_username,
+        password=atlassian_api_token,
         cloud=True)
 
 And to Bitbucket Cloud:
