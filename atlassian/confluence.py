@@ -1340,7 +1340,7 @@ class Confluence(AtlassianRestAPI):
                 if not file_name:
                     file_name = attachment["id"]  # if the attachment has no title, use attachment_id as a filename
                 download_link = self.url + attachment["_links"]["download"]
-                r = self._session.get(f"{download_link}")
+                r = self._session.get(str(download_link))
                 file_path = os.path.join(path, file_name)
                 with open(file_path, "wb") as f:
                     f.write(r.content)

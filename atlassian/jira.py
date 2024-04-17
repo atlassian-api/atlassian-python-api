@@ -255,11 +255,11 @@ class Jira(AtlassianRestAPI):
                 path = os.getcwd()
             issue_id = self.issue(issue, fields="id")["id"]
             if cloud:
-                url = self.url + f"/secure/issueAttachments/{issue_id}.zip"
+                url = self.url + "/secure/issueAttachments/{}.zip".format(issue_id)
             else:
-                url = self.url + f"/secure/attachmentzip/{issue_id}.zip"
+                url = self.url + "/secure/attachmentzip/{}.zip".format(issue_id)
             response = self._session.get(url)
-            attachment_name = f"{issue_id}_attachments.zip"
+            attachment_name = "{}_attachments.zip".format(issue_id)
             file_path = os.path.join(path, attachment_name)
             # if Jira issue doesn't have any attachments _session.get request response will return 22 bytes of PKzip format
             file_size = sum(len(chunk) for chunk in response.iter_content(8196))
