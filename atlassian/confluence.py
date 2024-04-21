@@ -2878,14 +2878,13 @@ class Confluence(AtlassianRestAPI):
         return self.get(url, params=params)
 
     """
-      ##############################################################################################
-      #   Confluence whiteboards (cloud only!)  #
-      ##############################################################################################
-      """
+    ##############################################################################################
+    #   Confluence whiteboards (cloud only!)  #
+    ##############################################################################################
+    """
 
     def create_whiteboard(self, spaceId, title=None, parentId=None):
-        # Use spaceId, not space key.
-        url = '/api/v2/whiteboards'
+        url = "/api/v2/whiteboards"
         data = {"spaceId": spaceId}
         if title is not None:
             data["title"] = title
@@ -2895,26 +2894,27 @@ class Confluence(AtlassianRestAPI):
 
     def get_whiteboard(self, whiteboard_id):
         try:
-            url = f'/api/v2/whiteboards/{whiteboard_id}'
+            url = f"/api/v2/whiteboards/{whiteboard_id}"
             return self.get(url)
         except HTTPError as e:
             # Default 404 error handling is ambiguous
             if e.response.status_code == 404:
-                raise ApiValueError("Whiteboard not found. Check confluence instance url and/or if whiteboard id exists", reason=e)
+                raise ApiValueError(
+                    "Whiteboard not found. Check confluence instance url and/or if whiteboard id exists", reason=e
+                )
 
             raise
 
-
     def delete_whiteboard(self, whiteboard_id):
-        # Deleting a whiteboard moves the whiteboard to the trash, where it can be restored later
         try:
-            url = f'/api/v2/whiteboards/{whiteboard_id}'
+            url = f"/api/v2/whiteboards/{whiteboard_id}"
             return self.delete(url)
         except HTTPError as e:
             # # Default 404 error handling is ambiguous
             if e.response.status_code == 404:
                 raise ApiValueError(
-                    "Whiteboard not found. Check confluence instance url and/or if whiteboard id exists", reason=e)
+                    "Whiteboard not found. Check confluence instance url and/or if whiteboard id exists", reason=e
+                )
 
             raise
 
