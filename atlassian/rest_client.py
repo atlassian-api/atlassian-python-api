@@ -537,7 +537,9 @@ class AtlassianRestAPI(object):
                 else:
                     error_msg_list = j.get("errorMessages", list())
                     errors = j.get("errors", dict())
-                    if isinstance(errors, dict):
+                    if isinstance(errors, dict) and "message" not in errors:
+                        error_msg_list.extend(errors.values())
+                    elif isinstance(errors, dict) and "message" in errors:
                         error_msg_list.append(errors.get("message", ""))
                     elif isinstance(errors, list):
                         error_msg_list.extend([v.get("message", "") if isinstance(v, dict) else v for v in errors])
