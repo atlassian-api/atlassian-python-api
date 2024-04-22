@@ -2879,6 +2879,47 @@ class Confluence(AtlassianRestAPI):
 
     """
     ##############################################################################################
+    #   Confluence whiteboards (cloud only!)  #
+    ##############################################################################################
+    """
+
+    def create_whiteboard(self, spaceId, title=None, parentId=None):
+        url = "/api/v2/whiteboards"
+        data = {"spaceId": spaceId}
+        if title is not None:
+            data["title"] = title
+        if parentId is not None:
+            data["parentId"] = parentId
+        return self.post(url, data=data)
+
+    def get_whiteboard(self, whiteboard_id):
+        try:
+            url = f"/api/v2/whiteboards/{whiteboard_id}"
+            return self.get(url)
+        except HTTPError as e:
+            # Default 404 error handling is ambiguous
+            if e.response.status_code == 404:
+                raise ApiValueError(
+                    "Whiteboard not found. Check confluence instance url and/or if whiteboard id exists", reason=e
+                )
+
+            raise
+
+    def delete_whiteboard(self, whiteboard_id):
+        try:
+            url = f"/api/v2/whiteboards/{whiteboard_id}"
+            return self.delete(url)
+        except HTTPError as e:
+            # # Default 404 error handling is ambiguous
+            if e.response.status_code == 404:
+                raise ApiValueError(
+                    "Whiteboard not found. Check confluence instance url and/or if whiteboard id exists", reason=e
+                )
+
+            raise
+
+    """
+    ##############################################################################################
     #   Team Calendars REST API implements  (https://jira.atlassian.com/browse/CONFSERVER-51003) #
     ##############################################################################################
     """
