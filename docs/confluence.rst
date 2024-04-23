@@ -161,6 +161,21 @@ Page actions
     # Get regex matches from Confluence page
     confluence.scrap_regex_from_page(page_id, regex)
 
+Confluence Whiteboards
+----------------------
+
+.. code-block:: python
+
+    # Create  new whiteboard  - cloud only
+    confluence.create_whiteboard(spaceId, title=None, parentId=None)
+
+    # Delete existing whiteboard - cloud only
+    confluence.delete_whiteboard(whiteboard_id)
+
+    # Get whiteboard by id  - cloud only!
+    confluence.get_whiteboard(whiteboard_id)
+
+
 Template actions
 ----------------
 
