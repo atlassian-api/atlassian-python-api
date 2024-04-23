@@ -228,6 +228,11 @@ Manage issues
     fields = {'summary': 'New summary'}
     jira.update_issue_field(key, fields, notify_users=True)
 
+    # Append value to issue field
+    field = 'customfield_10000'
+    value = {'name': 'username'}
+    jira.issue_field_value_append(issue_id_or_key, field, value, notify_users=True)
+
     # Get existing custom fields or find by filter
     jira.get_custom_fields(self, search=None, start=1, limit=50):
 

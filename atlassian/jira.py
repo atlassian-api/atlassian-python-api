@@ -1336,6 +1336,33 @@ class Jira(AtlassianRestAPI):
             return False
         return True
 
+    def issue_field_value_append(self, issue_id_or_key, field, value, notify_users=True):
+        """
+        Add value to a multiple value field
+
+        :param issue_id_or_key: str Issue id or issue key
+        :param field: str Field key ("customfield_10000")
+        :param value: str A value which need to append (use python value types)
+        :param notify_users: bool OPTIONAL if True, use project's default notification scheme to notify users via email.
+                                           if False, do not send any email notifications. (only works with admin privilege)
+        """
+        base_url = self.resource_url("issue")
+        params = {"notifyUsers": True if notify_users else False}
+        current_value = self.issue_field_value(key=issue_id_or_key, field=field)
+
+        if current_value:
+            new_value = current_value + [value]
+        else:
+            new_value = [value]
+
+        fields = {'{}'.format(field): new_value}
+
+        return self.put(
+            "{base_url}/{key}".format(base_url=base_url, key=issue_id_or_key),
+            data={"fields": fields},
+            params=params,
+        )
+
     def get_issue_labels(self, issue_key):
         """
         Get issue labels.
