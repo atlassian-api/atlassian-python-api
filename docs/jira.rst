@@ -211,7 +211,7 @@ Manage projects
 
     # Returns a list of active users who have browse permission for a project that matches the search string for username.
     # Using " " string (space) for username gives All the active users who have browse permission for a project
-    jira.get_users_with_browse_permission_to_a_project(self, username, issue_key=None, project_key=None, start=0, limit=100)
+    jira.get_users_with_browse_permission_to_a_project(username, issue_key=None, project_key=None, start=0, limit=100)
 
 Manage issues
 -------------
@@ -228,8 +228,13 @@ Manage issues
     fields = {'summary': 'New summary'}
     jira.update_issue_field(key, fields, notify_users=True)
 
+    # Append value to issue field
+    field = 'customfield_10000'
+    value = {'name': 'username'}
+    jira.issue_field_value_append(issue_id_or_key, field, value, notify_users=True)
+
     # Get existing custom fields or find by filter
-    jira.get_custom_fields(self, search=None, start=1, limit=50):
+    jira.get_custom_fields(search=None, start=1, limit=50):
 
     # Check issue exists
     jira.issue_exists(issue_key)
@@ -286,7 +291,7 @@ Manage issues
     jira.issue_createmeta_issuetypes(project, start=None, limit=None)
 
     # Get create field metadata for a project and issue type id
-    jira.issue_createmeta_fieldtypes(self, project, issue_type_id, start=None, limit=None)
+    jira.issue_createmeta_fieldtypes(project, issue_type_id, start=None, limit=None)
 
     # Create Issue Link
     data = {
@@ -467,7 +472,7 @@ Manage Sprints
     jira.get_all_issues_for_sprint_in_board(board_id, state=None, start=0, limit=50)
 
     # Get all versions for sprint in board
-    jira.get_all_versions_from_board(self, board_id, released="true", start=0, limit=50)
+    jira.get_all_versions_from_board(board_id, released="true", start=0, limit=50)
 
     # Create sprint
     jira.jira.create_sprint(sprint_name, origin_board_id,  start_datetime, end_datetime, goal)
