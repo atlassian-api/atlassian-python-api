@@ -3665,6 +3665,34 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         url = "/plugins/1.0/{plugin_key}/license".format(plugin_key=plugin_key)
         data = {"rawLicense": raw_license}
         return self.put(url, data=data, headers=app_headers)
+    
+    def disable_plugin(self,plugin_key):
+        """
+        Disable a plugin
+        :param plugin_key:
+        :return:
+        """
+        app_headers = {
+            "X-Atlassian-Token": "nocheck",
+            "Content-Type": "application/vnd.atl.plugins+json",
+        }
+        url = "rest/plugins/1.0/{plugin_key}-key".format(plugin_key=plugin_key)
+        data = {"status": "disabled"}
+        return self.put(url, data=data, headers=app_headers)
+
+    def enable_plugin(self,plugin_key):
+        """
+        Enable a plugin
+        :param plugin_key:
+        :return:
+        """
+        app_headers = {
+            "X-Atlassian-Token": "nocheck",
+            "Content-Type": "application/vnd.atl.plugins+json",
+        }
+        url = "rest/plugins/1.0/{plugin_key}-key".format(plugin_key=plugin_key)
+        data = {"status": "enabled"}
+        return self.put(url, data=data, headers=app_headers)
 
     def get_all_permissionschemes(self, expand=None):
         """
