@@ -506,27 +506,19 @@ class Confluence(AtlassianRestAPI):
 
         return response
 
-    def get_draft_page_by_id(self, page_id, status="draft"):
+    def get_draft_page_by_id(self, page_id, expand=None):
         """
-        Provide content by id with status = draft
-        :param page_id:
-        :param status:
+        Gets content by id with status = draft
+        :param page_id: Content ID
+        :param expand: OPTIONAL: Default value: history,space,version
+                       We can also specify some extensions such as extensions.inlineProperties
+                       (for getting inline comment-specific properties) or extensions. Resolution
+                       for the resolution status of each comment in the results
         :return:
         """
-        url = "rest/api/content/{page_id}?status={status}".format(page_id=page_id, status=status)
-
-        try:
-            response = self.get(url)
-        except HTTPError as e:
-            if e.response.status_code == 404:
-                raise ApiPermissionError(
-                    "The calling user does not have permission to view the content",
-                    reason=e,
-                )
-
-            raise
-
-        return response
+        # Status hardcoded to draft, version not passed since draft versions
+        # operate differently between different collaborative modes
+        return self.get_page_by_id(page_id=page_id, expand=expand, status='draft')
 
     def get_all_pages_by_label(self, label, start=0, limit=50):
         """
