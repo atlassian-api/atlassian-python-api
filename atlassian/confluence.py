@@ -519,7 +519,7 @@ class Confluence(AtlassianRestAPI):
         """
         # Version not passed since draft versions don't match the page and
         # operate differently between different collaborative modes
-        return self.get_page_by_id(page_id=page_id, expand=expand, status='draft')
+        return self.get_page_by_id(page_id=page_id, expand=expand, status=status)
 
     def get_all_pages_by_label(self, label, start=0, limit=50):
         """
