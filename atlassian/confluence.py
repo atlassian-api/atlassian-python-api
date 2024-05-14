@@ -506,7 +506,7 @@ class Confluence(AtlassianRestAPI):
 
         return response
 
-    def get_draft_page_by_id(self, page_id, status='draft', expand=None):
+    def get_draft_page_by_id(self, page_id, status="draft", expand=None):
         """
         Gets content by id with status = draft
         :param page_id: Content ID
