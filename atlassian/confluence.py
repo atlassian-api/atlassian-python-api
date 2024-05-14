@@ -506,17 +506,18 @@ class Confluence(AtlassianRestAPI):
 
         return response
 
-    def get_draft_page_by_id(self, page_id, expand=None):
+    def get_draft_page_by_id(self, page_id, status='draft', expand=None):
         """
         Gets content by id with status = draft
         :param page_id: Content ID
+        :param status: (str) list of content statuses to filter results on. Default value: [draft]
         :param expand: OPTIONAL: Default value: history,space,version
                        We can also specify some extensions such as extensions.inlineProperties
                        (for getting inline comment-specific properties) or extensions. Resolution
                        for the resolution status of each comment in the results
         :return:
         """
-        # Status hardcoded to draft, version not passed since draft versions
+        # Version not passed since draft versions don't match the page and
         # operate differently between different collaborative modes
         return self.get_page_by_id(page_id=page_id, expand=expand, status='draft')
 
