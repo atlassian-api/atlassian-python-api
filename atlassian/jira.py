@@ -1355,7 +1355,7 @@ class Jira(AtlassianRestAPI):
         else:
             new_value = [value]
 
-        fields = {'{}'.format(field): new_value}
+        fields = {"{}".format(field): new_value}
 
         return self.put(
             "{base_url}/{key}".format(base_url=base_url, key=issue_id_or_key),
