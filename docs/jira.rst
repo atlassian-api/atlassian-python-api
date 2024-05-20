@@ -228,6 +228,9 @@ Manage issues
     fields = {'summary': 'New summary'}
     jira.update_issue_field(key, fields, notify_users=True)
 
+    # Bulk update issue field
+    jira.bulk_update_issue_field(key_list, fields="*all")
+
     # Append value to issue field
     field = 'customfield_10000'
     value = {'name': 'username'}

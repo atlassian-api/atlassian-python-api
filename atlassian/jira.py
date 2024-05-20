@@ -1320,7 +1320,7 @@ class Jira(AtlassianRestAPI):
 
     def bulk_update_issue_field(self, key_list, fields="*all"):
         """
-        :param key_list=list of issues with common filed to be updated
+        :param key_list: list of issues with common filed to be updated
         :param fields: common fields to be updated
         return Boolean True/False
         """
