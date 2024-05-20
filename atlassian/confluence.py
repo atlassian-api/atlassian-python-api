@@ -1315,17 +1315,20 @@ class Confluence(AtlassianRestAPI):
             comment=comment,
         )
 
-    def download_attachments_from_page(self, page_id, path=None):
+    def download_attachments_from_page(self, page_id, path=None, start=0, limit=50):
         """
         Downloads all attachments from a page
         :param page_id:
-        :param path: path to directory where attachments will be saved. If None, current working directory will be used.
+        :param path: OPTIONAL: path to directory where attachments will be saved. If None, current working directory will be used.
+        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
+        :param limit: OPTIONAL: The limit of the number of attachments to return, this may be restricted by
+                                fixed system limits. Default: 50
         :return info message: number of saved attachments + path to directory where attachments were saved:
         """
         if path is None:
             path = os.getcwd()
         try:
-            attachments = self.get_attachments_from_content(page_id=page_id)["results"]
+            attachments = self.get_attachments_from_content(page_id=page_id, start=start, limit=limit)["results"]
             if not attachments:
                 return "No attachments found"
             for attachment in attachments:
