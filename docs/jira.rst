@@ -232,8 +232,8 @@ Manage issues
     jira.bulk_update_issue_field(key_list, fields="*all")
 
     # Append value to issue field
-    field = 'customfield_10000'
-    value = {'name': 'username'}
+    field = "customfield_10000"
+    value = {"name": "username"}
     jira.issue_field_value_append(issue_id_or_key, field, value, notify_users=True)
 
     # Get existing custom fields or find by filter
