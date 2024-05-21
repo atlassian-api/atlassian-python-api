@@ -19,6 +19,7 @@ Projects & Plans
     plans(expand=None, favourite=False, clover_enabled=False, start_index=0, max_results=25)
 
     # Get information about plan build directory
+    # Returns information about the directories where artifacts, build logs, and build results will be stored.
     plan_directory_info(plan_key)
 
     # Get plan information
@@ -35,6 +36,12 @@ Projects & Plans
 
     # Enable plan
     enable_plan(plan_key)
+
+    # Retrieve information for project specified as project key.
+    get_project(project_key)
+
+    # Delete project
+    delete_project(project_key)
 
 Branches
 -------------
@@ -89,24 +96,27 @@ Build results
     # Execute build
     execute_build(plan_key, stage=None, execute_all_stages=True, custom_revision=None, **bamboo_variables)
 
+    # Stop Build
+    stop_build(plan_key)
+
 Comments & Labels
 -----------------
 
 .. code-block:: python
 
-    # Get comments for the build
+    # Get comments for a specific build
     comments(project_key, plan_key, build_number, start_index=0, max_results=25)
 
-    # Make a comment
+    # Create a comment for a specific build
     create_comment(project_key, plan_key, build_number, comment, author=None)
 
     # Get labels for a build
     labels(project_key, plan_key, build_number, start_index=0, max_results=25)
 
-    # Create a label
+    # Create a label for a specific build
     create_label(project_key, plan_key, build_number, label)
 
-    # Delete a label
+    # Delete a label for a specific build
     delete_label(project_key, plan_key, build_number, label)
 
 Deployments
@@ -114,7 +124,7 @@ Deployments
 
 .. code-block:: python
 
-    # Get deployment projects
+    # Get all deployment projects.
     deployment_projects()
 
     # Get deployments for a single project
@@ -128,6 +138,12 @@ Deployments
 
     # Delete deployment project
     delete_deployment_project(project_id)
+
+    # Returns deployment projects associated with a build plan.
+    get_deployment_projects_for_plan(plan_key)
+
+    # Triggers a deployment for a release version on the given environment.
+    trigger_deployment_for_version_on_environment(version_id, environment_id)
 
 Users & Groups
 --------------
@@ -213,7 +229,7 @@ Agents
     agent_enable(agent_id=123456)
 
     # Disable agent
-    agent_enable(agent_id=123456)
+    agent_disable(agent_id)
 
     # Get agent details
     agent_details(agent_id=123456)
@@ -247,8 +263,14 @@ Other actions
     reports(max_results=25)
 
     # Get charts
-    hart(report_key, build_keys, group_by_period, date_filter=None, date_from=None, date_to=None,
+    chart(report_key, build_keys, group_by_period, date_filter=None, date_from=None, date_to=None,
               width=None, height=None, start_index=9, max_results=25)
+
+    # Returns status of the current indexing operation.
+    reindex()
+
+    # Kicks off a reindex.
+    stop_reindex()
 
     # Health check
     health_check()
@@ -288,3 +310,34 @@ Elastic Bamboo
     "elasticInstanceManagement": {"type": "Disabled"}, "uploadAwsAccountIdentifierToElasticInstances": False,
     "elasticAutoTermination": { "enabled": True, "shutdownDelay": 300}})
 
+Plugins information
+-------------------
+
+.. code-block:: python
+
+    # Get plugins information
+    get_plugins_info()
+
+    # Get plugin information
+    get_plugin_info(plugin_key)
+
+    # Provide plugin license information
+    get_plugin_license_info(plugin_key)
+
+    # Provide plugin path for upload into Bamboo e.g. useful for auto deploy
+    upload_plugin(plugin_path)
+
+    # Disable plugin
+    disable_plugin(plugin_key)
+
+    # Enable plugin
+    enable_plugin(plugin_key)
+
+    # Uninstall plugin
+    delete_plugin(plugin_key)
+
+    # Check plugin manager status
+    get_plugin_module_info(plugin_key, module_key)
+
+    # Update license for plugin (app)
+    update_plugin_license(plugin_key, raw_license)
