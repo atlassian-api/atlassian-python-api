@@ -30,7 +30,6 @@ jobs:
           .github/bump_version ./ minor > atlassian/VERSION
           make docker-qa PYTHON_VERSION=${{matrix.python-version}}
       - name: Creating coverage report
-        if: ${{ ( matrix.python-version == '3.8' ) }}
         uses: codecov/codecov-action@v4
         with:
           files: ./coverage.xml
