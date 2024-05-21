@@ -97,7 +97,6 @@ class Bamboo(AtlassianRestAPI):
 
     """ Projects & Plans """
 
-
     def projects(
         self,
         expand=None,
@@ -1296,6 +1295,7 @@ class Bamboo(AtlassianRestAPI):
         return response
 
     """Elastic Bamboo"""
+
     def get_elastic_instance_logs(self, instance_id):
         """
         Get logs from an EC2 instance
