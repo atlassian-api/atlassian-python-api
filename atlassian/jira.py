@@ -1221,13 +1221,18 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         base_url = self.resource_url("issue")
-        url = "{base_url}/{issue_key}/changelog".format(base_url=base_url, issue_key=issue_key)
         params = {}
         if start:
             params["startAt"] = start
         if limit:
             params["maxResults"] = limit
-        return self.get(url, params=params)
+
+        if self.cloud:
+            url = "{base_url}/{issue_key}/changelog".format(base_url=base_url, issue_key=issue_key)
+            return self.get(url, params=params)
+        else:
+            url = "{base_url}/{issue_key}?expand=changelog".format(base_url=base_url, issue_key=issue_key)
+            return (self.get(url) or {}).get("changelog", params)
 
     def issue_add_json_worklog(self, key, worklog):
         """
