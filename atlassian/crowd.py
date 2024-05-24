@@ -271,15 +271,17 @@ class Crowd(AtlassianRestAPI):
         """
         Retrieves full details of all group memberships, with users and nested groups.
         See: https://docs.atlassian.com/atlassian-crowd/5.3.1/REST/#usermanagement/1/group-getAllMemberships
+        Retrieves full details of all group memberships, with users and nested groups.
+        This resource is optimised for streaming XML responses, and does not support JSON responses.
         :return: All membership mapping dict
         """
         path = self._crowd_api_url("usermanagement", "group/membership")
-        headers = {'Accept': 'application/xml'}
+        headers = {"Accept": "application/xml"}
         response = self.get(path, headers=headers, advanced_mode=True)
         root = etree.fromstring(response.content)
         memberships = {}
-        for member in root.xpath('//membership'):
-            group = member.get('group')
-            users = [user.get('name') for user in member.xpath('./users/user')]
+        for member in root.xpath("//membership"):
+            group = member.get("group")
+            users = [user.get("name") for user in member.xpath("./users/user")]
             memberships[group] = users
         return memberships
