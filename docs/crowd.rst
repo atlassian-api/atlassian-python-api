@@ -38,3 +38,16 @@ Manage groups
     # Get group's members
     crowd.group_members(group, kind='direct', max_results=99999)
 
+Get memberships
+----------------
+
+.. code-block:: python
+
+    # Retrieves full details of all group memberships.
+    # Return data structure:
+    # {
+    #     GroupName1<str>: [ Member1<str>, Member2<str>, ... ],
+    #     GroupName2<str>: [ MemberA<str>, MemberB<str>, ... ],
+    #     ...
+    # }
+    crowd.memberships
