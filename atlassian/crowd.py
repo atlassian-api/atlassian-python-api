@@ -2,6 +2,7 @@
 import logging
 
 from jmespath import search
+from lxml import etree
 
 from .rest_client import AtlassianRestAPI
 
