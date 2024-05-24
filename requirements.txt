@@ -7,4 +7,3 @@ requests-kerberos==0.14.0
 # Add this package to search string in json
 jmespath
 beautifulsoup4
-lxml
