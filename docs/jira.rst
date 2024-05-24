@@ -588,6 +588,22 @@ Cluster methods (only for DC edition)
     # Request current index from node (the request is processed asynchronously).
     jira.request_current_index_from_node(node_id)
 
+Health checks methods (only for on-prem edition)
+------------------------------------------------
+.. code-block:: python
+
+    # Get health status of Jira.
+    jira.health_check()
+
+    # Health check: Duplicate user accounts detail
+    jira.duplicated_account_checks_detail()
+
+    # Health check: Duplicate user accounts by flush
+    jira.duplicated_account_checks_flush()
+
+    # Health check: Duplicate user accounts count
+    jira.duplicated_account_checks_count()
+
 TEMPO
 ----------------------
 .. code-block:: python

@@ -5327,3 +5327,34 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
             # check as support tools
             response = self.get("rest/supportHealthCheck/1.0/check/")
         return response
+
+    def duplicated_account_checks_detail(self):
+        """
+        Health check: Duplicate user accounts detail
+        https://confluence.atlassian.com/jirakb/health-check-duplicate-user-accounts-1063554355.html
+        :return:
+        """
+        response = self.get("rest/api/2/user/duplicated/list")
+        return response
+
+    def duplicated_account_checks_flush(self):
+        """
+        Health check: Duplicate user accounts by flush
+        The responses returned by the count and list methods are stored in the duplicate users cache for 10 minutes.
+        The cache is flushed automatically every time a directory
+        is added, deleted, enabled, disabled, reordered, or synchronized.
+        https://confluence.atlassian.com/jirakb/health-check-duplicate-user-accounts-1063554355.html
+        :return:
+        """
+        params = {"flush": "true"}
+        response = self.get("rest/api/2/user/duplicated/list", params=params)
+        return response
+
+    def duplicated_account_checks_count(self):
+        """
+        Health check: Duplicate user accounts count
+        https://confluence.atlassian.com/jirakb/health-check-duplicate-user-accounts-1063554355.html
+        :return:
+        """
+        response = self.get("rest/api/2/user/duplicated/count")
+        return response
