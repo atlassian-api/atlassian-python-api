@@ -2,6 +2,7 @@
 import logging
 
 from jmespath import search
+from bs4 import BeautifulSoup
 
 from .rest_client import AtlassianRestAPI
 
@@ -264,3 +265,21 @@ class Crowd(AtlassianRestAPI):
         url = "/plugins/1.0/{plugin_key}/license".format(plugin_key=plugin_key)
         data = {"rawLicense": raw_license}
         return self.put(url, data=data, headers=app_headers)
+
+    @property
+    def memberships(self):
+        """
+        Retrieves full details of all group memberships, with users and nested groups.
+        See: https://docs.atlassian.com/atlassian-crowd/5.3.1/REST/#usermanagement/1/group-getAllMemberships
+        :return: All membership mapping dict
+        """
+        path = self._crowd_api_url("usermanagement", "group/membership")
+        headers = {"Accept": "application/xml"}
+        response = self.get(path, headers=headers)
+        soup = BeautifulSoup(response, "xml")
+        memberships = {}
+        for membership in soup.find_all("membership"):
+            group = membership["group"]
+            users = [user["name"] for user in membership.find_all("user")]
+            memberships[group] = users
+        return memberships
