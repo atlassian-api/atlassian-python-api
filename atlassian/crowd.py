@@ -274,12 +274,12 @@ class Crowd(AtlassianRestAPI):
         :return: All membership mapping dict
         """
         path = self._crowd_api_url("usermanagement", "group/membership")
-        headers = {'Accept': 'application/xml'}
+        headers = {"Accept": "application/xml"}
         response = self.get(path, headers=headers)
-        soup = BeautifulSoup(response, 'xml')
+        soup = BeautifulSoup(response, "xml")
         memberships = {}
-        for membership in soup.find_all('membership'):
-            group = membership['group']
-            users = [user['name'] for user in membership.find_all('user')]
+        for membership in soup.find_all("membership"):
+            group = membership["group"]
+            users = [user["name"] for user in membership.find_all("user")]
             memberships[group] = users
         return memberships
