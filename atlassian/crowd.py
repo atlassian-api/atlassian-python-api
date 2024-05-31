@@ -283,3 +283,20 @@ class Crowd(AtlassianRestAPI):
             users = [user["name"] for user in membership.find_all("user")]
             memberships[group] = users
         return memberships
+
+    def group_create(self, groupname, description=None, active=True):
+        """
+        Create new group method
+        :param groupname: string: The name of new group
+        :param description: string: The description of new group, default is None
+        :param active: bool: Weather the group is active, default is True
+        :return: Create result
+        """
+        group = {
+            "name": groupname,
+            "active": active,
+            "description": description,
+            "type": "GROUP",
+        }
+
+        return self.post(self._crowd_api_url("usermanagement", "group"), data=group)
