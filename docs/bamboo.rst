@@ -108,7 +108,7 @@ Comments & Labels
     comments(project_key, plan_key, build_number, start_index=0, max_results=25)
 
     # Create a comment for a specific build
-    create_comment(project_key, plan_key, build_number, comment, author=None)
+    create_comment(project_key, plan_key, build_number, comment)
 
     # Get labels for a build
     labels(project_key, plan_key, build_number, start_index=0, max_results=25)
