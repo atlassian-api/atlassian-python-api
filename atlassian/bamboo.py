@@ -685,19 +685,17 @@ class Bamboo(AtlassianRestAPI):
         params = {"start-index": start_index, "max-results": max_results}
         return self.get(self.resource_url(resource), params=params)
 
-    def create_comment(self, project_key, plan_key, build_number, comment, author=None):
+    def create_comment(self, project_key, plan_key, build_number, comment):
         """
         Create a comment for a specific build
         :param project_key:
         :param plan_key:
         :param build_number:
         :param comment:
-        :param author:
         :return:
         """
         resource = "result/{}-{}-{}/comment".format(project_key, plan_key, build_number)
         comment_data = {
-            "author": author if author else self.username,
             "content": comment,
         }
         return self.post(self.resource_url(resource), data=comment_data)
