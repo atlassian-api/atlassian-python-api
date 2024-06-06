@@ -1,7 +1,10 @@
 # coding=utf-8
+from __future__ import annotations
+
 import json
 import os
 import unittest
+
 from requests import Response
 
 from atlassian import Confluence
@@ -13,6 +16,9 @@ from atlassian.errors import ApiError
     "credentials.secret missing, skipping test",
 )
 class TestConfluenceAdvancedModeCalls(unittest.TestCase):
+    space: str
+    created_pages: set
+    confluence: Confluence
     secret_file = "../credentials.secret"
 
     """
@@ -42,7 +48,7 @@ class TestConfluenceAdvancedModeCalls(unittest.TestCase):
         cls.space = "SAN"
         cls.created_pages = set()
 
-    def test_confluence_advanced_mode_post(self):
+    def test_confluence_advanced_mode_post(self) -> None:
         """Tests the advanced_mode option of AtlassianRestAPI post method by manually creating a page"""
         page_title = "Test_confluence_advanced_mode_post"
         data = {
