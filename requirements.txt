@@ -1,8 +1,8 @@
-deprecated
+Deprecated
 requests>=2.8.1
 six
 oauthlib
-requests_oauthlib
+requests-oauthlib
 requests-kerberos==0.14.0
 # Add this package to search string in json
 jmespath
