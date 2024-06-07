@@ -2439,7 +2439,6 @@ class Jira(AtlassianRestAPI):
                 self._get_paged(
                     self.resource_url("project/search"),
                     params,
-                    paging_workaround=True,
                 )
             )
         else:
