@@ -5,5 +5,3 @@ T_id: TypeAlias = str | int
 _Data: TypeAlias = (
     dict | str
 )
-
-
