@@ -9,6 +9,9 @@ from typing import TYPE_CHECKING, Literal, MutableMapping, overload
 import requests
 from requests.adapters import HTTPAdapter
 
+from atlassian.typehints import T_resp_json
+
+
 try:
     from oauthlib.oauth1.rfc5849 import SIGNATURE_RSA_SHA512 as SIGNATURE_RSA
 except ImportError:
@@ -30,8 +33,8 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
 
-T_resp = Response | dict | None
-T_resp_get = Response | dict | str | bytes | None
+T_resp = Response | T_resp_json
+T_resp_get = Response | T_resp_json | str | bytes
 
 
 log = get_default_logger(__name__)
@@ -245,7 +248,7 @@ class AtlassianRestAPI(object):
         self._session.headers.update({key: value})
 
     @staticmethod
-    def _response_handler(response: Response) -> dict | None:
+    def _response_handler(response: Response) -> T_resp_json:
         try:
             return response.json()
         except ValueError:
@@ -495,7 +498,7 @@ class AtlassianRestAPI(object):
         trailing: bool | None = ...,
         absolute: bool = ...,
         advanced_mode: Literal[False] = ...,
-    ) -> dict | None: ...
+    ) -> T_resp_json: ...
 
     # basic overall case
     @overload
@@ -603,7 +606,7 @@ class AtlassianRestAPI(object):
         trailing: bool | None = ...,
         absolute: bool = ...,
         advanced_mode: Literal[False] = ...,
-    ) -> dict | None: ...
+    ) -> T_resp_json: ...
 
     @overload
     def post(
@@ -618,7 +621,7 @@ class AtlassianRestAPI(object):
         absolute: bool = ...,
         *,
         advanced_mode: Literal[False] = ...,
-    ) -> dict | None: ...
+    ) -> T_resp_json: ...
 
     @overload
     def post(
@@ -632,7 +635,7 @@ class AtlassianRestAPI(object):
         trailing: bool | None = ...,
         absolute: bool = ...,
         advanced_mode: Literal[False] = ...,
-    ) -> dict | None: ...
+    ) -> T_resp_json: ...
 
     # advanced True
     @overload
@@ -718,7 +721,7 @@ class AtlassianRestAPI(object):
         absolute: bool = ...,
         *,
         advanced_mode: Literal[False],
-    ) -> dict | None: ...
+    ) -> T_resp_json: ...
 
     @overload
     def put(
@@ -731,7 +734,7 @@ class AtlassianRestAPI(object):
         params: dict | None = ...,
         absolute: bool = ...,
         advanced_mode: Literal[False] = ...,
-    ) -> dict | None: ...
+    ) -> T_resp_json: ...
 
     # advanced True
     @overload
@@ -853,7 +856,7 @@ class AtlassianRestAPI(object):
         absolute: bool = ...,
         *,
         advanced_mode: Literal[False],
-    ) -> dict | None: ...
+    ) -> T_resp_json: ...
 
     @overload
     def delete(
@@ -865,7 +868,7 @@ class AtlassianRestAPI(object):
         trailing: bool | None = ...,
         absolute: bool = ...,
         advanced_mode: Literal[False] = ...,
-    ) -> dict | None: ...
+    ) -> T_resp_json: ...
 
     # advanced True
     @overload
