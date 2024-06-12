@@ -12,7 +12,6 @@ codecov
 python-magic
 pylint
 mypy>=0.812
-bandit
 doc8
 types-Deprecated
 types-requests
