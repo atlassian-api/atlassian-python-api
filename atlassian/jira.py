@@ -699,7 +699,9 @@ class Jira(AtlassianRestAPI):
         url = self.resource_url("field")
         return self.get(url)
 
-    def create_custom_field(self, name: str, type: str, search_key: str | None = None, description: str | None = None) -> T_resp_json:
+    def create_custom_field(
+        self, name: str, type: str, search_key: str | None = None, description: str | None = None
+    ) -> T_resp_json:
         """
         Creates a custom field with the given name and type
         :param name: str - name of the custom field
@@ -3065,7 +3067,7 @@ class Jira(AtlassianRestAPI):
         response = self.jql(jql)
         if self.advanced_mode:
             return cast(Response, response)
-        
+
         return (cast(dict, response).__getitem__("issues") or {"key": None})[0]["key"]
 
     def get_project_issuekey_all(
@@ -3701,7 +3703,9 @@ class Jira(AtlassianRestAPI):
             headers={"Accept": "application/vnd.ms-excel"},
         )
 
-    def export_html(self, jql: str, limit: int | None = None, all_fields: bool = True, start: int | None = None) -> bytes:
+    def export_html(
+        self, jql: str, limit: int | None = None, all_fields: bool = True, start: int | None = None
+    ) -> bytes:
         """
         Get issues from jql search result with ALL or CURRENT fields
             default will be to return all fields
@@ -4217,7 +4221,9 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         data = {"idsOrKeys": [project_key]}
         return self.post(url, data=data)
 
-    def create_issuetype_scheme(self, name: str, description: str, default_issue_type_id: T_id, issue_type_ids: list) -> T_resp_json:
+    def create_issuetype_scheme(
+        self, name: str, description: str, default_issue_type_id: T_id, issue_type_ids: list
+    ) -> T_resp_json:
         """
         Create an issue type scheme
         https://docs.atlassian.com/software/jira/docs/api/REST/8.13.6/#api/2/issuetypescheme-createIssueTypeScheme
@@ -4660,7 +4666,9 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         return self.get(url, params=params)
 
     # noinspection PyIncorrectDocstring
-    def tempo_4_timesheets_find_worklogs(self, date_from: str | None = None, date_to: str | None = None, **params: Any) -> T_resp_json:
+    def tempo_4_timesheets_find_worklogs(
+        self, date_from: str | None = None, date_to: str | None = None, **params: Any
+    ) -> T_resp_json:
         """
         Find existing worklogs with searching parameters.
         NOTE: check if you are using correct types for the parameters!
@@ -4854,7 +4862,9 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         url = f"rest/tempo-teams/2/team/{team_id}/member/{member_id}/membership/{membership_id}"
         return self.delete(url)
 
-    def tempo_teams_update_member_information(self, team_id: T_id, member_id: T_id, membership_id: T_id, data: dict) -> T_resp_json:
+    def tempo_teams_update_member_information(
+        self, team_id: T_id, member_id: T_id, membership_id: T_id, data: dict
+    ) -> T_resp_json:
         """
         Update team membership attribute info
         :param team_id:
