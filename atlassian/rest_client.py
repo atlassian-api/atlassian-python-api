@@ -457,7 +457,7 @@ class AtlassianRestAPI(object):
         absolute: bool = ...,
         advanced_mode: Literal[True],
     ) -> bytes:
-        ...
+        ...  # fmt: skip
 
     # not_json_response True
     @overload
@@ -474,7 +474,7 @@ class AtlassianRestAPI(object):
         absolute: bool = ...,
         advanced_mode: bool = ...,
     ) -> bytes:
-        ...
+        ...  # fmt: skip
 
     # advanced mode True
     @overload
@@ -491,7 +491,7 @@ class AtlassianRestAPI(object):
         *,
         advanced_mode: Literal[True],
     ) -> Response:
-        ...
+        ...  # fmt: skip
 
     # both False
     @overload
@@ -507,7 +507,7 @@ class AtlassianRestAPI(object):
         absolute: bool = ...,
         advanced_mode: Literal[False] = ...,
     ) -> T_resp_json:
-        ...
+        ...  # fmt: skip
 
     # basic overall case
     @overload
@@ -523,7 +523,7 @@ class AtlassianRestAPI(object):
         absolute: bool = ...,
         advanced_mode: bool = ...,
     ) -> T_resp_get:
-        ...
+        ...  # fmt: skip
 
     def get(
         self,
@@ -617,7 +617,7 @@ class AtlassianRestAPI(object):
         absolute: bool = ...,
         advanced_mode: Literal[False] = ...,
     ) -> T_resp_json:
-        ...
+        ...  # fmt: skip
 
     @overload
     def post(
@@ -633,7 +633,7 @@ class AtlassianRestAPI(object):
         *,
         advanced_mode: Literal[False] = ...,
     ) -> T_resp_json:
-        ...
+        ...  # fmt: skip
 
     @overload
     def post(
@@ -648,7 +648,7 @@ class AtlassianRestAPI(object):
         absolute: bool = ...,
         advanced_mode: Literal[False] = ...,
     ) -> T_resp_json:
-        ...
+        ...  # fmt: skip
 
     # advanced True
     @overload
@@ -665,7 +665,7 @@ class AtlassianRestAPI(object):
         *,
         advanced_mode: Literal[True],
     ) -> Response:
-        ...
+        ...  # fmt: skip
 
     # basic overall case
     @overload
@@ -681,7 +681,7 @@ class AtlassianRestAPI(object):
         absolute: bool = ...,
         advanced_mode: bool = ...,
     ) -> Union[Response, dict, None]:
-        ...
+        ...  # fmt: skip
 
     def post(
         self,
@@ -737,7 +737,7 @@ class AtlassianRestAPI(object):
         *,
         advanced_mode: Literal[False],
     ) -> T_resp_json:
-        ...
+        ...  # fmt: skip
 
     @overload
     def put(
@@ -751,7 +751,7 @@ class AtlassianRestAPI(object):
         absolute: bool = ...,
         advanced_mode: Literal[False] = ...,
     ) -> T_resp_json:
-        ...
+        ...  # fmt: skip
 
     # advanced True
     @overload
@@ -767,7 +767,7 @@ class AtlassianRestAPI(object):
         *,
         advanced_mode: Literal[True],
     ) -> Response:
-        ...
+        ...  # fmt: skip
 
     # basic overall case
     @overload
@@ -782,7 +782,7 @@ class AtlassianRestAPI(object):
         absolute: bool = ...,
         advanced_mode: bool = ...,
     ) -> Union[Response, dict, None]:
-        ...
+        ...  # fmt: skip
 
     def put(
         self,
@@ -876,7 +876,7 @@ class AtlassianRestAPI(object):
         *,
         advanced_mode: Literal[False],
     ) -> T_resp_json:
-        ...
+        ...  # fmt: skip
 
     @overload
     def delete(
@@ -889,7 +889,7 @@ class AtlassianRestAPI(object):
         absolute: bool = ...,
         advanced_mode: Literal[False] = ...,
     ) -> T_resp_json:
-        ...
+        ...  # fmt: skip
 
     # advanced True
     @overload
@@ -904,7 +904,7 @@ class AtlassianRestAPI(object):
         *,
         advanced_mode: Literal[True],
     ) -> Response:
-        ...
+        ...  # fmt: skip
 
     # basic overall case
     @overload
@@ -918,7 +918,7 @@ class AtlassianRestAPI(object):
         absolute: bool = ...,
         advanced_mode: bool = ...,
     ) -> T_resp:
-        ...
+        ...  # fmt: skip
 
     def delete(
         self,
