@@ -1,5 +1,4 @@
 # coding=utf-8
-from __future__ import annotations
 from ..base import BitbucketCloudBase
 
 
@@ -7,7 +6,7 @@ class RepositoryVariables(BitbucketCloudBase):
     def __init__(self, url, *args, **kwargs):
         super(RepositoryVariables, self).__init__(url, *args, **kwargs)
 
-    def __get_object(self, data) -> RepositoryVariable:
+    def __get_object(self, data) -> "RepositoryVariable":
         return RepositoryVariable(
             self.url_joiner(self.url, data["uuid"]),
             data,
