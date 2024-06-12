@@ -1,16 +1,21 @@
 # coding=utf-8
-from __future__ import annotations
-
 import logging
 import random
 from json import dumps
-from typing import TYPE_CHECKING, Literal, MutableMapping, overload
+from typing import (
+    List,
+    MutableMapping,
+    Optional,
+    Tuple,
+    Union,
+    overload,
+)
 
 import requests
 from requests.adapters import HTTPAdapter
+from typing_extensions import Literal
 
 from atlassian.typehints import T_resp_json
-
 
 try:
     from oauthlib.oauth1.rfc5849 import SIGNATURE_RSA_SHA512 as SIGNATURE_RSA
@@ -20,21 +25,19 @@ except ImportError:
 import time
 
 import urllib3
+from http.cookiejar import CookieJar
+
+import urllib3
 from requests import HTTPError, Response, Session
 from requests_oauthlib import OAuth1, OAuth2
 from six.moves.urllib.parse import urlencode
+from typing_extensions import Self
 from urllib3.util import Retry
 
 from atlassian.request_utils import get_default_logger
 
-if TYPE_CHECKING:
-    from http.cookiejar import CookieJar
-
-    from typing_extensions import Self
-
-
-T_resp = Response | T_resp_json
-T_resp_get = Response | T_resp_json | str | bytes
+T_resp = Union[Response, T_resp_json]
+T_resp_get = Union[Response, T_resp_json, str, bytes]
 
 
 log = get_default_logger(__name__)
@@ -72,24 +75,24 @@ class AtlassianRestAPI(object):
     def __init__(
         self,
         url: str,
-        username: str | None = None,
-        password: str | None = None,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
         timeout: int = 75,
         api_root: str = "rest/api",
-        api_version: str | int = "latest",
+        api_version: Union[str, int] = "latest",
         verify_ssl: bool = True,
-        session: requests.Session | None = None,
-        oauth: dict | None = None,
-        oauth2: dict | None = None,
-        cookies: CookieJar | None = None,
-        advanced_mode: bool | None = None,
+        session: Optional[requests.Session] = None,
+        oauth: Optional[dict] = None,
+        oauth2: Optional[dict] = None,
+        cookies: Optional[CookieJar] = None,
+        advanced_mode: Optional[bool] = None,
         kerberos: object = None,
         cloud: bool = False,
-        proxies: MutableMapping[str, str] | None = None,
-        token: str | None = None,
-        cert: str | tuple[str, str] | None = None,
+        proxies: Optional[MutableMapping[str, str]] = None,
+        token: Optional[str] = None,
+        cert: Union[str, Tuple[str, str], None] = None,
         backoff_and_retry: bool = False,
-        retry_status_codes: list[int] = [413, 429, 503],
+        retry_status_codes: List[int] = [413, 429, 503],
         max_backoff_seconds: int = 1800,
         max_backoff_retries: int = 1000,
         backoff_factor=1.0,
@@ -315,8 +318,8 @@ class AtlassianRestAPI(object):
         self,
         method: str,
         url: str,
-        data: dict | str | None = None,
-        headers: dict | None = None,
+        data: Union[dict, str, None] = None,
+        headers: Optional[dict] = None,
         level: int = logging.DEBUG,
     ) -> None:
         """
@@ -337,7 +340,9 @@ class AtlassianRestAPI(object):
         )
         log.log(level=level, msg=message)
 
-    def resource_url(self, resource: str, api_root: str | None = None, api_version: str | int | None = None) -> str:
+    def resource_url(
+        self, resource: str, api_root: Optional[str] = None, api_version: Union[str, int, None] = None
+    ) -> str:
         if api_root is None:
             api_root = self.api_root
         if api_version is None:
@@ -345,7 +350,7 @@ class AtlassianRestAPI(object):
         return "/".join(str(s).strip("/") for s in [api_root, api_version, resource] if s is not None)
 
     @staticmethod
-    def url_joiner(url: str | None, path: str, trailing: bool | None = None) -> str:
+    def url_joiner(url: Optional[str], path: str, trailing: Optional[bool] = None) -> str:
         url_link = "/".join(str(s).strip("/") for s in [url, path] if s is not None)
         if trailing:
             url_link += "/"
@@ -358,13 +363,13 @@ class AtlassianRestAPI(object):
         self,
         method: str = "GET",
         path: str = "/",
-        data: dict | str | None = None,
-        json: dict | str | None = None,
-        flags: list | None = None,
-        params: dict | None = None,
-        headers: dict | None = None,
-        files: dict | None = None,
-        trailing: bool | None = None,
+        data: Union[dict, str, None] = None,
+        json: Union[dict, str, None] = None,
+        flags: Optional[list] = None,
+        params: Optional[dict] = None,
+        headers: Optional[dict] = None,
+        files: Optional[dict] = None,
+        trailing: Optional[bool] = None,
         absolute: bool = False,
         advanced_mode: bool = False,
     ) -> Response:
@@ -442,13 +447,13 @@ class AtlassianRestAPI(object):
     def get(
         self,
         path: str,
-        data: dict | str | None = ...,
-        flags: list | None = ...,
-        params: dict | None = ...,
-        headers: dict | None = ...,
+        data: Union[dict, str, None] = ...,
+        flags: Optional[list] = ...,
+        params: Optional[dict] = ...,
+        headers: Optional[dict] = ...,
         *,
         not_json_response: Literal[True],
-        trailing: bool | None = ...,
+        trailing: Optional[bool] = ...,
         absolute: bool = ...,
         advanced_mode: Literal[True],
     ) -> bytes:
@@ -459,13 +464,13 @@ class AtlassianRestAPI(object):
     def get(
         self,
         path: str,
-        data: dict | str | None = ...,
-        flags: list | None = ...,
-        params: dict | None = ...,
-        headers: dict | None = ...,
+        data: Union[dict, str, None] = ...,
+        flags: Optional[list] = ...,
+        params: Optional[dict] = ...,
+        headers: Optional[dict] = ...,
         *,
         not_json_response: Literal[True],
-        trailing: bool | None = ...,
+        trailing: Optional[bool] = ...,
         absolute: bool = ...,
         advanced_mode: bool = ...,
     ) -> bytes:
@@ -476,12 +481,12 @@ class AtlassianRestAPI(object):
     def get(
         self,
         path: str,
-        data: dict | str | None = ...,
-        flags: list | None = ...,
-        params: dict | None = ...,
-        headers: dict | None = ...,
-        not_json_response: Literal[False] | None = ...,
-        trailing: bool | None = ...,
+        data: Union[dict, str, None] = ...,
+        flags: Optional[list] = ...,
+        params: Optional[dict] = ...,
+        headers: Optional[dict] = ...,
+        not_json_response: Optional[Literal[False]] = ...,
+        trailing: Optional[bool] = ...,
         absolute: bool = ...,
         *,
         advanced_mode: Literal[True],
@@ -493,12 +498,12 @@ class AtlassianRestAPI(object):
     def get(
         self,
         path: str,
-        data: dict | str | None = ...,
-        flags: list | None = ...,
-        params: dict | None = ...,
-        headers: dict | None = ...,
-        not_json_response: Literal[False] | None = ...,
-        trailing: bool | None = ...,
+        data: Union[dict, str, None] = ...,
+        flags: Optional[list] = ...,
+        params: Optional[dict] = ...,
+        headers: Optional[dict] = ...,
+        not_json_response: Optional[Literal[False]] = ...,
+        trailing: Optional[bool] = ...,
         absolute: bool = ...,
         advanced_mode: Literal[False] = ...,
     ) -> T_resp_json:
@@ -509,12 +514,12 @@ class AtlassianRestAPI(object):
     def get(
         self,
         path: str,
-        data: dict | str | None = ...,
-        flags: list | None = ...,
-        params: dict | None = ...,
-        headers: dict | None = ...,
-        not_json_response: bool | None = ...,
-        trailing: bool | None = ...,
+        data: Union[dict, str, None] = ...,
+        flags: Optional[list] = ...,
+        params: Optional[dict] = ...,
+        headers: Optional[dict] = ...,
+        not_json_response: Optional[bool] = ...,
+        trailing: Optional[bool] = ...,
         absolute: bool = ...,
         advanced_mode: bool = ...,
     ) -> T_resp_get:
@@ -523,12 +528,12 @@ class AtlassianRestAPI(object):
     def get(
         self,
         path: str,
-        data: dict | str | None = None,
-        flags: list | None = None,
-        params: dict | None = None,
-        headers: dict | None = None,
-        not_json_response: bool | None = None,
-        trailing: bool | None = None,
+        data: Union[dict, str, None] = None,
+        flags: Optional[list] = None,
+        params: Optional[dict] = None,
+        headers: Optional[dict] = None,
+        not_json_response: Optional[bool] = None,
+        trailing: Optional[bool] = None,
         absolute: bool = False,
         advanced_mode: bool = False,
     ) -> T_resp_get:
@@ -602,13 +607,13 @@ class AtlassianRestAPI(object):
     def post(
         self,
         path: str,
-        data: dict | str,
+        data: Union[dict, str],
         *,
-        json: dict | str | None = ...,
-        headers: dict | None = ...,
-        files: dict | None = ...,
-        params: dict | None = ...,
-        trailing: bool | None = ...,
+        json: Union[dict, str, None] = ...,
+        headers: Optional[dict] = ...,
+        files: Optional[dict] = ...,
+        params: Optional[dict] = ...,
+        trailing: Optional[bool] = ...,
         absolute: bool = ...,
         advanced_mode: Literal[False] = ...,
     ) -> T_resp_json:
@@ -618,12 +623,12 @@ class AtlassianRestAPI(object):
     def post(
         self,
         path: str,
-        data: dict | str | None = ...,
-        json: dict | str | None = ...,
-        headers: dict | None = ...,
-        files: dict | None = ...,
-        params: dict | None = ...,
-        trailing: bool | None = ...,
+        data: Union[dict, str, None] = ...,
+        json: Union[dict, str, None] = ...,
+        headers: Optional[dict] = ...,
+        files: Optional[dict] = ...,
+        params: Optional[dict] = ...,
+        trailing: Optional[bool] = ...,
         absolute: bool = ...,
         *,
         advanced_mode: Literal[False] = ...,
@@ -634,12 +639,12 @@ class AtlassianRestAPI(object):
     def post(
         self,
         path: str,
-        data: dict | str | None = ...,
-        json: dict | str | None = ...,
-        headers: dict | None = ...,
-        files: dict | None = ...,
-        params: dict | None = ...,
-        trailing: bool | None = ...,
+        data: Union[dict, str, None] = ...,
+        json: Union[dict, str, None] = ...,
+        headers: Optional[dict] = ...,
+        files: Optional[dict] = ...,
+        params: Optional[dict] = ...,
+        trailing: Optional[bool] = ...,
         absolute: bool = ...,
         advanced_mode: Literal[False] = ...,
     ) -> T_resp_json:
@@ -650,12 +655,12 @@ class AtlassianRestAPI(object):
     def post(
         self,
         path: str,
-        data: dict | str | None = ...,
-        json: dict | str | None = ...,
-        headers: dict | None = ...,
-        files: dict | None = ...,
-        params: dict | None = ...,
-        trailing: bool | None = ...,
+        data: Union[dict, str, None] = ...,
+        json: Union[dict, str, None] = ...,
+        headers: Optional[dict] = ...,
+        files: Optional[dict] = ...,
+        params: Optional[dict] = ...,
+        trailing: Optional[bool] = ...,
         absolute: bool = ...,
         *,
         advanced_mode: Literal[True],
@@ -667,29 +672,29 @@ class AtlassianRestAPI(object):
     def post(
         self,
         path: str,
-        data: dict | str | None = ...,
-        json: dict | str | None = ...,
-        headers: dict | None = ...,
-        files: dict | None = ...,
-        params: dict | None = ...,
-        trailing: bool | None = ...,
+        data: Union[dict, str, None] = ...,
+        json: Union[dict, str, None] = ...,
+        headers: Optional[dict] = ...,
+        files: Optional[dict] = ...,
+        params: Optional[dict] = ...,
+        trailing: Optional[bool] = ...,
         absolute: bool = ...,
         advanced_mode: bool = ...,
-    ) -> Response | dict | None:
+    ) -> Union[Response, dict, None]:
         ...
 
     def post(
         self,
         path: str,
-        data: dict | str | None = None,
-        json: dict | str | None = None,
-        headers: dict | None = None,
-        files: dict | None = None,
-        params: dict | None = None,
-        trailing: bool | None = None,
+        data: Union[dict, str, None] = None,
+        json: Union[dict, str, None] = None,
+        headers: Optional[dict] = None,
+        files: Optional[dict] = None,
+        params: Optional[dict] = None,
+        trailing: Optional[bool] = None,
         absolute: bool = False,
         advanced_mode: bool = False,
-    ) -> Response | dict | None:
+    ) -> Union[Response, dict, None]:
         """
         :param path:
         :param data:
@@ -723,11 +728,11 @@ class AtlassianRestAPI(object):
     def put(
         self,
         path: str,
-        data: dict | str | None = ...,
-        headers: dict | None = ...,
-        files: dict | None = ...,
-        trailing: bool | None = ...,
-        params: dict | None = ...,
+        data: Union[dict, str, None] = ...,
+        headers: Optional[dict] = ...,
+        files: Optional[dict] = ...,
+        trailing: Optional[bool] = ...,
+        params: Optional[dict] = ...,
         absolute: bool = ...,
         *,
         advanced_mode: Literal[False],
@@ -738,11 +743,11 @@ class AtlassianRestAPI(object):
     def put(
         self,
         path: str,
-        data: dict | str | None = ...,
-        headers: dict | None = ...,
-        files: dict | None = ...,
-        trailing: bool | None = ...,
-        params: dict | None = ...,
+        data: Union[dict, str, None] = ...,
+        headers: Optional[dict] = ...,
+        files: Optional[dict] = ...,
+        trailing: Optional[bool] = ...,
+        params: Optional[dict] = ...,
         absolute: bool = ...,
         advanced_mode: Literal[False] = ...,
     ) -> T_resp_json:
@@ -753,11 +758,11 @@ class AtlassianRestAPI(object):
     def put(
         self,
         path: str,
-        data: dict | str | None = ...,
-        headers: dict | None = ...,
-        files: dict | None = ...,
-        trailing: bool | None = ...,
-        params: dict | None = ...,
+        data: Union[dict, str, None] = ...,
+        headers: Optional[dict] = ...,
+        files: Optional[dict] = ...,
+        trailing: Optional[bool] = ...,
+        params: Optional[dict] = ...,
         absolute: bool = ...,
         *,
         advanced_mode: Literal[True],
@@ -769,27 +774,27 @@ class AtlassianRestAPI(object):
     def put(
         self,
         path: str,
-        data: dict | str | None = ...,
-        headers: dict | None = ...,
-        files: dict | None = ...,
-        trailing: bool | None = ...,
-        params: dict | None = ...,
+        data: Union[dict, str, None] = ...,
+        headers: Optional[dict] = ...,
+        files: Optional[dict] = ...,
+        trailing: Optional[bool] = ...,
+        params: Optional[dict] = ...,
         absolute: bool = ...,
         advanced_mode: bool = ...,
-    ) -> Response | dict | None:
+    ) -> Union[Response, dict, None]:
         ...
 
     def put(
         self,
         path: str,
-        data: dict | str | None = None,
-        headers: dict | None = None,
-        files: dict | None = None,
-        trailing: bool | None = None,
-        params: dict | None = None,
+        data: Union[dict, str, None] = None,
+        headers: Optional[dict] = None,
+        files: Optional[dict] = None,
+        trailing: Optional[bool] = None,
+        params: Optional[dict] = None,
         absolute: bool = False,
         advanced_mode: bool = False,
-    ) -> Response | dict | None:
+    ) -> Union[Response, dict, None]:
         """
         :param path: Path of request
         :param data:
@@ -824,11 +829,11 @@ class AtlassianRestAPI(object):
     def patch(
         self,
         path: str,
-        data: dict | str | None = None,
-        headers: dict | None = None,
-        files: dict | None = None,
-        trailing: bool | None = None,
-        params: dict | None = None,
+        data: Union[dict, str, None] = None,
+        headers: Optional[dict] = None,
+        files: Optional[dict] = None,
+        trailing: Optional[bool] = None,
+        params: Optional[dict] = None,
         absolute: bool = False,
         advanced_mode: bool = False,
     ) -> T_resp:
@@ -863,10 +868,10 @@ class AtlassianRestAPI(object):
     def delete(
         self,
         path: str,
-        data: dict | str | None = ...,
-        headers: dict | None = ...,
-        params: dict | None = ...,
-        trailing: bool | None = ...,
+        data: Union[dict, str, None] = ...,
+        headers: Optional[dict] = ...,
+        params: Optional[dict] = ...,
+        trailing: Optional[bool] = ...,
         absolute: bool = ...,
         *,
         advanced_mode: Literal[False],
@@ -877,10 +882,10 @@ class AtlassianRestAPI(object):
     def delete(
         self,
         path: str,
-        data: dict | str | None = ...,
-        headers: dict | None = ...,
-        params: dict | None = ...,
-        trailing: bool | None = ...,
+        data: Union[dict, str, None] = ...,
+        headers: Optional[dict] = ...,
+        params: Optional[dict] = ...,
+        trailing: Optional[bool] = ...,
         absolute: bool = ...,
         advanced_mode: Literal[False] = ...,
     ) -> T_resp_json:
@@ -891,10 +896,10 @@ class AtlassianRestAPI(object):
     def delete(
         self,
         path: str,
-        data: dict | str | None = ...,
-        headers: dict | None = ...,
-        params: dict | None = ...,
-        trailing: bool | None = ...,
+        data: Union[dict, str, None] = ...,
+        headers: Optional[dict] = ...,
+        params: Optional[dict] = ...,
+        trailing: Optional[bool] = ...,
         absolute: bool = ...,
         *,
         advanced_mode: Literal[True],
@@ -906,10 +911,10 @@ class AtlassianRestAPI(object):
     def delete(
         self,
         path: str,
-        data: dict | str | None = ...,
-        headers: dict | None = ...,
-        params: dict | None = ...,
-        trailing: bool | None = ...,
+        data: Union[dict, str, None] = ...,
+        headers: Optional[dict] = ...,
+        params: Optional[dict] = ...,
+        trailing: Optional[bool] = ...,
         absolute: bool = ...,
         advanced_mode: bool = ...,
     ) -> T_resp:
@@ -918,10 +923,10 @@ class AtlassianRestAPI(object):
     def delete(
         self,
         path: str,
-        data: dict | str | None = None,
-        headers: dict | None = None,
-        params: dict | None = None,
-        trailing: bool | None = None,
+        data: Union[dict, str, None] = None,
+        headers: Optional[dict] = None,
+        params: Optional[dict] = None,
+        trailing: Optional[bool] = None,
         absolute: bool = False,
         advanced_mode: bool = False,
     ) -> T_resp:

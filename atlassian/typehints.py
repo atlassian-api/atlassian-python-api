@@ -1,5 +1,6 @@
+from typing import Union
 from typing_extensions import TypeAlias
 
-T_id: TypeAlias = str | int
-_Data: TypeAlias = dict | str
-T_resp_json: TypeAlias = dict | None
+T_id: TypeAlias = Union[str, int]
+_Data: TypeAlias = Union[dict, str]
+T_resp_json: TypeAlias = Union[dict, None]
