@@ -1489,7 +1489,7 @@ class Confluence(AtlassianRestAPI):
 
         return response
 
-    def remove_page_label(self, page_id, label):
+    def remove_page_label(self, page_id: str, label: str):
         """
         Delete Confluence page label
         :param page_id: content_id format
