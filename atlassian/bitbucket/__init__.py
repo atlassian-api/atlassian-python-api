@@ -297,7 +297,10 @@ class Bitbucket(BitbucketBase):
     ################################################################################################
 
     def _url_projects(self, api_root=None, api_version=None):
+        if self.cloud:
+            return self.resource_url("repositories", api_root, api_version)
         return self.resource_url("projects", api_root, api_version)
+    
 
     def project_list(self, start=0, limit=None):
         """
@@ -749,6 +752,8 @@ class Bitbucket(BitbucketBase):
         return self._get_paged(url, params=params)
 
     def _url_repos(self, project_key, api_root=None, api_version=None):
+        if self.cloud:
+            return self._url_project(project_key, api_root, api_version)
         return "{}/repos".format(self._url_project(project_key, api_root, api_version))
 
     def repo_list(self, project_key, start=0, limit=25):
@@ -1162,6 +1167,8 @@ class Bitbucket(BitbucketBase):
         return self._get_paged(url, params=params)
 
     def _url_repo_branches(self, project_key, repository_slug, api_root=None):
+        if self.cloud:
+            return "{}/refs/branches".format(self._url_repo(project_key, repository_slug, api_root=api_root))
         return "{}/branches".format(self._url_repo(project_key, repository_slug, api_root=api_root))
 
     def get_branches(
