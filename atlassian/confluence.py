@@ -3067,8 +3067,8 @@ class Confluence(AtlassianRestAPI):
         :param group_name: str - name of group to add user to
         :return: Current state of the group
         """
-       url = f"rest/api/user/{username}/group/{group_name}"
-       return self.put(url)
+        url = f"rest/api/user/{username}/group/{group_name}"
+        return self.put(url)
 
     def add_space_permissions(
         self,
