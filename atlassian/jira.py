@@ -284,11 +284,11 @@ class Jira(AtlassianRestAPI):
         """
         Returns the content for an attachment
         :param attachment_id: int
-        :return: json
+        :return: content as bytes
         """
         base_url = self.resource_url("attachment")
         url = "{base_url}/content/{attachment_id}".format(base_url=base_url, attachment_id=attachment_id)
-        return self.get(url)
+        return self.get(url, not_json_response=True)
 
     def remove_attachment(self, attachment_id):
         """
