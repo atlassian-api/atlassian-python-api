@@ -478,7 +478,7 @@ Manage Sprints
     jira.get_all_versions_from_board(board_id, released="true", start=0, limit=50)
 
     # Create sprint
-    jira.jira.create_sprint(sprint_name, origin_board_id,  start_datetime, end_datetime, goal)
+    jira.create_sprint(sprint_name, origin_board_id,  start_datetime, end_datetime, goal)
 
     # Rename sprint
     jira.rename_sprint(sprint_id, name, start_date, end_date)
