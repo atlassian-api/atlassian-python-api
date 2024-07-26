@@ -1,5 +1,7 @@
 # coding=utf-8
 import logging
+from enum import Enum
+from typing import Optional, Union
 
 from deprecated import deprecated
 from requests import HTTPError
@@ -8,6 +10,16 @@ from .base import BitbucketBase
 from atlassian.bitbucket.cloud import Cloud
 
 log = logging.getLogger(__name__)
+
+
+class MergeStrategy(Enum):
+    """
+    Merge strategies used by the merge_pull_request method.
+    """
+
+    MERGE_COMMIT = "merge_commit"
+    SQUASH = "squash"
+    FAST_FORWARD = "fast_forward"
 
 
 class Bitbucket(BitbucketBase):
@@ -2194,7 +2206,16 @@ class Bitbucket(BitbucketBase):
         url = "{}/merge".format(self._url_pull_request(project_key, repository_slug, pr_id))
         return self.get(url)
 
-    def merge_pull_request(self, project_key, repository_slug, pr_id, pr_version):
+    def merge_pull_request(
+        self,
+        project_key: str,
+        repository_slug: str,
+        pr_id: int,
+        pr_version: Optional[int],
+        merge_message: str,
+        close_source_branch: bool = False,
+        merge_strategy: Union[str, MergeStrategy] = MergeStrategy.MERGE_COMMIT,
+    ):
         """
         Merge pull request
         The authenticated user must have REPO_READ permission for the repository
@@ -2204,10 +2225,17 @@ class Bitbucket(BitbucketBase):
         :param repository_slug: my_shiny_repo
         :param pr_id: 2341
         :param pr_version:
+        :param merge_message: "feat: add new file handler"
+        :param close_source_branch: True
+        :param merge_strategy:  "squash"
         :return:
         """
         url = "{}/merge".format(self._url_pull_request(project_key, repository_slug, pr_id))
-        params = {}
+        params = {
+            "message": merge_message,
+            "close_source_branch": close_source_branch,
+            "merge_strategy": MergeStrategy(merge_strategy).value,
+        }
         if not self.cloud:
             params["version"] = pr_version
         return self.post(url, params=params)
