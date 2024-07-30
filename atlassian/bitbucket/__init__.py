@@ -2231,7 +2231,8 @@ class Bitbucket(BitbucketBase):
         :return:
         """
         url = "{}/merge".format(self._url_pull_request(project_key, repository_slug, pr_id))
-        params = {
+        params = {}
+        data = {
             "type": "pullrequest",
             "message": merge_message,
             "close_source_branch": close_source_branch,
@@ -2239,7 +2240,7 @@ class Bitbucket(BitbucketBase):
         }
         if not self.cloud:
             params["version"] = pr_version
-        return self.post(url, data=params)
+        return self.post(url, data=data, params=params)
 
     def reopen_pull_request(self, project_key, repository_slug, pr_id, pr_version):
         """
