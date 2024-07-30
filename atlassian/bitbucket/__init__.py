@@ -2211,10 +2211,10 @@ class Bitbucket(BitbucketBase):
         project_key: str,
         repository_slug: str,
         pr_id: int,
-        pr_version: Optional[int],
         merge_message: str,
         close_source_branch: bool = False,
         merge_strategy: Union[str, MergeStrategy] = MergeStrategy.MERGE_COMMIT,
+        pr_version: Optional[int] = None,
     ):
         """
         Merge pull request
@@ -2224,21 +2224,23 @@ class Bitbucket(BitbucketBase):
         :param project_key: PROJECT
         :param repository_slug: my_shiny_repo
         :param pr_id: 2341
-        :param pr_version:
         :param merge_message: "feat: add new file handler"
+        :param pr_version:
         :param close_source_branch: True
         :param merge_strategy:  "squash"
         :return:
         """
         url = "{}/merge".format(self._url_pull_request(project_key, repository_slug, pr_id))
-        params = {
+        params = {}
+        data = {
+            "type": "pullrequest",
             "message": merge_message,
             "close_source_branch": close_source_branch,
             "merge_strategy": MergeStrategy(merge_strategy).value,
         }
         if not self.cloud:
             params["version"] = pr_version
-        return self.post(url, params=params)
+        return self.post(url, data=data, params=params)
 
     def reopen_pull_request(self, project_key, repository_slug, pr_id, pr_version):
         """
