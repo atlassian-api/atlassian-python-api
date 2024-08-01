@@ -4,7 +4,7 @@ from atlassian import Jira
 jira = Jira(url="http://localhost:8080", username="admin", password="admin")
 
 
-def get_all_users(group, include_inactive=True):
+def get_all_users(group: str, include_inactive: bool = True):
     """
     Get all users for group. If their more, than 50 users in group:
     go through the pages and append other users to the list
@@ -28,7 +28,7 @@ def get_all_users(group, include_inactive=True):
     return processed_data
 
 
-def sort_users_in_group(group):
+def sort_users_in_group(group: dict):
     """
     Take group, sort users by the name and return group with sorted users
     """
@@ -47,7 +47,7 @@ def get_groups_data():
     return groups_and_users
 
 
-def get_inactive_users(groups):
+def get_inactive_users(groups: list[dict]):
     """
     Take group list and return groups only with inactive users
     :param groups:
@@ -66,7 +66,7 @@ def get_inactive_users(groups):
     return inactive_users_list
 
 
-def exclude_inactive_users(groups):
+def exclude_inactive_users(groups: list[dict]):
     """
     Excluding inactive users from groups.
     :param groups:
@@ -79,7 +79,7 @@ def exclude_inactive_users(groups):
     return True
 
 
-def filter_groups_by_members(groups, quantity=1):
+def filter_groups_by_members(groups: list[dict], quantity: int = 1):
     """
     Take groups list and return empty groups
     :param groups:
@@ -89,7 +89,7 @@ def filter_groups_by_members(groups, quantity=1):
     return [x for x in groups if int(x["total"]) < quantity]
 
 
-def find_group(groups, group_name):
+def find_group(groups: list[dict], group_name: str):
     """
     Take groups list and find group by the group name
     :param groups:
