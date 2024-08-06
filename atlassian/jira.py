@@ -284,11 +284,11 @@ class Jira(AtlassianRestAPI):
         """
         Returns the content for an attachment
         :param attachment_id: int
-        :return: json
+        :return: content as bytes
         """
         base_url = self.resource_url("attachment")
         url = "{base_url}/content/{attachment_id}".format(base_url=base_url, attachment_id=attachment_id)
-        return self.get(url)
+        return self.get(url, not_json_response=True)
 
     def remove_attachment(self, attachment_id):
         """
@@ -1221,13 +1221,18 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         base_url = self.resource_url("issue")
-        url = "{base_url}/{issue_key}?expand=changelog".format(base_url=base_url, issue_key=issue_key)
         params = {}
         if start:
             params["startAt"] = start
         if limit:
             params["maxResults"] = limit
-        return (self.get(url) or {}).get("changelog", params)
+
+        if self.cloud:
+            url = "{base_url}/{issue_key}/changelog".format(base_url=base_url, issue_key=issue_key)
+            return self.get(url, params=params)
+        else:
+            url = "{base_url}/{issue_key}?expand=changelog".format(base_url=base_url, issue_key=issue_key)
+            return (self.get(url) or {}).get("changelog", params)
 
     def issue_add_json_worklog(self, key, worklog):
         """
@@ -1320,7 +1325,7 @@ class Jira(AtlassianRestAPI):
 
     def bulk_update_issue_field(self, key_list, fields="*all"):
         """
-        :param key_list=list of issues with common filed to be updated
+        :param key_list: list of issues with common filed to be updated
         :param fields: common fields to be updated
         return Boolean True/False
         """
@@ -1335,6 +1340,33 @@ class Jira(AtlassianRestAPI):
             log.error(e)
             return False
         return True
+
+    def issue_field_value_append(self, issue_id_or_key, field, value, notify_users=True):
+        """
+        Add value to a multiple value field
+
+        :param issue_id_or_key: str Issue id or issue key
+        :param field: str Field key ("customfield_10000")
+        :param value: str A value which need to append (use python value types)
+        :param notify_users: bool OPTIONAL if True, use project's default notification scheme to notify users via email.
+                                           if False, do not send any email notifications. (only works with admin privilege)
+        """
+        base_url = self.resource_url("issue")
+        params = {"notifyUsers": True if notify_users else False}
+        current_value = self.issue_field_value(key=issue_id_or_key, field=field)
+
+        if current_value:
+            new_value = current_value + [value]
+        else:
+            new_value = [value]
+
+        fields = {"{}".format(field): new_value}
+
+        return self.put(
+            "{base_url}/{key}".format(base_url=base_url, key=issue_id_or_key),
+            data={"fields": fields},
+            params=params,
+        )
 
     def get_issue_labels(self, issue_key):
         """
@@ -2407,7 +2439,6 @@ class Jira(AtlassianRestAPI):
                 self._get_paged(
                     self.resource_url("project/search"),
                     params,
-                    paging_workaround=True,
                 )
             )
         else:
@@ -3637,6 +3668,34 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         }
         url = "/plugins/1.0/{plugin_key}/license".format(plugin_key=plugin_key)
         data = {"rawLicense": raw_license}
+        return self.put(url, data=data, headers=app_headers)
+
+    def disable_plugin(self, plugin_key):
+        """
+        Disable a plugin
+        :param plugin_key:
+        :return:
+        """
+        app_headers = {
+            "X-Atlassian-Token": "nocheck",
+            "Content-Type": "application/vnd.atl.plugins+json",
+        }
+        url = "rest/plugins/1.0/{plugin_key}-key".format(plugin_key=plugin_key)
+        data = {"status": "disabled"}
+        return self.put(url, data=data, headers=app_headers)
+
+    def enable_plugin(self, plugin_key):
+        """
+        Enable a plugin
+        :param plugin_key:
+        :return:
+        """
+        app_headers = {
+            "X-Atlassian-Token": "nocheck",
+            "Content-Type": "application/vnd.atl.plugins+json",
+        }
+        url = "rest/plugins/1.0/{plugin_key}-key".format(plugin_key=plugin_key)
+        data = {"status": "enabled"}
         return self.put(url, data=data, headers=app_headers)
 
     def get_all_permissionschemes(self, expand=None):
@@ -5266,4 +5325,35 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         if not response:
             # check as support tools
             response = self.get("rest/supportHealthCheck/1.0/check/")
+        return response
+
+    def duplicated_account_checks_detail(self):
+        """
+        Health check: Duplicate user accounts detail
+        https://confluence.atlassian.com/jirakb/health-check-duplicate-user-accounts-1063554355.html
+        :return:
+        """
+        response = self.get("rest/api/2/user/duplicated/list")
+        return response
+
+    def duplicated_account_checks_flush(self):
+        """
+        Health check: Duplicate user accounts by flush
+        The responses returned by the count and list methods are stored in the duplicate users cache for 10 minutes.
+        The cache is flushed automatically every time a directory
+        is added, deleted, enabled, disabled, reordered, or synchronized.
+        https://confluence.atlassian.com/jirakb/health-check-duplicate-user-accounts-1063554355.html
+        :return:
+        """
+        params = {"flush": "true"}
+        response = self.get("rest/api/2/user/duplicated/list", params=params)
+        return response
+
+    def duplicated_account_checks_count(self):
+        """
+        Health check: Duplicate user accounts count
+        https://confluence.atlassian.com/jirakb/health-check-duplicate-user-accounts-1063554355.html
+        :return:
+        """
+        response = self.get("rest/api/2/user/duplicated/count")
         return response

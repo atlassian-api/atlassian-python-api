@@ -506,27 +506,20 @@ class Confluence(AtlassianRestAPI):
 
         return response
 
-    def get_draft_page_by_id(self, page_id, status="draft"):
+    def get_draft_page_by_id(self, page_id, status="draft", expand=None):
         """
-        Provide content by id with status = draft
-        :param page_id:
-        :param status:
+        Gets content by id with status = draft
+        :param page_id: Content ID
+        :param status: (str) list of content statuses to filter results on. Default value: [draft]
+        :param expand: OPTIONAL: Default value: history,space,version
+                       We can also specify some extensions such as extensions.inlineProperties
+                       (for getting inline comment-specific properties) or extensions. Resolution
+                       for the resolution status of each comment in the results
         :return:
         """
-        url = "rest/api/content/{page_id}?status={status}".format(page_id=page_id, status=status)
-
-        try:
-            response = self.get(url)
-        except HTTPError as e:
-            if e.response.status_code == 404:
-                raise ApiPermissionError(
-                    "The calling user does not have permission to view the content",
-                    reason=e,
-                )
-
-            raise
-
-        return response
+        # Version not passed since draft versions don't match the page and
+        # operate differently between different collaborative modes
+        return self.get_page_by_id(page_id=page_id, expand=expand, status=status)
 
     def get_all_pages_by_label(self, label, start=0, limit=50):
         """
@@ -1322,17 +1315,20 @@ class Confluence(AtlassianRestAPI):
             comment=comment,
         )
 
-    def download_attachments_from_page(self, page_id, path=None):
+    def download_attachments_from_page(self, page_id, path=None, start=0, limit=50):
         """
         Downloads all attachments from a page
         :param page_id:
-        :param path: path to directory where attachments will be saved. If None, current working directory will be used.
+        :param path: OPTIONAL: path to directory where attachments will be saved. If None, current working directory will be used.
+        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
+        :param limit: OPTIONAL: The limit of the number of attachments to return, this may be restricted by
+                                fixed system limits. Default: 50
         :return info message: number of saved attachments + path to directory where attachments were saved:
         """
         if path is None:
             path = os.getcwd()
         try:
-            attachments = self.get_attachments_from_content(page_id=page_id)["results"]
+            attachments = self.get_attachments_from_content(page_id=page_id, start=start, limit=limit)["results"]
             if not attachments:
                 return "No attachments found"
             for attachment in attachments:
@@ -2726,6 +2722,34 @@ class Confluence(AtlassianRestAPI):
         ).headers["upm-token"]
         url = "rest/plugins/1.0/?token={upm_token}".format(upm_token=upm_token)
         return self.post(url, files=files, headers=self.no_check_headers)
+
+    def disable_plugin(self, plugin_key):
+        """
+        Disable a plugin
+        :param plugin_key:
+        :return:
+        """
+        app_headers = {
+            "X-Atlassian-Token": "nocheck",
+            "Content-Type": "application/vnd.atl.plugins+json",
+        }
+        url = "rest/plugins/1.0/{plugin_key}-key".format(plugin_key=plugin_key)
+        data = {"status": "disabled"}
+        return self.put(url, data=data, headers=app_headers)
+
+    def enable_plugin(self, plugin_key):
+        """
+        Enable a plugin
+        :param plugin_key:
+        :return:
+        """
+        app_headers = {
+            "X-Atlassian-Token": "nocheck",
+            "Content-Type": "application/vnd.atl.plugins+json",
+        }
+        url = "rest/plugins/1.0/{plugin_key}-key".format(plugin_key=plugin_key)
+        data = {"status": "enabled"}
+        return self.put(url, data=data, headers=app_headers)
 
     def delete_plugin(self, plugin_key):
         """
