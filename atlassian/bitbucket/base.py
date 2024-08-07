@@ -167,7 +167,7 @@ class BitbucketBase(AtlassianRestAPI):
             try:
                 value = datetime.strptime(value_str, self.CONF_TIMEFORMAT)
             except ValueError:
-                value = datetime.strptime(value_str, %Y-%m-%dT%H:%M:%S.%fZ,tzinfo=UTC)
+                value = datetime.strptime(value_str, "%Y-%m-%dT%H:%M:%S.%fZ", tzinfo="UTC")
         else:
             value = value_str
 
