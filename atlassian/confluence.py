@@ -37,6 +37,7 @@ class Confluence(AtlassianRestAPI):
     @staticmethod
     def _create_body(body, representation):
         if representation not in [
+            "atlas_doc_format",
             "editor",
             "export_view",
             "view",
