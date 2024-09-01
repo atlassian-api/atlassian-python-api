@@ -1378,7 +1378,7 @@ class Jira(AtlassianRestAPI):
         url = "{base_url}/{issue_key}?fields=labels".format(base_url=base_url, issue_key=issue_key)
         if self.advanced_mode:
             return self.get(url)
-        return self._get_response_content(url, fields=[("labels",)])
+        return self._get_response_content(url, fields=[("fields",), ("labels",)])
 
     def update_issue(self, issue_key, update):
         """
