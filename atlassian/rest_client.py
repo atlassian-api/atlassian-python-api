@@ -362,6 +362,34 @@ class AtlassianRestAPI(object):
                 log.error(e)
                 return response.text
 
+    def _get_response_content(
+        self,
+        *args,
+        fields,
+        **kwargs,
+    ):
+        """
+        :param fields: list of tuples in the form (field_name, default value (optional)).
+            Used for chaining dictionary value accession.
+            E.g. [("field1", "default1"), ("field2", "default2"), ("field3", )]
+        """
+        response = self.get(*args, **kwargs)
+        if "advanced_mode" in kwargs:
+            advanced_mode = kwargs["advanced_mode"]
+        else:
+            advanced_mode = self.advanced_mode
+
+        if not advanced_mode:  # dict
+            for field in fields:
+                response = response.get(*field)
+        else:  # requests.Response
+            first_field = fields[0]
+            response = response.json().get(*first_field)
+            for field in fields[1:]:
+                response = response.get(*field)
+
+        return response
+
     def post(
         self,
         path,
