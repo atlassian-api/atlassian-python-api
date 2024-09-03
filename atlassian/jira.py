@@ -1232,7 +1232,7 @@ class Jira(AtlassianRestAPI):
             return self.get(url, params=params)
         else:
             url = "{base_url}/{issue_key}?expand=changelog".format(base_url=base_url, issue_key=issue_key)
-            return (self.get(url) or {}).get("changelog", params)
+            return self._get_response_content(url, fields=[("changelog", params)])
 
     def issue_add_json_worklog(self, key, worklog):
         """
@@ -1378,7 +1378,7 @@ class Jira(AtlassianRestAPI):
         url = "{base_url}/{issue_key}?fields=labels".format(base_url=base_url, issue_key=issue_key)
         if self.advanced_mode:
             return self.get(url)
-        return (self.get(url) or {}).get("fields").get("labels")
+        return self._get_response_content(url, fields=[("fields",), ("labels",)])
 
     def update_issue(self, issue_key, update):
         """
@@ -1919,12 +1919,14 @@ class Jira(AtlassianRestAPI):
     def get_issue_status(self, issue_key):
         base_url = self.resource_url("issue")
         url = "{base_url}/{issue_key}?fields=status".format(base_url=base_url, issue_key=issue_key)
-        return (((self.get(url) or {}).get("fields") or {}).get("status") or {}).get("name") or {}
+        fields = [("fields",), ("status",), ("name",)]
+        return self._get_response_content(url, fields=fields) or {}
 
     def get_issue_status_id(self, issue_key):
         base_url = self.resource_url("issue")
         url = "{base_url}/{issue_key}?fields=status".format(base_url=base_url, issue_key=issue_key)
-        return (self.get(url) or {}).get("fields").get("status").get("id")
+        fields = [("fields",), ("status",), ("id",)]
+        return self._get_response_content(url, fields=fields)
 
     def get_issue_transitions_full(self, issue_key, transition_id=None, expand=None):
         """
@@ -2721,7 +2723,7 @@ class Jira(AtlassianRestAPI):
         """
         base_url = self.resource_url("project")
         url = "{base_url}/{projectIdOrKey}/role/{id}".format(base_url=base_url, projectIdOrKey=project_key, id=role_id)
-        return (self.get(url) or {}).get("actors")
+        return self._get_response_content(url, fields=[("actors",)])
 
     def delete_project_actors(self, project_key, role_id, actor, actor_type=None):
         """
@@ -3080,7 +3082,7 @@ class Jira(AtlassianRestAPI):
     def get_status_id_from_name(self, status_name):
         base_url = self.resource_url("status")
         url = "{base_url}/{name}".format(base_url=base_url, name=status_name)
-        return int((self.get(url) or {}).get("id"))
+        return int(self._get_response_content(url, fields=[("id",)]))
 
     def get_status_for_project(self, project_key):
         base_url = self.resource_url("project")
@@ -3181,7 +3183,7 @@ class Jira(AtlassianRestAPI):
         a name and a label for the outward and inward link relationship.
         """
         url = self.resource_url("issueLinkType")
-        return (self.get(url) or {}).get("issueLinkTypes")
+        return self._get_response_content(url, fields=[("issueLinkTypes",)])
 
     def get_issue_link_types_names(self):
         """
@@ -3712,7 +3714,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         params = {}
         if expand:
             params["expand"] = expand
-        return (self.get(url, params=params) or {}).get("permissionSchemes")
+        return self._get_response_content(url, params=params, fields=[("permissionSchemes",)])
 
     def get_permissionscheme(self, permission_id, expand=None):
         """
@@ -3768,7 +3770,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :return: list
         """
         url = self.resource_url("issuesecurityschemes")
-        return self.get(url).get("issueSecuritySchemes")
+        return self._get_response_content(url, fields=[("issueSecuritySchemes",)])
 
     def get_issue_security_scheme(self, scheme_id, only_levels=False):
         """
@@ -3785,7 +3787,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         url = "{base_url}/{scheme_id}".format(base_url=base_url, scheme_id=scheme_id)
 
         if only_levels is True:
-            return self.get(url).get("levels")
+            return self._get_response_content(url, fields=[("levels",)])
         else:
             return self.get(url)
 
