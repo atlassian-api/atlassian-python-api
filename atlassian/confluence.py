@@ -793,6 +793,7 @@ class Confluence(AtlassianRestAPI):
         representation="storage",
         editor=None,
         full_width=False,
+        status="current",
     ):
         """
         Create page from scratch
@@ -804,6 +805,7 @@ class Confluence(AtlassianRestAPI):
         :param representation: OPTIONAL: either Confluence 'storage' or 'wiki' markup format
         :param editor: OPTIONAL: v2 to be created in the new editor
         :param full_width: DEFAULT: False
+        :param status: either 'current' or 'draft'
         :return:
         """
         log.info('Creating %s "%s" -> "%s"', type, space, title)
@@ -811,6 +813,7 @@ class Confluence(AtlassianRestAPI):
         data = {
             "type": type,
             "title": title,
+            "status": status,
             "space": {"key": space},
             "body": self._create_body(body, representation),
             "metadata": {"properties": {}},
