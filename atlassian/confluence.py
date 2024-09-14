@@ -1340,7 +1340,7 @@ class Confluence(AtlassianRestAPI):
                 if not file_name:
                     file_name = attachment["id"]  # if the attachment has no title, use attachment_id as a filename
                 download_link = self.url + attachment["_links"]["download"]
-                r = self._session.get(f"{download_link}")
+                r = self._session.get(download_link)
                 file_path = os.path.join(path, file_name)
                 with open(file_path, "wb") as f:
                     f.write(r.content)
@@ -2922,7 +2922,7 @@ class Confluence(AtlassianRestAPI):
 
     def get_whiteboard(self, whiteboard_id):
         try:
-            url = f"/api/v2/whiteboards/{whiteboard_id}"
+            url = "/api/v2/whiteboards/%s" % (whiteboard_id)
             return self.get(url)
         except HTTPError as e:
             # Default 404 error handling is ambiguous
@@ -2935,7 +2935,7 @@ class Confluence(AtlassianRestAPI):
 
     def delete_whiteboard(self, whiteboard_id):
         try:
-            url = f"/api/v2/whiteboards/{whiteboard_id}"
+            url = "/api/v2/whiteboards/%s" % (whiteboard_id)
             return self.delete(url)
         except HTTPError as e:
             # # Default 404 error handling is ambiguous
@@ -3071,7 +3071,7 @@ class Confluence(AtlassianRestAPI):
         :param group_name: str - name of group to add user to
         :return: Current state of the group
         """
-        url = f"rest/api/user/{username}/group/{group_name}"
+        url = "rest/api/user/%s/group/%s" % (username, group_name)
         return self.put(url)
 
     def add_space_permissions(
