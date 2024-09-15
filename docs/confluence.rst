@@ -114,10 +114,12 @@ Page actions
 
     # Attach (upload) a file to a page, if it exists it will update the
     # automatically version the new file and keep the old one
+    # content_type is default to "application/binary"
     confluence.attach_file(filename, name=None, content_type=None, page_id=None, title=None, space=None, comment=None)
 
     # Attach (upload) a content to a page, if it exists it will update the
     # automatically version the new file and keep the old one
+    # content_type is default to "application/binary"
     confluence.attach_content(content, name=None, content_type=None, page_id=None, title=None, space=None, comment=None)
 
     # Download attachments from a page to local system. If path is None, current working directory will be used.
