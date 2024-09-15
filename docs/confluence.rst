@@ -43,7 +43,7 @@ Get page info
     confluence.get_draft_page_by_id(page_id, status='draft')
 
     # Get all page by label
-    confluence.get_all_pages_by_label(label, start=0, limit=50)
+    confluence.get_all_pages_by_label(label, start=0, limit=50, expand=None)
 
     # Get all pages from Space
     # content_type can be 'page' or 'blogpost'. Defaults to 'page'
