@@ -1214,7 +1214,8 @@ class Confluence(AtlassianRestAPI):
         :type  name: ``str``
         :param content: Contains the content which should be uploaded
         :type  content: ``binary``
-        :param content_type: Specify the HTTP content type. The default is
+        :param content_type: Specify the HTTP content type.
+                The default is "application/binary"
         :type  content_type: ``str``
         :param comment: A comment describing this upload/file
         :type  comment: ``str``
@@ -1296,6 +1297,7 @@ class Confluence(AtlassianRestAPI):
                      Is no name give the file name is used as name
         :type  name: ``str``
         :param content_type: Specify the HTTP content type. The default is
+                            The default is "application/binary"
         :type  content_type: ``str``
         :param comment: A comment describing this upload/file
         :type  comment: ``str``
