@@ -522,13 +522,14 @@ class Confluence(AtlassianRestAPI):
         # operate differently between different collaborative modes
         return self.get_page_by_id(page_id=page_id, expand=expand, status=status)
 
-    def get_all_pages_by_label(self, label, start=0, limit=50):
+    def get_all_pages_by_label(self, label, start=0, limit=50, expand=None):
         """
         Get all page by label
         :param label:
         :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
         :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
                       fixed system limits. Default: 50
+        :param expand: OPTIONAL: a comma separated list of properties to expand on the content
         :return:
         """
         url = "rest/api/content/search"
@@ -539,6 +540,8 @@ class Confluence(AtlassianRestAPI):
             params["start"] = start
         if limit:
             params["limit"] = limit
+        if expand:
+            params["expand"] = expand
 
         try:
             response = self.get(url, params=params)
