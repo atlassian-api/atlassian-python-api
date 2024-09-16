@@ -1,0 +1,7 @@
+responses[
+    '{"object": {"url": "https://confluence.atlassian-python.atlassian.net/display/Test", "title": "Unused link text", "status": {"resolved": false}}}'
+] = {
+    "id": 10000,
+    "self": "https://atlassian-python.atlassian.net/rest/api/2/issue/FOO-123/remotelink/10000",
+    "application": {},
+}
