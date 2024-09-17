@@ -1776,6 +1776,7 @@ class Jira(AtlassianRestAPI):
         icon_url=None,
         icon_title=None,
         status_resolved=False,
+        application: dict = {},
     ):
         """
         Add Remote Link to Issue, update url if global_id is passed
@@ -1787,6 +1788,7 @@ class Jira(AtlassianRestAPI):
         :param icon_url: str, OPTIONAL: Link to a 16x16 icon representing the type of the object in the remote system
         :param icon_title: str, OPTIONAL: Text for the tooltip of the main icon describing the type of the object in the remote system
         :param status_resolved: bool, OPTIONAL: if set to True, Jira renders the link strikethrough
+        :param application: dict, OPTIONAL: Application description
         """
         base_url = self.resource_url("issue")
         url = "{base_url}/{issue_key}/remotelink".format(base_url=base_url, issue_key=issue_key)
@@ -1802,6 +1804,8 @@ class Jira(AtlassianRestAPI):
             if icon_title:
                 icon_data["title"] = icon_title
             data["object"]["icon"] = icon_data
+        if application:
+            data["application"] = application
         return self.post(url, data=data)
 
     def get_issue_remote_link_by_id(self, issue_key, link_id):
