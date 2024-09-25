@@ -2330,6 +2330,7 @@ class Bitbucket(BitbucketBase):
         limit=None,
         until=None,
         since=None,
+        path=None,
     ):
         """
         Get commit list from repo
@@ -2347,6 +2348,7 @@ class Bitbucket(BitbucketBase):
                fixed system limits. Default by built-in method: None
         :param until: OPTIONAL: The commit ID or ref (inclusively) to retrieve commits before
         :param since: OPTIONAL: The commit ID or ref (exclusively) to retrieve commits after
+        :param path: OPTIONAL: An optional path to filter commits by
         :return:
         """
         url = self._url_commits(project_key, repository_slug)
@@ -2373,6 +2375,8 @@ class Bitbucket(BitbucketBase):
             params["since"] = since
         if until:
             params["until"] = until
+        if path:
+            params["path"] = path
         return self._get_paged(url, params=params)
 
     def get_commit_changes(self, project_key, repository_slug, hash_newest=None, merges="include", commit_id=None):
