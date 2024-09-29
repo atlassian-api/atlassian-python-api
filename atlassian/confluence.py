@@ -695,7 +695,7 @@ class Confluence(AtlassianRestAPI):
     def get_all_pages_by_space_ids_confluence_cloud(
         self,
         space_ids,
-        batch_size,
+        batch_size=250,
         sort=None,
         status=None,
         title=None,
