@@ -720,7 +720,7 @@ class Confluence(AtlassianRestAPI):
         path = "/api/v2/pages"
         params = {}
         if space_ids:
-            params["space-id"] = ','.join(space_ids)
+            params["space-id"] = ",".join(space_ids)
         if batch_size:
             params["limit"] = batch_size
         if sort:
@@ -741,8 +741,8 @@ class Confluence(AtlassianRestAPI):
                 _all_pages = _all_pages + pages
 
                 links = response.get("_links")
-                if links is not None and 'next' in links:
-                    path = response['_links']['next'].removeprefix('/wiki/')
+                if links is not None and "next" in links:
+                    path = response["_links"]["next"].removeprefix("/wiki/")
                     params = {}
                 else:
                     break
@@ -751,7 +751,8 @@ class Confluence(AtlassianRestAPI):
                 raise ApiValueError(
                     "The configured params cannot be interpreted by Confluence"
                     "Check the api documentation for valid values for status, expand, and sort params",
-                    reason=e,)
+                    reason=e,
+                )
             if e.response.status_code == 401:
                 raise HTTPError("Unauthorized (401)", response=response)
             raise
