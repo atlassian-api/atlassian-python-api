@@ -1730,20 +1730,21 @@ class Jira(AtlassianRestAPI):
             url += "/" + internal_id
         return self.get(url, params=params)
 
-    def get_issue_tree_recursive(self, issue_key, tree=[], depth=0):
+    def get_issue_tree_recursive(self, issue_key, tree=None, depth=None):
         """
-        Returns list that contains the  tree structure of the root issue, with all subtasks and inward linked issues.
-        (!) Function only returns child issues from the same jira instance or from instance to which api key has access to.
-        (!) User asssociated with API key must have access to the  all child issues in order to get them.
-        :param  jira issue_key:
-        :param tree: blank parameter used for recursion. Don't change it.
-        :param depth: blank parameter used for recursion. Don't change it.
-        :return: list of dictioanries, key is the parent issue key, value is the child/linked issue key
-
+        Returns a list that contains the tree structure of the root issue, with all subtasks and inward linked issues.
+        (!) Function only returns child issues from the same Jira instance or from an instance to which the API key has access.
+        :param issue_key: Jira issue key
+        :param tree: list to store the tree structure for recursion. Do not change it.
+        :param depth: current depth of the tree for recursion. Do not change it.
+        :return: list of dictionaries containing the tree structure. Dictionary element contains a key (parent issue) and value (child issue).
         """
-
+        if tree is None:
+            tree = []
+        if depth is None:
+            depth = 0
         # Check the recursion depth. In case of any bugs that would result in infinite recursion, this will prevent the function from crashing your app. Python default for REcursionError  is 1000
-        if depth > 50:
+        if depth > 150:
             raise Exception("Recursion depth exceeded")
         issue = self.get_issue(issue_key)
         issue_links = issue["fields"]["issuelinks"]
@@ -1761,9 +1762,9 @@ class Jira(AtlassianRestAPI):
         for subtask in subtasks:
             if subtask.get("key") is not None:
                 parent_issue_key = issue["key"]
-                if not [x for x in tree if subtask["key"] in x.keys()]:  # condition to avoid infinite recursion
+                if not [x for x in tree if subtask["key"] in x.keys()]:
                     tree.append({parent_issue_key: subtask["key"]})
-                    self.get_issue_tree_recursive(subtask["key"], tree, depth + 1)  # recursive call of the function
+                    self.get_issue_tree_recursive(subtask["key"], tree, depth + 1)
         return tree
 
     def create_or_update_issue_remote_links(
