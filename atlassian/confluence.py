@@ -692,6 +692,73 @@ class Confluence(AtlassianRestAPI):
 
         return response.get("results")
 
+    def get_all_pages_by_space_ids_confluence_cloud(
+        self,
+        space_ids,
+        batch_size=250,
+        sort=None,
+        status=None,
+        title=None,
+        body_format=None,
+    ):
+        """
+        Get all pages from a set of space ids:
+        https://developer.atlassian.com/cloud/confluence/rest/v2/api-group-page/#api-pages-get
+
+        :param space_ids: A Set of space IDs passed as a filter to Confluence
+        :param batch_size: OPTIONAL: The batch size of pages to retrieve from confluence per request MAX is 250.
+                                     Default: 250
+        :param sort: OPTIONAL: The order the pages are retrieved in.
+                               Valid values: id, -id, created-date, -created-date, modified-date, -modified-date, title, -title
+        :param status: OPTIONAL: Filter pages based on their status.
+                                 Valid values: current, archived, deleted, trashed
+                                 Default: current,archived
+        :param title: OPTIONAL: Filter pages based on their title.
+        :param body-format: OPTIONAL: The format of the body in the response. Valid values: storage, atlas_doc_format
+        :return:
+        """
+        path = "/api/v2/pages"
+        params = {}
+        if space_ids:
+            params["space-id"] = ",".join(space_ids)
+        if batch_size:
+            params["limit"] = batch_size
+        if sort:
+            params["sort"] = sort
+        if status:
+            params["status"] = status
+        if title:
+            params["title"] = title
+        if body_format:
+            params["body-format"] = body_format
+
+        _all_pages = []
+        try:
+            while True:
+                response = self.get(path, params=params)
+
+                pages = response.get("results")
+                _all_pages = _all_pages + pages
+
+                links = response.get("_links")
+                if links is not None and "next" in links:
+                    path = response["_links"]["next"].removeprefix("/wiki/")
+                    params = {}
+                else:
+                    break
+        except HTTPError as e:
+            if e.response.status_code == 400:
+                raise ApiValueError(
+                    "The configured params cannot be interpreted by Confluence"
+                    "Check the api documentation for valid values for status, expand, and sort params",
+                    reason=e,
+                )
+            if e.response.status_code == 401:
+                raise HTTPError("Unauthorized (401)", response=response)
+            raise
+
+        return _all_pages
+
     @deprecated(version="2.4.2", reason="Use get_all_restrictions_for_content()")
     def get_all_restictions_for_content(self, content_id):
         """Let's use the get_all_restrictions_for_content()"""
