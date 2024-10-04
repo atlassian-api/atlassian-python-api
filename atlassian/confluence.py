@@ -2657,7 +2657,6 @@ class Confluence(AtlassianRestAPI):
         url = "exportword?pageId={pageId}".format(pageId=page_id)
         return self.get(url, headers=headers, not_json_response=True)
 
-
     def export_space_pdf(self, url):
         try:
             running_task = True
@@ -2698,9 +2697,11 @@ class Confluence(AtlassianRestAPI):
         except IndexError as e:
             log.error(e)
             return None
+
     def get_space_export(self, space_key: str, export_type: str) -> str:
         def get_atl_request(url):
             # this is only applicable to html/csv/xml export
+            # getting atl_token used for XSRF protection
             response = self.get(url, advanced_mode=True)
             parsed_html = BeautifulSoup(response.text, "html.parser")
             atl_token = parsed_html.find("input", {"name": "atl_token"}).get("value")
@@ -2708,8 +2709,8 @@ class Confluence(AtlassianRestAPI):
         try:
             running_task = True
             headers = self.form_token_headers
-            print("Initiate PDF export from Confluence Cloud")
-            log.info("Initiate PDF export from Confluence Cloud")
+            print("Initiate " + str(export_type) +  " export from Confluence space " + str(space_key))
+            log.info("Initiate " + str(export_type) +  " export from Confluence space " + str(space_key))
             form_data = {}
             url = ''
             if export_type == "csv":
@@ -2736,7 +2737,6 @@ class Confluence(AtlassianRestAPI):
                     "includeComments": "true",
                     "confirm": "Export" }
             elif export_type == "pdf":
-
                 form_data = {
                  #   "atl_token": get_atl_request(f"spaces/flyingpdf/flyingpdf.action?key={space_key}"),
                     "synchronous": "false",
@@ -2748,26 +2748,25 @@ class Confluence(AtlassianRestAPI):
             url = f"/spaces/exportspace.action?key={space_key}"
             # bypass self.confluence_client.post method because it serializes form data as JSON which is wrong
             if export_type == "pdf":
-
                 url = self.url_joiner(url=self.url,
                                       path=f"spaces/flyingpdf/doflyingpdf.action?key={space_key}")
             elif export_type == "csv" or export_type == "html" or export_type == "xml":
                 url = self.url_joiner(url=self.url, path=f"spaces/doexportspace.action?key={space_key}")
+
+            # Sending a request that trigger the export
             response = self.session.post(url, headers=self.form_token_headers,
                                                            data=form_data)
-
             parsed_html = BeautifulSoup(response.text, "html.parser")
-            print(parsed_html)
+            # Getting the poll URL to get the export  progress status
             poll_url = parsed_html.find("meta", {"name": "ajs-pollURI"}).get("content")
-            running_task = True
             while running_task:
                 progress_response = self.get(poll_url)
                 if progress_response['complete']:
                     parsed_html = BeautifulSoup(progress_response['message'], "html.parser")
                     download_url = parsed_html.find("a", {"class": "space-export-download-path"}).get("href")
                     return self.url.replace('/wiki', '') + download_url
-                time.sleep(5)
-            return None
+                time.sleep(15)
+            return
         except Exception as e:
             print(e)
             return None
