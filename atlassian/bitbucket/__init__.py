@@ -2208,13 +2208,13 @@ class Bitbucket(BitbucketBase):
 
     def merge_pull_request(
         self,
-        project_key: str,
-        repository_slug: str,
-        pr_id: int,
-        merge_message: str,
-        close_source_branch: bool = False,
-        merge_strategy: Union[str, MergeStrategy] = MergeStrategy.MERGE_COMMIT,
-        pr_version: Optional[int] = None,
+        project_key,
+        repository_slug,
+        pr_id,
+        merge_message,
+        close_source_branch=False,
+        merge_strategy=MergeStrategy.MERGE_COMMIT,
+        pr_version=None,
     ):
         """
         Merge pull request
