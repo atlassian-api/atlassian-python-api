@@ -26,6 +26,9 @@ RUN apt install -y \
   python$PYTHON_VERSION-dev \
   python3-pip
 
+# Install curl
+RUN apt-get install -y curl
+
 # install distutils.util
 RUN if [ $PYTHON_VERSION = '3.7' ] ; then \
   apt install -y python$PYTHON_VERSION-distutils python3-distutils-extra python3-apt --reinstall ;\
@@ -38,6 +41,9 @@ RUN if [ $PYTHON_VERSION = '3.7' ] ; then \
   apt install -y python$PYTHON_VERSION-distutils python3-distutils-extra python3-apt --reinstall ; \
   curl -sS https://bootstrap.pypa.io/get-pip.py | python$PYTHON_VERSION ; \
   elif [ $PYTHON_VERSION = '3.12' ] ; then \
+  apt install -y python$PYTHON_VERSION-distutils python3-distutils-extra python3-apt --reinstall ; \
+  curl -sS https://bootstrap.pypa.io/get-pip.py | python$PYTHON_VERSION ; \
+  elif [ $PYTHON_VERSION = '3.13' ] ; then \
   apt install -y python$PYTHON_VERSION-distutils python3-distutils-extra python3-apt --reinstall ; \
   curl -sS https://bootstrap.pypa.io/get-pip.py | python$PYTHON_VERSION ; \
   else \
