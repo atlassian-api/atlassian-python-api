@@ -2669,7 +2669,7 @@ class Confluence(AtlassianRestAPI):
         """
 
         def get_atl_request(url: str):
-            #  Nested fucntion  used to get atl_token used for XSRF protection. this is only applicable to html/csv/xml spacee exports
+            #  Nested function  used to get atl_token used for XSRF protection. this is only applicable to html/csv/xml space exports
             try:
                 response = self.get(url, advanced_mode=True)
                 parsed_html = BeautifulSoup(response.text, "html.parser")
