@@ -50,6 +50,9 @@ docker-qa-build: Dockerfile.qa requirements.txt requirements-dev.txt
 		--build-arg PYTHON_VERSION=$(PYTHON_VERSION) \
 		--file $< .
 
+docker-fmt: docker-qa-build
+	docker run --rm -v `pwd`:/atlassian-python-api $(QA_CONTAINER) tox -e black_fmt
+
 docker-atlassian-standalone: Dockerfile.standalone
 	docker build \
 		--tag $(ATLASSIAN_SDK) \
