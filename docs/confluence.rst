@@ -240,6 +240,9 @@ Get spaces info
     # Get Space permissions set based on json-rpc call
     confluence.get_space_permissions(space_key)
 
+    # Get Space export download url
+    confluence.get_space_export(space_key, export_type)
+
 Users and Groups
 ----------------
 
