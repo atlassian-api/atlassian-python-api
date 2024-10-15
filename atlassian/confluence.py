@@ -2657,77 +2657,52 @@ class Confluence(AtlassianRestAPI):
         url = "exportword?pageId={pageId}".format(pageId=page_id)
         return self.get(url, headers=headers, not_json_response=True)
 
-    def export_space_pdf(self, url):
-        try:
-            running_task = True
-            headers = self.form_token_headers
-            log.info("Initiate PDF export from Confluence Cloud")
-            response = self.session.post(url, headers=headers)
-            print(response.text)
-            response_string = response.decode(encoding="utf-8", errors="ignore")
-            task_id = response_string.split('name="ajs-taskId" content="')[1].split('">')[0]
-            poll_url = "/services/api/v1/task/{0}/progress".format(task_id)
-            while running_task:
-                log.info("Check if export task has completed.")
-                progress_response = self.get(poll_url)
-                print(progress_response)
-                percentage_complete = int(progress_response.get("progress", 0))
-                task_state = progress_response.get("state")
-                if task_state == "FAILED":
-                    log.error("PDF conversion not successful.")
-                    return None
-                elif percentage_complete == 100:
-                    running_task = False
-                    log.info("Task completed - {task_state}".format(task_state=task_state))
-                    log.debug("Extract task results to download PDF.")
-                    task_result_url = progress_response.get("result")
-                else:
-                    log.info(
-                        "{percentage_complete}% - {task_state}".format(
-                            percentage_complete=percentage_complete, task_state=task_state
-                        )
-                    )
-                    time.sleep(3)
-            log.debug("Task successfully done, querying the task result for the download url")
-            # task result url starts with /wiki, remove it.
-            task_content = self.get(task_result_url[5:], not_json_response=True)
-            download_url = task_content.decode(encoding="utf-8", errors="strict")
-            log.debug("Successfully got the download url")
-            return download_url
-        except IndexError as e:
-            log.error(e)
-            return None
-
     def get_space_export(self, space_key: str, export_type: str) -> str:
-        def get_atl_request(url):
-            # this is only applicable to html/csv/xml export
-            # getting atl_token used for XSRF protection
-            response = self.get(url, advanced_mode=True)
-            parsed_html = BeautifulSoup(response.text, "html.parser")
-            atl_token = parsed_html.find("input", {"name": "atl_token"}).get("value")
-            return atl_token
+        """
+        Export a Confluence space to a file of the specified type.
+        (!) This method was developed for Confluence Cloud and may not work with Confluence on-prem.
+        (!) This is an experimental method that does not trigger an officially supported REST endpoint. It may break if Atlassian changes the space export front-end logic.
+
+        :param space_key: The key of the space to export.
+        :param export_type: The type of export to perform. Valid values are: 'html', 'csv', 'xml', 'pdf'.
+        :return: The URL to download the exported file.
+        """
+
+        def get_atl_request(url: str):
+            #  Nested fucntion  used to get atl_token used for XSRF protection. this is only applicable to html/csv/xml spacee exports
+            try:
+                response = self.get(url, advanced_mode=True)
+                parsed_html = BeautifulSoup(response.text, "html.parser")
+                atl_token = parsed_html.find("input", {"name": "atl_token"}).get("value")
+                return atl_token
+            except Exception as e:
+                raise ApiError("Problems with getting the atl_token for get_space_export method :", reason=e)
+
+        # Checks if space_ke parameter is valid and  if api_token has relevant permissions to space
+        self.get_space(space_key=space_key, expand="permissions")
+
         try:
-            running_task = True
-            headers = self.form_token_headers
-            print("Initiate " + str(export_type) +  " export from Confluence space " + str(space_key))
-            log.info("Initiate " + str(export_type) +  " export from Confluence space " + str(space_key))
-            form_data = {}
-            url = ''
+            log.info(
+                "Initiated experimental get_space_export method for export type: "
+                + export_type
+                + " from Confluence space: "
+                + space_key
+            )
             if export_type == "csv":
                 form_data = {
                     "atl_token": get_atl_request(f"spaces/exportspacecsv.action?key={space_key}"),
                     "exportType": "TYPE_CSV",
                     "contentOption": "all",
                     "includeComments": "true",
-                    "confirm": "Export"
+                    "confirm": "Export",
                 }
             elif export_type == "html":
                 form_data = {
                     "atl_token": get_atl_request(f"spaces/exportspacehtml.action?key={space_key}"),
                     "exportType": "TYPE_HTML",
                     "contentOption": "visibleOnly",
-                    "includeComments": True,
-                    "confirm": "Export"
+                    "includeComments": "true",
+                    "confirm": "Export",
                 }
             elif export_type == "xml":
                 form_data = {
@@ -2735,42 +2710,48 @@ class Confluence(AtlassianRestAPI):
                     "exportType": "TYPE_XML",
                     "contentOption": "all",
                     "includeComments": "true",
-                    "confirm": "Export" }
-            elif export_type == "pdf":
-                form_data = {
-                 #   "atl_token": get_atl_request(f"spaces/flyingpdf/flyingpdf.action?key={space_key}"),
-                    "synchronous": "false",
-                    "contentOption": "visibleOnly",
-                    "confirm": "Export"
+                    "confirm": "Export",
                 }
+            elif export_type == "pdf":
+                url = "spaces/flyingpdf/doflyingpdf.action?key=" + space_key
+                log.info("Initiate PDF  space export from space " + str(space_key))
+                return self.get_pdf_download_url_for_confluence_cloud(url)
             else:
-                raise ValueError("Invalid export type")
-            url = f"/spaces/exportspace.action?key={space_key}"
-            # bypass self.confluence_client.post method because it serializes form data as JSON which is wrong
-            if export_type == "pdf":
-                url = self.url_joiner(url=self.url,
-                                      path=f"spaces/flyingpdf/doflyingpdf.action?key={space_key}")
-            elif export_type == "csv" or export_type == "html" or export_type == "xml":
-                url = self.url_joiner(url=self.url, path=f"spaces/doexportspace.action?key={space_key}")
+                raise ValueError("Invalid export_type parameter value. Valid values are: 'html/csv/xml/pdf'")
+            url = self.url_joiner(url=self.url, path=f"spaces/doexportspace.action?key={space_key}")
 
-            # Sending a request that trigger the export
-            response = self.session.post(url, headers=self.form_token_headers,
-                                                           data=form_data)
+            # Sending a POST request that triggers the space export.
+            response = self.session.post(url, headers=self.form_token_headers, data=form_data)
             parsed_html = BeautifulSoup(response.text, "html.parser")
-            # Getting the poll URL to get the export  progress status
-            poll_url = parsed_html.find("meta", {"name": "ajs-pollURI"}).get("content")
+            # Getting the poll URL to get the export progress status
+            try:
+                poll_url = parsed_html.find("meta", {"name": "ajs-pollURI"}).get("content")
+            except Exception as e:
+                raise ApiError("Problems with getting the poll_url for get_space_export method :", reason=e)
+            running_task = True
             while running_task:
-                progress_response = self.get(poll_url)
-                if progress_response['complete']:
-                    parsed_html = BeautifulSoup(progress_response['message'], "html.parser")
-                    download_url = parsed_html.find("a", {"class": "space-export-download-path"}).get("href")
-                    return self.url.replace('/wiki', '') + download_url
-                time.sleep(15)
-            return
-        except Exception as e:
-            print(e)
-            return None
+                try:
+                    progress_response = self.get(poll_url)
+                    if progress_response["complete"]:
+                        parsed_html = BeautifulSoup(progress_response["message"], "html.parser")
+                        download_url = parsed_html.find("a", {"class": "space-export-download-path"}).get("href")
+                        if self.url in download_url:
+                            return download_url
+                        else:
+                            combined_url = self.url + download_url
+                            # Ensure only one /wiki is included in the path
+                            if combined_url.count("/wiki") > 1:
+                                combined_url = combined_url.replace("/wiki/wiki", "/wiki")
+                            return combined_url
+                    time.sleep(15)
+                except Exception as e:
+                    raise ApiError(
+                        "Encountered error during space export status check from space " + space_key, reason=e
+                    )
 
+            return "None"  # Return None if the while loop does not return a value
+        except Exception as e:
+            raise ApiError("Encountered error during space export from space " + space_key, reason=e)
 
     def export_page(self, page_id):
         """
@@ -3020,6 +3001,7 @@ class Confluence(AtlassianRestAPI):
         and provides a link to download the PDF once the process completes.
         This functions polls the long-running task page and returns the
         download url of the PDF.
+        This method is used in get_space_export() method for space-> PDF export.
         :param url: URL to initiate PDF export
         :return: Download url for PDF file
         """
