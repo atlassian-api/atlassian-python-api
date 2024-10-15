@@ -2732,6 +2732,7 @@ class Confluence(AtlassianRestAPI):
             while running_task:
                 try:
                     progress_response = self.get(poll_url)
+                    log.info("Space" + space_key + " export status: " + progress_response["message"])
                     if progress_response["complete"]:
                         parsed_html = BeautifulSoup(progress_response["message"], "html.parser")
                         download_url = parsed_html.find("a", {"class": "space-export-download-path"}).get("href")
@@ -2743,7 +2744,7 @@ class Confluence(AtlassianRestAPI):
                             if combined_url.count("/wiki") > 1:
                                 combined_url = combined_url.replace("/wiki/wiki", "/wiki")
                             return combined_url
-                    time.sleep(15)
+                    time.sleep(30)
                 except Exception as e:
                     raise ApiError(
                         "Encountered error during space export status check from space " + space_key, reason=e
