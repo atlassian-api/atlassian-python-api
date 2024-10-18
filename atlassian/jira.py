@@ -599,7 +599,7 @@ class Jira(AtlassianRestAPI):
         return self.get(url)
 
     def create_component(self, component):
-        log.warning('Creating component "%s"', component["name"])
+        log.info('Creating component "%s"', component["name"])
         base_url = self.resource_url("component")
         url = "{base_url}/".format(base_url=base_url)
         return self.post(url, data=component)
@@ -610,7 +610,7 @@ class Jira(AtlassianRestAPI):
         return self.put(url, data=component)
 
     def delete_component(self, component_id):
-        log.warning('Deleting component "%s"', component_id)
+        log.info('Deleting component "%s"', component_id)
         base_url = self.resource_url("component")
         return self.delete("{base_url}/{component_id}".format(base_url=base_url, component_id=component_id))
 
@@ -965,7 +965,7 @@ class Jira(AtlassianRestAPI):
         :param swap_group: str - swap group
         :return:
         """
-        log.warning("Removing group...")
+        log.info("Removing group: %s ", name)
         url = self.resource_url("group")
         if swap_group is not None:
             params = {"groupname": name, "swapGroup": swap_group}
@@ -1030,7 +1030,7 @@ class Jira(AtlassianRestAPI):
         :param group_name: str
         :return:
         """
-        log.warning("Removing user from a group...")
+        log.info("Removing user: %s from a group: %s", username, group_name)
         url = self.resource_url("group/user")
         url_domain = self.url
         if "atlassian.net" in url_domain:
@@ -1422,7 +1422,7 @@ class Jira(AtlassianRestAPI):
         :param issue_key: str
         :param attachment: IO Object
         """
-        log.warning("Adding attachment...")
+        log.info("Adding attachment:  %s", attachment)
         base_url = self.resource_url("issue")
         url = "{base_url}/{issue_key}/attachments".format(base_url=base_url, issue_key=issue_key)
         if attachment:
@@ -1472,13 +1472,13 @@ class Jira(AtlassianRestAPI):
         else:
             params["deleteSubtasks"] = "false"
 
-        log.warning("Removing issue %s...", issue_id_or_key)
+        log.info("Removing issue %s...", issue_id_or_key)
 
         return self.delete(url, params=params)
 
     # @todo merge with edit_issue method
     def issue_update(self, issue_key, fields):
-        log.warning('Updating issue "%s" with "%s"', issue_key, fields)
+        log.info('Updating issue "%s" with "%s"', issue_key, fields)
         base_url = self.resource_url("issue")
         url = "{base_url}/{issue_key}".format(base_url=base_url, issue_key=issue_key)
         return self.put(url, data={"fields": fields})
@@ -1512,7 +1512,7 @@ class Jira(AtlassianRestAPI):
         :param user:
         :return:
         """
-        log.warning('Adding user %s to "%s" watchers', user, issue_key)
+        log.info('Adding user %s to "%s" watchers', user, issue_key)
         data = user
         base_url = self.resource_url("issue")
         return self.post(
@@ -1527,7 +1527,7 @@ class Jira(AtlassianRestAPI):
         :param user:
         :return:
         """
-        log.warning('Deleting user %s from "%s" watchers', user, issue_key)
+        log.info('Deleting user %s from "%s" watchers', user, issue_key)
         params = {"username": user}
         base_url = self.resource_url("issue")
         return self.delete(
@@ -1613,7 +1613,7 @@ class Jira(AtlassianRestAPI):
 
     # @todo refactor and merge with create_issue method
     def issue_create(self, fields):
-        log.warning('Creating issue "%s"', fields["summary"])
+        log.info('Creating issue "%s"', fields["summary"])
         url = self.resource_url("issue")
         return self.post(url, data={"fields": fields})
 
@@ -2141,7 +2141,7 @@ class Jira(AtlassianRestAPI):
                              Default:false.
         :return:
         """
-        log.warning("Creating user %s", display_name)
+        log.info("Creating user %s", display_name)
         data = {
             "name": username,
             "emailAddress": email,

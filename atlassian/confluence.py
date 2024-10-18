@@ -762,7 +762,6 @@ class Confluence(AtlassianRestAPI):
     @deprecated(version="2.4.2", reason="Use get_all_restrictions_for_content()")
     def get_all_restictions_for_content(self, content_id):
         """Let's use the get_all_restrictions_for_content()"""
-        log.warning("Please, be informed that is deprecated as typo naming")
         return self.get_all_restrictions_for_content(content_id=content_id)
 
     def get_all_restrictions_for_content(self, content_id):
@@ -2284,7 +2283,7 @@ class Confluence(AtlassianRestAPI):
         :param name: str
         :return:
         """
-        log.warning("Removing group...")
+        log.info("Removing group:  %s  during Confluence remove_group method execution", name)
         url = "rest/api/admin/group/{groupName}".format(groupName=name)
 
         try:
@@ -2714,7 +2713,7 @@ class Confluence(AtlassianRestAPI):
                 }
             elif export_type == "pdf":
                 url = "spaces/flyingpdf/doflyingpdf.action?key=" + space_key
-                log.info("Initiate PDF  space export from space " + str(space_key))
+                log.info("Initiated PDF  space export")
                 return self.get_pdf_download_url_for_confluence_cloud(url)
             else:
                 raise ValueError("Invalid export_type parameter value. Valid values are: 'html/csv/xml/pdf'")

@@ -118,7 +118,7 @@ class Insight(AtlassianRestAPI):
         """
         if self.cloud:
             raise NotImplementedError
-        log.warning("Adding attachment...")
+        log.info("Adding attachment...")
         url = "rest/insight/1.0/attachments/object/{objectId}".format(objectId=object_id)
         with open(filename, "rb") as attachment:
             files = {"file": attachment}
@@ -131,7 +131,7 @@ class Insight(AtlassianRestAPI):
         """
         if self.cloud:
             raise NotImplementedError
-        log.warning("Adding attachment...")
+        log.info("Deleting attachment...")
         url = "rest/insight/1.0/attachments/{attachmentId}".format(attachmentId=attachment_id)
         return self.delete(url)
 
@@ -373,7 +373,6 @@ class Insight(AtlassianRestAPI):
     @deprecated(version="3.29.0", reason="Use get_object_reference_info()")
     def get_object_referenceinfo(self, object_id):
         """Let's use the get_object_reference_info()"""
-        log.warning("Please, be informed that is deprecated as typo naming")
         self.get_object_reference_info(object_id)
 
     def get_object_reference_info(self, object_id):
