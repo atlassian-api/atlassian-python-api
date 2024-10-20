@@ -1,7 +1,6 @@
 # coding=utf-8
 import logging
 from enum import Enum
-from typing import Optional, Union
 
 from deprecated import deprecated
 from requests import HTTPError
