@@ -136,6 +136,24 @@ class Confluence(AtlassianRestAPI):
         else:
             return False
 
+    def share_with_others(self,page_id:str, group:list, message:str):
+        """
+        Notify members (currently only groups implemented) about something on that page
+        """
+        url = "rest/share-page/latest/share"
+        params = {
+            "contextualPageId": page_id,
+            #"emails": [],
+            "entityId": page_id,
+            "entityType": "page",
+            "groups": group,
+            "note": message
+            #"users":[]
+        }
+        r = self.post(url, json=params,headers={"contentType":"application/json; charset=utf-8"},advanced_mode=True,)
+        if r.status_code != 200:
+            raise Exception(f"failed sharing content {r.status_code}: {r.text}")
+    
     def get_page_child_by_type(self, page_id, type="page", start=None, limit=None, expand=None):
         """
         Provide content by type (page, blog, comment)
