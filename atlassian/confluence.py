@@ -1449,9 +1449,11 @@ class Confluence(AtlassianRestAPI):
         :param version: file version
         :return:
         """
-        return self.delete(
-            "rest/experimental/content/{id}/version/{versionId}".format(id=attachment_id, versionId=version)
-        )
+        if self.cloud:
+            url = "rest/api/content/{id}/version/{versionId}".format(id=attachment_id, versionId=version)
+        else:
+            url = "rest/experimental/content/{id}/version/{versionId}".format(id=attachment_id, versionId=version)
+        return self.delete(url)
 
     def remove_page_attachment_keep_version(self, page_id, filename, keep_last_versions):
         """
@@ -1488,7 +1490,10 @@ class Confluence(AtlassianRestAPI):
         :return
         """
         params = {"limit": limit, "start": start}
-        url = "rest/experimental/content/{}/version".format(attachment_id)
+        if self.cloud:
+            url = "rest/api/content/{id}/version".format(id=attachment_id)
+        else:
+            url = "rest/experimental/content/{id}/version".format(id=attachment_id)
         return (self.get(url, params=params) or {}).get("results")
 
     # @todo prepare more attachments info
