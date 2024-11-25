@@ -1906,6 +1906,20 @@ class Bitbucket(BitbucketBase):
             params["limit"] = limit
         return self._get_paged(url, params)
 
+    def assign_pull_request_participant_role(self, project_key: str, repository_slug: str, pull_request_id: int, role: str, user: str) -> dict:
+        """
+        Assign a role to a user for a pull request
+        :param project_key: The project key
+        :param repository_slug: The repository key
+        :param pull_request_id: The pull request id
+        :param role: The role to assign, currently it only accepts REVIEWER
+        :param user: The user to assign the role to
+        :return:
+        """
+        url = self._url_pull_request_participants(project_key, repository_slug, pull_request_id)
+        data = {"role": role, "user": {"name": user}}
+        return self.post(url, data=data)
+
     def get_dashboard_pull_requests(
         self,
         start=0,
@@ -2103,6 +2117,35 @@ class Bitbucket(BitbucketBase):
         url = self._url_pull_request_comment(project_key, repository_slug, pull_request_id, comment_id)
         data = {"version": comment_version}
         return self.delete(url, params=data)
+
+    def _url_pull_request_blocker_comments(self, project_key, repository_slug, pull_request_id) -> str:
+        url = "{}/blocker-comments".format(self._url_pull_request(project_key, repository_slug, pull_request_id))
+        return url
+
+    def add_pull_request_blocker_comment(self, project_key: str, repository_slug: str, pull_request_id: int, text: dict, severity: str) -> dict:
+        """
+        Add a comment to a pull request that blocks the merge
+        :param project_key: The project key
+        :param repository_slug: The repository key
+        :param pull_request_id: The pull request id
+        :param text: The text of the comment
+        :param severity: The severity of the comment
+        :return:
+        """
+        url = self._url_pull_request_blocker_comments(project_key, repository_slug, pull_request_id)
+        data = {"text": text, "severity": severity}
+        return self.post(url, data=data)
+
+    def search_pull_request_blocker_comment(self, project_key: str, repository_slug: str, pull_request_id: int) -> dict:
+        """
+        Get all comments that block the merge of a pull request
+        :param project_key: The project key
+        :param repository_slug: The repository key
+        :param pull_request_id: The pull request id
+        :return:
+        """
+        url = self._url_pull_request_blocker_comments(project_key, repository_slug, pull_request_id)
+        return self.get(url)
 
     def decline_pull_request(self, project_key, repository_slug, pr_id, pr_version):
         """
