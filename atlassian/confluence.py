@@ -1400,14 +1400,14 @@ class Confluence(AtlassianRestAPI):
             comment=comment,
         )
 
-    def download_attachments_from_page(self, page_id, save_path=None, start=0, limit=50, filename=None, to_memory=False):
+    def download_attachments_from_page(self, page_id, path=None, start=0, limit=50, filename=None, to_memory=False):
         """
         Downloads attachments from a Confluence page. Supports downloading all files or a specific file. 
         Files can either be saved to disk or returned as BytesIO objects for in-memory handling.
 
         :param page_id: str
             The ID of the Confluence page to fetch attachments from.
-        :param save_path: str, optional
+        :param path: str, optional
             Directory where attachments will be saved. If None, defaults to the current working directory.
             Ignored if `to_memory` is True.
         :param start: int, optional
@@ -1423,14 +1423,14 @@ class Confluence(AtlassianRestAPI):
             - If `to_memory` is True, returns a dictionary {filename: BytesIO object}.
             - If `to_memory` is False, returns a summary dict: {"attachments_downloaded": int, "path": str}.
         :raises:
-            - FileNotFoundError: If the specified save_path does not exist.
-            - PermissionError: If there are permission issues with the specified save_path.
+            - FileNotFoundError: If the specified path does not exist.
+            - PermissionError: If there are permission issues with the specified path.
             - requests.HTTPError: If the HTTP request to fetch an attachment fails.
             - Exception: For any unexpected errors.
         """
-        # Default save_path to current working directory if not provided
-        if not to_memory and save_path is None:
-            save_path = os.getcwd()
+        # Default path to current working directory if not provided
+        if not to_memory and path is None:
+            path = os.getcwd()
 
         try:
             # Fetch attachments based on the specified parameters
@@ -1461,7 +1461,7 @@ class Confluence(AtlassianRestAPI):
                     downloaded_files[file_name] = file_obj
                 else:
                     # Save file to disk
-                    file_path = os.path.join(save_path, file_name)
+                    file_path = os.path.join(path, file_name)
                     with open(file_path, "wb") as file:
                         file.write(response.content)
 
@@ -1469,12 +1469,12 @@ class Confluence(AtlassianRestAPI):
             if to_memory:
                 return downloaded_files
             else:
-                return {"attachments_downloaded": len(attachments), "path": save_path}
+                return {"attachments_downloaded": len(attachments), "path": path}
 
         except NotADirectoryError:
-            raise FileNotFoundError(f"The directory '{save_path}' does not exist.")
+            raise FileNotFoundError(f"The directory '{path}' does not exist.")
         except PermissionError:
-            raise PermissionError(f"Permission denied when trying to save files to '{save_path}'.")
+            raise PermissionError(f"Permission denied when trying to save files to '{path}'.")
         except requests.HTTPError as http_err:
             raise Exception(f"HTTP error occurred while downloading attachments: {http_err}")
         except Exception as err:
