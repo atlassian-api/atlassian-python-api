@@ -1,15 +1,25 @@
 # coding=utf-8
+import io
+import json
 import logging
 import os
-import time
-import json
 import re
-from requests import HTTPError
-import requests
-from deprecated import deprecated
+import time
+
 from bs4 import BeautifulSoup
+from deprecated import deprecated
+import requests
+from requests import HTTPError
+
 from atlassian import utils
-from .errors import ApiError, ApiNotFoundError, ApiPermissionError, ApiValueError, ApiConflictError, ApiNotAcceptable
+from .errors import (
+    ApiConflictError,
+    ApiError,
+    ApiNotAcceptable,
+    ApiNotFoundError,
+    ApiPermissionError,
+    ApiValueError,
+)
 from .rest_client import AtlassianRestAPI
 
 log = logging.getLogger(__name__)
@@ -1390,40 +1400,85 @@ class Confluence(AtlassianRestAPI):
             comment=comment,
         )
 
-    def download_attachments_from_page(self, page_id, path=None, start=0, limit=50):
+    def download_attachments_from_page(self, page_id, save_path=None, start=0, limit=50, filename=None, to_memory=False):
         """
-        Downloads all attachments from a page
-        :param page_id:
-        :param path: OPTIONAL: path to directory where attachments will be saved. If None, current working directory will be used.
-        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
-        :param limit: OPTIONAL: The limit of the number of attachments to return, this may be restricted by
-                                fixed system limits. Default: 50
-        :return info message: number of saved attachments + path to directory where attachments were saved:
+        Downloads attachments from a Confluence page. Supports downloading all files or a specific file. 
+        Files can either be saved to disk or returned as BytesIO objects for in-memory handling.
+
+        :param page_id: str
+            The ID of the Confluence page to fetch attachments from.
+        :param save_path: str, optional
+            Directory where attachments will be saved. If None, defaults to the current working directory.
+            Ignored if `to_memory` is True.
+        :param start: int, optional
+            The start point for paginated attachment fetching. Default is 0. Ignored if `filename` is specified.
+        :param limit: int, optional
+            The maximum number of attachments to fetch per request. Default is 50. Ignored if `filename` is specified.
+        :param filename: str, optional
+            The name of a specific file to download. If provided, only this file will be fetched.
+        :param to_memory: bool, optional
+            If True, attachments are returned as a dictionary of {filename: BytesIO object}.
+            If False, files are written to the specified directory on disk.
+        :return:
+            - If `to_memory` is True, returns a dictionary {filename: BytesIO object}.
+            - If `to_memory` is False, returns a summary dict: {"attachments_downloaded": int, "path": str}.
+        :raises:
+            - FileNotFoundError: If the specified save_path does not exist.
+            - PermissionError: If there are permission issues with the specified save_path.
+            - requests.HTTPError: If the HTTP request to fetch an attachment fails.
+            - Exception: For any unexpected errors.
         """
-        if path is None:
-            path = os.getcwd()
+        # Default save_path to current working directory if not provided
+        if not to_memory and save_path is None:
+            save_path = os.getcwd()
+
         try:
-            attachments = self.get_attachments_from_content(page_id=page_id, start=start, limit=limit)["results"]
-            if not attachments:
-                return "No attachments found"
+            # Fetch attachments based on the specified parameters
+            if filename:
+                # Fetch specific file by filename
+                attachments = self.get_attachments_from_content(page_id=page_id, filename=filename)["results"]
+                if not attachments:
+                    return f"No attachment with filename '{filename}' found on the page."
+            else:
+                # Fetch all attachments with pagination
+                attachments = self.get_attachments_from_content(page_id=page_id, start=start, limit=limit)["results"]
+                if not attachments:
+                    return "No attachments found on the page."
+
+            # Prepare to handle downloads
+            downloaded_files = {}
             for attachment in attachments:
-                file_name = attachment["title"]
-                if not file_name:
-                    file_name = attachment["id"]  # if the attachment has no title, use attachment_id as a filename
+                file_name = attachment["title"] or attachment["id"]  # Use attachment ID if title is unavailable
                 download_link = self.url + attachment["_links"]["download"]
-                r = self._session.get(download_link)
-                file_path = os.path.join(path, file_name)
-                with open(file_path, "wb") as f:
-                    f.write(r.content)
+
+                # Fetch the file content
+                response = self._session.get(download_link)
+                response.raise_for_status()  # Raise error if request fails
+
+                if to_memory:
+                    # Store in BytesIO object
+                    file_obj = io.BytesIO(response.content)
+                    downloaded_files[file_name] = file_obj
+                else:
+                    # Save file to disk
+                    file_path = os.path.join(save_path, file_name)
+                    with open(file_path, "wb") as file:
+                        file.write(response.content)
+
+            # Return results based on storage mode
+            if to_memory:
+                return downloaded_files
+            else:
+                return {"attachments_downloaded": len(attachments), "path": save_path}
+
         except NotADirectoryError:
-            raise NotADirectoryError("Verify if directory path is correct and/or if directory exists")
+            raise FileNotFoundError(f"The directory '{save_path}' does not exist.")
         except PermissionError:
-            raise PermissionError(
-                "Directory found, but there is a problem with saving file to this directory. Check directory permissions"
-            )
-        except Exception as e:
-            raise e
-        return {"attachments downloaded": len(attachments), " to path ": path}
+            raise PermissionError(f"Permission denied when trying to save files to '{save_path}'.")
+        except requests.HTTPError as http_err:
+            raise Exception(f"HTTP error occurred while downloading attachments: {http_err}")
+        except Exception as err:
+            raise Exception(f"An unexpected error occurred: {err}")
 
     def delete_attachment(self, page_id, filename, version=None):
         """
