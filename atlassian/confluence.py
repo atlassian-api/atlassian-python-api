@@ -1438,7 +1438,7 @@ class Confluence(AtlassianRestAPI):
                 # Fetch specific file by filename
                 attachments = self.get_attachments_from_content(page_id=page_id, filename=filename)["results"]
                 if not attachments:
-                    return f"No attachment with filename '{filename}' found on the page."
+                    return "No attachment with filename '{0}' found on the page.".format(filename)
             else:
                 # Fetch all attachments with pagination
                 attachments = self.get_attachments_from_content(page_id=page_id, start=start, limit=limit)["results"]
@@ -1472,13 +1472,13 @@ class Confluence(AtlassianRestAPI):
                 return {"attachments_downloaded": len(attachments), "path": path}
 
         except NotADirectoryError:
-            raise FileNotFoundError(f"The directory '{path}' does not exist.")
+            raise FileNotFoundError("The directory '{path}' does not exist.".format(path=path))
         except PermissionError:
-            raise PermissionError(f"Permission denied when trying to save files to '{path}'.")
+            raise PermissionError("Permission denied when trying to save files to '{path}'.".format(path=path))
         except requests.HTTPError as http_err:
-            raise Exception(f"HTTP error occurred while downloading attachments: {http_err}")
+            raise Exception("HTTP error occurred while downloading attachments: {http_err}".format(http_err=http_err))
         except Exception as err:
-            raise Exception(f"An unexpected error occurred: {err}")
+            raise Exception("An unexpected error occurred: {error}".format(error=err))
 
     def delete_attachment(self, page_id, filename, version=None):
         """
@@ -2749,7 +2749,7 @@ class Confluence(AtlassianRestAPI):
             )
             if export_type == "csv":
                 form_data = {
-                    "atl_token": get_atl_request(f"spaces/exportspacecsv.action?key={space_key}"),
+                    "atl_token": get_atl_request("spaces/exportspacecsv.action?key={space_key}".format(space_key=space_key)),
                     "exportType": "TYPE_CSV",
                     "contentOption": "all",
                     "includeComments": "true",
@@ -2757,7 +2757,7 @@ class Confluence(AtlassianRestAPI):
                 }
             elif export_type == "html":
                 form_data = {
-                    "atl_token": get_atl_request(f"spaces/exportspacehtml.action?key={space_key}"),
+                    "atl_token": get_atl_request("spaces/exportspacehtml.action?key={space_key}".format(space_key=space_key)),
                     "exportType": "TYPE_HTML",
                     "contentOption": "visibleOnly",
                     "includeComments": "true",
@@ -2765,7 +2765,7 @@ class Confluence(AtlassianRestAPI):
                 }
             elif export_type == "xml":
                 form_data = {
-                    "atl_token": get_atl_request(f"spaces/exportspacexml.action?key={space_key}"),
+                    "atl_token": get_atl_request("spaces/exportspacexml.action?key={space_key}".format(space_key=space_key)),
                     "exportType": "TYPE_XML",
                     "contentOption": "all",
                     "includeComments": "true",
@@ -2777,7 +2777,7 @@ class Confluence(AtlassianRestAPI):
                 return self.get_pdf_download_url_for_confluence_cloud(url)
             else:
                 raise ValueError("Invalid export_type parameter value. Valid values are: 'html/csv/xml/pdf'")
-            url = self.url_joiner(url=self.url, path=f"spaces/doexportspace.action?key={space_key}")
+            url = self.url_joiner(url=self.url, path="spaces/doexportspace.action?key={space_key}".format(space_key=space_key))
 
             # Sending a POST request that triggers the space export.
             response = self.session.post(url, headers=self.form_token_headers, data=form_data)
