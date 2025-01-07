@@ -1906,7 +1906,9 @@ class Bitbucket(BitbucketBase):
             params["limit"] = limit
         return self._get_paged(url, params)
 
-    def assign_pull_request_participant_role(self, project_key: str, repository_slug: str, pull_request_id: int, role: str, user: str) -> dict:
+    def assign_pull_request_participant_role(
+        self, project_key: str, repository_slug: str, pull_request_id: int, role: str, user: str
+    ) -> dict:
         """
         Assign a role to a user for a pull request
         :param project_key: The project key
@@ -2122,7 +2124,9 @@ class Bitbucket(BitbucketBase):
         url = "{}/blocker-comments".format(self._url_pull_request(project_key, repository_slug, pull_request_id))
         return url
 
-    def add_pull_request_blocker_comment(self, project_key: str, repository_slug: str, pull_request_id: int, text: dict, severity: str) -> dict:
+    def add_pull_request_blocker_comment(
+        self, project_key: str, repository_slug: str, pull_request_id: int, text: dict, severity: str
+    ) -> dict:
         """
         Add a comment to a pull request that blocks the merge
         :param project_key: The project key
