@@ -294,6 +294,15 @@ Pull Request management
     # Reopen pull request
     bitbucket.reopen_pull_request(project_key, repository, pr_id, pr_version)
 
+    # Assign user as a reviewer of pull request
+    bitbucket.assign_pull_request_participant_role(project_key, repository, pr_id, "REVIEWER", username)
+
+    # Add a blocker comment to a pull request (create a new task)
+    bitbucket.add_pull_request_blocker_comment(project_key, repository, pr_id, "Input task text here", "BLOCKER")
+
+    # Get blocker comments for a pull request
+    bitbucket.search_pull_request_blocker_comment(project_key, repository, pr_id)
+
 Conditions-Reviewers management
 -------------------------------
 
