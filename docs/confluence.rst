@@ -43,7 +43,7 @@ Get page info
     confluence.get_draft_page_by_id(page_id, status='draft')
 
     # Get all page by label
-    confluence.get_all_pages_by_label(label, start=0, limit=50)
+    confluence.get_all_pages_by_label(label, start=0, limit=50, expand=None)
 
     # Get all pages from Space
     # content_type can be 'page' or 'blogpost'. Defaults to 'page'
@@ -114,14 +114,16 @@ Page actions
 
     # Attach (upload) a file to a page, if it exists it will update the
     # automatically version the new file and keep the old one
+    # content_type is default to "application/binary"
     confluence.attach_file(filename, name=None, content_type=None, page_id=None, title=None, space=None, comment=None)
 
     # Attach (upload) a content to a page, if it exists it will update the
     # automatically version the new file and keep the old one
+    # content_type is default to "application/binary"
     confluence.attach_content(content, name=None, content_type=None, page_id=None, title=None, space=None, comment=None)
 
-    # Download attachments from a page to local system. If download_path is None, current working directory will be used.
-    confluence.download_attachments_from_page(page_id, download_path=None)
+    # Download attachments from a page to local system. If path is None, current working directory will be used.
+    confluence.download_attachments_from_page(page_id, path=None)
 
     # Remove completely a file if version is None or delete version
     confluence.delete_attachment(page_id, filename, version=None)
@@ -160,6 +162,21 @@ Page actions
 
     # Get regex matches from Confluence page
     confluence.scrap_regex_from_page(page_id, regex)
+
+Confluence Whiteboards
+----------------------
+
+.. code-block:: python
+
+    # Create  new whiteboard  - cloud only
+    confluence.create_whiteboard(spaceId, title=None, parentId=None)
+
+    # Delete existing whiteboard - cloud only
+    confluence.delete_whiteboard(whiteboard_id)
+
+    # Get whiteboard by id  - cloud only!
+    confluence.get_whiteboard(whiteboard_id)
+
 
 Template actions
 ----------------
@@ -222,6 +239,9 @@ Get spaces info
 
     # Get Space permissions set based on json-rpc call
     confluence.get_space_permissions(space_key)
+
+    # Get Space export download url
+    confluence.get_space_export(space_key, export_type)
 
 Users and Groups
 ----------------

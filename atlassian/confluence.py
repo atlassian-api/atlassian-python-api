@@ -1,15 +1,25 @@
 # coding=utf-8
+import io
+import json
 import logging
 import os
-import time
-import json
 import re
-from requests import HTTPError
-import requests
-from deprecated import deprecated
+import time
+
 from bs4 import BeautifulSoup
+from deprecated import deprecated
+import requests
+from requests import HTTPError
+
 from atlassian import utils
-from .errors import ApiError, ApiNotFoundError, ApiPermissionError, ApiValueError, ApiConflictError, ApiNotAcceptable
+from .errors import (
+    ApiConflictError,
+    ApiError,
+    ApiNotAcceptable,
+    ApiNotFoundError,
+    ApiPermissionError,
+    ApiValueError,
+)
 from .rest_client import AtlassianRestAPI
 
 log = logging.getLogger(__name__)
@@ -37,6 +47,7 @@ class Confluence(AtlassianRestAPI):
     @staticmethod
     def _create_body(body, representation):
         if representation not in [
+            "atlas_doc_format",
             "editor",
             "export_view",
             "view",
@@ -134,6 +145,24 @@ class Confluence(AtlassianRestAPI):
             return True
         else:
             return False
+
+    def share_with_others(self, page_id, group, message):
+        """
+        Notify members (currently only groups implemented) about something on that page
+        """
+        url = "rest/share-page/latest/share"
+        params = {
+            "contextualPageId": page_id,
+            # "emails": [],
+            "entityId": page_id,
+            "entityType": "page",
+            "groups": group,
+            "note": message,
+            # "users":[]
+        }
+        r = self.post(url, json=params, headers={"contentType": "application/json; charset=utf-8"}, advanced_mode=True)
+        if r.status_code != 200:
+            raise Exception("failed sharing content {code}: {reason}".format(code=r.status_code, reason=r.text))
 
     def get_page_child_by_type(self, page_id, type="page", start=None, limit=None, expand=None):
         """
@@ -506,35 +535,29 @@ class Confluence(AtlassianRestAPI):
 
         return response
 
-    def get_draft_page_by_id(self, page_id, status="draft"):
+    def get_draft_page_by_id(self, page_id, status="draft", expand=None):
         """
-        Provide content by id with status = draft
-        :param page_id:
-        :param status:
+        Gets content by id with status = draft
+        :param page_id: Content ID
+        :param status: (str) list of content statuses to filter results on. Default value: [draft]
+        :param expand: OPTIONAL: Default value: history,space,version
+                       We can also specify some extensions such as extensions.inlineProperties
+                       (for getting inline comment-specific properties) or extensions. Resolution
+                       for the resolution status of each comment in the results
         :return:
         """
-        url = "rest/api/content/{page_id}?status={status}".format(page_id=page_id, status=status)
+        # Version not passed since draft versions don't match the page and
+        # operate differently between different collaborative modes
+        return self.get_page_by_id(page_id=page_id, expand=expand, status=status)
 
-        try:
-            response = self.get(url)
-        except HTTPError as e:
-            if e.response.status_code == 404:
-                raise ApiPermissionError(
-                    "The calling user does not have permission to view the content",
-                    reason=e,
-                )
-
-            raise
-
-        return response
-
-    def get_all_pages_by_label(self, label, start=0, limit=50):
+    def get_all_pages_by_label(self, label, start=0, limit=50, expand=None):
         """
         Get all page by label
         :param label:
         :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
         :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
                       fixed system limits. Default: 50
+        :param expand: OPTIONAL: a comma separated list of properties to expand on the content
         :return:
         """
         url = "rest/api/content/search"
@@ -545,6 +568,8 @@ class Confluence(AtlassianRestAPI):
             params["start"] = start
         if limit:
             params["limit"] = limit
+        if expand:
+            params["expand"] = expand
 
         try:
             response = self.get(url, params=params)
@@ -695,10 +720,76 @@ class Confluence(AtlassianRestAPI):
 
         return response.get("results")
 
+    def get_all_pages_by_space_ids_confluence_cloud(
+        self,
+        space_ids,
+        batch_size=250,
+        sort=None,
+        status=None,
+        title=None,
+        body_format=None,
+    ):
+        """
+        Get all pages from a set of space ids:
+        https://developer.atlassian.com/cloud/confluence/rest/v2/api-group-page/#api-pages-get
+
+        :param space_ids: A Set of space IDs passed as a filter to Confluence
+        :param batch_size: OPTIONAL: The batch size of pages to retrieve from confluence per request MAX is 250.
+                                     Default: 250
+        :param sort: OPTIONAL: The order the pages are retrieved in.
+                               Valid values: id, -id, created-date, -created-date, modified-date, -modified-date, title, -title
+        :param status: OPTIONAL: Filter pages based on their status.
+                                 Valid values: current, archived, deleted, trashed
+                                 Default: current,archived
+        :param title: OPTIONAL: Filter pages based on their title.
+        :param body-format: OPTIONAL: The format of the body in the response. Valid values: storage, atlas_doc_format
+        :return:
+        """
+        path = "/api/v2/pages"
+        params = {}
+        if space_ids:
+            params["space-id"] = ",".join(space_ids)
+        if batch_size:
+            params["limit"] = batch_size
+        if sort:
+            params["sort"] = sort
+        if status:
+            params["status"] = status
+        if title:
+            params["title"] = title
+        if body_format:
+            params["body-format"] = body_format
+
+        _all_pages = []
+        try:
+            while True:
+                response = self.get(path, params=params)
+
+                pages = response.get("results")
+                _all_pages = _all_pages + pages
+
+                links = response.get("_links")
+                if links is not None and "next" in links:
+                    path = response["_links"]["next"].removeprefix("/wiki/")
+                    params = {}
+                else:
+                    break
+        except HTTPError as e:
+            if e.response.status_code == 400:
+                raise ApiValueError(
+                    "The configured params cannot be interpreted by Confluence"
+                    "Check the api documentation for valid values for status, expand, and sort params",
+                    reason=e,
+                )
+            if e.response.status_code == 401:
+                raise HTTPError("Unauthorized (401)", response=response)
+            raise
+
+        return _all_pages
+
     @deprecated(version="2.4.2", reason="Use get_all_restrictions_for_content()")
     def get_all_restictions_for_content(self, content_id):
         """Let's use the get_all_restrictions_for_content()"""
-        log.warning("Please, be informed that is deprecated as typo naming")
         return self.get_all_restrictions_for_content(content_id=content_id)
 
     def get_all_restrictions_for_content(self, content_id):
@@ -799,6 +890,7 @@ class Confluence(AtlassianRestAPI):
         representation="storage",
         editor=None,
         full_width=False,
+        status="current",
     ):
         """
         Create page from scratch
@@ -810,6 +902,7 @@ class Confluence(AtlassianRestAPI):
         :param representation: OPTIONAL: either Confluence 'storage' or 'wiki' markup format
         :param editor: OPTIONAL: v2 to be created in the new editor
         :param full_width: DEFAULT: False
+        :param status: either 'current' or 'draft'
         :return:
         """
         log.info('Creating %s "%s" -> "%s"', type, space, title)
@@ -817,6 +910,7 @@ class Confluence(AtlassianRestAPI):
         data = {
             "type": type,
             "title": title,
+            "status": status,
             "space": {"key": space},
             "body": self._create_body(body, representation),
             "metadata": {"properties": {}},
@@ -1217,7 +1311,8 @@ class Confluence(AtlassianRestAPI):
         :type  name: ``str``
         :param content: Contains the content which should be uploaded
         :type  content: ``binary``
-        :param content_type: Specify the HTTP content type. The default is
+        :param content_type: Specify the HTTP content type.
+                The default is "application/binary"
         :type  content_type: ``str``
         :param comment: A comment describing this upload/file
         :type  comment: ``str``
@@ -1299,6 +1394,7 @@ class Confluence(AtlassianRestAPI):
                      Is no name give the file name is used as name
         :type  name: ``str``
         :param content_type: Specify the HTTP content type. The default is
+                            The default is "application/binary"
         :type  content_type: ``str``
         :param comment: A comment describing this upload/file
         :type  comment: ``str``
@@ -1322,37 +1418,83 @@ class Confluence(AtlassianRestAPI):
             comment=comment,
         )
 
-    def download_attachments_from_page(self, page_id, path=None):
+    def download_attachments_from_page(self, page_id, path=None, start=0, limit=50, filename=None, to_memory=False):
         """
-        Downloads all attachments from a page
-        :param page_id:
-        :param path: path to directory where attachments will be saved. If None, current working directory will be used.
-        :return info message: number of saved attachments + path to directory where attachments were saved:
+        Downloads attachments from a Confluence page. Supports downloading all files or a specific file.
+        Files can either be saved to disk or returned as BytesIO objects for in-memory handling.
+
+        :param page_id: str
+            The ID of the Confluence page to fetch attachments from.
+        :param path: str, optional
+            Directory where attachments will be saved. If None, defaults to the current working directory.
+            Ignored if `to_memory` is True.
+        :param start: int, optional
+            The start point for paginated attachment fetching. Default is 0. Ignored if `filename` is specified.
+        :param limit: int, optional
+            The maximum number of attachments to fetch per request. Default is 50. Ignored if `filename` is specified.
+        :param filename: str, optional
+            The name of a specific file to download. If provided, only this file will be fetched.
+        :param to_memory: bool, optional
+            If True, attachments are returned as a dictionary of {filename: BytesIO object}.
+            If False, files are written to the specified directory on disk.
+        :return:
+            - If `to_memory` is True, returns a dictionary {filename: BytesIO object}.
+            - If `to_memory` is False, returns a summary dict: {"attachments_downloaded": int, "path": str}.
+        :raises:
+            - FileNotFoundError: If the specified path does not exist.
+            - PermissionError: If there are permission issues with the specified path.
+            - requests.HTTPError: If the HTTP request to fetch an attachment fails.
+            - Exception: For any unexpected errors.
         """
-        if path is None:
+        # Default path to current working directory if not provided
+        if not to_memory and path is None:
             path = os.getcwd()
+
         try:
-            attachments = self.get_attachments_from_content(page_id=page_id)["results"]
-            if not attachments:
-                return "No attachments found"
+            # Fetch attachments based on the specified parameters
+            if filename:
+                # Fetch specific file by filename
+                attachments = self.get_attachments_from_content(page_id=page_id, filename=filename)["results"]
+                if not attachments:
+                    return "No attachment with filename '{0}' found on the page.".format(filename)
+            else:
+                # Fetch all attachments with pagination
+                attachments = self.get_attachments_from_content(page_id=page_id, start=start, limit=limit)["results"]
+                if not attachments:
+                    return "No attachments found on the page."
+
+            # Prepare to handle downloads
+            downloaded_files = {}
             for attachment in attachments:
-                file_name = attachment["title"]
-                if not file_name:
-                    file_name = attachment["id"]  # if the attachment has no title, use attachment_id as a filename
+                file_name = attachment["title"] or attachment["id"]  # Use attachment ID if title is unavailable
                 download_link = self.url + attachment["_links"]["download"]
-                r = self._session.get(str(download_link))
-                file_path = os.path.join(path, file_name)
-                with open(file_path, "wb") as f:
-                    f.write(r.content)
+                # Fetch the file content
+                response = self._session.get(str(download_link))
+                response.raise_for_status()  # Raise error if request fails
+
+                if to_memory:
+                    # Store in BytesIO object
+                    file_obj = io.BytesIO(response.content)
+                    downloaded_files[file_name] = file_obj
+                else:
+                    # Save file to disk
+                    file_path = os.path.join(path, file_name)
+                    with open(file_path, "wb") as file:
+                        file.write(response.content)
+
+            # Return results based on storage mode
+            if to_memory:
+                return downloaded_files
+            else:
+                return {"attachments_downloaded": len(attachments), "path": path}
         except NotADirectoryError:
-            raise NotADirectoryError("Verify if directory path is correct and/or if directory exists")
+            raise FileNotFoundError("The directory '{path}' does not exist.".format(path=path))
         except PermissionError:
-            raise PermissionError(
-                "Directory found, but there is a problem with saving file to this directory. Check directory permissions"
-            )
-        except Exception as e:
-            raise e
-        return {"attachments downloaded": len(attachments), " to path ": path}
+            raise PermissionError("Permission denied when trying to save files to '{path}'.".format(path=path))
+        except requests.HTTPError as http_err:
+            raise Exception("HTTP error occurred while downloading attachments: {http_err}".format(http_err=http_err))
+        except Exception as err:
+            raise Exception("An unexpected error occurred: {error}".format(error=err))
 
     def delete_attachment(self, page_id, filename, version=None):
         """
@@ -1378,9 +1520,11 @@ class Confluence(AtlassianRestAPI):
         :param version: file version
         :return:
         """
-        return self.delete(
-            "rest/experimental/content/{id}/version/{versionId}".format(id=attachment_id, versionId=version)
-        )
+        if self.cloud:
+            url = "rest/api/content/{id}/version/{versionId}".format(id=attachment_id, versionId=version)
+        else:
+            url = "rest/experimental/content/{id}/version/{versionId}".format(id=attachment_id, versionId=version)
+        return self.delete(url)
 
     def remove_page_attachment_keep_version(self, page_id, filename, keep_last_versions):
         """
@@ -1417,7 +1561,10 @@ class Confluence(AtlassianRestAPI):
         :return
         """
         params = {"limit": limit, "start": start}
-        url = "rest/experimental/content/{}/version".format(attachment_id)
+        if self.cloud:
+            url = "rest/api/content/{id}/version".format(id=attachment_id)
+        else:
+            url = "rest/experimental/content/{id}/version".format(id=attachment_id)
         return (self.get(url, params=params) or {}).get("results")
 
     # @todo prepare more attachments info
@@ -2212,7 +2359,7 @@ class Confluence(AtlassianRestAPI):
         :param name: str
         :return:
         """
-        log.warning("Removing group...")
+        log.info("Removing group:  %s  during Confluence remove_group method execution", name)
         url = "rest/api/admin/group/{groupName}".format(groupName=name)
 
         try:
@@ -2585,6 +2732,111 @@ class Confluence(AtlassianRestAPI):
         url = "exportword?pageId={pageId}".format(pageId=page_id)
         return self.get(url, headers=headers, not_json_response=True)
 
+    def get_space_export(self, space_key: str, export_type: str) -> str:
+        """
+        Export a Confluence space to a file of the specified type.
+        (!) This method was developed for Confluence Cloud and may not work with Confluence on-prem.
+        (!) This is an experimental method that does not trigger an officially supported REST endpoint. It may break if Atlassian changes the space export front-end logic.
+
+        :param space_key: The key of the space to export.
+        :param export_type: The type of export to perform. Valid values are: 'html', 'csv', 'xml', 'pdf'.
+        :return: The URL to download the exported file.
+        """
+
+        def get_atl_request(url: str):
+            #  Nested function  used to get atl_token used for XSRF protection. this is only applicable to html/csv/xml space exports
+            try:
+                response = self.get(url, advanced_mode=True)
+                parsed_html = BeautifulSoup(response.text, "html.parser")
+                atl_token = parsed_html.find("input", {"name": "atl_token"}).get("value")
+                return atl_token
+            except Exception as e:
+                raise ApiError("Problems with getting the atl_token for get_space_export method :", reason=e)
+
+        # Checks if space_ke parameter is valid and  if api_token has relevant permissions to space
+        self.get_space(space_key=space_key, expand="permissions")
+
+        try:
+            log.info(
+                "Initiated experimental get_space_export method for export type: "
+                + export_type
+                + " from Confluence space: "
+                + space_key
+            )
+            if export_type == "csv":
+                form_data = {
+                    "atl_token": get_atl_request(
+                        "spaces/exportspacecsv.action?key={space_key}".format(space_key=space_key)
+                    ),
+                    "exportType": "TYPE_CSV",
+                    "contentOption": "all",
+                    "includeComments": "true",
+                    "confirm": "Export",
+                }
+            elif export_type == "html":
+                form_data = {
+                    "atl_token": get_atl_request(
+                        "spaces/exportspacehtml.action?key={space_key}".format(space_key=space_key)
+                    ),
+                    "exportType": "TYPE_HTML",
+                    "contentOption": "visibleOnly",
+                    "includeComments": "true",
+                    "confirm": "Export",
+                }
+            elif export_type == "xml":
+                form_data = {
+                    "atl_token": get_atl_request(
+                        "spaces/exportspacexml.action?key={space_key}".format(space_key=space_key)
+                    ),
+                    "exportType": "TYPE_XML",
+                    "contentOption": "all",
+                    "includeComments": "true",
+                    "confirm": "Export",
+                }
+            elif export_type == "pdf":
+                url = "spaces/flyingpdf/doflyingpdf.action?key=" + space_key
+                log.info("Initiated PDF  space export")
+                return self.get_pdf_download_url_for_confluence_cloud(url)
+            else:
+                raise ValueError("Invalid export_type parameter value. Valid values are: 'html/csv/xml/pdf'")
+            url = self.url_joiner(
+                url=self.url, path="spaces/doexportspace.action?key={space_key}".format(space_key=space_key)
+            )
+
+            # Sending a POST request that triggers the space export.
+            response = self.session.post(url, headers=self.form_token_headers, data=form_data)
+            parsed_html = BeautifulSoup(response.text, "html.parser")
+            # Getting the poll URL to get the export progress status
+            try:
+                poll_url = parsed_html.find("meta", {"name": "ajs-pollURI"}).get("content")
+            except Exception as e:
+                raise ApiError("Problems with getting the poll_url for get_space_export method :", reason=e)
+            running_task = True
+            while running_task:
+                try:
+                    progress_response = self.get(poll_url)
+                    log.info("Space" + space_key + " export status: " + progress_response["message"])
+                    if progress_response["complete"]:
+                        parsed_html = BeautifulSoup(progress_response["message"], "html.parser")
+                        download_url = parsed_html.find("a", {"class": "space-export-download-path"}).get("href")
+                        if self.url in download_url:
+                            return download_url
+                        else:
+                            combined_url = self.url + download_url
+                            # Ensure only one /wiki is included in the path
+                            if combined_url.count("/wiki") > 1:
+                                combined_url = combined_url.replace("/wiki/wiki", "/wiki")
+                            return combined_url
+                    time.sleep(30)
+                except Exception as e:
+                    raise ApiError(
+                        "Encountered error during space export status check from space " + space_key, reason=e
+                    )
+
+            return "None"  # Return None if the while loop does not return a value
+        except Exception as e:
+            raise ApiError("Encountered error during space export from space " + space_key, reason=e)
+
     def export_page(self, page_id):
         """
         Alias method for export page as pdf
@@ -2727,6 +2979,34 @@ class Confluence(AtlassianRestAPI):
         url = "rest/plugins/1.0/?token={upm_token}".format(upm_token=upm_token)
         return self.post(url, files=files, headers=self.no_check_headers)
 
+    def disable_plugin(self, plugin_key):
+        """
+        Disable a plugin
+        :param plugin_key:
+        :return:
+        """
+        app_headers = {
+            "X-Atlassian-Token": "nocheck",
+            "Content-Type": "application/vnd.atl.plugins+json",
+        }
+        url = "rest/plugins/1.0/{plugin_key}-key".format(plugin_key=plugin_key)
+        data = {"status": "disabled"}
+        return self.put(url, data=data, headers=app_headers)
+
+    def enable_plugin(self, plugin_key):
+        """
+        Enable a plugin
+        :param plugin_key:
+        :return:
+        """
+        app_headers = {
+            "X-Atlassian-Token": "nocheck",
+            "Content-Type": "application/vnd.atl.plugins+json",
+        }
+        url = "rest/plugins/1.0/{plugin_key}-key".format(plugin_key=plugin_key)
+        data = {"status": "enabled"}
+        return self.put(url, data=data, headers=app_headers)
+
     def delete_plugin(self, plugin_key):
         """
         Delete plugin
@@ -2805,6 +3085,7 @@ class Confluence(AtlassianRestAPI):
         and provides a link to download the PDF once the process completes.
         This functions polls the long-running task page and returns the
         download url of the PDF.
+        This method is used in get_space_export() method for space-> PDF export.
         :param url: URL to initiate PDF export
         :return: Download url for PDF file
         """
@@ -2876,6 +3157,47 @@ class Confluence(AtlassianRestAPI):
         if search_string:
             params["searchString"] = search_string
         return self.get(url, params=params)
+
+    """
+    ##############################################################################################
+    #   Confluence whiteboards (cloud only!)  #
+    ##############################################################################################
+    """
+
+    def create_whiteboard(self, spaceId, title=None, parentId=None):
+        url = "/api/v2/whiteboards"
+        data = {"spaceId": spaceId}
+        if title is not None:
+            data["title"] = title
+        if parentId is not None:
+            data["parentId"] = parentId
+        return self.post(url, data=data)
+
+    def get_whiteboard(self, whiteboard_id):
+        try:
+            url = "/api/v2/whiteboards/%s" % (whiteboard_id)
+            return self.get(url)
+        except HTTPError as e:
+            # Default 404 error handling is ambiguous
+            if e.response.status_code == 404:
+                raise ApiValueError(
+                    "Whiteboard not found. Check confluence instance url and/or if whiteboard id exists", reason=e
+                )
+
+            raise
+
+    def delete_whiteboard(self, whiteboard_id):
+        try:
+            url = "/api/v2/whiteboards/%s" % (whiteboard_id)
+            return self.delete(url)
+        except HTTPError as e:
+            # # Default 404 error handling is ambiguous
+            if e.response.status_code == 404:
+                raise ApiValueError(
+                    "Whiteboard not found. Check confluence instance url and/or if whiteboard id exists", reason=e
+                )
+
+            raise
 
     """
     ##############################################################################################
@@ -3002,10 +3324,8 @@ class Confluence(AtlassianRestAPI):
         :param group_name: str - name of group to add user to
         :return: Current state of the group
         """
-        url = "rest/api/2/group/user"
-        params = {"groupname": group_name}
-        data = {"name": username}
-        return self.post(url, params=params, data=data)
+        url = "rest/api/user/%s/group/%s" % (username, group_name)
+        return self.put(url)
 
     def add_space_permissions(
         self,

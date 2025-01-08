@@ -92,3 +92,40 @@ class TestJira(TestCase):
             self.jira.get_issue_property("FOO-123", "NotFoundBar1")
         with self.assertRaises(HTTPError):
             self.jira.get_issue_property("FOONotFound-123", "NotFoundBar1")
+
+    def test_post_issue_remotelink(self):
+        """Create a new remote link"""
+        resp = self.jira.create_or_update_issue_remote_links(
+            "FOO-123",
+            "https://confluence.atlassian-python.atlassian.net/display/Test",
+            "Unused link text",
+        )
+        self.assertEqual(resp["id"], 10000)
+        self.assertEqual(
+            resp["self"], "https://atlassian-python.atlassian.net/rest/api/2/issue/FOO-123/remotelink/10000"
+        )
+        self.assertDictEqual(resp["application"], {})
+
+    def test_post_issue_remotelink_confluence(self):
+        """Create a new Confluence remote link"""
+        resp = self.jira.create_or_update_issue_remote_links(
+            "FOO-123",
+            "https://confluence.atlassian-python.atlassian.net/display/Test",
+            "Unused link text",
+            global_id="appId=00000000-0000-0000-0000-000000000000&pageId=0",
+            application={
+                "type": "com.atlassian.confluence",
+                "name": "Confluence",
+            },
+        )
+        self.assertEqual(resp["id"], 10000)
+        self.assertEqual(
+            resp["self"], "https://atlassian-python.atlassian.net/rest/api/2/issue/FOO-123/remotelink/10000"
+        )
+        self.assertDictEqual(
+            resp["application"],
+            {
+                "type": "com.atlassian.confluence",
+                "name": "Confluence",
+            },
+        )

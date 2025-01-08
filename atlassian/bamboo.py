@@ -104,6 +104,14 @@ class Bamboo(AtlassianRestAPI):
         clover_enabled=False,
         max_results=25,
     ):
+        """
+        Get all Projects
+        :param expand:
+        :param favourite:
+        :param clover_enabled:
+        :param max_results:
+        :return:
+        """
         return self.base_list_call(
             "project",
             expand=expand,
@@ -115,6 +123,14 @@ class Bamboo(AtlassianRestAPI):
         )
 
     def project(self, project_key, expand=None, favourite=False, clover_enabled=False):
+        """
+        Get a single project by the key
+        :param project_key:
+        :param expand:
+        :param favourite:
+        :param clover_enabled:
+        :return:
+        """
         resource = "project/{}".format(project_key)
         return self.base_list_call(
             resource=resource,
@@ -125,8 +141,21 @@ class Bamboo(AtlassianRestAPI):
             max_results=25,
         )
 
+    def get_project(self, project_key):
+        """Method used to retrieve information for project specified as project key.
+        Possible expand parameters: plans, list of plans for project. plans.plan, list of plans with plan details
+        (only plans visible - READ permission for user)"""
+        resource = "project/{}?showEmpty".format(project_key)
+        return self.get(self.resource_url(resource))
+
+    def delete_project(self, project_key):
+        """Marks project for deletion. Project will be deleted by a batch job."""
+        resource = "project/{}".format(project_key)
+        return self.delete(self.resource_url(resource))
+
     def project_plans(self, project_key, start_index=0, max_results=25):
         """
+        Get all build plans in a project
         Returns a generator with the plans in a given project.
         :param project_key: project key
         :param start_index:
@@ -153,6 +182,15 @@ class Bamboo(AtlassianRestAPI):
         start_index=0,
         max_results=25,
     ):
+        """
+        Get all build plans
+        :param expand:
+        :param favourite:
+        :param clover_enabled:
+        :param start_index:
+        :param max_results:
+        :return:
+        """
         return self.base_list_call(
             "plan",
             expand=expand,
@@ -234,6 +272,14 @@ class Bamboo(AtlassianRestAPI):
     """ Branches """
 
     def search_branches(self, plan_key, include_default_branch=True, max_results=25, start=0):
+        """
+        Search Branches
+        :param plan_key:
+        :param include_default_branch:
+        :param max_results:
+        :param start:
+        :return:
+        """
         params = {
             "max-result": max_results,
             "start-index": start,
@@ -256,7 +302,16 @@ class Bamboo(AtlassianRestAPI):
         clover_enabled=False,
         max_results=25,
     ):
-        """api/1.0/plan/{projectKey}-{buildKey}/branch"""
+        """
+        Get all plan Branches
+        api/1.0/plan/{projectKey}-{buildKey}/branch
+        :param plan_key:
+        :param expand:
+        :param favourite:
+        :param clover_enabled:
+        :param max_results:
+        :return:
+        """
         resource = "plan/{}/branch".format(plan_key)
         return self.base_list_call(
             resource,
@@ -617,14 +672,30 @@ class Bamboo(AtlassianRestAPI):
         start_index=0,
         max_results=25,
     ):
+        """
+        Get comments for a specific build
+        :param project_key:
+        :param plan_key:
+        :param build_number:
+        :param start_index:
+        :param max_results:
+        :return:
+        """
         resource = "result/{}-{}-{}/comment".format(project_key, plan_key, build_number)
         params = {"start-index": start_index, "max-results": max_results}
         return self.get(self.resource_url(resource), params=params)
 
-    def create_comment(self, project_key, plan_key, build_number, comment, author=None):
+    def create_comment(self, project_key, plan_key, build_number, comment):
+        """
+        Create a comment for a specific build
+        :param project_key:
+        :param plan_key:
+        :param build_number:
+        :param comment:
+        :return:
+        """
         resource = "result/{}-{}-{}/comment".format(project_key, plan_key, build_number)
         comment_data = {
-            "author": author if author else self.username,
             "content": comment,
         }
         return self.post(self.resource_url(resource), data=comment_data)
@@ -637,15 +708,40 @@ class Bamboo(AtlassianRestAPI):
         start_index=0,
         max_results=25,
     ):
+        """
+        Get labels for a build
+        :param project_key:
+        :param plan_key:
+        :param build_number:
+        :param start_index:
+        :param max_results:
+        :return:
+        """
         resource = "result/{}-{}-{}/label".format(project_key, plan_key, build_number)
         params = {"start-index": start_index, "max-results": max_results}
         return self.get(self.resource_url(resource), params=params)
 
     def create_label(self, project_key, plan_key, build_number, label):
+        """
+        Create a label for a specific build
+        :param project_key:
+        :param plan_key:
+        :param build_number:
+        :param label:
+        :return:
+        """
         resource = "result/{}-{}-{}/label".format(project_key, plan_key, build_number)
         return self.post(self.resource_url(resource), data={"name": label})
 
     def delete_label(self, project_key, plan_key, build_number, label):
+        """
+        Delete a label for a specific build
+        :param project_key:
+        :param plan_key:
+        :param build_number:
+        :param label:
+        :return:
+        """
         resource = "result/{}-{}-{}/label/{}".format(project_key, plan_key, build_number, label)
         return self.delete(self.resource_url(resource))
 
@@ -671,34 +767,43 @@ class Bamboo(AtlassianRestAPI):
             for project in r["projects"]["project"]:
                 yield project
 
-    def get_project(self, project_key):
-        """Method used to retrieve information for project specified as project key.
-        Possible expand parameters: plans, list of plans for project. plans.plan, list of plans with plan details
-        (only plans visible - READ permission for user)"""
-        resource = "project/{}?showEmpty".format(project_key)
-        return self.get(self.resource_url(resource))
-
-    def delete_project(self, project_key):
-        """Marks project for deletion. Project will be deleted by a batch job."""
-        resource = "project/{}".format(project_key)
-        return self.delete(self.resource_url(resource))
-
     """ Deployments """
 
     def deployment_projects(self):
+        """
+        Returns all deployment projects.
+        :return:
+        """
         resource = "deploy/project/all"
         for project in self.get(self.resource_url(resource)):
             yield project
 
     def deployment_project(self, project_id):
+        """
+        Returns a deployment project.
+        :param project_id:
+        :return:
+        """
         resource = "deploy/project/{}".format(project_id)
         return self.get(self.resource_url(resource))
 
     def delete_deployment_project(self, project_id):
+        """
+        Deletes a deployment project.
+        :param project_id:
+        :return:
+        """
         resource = "deploy/project/{}".format(project_id)
         return self.delete(self.resource_url(resource))
 
     def deployment_environment_results(self, env_id, expand=None, max_results=25):
+        """
+        Get deployment environment results
+        :param env_id:
+        :param expand:
+        :param max_results:
+        :return:
+        """
         resource = "deploy/environment/{environmentId}/results".format(environmentId=env_id)
         params = {"max-result": max_results, "start-index": 0}
         size = 1
@@ -843,23 +948,6 @@ class Bamboo(AtlassianRestAPI):
 
         url = "rest/api/latest/admin/groups/{}/more-non-members".format(group_name)
         return self.get(url, params=params)
-
-    def get_build_queue(self, expand="queuedBuilds"):
-        """
-        Lists all the builds waiting in the build queue, adds or removes a build from the build queue.
-        May be used also to resume build on manual stage or rerun failed jobs.
-        :return:
-        """
-        params = {"expand": expand}
-        return self.get("rest/api/latest/queue", params=params)
-
-    def get_deployment_queue(self, expand="queuedDeployments"):
-        """
-        Provide list of deployment results scheduled for execution and waiting in queue.
-        :return:
-        """
-        params = {"expand": expand}
-        return self.get("rest/api/latest/queue/deployment", params=params)
 
     def get_deployment_users(self, deployment_id, filter_name=None, start=0, limit=25):
         """
@@ -1022,6 +1110,23 @@ class Bamboo(AtlassianRestAPI):
     def server_info(self):
         return self.get(self.resource_url("info"))
 
+    def get_build_queue(self, expand="queuedBuilds"):
+        """
+        Lists all the builds waiting in the build queue, adds or removes a build from the build queue.
+        May be used also to resume build on manual stage or rerun failed jobs.
+        :return:
+        """
+        params = {"expand": expand}
+        return self.get("rest/api/latest/queue", params=params)
+
+    def get_deployment_queue(self, expand="queuedDeployments"):
+        """
+        Provide list of deployment results scheduled for execution and waiting in queue.
+        :return:
+        """
+        params = {"expand": expand}
+        return self.get("rest/api/latest/queue/deployment", params=params)
+
     def agent_status(self, online=False):
         """
         Provides a list of all agents.
@@ -1128,6 +1233,20 @@ class Bamboo(AtlassianRestAPI):
         start_index=9,
         max_results=25,
     ):
+        """
+        Get chart data
+        :param report_key:
+        :param build_keys:
+        :param group_by_period:
+        :param date_filter:
+        :param date_from:
+        :param date_to:
+        :param width:
+        :param height:
+        :param start_index:
+        :param max_results:
+        :return:
+        """
         params = {
             "reportKey": report_key,
             "buildKeys": build_keys,
@@ -1173,6 +1292,8 @@ class Bamboo(AtlassianRestAPI):
             response = self.get("rest/supportHealthCheck/1.0/check/")
         return response
 
+    """Elastic Bamboo"""
+
     def get_elastic_instance_logs(self, instance_id):
         """
         Get logs from an EC2 instance
@@ -1201,7 +1322,7 @@ class Bamboo(AtlassianRestAPI):
 
     def get_elastic_configuration(self, configuration_id):
         """
-        Get informatin of an elastic configuration
+        Get information of an elastic configuration
         :param configuration_id:
         :return:
         """
@@ -1264,7 +1385,7 @@ class Bamboo(AtlassianRestAPI):
 
     def get_plugin_license_info(self, plugin_key):
         """
-        Provide plugin license info
+        Provide plugin license information
         :return a json specific License query
         """
         url = "rest/plugins/1.0/{plugin_key}-key/license".format(plugin_key=plugin_key)
@@ -1286,6 +1407,34 @@ class Bamboo(AtlassianRestAPI):
         url = "rest/plugins/1.0/?token={upm_token}".format(upm_token=upm_token)
         return self.post(url, files=files, headers=self.no_check_headers)
 
+    def disable_plugin(self, plugin_key):
+        """
+        Disable a plugin
+        :param plugin_key:
+        :return:
+        """
+        app_headers = {
+            "X-Atlassian-Token": "nocheck",
+            "Content-Type": "application/vnd.atl.plugins+json",
+        }
+        url = "rest/plugins/1.0/{plugin_key}-key".format(plugin_key=plugin_key)
+        data = {"status": "disabled"}
+        return self.put(url, data=data, headers=app_headers)
+
+    def enable_plugin(self, plugin_key):
+        """
+        Enable a plugin
+        :param plugin_key:
+        :return:
+        """
+        app_headers = {
+            "X-Atlassian-Token": "nocheck",
+            "Content-Type": "application/vnd.atl.plugins+json",
+        }
+        url = "rest/plugins/1.0/{plugin_key}-key".format(plugin_key=plugin_key)
+        data = {"status": "enabled"}
+        return self.put(url, data=data, headers=app_headers)
+
     def delete_plugin(self, plugin_key):
         """
         Delete plugin
@@ -1296,6 +1445,10 @@ class Bamboo(AtlassianRestAPI):
         return self.delete(url)
 
     def check_plugin_manager_status(self):
+        """
+        Check plugin manager status
+        :return:
+        """
         url = "rest/plugins/latest/safe-mode"
         return self.request(method="GET", path=url, headers=self.safe_mode_headers)
 

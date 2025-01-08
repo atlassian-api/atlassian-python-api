@@ -301,7 +301,8 @@ class Repository(BitbucketServerBase):
         For further information visit:
            https://docs.atlassian.com/bitbucket-server/rest/7.13.0/bitbucket-rest.html#idp199
         :param dest_fd: a file-like object to which the archive will be written
-        :param at: string: Optional, the commit to download an archive of; if not supplied, an archive of the default branch is downloaded
+        :param at: string: Optional, the commit to download an archive of; if not supplied,
+                           an archive of the default branch is downloaded
         :param filename: string: Optional, a filename to include the "Content-Disposition" header
         :param format: string: Optional, the format to stream the archive in; must be one of: zip, tar, tar.gz or tgz.
                         If not specified, then the archive will be in zip format.

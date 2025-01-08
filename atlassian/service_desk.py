@@ -1,6 +1,8 @@
 # coding=utf-8
 import logging
 
+from requests import HTTPError
+
 from .rest_client import AtlassianRestAPI
 
 log = logging.getLogger(__name__)
@@ -54,7 +56,7 @@ class ServiceDesk(AtlassianRestAPI):
         :param email: str - email address
         :return: New customer
         """
-        log.warning("Creating customer...")
+        log.info("Creating customer using create_customer method...")
         data = {"fullName": full_name, "email": email}
 
         return self.post(
@@ -234,7 +236,7 @@ class ServiceDesk(AtlassianRestAPI):
         :param comment: OPTIONAL: str
         :return: None
         """
-        log.warning("Performing transition...")
+        log.info("Performing transition for issue: " + issue_id_or_key)
         data = {"id": transition_id, "additionalComment": {"body": comment}}
         url = "rest/servicedeskapi/request/{}/transition".format(issue_id_or_key)
 
@@ -371,7 +373,7 @@ class ServiceDesk(AtlassianRestAPI):
         :param name: str
         :return: Organization data
         """
-        log.warning("Creating organization...")
+        log.info("Creating organization: " + name)
         url = "rest/servicedeskapi/organization"
         data = {"name": name}
 
@@ -385,7 +387,7 @@ class ServiceDesk(AtlassianRestAPI):
         :param organization_id: int
         :return:
         """
-        log.warning("Adding organization...")
+        log.info("Adding organization...")
         url = "rest/servicedeskapi/servicedesk/{}/organization".format(service_desk_id)
         data = {"organizationId": organization_id}
 
@@ -399,7 +401,7 @@ class ServiceDesk(AtlassianRestAPI):
         :param organization_id: int
         :return:
         """
-        log.warning("Removing organization...")
+        log.info("Removing organization...")
         url = "rest/servicedeskapi/servicedesk/{}/organization".format(service_desk_id)
         data = {"organizationId": organization_id}
 
@@ -412,7 +414,7 @@ class ServiceDesk(AtlassianRestAPI):
         :param organization_id:
         :return:
         """
-        log.warning("Deleting organization...")
+        log.info("Deleting organization: %s ", organization_id)
         url = "rest/servicedeskapi/organization/{}".format(organization_id)
 
         return self.delete(url, headers=self.experimental_headers)
@@ -428,7 +430,7 @@ class ServiceDesk(AtlassianRestAPI):
         :param users_list: list
         :return:
         """
-        log.warning("Adding users...")
+        log.info("Adding users: %s ", str(users_list))
         url = "rest/servicedeskapi/organization/{}/user".format(organization_id)
         data = {"usernames": users_list, "accountIds": account_list}
 
@@ -445,7 +447,7 @@ class ServiceDesk(AtlassianRestAPI):
         :param account_list: list
         :return:
         """
-        log.warning("Removing users...")
+        log.info("Removing users: %s", str(users_list))
         url = "rest/servicedeskapi/organization/{}/user".format(organization_id)
         data = {"usernames": users_list, "accountIds": account_list}
 
@@ -899,7 +901,7 @@ class ServiceDesk(AtlassianRestAPI):
         :param request_name: str
         :param request_description: str
         """
-        log.warning("Creating request type...")
+        log.info("Creating request type")
         data = {
             "issueTypeId": request_type_id,
             "name": request_name,
@@ -909,3 +911,22 @@ class ServiceDesk(AtlassianRestAPI):
 
         url = "rest/servicedeskapi/servicedesk/{}/requesttype".format(service_desk_id)
         return self.post(url, headers=self.experimental_headers, data=data)
+
+    def raise_for_status(self, response):
+        """
+        Checks the response for an error status and raises an exception with the error message provided by the server
+        :param response:
+        :return:
+        """
+        if response.status_code == 401 and response.headers.get("Content-Type") != "application/json;charset=UTF-8":
+            raise HTTPError("Unauthorized (401)", response=response)
+
+        if 400 <= response.status_code < 600:
+            try:
+                j = response.json()
+                error_msg = j["errorMessage"]
+            except Exception as e:
+                log.error(e)
+                response.raise_for_status()
+            else:
+                raise HTTPError(error_msg, response=response)

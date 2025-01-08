@@ -1,5 +1,6 @@
 # coding=utf-8
 import logging
+from enum import Enum
 
 from deprecated import deprecated
 from requests import HTTPError
@@ -8,6 +9,16 @@ from .base import BitbucketBase
 from atlassian.bitbucket.cloud import Cloud
 
 log = logging.getLogger(__name__)
+
+
+class MergeStrategy(Enum):
+    """
+    Merge strategies used by the merge_pull_request method.
+    """
+
+    MERGE_COMMIT = "merge_commit"
+    SQUASH = "squash"
+    FAST_FORWARD = "fast_forward"
 
 
 class Bitbucket(BitbucketBase):
@@ -1895,6 +1906,22 @@ class Bitbucket(BitbucketBase):
             params["limit"] = limit
         return self._get_paged(url, params)
 
+    def assign_pull_request_participant_role(
+        self, project_key: str, repository_slug: str, pull_request_id: int, role: str, user: str
+    ) -> dict:
+        """
+        Assign a role to a user for a pull request
+        :param project_key: The project key
+        :param repository_slug: The repository key
+        :param pull_request_id: The pull request id
+        :param role: The role to assign, currently it only accepts REVIEWER
+        :param user: The user to assign the role to
+        :return:
+        """
+        url = self._url_pull_request_participants(project_key, repository_slug, pull_request_id)
+        data = {"role": role, "user": {"name": user}}
+        return self.post(url, data=data)
+
     def get_dashboard_pull_requests(
         self,
         start=0,
@@ -2093,6 +2120,37 @@ class Bitbucket(BitbucketBase):
         data = {"version": comment_version}
         return self.delete(url, params=data)
 
+    def _url_pull_request_blocker_comments(self, project_key, repository_slug, pull_request_id) -> str:
+        url = "{}/blocker-comments".format(self._url_pull_request(project_key, repository_slug, pull_request_id))
+        return url
+
+    def add_pull_request_blocker_comment(
+        self, project_key: str, repository_slug: str, pull_request_id: int, text: dict, severity: str
+    ) -> dict:
+        """
+        Add a comment to a pull request that blocks the merge
+        :param project_key: The project key
+        :param repository_slug: The repository key
+        :param pull_request_id: The pull request id
+        :param text: The text of the comment
+        :param severity: The severity of the comment
+        :return:
+        """
+        url = self._url_pull_request_blocker_comments(project_key, repository_slug, pull_request_id)
+        data = {"text": text, "severity": severity}
+        return self.post(url, data=data)
+
+    def search_pull_request_blocker_comment(self, project_key: str, repository_slug: str, pull_request_id: int) -> dict:
+        """
+        Get all comments that block the merge of a pull request
+        :param project_key: The project key
+        :param repository_slug: The repository key
+        :param pull_request_id: The pull request id
+        :return:
+        """
+        url = self._url_pull_request_blocker_comments(project_key, repository_slug, pull_request_id)
+        return self.get(url)
+
     def decline_pull_request(self, project_key, repository_slug, pr_id, pr_version):
         """
         Decline a pull request.
@@ -2194,7 +2252,16 @@ class Bitbucket(BitbucketBase):
         url = "{}/merge".format(self._url_pull_request(project_key, repository_slug, pr_id))
         return self.get(url)
 
-    def merge_pull_request(self, project_key, repository_slug, pr_id, pr_version):
+    def merge_pull_request(
+        self,
+        project_key,
+        repository_slug,
+        pr_id,
+        merge_message,
+        close_source_branch=False,
+        merge_strategy=MergeStrategy.MERGE_COMMIT,
+        pr_version=None,
+    ):
         """
         Merge pull request
         The authenticated user must have REPO_READ permission for the repository
@@ -2203,14 +2270,23 @@ class Bitbucket(BitbucketBase):
         :param project_key: PROJECT
         :param repository_slug: my_shiny_repo
         :param pr_id: 2341
+        :param merge_message: "feat: add new file handler"
         :param pr_version:
+        :param close_source_branch: True
+        :param merge_strategy:  "squash"
         :return:
         """
         url = "{}/merge".format(self._url_pull_request(project_key, repository_slug, pr_id))
         params = {}
+        data = {
+            "type": "pullrequest",
+            "message": merge_message,
+            "close_source_branch": close_source_branch,
+            "merge_strategy": MergeStrategy(merge_strategy).value,
+        }
         if not self.cloud:
             params["version"] = pr_version
-        return self.post(url, params=params)
+        return self.post(url, data=data, params=params)
 
     def reopen_pull_request(self, project_key, repository_slug, pr_id, pr_version):
         """
@@ -2300,6 +2376,7 @@ class Bitbucket(BitbucketBase):
         limit=None,
         until=None,
         since=None,
+        path=None,
     ):
         """
         Get commit list from repo
@@ -2317,6 +2394,7 @@ class Bitbucket(BitbucketBase):
                fixed system limits. Default by built-in method: None
         :param until: OPTIONAL: The commit ID or ref (inclusively) to retrieve commits before
         :param since: OPTIONAL: The commit ID or ref (exclusively) to retrieve commits after
+        :param path: OPTIONAL: An optional path to filter commits by
         :return:
         """
         url = self._url_commits(project_key, repository_slug)
@@ -2343,6 +2421,8 @@ class Bitbucket(BitbucketBase):
             params["since"] = since
         if until:
             params["until"] = until
+        if path:
+            params["path"] = path
         return self._get_paged(url, params=params)
 
     def get_commit_changes(self, project_key, repository_slug, hash_newest=None, merges="include", commit_id=None):

@@ -264,7 +264,7 @@ class Repository(BitbucketCloudBase):
             "{}/hooks".format(self.url),
             data={"links": {"hooks": {"href": "{}/hooks".format(self.url)}}},
             **self._new_session_args
-        )
+        )  # fmt: skip
         self.__default_reviewers = DefaultReviewers("{}/default-reviewers".format(self.url), **self._new_session_args)
         self.__deployment_environments = DeploymentEnvironments(
             "{}/environments".format(self.url), **self._new_session_args

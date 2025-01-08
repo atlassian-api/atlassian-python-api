@@ -13,6 +13,7 @@ from requests import HTTPError
 from requests_oauthlib import OAuth1, OAuth2
 from six.moves.urllib.parse import urlencode
 from urllib3.util import Retry
+import urllib3
 
 from atlassian.request_utils import get_default_logger
 
@@ -117,7 +118,7 @@ class AtlassianRestAPI(object):
             self._session = requests.Session()
         else:
             self._session = session
-        if backoff_and_retry:
+        if backoff_and_retry and int(urllib3.__version__.split(".")[0]) >= 2:
             # Note: we only retry on status and not on any of the
             # other supported reasons
             retries = Retry(
@@ -361,6 +362,34 @@ class AtlassianRestAPI(object):
                 log.error(e)
                 return response.text
 
+    def _get_response_content(
+        self,
+        *args,
+        fields,
+        **kwargs,
+    ):
+        """
+        :param fields: list of tuples in the form (field_name, default value (optional)).
+            Used for chaining dictionary value accession.
+            E.g. [("field1", "default1"), ("field2", "default2"), ("field3", )]
+        """
+        response = self.get(*args, **kwargs)
+        if "advanced_mode" in kwargs:
+            advanced_mode = kwargs["advanced_mode"]
+        else:
+            advanced_mode = self.advanced_mode
+
+        if not advanced_mode:  # dict
+            for field in fields:
+                response = response.get(*field)
+        else:  # requests.Response
+            first_field = fields[0]
+            response = response.json().get(*first_field)
+            for field in fields[1:]:
+                response = response.get(*field)
+
+        return response
+
     def post(
         self,
         path,
@@ -537,7 +566,9 @@ class AtlassianRestAPI(object):
                 else:
                     error_msg_list = j.get("errorMessages", list())
                     errors = j.get("errors", dict())
-                    if isinstance(errors, dict):
+                    if isinstance(errors, dict) and "message" not in errors:
+                        error_msg_list.extend(errors.values())
+                    elif isinstance(errors, dict) and "message" in errors:
                         error_msg_list.append(errors.get("message", ""))
                     elif isinstance(errors, list):
                         error_msg_list.extend([v.get("message", "") if isinstance(v, dict) else v for v in errors])

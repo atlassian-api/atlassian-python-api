@@ -164,7 +164,10 @@ class BitbucketBase(AtlassianRestAPI):
             # The format contains a : in the timezone which is supported from 3.7 on.
             if sys.version_info <= (3, 7):
                 value_str = RE_TIMEZONE.sub(r"\1\2", value_str)
-            value = datetime.strptime(value_str, self.CONF_TIMEFORMAT)
+            try:
+                value = datetime.strptime(value_str, self.CONF_TIMEFORMAT)
+            except ValueError:
+                value = datetime.strptime(value_str, "%Y-%m-%dT%H:%M:%S.%fZ", tzinfo="UTC")
         else:
             value = value_str
 
