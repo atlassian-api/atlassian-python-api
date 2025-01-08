@@ -1468,9 +1468,8 @@ class Confluence(AtlassianRestAPI):
             for attachment in attachments:
                 file_name = attachment["title"] or attachment["id"]  # Use attachment ID if title is unavailable
                 download_link = self.url + attachment["_links"]["download"]
-
                 # Fetch the file content
-                response = self._session.get(download_link)
+                response = self._session.get(str(download_link))
                 response.raise_for_status()  # Raise error if request fails
 
                 if to_memory:
@@ -1488,7 +1487,6 @@ class Confluence(AtlassianRestAPI):
                 return downloaded_files
             else:
                 return {"attachments_downloaded": len(attachments), "path": path}
-
         except NotADirectoryError:
             raise FileNotFoundError("The directory '{path}' does not exist.".format(path=path))
         except PermissionError:
