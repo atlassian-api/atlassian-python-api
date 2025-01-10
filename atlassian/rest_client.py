@@ -12,6 +12,7 @@ except ImportError:
 from requests import HTTPError
 from requests_oauthlib import OAuth1, OAuth2
 from six.moves.urllib.parse import urlencode
+import time
 from urllib3.util import Retry
 import urllib3
 
@@ -269,44 +270,52 @@ class AtlassianRestAPI(object):
         :param advanced_mode: bool, OPTIONAL: Return the raw response
         :return:
         """
-        url = self.url_joiner(None if absolute else self.url, path, trailing)
-        params_already_in_url = True if "?" in url else False
-        if params or flags:
-            if params_already_in_url:
-                url += "&"
-            else:
-                url += "?"
-        if params:
-            url += urlencode(params or {})
-        if flags:
-            url += ("&" if params or params_already_in_url else "") + "&".join(flags or [])
-        json_dump = None
-        if files is None:
-            data = None if not data else dumps(data)
-            json_dump = None if not json else dumps(json)
-        self.log_curl_debug(
-            method=method,
-            url=url,
-            headers=headers,
-            data=data if data else json_dump,
-        )
-        headers = headers or self.default_headers
-        response = self._session.request(
-            method=method,
-            url=url,
-            headers=headers,
-            data=data,
-            json=json,
-            timeout=self.timeout,
-            verify=self.verify_ssl,
-            files=files,
-            proxies=self.proxies,
-            cert=self.cert,
-        )
-        response.encoding = "utf-8"
 
-        log.debug("HTTP: %s %s -> %s %s", method, path, response.status_code, response.reason)
-        log.debug("HTTP: Response text -> %s", response.text)
+        while True:
+            url = self.url_joiner(None if absolute else self.url, path, trailing)
+            params_already_in_url = True if "?" in url else False
+            if params or flags:
+                if params_already_in_url:
+                   url += "&"
+                else:
+                    url += "?"
+            if params:
+                url += urlencode(params or {})
+            if flags:
+                url += ("&" if params or params_already_in_url else "") + "&".join(flags or [])
+            json_dump = None
+            if files is None:
+                data = None if not data else dumps(data)
+                json_dump = None if not json else dumps(json)
+            self.log_curl_debug(
+                method=method,
+                url=url,
+                headers=headers,
+                data=data if data else json_dump,
+            )
+            headers = headers or self.default_headers
+            response = self._session.request(
+                method=method,
+                url=url,
+                headers=headers,
+                data=data,
+                json=json,
+                timeout=self.timeout,
+                verify=self.verify_ssl,
+                files=files,
+                proxies=self.proxies,
+                cert=self.cert,
+             )
+            response.encoding = "utf-8"
+
+            log.debug("HTTP: %s %s -> %s %s", method, path, response.status_code, response.reason)
+            log.debug("HTTP: Response text -> %s", response.text)
+
+            if response.status_code == 429:
+                time.sleep(int(response.headers['Retry-After']))
+            else:
+                break
+
         if self.advanced_mode or advanced_mode:
             return response
 
