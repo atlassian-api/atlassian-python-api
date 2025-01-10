@@ -276,7 +276,7 @@ class AtlassianRestAPI(object):
             params_already_in_url = True if "?" in url else False
             if params or flags:
                 if params_already_in_url:
-                   url += "&"
+                    url += "&"
                 else:
                     url += "?"
             if params:
@@ -305,14 +305,14 @@ class AtlassianRestAPI(object):
                 files=files,
                 proxies=self.proxies,
                 cert=self.cert,
-             )
+            )
             response.encoding = "utf-8"
 
             log.debug("HTTP: %s %s -> %s %s", method, path, response.status_code, response.reason)
             log.debug("HTTP: Response text -> %s", response.text)
 
             if response.status_code == 429:
-                time.sleep(int(response.headers['Retry-After']))
+                time.sleep(int(response.headers["Retry-After"]))
             else:
                 break
 
