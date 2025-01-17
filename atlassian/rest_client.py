@@ -119,6 +119,10 @@ class AtlassianRestAPI(object):
             self._session = requests.Session()
         else:
             self._session = session
+
+        if proxies is not None:
+            self._session.proxies = self.proxies
+
         if backoff_and_retry and int(urllib3.__version__.split(".")[0]) >= 2:
             # Note: we only retry on status and not on any of the
             # other supported reasons
