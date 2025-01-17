@@ -2753,7 +2753,7 @@ class Confluence(AtlassianRestAPI):
             except Exception as e:
                 raise ApiError("Problems with getting the atl_token for get_space_export method :", reason=e)
 
-        # Checks if space_ke parameter is valid and  if api_token has relevant permissions to space
+        # Checks if space_ke parameter is valid and if api_token has relevant permissions to space
         self.get_space(space_key=space_key, expand="permissions")
 
         try:
