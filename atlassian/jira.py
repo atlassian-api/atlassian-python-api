@@ -2508,7 +2508,7 @@ class Jira(AtlassianRestAPI):
         """
         base_url = self.resource_url("project")
         url = "{base_url}/{key}/archive".format(base_url=base_url, key=key)
-        return self.post(url)
+        return self.put(url)
 
     def project(self, key, expand=None):
         """
