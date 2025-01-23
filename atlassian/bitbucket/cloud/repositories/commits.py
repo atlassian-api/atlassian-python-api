@@ -3,7 +3,7 @@
 from ..base import BitbucketCloudBase
 from ..common.builds import Build
 from ..common.comments import Comment
-from ..common.users import User, Participant
+from ..common.users import Participant, User
 
 
 class Commits(BitbucketCloudBase):
@@ -186,3 +186,29 @@ class Commit(BitbucketCloudBase):
         API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-commits/#api-repositories-workspace-repo-slug-commit-commit-approve-delete
         """
         return super(BitbucketCloudBase, self).delete("approve")
+
+    def get_pull_requests(self, start=0, pagelen=0):
+        """
+        Retrieves pull requests associated with the current commit.
+
+        Pull Request Commit Links app must be installed first before using this API;
+        installation automatically occurs when 'Go to pull request' is clicked
+        from the web interface for a commit's details.
+
+        API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-commit-commit-pullrequests-get
+
+        :param start: int, OPTIONAL: The starting page of pull requests to retrieve. Defaults to 0.
+        :param pagelen: int, OPTIONAL: The number of pull requests to retrieve per page. Defaults to 0.
+        :return: Generator[PullRequest]: A generator that yields `PullRequest` objects.
+        """
+        # NOTE: Import moved inside the method to avoid circular import issues
+        from ...cloud.repositories.pullRequests import PullRequest
+
+        params = {}
+        if start:
+            params["page"] = start
+        if pagelen:
+            params["pagelen"] = pagelen
+
+        for pull_request in self._get_paged(url="pullrequests", params=params):
+            yield PullRequest(pull_request, **self._new_session_args)
