@@ -7,11 +7,6 @@ JIRA_URL = "localhost:8080"
 JIRA_LOGIN = "admin"
 JIRA_TOKEN = "dsadd2c3s"
 
-
-def get_tickets(jql):
-    pass
-
-
 if __name__ == "__main__":
     jira = Jira(url=JIRA_URL, username=JIRA_LOGIN, token=JIRA_TOKEN)
     jql = "project = DOC"

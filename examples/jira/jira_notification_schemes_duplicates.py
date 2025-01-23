@@ -26,9 +26,7 @@ def compare_dicts(dict1, dict2, print_diffs=False):
 
 
 def review():
-    notification_scheme_dict = {}
     all_notification_schemes_dict = {}
-
     notification_schemes_ids = jira.get_notification_schemes()
     names = []
 

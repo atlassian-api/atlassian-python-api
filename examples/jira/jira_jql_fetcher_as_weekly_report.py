@@ -31,7 +31,6 @@ class ReportGenerator:
         jql = "((assignee was in ({})) OR assignee in ({})) AND updated > -{}d ".format(user, user, self.days)
         print("Start fetching info jql = {}".format(jql))
         while flag:
-            values = []
             try:
                 response = self.jira.jql(
                     jql,

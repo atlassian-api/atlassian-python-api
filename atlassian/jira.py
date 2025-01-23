@@ -656,12 +656,16 @@ class Jira(AtlassianRestAPI):
     def get_custom_fields(self, search=None, start=1, limit=50):
         """
         Get custom fields. Evaluated on 7.12
+        Get fields paginated in cloud
         :param search: str
         :param start: long Default: 1
         :param limit: int Default: 50
         :return:
         """
-        url = self.resource_url("customFields")
+        if self.cloud:
+            url = self.resource_url("field/search")
+        else:
+            url = self.resource_url("customFields")
         params = {}
         if search:
             params["search"] = search

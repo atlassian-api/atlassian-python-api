@@ -113,7 +113,8 @@ class AtlassianRestAPI(object):
                 Defaults to 1.0.
         :param retry_with_header: Enable retry logic based on the `Retry-After` header.
                 If set to True, the request will automatically retry if the response
-                contains a `Retry-After` header with a delay and has a status code of 429. The retry delay will be extracted
+                contains a `Retry-After` header with a delay and has a status code of 429.
+                The retry delay will be extracted
                 from the `Retry-After` header and the request will be paused for the specified
                 duration before retrying. Defaults to True.
                 If the `Retry-After` header is not present, retries will not occur.
@@ -253,7 +254,7 @@ class AtlassianRestAPI(object):
         """
         backoff_value = self.backoff_factor * (2 ** (retry_count - 1))
         if self.backoff_jitter != 0.0:
-            backoff_value += random.random() * self.backoff_jitter
+            backoff_value += random.uniform(0, self.backoff_jitter) # nosec B311
         return float(max(0, min(self.max_backoff_seconds, backoff_value)))
 
     def _retry_handler(self):

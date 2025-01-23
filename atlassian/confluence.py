@@ -390,7 +390,8 @@ class Confluence(AtlassianRestAPI):
         """
         Fetches html  tables added to  confluence page
         :param page_id: integer confluence page_id
-        :return: json object with page_id, number_of_tables_in_page  and  list of list tables_content representing scrapepd tables
+        :return: json object with page_id, number_of_tables_in_page
+                 and list of list tables_content representing scraped tables
         """
         try:
             page_content = self.get_page_by_id(page_id, expand="body.storage")["body"]["storage"]["value"]
@@ -736,7 +737,8 @@ class Confluence(AtlassianRestAPI):
         :param batch_size: OPTIONAL: The batch size of pages to retrieve from confluence per request MAX is 250.
                                      Default: 250
         :param sort: OPTIONAL: The order the pages are retrieved in.
-                               Valid values: id, -id, created-date, -created-date, modified-date, -modified-date, title, -title
+                               Valid values:
+                                    id, -id, created-date, -created-date, modified-date, -modified-date, title, -title
         :param status: OPTIONAL: Filter pages based on their status.
                                  Valid values: current, archived, deleted, trashed
                                  Default: current,archived
@@ -2735,7 +2737,8 @@ class Confluence(AtlassianRestAPI):
         """
         Export a Confluence space to a file of the specified type.
         (!) This method was developed for Confluence Cloud and may not work with Confluence on-prem.
-        (!) This is an experimental method that does not trigger an officially supported REST endpoint. It may break if Atlassian changes the space export front-end logic.
+        (!) This is an experimental method that does not trigger an officially supported REST endpoint.
+        It may break if Atlassian changes the space export front-end logic.
 
         :param space_key: The key of the space to export.
         :param export_type: The type of export to perform. Valid values are: 'html', 'csv', 'xml', 'pdf'.
@@ -2743,7 +2746,8 @@ class Confluence(AtlassianRestAPI):
         """
 
         def get_atl_request(url: str):
-            #  Nested function  used to get atl_token used for XSRF protection. this is only applicable to html/csv/xml space exports
+            # Nested function  used to get atl_token used for XSRF protection.
+            # This is only applicable to html/csv/xml space exports
             try:
                 response = self.get(url, advanced_mode=True)
                 parsed_html = BeautifulSoup(response.text, "html.parser")
