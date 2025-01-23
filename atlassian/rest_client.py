@@ -254,7 +254,7 @@ class AtlassianRestAPI(object):
         """
         backoff_value = self.backoff_factor * (2 ** (retry_count - 1))
         if self.backoff_jitter != 0.0:
-            backoff_value += random.uniform(0, self.backoff_jitter) # nosec B311
+            backoff_value += random.uniform(0, self.backoff_jitter)  # nosec B311
         return float(max(0, min(self.max_backoff_seconds, backoff_value)))
 
     def _retry_handler(self):

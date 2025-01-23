@@ -115,7 +115,7 @@ class BitbucketCloudBase(BitbucketBase):
                 if e.get("detail"):
                     # It uses interpolation instead of concatenation because of
                     # https://github.com/atlassian-api/atlassian-python-api/issues/1481
-                    error_msg = "{}\n{}".format(error_msg, e["detail"])
+                    error_msg = "{}\n{}".format(error_msg, str(e["detail"]))
             except Exception as e:
                 log.error(e)
                 response.raise_for_status()
