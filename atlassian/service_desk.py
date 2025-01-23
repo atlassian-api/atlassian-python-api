@@ -196,6 +196,7 @@ class ServiceDesk(AtlassianRestAPI):
 
         :param issue_id_or_key: str
         :param users_list: list
+        :param account_list: list
         :return:
         """
         url = "rest/servicedeskapi/request/{}/participant".format(issue_id_or_key)
@@ -214,6 +215,7 @@ class ServiceDesk(AtlassianRestAPI):
 
         :param issue_id_or_key: str
         :param users_list: list
+        :param account_list: list
         :return:
         """
         url = "rest/servicedeskapi/request/{}/participant".format(issue_id_or_key)

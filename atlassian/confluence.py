@@ -732,7 +732,6 @@ class Confluence(AtlassianRestAPI):
         """
         Get all pages from a set of space ids:
         https://developer.atlassian.com/cloud/confluence/rest/v2/api-group-page/#api-pages-get
-
         :param space_ids: A Set of space IDs passed as a filter to Confluence
         :param batch_size: OPTIONAL: The batch size of pages to retrieve from confluence per request MAX is 250.
                                      Default: 250
@@ -742,7 +741,7 @@ class Confluence(AtlassianRestAPI):
                                  Valid values: current, archived, deleted, trashed
                                  Default: current,archived
         :param title: OPTIONAL: Filter pages based on their title.
-        :param body-format: OPTIONAL: The format of the body in the response. Valid values: storage, atlas_doc_format
+        :param body_format: OPTIONAL: The format of the body in the response. Valid values: storage, atlas_doc_format
         :return:
         """
         path = "/api/v2/pages"
