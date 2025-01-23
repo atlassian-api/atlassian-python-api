@@ -1,5 +1,6 @@
 # coding=utf-8
 import logging
+import random
 from json import dumps
 
 import requests
@@ -9,12 +10,13 @@ try:
     from oauthlib.oauth1.rfc5849 import SIGNATURE_RSA_SHA512 as SIGNATURE_RSA
 except ImportError:
     from oauthlib.oauth1 import SIGNATURE_RSA
+import time
+
+import urllib3
 from requests import HTTPError
 from requests_oauthlib import OAuth1, OAuth2
 from six.moves.urllib.parse import urlencode
-import time
 from urllib3.util import Retry
-import urllib3
 
 from atlassian.request_utils import get_default_logger
 
@@ -69,6 +71,9 @@ class AtlassianRestAPI(object):
         retry_status_codes=[413, 429, 503],
         max_backoff_seconds=1800,
         max_backoff_retries=1000,
+        backoff_factor=1.0,
+        backoff_jitter=1.0,
+        retry_with_header=True,
     ):
         """
         init function for the AtlassianRestAPI object.
@@ -102,6 +107,19 @@ class AtlassianRestAPI(object):
                 wait any longer than this. Defaults to 1800.
         :param max_backoff_retries: Maximum number of retries to try before
                 continuing. Defaults to 1000.
+        :param backoff_factor: Factor by which to multiply the backoff time (for exponential backoff).
+                Defaults to 1.0.
+        :param backoff_jitter: Random variation to add to the backoff time to avoid synchronized retries.
+                Defaults to 1.0.
+        :param retry_with_header: Enable retry logic based on the `Retry-After` header.
+                If set to True, the request will automatically retry if the response
+                contains a `Retry-After` header with a delay and has a status code of 429. The retry delay will be extracted
+                from the `Retry-After` header and the request will be paused for the specified
+                duration before retrying. Defaults to True.
+                If the `Retry-After` header is not present, retries will not occur.
+                However, if the `Retry-After` header is missing and `backoff_and_retry` is enabled,
+                the retry logic will still be triggered based on the status code 429,
+                provided that 429 is included in the `retry_status_codes` list.
         """
         self.url = url
         self.username = username
@@ -115,6 +133,14 @@ class AtlassianRestAPI(object):
         self.cloud = cloud
         self.proxies = proxies
         self.cert = cert
+        self.backoff_and_retry = backoff_and_retry
+        self.max_backoff_retries = max_backoff_retries
+        self.retry_status_codes = retry_status_codes
+        self.max_backoff_seconds = max_backoff_seconds
+        self.use_urllib3_retry = int(urllib3.__version__.split(".")[0]) >= 2
+        self.backoff_factor = backoff_factor
+        self.backoff_jitter = backoff_jitter
+        self.retry_with_header = retry_with_header
         if session is None:
             self._session = requests.Session()
         else:
@@ -123,17 +149,17 @@ class AtlassianRestAPI(object):
         if proxies is not None:
             self._session.proxies = self.proxies
 
-        if backoff_and_retry and int(urllib3.__version__.split(".")[0]) >= 2:
+        if self.backoff_and_retry and self.use_urllib3_retry:
             # Note: we only retry on status and not on any of the
             # other supported reasons
             retries = Retry(
                 total=None,
-                status=max_backoff_retries,
+                status=self.max_backoff_retries,
                 allowed_methods=None,
-                status_forcelist=retry_status_codes,
-                backoff_factor=1,
-                backoff_jitter=1,
-                backoff_max=max_backoff_seconds,
+                status_forcelist=self.retry_status_codes,
+                backoff_factor=self.backoff_factor,
+                backoff_jitter=self.backoff_jitter,
+                backoff_max=self.max_backoff_seconds,
             )
             self._session.mount(self.url, HTTPAdapter(max_retries=retries))
         if username and password:
@@ -209,6 +235,59 @@ class AtlassianRestAPI(object):
             log.error(e)
             return None
 
+    def _calculate_backoff_value(self, retry_count):
+        """
+        Calculate the backoff delay for a given retry attempt.
+
+        This method computes an exponential backoff delay based on the retry count and
+        a configurable backoff factor. It optionally adds a random jitter to introduce
+        variability in the delay, which can help prevent synchronized retries in
+        distributed systems. The calculated backoff delay is clamped between 0 and a
+        maximum allowable delay (`self.max_backoff_seconds`) to avoid excessively long
+        wait times.
+
+        :param retry_count: int, REQUIRED: The current retry attempt number (1-based).
+            Determines the exponential backoff delay.
+        :return: float: The calculated backoff delay in seconds, adjusted for jitter
+            and clamped to the maximum allowable value.
+        """
+        backoff_value = self.backoff_factor * (2 ** (retry_count - 1))
+        if self.backoff_jitter != 0.0:
+            backoff_value += random.random() * self.backoff_jitter
+        return float(max(0, min(self.max_backoff_seconds, backoff_value)))
+
+    def _retry_handler(self):
+        """
+        Creates and returns a retry handler function for managing HTTP request retries.
+
+        The returned handler function determines whether a request should be retried
+        based on the response and retry settings.
+
+        :return: Callable[[Response], bool]: A function that takes an HTTP response object as input and
+        returns `True` if the request should be retried, or `False` otherwise.
+        """
+        retries = 0
+
+        def _handle(response):
+            nonlocal retries
+
+            if self.retry_with_header and "Retry-After" in response.headers and response.status_code == 429:
+                time.sleep(int(response.headers["Retry-After"]))
+                return True
+
+            if not self.backoff_and_retry or self.use_urllib3_retry:
+                return False
+
+            if retries < self.max_backoff_retries and response.status_code in self.retry_status_codes:
+                retries += 1
+                backoff_value = self._calculate_backoff_value(retries)
+                time.sleep(backoff_value)
+                return True
+
+            return False
+
+        return _handle
+
     def log_curl_debug(self, method, url, data=None, headers=None, level=logging.DEBUG):
         """
 
@@ -274,30 +353,32 @@ class AtlassianRestAPI(object):
         :param advanced_mode: bool, OPTIONAL: Return the raw response
         :return:
         """
+        url = self.url_joiner(None if absolute else self.url, path, trailing)
+        params_already_in_url = True if "?" in url else False
+        if params or flags:
+            if params_already_in_url:
+                url += "&"
+            else:
+                url += "?"
+        if params:
+            url += urlencode(params or {})
+        if flags:
+            url += ("&" if params or params_already_in_url else "") + "&".join(flags or [])
+        json_dump = None
+        if files is None:
+            data = None if not data else dumps(data)
+            json_dump = None if not json else dumps(json)
 
+        headers = headers or self.default_headers
+
+        retry_handler = self._retry_handler()
         while True:
-            url = self.url_joiner(None if absolute else self.url, path, trailing)
-            params_already_in_url = True if "?" in url else False
-            if params or flags:
-                if params_already_in_url:
-                    url += "&"
-                else:
-                    url += "?"
-            if params:
-                url += urlencode(params or {})
-            if flags:
-                url += ("&" if params or params_already_in_url else "") + "&".join(flags or [])
-            json_dump = None
-            if files is None:
-                data = None if not data else dumps(data)
-                json_dump = None if not json else dumps(json)
             self.log_curl_debug(
                 method=method,
                 url=url,
                 headers=headers,
-                data=data if data else json_dump,
+                data=data or json_dump,
             )
-            headers = headers or self.default_headers
             response = self._session.request(
                 method=method,
                 url=url,
@@ -310,15 +391,15 @@ class AtlassianRestAPI(object):
                 proxies=self.proxies,
                 cert=self.cert,
             )
-            response.encoding = "utf-8"
+            continue_retries = retry_handler(response)
+            if continue_retries:
+                continue
+            break
 
-            log.debug("HTTP: %s %s -> %s %s", method, path, response.status_code, response.reason)
-            log.debug("HTTP: Response text -> %s", response.text)
+        response.encoding = "utf-8"
 
-            if response.status_code == 429:
-                time.sleep(int(response.headers["Retry-After"]))
-            else:
-                break
+        log.debug("HTTP: %s %s -> %s %s", method, path, response.status_code, response.reason)
+        log.debug("HTTP: Response text -> %s", response.text)
 
         if self.advanced_mode or advanced_mode:
             return response
