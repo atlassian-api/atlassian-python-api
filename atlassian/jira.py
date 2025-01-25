@@ -3764,6 +3764,53 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         url = "{base_url}/{schemeID}/permission".format(base_url=base_url, schemeID=permission_id)
         return self.post(url, data=new_permission)
 
+    def update_permissionscheme(self, permission_id, name, description=None, permissions=None, scope=None, expand=None):
+        """
+        Updates a permission scheme. Below are some important things to note when using this resource:
+        - If a permissions list is present in the request, then it is set in the permission scheme, overwriting all existing grants.
+        - If you want to update only the name and description, then do not send a permissions list in the request.
+        - Sending an empty list will remove all permission grants from the permission scheme.
+
+        Cloud API docs: https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-permission-schemes/#api-rest-api-3-permissionscheme-schemeid-put
+        
+        :param permission_id: int, REQUIRED: The ID of the permission scheme to update.
+        :param name: str, REQUIRED: The name of the permission scheme. Must be unique.
+        :param description: str, OPTIONAL: A description for the permission scheme. Defaults to None.
+        :param permissions: list[dict], OPTIONAL: A collection of permission grants. Defaults to None.
+            Example:
+                [
+                    {
+                        "holder": {
+                            "parameter": "jira-core-users",
+                            "type": "group",
+                            "value": "ca85fac0-d974-40ca-a615-7af99c48d24f"
+                        },
+                        "permission": "ADMINISTER_PROJECTS"
+                    }
+                ]
+        :param scope: OPTIONAL: The scope of the permission scheme.
+        :param expand: str, OPTIONAL: Use expand to include additional information in the response. 
+            This parameter accepts a comma-separated list. 
+            Note that permissions are always included when you specify any value.
+
+        :return:
+        """
+        base_url = self.resource_url("permissionscheme")
+        url = "{base_url}/{scheme_id}".format(base_url=base_url, scheme_id=permission_id) 
+        data = {"name": name}
+        if description is not None:
+            data["description"] = description
+        if permissions is not None:
+            data["permissions"] = permissions
+        if scope is not None:
+            data["scope"] = scope
+            
+        params = {}
+        if expand:
+            params["expand"] = expand
+            
+        return self.put(url, data=data, params=params)
+
     """
     REST resource that allows to view security schemes defined in the product.
     Resource for managing priority schemes.
