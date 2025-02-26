@@ -242,6 +242,16 @@ class Jira(AtlassianRestAPI):
         url = "{base_url}/{attachment_id}".format(base_url=base_url, attachment_id=attachment_id)
         return self.get(url)
 
+    def download_issue_attachments(self, issue, path=None):
+        """
+        Downloads all attachments from a Jira issue.
+        :param issue: The issue-key of the Jira issue
+        :param path: Path to directory where attachments will be saved. If None, current working directory will be used.
+        :return: A message indicating the result of the download operation.
+        """
+        return self.download_attachments_from_issue(issue=issue, path=path, cloud=self.cloud)
+        
+    @deprecated(version="3.41.20", reason="Use download_issue_attachments instead")
     def download_attachments_from_issue(self, issue, path=None, cloud=True):
         """
         Downloads all attachments from a Jira issue.
