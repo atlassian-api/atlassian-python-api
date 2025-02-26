@@ -3772,7 +3772,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         - Sending an empty list will remove all permission grants from the permission scheme.
 
         Cloud API docs: https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-permission-schemes/#api-rest-api-3-permissionscheme-schemeid-put
-        
+
         :param permission_id: int, REQUIRED: The ID of the permission scheme to update.
         :param name: str, REQUIRED: The name of the permission scheme. Must be unique.
         :param description: str, OPTIONAL: A description for the permission scheme. Defaults to None.
@@ -3789,14 +3789,14 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
                     }
                 ]
         :param scope: OPTIONAL: The scope of the permission scheme.
-        :param expand: str, OPTIONAL: Use expand to include additional information in the response. 
-            This parameter accepts a comma-separated list. 
+        :param expand: str, OPTIONAL: Use expand to include additional information in the response.
+            This parameter accepts a comma-separated list.
             Note that permissions are always included when you specify any value.
 
         :return:
         """
         base_url = self.resource_url("permissionscheme")
-        url = "{base_url}/{scheme_id}".format(base_url=base_url, scheme_id=permission_id) 
+        url = "{base_url}/{scheme_id}".format(base_url=base_url, scheme_id=permission_id)
         data = {"name": name}
         if description is not None:
             data["description"] = description
@@ -3804,11 +3804,11 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
             data["permissions"] = permissions
         if scope is not None:
             data["scope"] = scope
-            
+
         params = {}
         if expand:
             params["expand"] = expand
-            
+
         return self.put(url, data=data, params=params)
 
     """

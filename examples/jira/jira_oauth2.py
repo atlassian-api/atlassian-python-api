@@ -1,3 +1,4 @@
+# coding=utf-8
 """
     Example server with Flask demonstrating use of Jira OAuth 2.0.
     Server needs to be deployed. Example code is requesting access token from
