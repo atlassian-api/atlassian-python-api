@@ -463,6 +463,16 @@ class Xray(AtlassianRestAPI):
         url = self.resource_url("testrun/{0}".format(test_run_id))
         return self.put(url, update)
 
+    def get_test_run_iteration(self, test_run_id, iteration_id):
+        """
+        Retrieve the specified iteration for the given test run.
+        :param test_run_id: ID of the test run (e.g. 100).
+        :param iteration_id: ID of the iteration.
+        :return: Returns the specified iteration for the given test run.
+        """
+        url = self.resource_url("testrun/{0}/iteration/{1}".format(test_run_id, iteration_id))
+        return self.get(url)
+
     def get_test_run_status(self, test_run_id):
         """
         Retrieve the status for the given test run.
