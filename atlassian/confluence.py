@@ -1470,8 +1470,7 @@ class Confluence(AtlassianRestAPI):
                 file_name = attachment["title"] or attachment["id"]  # Use attachment ID if title is unavailable
                 download_link = self.url + attachment["_links"]["download"]
                 # Fetch the file content
-                response = self._session.get(str(download_link))
-                response.raise_for_status()  # Raise error if request fails
+                response = self.get(str(download_link))
 
                 if to_memory:
                     # Store in BytesIO object
@@ -1493,7 +1492,11 @@ class Confluence(AtlassianRestAPI):
         except PermissionError:
             raise PermissionError("Permission denied when trying to save files to '{path}'.".format(path=path))
         except requests.HTTPError as http_err:
-            raise Exception("HTTP error occurred while downloading attachments: {http_err}".format(http_err=http_err))
+            raise requests.HTTPError(
+                "HTTP error occurred while downloading attachments: {http_err}".format(http_err=http_err), 
+                response=http_err.response,
+                request=http_err.request
+            )
         except Exception as err:
             raise Exception("An unexpected error occurred: {error}".format(error=err))
 
