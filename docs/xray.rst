@@ -136,6 +136,9 @@ Manage Test Runs
     # Update the assignee for the given test run
     xray.update_test_run_assignee(100, 'bob')
 
+    # Retrieve a iteration of the given test run
+    xray.get_test_run_iteration(100, 200)
+
     # Retrieve the status for the given test run
     xray.get_test_run_status(100)
 
