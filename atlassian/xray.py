@@ -1,6 +1,7 @@
 # coding=utf-8
 import logging
 import re
+from requests import HTTPError
 from .rest_client import AtlassianRestAPI
 
 log = logging.getLogger(__name__)
@@ -12,6 +13,25 @@ class Xray(AtlassianRestAPI):
             kwargs["api_version"] = "1.0"
         kwargs["api_root"] = "rest/raven"
         super(Xray, self).__init__(*args, **kwargs)
+
+    def raise_for_status(self, response):
+        """
+        Checks the response for an error status and raises an exception with the error message provided by the server
+        :param response:
+        :return:
+        """
+        if response.status_code == 401 and response.headers.get("Content-Type") != "application/json;charset=UTF-8":
+            raise HTTPError("Unauthorized (401)", response=response)
+
+        if 400 <= response.status_code < 600:
+            try:
+                j = response.json()
+                error_msg = j["message"]
+            except Exception as e:
+                log.error(e)
+                response.raise_for_status()
+            else:
+                raise HTTPError(error_msg, response=response)
 
     def resource_url(self, resource, api_root=None, api_version=None):
         """
@@ -462,6 +482,16 @@ class Xray(AtlassianRestAPI):
         update = {"assignee": assignee}
         url = self.resource_url("testrun/{0}".format(test_run_id))
         return self.put(url, update)
+
+    def get_test_run_iteration(self, test_run_id, iteration_id):
+        """
+        Retrieve the specified iteration for the given test run.
+        :param test_run_id: ID of the test run (e.g. 100).
+        :param iteration_id: ID of the iteration.
+        :return: Returns the specified iteration for the given test run.
+        """
+        url = self.resource_url("testrun/{0}/iteration/{1}".format(test_run_id, iteration_id))
+        return self.get(url)
 
     def get_test_run_status(self, test_run_id):
         """
