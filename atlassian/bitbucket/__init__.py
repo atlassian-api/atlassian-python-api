@@ -1458,7 +1458,10 @@ class Bitbucket(BitbucketBase):
         return self.delete(url)
 
     def _url_webhooks(self, project_key, repository_slug):
-        return "{}/webhooks".format(self._url_repo(project_key, repository_slug))
+        if repository_slug is None:
+            return "{}/webhooks".format(self._url_project(project_key))
+        else:
+            return "{}/webhooks".format(self._url_repo(project_key, repository_slug))
 
     def get_webhooks(
         self,
