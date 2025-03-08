@@ -27,7 +27,7 @@ class Repositories(RepositoriesBase):
     def __init__(self, url, *args, **kwargs):
         super(Repositories, self).__init__(url, *args, **kwargs)
 
-    def each(self, after=None, role=None, q=None, sort=None):
+    def each(self, after=None, role=None, q=None, sort=None, pagelen=None):
         """
         Get all repositories matching the criteria.
 
@@ -47,7 +47,9 @@ class Repositories(RepositoriesBase):
                           See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
         :param sort: string: Name of a response property to sort results.
                              See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
-
+        :param pagelen: int: Name of a response property to change page size.
+                             See https://developer.atlassian.com/cloud/bitbucket/rest/intro/#pagination for details.
+        
         :return: A generator for the repository objects
 
         API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories#get
@@ -64,6 +66,8 @@ class Repositories(RepositoriesBase):
             params["q"] = q
         if sort is not None:
             params["sort"] = sort
+        if pagelen is not None:
+            params["pagelen"] = pagelen
         for repository in self._get_paged(None, params):
             yield self._get_object(repository)
 
