@@ -32,7 +32,7 @@ class Refs(BitbucketCloudBase):
 
         return self._get_object(self.post(None, data))
 
-    def each(self, q=None, sort=None):
+    def each(self, q=None, sort=None, pagelen=None):
         """
         Returns the list of refs in this repository.
 
@@ -40,7 +40,9 @@ class Refs(BitbucketCloudBase):
                           See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
         :param sort: string: Name of a response property to sort results.
                              See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
-
+        :param pagelen: int: Name of a response property to change page size.
+                             See https://developer.atlassian.com/cloud/bitbucket/rest/intro/#pagination for details.
+        
         :return: A generator for the Ref objects
         """
         params = {}
@@ -48,6 +50,8 @@ class Refs(BitbucketCloudBase):
             params["sort"] = sort
         if q is not None:
             params["q"] = q
+        if pagelen is not None:
+            params["pagelen"] = q
         for ref in self._get_paged(None, trailing=True, params=params):
             yield self._get_object(super(Refs, self).get(ref.get("name")))
 
