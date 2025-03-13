@@ -51,7 +51,7 @@ class Refs(BitbucketCloudBase):
         if q is not None:
             params["q"] = q
         if pagelen is not None:
-            params["pagelen"] = q
+            params["pagelen"] = pagelin
         for ref in self._get_paged(None, trailing=True, params=params):
             yield self._get_object(super(Refs, self).get(ref.get("name")))
 
