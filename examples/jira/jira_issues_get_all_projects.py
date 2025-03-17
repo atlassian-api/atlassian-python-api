@@ -1,7 +1,5 @@
 # coding=utf-8
-"""
-    Getting Project Issue(s) example
-"""
+"""Getting Project Issue(s) example"""
 
 from atlassian import Jira
 

@@ -1,10 +1,9 @@
 # coding=utf-8
-"""
-    Example server with Flask demonstrating use of Jira OAuth 2.0.
-    Server needs to be deployed. Example code is requesting access token from
-    Jira. User has to grant access rights. After authorization the
-    token and Using access token, Jira cloud ID is identified and
-    the available projects are returned.
+"""Example server with Flask demonstrating use of Jira OAuth 2.0.
+Server needs to be deployed. Example code is requesting access token from
+Jira. User has to grant access rights. After authorization the
+token and Using access token, Jira cloud ID is identified and
+the available projects are returned.
 """
 
 from requests_oauthlib import OAuth2Session

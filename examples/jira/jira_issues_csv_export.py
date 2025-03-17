@@ -1,8 +1,7 @@
 # coding=utf-8
-"""
-    jira issues export to CSV - all or current.
-    default is ALL
-    below example uses the current fields
+"""Jira issues export to CSV - all or current.
+default is ALL
+below example uses the current fields
 """
 
 from atlassian import Jira

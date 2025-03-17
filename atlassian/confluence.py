@@ -1493,9 +1493,9 @@ class Confluence(AtlassianRestAPI):
             raise PermissionError("Permission denied when trying to save files to '{path}'.".format(path=path))
         except requests.HTTPError as http_err:
             raise requests.HTTPError(
-                "HTTP error occurred while downloading attachments: {http_err}".format(http_err=http_err), 
+                "HTTP error occurred while downloading attachments: {http_err}".format(http_err=http_err),
                 response=http_err.response,
-                request=http_err.request
+                request=http_err.request,
             )
         except Exception as err:
             raise Exception("An unexpected error occurred: {error}".format(error=err))

@@ -1,7 +1,5 @@
 # coding=utf8
-"""
-    Assign/Reassign a Jira Issue to a user with the account_id
-"""
+"""Assign/Reassign a Jira Issue to a user with the account_id"""
 
 from atlassian import Jira
 

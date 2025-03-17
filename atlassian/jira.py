@@ -250,7 +250,7 @@ class Jira(AtlassianRestAPI):
         :return: A message indicating the result of the download operation.
         """
         return self.download_attachments_from_issue(issue=issue, path=path, cloud=self.cloud)
-        
+
     @deprecated(version="3.41.20", reason="Use download_issue_attachments instead")
     def download_attachments_from_issue(self, issue, path=None, cloud=True):
         """

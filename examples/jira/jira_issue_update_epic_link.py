@@ -1,6 +1,4 @@
-"""
-    Update the Epic Link for issue(s)
-"""
+"""Update the Epic Link for issue(s)"""
 
 from atlassian.jira import Jira
 
