@@ -161,7 +161,7 @@ class AtlassianRestAPI(object):
                 backoff_factor=self.backoff_factor,
                 backoff_jitter=self.backoff_jitter,
                 backoff_max=self.max_backoff_seconds,
-                respect_retry_after_header=self.retry_with_header
+                respect_retry_after_header=self.retry_with_header,
             )
             self._session.mount(self.url, HTTPAdapter(max_retries=retries))
         if username and password:

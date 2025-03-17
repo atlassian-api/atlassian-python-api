@@ -49,7 +49,7 @@ class Repositories(RepositoriesBase):
                              See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
         :param pagelen: int: Name of a response property to change page size.
                              See https://developer.atlassian.com/cloud/bitbucket/rest/intro/#pagination for details.
-        
+
         :return: A generator for the repository objects
 
         API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories#get
