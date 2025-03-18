@@ -1470,17 +1470,17 @@ class Confluence(AtlassianRestAPI):
                 file_name = attachment["title"] or attachment["id"]  # Use attachment ID if title is unavailable
                 download_link = self.url + attachment["_links"]["download"]
                 # Fetch the file content
-                response = self.get(str(download_link))
+                response = self.get(str(download_link), not_json_response=True)
 
                 if to_memory:
                     # Store in BytesIO object
-                    file_obj = io.BytesIO(response.content)
+                    file_obj = io.BytesIO(response)
                     downloaded_files[file_name] = file_obj
                 else:
                     # Save file to disk
                     file_path = os.path.join(path, file_name)
                     with open(file_path, "wb") as file:
-                        file.write(response.content)
+                        file.write(response)
 
             # Return results based on storage mode
             if to_memory:
