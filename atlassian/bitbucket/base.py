@@ -30,7 +30,9 @@ class BitbucketBase(AtlassianRestAPI):
             url = self.get_link("self")
             if isinstance(url, list):  # Server has a list of links
                 url = url[0]
-        self.timeformat_lambda = kwargs.pop("timeformat_lambda", lambda x: self._default_timeformat_lambda(x))
+        self.timeformat_lambda = kwargs.pop(
+            "timeformat_lambda", lambda x: self._default_timeformat_lambda(x)
+        )
         self._check_timeformat_lambda()
         super(BitbucketBase, self).__init__(url, *args, **kwargs)
 
@@ -111,7 +113,8 @@ class BitbucketBase(AtlassianRestAPI):
         """
         LAMBDA = lambda: 0  # noqa: E731
         if self.timeformat_lambda is None or (
-            isinstance(self.timeformat_lambda, type(LAMBDA)) and self.timeformat_lambda.__name__ == LAMBDA.__name__
+            isinstance(self.timeformat_lambda, type(LAMBDA))
+            and self.timeformat_lambda.__name__ == LAMBDA.__name__
         ):
             return True
         else:
@@ -165,9 +168,13 @@ class BitbucketBase(AtlassianRestAPI):
             if sys.version_info <= (3, 7):
                 value_str = RE_TIMEZONE.sub(r"\1\2", value_str)
             try:
+                value_str = value_str[:26] + "Z"
                 value = datetime.strptime(value_str, self.CONF_TIMEFORMAT)
             except ValueError:
-                value = datetime.strptime(value_str, "%Y-%m-%dT%H:%M:%S.%fZ", tzinfo="UTC")
+                value = datetime.strptime(
+                    value_str,
+                    "%Y-%m-%dT%H:%M:%S.%fZ",
+                )
         else:
             value = value_str
 
