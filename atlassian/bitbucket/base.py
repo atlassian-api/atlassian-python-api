@@ -30,9 +30,7 @@ class BitbucketBase(AtlassianRestAPI):
             url = self.get_link("self")
             if isinstance(url, list):  # Server has a list of links
                 url = url[0]
-        self.timeformat_lambda = kwargs.pop(
-            "timeformat_lambda", lambda x: self._default_timeformat_lambda(x)
-        )
+        self.timeformat_lambda = kwargs.pop("timeformat_lambda", self._default_timeformat_lambda)
         self._check_timeformat_lambda()
         super(BitbucketBase, self).__init__(url, *args, **kwargs)
 
