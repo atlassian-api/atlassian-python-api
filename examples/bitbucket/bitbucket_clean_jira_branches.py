@@ -96,7 +96,7 @@ if __name__ == "__main__":
                             name=display_id,
                             end_point=branch["latestCommit"],
                         )
-                    log.write("{},{},{}\n".format(display_id, last_date_commit, True))
+                    log.write(f"{display_id},{last_date_commit},{True}\n")
             step += 1
     log.close()
     print("Done")

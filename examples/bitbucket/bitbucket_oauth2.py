@@ -43,7 +43,7 @@ def callback():
     bitbucket = OAuth2Session(client_id, state=session["oauth_state"])
     token = bitbucket.fetch_token(token_url, client_secret=client_secret, authorization_response=request.url)
 
-    return "Token: {}<p />Workspaces: {}".format(token, ", ".join(get_workspaces(token)))
+    return f"Token: {token}<p />Workspaces: {', '.join(get_workspaces(token))}"
 
 
 # 4. Token used for Bitbucket Python API

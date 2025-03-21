@@ -46,11 +46,11 @@ def clean_all_draft_pages_from_all_spaces(days=30):
         if space_lists and len(space_lists) != 0:
             i += 1
             for space_list in space_lists:
-                print(("Start review the space {}".format(space_list["key"])))
+                print(f"Start review the space {space_list['key']}")
                 count = clean_draft_pages_from_space(space_key=space_list["key"], count=count, date_now=date_now)
         else:
             flag = False
-    print(("Script has removed {count} draft pages older than {days} days".format(count=count, days=days)))
+    print(f"Script has removed {count} draft pages older than {days} days")
 
 
 if __name__ == "__main__":

@@ -16,7 +16,7 @@ def search_word(word):
     :param word:
     :return: json answer
     """
-    cql = "siteSearch ~ {} order by created".format(word)
+    cql = f"siteSearch ~ {word} order by created"
     answers = confluence.cql(cql)
     for answer in answers.get("results"):
         print(answer)
@@ -29,7 +29,7 @@ def search_word_in_space(space, word):
     :param word:
     :return: json answer
     """
-    cql = "space.key={} and (text ~ {})".format(space, word)
+    cql = f"space.key={space} and (text ~ {word})"
     answers = confluence.cql(cql, expand="space,body.view")
     for answer in answers.get("results"):
         print(answer)
