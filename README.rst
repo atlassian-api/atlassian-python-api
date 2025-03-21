@@ -78,6 +78,23 @@ And here's another example of how to get issues from Jira using JQL Query:
     data = jira.jql(JQL)
     print(data)
 
+The traditional jql method is deprecated for Jira Cloud users, as Atlassian has transitioned to a nextPageToken-based pagination approach instead of startAt. Use enhanced_jql for improved performance and future compatibility.
+
+.. code-block:: python
+
+    from atlassian import Jira
+
+    jira = Jira(
+        url='https://your-jira-instance.atlassian.net',
+        username='your-email@example.com',
+        password='your-api-token',
+        cloud=True  # Ensure this is set to True for Jira Cloud
+    )
+    JQL = 'project = DEMO AND status IN ("To Do", "In Progress") ORDER BY issuekey'
+    # Fetch issues using the new enhanced_jql method
+    data = jira.enhanced_jql(JQL)
+    print(data)
+
 Also, you can use the Bitbucket module e.g. for getting project list
 
 .. code-block:: python
