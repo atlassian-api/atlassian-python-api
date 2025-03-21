@@ -5016,9 +5016,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param property_key:
         :return:
         """
-        url = "/rest/agile/1.0/board/{boardId}/properties/{propertyKey}".format(
-            boardId=board_id, propertyKey=property_key
-        )
+        url = f"/rest/agile/1.0/board/{board_id}/properties/{property_key}"
         return self.put(url)
 
     def get_agile_board_property(self, board_id, property_key):
