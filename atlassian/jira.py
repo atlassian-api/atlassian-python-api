@@ -3594,7 +3594,6 @@ class Jira(AtlassianRestAPI):
             if nextPageToken is not None:
                 params["nextPageToken"] = nextPageToken
 
-            print(nextPageToken)
             response = self.get(url, params=params)
             if not response:
                 break
