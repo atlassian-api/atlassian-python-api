@@ -80,6 +80,7 @@ class Build(BitbucketCloudBase):
     def update(self, **kwargs):
         """Update build status.
 
-        See https://developer.atlassian.com/cloud/bitbucket/rest/api-group-commit-statuses/#api-repositories-workspace-repo-slug-commit-commit-statuses-build-key-put
+        See
+        https://developer.atlassian.com/cloud/bitbucket/rest/api-group-commit-statuses/#api-repositories-workspace-repo-slug-commit-commit-statuses-build-key-put
         """
         return self._update_data(self.put(None, data=kwargs))

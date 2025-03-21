@@ -27,7 +27,7 @@ def html_email(email, title=None):
     if not title:
         title = email
 
-    return '<a href="mailto:{email}">{title}</a>'.format(email=email, title=title)
+    return f'<a href="mailto:{email}">{title}</a>'
 
 
 def html_list(data):
@@ -49,7 +49,7 @@ def html_list(data):
 
         if is_email(item):
             item = html_email(item, item)
-        html += "<li>{}</li>".format(item)
+        html += f"<li>{item}</li>"
     return html + "</ul>"
 
 
@@ -63,7 +63,7 @@ def html_table_header_row(data):
     html = "\n\t<tr>"
     for th in data:
         title = th.replace("_", " ").title()
-        html += "<th>{}</th>".format(title)
+        html += f"<th>{title}</th>"
     return html + "</tr>"
 
 
@@ -89,7 +89,7 @@ def html_row_with_ordered_headers(data, col_headers, row_header=None):
     """
     html = "\n\t<tr>"
     if row_header:
-        html += "<th>{}</th>".format(row_header.replace("_", " ").title())
+        html += f"<th>{row_header.replace('_', ' ').title()}</th>"
     for header in col_headers:
         element = data[header]
         if isinstance(element, list):
@@ -97,7 +97,7 @@ def html_row_with_ordered_headers(data, col_headers, row_header=None):
 
         if is_email(element):
             element = html_email(element)
-        html += "<td>{}</td>".format(element)
+        html += f"<td>{element}</td>"
     return html + "</tr>"
 
 
@@ -198,7 +198,7 @@ def html_table_from_nested_dict(data, ordering):
     header_row.extend(ordering)
     html += html_table_header_row(header_row)
 
-    for row_header, row in data.items():
+    for row_header, row in list(data.items()):
         html += html_row_with_ordered_headers(row, ordering, row_header)
 
     return html + "\n</tbody></table>"

@@ -19,7 +19,7 @@ def request_mockup(*args, **kwargs):
     url = kwargs["url"]
     if not url.startswith(SERVER + "/"):
         raise ValueError("URL [{}] does not start with [{}/].".format(url, SERVER))
-    parts = url[len(SERVER) + 1 :].split("?")
+    parts = url[len(SERVER) + 1:].split("?")
     url = parts[0]
     response_key = parts[1] if len(parts) > 1 else None
     if kwargs["data"] is not None:
@@ -48,7 +48,7 @@ def request_mockup(*args, **kwargs):
                     for elem in data["values"] if "values" in data else [data]:
                         cur_dict = elem if item is None else elem.get(item, {})
                         if "links" in cur_dict:
-                            for link in cur_dict["links"].values():
+                            for link in list(cur_dict["links"].values()):
                                 for ld in link if type(link) is list else [link]:
                                     ld["href"] = "{}/{}".format(SERVER, ld["href"])
                 if "next" in data:

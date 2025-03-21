@@ -18,4 +18,4 @@ for project in projects:
     except Exception as e:
         log.error(e)
         value = "None"
-    print(project_key + " has issue security scheme " + value)
+    print((project_key + " has issue security scheme " + value))

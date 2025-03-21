@@ -30,22 +30,28 @@ output = jira_cloud.get_issue_tree_recursive("INTEGRTEST-2")
 
 
 # print(output) will return:
-# [{'INTEGRTEST-2': 'TEST-1'}, {'INTEGRTEST-2': 'INTEGRTEST-3'}, {'INTEGRTEST-2': 'INTEGRTEST-4'}, {'INTEGRTEST-4': 'INTEGRTEST-6'}]
+# [
+# {'INTEGRTEST-2': 'TEST-1'},
+# {'INTEGRTEST-2': 'INTEGRTEST-3'},
+# {'INTEGRTEST-2': 'INTEGRTEST-4'},
+# {'INTEGRTEST-4': 'INTEGRTEST-6'}
+# ]
 # now we can use this output to create a graph representation of the tree:
 def print_tree(node, dict_list, level=0):
-    children = [value for dict_item in dict_list for key, value in dict_item.items() if key == node]
-    print("  " * level + node)
+    children = [value for dict_item in dict_list for key, value in list(dict_item.items()) if key == node]
+    print(("  " * level + node))
     for child in children:
         print_tree(child, dict_list, level + 1)
 
 
-# or use this input to create a visualisation using networkx and matplotlib librarries or some js library like recharts or vis.js
+# or use this input to create a visualisation using networkx and matplotlib librarries or
+# some js library like recharts or vis.js
 def make_graph(dict_list):
     # Create a new directed graph
     G = nx.DiGraph()
     # Add an edge to the graph for each key-value pair in each dictionary
     for d in dict_list:
-        for key, value in d.items():
+        for key, value in list(d.items()):
             G.add_edge(key, value)
 
     # Generate a layout for the nodes

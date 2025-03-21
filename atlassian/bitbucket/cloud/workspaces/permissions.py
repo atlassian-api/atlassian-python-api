@@ -28,7 +28,8 @@ class Permissions(BitbucketCloudBase):
         :param pagelen: page length
         :return: A generator for the Workspace Permission objects
 
-        API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-workspaces/#api-workspaces-workspace-permissions-get
+        API docs:
+        https://developer.atlassian.com/cloud/bitbucket/rest/api-group-workspaces/#api-workspaces-workspace-permissions-get
         """
         params = {}
         if sort is not None:
@@ -48,7 +49,7 @@ class Permissions(BitbucketCloudBase):
 
     def repositories(self, repo_slug="", pagelen=10):
         for permissions in self._get_paged(
-            "repositories/{}".format(repo_slug), trailing=True, params={"pagelen": pagelen}
+                f"repositories/{repo_slug}", trailing=True, params={"pagelen": pagelen}
         ):
             yield self.__get_object_repository_permission(permissions)
 

@@ -46,7 +46,7 @@ class Bamboo(AtlassianRestAPI):
                 response.raise_for_status()
                 response = response.json()
             except HTTPError as e:
-                logging.error("Broken response: {}".format(e))
+                logging.error(f"Broken response: {e}")
                 yield e
         try:
             results = response[elements_key]
@@ -58,7 +58,7 @@ class Bamboo(AtlassianRestAPI):
                 size += 1
                 yield r
         except TypeError:
-            logging.error("Broken response: {}".format(response))
+            logging.error(f"Broken response: {response}")
             yield response
 
     def base_list_call(
@@ -131,7 +131,7 @@ class Bamboo(AtlassianRestAPI):
         :param clover_enabled:
         :return:
         """
-        resource = "project/{}".format(project_key)
+        resource = f"project/{project_key}"
         return self.base_list_call(
             resource=resource,
             expand=expand,
@@ -145,12 +145,12 @@ class Bamboo(AtlassianRestAPI):
         """Method used to retrieve information for project specified as project key.
         Possible expand parameters: plans, list of plans for project. plans.plan, list of plans with plan details
         (only plans visible - READ permission for user)"""
-        resource = "project/{}?showEmpty".format(project_key)
+        resource = f"project/{project_key}?showEmpty"
         return self.get(self.resource_url(resource))
 
     def delete_project(self, project_key):
         """Marks project for deletion. Project will be deleted by a batch job."""
-        resource = "project/{}".format(project_key)
+        resource = f"project/{project_key}"
         return self.delete(self.resource_url(resource))
 
     def project_plans(self, project_key, start_index=0, max_results=25):
@@ -162,7 +162,7 @@ class Bamboo(AtlassianRestAPI):
         :param max_results:
         :return: Generator with plans
         """
-        resource = "project/{}".format(project_key)
+        resource = f"project/{project_key}"
         return self.base_list_call(
             resource,
             expand="plans",
@@ -210,7 +210,7 @@ class Bamboo(AtlassianRestAPI):
         :param plan_key:
         :return:
         """
-        resource = "planDirectoryInfo/{}".format(plan_key)
+        resource = f"planDirectoryInfo/{plan_key}"
         return self.get(self.resource_url(resource))
 
     def get_plan(self, plan_key, expand=None):
@@ -223,7 +223,7 @@ class Bamboo(AtlassianRestAPI):
         params = {}
         if expand:
             params["expand"] = expand
-        resource = "rest/api/latest/plan/{}".format(plan_key)
+        resource = f"rest/api/latest/plan/{plan_key}"
         return self.get(resource, params=params)
 
     def search_plans(self, search_term, fuzzy=True, start_index=0, max_results=25):
@@ -248,7 +248,7 @@ class Bamboo(AtlassianRestAPI):
         :param plan_key:
         :return:
         """
-        resource = "rest/api/latest/plan/{}".format(plan_key)
+        resource = f"rest/api/latest/plan/{plan_key}"
         return self.delete(resource)
 
     def disable_plan(self, plan_key):
@@ -257,7 +257,7 @@ class Bamboo(AtlassianRestAPI):
         :param plan_key: str TST-BLD
         :return: DELETE request
         """
-        resource = "plan/{plan_key}/enable".format(plan_key=plan_key)
+        resource = f"plan/{plan_key}/enable"
         return self.delete(self.resource_url(resource))
 
     def enable_plan(self, plan_key):
@@ -266,7 +266,7 @@ class Bamboo(AtlassianRestAPI):
         :param plan_key: str TST-BLD
         :return: POST request
         """
-        resource = "plan/{plan_key}/enable".format(plan_key=plan_key)
+        resource = f"plan/{plan_key}/enable"
         return self.post(self.resource_url(resource))
 
     """ Branches """
@@ -312,7 +312,7 @@ class Bamboo(AtlassianRestAPI):
         :param max_results:
         :return:
         """
-        resource = "plan/{}/branch".format(plan_key)
+        resource = f"plan/{plan_key}/branch"
         return self.base_list_call(
             resource,
             expand,
@@ -330,7 +330,7 @@ class Bamboo(AtlassianRestAPI):
         :param branch_name:
         :return:
         """
-        resource = "plan/{plan_key}/branch/{branch_name}".format(plan_key=plan_key, branch_name=branch_name)
+        resource = f"plan/{plan_key}/branch/{branch_name}"
         return self.get(self.resource_url(resource))
 
     def create_branch(
@@ -353,7 +353,7 @@ class Bamboo(AtlassianRestAPI):
         :param cleanup_enabled: bool - enable/disable automatic cleanup of branch
         :return: PUT request
         """
-        resource = "plan/{plan_key}/branch/{branch_name}".format(plan_key=plan_key, branch_name=branch_name)
+        resource = f"plan/{plan_key}/branch/{branch_name}"
         params = {}
         if vcs_branch:
             params = dict(
@@ -370,7 +370,7 @@ class Bamboo(AtlassianRestAPI):
         :param max_results
         :return:
         """
-        resource = "plan/{plan_key}/vcsBranches".format(plan_key=plan_key)
+        resource = f"plan/{plan_key}/vcsBranches"
         return self.base_list_call(
             resource,
             start_index=0,
@@ -415,11 +415,11 @@ class Bamboo(AtlassianRestAPI):
         """
         resource = "result"
         if project_key and plan_key and job_key and build_number:
-            resource += "/{}-{}-{}/{}".format(project_key, plan_key, job_key, build_number)
+            resource += f"/{project_key}-{plan_key}-{job_key}/{build_number}"
         elif project_key and plan_key and build_number:
-            resource += "/{}-{}/{}".format(project_key, plan_key, build_number)
+            resource += f"/{project_key}-{plan_key}/{build_number}"
         elif project_key and plan_key:
-            resource += "/{}-{}".format(project_key, plan_key)
+            resource += f"/{project_key}-{plan_key}"
         elif project_key:
             resource += "/" + project_key
 
@@ -573,7 +573,7 @@ class Bamboo(AtlassianRestAPI):
         """
         try:
             int(build_key.split("-")[-1])
-            resource = "result/{}".format(build_key)
+            resource = f"result/{build_key}"
             return self.base_list_call(
                 resource,
                 expand,
@@ -584,7 +584,7 @@ class Bamboo(AtlassianRestAPI):
                 include_all_states=include_all_states,
             )
         except ValueError:
-            raise ValueError('The key "{}" does not correspond to a build result'.format(build_key))
+            raise ValueError(f'The key "{build_key}" does not correspond to a build result')
 
     def build_latest_result(self, plan_key, expand=None, include_all_states=False):
         """
@@ -596,7 +596,7 @@ class Bamboo(AtlassianRestAPI):
         :param include_all_states:
         """
         try:
-            resource = "result/{}/latest.json".format(plan_key)
+            resource = f"result/{plan_key}/latest.json"
             return self.base_list_call(
                 resource,
                 expand,
@@ -607,7 +607,7 @@ class Bamboo(AtlassianRestAPI):
                 include_all_states=include_all_states,
             )
         except ValueError:
-            raise ValueError('The key "{}" does not correspond to the latest build result'.format(plan_key))
+            raise ValueError(f'The key "{plan_key}" does not correspond to the latest build result')
 
     def delete_build_result(self, build_key):
         """
@@ -616,7 +616,7 @@ class Bamboo(AtlassianRestAPI):
         """
         custom_resource = "/build/admin/deletePlanResults.action"
         build_key = build_key.split("-")
-        plan_key = "{}-{}".format(build_key[0], build_key[1])
+        plan_key = f"{build_key[0]}-{build_key[1]}"
         build_number = build_key[2]
         params = {"buildKey": plan_key, "buildNumber": build_number}
         return self.post(custom_resource, params=params, headers=self.form_token_headers)
@@ -639,7 +639,7 @@ class Bamboo(AtlassianRestAPI):
         :param bamboo_variables: dict {variable=value}
         :return: POST request
         """
-        resource = "queue/{plan_key}".format(plan_key=plan_key)
+        resource = f"queue/{plan_key}"
         params = {}
         if stage:
             execute_all_stages = False
@@ -648,8 +648,8 @@ class Bamboo(AtlassianRestAPI):
             params["customRevision"] = custom_revision
         params["executeAllStages"] = "true" if execute_all_stages else "false"
         if bamboo_variables:
-            for key, value in bamboo_variables.items():
-                params["bamboo.variable.{}".format(key)] = value
+            for key, value in list(bamboo_variables.items()):
+                params[f"bamboo.variable.{key}"] = value
 
         return self.post(self.resource_url(resource), params=params)
 
@@ -659,7 +659,7 @@ class Bamboo(AtlassianRestAPI):
         :param plan_key: str TST-BLD
         :return: GET request
         """
-        resource = "/build/admin/stopPlan.action?planKey={}".format(plan_key)
+        resource = f"/build/admin/stopPlan.action?planKey={plan_key}"
         return self.post(path=resource, headers=self.no_check_headers)
 
     """ Comments & Labels """
@@ -681,7 +681,7 @@ class Bamboo(AtlassianRestAPI):
         :param max_results:
         :return:
         """
-        resource = "result/{}-{}-{}/comment".format(project_key, plan_key, build_number)
+        resource = f"result/{project_key}-{plan_key}-{build_number}/comment"
         params = {"start-index": start_index, "max-results": max_results}
         return self.get(self.resource_url(resource), params=params)
 
@@ -694,7 +694,7 @@ class Bamboo(AtlassianRestAPI):
         :param comment:
         :return:
         """
-        resource = "result/{}-{}-{}/comment".format(project_key, plan_key, build_number)
+        resource = f"result/{project_key}-{plan_key}-{build_number}/comment"
         comment_data = {
             "content": comment,
         }
@@ -717,7 +717,7 @@ class Bamboo(AtlassianRestAPI):
         :param max_results:
         :return:
         """
-        resource = "result/{}-{}-{}/label".format(project_key, plan_key, build_number)
+        resource = f"result/{project_key}-{plan_key}-{build_number}/label"
         params = {"start-index": start_index, "max-results": max_results}
         return self.get(self.resource_url(resource), params=params)
 
@@ -730,7 +730,7 @@ class Bamboo(AtlassianRestAPI):
         :param label:
         :return:
         """
-        resource = "result/{}-{}-{}/label".format(project_key, plan_key, build_number)
+        resource = f"result/{project_key}-{plan_key}-{build_number}/label"
         return self.post(self.resource_url(resource), data={"name": label})
 
     def delete_label(self, project_key, plan_key, build_number, label):
@@ -742,9 +742,10 @@ class Bamboo(AtlassianRestAPI):
         :param label:
         :return:
         """
-        resource = "result/{}-{}-{}/label/{}".format(project_key, plan_key, build_number, label)
+        resource = f"result/{project_key}-{plan_key}-{build_number}/label/{label}"
         return self.delete(self.resource_url(resource))
 
+    @property
     def get_projects(self):
         """Method used to list all projects defined in Bamboo.
         Projects without any plan are not listed."""
@@ -752,7 +753,7 @@ class Bamboo(AtlassianRestAPI):
         max_results = 25
 
         while True:
-            resource = "project?start-index={}&max-result={}".format(start_idx, max_results)
+            resource = f"project?start-index={start_idx}&max-result={max_results}"
 
             r = self.get(self.resource_url(resource))
 
@@ -784,7 +785,7 @@ class Bamboo(AtlassianRestAPI):
         :param project_id:
         :return:
         """
-        resource = "deploy/project/{}".format(project_id)
+        resource = f"deploy/project/{project_id}"
         return self.get(self.resource_url(resource))
 
     def delete_deployment_project(self, project_id):
@@ -793,7 +794,7 @@ class Bamboo(AtlassianRestAPI):
         :param project_id:
         :return:
         """
-        resource = "deploy/project/{}".format(project_id)
+        resource = f"deploy/project/{project_id}"
         return self.delete(self.resource_url(resource))
 
     def deployment_environment_results(self, env_id, expand=None, max_results=25):
@@ -804,7 +805,7 @@ class Bamboo(AtlassianRestAPI):
         :param max_results:
         :return:
         """
-        resource = "deploy/environment/{environmentId}/results".format(environmentId=env_id)
+        resource = f"deploy/environment/{env_id}/results"
         params = {"max-result": max_results, "start-index": 0}
         size = 1
         if expand:
@@ -821,7 +822,7 @@ class Bamboo(AtlassianRestAPI):
         Returns the current status of each deployment environment
         If no project id is provided, returns all projects.
         """
-        resource = "deploy/dashboard/{}".format(project_id) if project_id else "deploy/dashboard"
+        resource = f"deploy/dashboard/{project_id}" if project_id else "deploy/dashboard"
         return self.get(self.resource_url(resource))
 
     def get_deployment_projects_for_plan(self, plan_key):
@@ -889,7 +890,7 @@ class Bamboo(AtlassianRestAPI):
         :param group_name:
         :return:
         """
-        url = "rest/api/latest/admin/groups/{}".format(group_name)
+        url = f"rest/api/latest/admin/groups/{group_name}"
         return self.delete(url)
 
     def add_users_into_group(self, group_name, users):
@@ -901,7 +902,7 @@ class Bamboo(AtlassianRestAPI):
         :param users: list
         :return:
         """
-        url = "rest/api/latest/admin/groups/{}/add-users".format(group_name)
+        url = f"rest/api/latest/admin/groups/{group_name}/add-users"
         return self.post(url, data=users)
 
     def remove_users_from_group(self, group_name, users):
@@ -913,7 +914,7 @@ class Bamboo(AtlassianRestAPI):
         :param users: list
         :return:
         """
-        url = "rest/api/latest/admin/groups/{}/remove-users".format(group_name)
+        url = f"rest/api/latest/admin/groups/{group_name}/remove-users"
         return self.delete(url, data=users)
 
     def get_users_from_group(self, group_name, filter_users=None, start=0, limit=25):
@@ -929,7 +930,7 @@ class Bamboo(AtlassianRestAPI):
         params = {"limit": limit, "start": start}
         if filter_users:
             params = {"filter": filter_users}
-        url = "rest/api/latest/admin/groups/{}/more-members".format(group_name)
+        url = f"rest/api/latest/admin/groups/{group_name}/more-members"
         return self.get(url, params=params)
 
     def get_users_not_in_group(self, group_name, filter_users="", start=0, limit=25):
@@ -946,7 +947,7 @@ class Bamboo(AtlassianRestAPI):
         if filter_users:
             params = {"filter": filter_users}
 
-        url = "rest/api/latest/admin/groups/{}/more-non-members".format(group_name)
+        url = f"rest/api/latest/admin/groups/{group_name}/more-non-members"
         return self.get(url, params=params)
 
     def get_deployment_users(self, deployment_id, filter_name=None, start=0, limit=25):
@@ -963,7 +964,7 @@ class Bamboo(AtlassianRestAPI):
         params = {"limit": limit, "start": start}
         if filter_name:
             params = {"name": filter_name}
-        resource = "permissions/deployment/{}/users".format(deployment_id)
+        resource = f"permissions/deployment/{deployment_id}/users"
         return self.get(self.resource_url(resource), params=params)
 
     def revoke_user_from_deployment(self, deployment_id, user, permissions=["READ", "WRITE", "BUILD"]):
@@ -974,7 +975,7 @@ class Bamboo(AtlassianRestAPI):
         :param permissions:
         :return:
         """
-        resource = "permissions/deployment/{}/users/{}".format(deployment_id, user)
+        resource = f"permissions/deployment/{deployment_id}/users/{user}"
         return self.delete(self.resource_url(resource), data=permissions)
 
     def grant_user_to_deployment(self, deployment_id, user, permissions):
@@ -985,7 +986,7 @@ class Bamboo(AtlassianRestAPI):
         :param permissions:
         :return:
         """
-        resource = "permissions/deployment/{}/users/{}".format(deployment_id, user)
+        resource = f"permissions/deployment/{deployment_id}/users/{user}"
         return self.put(self.resource_url(resource), data=permissions)
 
     def get_deployment_groups(self, deployment_id, filter_name=None, start=0, limit=25):
@@ -1002,7 +1003,7 @@ class Bamboo(AtlassianRestAPI):
         params = {"limit": limit, "start": start}
         if filter_name:
             params = {"name": filter_name}
-        resource = "permissions/deployment/{}/groups".format(deployment_id)
+        resource = f"permissions/deployment/{deployment_id}/groups"
         return self.get(self.resource_url(resource), params=params)
 
     def revoke_group_from_deployment(self, deployment_id, group, permissions=["READ", "WRITE", "BUILD"]):
@@ -1013,7 +1014,7 @@ class Bamboo(AtlassianRestAPI):
         :param permissions:
         :return:
         """
-        resource = "permissions/deployment/{}/groups/{}".format(deployment_id, group)
+        resource = f"permissions/deployment/{deployment_id}/groups/{group}"
         return self.delete(self.resource_url(resource), data=permissions)
 
     def grant_group_to_deployment(self, deployment_id, group, permissions):
@@ -1024,7 +1025,7 @@ class Bamboo(AtlassianRestAPI):
         :param permissions:
         :return:
         """
-        resource = "permissions/deployment/{}/groups/{}".format(deployment_id, group)
+        resource = f"permissions/deployment/{deployment_id}/groups/{group}"
         return self.put(self.resource_url(resource), data=permissions)
 
     def get_environment_users(self, environment_id, filter_name=None, start=0, limit=25):
@@ -1041,7 +1042,7 @@ class Bamboo(AtlassianRestAPI):
         params = {"limit": limit, "start": start}
         if filter_name:
             params = {"name": filter_name}
-        resource = "permissions/environment/{}/users".format(environment_id)
+        resource = f"permissions/environment/{environment_id}/users"
         return self.get(self.resource_url(resource), params=params)
 
     def revoke_user_from_environment(self, environment_id, user, permissions=["READ", "WRITE", "BUILD"]):
@@ -1052,7 +1053,7 @@ class Bamboo(AtlassianRestAPI):
         :param permissions:
         :return:
         """
-        resource = "permissions/environment/{}/users/{}".format(environment_id, user)
+        resource = f"permissions/environment/{environment_id}/users/{user}"
         return self.delete(self.resource_url(resource), data=permissions)
 
     def grant_user_to_environment(self, environment_id, user, permissions):
@@ -1063,7 +1064,7 @@ class Bamboo(AtlassianRestAPI):
         :param permissions:
         :return:
         """
-        resource = "permissions/environment/{}/users/{}".format(environment_id, user)
+        resource = f"permissions/environment/{environment_id}/users/{user}"
         return self.put(self.resource_url(resource), data=permissions)
 
     def get_environment_groups(self, environment_id, filter_name=None, start=0, limit=25):
@@ -1080,7 +1081,7 @@ class Bamboo(AtlassianRestAPI):
         params = {"limit": limit, "start": start}
         if filter_name:
             params = {"name": filter_name}
-        resource = "permissions/environment/{}/groups".format(environment_id)
+        resource = f"permissions/environment/{environment_id}/groups"
         return self.get(self.resource_url(resource), params=params)
 
     def revoke_group_from_environment(self, environment_id, group, permissions=["READ", "WRITE", "BUILD"]):
@@ -1091,7 +1092,7 @@ class Bamboo(AtlassianRestAPI):
         :param permissions:
         :return:
         """
-        resource = "permissions/environment/{}/groups/{}".format(environment_id, group)
+        resource = f"permissions/environment/{environment_id}/groups/{group}"
         return self.delete(self.resource_url(resource), data=permissions)
 
     def grant_group_to_environment(self, environment_id, group, permissions):
@@ -1102,7 +1103,7 @@ class Bamboo(AtlassianRestAPI):
         :param permissions:
         :return:
         """
-        resource = "permissions/environment/{}/groups/{}".format(environment_id, group)
+        resource = f"permissions/environment/{environment_id}/groups/{group}"
         return self.put(self.resource_url(resource), data=permissions)
 
     """Other actions"""
@@ -1143,7 +1144,7 @@ class Bamboo(AtlassianRestAPI):
         :param agent_id:  Bamboo agent ID (integer number)
         :return: True/False
         """
-        response = self.get(self.resource_url("agent/{}/status".format(agent_id)))
+        response = self.get(self.resource_url(f"agent/{agent_id}/status"))
         return response["online"]
 
     def agent_enable(self, agent_id):
@@ -1153,7 +1154,7 @@ class Bamboo(AtlassianRestAPI):
         :param agent_id:  Bamboo agent ID (integer number)
         :return: None
         """
-        self.put(self.resource_url("agent/{}/enable".format(agent_id)))
+        self.put(self.resource_url(f"agent/{agent_id}/enable"))
 
     def agent_disable(self, agent_id):
         """
@@ -1162,7 +1163,7 @@ class Bamboo(AtlassianRestAPI):
         :param agent_id:  Bamboo agent ID (integer number)
         :return: None
         """
-        self.put(self.resource_url("agent/{}/disable".format(agent_id)))
+        self.put(self.resource_url(f"agent/{agent_id}/disable"))
 
     def agent_remote(self, online=False):
         """
@@ -1184,7 +1185,7 @@ class Bamboo(AtlassianRestAPI):
         params = None
         if expand:
             params = {"expand": expand}
-        return self.get(self.resource_url("agent/{}".format(agent_id)), params=params)
+        return self.get(self.resource_url(f"agent/{agent_id}"), params=params)
 
     def agent_capabilities(self, agent_id, include_shared=True):
         """
@@ -1195,7 +1196,7 @@ class Bamboo(AtlassianRestAPI):
         :return: agents
         """
         return self.get(
-            self.resource_url("agent/{}/capability".format(agent_id)),
+            self.resource_url(f"agent/{agent_id}/capability"),
             params={"includeShared": include_shared},
         )
 
@@ -1208,7 +1209,7 @@ class Bamboo(AtlassianRestAPI):
         If global expiry is not enabled it returns empty response.
         :param limit:
         """
-        url = "rest/api/latest/admin/expiry/custom/plan?limit={}".format(limit)
+        url = f"rest/api/latest/admin/expiry/custom/plan?limit={limit}"
         return self.get(url)
 
     def reports(self, max_results=25):
@@ -1300,7 +1301,7 @@ class Bamboo(AtlassianRestAPI):
         :param instance_id:
         :return:
         """
-        resource = "/elasticInstances/instance/{instance_id}/logs".format(instance_id=instance_id)
+        resource = f"/elasticInstances/instance/{instance_id}/logs"
         return self.get(self.resource_url(resource))
 
     def get_elastic_configurations(self):
@@ -1327,7 +1328,7 @@ class Bamboo(AtlassianRestAPI):
         :return:
         """
 
-        resource = "elasticConfiguration/{configuration_id}".format(configuration_id=configuration_id)
+        resource = f"elasticConfiguration/{configuration_id}"
         return self.get(self.resource_url(resource))
 
     def update_elastic_configuration(self, configuration_id, data):
@@ -1338,7 +1339,7 @@ class Bamboo(AtlassianRestAPI):
         :return:
         """
 
-        resource = "elasticConfiguration/{configuration_id}".format(configuration_id=configuration_id)
+        resource = f"elasticConfiguration/{configuration_id}"
         return self.put(self.resource_url(resource), data=data)
 
     def delete_elastic_configuration(self, configuration_id):
@@ -1348,7 +1349,7 @@ class Bamboo(AtlassianRestAPI):
         :return:
         """
 
-        resource = "elasticConfiguration/{configuration_id}".format(configuration_id=configuration_id)
+        resource = f"elasticConfiguration/{configuration_id}"
         return self.delete(self.resource_url(resource))
 
     def get_elastic_bamboo(self):
@@ -1380,7 +1381,7 @@ class Bamboo(AtlassianRestAPI):
         Provide plugin info
         :return a json of installed plugins
         """
-        url = "rest/plugins/1.0/{plugin_key}-key".format(plugin_key=plugin_key)
+        url = f"rest/plugins/1.0/{plugin_key}-key"
         return self.get(url, headers=self.no_check_headers, trailing=True)
 
     def get_plugin_license_info(self, plugin_key):
@@ -1388,7 +1389,7 @@ class Bamboo(AtlassianRestAPI):
         Provide plugin license information
         :return a json specific License query
         """
-        url = "rest/plugins/1.0/{plugin_key}-key/license".format(plugin_key=plugin_key)
+        url = f"rest/plugins/1.0/{plugin_key}-key/license"
         return self.get(url, headers=self.no_check_headers, trailing=True)
 
     def upload_plugin(self, plugin_path):
@@ -1404,7 +1405,7 @@ class Bamboo(AtlassianRestAPI):
             headers=self.no_check_headers,
             trailing=True,
         ).headers["upm-token"]
-        url = "rest/plugins/1.0/?token={upm_token}".format(upm_token=upm_token)
+        url = f"rest/plugins/1.0/?token={upm_token}"
         return self.post(url, files=files, headers=self.no_check_headers)
 
     def disable_plugin(self, plugin_key):
@@ -1417,7 +1418,7 @@ class Bamboo(AtlassianRestAPI):
             "X-Atlassian-Token": "nocheck",
             "Content-Type": "application/vnd.atl.plugins+json",
         }
-        url = "rest/plugins/1.0/{plugin_key}-key".format(plugin_key=plugin_key)
+        url = f"rest/plugins/1.0/{plugin_key}-key"
         data = {"status": "disabled"}
         return self.put(url, data=data, headers=app_headers)
 
@@ -1431,7 +1432,7 @@ class Bamboo(AtlassianRestAPI):
             "X-Atlassian-Token": "nocheck",
             "Content-Type": "application/vnd.atl.plugins+json",
         }
-        url = "rest/plugins/1.0/{plugin_key}-key".format(plugin_key=plugin_key)
+        url = f"rest/plugins/1.0/{plugin_key}-key"
         data = {"status": "enabled"}
         return self.put(url, data=data, headers=app_headers)
 
@@ -1441,7 +1442,7 @@ class Bamboo(AtlassianRestAPI):
         :param plugin_key:
         :return:
         """
-        url = "rest/plugins/1.0/{}-key".format(plugin_key)
+        url = f"rest/plugins/1.0/{plugin_key}-key"
         return self.delete(url)
 
     def check_plugin_manager_status(self):
@@ -1463,6 +1464,6 @@ class Bamboo(AtlassianRestAPI):
             "X-Atlassian-Token": "nocheck",
             "Content-Type": "application/vnd.atl.plugins+json",
         }
-        url = "/plugins/1.0/{plugin_key}/license".format(plugin_key=plugin_key)
+        url = f"/plugins/1.0/{plugin_key}/license"
         data = {"rawLicense": raw_license}
         return self.put(url, data=data, headers=app_headers)

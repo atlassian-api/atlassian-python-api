@@ -15,4 +15,4 @@ def html(project):
 bitbucket = Bitbucket(url="http://localhost:7990", username="admin", password="admin")
 
 data = bitbucket.project("DEMO")
-print(html(data))
+print((html(data)))

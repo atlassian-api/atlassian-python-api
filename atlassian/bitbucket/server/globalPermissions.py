@@ -100,7 +100,7 @@ class GlobalPermissions(BitbucketServerBase):
             if entry.name == name:
                 return entry
 
-        raise Exception("Unknown group/user '{}'".format(name))
+        raise Exception(f"Unknown group/user '{name}'")
 
 
 class Groups(GlobalPermissions):

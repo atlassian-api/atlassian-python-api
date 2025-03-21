@@ -27,7 +27,8 @@ class Commits(BitbucketCloudBase):
 
         :return: A generator for the Commit objects
 
-        API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-commits/#api-repositories-workspace-repo-slug-commits-get
+        API docs:
+        https://developer.atlassian.com/cloud/bitbucket/rest/api-group-commits/#api-repositories-workspace-repo-slug-commits-get
         """
         params = {}
         if sort is not None:
@@ -48,7 +49,8 @@ class Commits(BitbucketCloudBase):
 
         :return: The requested Commit object
 
-        API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-commits/#api-repositories-workspace-repo-slug-commit-commit-get
+        API docs:
+        https://developer.atlassian.com/cloud/bitbucket/rest/api-group-commits/#api-repositories-workspace-repo-slug-commit-commit-get
         """
         return self.__get_object(
             super(Commits, self).get(
@@ -62,7 +64,8 @@ class Commit(BitbucketCloudBase):
     """
     Bitbucket Cloud commit endpoint.
 
-    See https://developer.atlassian.com/cloud/bitbucket/rest/api-group-commits/#api-repositories-workspace-repo-slug-commit-commit-get
+    See
+    https://developer.atlassian.com/cloud/bitbucket/rest/api-group-commits/#api-repositories-workspace-repo-slug-commit-commit-get
     """
 
     def __init__(self, data, *args, **kwargs):
@@ -96,7 +99,8 @@ class Commit(BitbucketCloudBase):
     def statuses(self):
         """
         Return generator object of the status's endpoint.
-        API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-commit-statuses/#api-repositories-workspace-repo-slug-commit-commit-statuses-get
+        API docs:
+        https://developer.atlassian.com/cloud/bitbucket/rest/api-group-commit-statuses/#api-repositories-workspace-repo-slug-commit-commit-statuses-get
         """
         return self._get_paged("statuses")
 
@@ -122,7 +126,8 @@ class Commit(BitbucketCloudBase):
         """
         Add new build status to commit.
 
-        API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-commit-statuses/#api-repositories-workspace-repo-slug-commit-commit-statuses-build-post
+        API docs:
+        https://developer.atlassian.com/cloud/bitbucket/rest/api-group-commit-statuses/#api-repositories-workspace-repo-slug-commit-commit-statuses-build-post
         """
         data = {
             "key": key,
@@ -138,7 +143,8 @@ class Commit(BitbucketCloudBase):
         """
         Return a specific build for the commit.
 
-        API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-commit-statuses/#api-repositories-workspace-repo-slug-commit-commit-statuses-build-key-get
+        API docs:
+        https://developer.atlassian.com/cloud/bitbucket/rest/api-group-commit-statuses/#api-repositories-workspace-repo-slug-commit-commit-statuses-build-key-get
         """
         return Build(
             super(Commit, self).get(self.url_joiner("statuses/build", key)),
@@ -148,7 +154,8 @@ class Commit(BitbucketCloudBase):
     def comments(self):
         """
         Return generator object endpoint of the comment.
-        API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-commits/#api-repositories-workspace-repo-slug-commit-commit-comments-get
+        API docs:
+        https://developer.atlassian.com/cloud/bitbucket/rest/api-group-commits/#api-repositories-workspace-repo-slug-commit-commit-comments-get
         """
         for comment in self._get_paged("comments"):
             yield Comment(comment, **self._new_session_args)
@@ -157,7 +164,8 @@ class Commit(BitbucketCloudBase):
         """
         Add a comment to the pull request in raw format.
 
-        API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-commits/#api-repositories-workspace-repo-slug-commit-commit-comments-post
+        API docs:
+        https://developer.atlassian.com/cloud/bitbucket/rest/api-group-commits/#api-repositories-workspace-repo-slug-commit-commit-comments-post
         """
         if not raw_message:
             raise ValueError("No message set")
@@ -174,7 +182,8 @@ class Commit(BitbucketCloudBase):
         """
         Approve a commit.
 
-        API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-commits/#api-repositories-workspace-repo-slug-commit-commit-approve-post
+        API docs:
+        https://developer.atlassian.com/cloud/bitbucket/rest/api-group-commits/#api-repositories-workspace-repo-slug-commit-commit-approve-post
         """
         data = {"approved": True}
         return self.post("approve", data)
@@ -183,7 +192,8 @@ class Commit(BitbucketCloudBase):
         """
         Unapprove a commit.
 
-        API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-commits/#api-repositories-workspace-repo-slug-commit-commit-approve-delete
+        API docs:
+        https://developer.atlassian.com/cloud/bitbucket/rest/api-group-commits/#api-repositories-workspace-repo-slug-commit-commit-approve-delete
         """
         return super(BitbucketCloudBase, self).delete("approve")
 
@@ -195,7 +205,8 @@ class Commit(BitbucketCloudBase):
         installation automatically occurs when 'Go to pull request' is clicked
         from the web interface for a commit's details.
 
-        API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-commit-commit-pullrequests-get
+        API docs:
+        https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-commit-commit-pullrequests-get
 
         :param start: int, OPTIONAL: The starting page of pull requests to retrieve. Defaults to 0.
         :param pagelen: int, OPTIONAL: The number of pull requests to retrieve per page. Defaults to 0.

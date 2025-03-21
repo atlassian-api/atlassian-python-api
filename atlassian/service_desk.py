@@ -44,7 +44,7 @@ class ServiceDesk(AtlassianRestAPI):
         """
 
         return self.get(
-            "rest/servicedeskapi/servicedesk/{}".format(service_desk_id),
+            f"rest/servicedeskapi/servicedesk/{service_desk_id}",
             headers=self.experimental_headers,
         )
 
@@ -74,7 +74,7 @@ class ServiceDesk(AtlassianRestAPI):
         """
 
         return self.get(
-            "rest/servicedeskapi/request/{}".format(issue_id_or_key),
+            f"rest/servicedeskapi/request/{issue_id_or_key}",
             headers=self.experimental_headers,
         )
 
@@ -133,7 +133,7 @@ class ServiceDesk(AtlassianRestAPI):
         :return: Status name
         """
         request = self.get(
-            "rest/servicedeskapi/request/{}/status".format(issue_id_or_key),
+            f"rest/servicedeskapi/request/{issue_id_or_key}/status",
             headers=self.experimental_headers,
         )
         if self.advanced_mode:
@@ -150,7 +150,7 @@ class ServiceDesk(AtlassianRestAPI):
         :param issue_id_or_key: str
         :return:
         """
-        url = "rest/servicedeskapi/request/{}/transition".format(issue_id_or_key)
+        url = f"rest/servicedeskapi/request/{issue_id_or_key}/transition"
 
         return self.get(url, headers=self.experimental_headers)
 
@@ -163,7 +163,7 @@ class ServiceDesk(AtlassianRestAPI):
         """
 
         return self.get(
-            "rest/servicedeskapi/servicedesk/{}/requesttype".format(service_desk_id),
+            f"rest/servicedeskapi/servicedesk/{service_desk_id}/requesttype",
             headers=self.experimental_headers,
         )
 
@@ -177,7 +177,7 @@ class ServiceDesk(AtlassianRestAPI):
         :param limit: OPTIONAL: int
         :return: Request participants
         """
-        url = "rest/servicedeskapi/request/{}/participant".format(issue_id_or_key)
+        url = f"rest/servicedeskapi/request/{issue_id_or_key}/participant"
         params = {}
         if start is not None:
             params["start"] = int(start)
@@ -199,7 +199,7 @@ class ServiceDesk(AtlassianRestAPI):
         :param account_list: list
         :return:
         """
-        url = "rest/servicedeskapi/request/{}/participant".format(issue_id_or_key)
+        url = f"rest/servicedeskapi/request/{issue_id_or_key}/participant"
         data = {}
         if users_list is not None:
             data["usernames"] = users_list
@@ -218,7 +218,7 @@ class ServiceDesk(AtlassianRestAPI):
         :param account_list: list
         :return:
         """
-        url = "rest/servicedeskapi/request/{}/participant".format(issue_id_or_key)
+        url = f"rest/servicedeskapi/request/{issue_id_or_key}/participant"
         data = {}
         if users_list is not None:
             data["usernames"] = users_list
@@ -240,7 +240,7 @@ class ServiceDesk(AtlassianRestAPI):
         """
         log.info("Performing transition for issue: " + issue_id_or_key)
         data = {"id": transition_id, "additionalComment": {"body": comment}}
-        url = "rest/servicedeskapi/request/{}/transition".format(issue_id_or_key)
+        url = f"rest/servicedeskapi/request/{issue_id_or_key}/transition"
 
         return self.post(url, headers=self.experimental_headers, data=data)
 
@@ -256,7 +256,7 @@ class ServiceDesk(AtlassianRestAPI):
         """
         log.info("Creating comment...")
         data = {"body": body, "public": public}
-        url = "rest/servicedeskapi/request/{}/comment".format(issue_id_or_key)
+        url = f"rest/servicedeskapi/request/{issue_id_or_key}/comment"
 
         return self.post(path=url, data=data, headers=self.experimental_headers)
 
@@ -271,7 +271,7 @@ class ServiceDesk(AtlassianRestAPI):
         :param internal: OPTIONAL: bool
         :return: Issue comments
         """
-        url = "rest/servicedeskapi/request/{}/comment".format(issue_id_or_key)
+        url = f"rest/servicedeskapi/request/{issue_id_or_key}/comment"
         params = {}
         if start is not None:
             params["start"] = int(start)
@@ -287,11 +287,6 @@ class ServiceDesk(AtlassianRestAPI):
             return response
         return (response or {}).get("values")
 
-        # return self.get(
-        #     "rest/servicedeskapi/request/{}/comment".format(issue_id_or_key),
-        #     headers=self.experimental_headers,
-        # )
-
     def get_request_comment_by_id(self, issue_id_or_key, comment_id):
         """
         Get single comment by ID
@@ -302,7 +297,7 @@ class ServiceDesk(AtlassianRestAPI):
         """
 
         return self.get(
-            "rest/servicedeskapi/request/{}/comment/{}".format(issue_id_or_key, comment_id),
+            f"rest/servicedeskapi/request/{issue_id_or_key}/comment/{comment_id}",
             headers=self.experimental_headers,
         )
 
@@ -320,7 +315,7 @@ class ServiceDesk(AtlassianRestAPI):
         :return:
         """
         url_without_sd_id = "rest/servicedeskapi/organization"
-        url_with_sd_id = "rest/servicedeskapi/servicedesk/{}/organization".format(service_desk_id)
+        url_with_sd_id = f"rest/servicedeskapi/servicedesk/{service_desk_id}/organization"
         params = {}
         if start is not None:
             params["start"] = int(start)
@@ -345,7 +340,7 @@ class ServiceDesk(AtlassianRestAPI):
         :param organization_id: str
         :return: Organization
         """
-        url = "rest/servicedeskapi/organization/{}".format(organization_id)
+        url = f"rest/servicedeskapi/organization/{organization_id}"
 
         return self.get(url, headers=self.experimental_headers)
 
@@ -358,7 +353,7 @@ class ServiceDesk(AtlassianRestAPI):
         :param limit: OPTIONAL: int
         :return: Users list in organization
         """
-        url = "rest/servicedeskapi/organization/{}/user".format(organization_id)
+        url = f"rest/servicedeskapi/organization/{organization_id}/user"
         params = {}
         if start is not None:
             params["start"] = int(start)
@@ -390,7 +385,7 @@ class ServiceDesk(AtlassianRestAPI):
         :return:
         """
         log.info("Adding organization...")
-        url = "rest/servicedeskapi/servicedesk/{}/organization".format(service_desk_id)
+        url = f"rest/servicedeskapi/servicedesk/{service_desk_id}/organization"
         data = {"organizationId": organization_id}
 
         return self.post(url, headers=self.experimental_headers, data=data)
@@ -404,7 +399,7 @@ class ServiceDesk(AtlassianRestAPI):
         :return:
         """
         log.info("Removing organization...")
-        url = "rest/servicedeskapi/servicedesk/{}/organization".format(service_desk_id)
+        url = f"rest/servicedeskapi/servicedesk/{service_desk_id}/organization"
         data = {"organizationId": organization_id}
 
         return self.delete(url, headers=self.experimental_headers, data=data)
@@ -417,7 +412,7 @@ class ServiceDesk(AtlassianRestAPI):
         :return:
         """
         log.info("Deleting organization: %s ", organization_id)
-        url = "rest/servicedeskapi/organization/{}".format(organization_id)
+        url = f"rest/servicedeskapi/organization/{organization_id}"
 
         return self.delete(url, headers=self.experimental_headers)
 
@@ -433,7 +428,7 @@ class ServiceDesk(AtlassianRestAPI):
         :return:
         """
         log.info("Adding users: %s ", str(users_list))
-        url = "rest/servicedeskapi/organization/{}/user".format(organization_id)
+        url = f"rest/servicedeskapi/organization/{organization_id}/user"
         data = {"usernames": users_list, "accountIds": account_list}
 
         return self.post(url, headers=self.experimental_headers, data=data)
@@ -450,7 +445,7 @@ class ServiceDesk(AtlassianRestAPI):
         :return:
         """
         log.info("Removing users: %s", str(users_list))
-        url = "rest/servicedeskapi/organization/{}/user".format(organization_id)
+        url = f"rest/servicedeskapi/organization/{organization_id}/user"
         data = {"usernames": users_list, "accountIds": account_list}
 
         return self.delete(url, headers=self.experimental_headers, data=data)
@@ -528,7 +523,7 @@ class ServiceDesk(AtlassianRestAPI):
         :param filename: str
         :return: Temporary Attachment ID
         """
-        url = "rest/servicedeskapi/servicedesk/{}/attachTemporaryFile".format(service_desk_id)
+        url = f"rest/servicedeskapi/servicedesk/{service_desk_id}/attachTemporaryFile"
 
         # no application/json content type and an additional X-Atlassian-Token header
         # https://docs.atlassian.com/jira-servicedesk/REST/4.14.1/#servicedeskapi/servicedesk/{serviceDeskId}/attachTemporaryFile-attachTemporaryFile
@@ -568,7 +563,7 @@ class ServiceDesk(AtlassianRestAPI):
             "public": public,
             "additionalComment": {"body": comment},
         }
-        url = "rest/servicedeskapi/request/{}/attachment".format(issue_id_or_key)
+        url = f"rest/servicedeskapi/request/{issue_id_or_key}/attachment"
 
         return self.post(url, headers=self.experimental_headers, data=data)
 
@@ -601,7 +596,7 @@ class ServiceDesk(AtlassianRestAPI):
         :param limit: OPTIONAL: int
         :return: SLA information
         """
-        url = "rest/servicedeskapi/request/{}/sla".format(issue_id_or_key)
+        url = f"rest/servicedeskapi/request/{issue_id_or_key}/sla"
         params = {}
         if start is not None:
             params["start"] = int(start)
@@ -622,7 +617,7 @@ class ServiceDesk(AtlassianRestAPI):
         :param sla_id: str
         :return: SLA information
         """
-        url = "rest/servicedeskapi/request/{0}/sla/{1}".format(issue_id_or_key, sla_id)
+        url = f"rest/servicedeskapi/request/{issue_id_or_key}/sla/{sla_id}"
 
         return self.get(url, headers=self.experimental_headers)
 
@@ -649,7 +644,7 @@ class ServiceDesk(AtlassianRestAPI):
         :param limit: OPTIONAL: int
         :return:
         """
-        url = "rest/servicedeskapi/request/{}/approval".format(issue_id_or_key)
+        url = f"rest/servicedeskapi/request/{issue_id_or_key}/approval"
         params = {}
         if start is not None:
             params["start"] = int(start)
@@ -669,7 +664,7 @@ class ServiceDesk(AtlassianRestAPI):
         :param approval_id: str
         :return:
         """
-        url = "rest/servicedeskapi/request/{0}/approval/{1}".format(issue_id_or_key, approval_id)
+        url = f"rest/servicedeskapi/request/{issue_id_or_key}/approval/{approval_id}"
 
         return self.get(url, headers=self.experimental_headers)
 
@@ -682,7 +677,7 @@ class ServiceDesk(AtlassianRestAPI):
         :param decision: str
         :return:
         """
-        url = "rest/servicedeskapi/request/{0}/approval/{1}".format(issue_id_or_key, approval_id)
+        url = f"rest/servicedeskapi/request/{issue_id_or_key}/approval/{approval_id}"
         data = {"decision": decision}
 
         return self.post(url, headers=self.experimental_headers, data=data)
@@ -694,7 +689,7 @@ class ServiceDesk(AtlassianRestAPI):
         :param project_key: str
         :return:
         """
-        url = "rest/servicedeskapi/queues/{}".format(project_key)
+        url = f"rest/servicedeskapi/queues/{project_key}"
 
         return self.get(url, headers=self.experimental_headers)
 
@@ -713,7 +708,7 @@ class ServiceDesk(AtlassianRestAPI):
         :param service_desk_id: str
         :return: the customers added to the service desk
         """
-        url = "rest/servicedeskapi/servicedesk/{}/customer".format(service_desk_id)
+        url = f"rest/servicedeskapi/servicedesk/{service_desk_id}/customer"
         params = {}
         if start is not None:
             params["start"] = int(start)
@@ -737,7 +732,7 @@ class ServiceDesk(AtlassianRestAPI):
         :param list_of_accountids: list
         :return: the customers added to the service desk
         """
-        url = "rest/servicedeskapi/servicedesk/{}/customer".format(service_desk_id)
+        url = f"rest/servicedeskapi/servicedesk/{service_desk_id}/customer"
         data = {
             "usernames": list_of_usernames,
             "accountIds": list_of_accountids,
@@ -758,7 +753,7 @@ class ServiceDesk(AtlassianRestAPI):
         :param list_of_accountids: list
         :return: the customers added to the service desk
         """
-        url = "rest/servicedeskapi/servicedesk/{}/customer".format(service_desk_id)
+        url = f"rest/servicedeskapi/servicedesk/{service_desk_id}/customer"
         data = {
             "usernames": list_of_usernames,
             "accountIds": list_of_accountids,
@@ -781,7 +776,7 @@ class ServiceDesk(AtlassianRestAPI):
         :param limit: int
         :return: a page of queues
         """
-        url = "rest/servicedeskapi/servicedesk/{}/queue".format(service_desk_id)
+        url = f"rest/servicedeskapi/servicedesk/{service_desk_id}/queue"
         params = {}
 
         if include_count is not None:
@@ -809,7 +804,7 @@ class ServiceDesk(AtlassianRestAPI):
         :param limit: int
         :return: a page of issues
         """
-        url = "rest/servicedeskapi/servicedesk/{0}/queue/{1}/issue".format(service_desk_id, queue_id)
+        url = f"rest/servicedeskapi/servicedesk/{service_desk_id}/queue/{queue_id}/issue"
         params = {}
 
         if start is not None:
@@ -832,7 +827,7 @@ class ServiceDesk(AtlassianRestAPI):
         Provide plugin info
         :return a json of installed plugins
         """
-        url = "rest/plugins/1.0/{plugin_key}-key".format(plugin_key=plugin_key)
+        url = f"rest/plugins/1.0/{plugin_key}-key"
         return self.get(url, headers=self.no_check_headers, trailing=True)
 
     def get_plugin_license_info(self, plugin_key):
@@ -840,7 +835,7 @@ class ServiceDesk(AtlassianRestAPI):
         Provide plugin license info
         :return a json specific License query
         """
-        url = "rest/plugins/1.0/{plugin_key}-key/license".format(plugin_key=plugin_key)
+        url = f"rest/plugins/1.0/{plugin_key}-key/license"
         return self.get(url, headers=self.no_check_headers, trailing=True)
 
     def upload_plugin(self, plugin_path):
@@ -856,7 +851,7 @@ class ServiceDesk(AtlassianRestAPI):
             headers=self.no_check_headers,
             trailing=True,
         ).headers["upm-token"]
-        url = "rest/plugins/1.0/?token={upm_token}".format(upm_token=upm_token)
+        url = f"rest/plugins/1.0/?token={upm_token}"
         return self.post(url, files=files, headers=self.no_check_headers)
 
     def delete_plugin(self, plugin_key):
@@ -865,7 +860,7 @@ class ServiceDesk(AtlassianRestAPI):
         :param plugin_key:
         :return:
         """
-        url = "rest/plugins/1.0/{}-key".format(plugin_key)
+        url = f"rest/plugins/1.0/{plugin_key}-key"
         return self.delete(url)
 
     def check_plugin_manager_status(self):
@@ -883,7 +878,7 @@ class ServiceDesk(AtlassianRestAPI):
             "X-Atlassian-Token": "nocheck",
             "Content-Type": "application/vnd.atl.plugins+json",
         }
-        url = "/plugins/1.0/{plugin_key}/license".format(plugin_key=plugin_key)
+        url = f"/plugins/1.0/{plugin_key}/license"
         data = {"rawLicense": raw_license}
         return self.put(url, data=data, headers=app_headers)
 
@@ -911,7 +906,7 @@ class ServiceDesk(AtlassianRestAPI):
             "helpText": request_help_text,
         }
 
-        url = "rest/servicedeskapi/servicedesk/{}/requesttype".format(service_desk_id)
+        url = f"rest/servicedeskapi/servicedesk/{service_desk_id}/requesttype"
         return self.post(url, headers=self.experimental_headers, data=data)
 
     def raise_for_status(self, response):
