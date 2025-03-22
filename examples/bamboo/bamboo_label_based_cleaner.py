@@ -50,9 +50,9 @@ if __name__ == "__main__":
                     continue
                 datetimeObj = datetime.strptime(build_complete_time.split("+")[0] + "000", "%Y-%m-%dT%H:%M:%S.%f")
                 if datetime.now() > datetimeObj + timedelta(days=OLDER_DAYS):
-                    print((
-                        f"Build is old {build_key} as build complete date {build_complete_time.strftime('%Y-%m-%d')}"
-                    ))
+                    print(
+                        (f"Build is old {build_key} as build complete date {build_complete_time.strftime('%Y-%m-%d')}")
+                    )
                     if not DRY_RUN:
                         print((f"Removing {build_key} build"))
                         bamboo.delete_build_result(build_key)

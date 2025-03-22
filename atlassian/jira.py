@@ -2689,9 +2689,7 @@ class Jira(AtlassianRestAPI):
         if position:
             position = position.lower().capitalize()
             if position not in ["Earlier", "Later", "First", "Last"]:
-                raise ValueError(
-                    f"position must be one of Earlier, Later, First, or Last. Got {position}"
-                )
+                raise ValueError(f"position must be one of Earlier, Later, First, or Last. Got {position}")
             return self.post(url, data={"position": position})
 
     def get_project_roles(self, project_key):

@@ -2762,14 +2762,16 @@ class Confluence(AtlassianRestAPI):
                 + space_key
             )
             if export_type == "csv":
-                form_data = dict(atl_token=get_atl_request(
-                    f"spaces/exportspacecsv.action?key={space_key}"
-                ), exportType="TYPE_CSV", contentOption="all", includeComments="true", confirm="Export")
+                form_data = dict(
+                    atl_token=get_atl_request(f"spaces/exportspacecsv.action?key={space_key}"),
+                    exportType="TYPE_CSV",
+                    contentOption="all",
+                    includeComments="true",
+                    confirm="Export",
+                )
             elif export_type == "html":
                 form_data = {
-                    "atl_token": get_atl_request(
-                        f"spaces/exportspacehtml.action?key={space_key}"
-                    ),
+                    "atl_token": get_atl_request(f"spaces/exportspacehtml.action?key={space_key}"),
                     "exportType": "TYPE_HTML",
                     "contentOption": "visibleOnly",
                     "includeComments": "true",
@@ -2777,9 +2779,7 @@ class Confluence(AtlassianRestAPI):
                 }
             elif export_type == "xml":
                 form_data = {
-                    "atl_token": get_atl_request(
-                        f"spaces/exportspacexml.action?key={space_key}"
-                    ),
+                    "atl_token": get_atl_request(f"spaces/exportspacexml.action?key={space_key}"),
                     "exportType": "TYPE_XML",
                     "contentOption": "all",
                     "includeComments": "true",
@@ -2791,9 +2791,7 @@ class Confluence(AtlassianRestAPI):
                 return self.get_pdf_download_url_for_confluence_cloud(url)
             else:
                 raise ValueError("Invalid export_type parameter value. Valid values are: 'html/csv/xml/pdf'")
-            url = self.url_joiner(
-                url=self.url, path=f"spaces/doexportspace.action?key={space_key}"
-            )
+            url = self.url_joiner(url=self.url, path=f"spaces/doexportspace.action?key={space_key}")
 
             # Sending a POST request that triggers the space export.
             response = self.session.post(url, headers=self.form_token_headers, data=form_data)
@@ -3103,9 +3101,7 @@ class Confluence(AtlassianRestAPI):
                     log.debug("Extract task results to download PDF.")
                     task_result_url = progress_response.get("result")
                 else:
-                    log.info(
-                        f"{percentage_complete}% - {task_state}"
-                    )
+                    log.info(f"{percentage_complete}% - {task_state}")
                     time.sleep(3)
             log.debug("Task successfully done, querying the task result for the download url")
             # task result url starts with /wiki, remove it.

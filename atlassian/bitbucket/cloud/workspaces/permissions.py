@@ -48,9 +48,7 @@ class Permissions(BitbucketCloudBase):
         return
 
     def repositories(self, repo_slug="", pagelen=10):
-        for permissions in self._get_paged(
-                f"repositories/{repo_slug}", trailing=True, params={"pagelen": pagelen}
-        ):
+        for permissions in self._get_paged(f"repositories/{repo_slug}", trailing=True, params={"pagelen": pagelen}):
             yield self.__get_object_repository_permission(permissions)
 
 

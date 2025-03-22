@@ -13,9 +13,11 @@ def page_version_remover(content_id, remained_page_numbers):
         return
     latest_version_count = int(response.get("lastUpdated").get("number"))
     if len(response) > 0 and latest_version_count > remained_page_numbers:
-        print((
-            f"Number of {confluence.url_joiner(confluence.url, '/pages/viewpage.action?pageId=' + content_id)} latest version {latest_version_count}"
-        ))
+        print(
+            (
+                f"Number of {confluence.url_joiner(confluence.url, '/pages/viewpage.action?pageId=' + content_id)} latest version {latest_version_count}"
+            )
+        )
         for version_page_counter in range(1, (latest_version_count - remained_page_numbers + 1), 1):
             confluence.remove_content_history(content_id, 1)
     else:

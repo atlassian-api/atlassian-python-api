@@ -255,9 +255,7 @@ class ProjectRepositories(RepositoriesBase):
 class Repository(BitbucketCloudBase):
     def __init__(self, data, *args, **kwargs):
         super(Repository, self).__init__(None, *args, data=data, expected_type="repository", **kwargs)
-        self.__branch_restrictions = BranchRestrictions(
-            f"{self.url}/branch-restrictions", **self._new_session_args
-        )
+        self.__branch_restrictions = BranchRestrictions(f"{self.url}/branch-restrictions", **self._new_session_args)
         self.__branches = Branches(f"{self.url}/refs/branches", **self._new_session_args)
         self.__commits = Commits(
             f"{self.url}/commits",
@@ -270,12 +268,8 @@ class Repository(BitbucketCloudBase):
             **self._new_session_args
         )  # fmt: skip
         self.__default_reviewers = DefaultReviewers(f"{self.url}/default-reviewers", **self._new_session_args)
-        self.__deployment_environments = DeploymentEnvironments(
-            f"{self.url}/environments", **self._new_session_args
-        )
-        self.__group_permissions = GroupPermissions(
-            f"{self.url}/permissions-config/groups", **self._new_session_args
-        )
+        self.__deployment_environments = DeploymentEnvironments(f"{self.url}/environments", **self._new_session_args)
+        self.__group_permissions = GroupPermissions(f"{self.url}/permissions-config/groups", **self._new_session_args)
         self.__issues = Issues(f"{self.url}/issues", **self._new_session_args)
         self.__pipelines = Pipelines(f"{self.url}/pipelines", **self._new_session_args)
         self.__pullrequests = PullRequests(f"{self.url}/pullrequests", **self._new_session_args)
