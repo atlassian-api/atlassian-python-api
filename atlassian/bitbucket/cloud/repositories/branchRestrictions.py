@@ -41,7 +41,8 @@ class BranchRestrictions(BitbucketCloudBase):
 
         :return: The created BranchRestriction object
 
-        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/branch-restrictions#post
+        API docs:
+        https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/branch-restrictions#post
         """
         if branch_match_kind == "branching_model":
             branch_pattern = ""
@@ -103,7 +104,8 @@ class BranchRestrictions(BitbucketCloudBase):
 
         :return: The requested BranchRestriction objects
 
-        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/branch-restrictions/%7Bid%7D#get
+        API docs:
+        https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/branch-restrictions/%7Bid%7D#get
         """
         return self.__get_object(super(BranchRestrictions, self).get(id))
 
@@ -120,7 +122,8 @@ class BranchRestriction(BitbucketCloudBase):
 
         :return: The updated branch restriction
 
-        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/branch-restrictions/%7Bid%7D#put
+        API docs:
+        https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/branch-restrictions/%7Bid%7D#put
         """
         return self._update_data(self.put(None, data=kwargs))
 
@@ -130,7 +133,8 @@ class BranchRestriction(BitbucketCloudBase):
 
         :return: The response on success
 
-        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/branch-restrictions/%7Bid%7D#delete
+        API docs:
+        https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/branch-restrictions/%7Bid%7D#delete
         """
         return super(BranchRestriction, self).delete(None)
 

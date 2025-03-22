@@ -177,7 +177,7 @@ class TestBasic:
             "My repo 3 description",
         ], "Each repo description"
 
-        print(list(project.repos.each()))
+        print((list(project.repos.each())))
 
         assert project.repos.exists("my-repo1-slug"), "Repo exists by slug"
 

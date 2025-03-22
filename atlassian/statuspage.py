@@ -154,7 +154,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}".format(page_id)
+        url = f"v1/pages/{page_id}"
         return self.get(url)
 
     def page_update(self, page_id, page):
@@ -186,7 +186,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}".format(page_id)
+        url = f"v1/pages/{page_id}"
         return self.patch(url, data={"page": page})
 
     def organization_get_users(self, organization_id, page=1, per_page=100):
@@ -214,7 +214,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/organizations/{}/users".format(organization_id)
+        url = f"v1/organizations/{organization_id}/users"
         return self.get(url, params={"page": page, "per_page": per_page})
 
     def organization_get_user_permissions(self, organization_id, user_id):
@@ -241,7 +241,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/organizations/{}/permissions/{}".format(organization_id, user_id)
+        url = f"v1/organizations/{organization_id}/permissions/{user_id}"
         return self.get(url)
 
     def organization_set_user_permissions(self, organization_id, user_id, pages):
@@ -287,7 +287,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/organizations/{}/permissions/{}".format(organization_id, user_id)
+        url = f"v1/organizations/{organization_id}/permissions/{user_id}"
         return self.patch(url, data={"pages": pages})
 
     def page_get_embed_config_settings(self, page_id):
@@ -312,7 +312,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/status_embed_config".format(page_id)
+        url = f"v1/pages/{page_id}/status_embed_config"
         return self.get(url)
 
     def page_update_embed_config_settings(self, page_id, status_embed_config):
@@ -352,7 +352,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/status_embed_config".format(page_id)
+        url = f"v1/pages/{page_id}/status_embed_config"
         return self.patch(url, status_embed_config)
 
     def page_access_users_list(self, page_id, email, page=1, per_page=100):
@@ -383,7 +383,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/page_access_users".format(page_id)
+        url = f"v1/pages/{page_id}/page_access_users"
         return self.get(url, params={"email": email, "page": page, "per_page": per_page})
 
     def page_get_access_user(self, page_id, page_access_user_id):
@@ -410,7 +410,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/page_access_users/{}".format(page_id, page_access_user_id)
+        url = f"v1/pages/{page_id}/page_access_users/{page_access_user_id}"
         return self.get(url)
 
     def page_set_access_user(self, page_id, page_access_user_id, external_login, email, page_access_group_ids):
@@ -447,7 +447,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/page_access_users/{}".format(page_id, page_access_user_id)
+        url = f"v1/pages/{page_id}/page_access_users/{page_access_user_id}"
         return self.patch(
             url, data={"external_login": external_login, "email": email, "page_access_group_ids": page_access_group_ids}
         )
@@ -477,7 +477,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/page_access_users/{}".format(page_id, page_access_user_id)
+        url = f"v1/pages/{page_id}/page_access_users/{page_access_user_id}"
         return self.delete(url)
 
     def page_get_components_access_user(self, page_id, page_access_user_id, page=1, per_page=100):
@@ -509,7 +509,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/page_access_users/{}/components".format(page_id, page_access_user_id)
+        url = f"v1/pages/{page_id}/page_access_users/{page_access_user_id}/components"
         return self.get(url, params={"page": page, "per_page": per_page})
 
     def page_add_components_access_user(self, page_id, page_access_user_id, component_ids):
@@ -539,7 +539,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/page_access_users/{}/components".format(page_id, page_access_user_id)
+        url = f"v1/pages/{page_id}/page_access_users/{page_access_user_id}/components"
         return self.patch(url, data={"component_ids": component_ids})
 
     def page_replace_components_access_user(self, page_id, page_access_user_id, component_ids):
@@ -569,7 +569,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/page_access_users/{}/components".format(page_id, page_access_user_id)
+        url = f"v1/pages/{page_id}/page_access_users/{page_access_user_id}/components"
         return self.post(url, data={"component_ids": component_ids})
 
     def page_delete_components_access_user(self, page_id, page_access_user_id, component_ids):
@@ -599,7 +599,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/page_access_users/{}/components".format(page_id, page_access_user_id)
+        url = f"v1/pages/{page_id}/page_access_users/{page_access_user_id}/components"
         return self.delete(url, data={"component_ids": component_ids})
 
     def page_delete_component_access_user(self, page_id, page_access_user_id, component_id):
@@ -629,7 +629,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/page_access_users/{}/components/{}".format(page_id, page_access_user_id, component_id)
+        url = f"v1/pages/{page_id}/page_access_users/{page_access_user_id}/components/{component_id}"
         return self.delete(url)
 
     def page_get_metrics_access_user(self, page_id, page_access_user_id):
@@ -657,7 +657,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/page_access_users/{}/metrics".format(page_id, page_access_user_id)
+        url = f"v1/pages/{page_id}/page_access_users/{page_access_user_id}/metrics"
         return self.get(url)
 
     def page_add_metrics_access_user(self, page_id, page_access_user_id, metric_ids):
@@ -687,7 +687,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/page_access_users/{}/metrics".format(page_id, page_access_user_id)
+        url = f"v1/pages/{page_id}/page_access_users/{page_access_user_id}/metrics"
         return self.patch(url, data={"metric_ids": metric_ids})
 
     def page_replace_metrics_access_user(self, page_id, page_access_user_id, metric_ids):
@@ -717,7 +717,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/page_access_users/{}/metrics".format(page_id, page_access_user_id)
+        url = f"v1/pages/{page_id}/page_access_users/{page_access_user_id}/metrics"
         return self.post(url, data={"metric_ids": metric_ids})
 
     def page_delete_metrics_access_user(self, page_id, page_access_user_id, metric_ids):
@@ -747,7 +747,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/page_access_users/{}/metrics".format(page_id, page_access_user_id)
+        url = f"v1/pages/{page_id}/page_access_users/{page_access_user_id}/metrics"
         return self.delete(url, data={"metric_ids": metric_ids})
 
     def page_delete_metric_access_user(self, page_id, page_access_user_id, metric_id):
@@ -777,7 +777,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/page_access_users/{}/metrics/{}".format(page_id, page_access_user_id, metric_id)
+        url = f"v1/pages/{page_id}/page_access_users/{page_access_user_id}/metrics/{metric_id}"
         return self.delete(url)
 
     def page_get_access_groups(self, page_id, page=1, per_page=100):
@@ -806,7 +806,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/page_access_groups".format(page_id)
+        url = f"v1/pages/{page_id}/page_access_groups"
         return self.get(url, params={"page": page, "per_page": per_page})
 
     def page_get_access_group(self, page_id, page_access_group_id):
@@ -833,7 +833,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/page_access_groups/{}".format(page_id, page_access_group_id)
+        url = f"v1/pages/{page_id}/page_access_groups/{page_access_group_id}"
         return self.get(url)
 
     def page_create_access_group(
@@ -867,7 +867,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/page_access_groups".format(page_id)
+        url = f"v1/pages/{page_id}/page_access_groups"
         return self.post(
             url,
             data={
@@ -914,7 +914,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/page_access_groups/{}".format(page_id, page_access_group_id)
+        url = f"v1/pages/{page_id}/page_access_groups/{page_access_group_id}"
         return self.patch(
             url,
             data={
@@ -953,7 +953,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/page_access_groups/{}".format(page_id, page_access_group_id)
+        url = f"v1/pages/{page_id}/page_access_groups/{page_access_group_id}"
         return self.delete(url)
 
     def page_add_components_to_access_group(self, page_id, page_access_group_id, component_ids):
@@ -982,7 +982,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/page_access_groups/{}/components".format(page_id, page_access_group_id)
+        url = f"v1/pages/{page_id}/page_access_groups/{page_access_group_id}/components"
         return self.patch(url, data={"component_ids": component_ids})
 
     def page_replace_components_for_access_page(self, page_id, page_access_group_id, component_ids):
@@ -1012,7 +1012,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/page_access_groups/{}/components".format(page_id, page_access_group_id)
+        url = f"v1/pages/{page_id}/page_access_groups/{page_access_group_id}/components"
         return self.post(url, data={"component_ids": component_ids})
 
     def page_delete_components_for_access_page(self, page_id, page_access_group_id, component_ids):
@@ -1042,7 +1042,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/page_access_groups/{}/components".format(page_id, page_access_group_id)
+        url = f"v1/pages/{page_id}/page_access_groups/{page_access_group_id}/components"
         return self.delete(url, data={"component_ids": component_ids})
 
     def page_delete_component_for_access_page(self, page_id, page_access_group_id, component_id):
@@ -1072,7 +1072,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/page_access_groups/{}/components/{}".format(page_id, page_access_group_id, component_id)
+        url = f"v1/pages/{page_id}/page_access_groups/{page_access_group_id}/components/{component_id}"
         return self.delete(url)
 
     def page_get_components_for_access_group(self, page_id, page_access_group_id, page=1, per_page=100):
@@ -1104,7 +1104,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/page_access_groups/{}/components".format(page_id, page_access_group_id)
+        url = f"v1/pages/{page_id}/page_access_groups/{page_access_group_id}/components"
         return self.get(url, params={"page": page, "per_page": per_page})
 
     def page_get_subscriber(self, page_id, subscriber_id):
@@ -1131,7 +1131,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/subscribers/{}".format(page_id, subscriber_id)
+        url = f"v1/pages/{page_id}/subscribers/{subscriber_id}"
         return self.get(url)
 
     def page_get_subscribers(self, page_id, search_by=None, sort_direction="asc", page=1, per_page=100):
@@ -1179,7 +1179,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/subscribers".format(page_id)
+        url = f"v1/pages/{page_id}/subscribers"
 
         params = {}
 
@@ -1228,7 +1228,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/subscribers/{}".format(page_id, subscriber_id)
+        url = f"v1/pages/{page_id}/subscribers/{subscriber_id}"
         return self.patch(url, data={"component_ids": component_ids})
 
     def page_unsubscribe_subscriber(self, page_id, subscriber_id, skip_unsubscription_notifications=False):
@@ -1257,7 +1257,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/subscribers/{}".format(page_id, subscriber_id)
+        url = f"v1/pages/{page_id}/subscribers/{subscriber_id}"
         return self.delete(url, params={"skip_unsubscription_notifications": skip_unsubscription_notifications})
 
     def page_resend_confirmation_subscribers(self, page_id, subscriber_id):
@@ -1285,7 +1285,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/subscribers/{}/resend_confirmation".format(page_id, subscriber_id)
+        url = f"v1/pages/{page_id}/subscribers/{subscriber_id}/resend_confirmation"
         return self.post(url)
 
     def page_create_subscriber(self, page_id, subscriber):
@@ -1313,7 +1313,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/subscribers".format(page_id)
+        url = f"v1/pages/{page_id}/subscribers"
         return self.post(url, data={"subscriber": subscriber})
 
     def page_get_list_unsubscribed(self, page_id, page=1, per_page=100):
@@ -1342,7 +1342,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/unsubscribed".format(page_id)
+        url = f"v1/pages/{page_id}/unsubscribed"
         return self.get(url, params={"page": page, "per_page": per_page})
 
     def page_count_subscribers_by_type(self, page_id, subscriber_type, subscriber_state):
@@ -1372,7 +1372,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/subscribers/count".format(page_id)
+        url = f"v1/pages/{page_id}/subscribers/count"
         return self.get(url, params={"type": subscriber_type, "state": subscriber_state})
 
     def page_get_histogram_of_subscribers_with_state(self, page_id):
@@ -1397,7 +1397,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/subscribers/histogram".format(page_id)
+        url = f"v1/pages/{page_id}/subscribers/histogram"
         return self.get(url)
 
     def page_reactivate_subscribers(self, page_id, subscriber_ids, subscriber_type):
@@ -1426,7 +1426,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/subscribers/reactivate".format(page_id)
+        url = f"v1/pages/{page_id}/subscribers/reactivate"
         return self.post(url, data={"subscribers": subscriber_ids, "type": subscriber_type})
 
     def page_unsubscribe_subscribers(
@@ -1460,7 +1460,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/subscribers/unsubscribe".format(page_id)
+        url = f"v1/pages/{page_id}/subscribers/unsubscribe"
         return self.post(
             url,
             data={
@@ -1496,7 +1496,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/subscribers/resend_confirmation".format(page_id)
+        url = f"v1/pages/{page_id}/subscribers/resend_confirmation"
         return self.post(url, data={"subscribers": subscriber_ids})
 
     def page_create_template(self, page_id, template):
@@ -1524,7 +1524,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/incident_templates".format(page_id)
+        url = f"v1/pages/{page_id}/incident_templates"
         return self.post(url, data={"template": template})
 
     def page_get_templates(self, page_id, page=1, per_page=100):
@@ -1556,7 +1556,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/incident_templates".format(page_id)
+        url = f"v1/pages/{page_id}/incident_templates"
         return self.get(url, params={"page": page, "per_page": per_page})
 
     def page_create_incident(self, page_id, incident):
@@ -1583,7 +1583,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/incidents".format(page_id)
+        url = f"v1/pages/{page_id}/incidents"
         return self.post(url, data={"incident": incident})
 
     def page_list_incidents(self, page_id, q, page=1, per_page=100):
@@ -1618,7 +1618,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/incidents".format(page_id)
+        url = f"v1/pages/{page_id}/incidents"
         return self.get(url, params={"q": q, "page": page, "per_page": per_page})
 
     def page_list_active_maintenances(self, page_id, page=1, per_page=100):
@@ -1650,7 +1650,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/incidents/active_maintenance".format(page_id)
+        url = f"v1/pages/{page_id}/incidents/active_maintenance"
         return self.get(url, params={"page": page, "per_page": per_page})
 
     def page_list_upcoming_incidents(self, page_id, page=1, per_page=100):
@@ -1682,7 +1682,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/incidents/upcoming".format(page_id)
+        url = f"v1/pages/{page_id}/incidents/upcoming"
         return self.get(url, params={"page": page, "per_page": per_page})
 
     def page_list_scheduled_incidents(self, page_id, page=1, per_page=100):
@@ -1714,7 +1714,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/incidents/scheduled".format(page_id)
+        url = f"v1/pages/{page_id}/incidents/scheduled"
         return self.get(url, params={"page": page, "per_page": per_page})
 
     def page_list_unresolved_incidents(self, page_id, page=1, per_page=100):
@@ -1746,7 +1746,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/incidents/unresolved".format(page_id)
+        url = f"v1/pages/{page_id}/incidents/unresolved"
         return self.get(url, params={"page": page, "per_page": per_page})
 
     def page_delete_incident(self, page_id, incident_id):
@@ -1769,7 +1769,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/incidents/{}".format(page_id, incident_id)
+        url = f"v1/pages/{page_id}/incidents/{incident_id}"
         return self.delete(url)
 
     def page_update_incident(self, page_id, incident_id, incident):
@@ -1798,7 +1798,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/incidents/{}".format(page_id, incident_id)
+        url = f"v1/pages/{page_id}/incidents/{incident_id}"
         return self.patch(url, data={"incident": incident})
 
     def page_get_incident(self, page_id, incident_id):
@@ -1825,7 +1825,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/incidents/{}".format(page_id, incident_id)
+        url = f"v1/pages/{page_id}/incidents/{incident_id}"
         return self.get(url)
 
     def page_update_incident_updates(self, page_id, incident_id, incident_update_id, incident_update):
@@ -1857,7 +1857,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/incidents/{}/incidents_update/{}".format(page_id, incident_id, incident_update_id)
+        url = f"v1/pages/{page_id}/incidents/{incident_id}/incidents_update/{incident_update_id}"
         return self.patch(url, data={"incident_update": incident_update})
 
     def page_create_incident_subscriber(self, page_id, incident_id, subscriber):
@@ -1886,7 +1886,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/incidents/{}/subscribers".format(page_id, incident_id)
+        url = f"v1/pages/{page_id}/incidents/{incident_id}/subscribers"
         return self.post(url, data={"subscriber": subscriber})
 
     def page_list_incident_subscribers(self, page_id, incident_id, page=1, per_page=100):
@@ -1917,7 +1917,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/incidents/{}/subscribers".format(page_id, incident_id)
+        url = f"v1/pages/{page_id}/incidents/{incident_id}/subscribers"
         return self.get(url, params={"page": page, "per_page": per_page})
 
     def page_unsubscribe_incident_subscriber(self, page_id, incident_id, subscriber_id):
@@ -1942,7 +1942,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/incidents/{}/subscribers/{}".format(page_id, incident_id, subscriber_id)
+        url = f"v1/pages/{page_id}/incidents/{incident_id}/subscribers/{subscriber_id}"
         return self.delete(url)
 
     def page_get_incident_subscriber(self, page_id, incident_id, subscriber_id):
@@ -1972,7 +1972,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/incidents/{}/subscribers/{}".format(page_id, incident_id, subscriber_id)
+        url = f"v1/pages/{page_id}/incidents/{incident_id}/subscribers/{subscriber_id}"
         return self.get(url)
 
     def page_resend_confirmation_incident_subscriber(self, page_id, incident_id, subscriber_id):
@@ -2001,7 +2001,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/incidents/{}/subscribers/{}/resend_confirmation".format(page_id, incident_id, subscriber_id)
+        url = f"v1/pages/{page_id}/incidents/{incident_id}/subscribers/{subscriber_id}/resend_confirmation"
         return self.post(url)
 
     def page_get_postmortem(self, page_id, incident_id):
@@ -2028,7 +2028,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/incidents/{}/postmortem".format(page_id, incident_id)
+        url = f"v1/pages/{page_id}/incidents/{incident_id}/postmortem"
         return self.get(url)
 
     def page_create_postmortem(self, page_id, incident_id, postmortem):
@@ -2057,7 +2057,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/incidents/{}/postmortem".format(page_id, incident_id)
+        url = f"v1/pages/{page_id}/incidents/{incident_id}/postmortem"
         return self.post(url, data={"postmortem": {"body_draft": postmortem}})
 
     def page_delete_postmortem(self, page_id, incident_id):
@@ -2084,7 +2084,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/incidents/{}/postmortem".format(page_id, incident_id)
+        url = f"v1/pages/{page_id}/incidents/{incident_id}/postmortem"
         return self.delete(url)
 
     def page_publish_postmortem(self, page_id, incident_id, postmortem):
@@ -2115,7 +2115,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/incidents/{}/postmortem/publish".format(page_id, incident_id)
+        url = f"v1/pages/{page_id}/incidents/{incident_id}/postmortem/publish"
         return self.post(url, data={"postmortem": postmortem})
 
     def page_revert_postmortem(self, page_id, incident_id):
@@ -2143,7 +2143,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/incidents/{}/postmortem/revert".format(page_id, incident_id)
+        url = f"v1/pages/{page_id}/incidents/{incident_id}/postmortem/revert"
         return self.post(url)
 
     def page_create_component(self, page_id, component):
@@ -2172,7 +2172,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/components".format(page_id)
+        url = f"v1/pages/{page_id}/components"
         return self.post(url, data={"component": component})
 
     def page_get_components(self, page_id, per_page=100, page=1):
@@ -2201,7 +2201,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/components".format(page_id)
+        url = f"v1/pages/{page_id}/components"
         return self.get(url, params={"per_page": per_page, "page": page})
 
     def page_update_component(self, page_id, component_id, component):
@@ -2236,7 +2236,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/components/{}".format(page_id, component_id)
+        url = f"v1/pages/{page_id}/components/{component_id}"
         return self.patch(url, data={"component": component})
 
     def page_delete_component(self, page_id, component_id):
@@ -2263,7 +2263,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/components/{}".format(page_id, component_id)
+        url = f"v1/pages/{page_id}/components/{component_id}"
         return self.delete(url)
 
     def page_get_component(self, page_id, component_id):
@@ -2290,7 +2290,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/components/{}".format(page_id, component_id)
+        url = f"v1/pages/{page_id}/components/{component_id}"
         return self.get(url)
 
     def page_get_uptime_component(self, page_id, component_id, start=None, end=None):
@@ -2330,7 +2330,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/components/{}/uptime".format(page_id, component_id)
+        url = f"v1/pages/{page_id}/components/{component_id}/uptime"
 
         params = {}
         if start is not None:
@@ -2365,7 +2365,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/components/{}/page_access_users".format(page_id, component_id)
+        url = f"v1/pages/{page_id}/components/{component_id}/page_access_users"
         return self.delete(url)
 
     def page_add_access_users_to_component(self, page_id, component_id, page_access_user_ids):
@@ -2395,7 +2395,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/components/{}/page_access_users".format(page_id, component_id)
+        url = f"v1/pages/{page_id}/components/{component_id}/page_access_users"
         return self.post(url, data={"page_access_user_ids": page_access_user_ids})
 
     def page_remove_access_users_from_group(self, page_id, component_id):
@@ -2423,7 +2423,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/components/{}/page_access_groups".format(page_id, component_id)
+        url = f"v1/pages/{page_id}/components/{component_id}/page_access_groups"
         return self.delete(url)
 
     def page_add_access_users_to_group(self, page_id, component_id, page_access_group_ids):
@@ -2453,7 +2453,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/components/{}/page_access_groups".format(page_id, component_id)
+        url = f"v1/pages/{page_id}/components/{component_id}/page_access_groups"
         return self.post(url, data={"page_access_group_ids": page_access_group_ids})
 
     def page_create_component_group(self, page_id, description, components_group):
@@ -2483,7 +2483,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/component_groups".format(page_id)
+        url = f"v1/pages/{page_id}/component_groups"
         return self.post(url, data={"description": description, "components_group": components_group})
 
     def page_get_list_of_component_groups(self, page_id, per_page=100, page=1):
@@ -2512,7 +2512,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/component_groups".format(page_id)
+        url = f"v1/pages/{page_id}/component_groups"
         return self.get(url, params={"per_page": per_page, "page": page})
 
     def page_update_component_group(self, page_id, component_group_id, description, component_group):
@@ -2544,7 +2544,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/component_groups/{}".format(page_id, component_group_id)
+        url = f"v1/pages/{page_id}/component_groups/{component_group_id}"
         return self.patch(url, data={"description": description, "component_group": component_group})
 
     def page_delete_component_group(self, page_id, component_group_id):
@@ -2571,7 +2571,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/component_groups/{}".format(page_id, component_group_id)
+        url = f"v1/pages/{page_id}/component_groups/{component_group_id}"
         return self.delete(url)
 
     def page_get_component_group(self, page_id, component_group_id):
@@ -2598,7 +2598,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/component_groups/{}".format(page_id, component_group_id)
+        url = f"v1/pages/{page_id}/component_groups/{component_group_id}"
         return self.get(url)
 
     def page_get_uptime_for_component_group(self, page_id, component_group_id, start=None, end=None):
@@ -2639,7 +2639,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/component_groups/{}/uptime".format(page_id, component_group_id)
+        url = f"v1/pages/{page_id}/component_groups/{component_group_id}/uptime"
 
         params = {}
         if start is not None:
@@ -2675,7 +2675,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/metrics/data".format(page_id)
+        url = f"v1/pages/{page_id}/metrics/data"
         return self.post(url, data={"data": data})
 
     def page_get_list_of_metrics(self, page_id, per_page=100, page=1):
@@ -2704,7 +2704,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/metrics".format(page_id)
+        url = f"v1/pages/{page_id}/metrics"
         return self.get(url, params={"per_page": per_page, "page": page})
 
     def page_update_metric(self, page_id, metric_id, metric):
@@ -2737,7 +2737,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/metrics/{}".format(page_id, metric_id)
+        url = f"v1/pages/{page_id}/metrics/{metric_id}"
         return self.patch(url, data={"metric": metric})
 
     def page_update_metric_data(self, page_id, metric_id, metric):
@@ -2770,7 +2770,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/metrics/{}".format(page_id, metric_id)
+        url = f"v1/pages/{page_id}/metrics/{metric_id}"
         return self.patch(url, data={"metric": metric})
 
     def page_delete_metric(self, page_id, metric_id):
@@ -2797,7 +2797,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/metrics/{}".format(page_id, metric_id)
+        url = f"v1/pages/{page_id}/metrics/{metric_id}"
         return self.delete(url)
 
     def page_get_metric(self, page_id, metric_id):
@@ -2824,7 +2824,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/metrics/{}".format(page_id, metric_id)
+        url = f"v1/pages/{page_id}/metrics/{metric_id}"
         return self.get(url)
 
     def page_reset_data_for_metric(self, page_id, metric_id):
@@ -2851,7 +2851,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/metrics/{}/data".format(page_id, metric_id)
+        url = f"v1/pages/{page_id}/metrics/{metric_id}/data"
         return self.delete(url)
 
     def page_add_data_to_metric(self, page_id, metric_id, data):
@@ -2882,7 +2882,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/metrics/{}/data".format(page_id, metric_id)
+        url = f"v1/pages/{page_id}/metrics/{metric_id}/data"
         return self.post(url, data={"data": data})
 
     def page_list_metric_for_metric_provider(self, page_id, metric_provider_id, per_page=100, page=1):
@@ -2914,7 +2914,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/metrics_providers/{}/metrics".format(page_id, metric_provider_id)
+        url = f"v1/pages/{page_id}/metrics_providers/{metric_provider_id}/metrics"
         return self.get(url, params={"per_page": per_page, "page": page})
 
     def page_create_metric_for_metric_provider(self, page_id, metric_provider_id, metric):
@@ -2970,7 +2970,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/metrics_providers/{}/metrics".format(page_id, metric_provider_id)
+        url = f"v1/pages/{page_id}/metrics_providers/{metric_provider_id}/metrics"
         return self.post(url, data={"metric": metric})
 
     def page_list_metric_providers(self, page_id):
@@ -2994,7 +2994,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/metrics_providers".format(page_id)
+        url = f"v1/pages/{page_id}/metrics_providers"
         return self.get(url)
 
     def page_create_metric_provider(self, page_id, metric_provider):
@@ -3041,7 +3041,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/metrics_providers".format(page_id)
+        url = f"v1/pages/{page_id}/metrics_providers"
         return self.post(url, data={"metric_provider": metric_provider})
 
     def page_get_metric_provider(self, page_id, metric_provider_id):
@@ -3068,7 +3068,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/metrics_providers/{}".format(page_id, metric_provider_id)
+        url = f"v1/pages/{page_id}/metrics_providers/{metric_provider_id}"
         return self.get(url)
 
     def page_update_metric_provider(self, page_id, metric_provider_id, metric_provider):
@@ -3106,7 +3106,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/metrics_providers/{}".format(page_id, metric_provider_id)
+        url = f"v1/pages/{page_id}/metrics_providers/{metric_provider_id}"
         return self.patch(url, data={"metric_provider": metric_provider})
 
     def page_delete_metric_provider(self, page_id, metric_provider_id):
@@ -3129,5 +3129,5 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = "v1/pages/{}/metrics_providers/{}".format(page_id, metric_provider_id)
+        url = f"v1/pages/{page_id}/metrics_providers/{metric_provider_id}"
         return self.delete(url)

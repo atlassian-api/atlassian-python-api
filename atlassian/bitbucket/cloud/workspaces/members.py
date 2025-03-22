@@ -16,7 +16,8 @@ class WorkspaceMembers(BitbucketCloudBase):
 
         :return: A generator for the member objects
 
-        API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-workspaces/#api-workspaces-workspace-members-get
+        API docs:
+        https://developer.atlassian.com/cloud/bitbucket/rest/api-group-workspaces/#api-workspaces-workspace-members-get
         """
         for member in self._get_paged(None):
             yield self.__get_object(member)
@@ -31,7 +32,8 @@ class WorkspaceMembers(BitbucketCloudBase):
 
         :return: The requested Member object
 
-        API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-workspaces/#api-workspaces-workspace-members-member-get
+        API docs:
+        https://developer.atlassian.com/cloud/bitbucket/rest/api-group-workspaces/#api-workspaces-workspace-members-member-get
         """
 
         return self.__get_object(super(WorkspaceMembers, self).get(member))

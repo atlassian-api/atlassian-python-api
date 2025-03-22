@@ -14,9 +14,8 @@ def page_version_remover(content_id, remained_page_numbers):
     latest_version_count = int(response.get("lastUpdated").get("number"))
     if len(response) > 0 and latest_version_count > remained_page_numbers:
         print(
-            "Number of {} latest version {}".format(
-                confluence.url_joiner(confluence.url, "/pages/viewpage.action?pageId=" + content_id),
-                latest_version_count,
+            (
+                f"Number of {confluence.url_joiner(confluence.url, '/pages/viewpage.action?pageId=' + content_id)} latest version {latest_version_count}"
             )
         )
         for version_page_counter in range(1, (latest_version_count - remained_page_numbers + 1), 1):
@@ -43,9 +42,9 @@ def get_all_page_ids_from_space(space):
             print("Did not find any pages, please, check permissions")
         else:
             for value in values:
-                print("Retrieve page with title: " + value["title"])
+                print(("Retrieve page with title: " + value["title"]))
                 content_ids.append((value["id"]))
-    print("Found in space {} pages {}".format(space, len(content_ids)))
+    print(f"Found in space {space} pages {len(content_ids)}")
     return content_ids
 
 
@@ -59,7 +58,7 @@ def get_all_spaces():
         if space_lists and len(space_lists) != 0:
             i += 1
             for space_list in space_lists:
-                print("Start review the space with key = " + space_list["key"])
+                print(("Start review the space with key = " + space_list["key"]))
                 space_key_list.append(space_list["key"])
         else:
             flag = False
@@ -82,7 +81,7 @@ if __name__ == "__main__":
     space_keys = get_all_spaces()
     counter = 0
     for space_key in space_keys:
-        print("Starting review space with key {}".format(space_key))
+        print(f"Starting review space with key {space_key}")
         page_ids = get_all_page_ids_from_space(space_key)
         for page_id in page_ids:
             reduce_page_numbers(page_id=page_id, remained_page_history_count=REMAINED_PAGE_HISTORY_COUNT)

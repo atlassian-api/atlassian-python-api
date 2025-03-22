@@ -35,20 +35,20 @@ def get_results_from_branch(plan_key):
 def remove_build_result(build_key, status):
     result = bamboo.build_result(build_key=build_key)
     if result.get("buildState") == status:
-        print("Removing build result - {}".format(build_key))
+        print(f"Removing build result - {build_key}")
         if REMOVE:
             bamboo.delete_build_result(build_key=build_key)
 
 
 def project_review(plans):
     for plan in plans:
-        print("Inspecting {} plan".format(plan))
+        print((f"Inspecting {plan} plan"))
         branches = get_branches_from_plan(plan)
         for branch in branches:
             build_results = get_results_from_branch(branch)
             for build in build_results:
                 build_key = build.get("buildResultKey") or None
-                print("Inspecting build - {}".format(build_key))
+                print(f"Inspecting build - {build_key}")
                 if build_key:
                     for status in STATUS_CLEANED_RESULTS:
                         remove_build_result(build_key=build_key, status=status)
@@ -60,7 +60,7 @@ if __name__ == "__main__":
     for project in projects:
         if project in EXCLUDED_PROJECTS:
             continue
-        print("Inspecting project - {}".format(project))
+        print(f"Inspecting project - {project}")
         results = []
         all_plans_of_project = get_plans_from_project(project)
         project_review(plans=all_plans_of_project)

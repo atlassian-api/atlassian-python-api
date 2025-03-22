@@ -92,9 +92,9 @@ class Projects(BitbucketCloudBase):
                 if p.name == project:
                     return p
         else:
-            ValueError("Unknown value '{}' for argument [by], expected 'key' or 'name'".format(by))
+            ValueError(f"Unknown value '{by}' for argument [by], expected 'key' or 'name'")
 
-        raise Exception("Unknown project {} '{}'".format(by, project))
+        raise Exception(f"Unknown project {by} '{project}'")
 
     def exists(self, project, by="key"):
         """
@@ -115,7 +115,7 @@ class Projects(BitbucketCloudBase):
             if e.response.status_code in (401, 404):
                 pass
         except Exception as e:
-            if not str(e) == "Unknown project {} '{}'".format(by, project):
+            if not str(e) == f"Unknown project {by} '{project}'":
                 raise e
         return exists
 
@@ -127,7 +127,7 @@ class Project(BitbucketCloudBase):
             url = self.get_link("repositories")
         except KeyError:
             workspace = self.get_data("workspace")
-            url = '{}/?q=project.key="{}"'.format(workspace["links"]["self"], workspace["slug"])
+            url = f'{workspace["links"]["self"]}/?q=project.key="{workspace["slug"]}"'
         self.__repositories = ProjectRepositories(url, **self._new_session_args)
 
     def update(self, **kwargs):

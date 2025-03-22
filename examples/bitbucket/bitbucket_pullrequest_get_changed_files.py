@@ -12,4 +12,4 @@ bitbucket = Bitbucket(url=url, username=username, password=password, advanced_mo
 
 diff = bitbucket.get_pull_requests_changes(proj, repo, pr_id).json()
 for item in diff.get("values", []):
-    print(item.get("path", {}).get("toString"))
+    print((item.get("path", {}).get("toString")))

@@ -2,7 +2,7 @@
 # Run `make` or `make help` to see a list of tasks.
 # Based on GCOVR project (https://github.com/gcovr/gcovr).
 
-PYTHON_VERSION ?= 3.7
+PYTHON_VERSION ?= 3.9
 
 ATLASSIAN_SDK ?= atlassian-sdk
 QA_CONTAINER ?= atlassian-python-api-qa-$(PYTHON_VERSION)

@@ -27,7 +27,8 @@ class DefaultReviewers(BitbucketCloudBase):
 
         :return: The added DefaultReviewer object
 
-        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/default-reviewers/%7Btarget_username%7D#put
+        API docs:
+        https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/default-reviewers/%7Btarget_username%7D#put
         """
         # the mention_id parameter is undocumented but if missed, leads to 400 statuses
         return self.__get_object(self.put(user, data={"mention_id": user}))
@@ -45,7 +46,8 @@ class DefaultReviewers(BitbucketCloudBase):
 
         :return: A generator for the DefaultReviewer objects
 
-        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/default-reviewers#get
+        API docs:
+        https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/default-reviewers#get
         """
         params = {}
         if sort is not None:
@@ -65,7 +67,8 @@ class DefaultReviewers(BitbucketCloudBase):
 
         :return: The requested DefaultReviewer object, None if not a default reviewer
 
-        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/default-reviewers/%7Btarget_username%7D#get
+        API docs:
+        https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/default-reviewers/%7Btarget_username%7D#get
         """
         default_reviewer = None
         try:
@@ -89,6 +92,7 @@ class DefaultReviewer(User):
 
         :return: The response on success
 
-        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/default-reviewers/%7Btarget_username%7D#delete
+        API docs:
+        https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/default-reviewers/%7Btarget_username%7D#delete
         """
         return super(DefaultReviewer, self).delete(None)

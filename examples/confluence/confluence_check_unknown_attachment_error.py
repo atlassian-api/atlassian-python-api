@@ -33,7 +33,7 @@ def check_unknown_attachment_in_space(space_key):
     :return:
     """
     page_ids = get_all_pages_ids(space_key)
-    print("Start review pages {} in {}".format(len(page_ids), space_key))
+    print(f"Start review pages {len(page_ids)} in {space_key}")
     for page_id in page_ids:
         link = confluence.has_unknown_attachment_error(page_id)
         if len(link) > 0:
@@ -43,5 +43,5 @@ def check_unknown_attachment_in_space(space_key):
 if __name__ == "__main__":
     space_list = confluence.get_all_spaces()
     for space in space_list:
-        print("Start review {} space".format(space["key"]))
+        print(f"Start review {space['key']} space")
         check_unknown_attachment_in_space(space["key"])

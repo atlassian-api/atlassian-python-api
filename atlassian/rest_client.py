@@ -187,7 +187,7 @@ class AtlassianRestAPI(object):
         self._session.auth = (username, password)
 
     def _create_token_session(self, token):
-        self._update_header("Authorization", "Bearer {token}".format(token=token.strip()))
+        self._update_header("Authorization", f"Bearer {token.strip()}")
 
     def _create_kerberos_session(self, _):
         from requests_kerberos import OPTIONAL, HTTPKerberosAuth
@@ -303,8 +303,8 @@ class AtlassianRestAPI(object):
         headers = headers or self.default_headers
         message = "curl --silent -X {method} -H {headers} {data} '{url}'".format(
             method=method,
-            headers=" -H ".join(["'{0}: {1}'".format(key, value) for key, value in headers.items()]),
-            data="" if not data else "--data '{0}'".format(dumps(data)),
+            headers=" -H ".join([f"'{key}: {value}'" for key, value in list(headers.items())]),
+            data="" if not data else f"--data '{dumps(data)}'",
             url=url,
         )
         log.log(level=level, msg=message)
@@ -658,12 +658,12 @@ class AtlassianRestAPI(object):
             try:
                 j = response.json()
                 if self.url == "https://api.atlassian.com":
-                    error_msg = "\n".join(["{}: {}".format(k, v) for k, v in j.items()])
+                    error_msg = "\n".join([f"{k}: {v}" for k, v in list(j.items())])
                 else:
                     error_msg_list = j.get("errorMessages", list())
                     errors = j.get("errors", dict())
                     if isinstance(errors, dict) and "message" not in errors:
-                        error_msg_list.extend(errors.values())
+                        error_msg_list.extend(list(errors.values()))
                     elif isinstance(errors, dict) and "message" in errors:
                         error_msg_list.append(errors.get("message", ""))
                     elif isinstance(errors, list):

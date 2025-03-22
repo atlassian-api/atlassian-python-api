@@ -25,15 +25,15 @@ class Portfolio(AtlassianRestAPI):
         }
 
     def get_plan(self):
-        url = "rest/roadmap/1.0/plans/{0}.json".format(self.plan_id)
+        url = f"rest/roadmap/1.0/plans/{self.plan_id}.json"
         return self.get(url)
 
     def get_stages(self):
-        url = "rest/roadmap/1.0/plans/{0}/stages.json".format(self.plan_id)
+        url = f"rest/roadmap/1.0/plans/{self.plan_id}/stages.json"
         return self.get(url)
 
     def get_teams(self):
-        url = "rest/roadmap/1.0/plans/{0}/teams.json".format(self.plan_id)
+        url = f"rest/roadmap/1.0/plans/{self.plan_id}/teams.json"
         return self.get(url)
 
     def get_team_name(self, team_id):
@@ -41,38 +41,38 @@ class Portfolio(AtlassianRestAPI):
         return [team["title"] for team in all_teams if team["id"] == str(team_id)][0]
 
     def get_config(self):
-        url = "rest/roadmap/1.0/plans/{0}/config.json".format(self.plan_id)
+        url = f"rest/roadmap/1.0/plans/{self.plan_id}/config.json"
         return self.get(url)
 
     def get_persons(self):
-        url = "rest/roadmap/1.0/plans/{0}/persons.json".format(self.plan_id)
+        url = f"rest/roadmap/1.0/plans/{self.plan_id}/persons.json"
         return self.get(url)
 
     def get_streams(self):
-        url = "rest/roadmap/1.0/plans/{0}/streams.json".format(self.plan_id)
+        url = f"rest/roadmap/1.0/plans/{self.plan_id}/streams.json"
         return self.get(url)
 
     def get_releases(self):
         return self.get_streams()
 
     def get_themes(self):
-        url = "rest/roadmap/1.0/plans/{0}/themes.json".format(self.plan_id)
+        url = f"rest/roadmap/1.0/plans/{self.plan_id}/themes.json"
         return self.get(url)
 
     def get_state(self):
-        url = "rest/roadmap/1.0/scheduling/{0}/state.json".format(self.plan_id)
+        url = f"rest/roadmap/1.0/scheduling/{self.plan_id}/state.json"
         return self.get(url)
 
     def get_filter(self, limit=500):
-        url = "rest/roadmap/1.0/plans/{0}/workitems/filter.json".format(self.plan_id)
+        url = f"rest/roadmap/1.0/plans/{self.plan_id}/workitems/filter.json"
         return self.post(url, data={"limit": limit})
 
     def get_filters(self, query_string):
-        url = "rest/roadmap/1.0/system/filters.json?queryString={0}".format(query_string)
+        url = f"rest/roadmap/1.0/system/filters.json?queryString={query_string}"
         return self.get(url)
 
     def get_dependencies(self, workitem_id, plan_version):
-        url = "rest/roadmap/1.0/workitems/{0}/dependencies.json?planVersion={1}".format(workitem_id, plan_version)
+        url = f"rest/roadmap/1.0/workitems/{workitem_id}/dependencies.json?planVersion={plan_version}"
         return self.get(url)
 
     def get_stage_name(self, stage_id):
@@ -83,7 +83,7 @@ class Portfolio(AtlassianRestAPI):
         return {self.get_stage_name(stage["targetId"]): stage["value"] for stage in estimates["stages"]}
 
     def import_workitem(self, data):
-        url = "rest/roadmap/1.0/plans/bulk/{0}/workitems.json".format(self.plan_id)
+        url = f"rest/roadmap/1.0/plans/bulk/{self.plan_id}/workitems.json"
         return self.post(url, data=data)
 
     def get_jql_issues(

@@ -406,7 +406,7 @@ class PullRequest(BitbucketCloudBase):
         self._check_if_open()
 
         if merge_strategy is not None and merge_strategy not in self.MERGE_STRATEGIES:
-            raise ValueError("merge_strategy must be {}".format(self.MERGE_STRATEGIES))
+            raise ValueError(f"merge_strategy must be {self.MERGE_STRATEGIES}")
 
         data = {
             "close_source_branch": close_source_branch or self.close_source_branch,

@@ -22,7 +22,8 @@ class DeploymentEnvironments(BitbucketCloudBase):
 
         :return: A list of the DeploymentEnvironment objects
 
-        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/environments/#get
+        API docs:
+        https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/environments/#get
         """
 
         # workaround for this issue
@@ -44,7 +45,8 @@ class DeploymentEnvironments(BitbucketCloudBase):
 
         :return: The requested DeploymentEnvironment objects
 
-        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/environments/%7Benvironment_uuid%7D#get
+        API docs:
+        https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/environments/%7Benvironment_uuid%7D#get
         """
         return self.__get_object(super(DeploymentEnvironments, self).get(uuid))
 
@@ -56,7 +58,7 @@ class DeploymentEnvironment(BitbucketCloudBase):
         )
         deployment_environment_url = self.get_deployment_environment_variable_url(self.url)
         self.__deployment_environment_variables = DeploymentEnvironmentVariables(
-            "{}/variables".format(deployment_environment_url), **self._new_session_args
+            f"{deployment_environment_url}/variables", **self._new_session_args
         )
 
     @property
@@ -127,7 +129,7 @@ class DeploymentEnvironment(BitbucketCloudBase):
     def get_deployment_environment_variable_url(self, url):
         parsed_url = urlsplit(url)
         path = parsed_url.path.split("/environments/")
-        new_path = "{}/deployments_config/environments/{}".format(path[0], path[1])
+        new_path = f"{path[0]}/deployments_config/environments/{path[1]}"
         list_parsed_url = list(parsed_url[:])
         list_parsed_url[2] = new_path
         return urlunsplit(tuple(list_parsed_url))
@@ -154,7 +156,8 @@ class DeploymentEnvironmentVariables(BitbucketCloudBase):
 
         :return: The created DeploymentEnvironment object
 
-        API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pipelines/#api-repositories-workspace-repo-slug-deployments-config-environments-environment-uuid-variables-post
+        API docs:
+        https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pipelines/#api-repositories-workspace-repo-slug-deployments-config-environments-environment-uuid-variables-post
         """
         data = {"key": key, "value": value, "secured": secured}
         return self.__get_object(self.post(None, data=data))
@@ -218,7 +221,7 @@ class DeploymentEnvironmentVariable(BitbucketCloudBase):
 
         API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pipelines/#api-repositories-workspace-repo-slug-deployments-config-environments-environment-uuid-variables-variable-uuid-put
         """
-        return self._update_data(self.put("/{}".format(self.uuid), data=kwargs))
+        return self._update_data(self.put(f"/{self.uuid}", data=kwargs))
 
     def delete(self):
         """
@@ -226,7 +229,7 @@ class DeploymentEnvironmentVariable(BitbucketCloudBase):
         :return: The response on success
         API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pipelines/#api-repositories-workspace-repo-slug-deployments-config-environments-environment-uuid-variables-variable-uuid-delete
         """
-        return super(DeploymentEnvironmentVariable, self).delete("/{}".format(self.uuid))
+        return super(DeploymentEnvironmentVariable, self).delete(f"/{self.uuid}")
 
     @property
     def uuid(self):

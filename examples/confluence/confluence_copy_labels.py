@@ -40,7 +40,7 @@ def sync_labels_pages(pages, destination_space):
                         label_name = label.get("name")
                         if not DRY_RUN:
                             confluence.set_page_label(destination_page_id, label_name)
-                        print(label_name + " copied to " + page_title)
+                        print((label_name + " copied to " + page_title))
     return
 
 

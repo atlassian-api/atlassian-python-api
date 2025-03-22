@@ -35,32 +35,32 @@ def is_can_removed_branch(branch_candidate):
     branch_id_name = branch_candidate.get("id")
     # Just exclude exist mainstream branches
     if any(x in branch_id_name for x in EXCLUDE_REPO_RULES):
-        print(branch.get("displayId") + " in exclusion list")
+        print((branch.get("displayId") + " in exclusion list"))
         return False
     # skip default branch maybe DevOps made configs in ui
     if branch_candidate.get("isDefault"):
-        print(branch.get("displayId") + " is default")
+        print((branch.get("displayId") + " is default"))
         return False
     pull_request_info = (branch_candidate.get("metadata") or {}).get(out_going_pull_request) or {}
     if pull_request_info.get("pullRequest") is not None or (pull_request_info.get("open") or 0) > 0:
-        print(branch.get("displayId") + " has open PR")
+        print((branch.get("displayId") + " has open PR"))
         return False
     # skip branches without pull request info
     if pull_request_info is None or len(pull_request_info) == 0:
-        print(branch.get("displayId") + " without pull request info")
+        print((branch.get("displayId") + " without pull request info"))
     #    return False
 
     author_time_stamp = branch_candidate.get("metadata").get(commit_info_key).get("authorTimestamp")
     # check latest commit info
     if time_now - author_time_stamp < delta_for_time_ms:
-        print(branch.get("displayId") + " is too early to remove")
+        print((branch.get("displayId") + " is too early to remove"))
         return False
 
     # check issues statuses
     issues_in_metadata = branch_candidate.get("metadata").get(branch_related_issues)
     for issue in issues_in_metadata:
         if jira.get_issue_status(issue.get("key")) not in ACCEPTED_ISSUE_STATUSES:
-            print(branch.get("displayId") + " related issue has not Resolution ")
+            print((branch.get("displayId") + " related issue has not Resolution "))
             return False
     # so branch can be removed
     return True
@@ -96,7 +96,7 @@ if __name__ == "__main__":
                             name=display_id,
                             end_point=branch["latestCommit"],
                         )
-                    log.write("{},{},{}\n".format(display_id, last_date_commit, True))
+                    log.write(f"{display_id},{last_date_commit},{True}\n")
             step += 1
     log.close()
     print("Done")

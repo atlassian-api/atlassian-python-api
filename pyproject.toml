@@ -5,7 +5,7 @@
 # https://github.com/carlosperate/awesome-pyproject
 
 [tool.black]
-target-version = ['py36', 'py37', 'py38', 'py39']
+target-version = ['py39', 'py310', 'py311']
 line-length = 120
 include = '(atlassian|examples|tests)\/.*(\.py|GET|POST)'
 

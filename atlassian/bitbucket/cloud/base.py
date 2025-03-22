@@ -22,7 +22,7 @@ class BitbucketCloudBase(BitbucketBase):
         expected_type = kwargs.pop("expected_type", None)
         super(BitbucketCloudBase, self).__init__(url, *args, **kwargs)
         if expected_type is not None and not expected_type == self.get_data("type"):
-            raise ValueError("Expected type of data is [{}], got [{}].".format(expected_type, self.get_data("type")))
+            raise ValueError(f"Expected type of data is [{expected_type}], got [{self.get_data('type')}].")
 
     def get_link(self, link):
         """
@@ -115,7 +115,7 @@ class BitbucketCloudBase(BitbucketBase):
                 if e.get("detail"):
                     # It uses interpolation instead of concatenation because of
                     # https://github.com/atlassian-api/atlassian-python-api/issues/1481
-                    error_msg = "{}\n{}".format(error_msg, str(e["detail"]))
+                    error_msg = f"{error_msg}\n{str(e['detail'])}"
             except Exception as e:
                 log.error(e)
                 response.raise_for_status()

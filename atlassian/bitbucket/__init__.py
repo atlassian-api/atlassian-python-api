@@ -79,7 +79,7 @@ class Bitbucket(BitbucketBase):
         :return: A list of group members
         """
 
-        url = "{}/groups/more-members".format(self._url_admin())
+        url = f"{self._url_admin()}/groups/more-members"
         params = {}
         if start:
             params["start"] = start
@@ -150,7 +150,7 @@ class Bitbucket(BitbucketBase):
         :param start:
         :return:
         """
-        url = "{}/users".format(self._url_admin(api_version="1.0"))
+        url = f"{self._url_admin(api_version='1.0')}/users"
         params = {}
         if limit:
             params["limit"] = limit
@@ -160,6 +160,7 @@ class Bitbucket(BitbucketBase):
             params["filter"] = user_filter
         return self._get_paged(url, params=params)
 
+    @property
     def get_current_license(self):
         """
         Retrieves details about the current license, as well as the current status of the system with
@@ -170,11 +171,11 @@ class Bitbucket(BitbucketBase):
         are not permitted to access license details.
         :return:
         """
-        url = "{}/license".format(self._url_admin())
+        url = f"{self._url_admin()}/license"
         return self.get(url)
 
     def _url_mail_server(self):
-        return "{}/mail-server".format(self._url_admin())
+        return f"{self._url_admin()}/mail-server"
 
     def get_mail_configuration(self):
         """
@@ -186,7 +187,7 @@ class Bitbucket(BitbucketBase):
         return self.get(url)
 
     def _url_mail_server_sender_address(self):
-        return "{}/sender-address".format(self._url_mail_server())
+        return f"{self._url_mail_server()}/sender-address"
 
     def get_mail_sender_address(self):
         """
@@ -233,13 +234,13 @@ class Bitbucket(BitbucketBase):
         :return:
         """
         url = self.resource_url(
-            "commits/{commitId}".format(commitId=commit),
+            f"commits/{commit}",
             api_root="rest/build-status",
         )
         return self.get(url)
 
     def _url_announcement_banner(self):
-        return "{}/banner".format(self._url_admin())
+        return f"{self._url_admin()}/banner"
 
     def get_announcement_banner(self):
         """
@@ -284,7 +285,7 @@ class Bitbucket(BitbucketBase):
             headers=self.no_check_headers,
             trailing=True,
         ).headers["upm-token"]
-        url = "rest/plugins/1.0/?token={}".format(upm_token)
+        url = f"rest/plugins/1.0/?token={upm_token}"
         files = {"plugin": open(plugin_path, "rb")}
         return self.post(url, files=files, headers=self.no_check_headers)
 
@@ -296,9 +297,9 @@ class Bitbucket(BitbucketBase):
         :return: If 'repository_slug', returns the list with categories of the repository,
         otherwise, returns the list with the categories of the project 'project_key'
         """
-        url = "project/{}".format(project_key)
+        url = f"project/{project_key}"
         if repository_slug:
-            url = "{}/repository/{}".format(url, repository_slug)
+            url = f"{url}/repository/{repository_slug}"
         url = self.resource_url(url, api_root="rest/categories", api_version="latest")
         data = self.get(url)
         return data.get("result").get("categories")
@@ -342,7 +343,7 @@ class Bitbucket(BitbucketBase):
     ################################################################################################
 
     def _url_project(self, project_key, api_root=None, api_version=None):
-        return "{}/{}".format(self._url_projects(api_root, api_version), project_key)
+        return f"{self._url_projects(api_root, api_version)}/{project_key}"
 
     def project(self, key):
         """
@@ -378,7 +379,7 @@ class Bitbucket(BitbucketBase):
         return self.put(url, data=params)
 
     def _url_project_avatar(self, project_key):
-        return "{}/avatar.png".format(self._url_project(project_key))
+        return f"{self._url_project(project_key)}/avatar.png"
 
     def project_summary(self, key):
         """
@@ -433,7 +434,7 @@ class Bitbucket(BitbucketBase):
         :param filter_str:  OPTIONAL: users filter string
         :return: The list of SSH access keys
         """
-        url = "{}/ssh".format(self._url_project(key, api_root="rest/keys"))
+        url = f"{self._url_project(key, api_root='rest/keys')}/ssh"
         params = {}
         if start:
             params["start"] = start
@@ -444,7 +445,7 @@ class Bitbucket(BitbucketBase):
         return self._get_paged(url, params=params)
 
     def _url_project_users(self, project_key):
-        return "{}/permissions/users".format(self._url_project(project_key))
+        return f"{self._url_project(project_key)}/permissions/users"
 
     def project_users(self, key, start=0, limit=None, filter_str=None):
         """
@@ -506,7 +507,7 @@ class Bitbucket(BitbucketBase):
         return self.delete(url, params=params)
 
     def _url_project_groups(self, project_key):
-        return "{}/permissions/groups".format(self._url_project(project_key))
+        return f"{self._url_project(project_key)}/permissions/groups"
 
     def project_groups(self, key, start=0, limit=None, filter_str=None):
         """
@@ -562,7 +563,7 @@ class Bitbucket(BitbucketBase):
         :param permission: the project permissions available are 'PROJECT_ADMIN', 'PROJECT_WRITE' and 'PROJECT_READ'
         :return:
         """
-        url = "{}/permissions/{}/all".format(self._url_project(project_key), permission)
+        url = f"{self._url_project(project_key)}/permissions/{permission}/all"
         return self.get(url)
 
     def project_grant_default_permissions(self, project_key, permission):
@@ -572,7 +573,7 @@ class Bitbucket(BitbucketBase):
         :param permission: the project permissions available are 'PROJECT_ADMIN', 'PROJECT_WRITE' and 'PROJECT_READ'
         :return:
         """
-        url = "{}/permissions/{}/all".format(self._url_project(project_key), permission)
+        url = f"{self._url_project(project_key)}/permissions/{permission}/all"
         return self.post(url, params={"allow": True})
 
     def project_remove_default_permissions(self, project_key, permission):
@@ -582,11 +583,11 @@ class Bitbucket(BitbucketBase):
         :param permission: the project permissions available are 'PROJECT_ADMIN', 'PROJECT_WRITE' and 'PROJECT_READ'
         :return:
         """
-        url = "{}/permissions/{}/all".format(self._url_project(project_key), permission)
+        url = f"{self._url_project(project_key)}/permissions/{permission}/all"
         return self.post(url, params={"allow": False})
 
     def _url_project_repo_hook_settings(self, project_key):
-        return "{}/settings/hooks".format(self._url_project(project_key))
+        return f"{self._url_project(project_key)}/settings/hooks"
 
     def all_project_repo_hook_settings(self, project_key, start=0, limit=None, filter_type=None):
         """
@@ -616,7 +617,7 @@ class Bitbucket(BitbucketBase):
         :param hook_key: The repository hook key
         :return:
         """
-        url = "{}/{}".format(self._url_project_repo_hook_settings(project_key), hook_key)
+        url = f"{self._url_project_repo_hook_settings(project_key)}/{hook_key}"
         return self.get(url)
 
     def enable_project_repo_hook_settings(self, project_key, hook_key):
@@ -626,7 +627,7 @@ class Bitbucket(BitbucketBase):
         :param hook_key: The repository hook key
         :return:
         """
-        url = "{}/{}/enabled".format(self._url_project_repo_hook_settings(project_key), hook_key)
+        url = f"{self._url_project_repo_hook_settings(project_key)}/{hook_key}/enabled"
         return self.put(url)
 
     def disable_project_repo_hook_settings(self, project_key, hook_key):
@@ -636,7 +637,7 @@ class Bitbucket(BitbucketBase):
         :param hook_key: The repository hook key
         :return:
         """
-        url = "{}/{}/enabled".format(self._url_project_repo_hook_settings(project_key), hook_key)
+        url = f"{self._url_project_repo_hook_settings(project_key)}/{hook_key}/enabled"
         return self.delete(url)
 
     def _url_project_conditions(self, project_key):
@@ -669,7 +670,7 @@ class Bitbucket(BitbucketBase):
             )
         )
         if id_condition is not None:
-            url += "/{}".format(id_condition)
+            url += f"/{id_condition}"
         return url
 
     def get_project_condition(self, project_key, id_condition):
@@ -741,7 +742,7 @@ class Bitbucket(BitbucketBase):
         if self.cloud:
             raise Exception("Not supported in Bitbucket Cloud")
 
-        return "{}/events".format(self._url_project(project_key, api_root="rest/audit"))
+        return f"{self._url_project(project_key, api_root='rest/audit')}/events"
 
     def get_project_audit_log(self, project_key, start=0, limit=None):
         """
@@ -760,7 +761,7 @@ class Bitbucket(BitbucketBase):
         return self._get_paged(url, params=params)
 
     def _url_repos(self, project_key, api_root=None, api_version=None):
-        return "{}/repos".format(self._url_project(project_key, api_root, api_version))
+        return f"{self._url_project(project_key, api_root, api_version)}/repos"
 
     def repo_list(self, project_key, start=0, limit=25):
         """
@@ -823,7 +824,7 @@ class Bitbucket(BitbucketBase):
     ################################################################################################
 
     def _url_repo(self, project_key, repo, api_root=None, api_version=None):
-        return "{}/{}".format(self._url_repos(project_key, api_root, api_version), repo)
+        return f"{self._url_repos(project_key, api_root, api_version)}/{repo}"
 
     def reindex_repo(self, project_key, repository_slug):
         """
@@ -852,7 +853,7 @@ class Bitbucket(BitbucketBase):
         :param repository_slug:
         :return:
         """
-        url = "{}/reindex".format(self._url_repo(project_key, repository_slug, api_root="rest/jira-dev"))
+        url = f"{self._url_repo(project_key, repository_slug, api_root='rest/jira-dev')}/reindex"
         return self.post(url)
 
     def get_repo(self, project_key, repository_slug):
@@ -951,7 +952,7 @@ class Bitbucket(BitbucketBase):
         :param filter_str:  OPTIONAL: users filter string
         :return:
         """
-        url = "{}/ssh".format(self._url_repo(project_key, repo_key, api_root="rest/keys"))
+        url = f"{self._url_repo(project_key, repo_key, api_root='rest/keys')}/ssh"
         params = {}
         if start:
             params["start"] = start
@@ -962,7 +963,7 @@ class Bitbucket(BitbucketBase):
         return self._get_paged(url, params=params)
 
     def _url_repo_users(self, project_key, repo):
-        return "{}/permissions/users".format(self._url_repo(project_key, repo))
+        return f"{self._url_repo(project_key, repo)}/permissions/users"
 
     def repo_users(self, project_key, repo_key, start=0, limit=None, filter_str=None):
         """
@@ -1014,7 +1015,7 @@ class Bitbucket(BitbucketBase):
         return self.delete(url, params=params)
 
     def _url_repo_groups(self, project_key, repo):
-        return "{}/permissions/groups".format(self._url_repo(project_key, repo))
+        return f"{self._url_repo(project_key, repo)}/permissions/groups"
 
     def repo_groups(self, project_key, repo_key, start=0, limit=None, filter_str=None):
         """
@@ -1123,7 +1124,7 @@ class Bitbucket(BitbucketBase):
         if self.cloud:
             raise Exception("Not supported in Bitbucket Cloud")
 
-        return "{}/labels".format(self._url_repo(project_key, repository_slug))
+        return f"{self._url_repo(project_key, repository_slug)}/labels"
 
     def get_repo_labels(self, project_key, repository_slug):
         """
@@ -1153,7 +1154,7 @@ class Bitbucket(BitbucketBase):
         if self.cloud:
             raise Exception("Not supported in Bitbucket Cloud")
 
-        return "{}/events".format(self._url_repo(project_key, repository_slug, api_root="rest/audit"))
+        return f"{self._url_repo(project_key, repository_slug, api_root='rest/audit')}/events"
 
     def get_repo_audit_log(self, project_key, repository_slug, start=0, limit=None):
         """
@@ -1173,7 +1174,7 @@ class Bitbucket(BitbucketBase):
         return self._get_paged(url, params=params)
 
     def _url_repo_branches(self, project_key, repository_slug, api_root=None):
-        return "{}/branches".format(self._url_repo(project_key, repository_slug, api_root=api_root))
+        return f"{self._url_repo(project_key, repository_slug, api_root=api_root)}/branches"
 
     def get_branches(
         self,
@@ -1219,7 +1220,7 @@ class Bitbucket(BitbucketBase):
         return self._get_paged(url, params=params)
 
     def _url_repo_default_branche(self, project_key, repository_slug):
-        return "{}/default".format(self._url_repo_branches(project_key, repository_slug))
+        return f"{self._url_repo_branches(project_key, repository_slug)}/default"
 
     def get_default_branch(self, project_key, repository_slug):
         """
@@ -1287,9 +1288,9 @@ class Bitbucket(BitbucketBase):
 
     def _url_repo_tags(self, project_key, repository_slug, api_root=None):
         if self.cloud:
-            return "{}/refs/tags".format(self._url_repo(project_key, repository_slug, api_root=api_root))
+            return f"{self._url_repo(project_key, repository_slug, api_root=api_root)}/refs/tags"
         else:
-            return "{}/tags".format(self._url_repo(project_key, repository_slug, api_root=api_root))
+            return f"{self._url_repo(project_key, repository_slug, api_root=api_root)}/tags"
 
     def get_tags(
         self,
@@ -1336,7 +1337,7 @@ class Bitbucket(BitbucketBase):
         """
         url = self._url_repo_tags(project_key, repository_slug)
         if tag_name is not None:
-            return self.get("{}/{}".format(url, tag_name))
+            return self.get(f"{url}/{tag_name}")
 
         return self._get_paged(url)
 
@@ -1377,14 +1378,11 @@ class Bitbucket(BitbucketBase):
         :param tag_name:
         :return:
         """
-        url = "{}/{}".format(
-            self._url_repo_tags(project_key, repository_slug, api_root="rest/git"),
-            tag_name,
-        )
+        url = f"{self._url_repo_tags(project_key, repository_slug, api_root='rest/git')}/{tag_name}"
         return self.delete(url)
 
     def _url_repo_hook_settings(self, project_key, repository_slug):
-        return "{}/settings/hooks".format(self._url_repo(project_key, repository_slug))
+        return f"{self._url_repo(project_key, repository_slug)}/settings/hooks"
 
     def all_repo_hook_settings(
         self,
@@ -1423,10 +1421,7 @@ class Bitbucket(BitbucketBase):
         :param hook_key: The repository hook key
         :return:
         """
-        url = "{}/{}".format(
-            self._url_repo_hook_settings(project_key, repository_slug),
-            hook_key,
-        )
+        url = f"{self._url_repo_hook_settings(project_key, repository_slug)}/{hook_key}"
         return self.get(url)
 
     def enable_repo_hook_settings(self, project_key, repository_slug, hook_key):
@@ -1437,10 +1432,7 @@ class Bitbucket(BitbucketBase):
         :param hook_key: The repository hook key
         :return:
         """
-        url = "{}/{}/enabled".format(
-            self._url_repo_hook_settings(project_key, repository_slug),
-            hook_key,
-        )
+        url = f"{self._url_repo_hook_settings(project_key, repository_slug)}/{hook_key}/enabled"
         return self.put(url)
 
     def disable_repo_hook_settings(self, project_key, repository_slug, hook_key):
@@ -1451,14 +1443,11 @@ class Bitbucket(BitbucketBase):
         :param hook_key: The repository hook key
         :return:
         """
-        url = "{}/{}/enabled".format(
-            self._url_repo_hook_settings(project_key, repository_slug),
-            hook_key,
-        )
+        url = f"{self._url_repo_hook_settings(project_key, repository_slug)}/{hook_key}/enabled"
         return self.delete(url)
 
     def _url_webhooks(self, project_key, repository_slug):
-        return "{}/webhooks".format(self._url_repo(project_key, repository_slug))
+        return f"{self._url_repo(project_key, repository_slug)}/webhooks"
 
     def get_webhooks(
         self,
@@ -1518,7 +1507,7 @@ class Bitbucket(BitbucketBase):
         return self.post(url, data=body)
 
     def _url_webhook(self, project_key, repository_slug, webhook_id):
-        return "{}/{}".format(self._url_webhooks(project_key, repository_slug), webhook_id)
+        return f"{self._url_webhooks(project_key, repository_slug)}/{webhook_id}"
 
     def get_webhook(self, project_key, repository_slug, webhook_id):
         """
@@ -1557,7 +1546,7 @@ class Bitbucket(BitbucketBase):
         return self.delete(url)
 
     def _url_pull_request_settings(self, project_key, repository_slug):
-        return "{}/settings/pull-requests".format(self._url_repo(project_key, repository_slug))
+        return f"{self._url_repo(project_key, repository_slug)}/settings/pull-requests"
 
     def get_pull_request_settings(self, project_key, repository_slug):
         """
@@ -1582,9 +1571,9 @@ class Bitbucket(BitbucketBase):
 
     def _url_pull_requests(self, project_key, repository_slug):
         if self.cloud:
-            return self.resource_url("repositories/{}/{}/pullrequests".format(project_key, repository_slug))
+            return self.resource_url(f"repositories/{project_key}/{repository_slug}/pullrequests")
         else:
-            return "{}/pull-requests".format(self._url_repo(project_key, repository_slug))
+            return f"{self._url_repo(project_key, repository_slug)}/pull-requests"
 
     def get_pull_requests(
         self,
@@ -1736,10 +1725,7 @@ class Bitbucket(BitbucketBase):
         return self.post(url, data=data)
 
     def _url_pull_request(self, project_key, repository_slug, pull_request_id):
-        return "{}/{}".format(
-            self._url_pull_requests(project_key, repository_slug),
-            pull_request_id,
-        )
+        return f"{self._url_pull_requests(project_key, repository_slug)}/{pull_request_id}"
 
     def get_pull_request(self, project_key, repository_slug, pull_request_id):
         """
@@ -1813,9 +1799,9 @@ class Bitbucket(BitbucketBase):
         :return:
         """
         if self.cloud:
-            url = "{}/activity".format(self._url_pull_request(project_key, repository_slug, pull_request_id))
+            url = f"{self._url_pull_request(project_key, repository_slug, pull_request_id)}/activity"
         else:
-            url = "{}/activities".format(self._url_pull_request(project_key, repository_slug, pull_request_id))
+            url = f"{self._url_pull_request(project_key, repository_slug, pull_request_id)}/activities"
         params = {}
         if start:
             params["start"] = start
@@ -1840,7 +1826,7 @@ class Bitbucket(BitbucketBase):
         :param pull_request_id: the ID of the pull request within the repository
         :return:
         """
-        url = "{}/changes".format(self._url_pull_request(project_key, repository_slug, pull_request_id))
+        url = f"{self._url_pull_request(project_key, repository_slug, pull_request_id)}/changes"
         params = {}
         if start:
             params["start"] = start
@@ -1867,7 +1853,7 @@ class Bitbucket(BitbucketBase):
         :limit
         :return:
         """
-        url = "{}/commits".format(self._url_pull_request(project_key, repository_slug, pull_request_id))
+        url = f"{self._url_pull_request(project_key, repository_slug, pull_request_id)}/commits"
         params = {}
         if start:
             params["start"] = start
@@ -1876,10 +1862,7 @@ class Bitbucket(BitbucketBase):
         return self._get_paged(url, params)
 
     def _url_pull_request_participants(self, project_key, repository_slug, pull_request_id):
-        return "{}/{}/participants".format(
-            self._url_pull_requests(project_key, repository_slug),
-            pull_request_id,
-        )
+        return f"{self._url_pull_requests(project_key, repository_slug)}/{pull_request_id}/participants"
 
     def get_pull_requests_participants(
         self,
@@ -1998,10 +1981,7 @@ class Bitbucket(BitbucketBase):
         :param user_slug:
         :return:
         """
-        url = "{}/{}".format(
-            self._url_pull_request_participants(project_key, repository_slug, pull_request_id),
-            user_slug,
-        )
+        url = f"{self._url_pull_request_participants(project_key, repository_slug, pull_request_id)}/{user_slug}"
         approved = True if status == "APPROVED" else False
         data = {
             "user": {"name": user_slug},
@@ -2011,7 +1991,7 @@ class Bitbucket(BitbucketBase):
         return self.put(url, data)
 
     def _url_pull_request_comments(self, project_key, repository_slug, pull_request_id):
-        url = "{}/comments".format(self._url_pull_request(project_key, repository_slug, pull_request_id))
+        url = f"{self._url_pull_request(project_key, repository_slug, pull_request_id)}/comments"
         return url
 
     def add_pull_request_comment(
@@ -2039,10 +2019,7 @@ class Bitbucket(BitbucketBase):
         return self.post(url, data=body)
 
     def _url_pull_request_comment(self, project_key, repository_slug, pull_request_id, comment_id):
-        url = "{}/{}".format(
-            self._url_pull_request_comments(project_key, repository_slug, pull_request_id),
-            comment_id,
-        )
+        url = f"{self._url_pull_request_comments(project_key, repository_slug, pull_request_id)}/{comment_id}"
         return url
 
     def get_pull_request_comment(self, project_key, repository_slug, pull_request_id, comment_id):
@@ -2121,7 +2098,7 @@ class Bitbucket(BitbucketBase):
         return self.delete(url, params=data)
 
     def _url_pull_request_blocker_comments(self, project_key, repository_slug, pull_request_id) -> str:
-        url = "{}/blocker-comments".format(self._url_pull_request(project_key, repository_slug, pull_request_id))
+        url = f"{self._url_pull_request(project_key, repository_slug, pull_request_id)}/blocker-comments"
         return url
 
     def add_pull_request_blocker_comment(
@@ -2163,7 +2140,7 @@ class Bitbucket(BitbucketBase):
         :param pr_version: 12
         :return:
         """
-        url = "{}/decline".format(self._url_pull_request(project_key, repository_slug, pr_id))
+        url = f"{self._url_pull_request(project_key, repository_slug, pr_id)}/decline"
         params = {}
         if not self.cloud:
             params["version"] = pr_version
@@ -2179,7 +2156,7 @@ class Bitbucket(BitbucketBase):
         """
         if self.cloud:
             raise Exception("Not supported in Bitbucket Cloud")
-        url = "{}/tasks".format(self._url_pull_request(project_key, repository_slug, pull_request_id))
+        url = f"{self._url_pull_request(project_key, repository_slug, pull_request_id)}/tasks"
         return self.get(url)
 
     def _url_tasks(self):
@@ -2199,7 +2176,7 @@ class Bitbucket(BitbucketBase):
         return self.post(url, data=data)
 
     def _url_task(self, task_id):
-        return "{}/{}".format(self._url_tasks(), task_id)
+        return f"{self._url_tasks()}/{task_id}"
 
     def get_task(self, task_id):
         """
@@ -2249,7 +2226,7 @@ class Bitbucket(BitbucketBase):
         :param pr_id: 2341
         :return:
         """
-        url = "{}/merge".format(self._url_pull_request(project_key, repository_slug, pr_id))
+        url = f"{self._url_pull_request(project_key, repository_slug, pr_id)}/merge"
         return self.get(url)
 
     def merge_pull_request(
@@ -2276,7 +2253,7 @@ class Bitbucket(BitbucketBase):
         :param merge_strategy:  "squash"
         :return:
         """
-        url = "{}/merge".format(self._url_pull_request(project_key, repository_slug, pr_id))
+        url = f"{self._url_pull_request(project_key, repository_slug, pr_id)}/merge"
         params = {}
         data = {
             "type": "pullrequest",
@@ -2300,7 +2277,7 @@ class Bitbucket(BitbucketBase):
         :param pr_version: 12
         :return:
         """
-        url = "{}/reopen".format(self._url_pull_request(project_key, repository_slug, pr_id))
+        url = f"{self._url_pull_request(project_key, repository_slug, pr_id)}/reopen"
         params = {"version": pr_version}
         return self.post(url, params=params)
 
@@ -2308,7 +2285,7 @@ class Bitbucket(BitbucketBase):
         return "inbox/pull-requests"
 
     def check_inbox_pull_requests_count(self):
-        url = "{}/count".format(self._url_inbox_pull_requests())
+        url = f"{self._url_inbox_pull_requests()}/count"
         return self.get(url)
 
     def check_inbox_pull_requests(self, start=0, limit=None, role=None):
@@ -2328,7 +2305,7 @@ class Bitbucket(BitbucketBase):
         return self._get_paged(url, params=params)
 
     def _url_repo_compare(self, project_key, repository_slug):
-        url = "{}/compare".format(self._url_repo(project_key, repository_slug))
+        url = f"{self._url_repo(project_key, repository_slug)}/compare"
         return url
 
     def get_diff(self, project_key, repository_slug, path, hash_oldest, hash_newest):
@@ -2343,7 +2320,7 @@ class Bitbucket(BitbucketBase):
         :param hash_newest: the target commit (can be a partial/full commit ID or qualified/unqualified ref name)
         :return:
         """
-        url = "{}/diff/{}".format(self._url_repo_compare(project_key, repository_slug), path)
+        url = f"{self._url_repo_compare(project_key, repository_slug)}/diff/{path}"
         params = {}
         if hash_oldest:
             params["from"] = hash_oldest
@@ -2492,7 +2469,7 @@ class Bitbucket(BitbucketBase):
         return self.get(url, params=params)
 
     def _url_commit_pull_requests(self, project_key, repository_slug, commit_id):
-        return "{}/pull-requests".format(self._url_commit(project_key, repository_slug, commit_id))
+        return f"{self._url_commit(project_key, repository_slug, commit_id)}/pull-requests"
 
     def get_pull_requests_contain_commit(self, project_key, repository_slug, commit):
         url = self._url_commit_pull_requests(project_key, repository_slug, commit)
@@ -2518,7 +2495,7 @@ class Bitbucket(BitbucketBase):
                 fixed system limits. Default by built-in method: None
         :return:
         """
-        url = "{}/compare/commits".format(self._url_repo(project_key, repository_slug))
+        url = f"{self._url_repo(project_key, repository_slug)}/compare/commits"
         params = {}
         if ref_from:
             params["from"] = ref_from
@@ -2641,9 +2618,9 @@ class Bitbucket(BitbucketBase):
         :param limit: OPTIONAL
         :return:
         """
-        url = "{}/files".format(self._url_repo(project_key, repository_slug))
+        url = f"{self._url_repo(project_key, repository_slug)}/files"
         if sub_folder:
-            url = "{}/{}".format(url, sub_folder.lstrip("/"))
+            url = f"{url}/{sub_folder.lstrip('/')}"
         params = {}
         if query:
             params["at"] = query
@@ -2665,7 +2642,7 @@ class Bitbucket(BitbucketBase):
             otherwise, if not specified, or any value other than "true" the content is streamed without markup.
         :return:
         """
-        url = "{}/raw/{}".format(self._url_repo(project_key, repository_slug), filename)
+        url = f"{self._url_repo(project_key, repository_slug)}/raw/{filename}"
         params = {}
         if at is not None:
             params["at"] = at
@@ -2689,7 +2666,7 @@ class Bitbucket(BitbucketBase):
                 api_version="2.0",
             )
 
-        return "{}/restrictions/{}".format(base, "" if permission_id is None else str(permission_id))
+        return f"{base}/restrictions/{'' if permission_id is None else str(permission_id)}"
 
     def get_branches_permissions(
         self,
@@ -2895,7 +2872,7 @@ class Bitbucket(BitbucketBase):
         return self.delete(self._url_branching_model(project_key, repository_slug))
 
     def _url_file(self, project_key, repository_slug, filename):
-        return "{}/browse/{}".format(self._url_repo(project_key, repository_slug), filename)
+        return f"{self._url_repo(project_key, repository_slug)}/browse/{filename}"
 
     def upload_file(self, project_key, repository_slug, content, message, branch, filename):
         """
@@ -2948,22 +2925,18 @@ class Bitbucket(BitbucketBase):
         :team: str
         :search_query: str
         """
-        url = self.resource_url("teams/{team}/search/code".format(team=team))
+        url = self.resource_url(f"teams/{team}/search/code")
         return self.get(
             url,
             params={"search_query": search_query, "page": page, "pagelen": limit},
         )
 
     def get_lfs_repo_status(self, project_key, repo):
-        url = "rest/git-lfs/admin/projects/{projectKey}/repos/{repositorySlug}/enabled".format(
-            projectKey=project_key, repositorySlug=repo
-        )
+        url = f"rest/git-lfs/admin/projects/{project_key}/repos/{repo}/enabled"
         return self.get(url)
 
     def set_lfs_repo_status(self, project_key, repo, enable=True):
-        url = "rest/git-lfs/admin/projects/{projectKey}/repos/{repositorySlug}/enabled".format(
-            projectKey=project_key, repositorySlug=repo
-        )
+        url = f"rest/git-lfs/admin/projects/{project_key}/repos/{repo}/enabled"
         if enable:
             return self.put(url)
         else:
@@ -3143,7 +3116,7 @@ class Bitbucket(BitbucketBase):
                     if the supplied prefix does not end with a trailing /, one will be added automatically
         :param chunk_size: int: Optional, download chunk size. Defeault is 128
         """
-        url = "{}/archive".format(self._url_repo(project_key, repository_slug))
+        url = f"{self._url_repo(project_key, repository_slug)}/archive"
         params = {}
         if at is not None:
             params["at"] = at

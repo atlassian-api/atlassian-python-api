@@ -108,7 +108,7 @@ class Pipeline(BitbucketCloudBase):
 
     def __get_object(self, data):
         return Step(
-            "{}/steps/{}".format(self.url, data["uuid"]),
+            f"{self.url}/steps/{data['uuid']}",
             data,
             **self._new_session_args
         )  # fmt: skip
@@ -180,7 +180,7 @@ class Pipeline(BitbucketCloudBase):
 
         API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/pipelines/%7Bpipeline_uuid%7D/steps/%7Bstep_uuid%7D#get
         """
-        return self.__get_object(self.get("steps/{}".format(uuid)))
+        return self.__get_object(self.get(f"steps/{uuid}"))
 
 
 class Step(BitbucketCloudBase):
@@ -246,7 +246,7 @@ class Step(BitbucketCloudBase):
             start = int(start)
             end = int(end)
             if (start >= 0) and (start < end):
-                headers["Range"] = "bytes={}-{}".format(start, end)
+                headers["Range"] = f"bytes={start}-{end}"
             else:
                 raise ValueError("Value of [start] must be o or greater and [end] must be greater than [start].")
 

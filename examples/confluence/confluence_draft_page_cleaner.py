@@ -24,9 +24,9 @@ def clean_draft_pages_from_space(space_key, count, date_now):
         last_date = datetime.datetime.strptime(last_date_string.replace(".000", "")[:-6], "%Y-%m-%dT%H:%M:%S")
         if (date_now - last_date) > datetime.timedelta(days=DRAFT_DAYS):
             count += 1
-            print("Removing page with page id: " + page_id)
+            print(("Removing page with page id: " + page_id))
             confluence.remove_page_as_draft(page_id=page_id)
-            print("Removed page with date " + last_date_string)
+            print(("Removed page with date " + last_date_string))
     return count
 
 
@@ -46,11 +46,11 @@ def clean_all_draft_pages_from_all_spaces(days=30):
         if space_lists and len(space_lists) != 0:
             i += 1
             for space_list in space_lists:
-                print("Start review the space {}".format(space_list["key"]))
+                print(f"Start review the space {space_list['key']}")
                 count = clean_draft_pages_from_space(space_key=space_list["key"], count=count, date_now=date_now)
         else:
             flag = False
-    print("Script has removed {count} draft pages older than {days} days".format(count=count, days=days))
+    print(f"Script has removed {count} draft pages older than {days} days")
 
 
 if __name__ == "__main__":

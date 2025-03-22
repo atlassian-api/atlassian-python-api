@@ -29,7 +29,7 @@ class ReportGenerator:
         limit = 10
         step = 0
         jql = "((assignee was in ({})) OR assignee in ({})) AND updated > -{}d ".format(user, user, self.days)
-        print("Start fetching info jql = {}".format(jql))
+        print(("Start fetching info jql = {}".format(jql)))
         while flag:
             try:
                 response = self.jira.jql(
@@ -89,7 +89,7 @@ class ReportGenerator:
         number = 1
         data = []
         for case in self.cases:
-            print("Processing case #{}".format(number))
+            print(("Processing case #{}".format(number)))
             output = [
                 case.get("actor"),
                 case.get("key"),

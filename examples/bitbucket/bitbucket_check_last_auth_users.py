@@ -25,11 +25,11 @@ def report(all=False, non_auth=False, limit=20):
         else:
             full_date = None
         if full_date:
-            output = "{} ({}) authenticated on {}".format(user.get("displayName"), user.get("emailAddress"), full_date)
+            output = f"{user.get('displayName')} ({user.get('emailAddress')}) authenticated on {full_date}"
             if all:
                 print(output)
         else:
-            output = "{} ({}) not authenticated yet".format(user.get("displayName"), user.get("emailAddress"))
+            output = f"{user.get('displayName')} ({user.get('emailAddress')}) not authenticated yet"
             if non_auth or all:
                 print(output)
 

@@ -4,7 +4,7 @@ jira = Jira(url="http://localhost:8080", username="admin", password="admin")
 
 issue_types = jira.get_issue_types()
 print("Enter projects category:")
-category = input()
+category = eval(input())
 
 for i in issue_types:
     issue_type = i["name"]
@@ -17,4 +17,4 @@ for i in issue_types:
     else:
         percent_of_deprecated = 0
     percentage = round(percent_of_deprecated, 1)
-    print("{0}, {1}, {2}% of {3}".format(issue_type, number, percentage, category))
+    print(("{0}, {1}, {2}% of {3}".format(issue_type, number, percentage, category)))

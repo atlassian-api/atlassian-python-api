@@ -81,9 +81,9 @@ class Projects(BitbucketServerBase):
                 if p.name == project:
                     return p
         else:
-            ValueError("Unknown value '{}' for argument [by], expected 'key' or 'name'".format(by))
+            ValueError(f"Unknown value '{by}' for argument [by], expected 'key' or 'name'")
 
-        raise Exception("Unknown project {} '{}'".format(by, project))
+        raise Exception(f"Unknown project {by} '{project}'")
 
     def exists(self, project, by="key"):
         """
@@ -102,7 +102,7 @@ class Projects(BitbucketServerBase):
             if e.response.status_code in (401, 404):
                 pass
         except Exception as e:
-            if not str(e) == "Unknown project {} '{}'".format(by, project):
+            if not str(e) == f"Unknown project {by} '{project}'":
                 raise e
         return exists
 
