@@ -30,9 +30,9 @@ class BitbucketBase(AtlassianRestAPI):
             url = self.get_link("self")
             if isinstance(url, list):  # Server has a list of links
                 url = url[0]
-        self.timeformat_lambda = kwargs.pop("timeformat_lambda", lambda x: self._default_timeformat_lambda(x))
+        self.timeformat_lambda = kwargs.pop("timeformat_lambda", self._default_timeformat_lambda)
         self._check_timeformat_lambda()
-        super(BitbucketBase, self).__init__(url, *args, **kwargs)
+        super().__init__(url, *args, **kwargs)
 
     def __str__(self):
         return PrettyPrinter(indent=4).pformat(self.__data if self.__data else self)
@@ -74,8 +74,7 @@ class BitbucketBase(AtlassianRestAPI):
             if "values" not in response:
                 return
 
-            for value in response.get("values", []):
-                yield value
+            yield from response.get("values", [])
 
             if self.cloud:
                 url = response.get("next")
@@ -165,9 +164,13 @@ class BitbucketBase(AtlassianRestAPI):
             if sys.version_info <= (3, 7):
                 value_str = RE_TIMEZONE.sub(r"\1\2", value_str)
             try:
+                value_str = value_str[:26] + "Z"
                 value = datetime.strptime(value_str, self.CONF_TIMEFORMAT)
             except ValueError:
-                value = datetime.strptime(value_str, "%Y-%m-%dT%H:%M:%S.%fZ", tzinfo="UTC")
+                value = datetime.strptime(
+                    value_str,
+                    "%Y-%m-%dT%H:%M:%S.%fZ",
+                )
         else:
             value = value_str
 
@@ -192,10 +195,10 @@ class BitbucketBase(AtlassianRestAPI):
 
         :return: A dict with the kwargs for new objects
         """
-        return dict(
-            session=self._session,
-            cloud=self.cloud,
-            api_root=self.api_root,
-            api_version=self.api_version,
-            timeformat_lambda=self.timeformat_lambda,
-        )
+        return {
+            "session": self._session,
+            "cloud": self.cloud,
+            "api_root": self.api_root,
+            "api_version": self.api_version,
+            "timeformat_lambda": self.timeformat_lambda,
+        }
