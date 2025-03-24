@@ -2285,6 +2285,8 @@ class Jira(AtlassianRestAPI):
     def invalidate_websudo(self):
         """
         This method invalidates any current WebSudo session.
+        link:
+        https://developer.atlassian.com/server/jira/platform/rest/v10002/api-group-websudo/#api-group-websudo
         """
         return self.delete("rest/auth/1/websudo")
 
