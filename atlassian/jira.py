@@ -2699,7 +2699,7 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         base_url = self.resource_url("project")
-        url = "{base_url}/{project_key}/role".format(base_url=base_url, project_key=project_key)
+        url = f"{base_url}/{project_key}/role"
         return self.get(url)
 
     def get_project_actors_for_role_project(self, project_key, role_id):
@@ -2710,7 +2710,7 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         base_url = self.resource_url("project")
-        url = "{base_url}/{projectIdOrKey}/role/{id}".format(base_url=base_url, projectIdOrKey=project_key, id=role_id)
+        url = f"{base_url}/{project_key}/role/{role_id}"
         return self._get_response_content(url, fields=[("actors",)])
 
     def delete_project_actors(self, project_key, role_id, actor, actor_type=None):
@@ -2725,9 +2725,7 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         base_url = self.resource_url("project")
-        url = "{base_url}/{projectIdOrKey}/role/{roleId}".format(
-            base_url=base_url, projectIdOrKey=project_key, roleId=role_id
-        )
+        url = f"{base_url}/{project_key}/role/{role_id}"
         params = {}
         if actor_type is not None and actor_type in ["group", "user"]:
             params[actor_type] = actor
@@ -2753,9 +2751,7 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         base_url = self.resource_url("project")
-        url = "{base_url}/{projectIdOrKey}/role/{roleId}".format(
-            base_url=base_url, projectIdOrKey=project_key, roleId=role_id
-        )
+        url = f"{base_url}/{project_key}/role/{role_id}"
         data = {}
         if actor_type in ["group", "atlassian-group-role-actor"]:
             data["group"] = [actor]
@@ -2776,7 +2772,7 @@ class Jira(AtlassianRestAPI):
         :param expand: the parameters to expand
         """
         base_url = self.resource_url("project")
-        url = "{base_url}/{projectIdOrKey}".format(base_url=base_url, projectIdOrKey=project_key)
+        url = f"{base_url}/{project_key}"
         params = {}
         if expand:
             params["expand"] = expand
@@ -2808,9 +2804,7 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         base_url = self.resource_url("project")
-        url = "{base_url}/{project_id_or_key}/notificationscheme".format(
-            base_url=base_url, project_id_or_key=project_id_or_key
-        )
+        url = f"{base_url}/{project_id_or_key}/notificationscheme"
         return self.get(url)
 
     def assign_project_notification_scheme(self, project_key, new_notification_scheme=""):
@@ -2875,9 +2869,7 @@ class Jira(AtlassianRestAPI):
         :return: full representation of the notification scheme for the given id
         """
         base_url = self.resource_url("notificationscheme")
-        url = "{base_url}/{notification_scheme_id}".format(
-            base_url=base_url, notification_scheme_id=notification_scheme_id
-        )
+        url = f"{base_url}/{notification_scheme_id}"
         params = {}
         if expand:
             params["expand"] = expand
@@ -2891,9 +2883,7 @@ class Jira(AtlassianRestAPI):
         :return: data of project notification scheme
         """
         base_url = self.resource_url("project")
-        url = "{base_url}/{project_id_or_key}/notificationscheme".format(
-            base_url=base_url, project_id_or_key=project_id_or_key
-        )
+        url = f"{base_url}/{project_id_or_key}/notificationscheme"
         return self.get(url)
 
     """
@@ -2910,9 +2900,7 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         base_url = self.resource_url("project")
-        url = "{base_url}/{project_id_or_key}/permissionscheme".format(
-            base_url=base_url, project_id_or_key=project_id_or_key
-        )
+        url = f"{base_url}/{project_id_or_key}/permissionscheme"
         data = {"id": permission_scheme_id}
         return self.put(url, data=data)
 
@@ -2926,9 +2914,7 @@ class Jira(AtlassianRestAPI):
         :return: data of project permission scheme
         """
         base_url = self.resource_url("project")
-        url = "{base_url}/{project_id_or_key}/permissionscheme".format(
-            base_url=base_url, project_id_or_key=project_id_or_key
-        )
+        url = f"{base_url}/{project_id_or_key}/permissionscheme"
         params = {}
         if expand:
             params["expand"] = expand
@@ -2996,21 +2982,21 @@ class Jira(AtlassianRestAPI):
             }
 
     def get_project_issuekey_last(self, project):
-        jql = 'project = "{project}" ORDER BY issuekey DESC'.format(project=project)
+        jql = f'project = "{project}" ORDER BY issuekey DESC'
         response = self.jql(jql)
         if self.advanced_mode:
             return response
         return (response.get("issues") or {"key": None})[0]["key"]
 
     def get_project_issuekey_all(self, project, start=0, limit=None, expand=None):
-        jql = 'project = "{project}" ORDER BY issuekey ASC'.format(project=project)
+        jql = f'project = "{project}" ORDER BY issuekey ASC'
         response = self.jql(jql, start=start, limit=limit, expand=expand)
         if self.advanced_mode:
             return response
         return [issue["key"] for issue in response["issues"]]
 
     def get_project_issues_count(self, project):
-        jql = 'project = "{project}" '.format(project=project)
+        jql = f'project = "{project}" '
         response = self.jql(jql, fields="*none")
         if self.advanced_mode:
             return response
@@ -3025,7 +3011,7 @@ class Jira(AtlassianRestAPI):
         :param limit: OPTIONAL int: Total number of project issues to be returned
         :return: List of Dictionary for the Issue(s) returned.
         """
-        jql = 'project = "{project}" ORDER BY key'.format(project=project)
+        jql = f'project = "{project}" ORDER BY key'
         response = self.jql(jql, fields=fields, start=start, limit=limit)
         if self.advanced_mode:
             return response
@@ -3041,12 +3027,7 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         base_url = self.resource_url("user/assignable/search")
-        url = "{base_url}?project={project_key}&startAt={start}&maxResults={limit}".format(
-            base_url=base_url,
-            project_key=project_key,
-            start=start,
-            limit=limit,
-        )
+        url = f"{base_url}?project={project_key}&startAt={start}&maxResults={limit}"
         return self.get(url)
 
     def get_assignable_users_for_issue(self, issue_key, username=None, start=0, limit=50):
@@ -3060,21 +3041,19 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         base_url = self.resource_url("user/assignable/search")
-        url = "{base_url}?issueKey={issue_key}&startAt={start}&maxResults={limit}".format(
-            base_url=base_url, issue_key=issue_key, start=start, limit=limit
-        )
+        url = f"{base_url}?issueKey={issue_key}&startAt={start}&maxResults={limit}"
         if username:
-            url += "&username={username}".format(username=username)
+            url += f"&username={username}"
         return self.get(url)
 
     def get_status_id_from_name(self, status_name):
         base_url = self.resource_url("status")
-        url = "{base_url}/{name}".format(base_url=base_url, name=status_name)
+        url = f"{base_url}/{status_name}"
         return int(self._get_response_content(url, fields=[("id",)]))
 
     def get_status_for_project(self, project_key):
         base_url = self.resource_url("project")
-        url = "{base_url}/{name}/statuses".format(base_url=base_url, name=project_key)
+        url = f"{base_url}/{project_key}/statuses"
         return self.get(url)
 
     def get_all_time_tracking_providers(self):
@@ -3144,7 +3123,7 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         base_url = self.resource_url("issueLink")
-        url = "{base_url}/{link_id}".format(base_url=base_url, link_id=link_id)
+        url = f"{base_url}/{link_id}"
         return self.get(url)
 
     def remove_issue_link(self, link_id):
@@ -3156,7 +3135,7 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         base_url = self.resource_url("issueLink")
-        url = "{base_url}/{link_id}".format(base_url=base_url, link_id=link_id)
+        url = f"{base_url}/{link_id}"
         return self.delete(url)
 
     """
@@ -3209,13 +3188,13 @@ class Jira(AtlassianRestAPI):
     def get_issue_link_type(self, issue_link_type_id):
         """Returns for a given issue link type id all information about this issue link type."""
         base_url = self.resource_url("issueLinkType")
-        url = "{base_url}/{issueLinkTypeId}".format(base_url=base_url, issueLinkTypeId=issue_link_type_id)
+        url = f"{base_url}/{issue_link_type_id}"
         return self.get(url)
 
     def delete_issue_link_type(self, issue_link_type_id):
         """Delete the specified issue link type."""
         base_url = self.resource_url("issueLinkType")
-        url = "{base_url}/{issueLinkTypeId}".format(base_url=base_url, issueLinkTypeId=issue_link_type_id)
+        url = f"{base_url}/{issue_link_type_id}"
         return self.delete(url)
 
     def update_issue_link_type(self, issue_link_type_id, data):
@@ -3230,7 +3209,7 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         base_url = self.resource_url("issueLinkType")
-        url = "{base_url}/{issueLinkTypeId}".format(base_url=base_url, issueLinkTypeId=issue_link_type_id)
+        url = f"{base_url}/{issue_link_type_id}"
         return self.put(url, data=data)
 
     """
@@ -3253,7 +3232,7 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         base_url = self.resource_url("resolution")
-        url = "{base_url}/{resolution_id}".format(base_url=base_url, resolution_id=resolution_id)
+        url = f"{base_url}/{resolution_id}"
         return self.get(url)
 
     """
@@ -3289,7 +3268,7 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         base_url = self.resource_url("screens")
-        url = "{base_url}/{screen_id}/availableFields".format(base_url=base_url, screen_id=screen_id)
+        url = f"{base_url}/{screen_id}/availableFields"
         return self.get(url)
 
     def get_screen_tabs(self, screen_id):
@@ -3299,7 +3278,7 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         base_url = self.resource_url("screens")
-        url = "{base_url}/{screen_id}/tabs".format(base_url=base_url, screen_id=screen_id)
+        url = f"{base_url}/{screen_id}/tabs"
         return self.get(url)
 
     def get_screen_tab_fields(self, screen_id, tab_id):
@@ -3310,9 +3289,7 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         base_url = self.resource_url("screens")
-        url = "{base_url}/{screen_id}/tabs/{tab_id}/fields".format(
-            base_url=base_url, screen_id=screen_id, tab_id=tab_id
-        )
+        url = f"{base_url}/{screen_id}/tabs/{tab_id}/fields"
         return self.get(url)
 
     def get_all_screen_fields(self, screen_id):
@@ -3337,7 +3314,7 @@ class Jira(AtlassianRestAPI):
         :param screen_id: screen ID
         :param tab_id: tab ID
         """
-        url = "rest/api/2/screens/{screen_id}/tabs/{tab_id}/fields".format(screen_id=screen_id, tab_id=tab_id)
+        url = f"rest/api/2/screens/{screen_id}/tabs/{tab_id}/fields"
         data = {"fieldId": field_id}
         return self.post(url, data=data)
 
@@ -3542,7 +3519,7 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         base_url = self.resource_url("priority")
-        url = "{base_url}/{priority_id}".format(base_url=base_url, priority_id=priority_id)
+        url = f"{base_url}/{priority_id}"
         return self.get(url)
 
     """
@@ -3605,7 +3582,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         Provide plugin info
         :return a json of installed plugins
         """
-        url = "rest/plugins/1.0/{plugin_key}-key".format(plugin_key=plugin_key)
+        url = f"rest/plugins/1.0/{plugin_key}-key"
         return self.get(url, headers=self.no_check_headers, trailing=True)
 
     def get_plugin_license_info(self, plugin_key):
@@ -3613,7 +3590,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         Provide plugin license info
         :return a json specific License query
         """
-        url = "rest/plugins/1.0/{plugin_key}-key/license".format(plugin_key=plugin_key)
+        url = f"rest/plugins/1.0/{plugin_key}-key/license"
         return self.get(url, headers=self.no_check_headers, trailing=True)
 
     def upload_plugin(self, plugin_path):
@@ -3629,7 +3606,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
             headers=self.no_check_headers,
             trailing=True,
         ).headers["upm-token"]
-        url = "rest/plugins/1.0/?token={upm_token}".format(upm_token=upm_token)
+        url = f"rest/plugins/1.0/?token={upm_token}"
         return self.post(url, files=files, headers=self.no_check_headers)
 
     def delete_plugin(self, plugin_key):
@@ -3638,7 +3615,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param plugin_key:
         :return:
         """
-        url = "rest/plugins/1.0/{}-key".format(plugin_key)
+        url = f"rest/plugins/1.0/{plugin_key}-key"
         return self.delete(url)
 
     def check_plugin_manager_status(self):
@@ -3656,7 +3633,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
             "X-Atlassian-Token": "nocheck",
             "Content-Type": "application/vnd.atl.plugins+json",
         }
-        url = "/plugins/1.0/{plugin_key}/license".format(plugin_key=plugin_key)
+        url = f"/plugins/1.0/{plugin_key}/license"
         data = {"rawLicense": raw_license}
         return self.put(url, data=data, headers=app_headers)
 
@@ -3670,7 +3647,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
             "X-Atlassian-Token": "nocheck",
             "Content-Type": "application/vnd.atl.plugins+json",
         }
-        url = "rest/plugins/1.0/{plugin_key}-key".format(plugin_key=plugin_key)
+        url = f"rest/plugins/1.0/{plugin_key}-key"
         data = {"status": "disabled"}
         return self.put(url, data=data, headers=app_headers)
 
@@ -3684,7 +3661,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
             "X-Atlassian-Token": "nocheck",
             "Content-Type": "application/vnd.atl.plugins+json",
         }
-        url = "rest/plugins/1.0/{plugin_key}-key".format(plugin_key=plugin_key)
+        url = f"rest/plugins/1.0/{plugin_key}-key"
         data = {"status": "enabled"}
         return self.put(url, data=data, headers=app_headers)
 
@@ -3716,7 +3693,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :return:
         """
         base_url = self.resource_url("permissionscheme")
-        url = "{base_url}/{schemeID}".format(base_url=base_url, schemeID=permission_id)
+        url = f"{base_url}/{permission_id}"
         params = {}
         if expand:
             params["expand"] = expand
@@ -3740,7 +3717,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :return:
         """
         base_url = self.resource_url("permissionscheme")
-        url = "{base_url}/{schemeID}/permission".format(base_url=base_url, schemeID=permission_id)
+        url = f"{base_url}/{permission_id}/permission"
         return self.post(url, data=new_permission)
 
     def update_permissionscheme(self, permission_id, name, description=None, permissions=None, scope=None, expand=None):
@@ -3775,7 +3752,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :return:
         """
         base_url = self.resource_url("permissionscheme")
-        url = "{base_url}/{scheme_id}".format(base_url=base_url, scheme_id=permission_id)
+        url = f"{base_url}/{permission_id}"
         data = {"name": name}
         if description is not None:
             data["description"] = description
@@ -3819,7 +3796,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :return: list
         """
         base_url = self.resource_url("issuesecurityschemes")
-        url = "{base_url}/{scheme_id}".format(base_url=base_url, scheme_id=scheme_id)
+        url = f"{base_url}/{scheme_id}"
 
         if only_levels is True:
             return self._get_response_content(url, fields=[("levels",)])
@@ -3838,9 +3815,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :return: list
         """
         base_url = self.resource_url("project")
-        url = "{base_url}/{project_id_or_key}/issuesecuritylevelscheme".format(
-            base_url=base_url, project_id_or_key=project_id_or_key
-        )
+        url = f"{base_url}/{project_id_or_key}/issuesecuritylevelscheme"
         try:
             response = self.get(url)
         except HTTPError as e:
@@ -3916,9 +3891,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         if expand:
             params["expand"] = expand
         base_url = self.resource_url("project")
-        url = "{base_url}/{project_key_or_id}/priorityscheme".format(
-            base_url=base_url, project_key_or_id=project_key_or_id
-        )
+        url = f"{base_url}/{project_key_or_id}/priorityscheme"
         return self.get(url, params=params)
 
     def assign_priority_scheme_for_project(self, project_key_or_id, priority_scheme_id):
@@ -3933,7 +3906,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :return:
         """
         base_url = self.resource_url("project")
-        url = "{base_url}/{projectKeyOrId}/priorityscheme".format(base_url=base_url, projectKeyOrId=project_key_or_id)
+        url = f"{base_url}/{project_key_or_id}/priorityscheme"
         data = {"id": priority_scheme_id}
         return self.put(url, data=data)
 
@@ -3951,7 +3924,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :return: Returns a list of all security levels in a project for which the current user has access.
         """
         base_url = self.resource_url("project")
-        url = "{base_url}/{projectKeyOrId}/securitylevel".format(base_url=base_url, projectKeyOrId=project_key_or_id)
+        url = f"{base_url}/{project_key_or_id}/securitylevel"
         return self.get(url)
 
     """
@@ -4008,7 +3981,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param project_key: The project key to associate with the given issue type scheme
         :return:
         """
-        url = "rest/api/2/issuetypescheme/{schemeId}/associations".format(schemeId=scheme_id)
+        url = f"rest/api/2/issuetypescheme/{scheme_id}/associations"
         data = {"idsOrKeys": [project_key]}
         return self.post(url, data=data)
 
@@ -4100,7 +4073,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
     def reindex_project(self, project_key):
         return self.post(
             "secure/admin/IndexProject.jspa",
-            data="confirmed=true&key={}".format(project_key),
+            data=f"confirmed=true&key={project_key}",
             headers=self.form_token_headers,
         )
 
@@ -4154,7 +4127,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param project_id: str the project id.
         :return:
         """
-        url = "rest/tempo-accounts/1/account/project/{}".format(project_id)
+        url = f"rest/tempo-accounts/1/account/project/{project_id}"
         return self.get(url)
 
     def tempo_account_associate_with_jira_project(
@@ -4217,7 +4190,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param account_id: the id of the Account to be deleted.
         :return:
         """
-        url = "rest/tempo-accounts/1/account/{id}/".format(id=account_id)
+        url = f"rest/tempo-accounts/1/account/{account_id}/"
         return self.delete(url)
 
     def tempo_account_get_rate_table_by_account_id(self, account_id):
@@ -4236,7 +4209,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param customer_id: the Customer id.
         :return:
         """
-        url = "rest/tempo-accounts/1/account/customer/{customerId}/".format(customerId=customer_id)
+        url = f"rest/tempo-accounts/1/account/customer/{customer_id}/"
         return self.get(url)
 
     def tempo_account_get_customers(self, query=None, count_accounts=None):
@@ -4288,7 +4261,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param customer_id: id of Customer record
         :return: Customer info
         """
-        url = "rest/tempo-accounts/1/customer/{id}".format(id=customer_id)
+        url = f"rest/tempo-accounts/1/customer/{customer_id}"
         return self.get(url)
 
     def tempo_account_update_customer_by_id(self, customer_id=1, data=None):
@@ -4309,7 +4282,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
                                                 name:string
                                                 key:string
                                                 id:number }"""
-        url = "rest/tempo-accounts/1/customer/{id}".format(id=customer_id)
+        url = f"rest/tempo-accounts/1/customer/{customer_id}"
         return self.put(url, data=data)
 
     def tempo_account_delete_customer_by_id(self, customer_id=1):
@@ -4318,7 +4291,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param customer_id: id of Customer record
         :return: Customer info
         """
-        url = "rest/tempo-accounts/1/customer/{id}".format(id=customer_id)
+        url = f"rest/tempo-accounts/1/customer/{customer_id}"
         return self.delete(url)
 
     def tempo_account_export_accounts(self):
@@ -4343,7 +4316,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         Provide a holiday scheme
         :return:
         """
-        url = "rest/tempo-core/2/holidayschemes/{}".format(scheme_id)
+        url = f"rest/tempo-core/2/holidayschemes/{scheme_id}"
         return self.get(url)
 
     def tempo_holiday_get_scheme_members(self, scheme_id):
@@ -4351,7 +4324,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         Provide a holiday scheme members
         :return:
         """
-        url = "rest/tempo-core/2/holidayschemes/{}/members".format(scheme_id)
+        url = f"rest/tempo-core/2/holidayschemes/{scheme_id}/members"
         return self.get(url)
 
     def tempo_holiday_put_into_scheme_member(self, scheme_id, username):
@@ -4359,7 +4332,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         Provide a holiday scheme
         :return:
         """
-        url = "rest/tempo-core/2/holidayschemes/{}/member/{}/".format(scheme_id, username)
+        url = f"rest/tempo-core/2/holidayschemes/{scheme_id}/member/{username}/"
         data = {"id": scheme_id}
         return self.put(url, data=data)
 
@@ -4369,10 +4342,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param scheme_id:
         :return:
         """
-        # @deprecated available in private mode the 1 version
-        # url = 'rest/tempo-core/1/holidayscheme/setDefault/{}'.format(scheme_id)
-
-        url = "rest/tempo-core/2/holidayscheme/setDefault/{}".format(scheme_id)
+        url = f"rest/tempo-core/2/holidayscheme/setDefault/{scheme_id}"
         data = {"id": scheme_id}
         return self.post(url, data=data)
 
@@ -4382,7 +4352,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param scheme_id:
         :return:
         """
-        url = "rest/tempo-core/1/workloadscheme/users/{}".format(scheme_id)
+        url = f"rest/tempo-core/1/workloadscheme/users/{scheme_id}"
         return self.get(url)
 
     def tempo_workload_scheme_set_member(self, scheme_id, member):
@@ -4392,7 +4362,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param scheme_id:
         :return:
         """
-        url = "rest/tempo-core/1/workloadscheme/user/{}".format(member)
+        url = f"rest/tempo-core/1/workloadscheme/user/{member}"
         data = {"id": scheme_id}
         return self.put(url, data=data)
 
@@ -4413,7 +4383,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param group_by:
         :return:
         """
-        url = "rest/tempo-timesheets/3/report/team/{}/utilization".format(team_id)
+        url = f"rest/tempo-timesheets/3/report/team/{team_id}/utilization"
         params = {"dateFrom": date_from, "dateTo": date_to}
 
         if group_by:
@@ -4497,7 +4467,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param issue: Issue key or ID
         :return:
         """
-        url = "rest/tempo-timesheets/4/worklogs/jira/issue/{issue}".format(issue=issue)
+        url = f"rest/tempo-timesheets/4/worklogs/jira/issue/{issue}"
         return self.get(url)
 
     def tempo_timesheets_write_worklog(self, worker, started, time_spend_in_seconds, issue_id, comment=None):
@@ -4569,7 +4539,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param project_id:
         :return:
         """
-        url = "rest/tempo-accounts/1/link/project/{}/".format(project_id)
+        url = f"rest/tempo-accounts/1/link/project/{project_id}/"
         return self.get(url)
 
     def tempo_get_default_link_to_project(self, project_id):
@@ -4578,7 +4548,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param project_id:
         :return:
         """
-        url = "rest/tempo-accounts/1/link/project/{}/default/".format(project_id)
+        url = f"rest/tempo-accounts/1/link/project/{project_id}/default/"
         return self.get(url)
 
     def tempo_teams_get_all_teams(self, expand=None):
@@ -4614,7 +4584,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
             "availability": "100",
             "role": {"id": 1},
         }
-        url = "rest/tempo-teams/2/team/{}/member/{}/membership".format(team_id, member_id)
+        url = f"rest/tempo-teams/2/team/{team_id}/member/{member_id}/membership"
         return self.post(url, data=data)
 
     def tempo_teams_add_member_raw(self, team_id, member_data):
@@ -4624,7 +4594,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param member_data:
         :return:
         """
-        url = "rest/tempo-teams/2/team/{}/member/".format(team_id)
+        url = f"rest/tempo-teams/2/team/{team_id}/member/"
         data = member_data
         return self.post(url, data=data)
 
@@ -4634,7 +4604,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param team_id:
         :return:
         """
-        url = "rest/tempo-teams/2/team/{}/member/".format(team_id)
+        url = f"rest/tempo-teams/2/team/{team_id}/member/"
         return self.get(url)
 
     def tempo_teams_remove_member(self, team_id, member_id, membership_id):
@@ -4645,7 +4615,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param membership_id:
         :return:
         """
-        url = "rest/tempo-teams/2/team/{}/member/{}/membership/{}".format(team_id, member_id, membership_id)
+        url = f"rest/tempo-teams/2/team/{team_id}/member/{member_id}/membership/{membership_id}"
         return self.delete(url)
 
     def tempo_teams_update_member_information(self, team_id, member_id, membership_id, data):
@@ -4657,7 +4627,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param data:
         :return:
         """
-        url = "rest/tempo-teams/2/team/{}/member/{}/membership/{}".format(team_id, member_id, membership_id)
+        url = f"rest/tempo-teams/2/team/{team_id}/member/{member_id}/membership/{membership_id}"
         return self.put(url, data=data)
 
     def tempo_timesheets_get_period_configuration(self):
@@ -4667,7 +4637,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         return self.get("rest/tempo-timesheets/3/private/config")
 
     def tempo_teams_get_memberships_for_member(self, username):
-        return self.get("rest/tempo-teams/2/user/{}/memberships".format(username))
+        return self.get(f"rest/tempo-teams/2/user/{username}/memberships")
 
     #######################################################################
     #   Agile (Formerly Greenhopper) REST API implements
@@ -4702,7 +4672,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         Gets an agile board by the filter id
         :param filter_id: int, str
         """
-        url = "rest/agile/1.0/board/filter/{filter_id}".format(filter_id=filter_id)
+        url = f"rest/agile/1.0/board/filter/{filter_id}"
         return self.get(url)
 
     # /rest/agile/1.0/board
@@ -4758,7 +4728,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param board_id:
         :return:
         """
-        url = "rest/agile/1.0/board/{}".format(str(board_id))
+        url = f"rest/agile/1.0/board/{str(board_id)}"
         return self.delete(url)
 
     def get_agile_board(self, board_id):
@@ -4767,7 +4737,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param board_id:
         :return:
         """
-        url = "rest/agile/1.0/board/{}".format(str(board_id))
+        url = f"rest/agile/1.0/board/{str(board_id)}"
         return self.get(url)
 
     def get_issues_for_backlog(self, board_id):
@@ -4780,7 +4750,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         By default, the returned issues are ordered by rank.
         :param board_id: int, str
         """
-        url = "rest/agile/1.0/board/{board_id}/backlog".format(board_id=board_id)
+        url = f"rest/agile/1.0/board/{board_id}/backlog"
         return self.get(url)
 
     def get_agile_board_configuration(self, board_id):
@@ -4807,7 +4777,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param board_id:
         :return:
         """
-        url = "rest/agile/1.0/board/{}/configuration".format(str(board_id))
+        url = f"rest/agile/1.0/board/{str(board_id)}/configuration"
         return self.get(url)
 
     def get_issues_for_board(self, board_id, jql, fields="*all", start=0, limit=None, expand=None):
@@ -4840,7 +4810,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         if expand is not None:
             params["expand"] = expand
 
-        url = "rest/agile/1.0/board/{board_id}/issue".format(board_id=board_id)
+        url = f"rest/agile/1.0/board/{board_id}/issue"
         return self.get(url, params=params)
 
     # /rest/agile/1.0/board/{boardId}/epic
@@ -4863,7 +4833,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
                       See the 'Pagination' section at the top of this page for more details.
         :return:
         """
-        url = "rest/agile/1.0/board/{board_id}/epic".format(board_id=board_id)
+        url = f"rest/agile/1.0/board/{board_id}/epic"
         params = {}
         if done:
             params["done"] = done
@@ -4901,7 +4871,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
                       If you exceed this limit, your results will be truncated.
         :return:
         """
-        url = "/rest/agile/1.0/board/{boardId}/epic/{epicId}/issue".format(epicId=epic_id, boardId=board_id)
+        url = f"/rest/agile/1.0/board/{board_id}/epic/{epic_id}/issue"
         params = {}
         if jql:
             params["jql"] = jql
@@ -4950,7 +4920,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
                         If you exceed this limit, your results will be truncated.
         :return:
         """
-        url = "/rest/agile/1.0/board/{boardId}/epic/none/issue".format(boardId=board_id)
+        url = f"/rest/agile/1.0/board/{board_id}/epic/none/issue"
         params = {}
         if jql:
             params["jql"] = jql
@@ -4986,7 +4956,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
                       See the 'Pagination' section at the top of this page for more details
         :return:
         """
-        url = "/rest/agile/1.0/board/{boardId}/project".format(boardId=board_id)
+        url = f"/rest/agile/1.0/board/{board_id}/project"
         params = {}
         if start:
             params["startAt"] = start
@@ -5001,7 +4971,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         The user who retrieves the property keys is required to have permissions to view the board.
         :param board_id: int, str
         """
-        url = "rest/agile/1.0/board/{boardId}/properties".format(boardId=board_id)
+        url = f"rest/agile/1.0/board/{board_id}/properties"
         return self.get(url)
 
     def set_agile_board_property(self, board_id, property_key):
@@ -5025,9 +4995,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param property_key:
         :return:
         """
-        url = "/rest/agile/1.0/board/{boardId}/properties/{propertyKey}".format(
-            boardId=board_id, propertyKey=property_key
-        )
+        url = f"/rest/agile/1.0/board/{board_id}/properties/{property_key}"
         return self.get(url)
 
     def delete_agile_board_property(self, board_id, property_key):
@@ -5038,9 +5006,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param property_key:
         :return:
         """
-        url = "/rest/agile/1.0/board/{boardId}/properties/{propertyKey}".format(
-            boardId=board_id, propertyKey=property_key
-        )
+        url = f"/rest/agile/1.0/board/{board_id}/properties/{property_key}"
         return self.delete(url)
 
     # /rest/agile/1.0/board/{boardId}/settings/refined-velocity
@@ -5050,7 +5016,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param board_id:
         :return:
         """
-        url = "/rest/agile/1.0/board/{boardId}/settings/refined-velocity".format(boardId=board_id)
+        url = f"/rest/agile/1.0/board/{board_id}/settings/refined-velocity"
         return self.get(url)
 
     def set_agile_board_refined_velocity(self, board_id, data):
@@ -5060,7 +5026,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param data:
         :return:
         """
-        url = "/rest/agile/1.0/board/{boardId}/settings/refined-velocity".format(boardId=board_id)
+        url = f"/rest/agile/1.0/board/{board_id}/settings/refined-velocity"
         return self.put(url, data=data)
 
     # /rest/agile/1.0/board/{boardId}/sprint
@@ -5088,7 +5054,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
             params["maxResults"] = limit
         if state:
             params["state"] = state
-        url = "rest/agile/1.0/board/{boardId}/sprint".format(boardId=board_id)
+        url = f"rest/agile/1.0/board/{board_id}/sprint"
         return self.get(url, params=params)
 
     @deprecated(version="3.42.0", reason="Use get_all_sprints_from_board instead")
@@ -5129,7 +5095,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
                       'jira.search.views.default.max' in your JIRA instance.
                       If you exceed this limit, your results will be truncated.
         """
-        url = "/rest/agile/1.0/board/{boardId}/sprint/{sprintId}/issue".format(boardId=board_id, sprintId=sprint_id)
+        url = f"/rest/agile/1.0/board/{board_id}/sprint/{sprint_id}/issue"
         params = {}
         if jql:
             params["jql"] = jql
@@ -5172,7 +5138,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
             params["startAt"] = start
         if limit:
             params["maxResults"] = limit
-        url = "rest/agile/1.0/board/{boardId}/version".format(boardId=board_id)
+        url = f"rest/agile/1.0/board/{board_id}/version"
         return self.get(url, params=params)
 
     def create_sprint(self, name, board_id, start_date=None, end_date=None, goal=None):
@@ -5216,7 +5182,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         """
         if not isinstance(issues, list):
             raise ValueError("`issues` param should be List of Issue Keys")
-        url = "/rest/agile/1.0/sprint/{sprint_id}/issue".format(sprint_id=sprint_id)
+        url = f"/rest/agile/1.0/sprint/{sprint_id}/issue"
         data = dict(issues=issues)
         return self.post(url, data=data)
 
@@ -5228,7 +5194,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param sprint_id:
         :return:
         """
-        url = "rest/agile/1.0/sprint/{sprintId}".format(sprintId=sprint_id)
+        url = f"rest/agile/1.0/sprint/{sprint_id}"
         return self.get(url)
 
     def rename_sprint(self, sprint_id, name, start_date, end_date):
@@ -5241,7 +5207,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :return:
         """
         return self.put(
-            "rest/greenhopper/1.0/sprint/{0}".format(sprint_id),
+            f"rest/greenhopper/1.0/sprint/{sprint_id}",
             data={"name": name, "startDate": start_date, "endDate": end_date},
         )
 
@@ -5253,7 +5219,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param sprint_id:
         :return:
         """
-        return self.delete("rest/agile/1.0/sprint/{sprintId}".format(sprintId=sprint_id))
+        return self.delete(f"rest/agile/1.0/sprint/{sprint_id}")
 
     def update_partially_sprint(self, sprint_id, data):
         """
@@ -5273,7 +5239,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param data: { "name": "new name"}
         :return:
         """
-        return self.post("rest/agile/1.0/sprint/{}".format(sprint_id), data=data)
+        return self.post(f"rest/agile/1.0/sprint/{sprint_id}", data=data)
 
     def get_sprint_issues(self, sprint_id, start, limit):
         """
@@ -5297,7 +5263,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
             params["startAt"] = start
         if limit:
             params["maxResults"] = limit
-        url = "rest/agile/1.0/sprint/{sprintId}/issue".format(sprintId=sprint_id)
+        url = f"rest/agile/1.0/sprint/{sprint_id}/issue"
         return self.get(url, params=params)
 
     def update_rank(self, issues_to_rank, rank_before, customfield_number):
@@ -5332,7 +5298,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param repository_id:
         :return:
         """
-        url = "rest/bitbucket/1.0/repositories/{}/sync".format(repository_id)
+        url = f"rest/bitbucket/1.0/repositories/{repository_id}/sync"
         return self.post(url)
 
     def flag_issue(self, issue_keys, flag=True):

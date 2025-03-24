@@ -10,9 +10,7 @@ BITBUCKET = None
 try:
     from .mockup import mockup_server
 
-    BITBUCKET = Server(
-        "{}/bitbucket/server".format(mockup_server()), username="username", password="password", cloud=True
-    )
+    BITBUCKET = Server(f"{mockup_server()}/bitbucket/server", username="username", password="password", cloud=True)
 except ImportError:
     pass
 

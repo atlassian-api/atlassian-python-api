@@ -33,7 +33,7 @@ class Xray(AtlassianRestAPI):
             else:
                 raise HTTPError(error_msg, response=response)
 
-    def resource_url(self, resource: object, api_root: object = None, api_version: object = None) -> object:
+    def resource_url(self, resource, api_root=None, api_version=None):
         """
         Overloading the method from AtlassianRestAPI to be compatible with the "middle man" version used by Xray.
         """

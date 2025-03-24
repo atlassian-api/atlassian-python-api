@@ -26,6 +26,6 @@ if index_orphant_issues_count > 0:
     index_orphant_issues = response["indexOrphans"]
     for ticket in index_orphant_issues:
         ticket_id = ticket["issueId"]
-        print(("Orphan index for ticket id = {}".format(ticket_id)))
+        print(f"Orphan index for ticket id = {ticket_id}")
         if fixer:
             s.deindex_issue(ticket_id)

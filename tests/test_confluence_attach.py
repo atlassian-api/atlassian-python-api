@@ -30,7 +30,7 @@ class TestConfluenceAttach(unittest.TestCase):
             with open(self.secret_file) as json_file:
                 credentials = json.load(json_file)
         except Exception as err:
-            self.fail("[{0}]: {1}".format(self.secret_file, err))
+            self.fail(f"[{self.secret_file}]: {err}")
 
         confluence = Confluence(
             url=credentials["host"],
@@ -75,7 +75,7 @@ class TestConfluenceAttach(unittest.TestCase):
             with open(self.secret_file) as json_file:
                 credentials = json.load(json_file)
         except Exception as err:
-            self.fail("[{0}]: {1}".format(self.secret_file, err))
+            self.fail(f"[{self.secret_file}]: {err}")
 
         confluence = Confluence(
             url=credentials["host"],
@@ -136,7 +136,7 @@ class TestConfluenceAttach(unittest.TestCase):
             with open(self.secret_file) as json_file:
                 credentials = json.load(json_file)
         except Exception as err:
-            self.fail("[{0}]: {1}".format(self.secret_file, err))
+            self.fail(f"[{self.secret_file}]: {err}")
 
         confluence = Confluence(
             url=credentials["host"],
