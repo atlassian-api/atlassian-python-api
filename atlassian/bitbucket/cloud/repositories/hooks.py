@@ -105,7 +105,7 @@ class Hook(BitbucketCloudBase):
             "active": self.active(),
         }
 
-        for key in payload.keys() and kwargs.keys():
+        for key in list(payload.keys()) and list(kwargs.keys()):
             payload[key] = kwargs[key]
 
         return self._update_data(self.put(None, data=payload))

@@ -14,7 +14,7 @@ class Permissions(BitbucketServerBase):
 
     def __permission(self, permission):
         """Internal function to get the permission for the put request."""
-        return "{}_{}".format(self.__permission_prefix, permission)
+        return f"{self.__permission_prefix}_{permission}"
 
     def admin(self, name):
         """
@@ -104,7 +104,7 @@ class Permissions(BitbucketServerBase):
             if entry.name == name:
                 return entry
 
-        raise Exception("Unknown group/user '{}'".format(name))
+        raise Exception(f"Unknown group/user '{name}'")
 
 
 class Groups(Permissions):

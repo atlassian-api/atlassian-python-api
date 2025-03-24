@@ -9,9 +9,7 @@ SERVICEDESK = None
 try:
     from .mockup import mockup_server
 
-    SERVICEDESK = ServiceDesk(
-        "{}/servicedesk".format(mockup_server()), username="username", password="password", cloud=True
-    )
+    SERVICEDESK = ServiceDesk(f"{mockup_server()}/servicedesk", username="username", password="password", cloud=True)
 except ImportError:
     pass
 

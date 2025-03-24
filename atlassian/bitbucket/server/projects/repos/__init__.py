@@ -48,13 +48,13 @@ class Repositories(BitbucketServerBase):
             return self.__get_object(super(Repositories, self).get(repository))
         elif by == "name":
             for r in self.each():
-                print(r.name)
+                print((r.name))
                 if r.name == repository:
                     return r
         else:
-            ValueError("Unknown value '{}' for argument [by], expected 'slug' or 'name'".format(by))
+            ValueError(f"Unknown value '{by}' for argument [by], expected 'slug' or 'name'")
 
-        raise Exception("Unknown repository {} '{}'".format(by, repository))
+        raise Exception(f"Unknown repository {by} '{repository}'")
 
     def exists(self, repository, by="slug"):
         """
@@ -73,7 +73,7 @@ class Repositories(BitbucketServerBase):
             if e.response.status_code in (401, 404):
                 pass
         except Exception as e:
-            if not str(e) == "Unknown project {} '{}'".format(by, repository):
+            if not str(e) == f"Unknown project {by} '{repository}'":
                 raise e
         return exists
 
@@ -244,7 +244,7 @@ class Repository(BitbucketServerBase):
 
         API docs: https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp186
         """
-        self.put("default-branch", data={"id": "refs/heads/{}".format(branch)})
+        self.put("default-branch", data={"id": f"refs/heads/{branch}"})
 
     def forks(self):
         """

@@ -21,7 +21,7 @@ def main():
     args = parser.parse_args()
 
     branch = create_plan_branch(plan=args.plan, vcs_branch=args.vcs_branch)
-    print(branch.get("key") or branch)
+    print((branch.get("key") or branch))
 
 
 if __name__ == "__main__":

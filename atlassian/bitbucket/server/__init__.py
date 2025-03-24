@@ -15,7 +15,7 @@ class Server(BitbucketServerBase):
         kwargs["cloud"] = False
         kwargs["api_root"] = "rest/api"
         kwargs["api_version"] = "1.0"
-        url = url.strip("/") + "/{}/{}".format(kwargs["api_root"], kwargs["api_version"])
+        url = url.strip("/") + f"/{kwargs['api_root']}/{kwargs['api_version']}"
         super(Server, self).__init__(url, *args, **kwargs)
         self.__projects = Projects(self._sub_url("projects"), **self._new_session_args)
         self.__groups = Groups(self._sub_url("admin/permissions/groups"), **self._new_session_args)

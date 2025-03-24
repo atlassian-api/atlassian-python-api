@@ -8,7 +8,7 @@ from requests import HTTPError
 
 class TestJira(TestCase):
     def setUp(self):
-        self.jira = jira.Jira("{}/jira".format(mockup_server()), username="username", password="password", cloud=True)
+        self.jira = jira.Jira(f"{mockup_server()}/jira", username="username", password="password", cloud=True)
 
     def test_get_issue(self):
         """Can retrieve an Issue by ID"""

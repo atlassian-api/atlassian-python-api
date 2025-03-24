@@ -19,7 +19,7 @@ projects = jira.get_all_projects(included_archived=True)
 
 for project in projects:
     project_key = project.get("key")
-    print("Start review project {}".format(project_key))
+    print(f"Start review project {project_key}")
     for role_id in role_ids:
         actors = jira.get_project_actors_for_role_project(project_key, role_id)
         for actor in actors:
@@ -29,5 +29,5 @@ for project in projects:
                     continue
                 answer = jira.user(username)
                 if answer.get("errorMessages") or (not answer.get("active")):
-                    print("Removing from project permissions {}".format(username))
+                    print(f"Removing from project permissions {username}")
                     jira.delete_project_actors(project_key, role_id=role_id, actor=username, actor_type="user")

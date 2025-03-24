@@ -28,5 +28,5 @@ class CloudAdminUsers(AtlassianRestAPI):
         super(CloudAdminUsers, self).__init__(ADMIN_URL, *args, **kwargs)
 
     def get_profile(self, account_id):
-        url = self.resource_url("{}/manage/profile".format(account_id))
+        url = self.resource_url(f"{account_id}/manage/profile")
         return self.get(url)

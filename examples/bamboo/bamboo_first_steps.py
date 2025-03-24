@@ -31,6 +31,6 @@ for branch in bamboo.plan_branches("PROJ-SP2"):
 
 # Methods in singular (project, plan, result...) return a single dictionary
 
-print(bamboo.project("FOO"))
+print((bamboo.project("FOO")))
 
-print(bamboo.build_result("FOO-BAR-1"))
+print((bamboo.build_result("FOO-BAR-1")))

@@ -12,7 +12,7 @@ def main():
     target_epic_issue_key = "ARA-1314"
     for issue_key in update_issues:
         jira.update_issue_field(issue_key, fields={epic_link_custom_field_id: target_epic_issue_key})
-        print("updated for {}".format(issue_key))
+        print(f"updated for {issue_key}")
     print("done")
 
 

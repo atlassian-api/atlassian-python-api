@@ -10,10 +10,10 @@ class Cloud(BitbucketCloudBase):
         kwargs["cloud"] = True
         kwargs["api_root"] = None
         kwargs["api_version"] = "2.0"
-        url = url.strip("/") + "/{}".format(kwargs["api_version"])
+        url = url.strip("/") + f"/{kwargs['api_version']}"
         super(Cloud, self).__init__(url, *args, **kwargs)
-        self.__workspaces = Workspaces("{}/workspaces".format(self.url), **self._new_session_args)
-        self.__repositories = Repositories("{}/repositories".format(self.url), **self._new_session_args)
+        self.__workspaces = Workspaces(f"{self.url}/workspaces", **self._new_session_args)
+        self.__repositories = Repositories(f"{self.url}/repositories", **self._new_session_args)
 
     @property
     def workspaces(self):

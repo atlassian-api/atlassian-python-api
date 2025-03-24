@@ -7,9 +7,7 @@ from .mockup import mockup_server
 
 class TestWebhook(TestCase):
     def setUp(self):
-        self.bitbucket = Bitbucket(
-            "{}/bitbucket/server".format(mockup_server()), username="username", password="password"
-        )
+        self.bitbucket = Bitbucket(f"{mockup_server()}/bitbucket/server", username="username", password="password")
         self.project_key = "PRJ"
         self.repository_slug = "my-repo1-slug"
         self.webhook_id = 3

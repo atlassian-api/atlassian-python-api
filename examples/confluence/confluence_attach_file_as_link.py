@@ -18,12 +18,10 @@ with open(filename, "w") as f:
 
 confluence.attach_file(filename, page_id="123456789")
 
-link = """<p>
+link = f"""<p>
   <ac:link>
-    <ri:attachment ri:filename="{}"/>
+    <ri:attachment ri:filename="{filename}"/>
   </ac:link>
-</p>""".format(
-    filename
-)
+</p>"""
 
 confluence.append_page(123456789, "Page Title", link)

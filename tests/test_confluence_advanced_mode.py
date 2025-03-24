@@ -37,7 +37,7 @@ class TestConfluenceAdvancedModeCalls(unittest.TestCase):
                     password=credentials["password"],
                 )
         except Exception as err:
-            raise cls.failureException("[{0}]: {1}".format(cls.secret_file, err))
+            raise cls.failureException(f"[{cls.secret_file}]: {err}")
 
         cls.space = "SAN"
         cls.created_pages = set()
@@ -79,7 +79,7 @@ class TestConfluenceAdvancedModeCalls(unittest.TestCase):
             "body": {"editor": {"value": "<h1>Updated page</h1>", "representation": "editor"}},
         }
 
-        result = self.confluence.put(path="/rest/api/content/{0}".format(page_id), data=data, advanced_mode=True)
+        result = self.confluence.put(path=f"/rest/api/content/{page_id}", data=data, advanced_mode=True)
         self.assertIsInstance(result, Response)
 
     def test_confluence_advanced_mode_delete(self):
@@ -89,9 +89,7 @@ class TestConfluenceAdvancedModeCalls(unittest.TestCase):
         page_id = self.confluence.create_page(
             space=self.space, title=page_title, body="h1. Test content\n", representation="wiki"
         )["id"]
-        response = self.confluence.delete(
-            path="rest/api/content/{page_id}".format(page_id=page_id), params={}, advanced_mode=True
-        )
+        response = self.confluence.delete(path=f"rest/api/content/{page_id}", params={}, advanced_mode=True)
         self.assertIsInstance(response, Response)
 
     def tearDown(self):

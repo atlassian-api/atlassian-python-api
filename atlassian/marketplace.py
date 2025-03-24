@@ -65,7 +65,7 @@ class MarketPlace(AtlassianRestAPI):
         params = {}
         if application:
             params["application"] = application
-        url = "rest/2/addons/{addonKey}/versions".format(addonKey=add_on_key)
+        url = f"rest/2/addons/{add_on_key}/versions"
         return self.get(url, params=params)
 
     def get_app_reviews(self, add_on_key, sort=None):
@@ -77,7 +77,7 @@ class MarketPlace(AtlassianRestAPI):
                      Valid values: helpful, recent
         :return:
         """
-        url = "rest/2/addons/{addonKey}/reviews".format(addonKey=add_on_key)
+        url = f"rest/2/addons/{add_on_key}/reviews"
         params = {}
         if sort:
             params["sort"] = sort

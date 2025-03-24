@@ -10,9 +10,7 @@ BITBUCKET = None
 try:
     from .mockup import mockup_server
 
-    BITBUCKET = Server(
-        "{}/bitbucket/server".format(mockup_server()), username="username", password="password", cloud=True
-    )
+    BITBUCKET = Server(f"{mockup_server()}/bitbucket/server", username="username", password="password", cloud=True)
 except ImportError:
     pass
 
@@ -177,7 +175,7 @@ class TestBasic:
             "My repo 3 description",
         ], "Each repo description"
 
-        print(list(project.repos.each()))
+        print((list(project.repos.each())))
 
         assert project.repos.exists("my-repo1-slug"), "Repo exists by slug"
 

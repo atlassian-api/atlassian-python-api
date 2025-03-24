@@ -33,5 +33,5 @@ if __name__ == "__main__":
             if response.status_code != 200:
                 continue
             with open(dest_folder + "/" + filename, "wb") as f:
-                print("Saving for {key} the file {filename}".format(key=key, filename=filename))
+                print(f"Saving for {key} the file {filename}")
                 f.write(response.content)

@@ -6,21 +6,21 @@ pr_id = 12345
 
 pr = bitbucket.get_pullrequest("project_name", "repository_name", pr_id)
 ver = pr.json().get("version")
-print("PR version: {}".format(ver))
+print(f"PR version: {ver}")
 
 response = bitbucket.decline_pull_request("project_name", "repository_name", pr_id, ver)
-print("Declined: {}".format(response))
+print(f"Declined: {response}")
 ver = response.json().get("version")
-print("PR version: {}".format(ver))
+print(f"PR version: {ver}")
 
 response = bitbucket.reopen_pull_request("project_name", "repository_name", pr_id, ver)
-print("Reopen: {}".format(response))
+print(f"Reopen: {response}")
 ver = response.json().get("version")
-print("PR version: {}".format(ver))
+print(f"PR version: {ver}")
 
 response = bitbucket.is_pull_request_can_be_merged("project_name", "repository_name", pr_id)
-print("Reopen: {}".format(response))
-print("PR version: {}".format(ver))
+print(f"Reopen: {response}")
+print(f"PR version: {ver}")
 
 response = bitbucket.merge_pull_request("project_name", "repository_name", pr_id, ver)
-print("Merged: {}".format(response))
+print(f"Merged: {response}")

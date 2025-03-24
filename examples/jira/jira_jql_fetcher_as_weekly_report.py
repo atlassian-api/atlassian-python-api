@@ -28,8 +28,8 @@ class ReportGenerator:
         flag = True
         limit = 10
         step = 0
-        jql = "((assignee was in ({})) OR assignee in ({})) AND updated > -{}d ".format(user, user, self.days)
-        print("Start fetching info jql = {}".format(jql))
+        jql = f"((assignee was in ({user})) OR assignee in ({user})) AND updated > -{self.days}d "
+        print(f"Start fetching info jql = {jql}")
         while flag:
             try:
                 response = self.jira.jql(
@@ -66,13 +66,7 @@ class ReportGenerator:
             ]  # person who did the change
             changes = ["Listing all items that changed:"]
             for item in history.get("items"):
-                changes.append(
-                    "{} - {}- {}".format(
-                        item["field"],
-                        item["fromString"],
-                        item["toString"],
-                    )
-                )
+                changes.append(f"{item['field']} - {item['fromString']}- {item['toString']}")
             output.append("\t".join(changes))
         return " - ".join(output)
 
@@ -89,7 +83,7 @@ class ReportGenerator:
         number = 1
         data = []
         for case in self.cases:
-            print("Processing case #{}".format(number))
+            print(f"Processing case #{number}")
             output = [
                 case.get("actor"),
                 case.get("key"),

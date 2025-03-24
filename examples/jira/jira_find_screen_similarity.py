@@ -41,7 +41,7 @@ for screen in all_screens:
         }
     )
     count_fields_per_screen.append(number_fields)
-    print("Number of available screen fields {} for screen with name  {}".format(number_fields, screen.get("name")))
+    print(f"Number of available screen fields {number_fields} for screen with name  {screen.get('name')}")
 
 screens.sort(key=extract_count, reverse=True)
 flipped_fields = {}
@@ -49,10 +49,10 @@ flipped_fields = {}
 print("The same screen of fields based on the count")
 for x in screens:
     if count_fields_per_screen.count(x["available_fields_count"]) > 1:
-        print("Please, check {}/secure/admin/ConfigureFieldScreen.jspa?id={}".format(jira.url, x["screen_id"]))
+        print(f"Please, check {jira.url}/secure/admin/ConfigureFieldScreen.jspa?id={x['screen_id']}")
 
-print("=" * 12)
+print(("=" * 12))
 print("The same field screens based on the hash")
 for x in screens:
     if hashes.count(x["available_fields_hash"]) > 1:
-        print("Please, check {}/secure/admin/ConfigureFieldScreen.jspa?id={}".format(jira.url, x["screen_id"]))
+        print(f"Please, check {jira.url}/secure/admin/ConfigureFieldScreen.jspa?id={x['screen_id']}")

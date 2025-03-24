@@ -25,9 +25,7 @@ print("|| Project Key || Project Name || Ask for Access ||")
 
 for project in jira.project_leaders():
     print(
-        "| {project_key} | {project_name} | {lead_email_link} |".format(
-            project_key=project["project_key"],
-            project_name=project["project_name"],
-            lead_email_link=MAILTO.format(lead_name=project["lead_name"], lead_email=project["lead_email"]),
+        (
+            f"| {project['project_key']} | {project['project_name']} | {MAILTO.format(lead_name=project['lead_name'], lead_email=project['lead_email'])} |"
         )
     )

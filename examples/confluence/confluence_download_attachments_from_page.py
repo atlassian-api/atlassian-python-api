@@ -18,4 +18,5 @@ my_path = current_dir + "/attachment_tests"
 page = 393464  # make sure the page id exists and has attachments
 
 confluence.download_attachments_from_page(page)
-# Directory  'attachment_tests' should include saved attachment. If directory deosn't exist or if there is permission issue function should raise an error.
+# Directory  'attachment_tests' should include saved attachment.
+# If directory doesn't exist or if there is permission issue function should raise an error.

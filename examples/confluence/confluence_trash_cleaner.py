@@ -18,11 +18,11 @@ def clean_pages_from_space(space_key, limit=500):
         values = confluence.get_all_pages_from_space_trash(space=space_key, start=0, limit=limit, content_type="page")
         if not values or len(values) == 0:
             flag = False
-            print("For space {} trash is empty".format(space_key))
+            print(f"For space {space_key} trash is empty")
         else:
-            print("Found in space {} pages as trashed {}".format(space_key, len(values)))
+            print(f"Found in space {space_key} pages as trashed {len(values)}")
             for value in values:
-                print("Removing page with title: " + value["title"])
+                print(("Removing page with title: " + value["title"]))
                 confluence.remove_page_from_trash(value["id"])
 
 
@@ -39,13 +39,13 @@ def clean_blog_posts_from_space(space_key, limit=500):
             space=space_key, start=0, limit=limit, content_type="blogpost"
         )
         if values and len(values) > 0:
-            print("Found in space {} pages as trashed {}".format(space_key, len(values)))
+            print(f"Found in space {space_key} pages as trashed {len(values)}")
             for value in values:
-                print("Removing page with title: " + value["title"])
+                print(("Removing page with title: " + value["title"]))
                 confluence.remove_page_from_trash(value["id"])
         else:
             flag = False
-            print("For space {} trash is empty".format(space_key))
+            print(f"For space {space_key} trash is empty")
 
 
 def clean_all_trash_pages_from_all_spaces():
@@ -61,7 +61,7 @@ def clean_all_trash_pages_from_all_spaces():
         if space_lists and len(space_lists) != 0:
             i += 1
             for space_list in space_lists["results"]:
-                print("Start review the space with key = " + space_list["key"])
+                print(("Start review the space with key = " + space_list["key"]))
                 clean_pages_from_space(space_key=space_list["key"])
                 clean_blog_posts_from_space(space_key=space_list["key"])
         else:

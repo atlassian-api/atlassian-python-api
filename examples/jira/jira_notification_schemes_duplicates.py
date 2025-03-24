@@ -51,7 +51,7 @@ def review():
                     all_notification_schemes_dict[names[j]],
                     print_diffs=show_diffs,
                 ):
-                    print("| same |", names[i], " | ", names[j], "|")
+                    print(("| same |", names[i], " | ", names[j], "|"))
 
 
 if __name__ == "__main__":

@@ -18,4 +18,4 @@ for component in components:
         "assigneeType": component.get("assigneeType"),
     }
     jira.create_component(data)
-    print("{} - component created ".format(component.get("name")))
+    print(f"{component.get('name')} - component created ")
