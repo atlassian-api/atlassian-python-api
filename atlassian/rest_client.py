@@ -33,15 +33,19 @@ class AtlassianRestAPI(object):
         "Accept": "application/json",
         "X-ExperimentalApi": "opt-in",
     }
+    # https://developer.atlassian.com/server/confluence/enable-xsrf-protection-for-your-app/#scripting
     form_token_headers = {
         "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
         "X-Atlassian-Token": "no-check",
     }
+    # https://developer.atlassian.com/server/confluence/enable-xsrf-protection-for-your-app/#scripting
     no_check_headers = {"X-Atlassian-Token": "no-check"}
+    # https://developer.atlassian.com/server/confluence/enable-xsrf-protection-for-your-app/#scripting
     safe_mode_headers = {
         "X-Atlassian-Token": "no-check",
         "Content-Type": "application/vnd.atl.plugins.safe.mode.flag+json",
     }
+    # https://developer.atlassian.com/server/confluence/enable-xsrf-protection-for-your-app/#scripting
     experimental_headers_general = {
         "X-Atlassian-Token": "no-check",
         "X-ExperimentalApi": "opt-in",
