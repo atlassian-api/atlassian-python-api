@@ -56,7 +56,7 @@ class Jira(AtlassianRestAPI):
 
             while True:
                 response = cast(
-                    dict,
+                    "dict",
                     super(Jira, self).get(
                         url,
                         trailing=trailing,
@@ -73,7 +73,7 @@ class Jira(AtlassianRestAPI):
                 if response.get("isLast", False) or len(values) == 0:
                     break
 
-                url = cast(str, response.get("nextPage"))
+                url = cast("str", response.get("nextPage"))
                 if url is None:
                     break
                 # From now on we have absolute URLs with parameters
@@ -1484,7 +1484,7 @@ class Jira(AtlassianRestAPI):
         original_value = self.advanced_mode
         self.advanced_mode = True
         try:
-            resp = cast(Response, self.issue(issue_key, fields="*none"))
+            resp = cast("Response", self.issue(issue_key, fields="*none"))
             if resp.status_code == 404:
                 log.info('Issue "%s" does not exists', issue_key)
                 return False
@@ -1915,7 +1915,7 @@ class Jira(AtlassianRestAPI):
 
     def get_issue_transitions(self, issue_key: str) -> List[dict]:
         if self.advanced_mode:
-            resp = cast(Response, self.get_issue_transitions_full(issue_key))
+            resp = cast("Response", self.get_issue_transitions_full(issue_key))
             d: Dict[str, list] = resp.json() or {}
         else:
             d = self.get_issue_transitions_full(issue_key) or {}
@@ -1926,7 +1926,7 @@ class Jira(AtlassianRestAPI):
                 "id": int(transition["id"]),
                 "to": transition["to"]["name"],
             }
-            for transition in cast(List[dict], d.get("transitions"))
+            for transition in cast("List[dict]", d.get("transitions"))
         ]
 
     def issue_transition(self, issue_key: str, status: str) -> T_resp_json:
@@ -3078,9 +3078,9 @@ class Jira(AtlassianRestAPI):
         jql = f'project = "{project}" ORDER BY issuekey DESC'
         response = self.jql(jql)
         if self.advanced_mode:
-            return cast(Response, response)
+            return cast("Response", response)
 
-        return (cast(dict, response).__getitem__("issues") or {"key": None})[0]["key"]
+        return (cast("dict", response).__getitem__("issues") or {"key": None})[0]["key"]
 
     def get_project_issuekey_all(
         self, project: str, start: int = 0, limit: Optional[int] = None, expand: Optional[str] = None
@@ -3088,15 +3088,15 @@ class Jira(AtlassianRestAPI):
         jql = f'project = "{project}" ORDER BY issuekey ASC'
         response = self.jql(jql, start=start, limit=limit, expand=expand)
         if self.advanced_mode:
-            return cast(Response, response)
-        return [issue["key"] for issue in cast(dict, response)["issues"]]
+            return cast("Response", response)
+        return [issue["key"] for issue in cast("dict", response)["issues"]]
 
     def get_project_issues_count(self, project: str):
         jql = f'project = "{project}" '
         response = self.jql(jql, fields="*none")
         if self.advanced_mode:
-            return cast(Response, response)
-        return cast(dict, response)["total"]
+            return cast("Response", response)
+        return cast("dict", response)["total"]
 
     def get_all_project_issues(
         self, project: str, fields: Union[str, List[str]] = "*all", start: int = 0, limit: Optional[int] = None
@@ -3112,8 +3112,8 @@ class Jira(AtlassianRestAPI):
         jql = f'project = "{project}" ORDER BY key'
         response = self.jql(jql, fields=fields, start=start, limit=limit)
         if self.advanced_mode:
-            return cast(Response, response)
-        return cast(dict, response)["issues"]
+            return cast("Response", response)
+        return cast("dict", response)["issues"]
 
     def get_all_assignable_users_for_project(self, project_key: str, start: int = 0, limit: int = 50):
         """
