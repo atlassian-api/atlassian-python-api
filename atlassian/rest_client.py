@@ -39,7 +39,7 @@ class AtlassianRestAPI(object):
     }
     no_check_headers = {"X-Atlassian-Token": "no-check"}
     safe_mode_headers = {
-        "X-Atlassian-Token": "nocheck",
+        "X-Atlassian-Token": "no-check",
         "Content-Type": "application/vnd.atl.plugins.safe.mode.flag+json",
     }
     experimental_headers_general = {

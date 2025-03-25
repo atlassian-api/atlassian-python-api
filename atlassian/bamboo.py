@@ -1415,7 +1415,7 @@ class Bamboo(AtlassianRestAPI):
         :return:
         """
         app_headers = {
-            "X-Atlassian-Token": "nocheck",
+            "X-Atlassian-Token": "no-check",
             "Content-Type": "application/vnd.atl.plugins+json",
         }
         url = f"rest/plugins/1.0/{plugin_key}-key"
@@ -1429,7 +1429,7 @@ class Bamboo(AtlassianRestAPI):
         :return:
         """
         app_headers = {
-            "X-Atlassian-Token": "nocheck",
+            "X-Atlassian-Token": "no-check",
             "Content-Type": "application/vnd.atl.plugins+json",
         }
         url = f"rest/plugins/1.0/{plugin_key}-key"
@@ -1461,7 +1461,7 @@ class Bamboo(AtlassianRestAPI):
         :return:
         """
         app_headers = {
-            "X-Atlassian-Token": "nocheck",
+            "X-Atlassian-Token": "no-check",
             "Content-Type": "application/vnd.atl.plugins+json",
         }
         url = f"/plugins/1.0/{plugin_key}/license"
