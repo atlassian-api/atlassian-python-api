@@ -1,12 +1,14 @@
 # coding=utf-8
 import logging
 from enum import Enum
+from typing import Optional
 
 from deprecated import deprecated
 from requests import HTTPError
 
-from .base import BitbucketBase
 from atlassian.bitbucket.cloud import Cloud
+
+from .base import BitbucketBase
 
 log = logging.getLogger(__name__)
 
@@ -1891,7 +1893,7 @@ class Bitbucket(BitbucketBase):
 
     def assign_pull_request_participant_role(
         self, project_key: str, repository_slug: str, pull_request_id: int, role: str, user: str
-    ) -> dict:
+    ) -> Optional[dict]:
         """
         Assign a role to a user for a pull request
         :param project_key: The project key
@@ -2117,7 +2119,9 @@ class Bitbucket(BitbucketBase):
         data = {"text": text, "severity": severity}
         return self.post(url, data=data)
 
-    def search_pull_request_blocker_comment(self, project_key: str, repository_slug: str, pull_request_id: int) -> dict:
+    def search_pull_request_blocker_comment(
+        self, project_key: str, repository_slug: str, pull_request_id: int
+    ) -> Optional[dict]:
         """
         Get all comments that block the merge of a pull request
         :param project_key: The project key
