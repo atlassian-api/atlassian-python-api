@@ -251,7 +251,7 @@ class Jira(AtlassianRestAPI):
         url = f"{base_url}/{attachment_id}"
         return self.get(url)
 
-    def download_issue_attachments(self, issue, path=None):
+    def download_issue_attachments(self, issue: T_id, path: Optional[str] = None) -> Optional[str]:
         """
         Downloads all attachments from a Jira issue.
         :param issue: The issue-key of the Jira issue
@@ -757,7 +757,7 @@ class Jira(AtlassianRestAPI):
     Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/dashboard
     """
 
-    def get_dashboards(self, filter: str = "", start: int = 0, limit: int = 10):
+    def get_dashboards(self, filter: str = "", start: int = 0, limit: int = 10) -> Optional[dict]:
         """
         Returns a list of all dashboards, optionally filtering them.
         :param filter: OPTIONAL: an optional filter that is applied to the list of dashboards.
@@ -782,7 +782,7 @@ class Jira(AtlassianRestAPI):
         url = self.resource_url("dashboard")
         return self.get(url, params=params)
 
-    def get_dashboard(self, dashboard_id: T_id):
+    def get_dashboard(self, dashboard_id: T_id) -> Optional[dict]:
         """
         Returns a single dashboard
 
@@ -1568,7 +1568,7 @@ class Jira(AtlassianRestAPI):
             data=data,
         )
 
-    def issue_delete_watcher(self, issue_key, user=None, account_id=None):
+    def issue_delete_watcher(self, issue_key: str, user: Optional[str] = None, account_id: Optional[str] = None):
         """
         Stop watching issue
         :param issue_key:
@@ -3474,11 +3474,11 @@ class Jira(AtlassianRestAPI):
 
     def enhanced_jql(
         self,
-        jql,
-        fields="*all",
-        nextPageToken=None,
-        limit=None,
-        expand=None,
+        jql: str,
+        fields: Union[str, List[str]] = "*all",
+        nextPageToken: Optional[str] = None,
+        limit: Optional[int] = None,
+        expand: Optional[str] = None,
     ):
         """
         Get issues from jql search result with all related fields
@@ -3493,7 +3493,8 @@ class Jira(AtlassianRestAPI):
 
         if not self.cloud:
             raise ValueError("``enhanced_jql`` method is only available for Jira Cloud platform")
-        params = {}
+        params: dict = {}
+        
         if nextPageToken is not None:
             params["nextPageToken"] = str(nextPageToken)
         if limit is not None:
@@ -3511,7 +3512,7 @@ class Jira(AtlassianRestAPI):
 
     def approximate_issue_count(
         self,
-        jql,
+        jql: str,
     ):
         """
         Get an approximate count of issues matching a JQL search string.
@@ -3595,10 +3596,10 @@ class Jira(AtlassianRestAPI):
 
     def enhanced_jql_get_list_of_tickets(
         self,
-        jql,
-        fields="*all",
-        limit=None,
-        expand=None,
+        jql: str,
+        fields: Union[str, dict] = "*all",
+        limit: Optional[int] = None,
+        expand: Optional[str] = None,
     ):
         """
         Get issues from JQL search result with all related fields using nextPageToken pagination.
@@ -3616,7 +3617,7 @@ class Jira(AtlassianRestAPI):
         if not self.cloud:
             raise ValueError("``enhanced_jql_get_list_of_tickets`` is only available for Jira Cloud.")
 
-        params = {}
+        params: dict = {}
         if limit is not None:
             params["maxResults"] = int(limit)
         if fields is not None:
@@ -3968,7 +3969,15 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         url = f"{base_url}/{permission_id}/permission"
         return self.post(url, data=new_permission)
 
-    def update_permissionscheme(self, permission_id, name, description=None, permissions=None, scope=None, expand=None):
+    def update_permissionscheme(
+        self,
+        permission_id: str,
+        name: str,
+        description: Optional[str] = None,
+        permissions: Optional[list[dict]] = None,
+        scope: Optional[str] = None,
+        expand: Optional[str] = None,
+    ):
         """
         Updates a permission scheme. Below are some important things to note when using this resource:
         - If a permissions list is present in the request, then it is set in the permission scheme, overwriting all existing grants.
@@ -4001,7 +4010,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         """
         base_url = self.resource_url("permissionscheme")
         url = f"{base_url}/{permission_id}"
-        data = {"name": name}
+        data: dict = {"name": name}
         if description is not None:
             data["description"] = description
         if permissions is not None:
