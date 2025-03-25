@@ -1525,7 +1525,7 @@ class Jira(AtlassianRestAPI):
             data=data,
         )
 
-    def issue_delete_watcher(self, issue_key, user):
+    def issue_delete_watcher(self, issue_key, user=None, account_id=None):
         """
         Stop watching issue
         :param issue_key:
@@ -1533,8 +1533,12 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         log.info('Deleting user %s from "%s" watchers', user, issue_key)
-        params = {"username": user}
         base_url = self.resource_url("issue")
+        params = {}
+        if self.cloud:
+            params = {"accountId": account_id}
+        else:
+            params = {"username": user}
         return self.delete(
             f"{base_url}/{issue_key}/watchers",
             params=params,
