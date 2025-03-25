@@ -29,7 +29,9 @@ issue_count = jira_cloud.approximate_issue_count("updated >= -1d ORDER BY update
 print(issue_count)
 
 print("========== Fetching Issues Using enhanced_jql_get_list_of_tickets ==========")
-issues_list = jira_cloud.enhanced_jql_get_list_of_tickets("updated >= -1d ORDER BY updated DESC", limit=300, fields="*nav")
+issues_list = jira_cloud.enhanced_jql_get_list_of_tickets(
+    "updated >= -1d ORDER BY updated DESC", limit=300, fields="*nav"
+)
 print(issues_list)
 
 print("========== Done ==========")

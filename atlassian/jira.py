@@ -3346,7 +3346,7 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         if self.cloud:
-            if start==0:
+            if start == 0:
                 return self.enhanced_jql(
                     jql=jql,
                     fields=fields,
@@ -3354,10 +3354,7 @@ class Jira(AtlassianRestAPI):
                     expand=expand,
                 )
             else:
-                raise ValueError(
-                    "The `jql` method is deprecated in Jira Cloud. Use `enhanced_jql` method instead."
-                )
-        
+                raise ValueError("The `jql` method is deprecated in Jira Cloud. Use `enhanced_jql` method instead.")
         params = {}
         if start is not None:
             params["startAt"] = int(start)
@@ -3397,7 +3394,6 @@ class Jira(AtlassianRestAPI):
 
         if not self.cloud:
             raise ValueError("``enhanced_jql`` method is only available for Jira Cloud platform")
-        
         params = {}
         if nextPageToken is not None:
             params["nextPageToken"] = str(nextPageToken)
@@ -3411,7 +3407,6 @@ class Jira(AtlassianRestAPI):
             params["jql"] = jql
         if expand is not None:
             params["expand"] = expand
-   
         url = self.resource_url("search/jql")
         return self.get(url, params=params)
 
@@ -3455,7 +3450,7 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         if self.cloud:
-            if start==0:
+            if start == 0:
                 return self.enhanced_jql_get_list_of_tickets(
                     jql=jql,
                     fields=fields,
@@ -3488,7 +3483,7 @@ class Jira(AtlassianRestAPI):
             response = self.get(url, params=params)
             if not response:
                 break
-            
+
             issues = response["issues"]
             results.extend(issues)
             total = int(response["total"])
@@ -3536,21 +3531,20 @@ class Jira(AtlassianRestAPI):
 
         url = self.resource_url("search/jql")
         results = []
-        nextPageToken = None
+        next_page_token = None
 
         while True:
-            if nextPageToken is not None:
-                params["nextPageToken"] = nextPageToken
+            if next_page_token is not None:
+                params["nextPageToken"] = next_page_token
 
             response = self.get(url, params=params)
             if not response:
                 break
-            
+
             issues = response["issues"]
             results.extend(issues)
-
-            nextPageToken = response.get("nextPageToken")
-            if not nextPageToken or (limit is not None and len(results) >= limit):
+            next_page_token = response.get("nextPageToken")
+            if not next_page_token or (limit is not None and len(results) >= limit):
                 break
         return results
 
