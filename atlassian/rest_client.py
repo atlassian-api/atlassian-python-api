@@ -168,7 +168,7 @@ class AtlassianRestAPI(object):
         else:
             self._session = session
 
-        if proxies is not None:
+        if self.proxies is not None:
             self._session.proxies = self.proxies
 
         if self.backoff_and_retry and self.use_urllib3_retry:

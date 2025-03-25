@@ -302,7 +302,7 @@ class Jira(AtlassianRestAPI):
         except Exception as e:
             raise e
 
-    def get_attachment_content(self, attachment_id: T_id) -> T_resp_json:
+    def get_attachment_content(self, attachment_id: T_id) -> bytes:
         """
         Returns the content for an attachment
         :param attachment_id: int
@@ -1791,7 +1791,7 @@ class Jira(AtlassianRestAPI):
             url += "/" + internal_id
         return self.get(url, params=params)
 
-    def get_issue_tree_recursive(self, issue_key: str, tree: list = None, depth: int = None):
+    def get_issue_tree_recursive(self, issue_key: str, tree: Optional[list] = None, depth: Optional[int] = None):
         """
         Returns a list that contains the tree structure of the root issue, with all subtasks and inward linked issues.
         (!) Function only returns child issues from the same Jira instance or from an instance to which the API key has access.
