@@ -1,6 +1,8 @@
 # coding=utf-8
 import logging
 import random
+import time
+from http.cookiejar import CookieJar
 from json import dumps
 from typing import (
     List,
@@ -12,6 +14,7 @@ from typing import (
 )
 
 import requests
+import urllib3
 from requests.adapters import HTTPAdapter
 from typing_extensions import Literal
 
@@ -21,13 +24,7 @@ try:
     from oauthlib.oauth1.rfc5849 import SIGNATURE_RSA_SHA512 as SIGNATURE_RSA
 except ImportError:
     from oauthlib.oauth1 import SIGNATURE_RSA
-
-import time
-
-import urllib3
-from http.cookiejar import CookieJar
-
-import urllib3
+    
 from requests import HTTPError, Response, Session
 from requests_oauthlib import OAuth1, OAuth2
 from six.moves.urllib.parse import urlencode

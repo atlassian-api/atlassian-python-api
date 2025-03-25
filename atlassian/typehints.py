@@ -1,4 +1,5 @@
 from typing import Union
+
 from typing_extensions import TypeAlias
 
 T_id: TypeAlias = Union[str, int]

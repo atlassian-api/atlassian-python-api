@@ -6,12 +6,13 @@ import os
 import re
 import time
 
+import requests
 from bs4 import BeautifulSoup
 from deprecated import deprecated
-import requests
 from requests import HTTPError
 
 from atlassian import utils
+
 from .errors import (
     ApiConflictError,
     ApiError,
