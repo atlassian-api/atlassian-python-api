@@ -1468,7 +1468,7 @@ class Confluence(AtlassianRestAPI):
             downloaded_files = {}
             for attachment in attachments:
                 file_name = attachment["title"] or attachment["id"]  # Use attachment ID if title is unavailable
-                download_link = self.url + attachment["_links"]["download"]
+                download_link = attachment["_links"]["download"]
                 # Fetch the file content
                 response = self.get(str(download_link), not_json_response=True)
 
