@@ -3494,7 +3494,7 @@ class Jira(AtlassianRestAPI):
         if not self.cloud:
             raise ValueError("``enhanced_jql`` method is only available for Jira Cloud platform")
         params: dict = {}
-        
+
         if nextPageToken is not None:
             params["nextPageToken"] = str(nextPageToken)
         if limit is not None:

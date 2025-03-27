@@ -2742,11 +2742,11 @@ class Confluence(AtlassianRestAPI):
         :return: The URL to download the exported file.
         """
 
-        def get_atl_request(url: str):
+        def get_atl_request(link: str):
             # Nested function  used to get atl_token used for XSRF protection.
             # This is only applicable to html/csv/xml space exports
             try:
-                response = self.get(url, advanced_mode=True)
+                response = self.get(link, advanced_mode=True)
                 parsed_html = BeautifulSoup(response.text, "html.parser")
                 atl_token = parsed_html.find("input", {"name": "atl_token"}).get("value")  # type: ignore[union-attr]
                 return atl_token
@@ -2806,11 +2806,10 @@ class Confluence(AtlassianRestAPI):
             running_task = True
             while running_task:
                 try:
-                    progress_response = self.get(poll_url)
-                    assert progress_response
-                    log.info("Space" + space_key + " export status: " + progress_response["message"])
-                    if progress_response["complete"]:
-                        parsed_html = BeautifulSoup(progress_response["message"], "html.parser")
+                    progress_response = self.get(poll_url) or {}
+                    log.info(f"Space {space_key} export status: {progress_response.get('message', 'None')}")
+                    if progress_response is not {} and progress_response.get("complete"):
+                        parsed_html = BeautifulSoup(progress_response.get("message"), "html.parser")
                         download_url = cast("str", parsed_html.find("a", {"class": "space-export-download-path"}).get("href"))  # type: ignore
                         if self.url in download_url:
                             return download_url
