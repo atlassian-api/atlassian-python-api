@@ -1805,7 +1805,7 @@ class Confluence(AtlassianRestAPI):
         log.debug('Old Content: """%s"""', confluence_body_content)
         log.debug('New Content: """%s"""', body)
 
-        if confluence_body_content.strip() == body.strip():
+        if confluence_body_content.strip().lower() == body.strip().lower():
             log.info("Content of %s is exactly the same", page_id)
             return True
         else:
