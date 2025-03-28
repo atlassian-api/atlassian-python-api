@@ -5,13 +5,15 @@ import logging
 import os
 import re
 import time
+from typing import cast
 
+import requests
 from bs4 import BeautifulSoup
 from deprecated import deprecated
-import requests
 from requests import HTTPError
 
 from atlassian import utils
+
 from .errors import (
     ApiConflictError,
     ApiError,
@@ -1644,7 +1646,7 @@ class Confluence(AtlassianRestAPI):
 
         return response
 
-    def remove_page_label(self, page_id, label):
+    def remove_page_label(self, page_id: str, label: str):
         """
         Delete Confluence page label
         :param page_id: content_id format
@@ -2740,13 +2742,13 @@ class Confluence(AtlassianRestAPI):
         :return: The URL to download the exported file.
         """
 
-        def get_atl_request(url: str):
+        def get_atl_request(link: str):
             # Nested function  used to get atl_token used for XSRF protection.
             # This is only applicable to html/csv/xml space exports
             try:
-                response = self.get(url, advanced_mode=True)
+                response = self.get(link, advanced_mode=True)
                 parsed_html = BeautifulSoup(response.text, "html.parser")
-                atl_token = parsed_html.find("input", {"name": "atl_token"}).get("value")
+                atl_token = parsed_html.find("input", {"name": "atl_token"}).get("value")  # type: ignore[union-attr]
                 return atl_token
             except Exception as e:
                 raise ApiError("Problems with getting the atl_token for get_space_export method :", reason=e)
@@ -2798,17 +2800,17 @@ class Confluence(AtlassianRestAPI):
             parsed_html = BeautifulSoup(response.text, "html.parser")
             # Getting the poll URL to get the export progress status
             try:
-                poll_url = parsed_html.find("meta", {"name": "ajs-pollURI"}).get("content")
+                poll_url = cast("str", parsed_html.find("meta", {"name": "ajs-pollURI"}).get("content"))  # type: ignore[union-attr]
             except Exception as e:
                 raise ApiError("Problems with getting the poll_url for get_space_export method :", reason=e)
             running_task = True
             while running_task:
                 try:
-                    progress_response = self.get(poll_url)
-                    log.info("Space" + space_key + " export status: " + progress_response["message"])
-                    if progress_response["complete"]:
-                        parsed_html = BeautifulSoup(progress_response["message"], "html.parser")
-                        download_url = parsed_html.find("a", {"class": "space-export-download-path"}).get("href")
+                    progress_response = self.get(poll_url) or {}
+                    log.info(f"Space {space_key} export status: {progress_response.get('message', 'None')}")
+                    if progress_response is not {} and progress_response.get("complete"):
+                        parsed_html = BeautifulSoup(progress_response.get("message"), "html.parser")
+                        download_url = cast("str", parsed_html.find("a", {"class": "space-export-download-path"}).get("href"))  # type: ignore
                         if self.url in download_url:
                             return download_url
                         else:

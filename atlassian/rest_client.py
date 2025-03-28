@@ -1,24 +1,41 @@
 # coding=utf-8
 import logging
 import random
+import time
+from http.cookiejar import CookieJar
 from json import dumps
+from typing import (
+    List,
+    MutableMapping,
+    Optional,
+    Tuple,
+    Union,
+    overload,
+)
 
 import requests
+import urllib3
 from requests.adapters import HTTPAdapter
+from typing_extensions import Literal
+
+from atlassian.typehints import T_resp_json
 
 try:
     from oauthlib.oauth1.rfc5849 import SIGNATURE_RSA_SHA512 as SIGNATURE_RSA
 except ImportError:
     from oauthlib.oauth1 import SIGNATURE_RSA
-import time
 
-import urllib3
-from requests import HTTPError
+from requests import HTTPError, Response, Session
 from requests_oauthlib import OAuth1, OAuth2
 from six.moves.urllib.parse import urlencode
+from typing_extensions import Self
 from urllib3.util import Retry
 
 from atlassian.request_utils import get_default_logger
+
+T_resp = Union[Response, T_resp_json]
+T_resp_get = Union[Response, T_resp_json, str, bytes]
+
 
 log = get_default_logger(__name__)
 
@@ -54,27 +71,27 @@ class AtlassianRestAPI(object):
 
     def __init__(
         self,
-        url,
-        username=None,
-        password=None,
-        timeout=75,
-        api_root="rest/api",
-        api_version="latest",
-        verify_ssl=True,
-        session=None,
-        oauth=None,
-        oauth2=None,
-        cookies=None,
-        advanced_mode=None,
-        kerberos=None,
-        cloud=False,
-        proxies=None,
-        token=None,
-        cert=None,
-        backoff_and_retry=False,
-        retry_status_codes=[413, 429, 503],
-        max_backoff_seconds=1800,
-        max_backoff_retries=1000,
+        url: str,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+        timeout: int = 75,
+        api_root: str = "rest/api",
+        api_version: Union[str, int] = "latest",
+        verify_ssl: bool = True,
+        session: Optional[requests.Session] = None,
+        oauth: Optional[dict] = None,
+        oauth2: Optional[dict] = None,
+        cookies: Optional[CookieJar] = None,
+        advanced_mode: Optional[bool] = None,
+        kerberos: object = None,
+        cloud: bool = False,
+        proxies: Optional[MutableMapping[str, str]] = None,
+        token: Optional[str] = None,
+        cert: Union[str, Tuple[str, str], None] = None,
+        backoff_and_retry: bool = False,
+        retry_status_codes: List[int] = [413, 429, 503],
+        max_backoff_seconds: int = 1800,
+        max_backoff_retries: int = 1000,
         backoff_factor=1.0,
         backoff_jitter=1.0,
         retry_with_header=True,
@@ -151,7 +168,7 @@ class AtlassianRestAPI(object):
         else:
             self._session = session
 
-        if proxies is not None:
+        if self.proxies is not None:
             self._session.proxies = self.proxies
 
         if self.backoff_and_retry and self.use_urllib3_retry:
@@ -181,24 +198,24 @@ class AtlassianRestAPI(object):
         elif cookies is not None:
             self._session.cookies.update(cookies)
 
-    def __enter__(self):
+    def __enter__(self) -> Self:
         return self
 
-    def __exit__(self, *_):
+    def __exit__(self, *_: object):
         self.close()
 
-    def _create_basic_session(self, username, password):
+    def _create_basic_session(self, username: str, password: str) -> None:
         self._session.auth = (username, password)
 
-    def _create_token_session(self, token):
+    def _create_token_session(self, token: str) -> None:
         self._update_header("Authorization", f"Bearer {token.strip()}")
 
-    def _create_kerberos_session(self, _):
+    def _create_kerberos_session(self, _: object) -> None:
         from requests_kerberos import OPTIONAL, HTTPKerberosAuth
 
         self._session.auth = HTTPKerberosAuth(mutual_authentication=OPTIONAL)
 
-    def _create_oauth_session(self, oauth_dict):
+    def _create_oauth_session(self, oauth_dict: dict) -> None:
         oauth = OAuth1(
             oauth_dict["consumer_key"],
             rsa_key=oauth_dict["key_cert"],
@@ -208,7 +225,7 @@ class AtlassianRestAPI(object):
         )
         self._session.auth = oauth
 
-    def _create_oauth2_session(self, oauth_dict):
+    def _create_oauth2_session(self, oauth_dict: dict) -> None:
         """
         Use OAuth 2.0 Authentication
         :param oauth_dict: Dictionary containing access information. Must at
@@ -221,7 +238,7 @@ class AtlassianRestAPI(object):
         oauth = OAuth2(oauth_dict["client_id"], oauth_dict["client"], oauth_dict["token"])
         self._session.auth = oauth
 
-    def _update_header(self, key, value):
+    def _update_header(self, key: str, value: str):
         """
         Update header for exist session
         :param key:
@@ -231,7 +248,7 @@ class AtlassianRestAPI(object):
         self._session.headers.update({key: value})
 
     @staticmethod
-    def _response_handler(response):
+    def _response_handler(response: Response) -> T_resp_json:
         try:
             return response.json()
         except ValueError:
@@ -294,7 +311,14 @@ class AtlassianRestAPI(object):
 
         return _handle
 
-    def log_curl_debug(self, method, url, data=None, headers=None, level=logging.DEBUG):
+    def log_curl_debug(
+        self,
+        method: str,
+        url: str,
+        data: Union[dict, str, None] = None,
+        headers: Optional[dict] = None,
+        level: int = logging.DEBUG,
+    ) -> None:
         """
 
         :param method:
@@ -313,7 +337,9 @@ class AtlassianRestAPI(object):
         )
         log.log(level=level, msg=message)
 
-    def resource_url(self, resource, api_root=None, api_version=None):
+    def resource_url(
+        self, resource: str, api_root: Optional[str] = None, api_version: Union[str, int, None] = None
+    ) -> str:
         if api_root is None:
             api_root = self.api_root
         if api_version is None:
@@ -321,29 +347,29 @@ class AtlassianRestAPI(object):
         return "/".join(str(s).strip("/") for s in [api_root, api_version, resource] if s is not None)
 
     @staticmethod
-    def url_joiner(url, path, trailing=None):
+    def url_joiner(url: Optional[str], path: str, trailing: Optional[bool] = None) -> str:
         url_link = "/".join(str(s).strip("/") for s in [url, path] if s is not None)
         if trailing:
             url_link += "/"
         return url_link
 
-    def close(self):
+    def close(self) -> None:
         return self._session.close()
 
     def request(
         self,
-        method="GET",
-        path="/",
-        data=None,
-        json=None,
-        flags=None,
-        params=None,
-        headers=None,
-        files=None,
-        trailing=None,
-        absolute=False,
-        advanced_mode=False,
-    ):
+        method: str = "GET",
+        path: str = "/",
+        data: Union[dict, str, None] = None,
+        json: Union[dict, str, None] = None,
+        flags: Optional[list] = None,
+        params: Optional[dict] = None,
+        headers: Optional[dict] = None,
+        files: Optional[dict] = None,
+        trailing: Optional[bool] = None,
+        absolute: bool = False,
+        advanced_mode: bool = False,
+    ) -> Response:
         """
 
         :param method:
@@ -413,18 +439,101 @@ class AtlassianRestAPI(object):
         self.raise_for_status(response)
         return response
 
+    # both True
+    @overload
     def get(
         self,
-        path,
-        data=None,
-        flags=None,
-        params=None,
-        headers=None,
-        not_json_response=None,
-        trailing=None,
-        absolute=False,
-        advanced_mode=False,
-    ):
+        path: str,
+        data: Union[dict, str, None] = ...,
+        flags: Optional[list] = ...,
+        params: Optional[dict] = ...,
+        headers: Optional[dict] = ...,
+        *,
+        not_json_response: Literal[True],
+        trailing: Optional[bool] = ...,
+        absolute: bool = ...,
+        advanced_mode: Literal[True],
+    ) -> bytes:
+        ...  # fmt: skip
+
+    # not_json_response True
+    @overload
+    def get(
+        self,
+        path: str,
+        data: Union[dict, str, None] = ...,
+        flags: Optional[list] = ...,
+        params: Optional[dict] = ...,
+        headers: Optional[dict] = ...,
+        *,
+        not_json_response: Literal[True],
+        trailing: Optional[bool] = ...,
+        absolute: bool = ...,
+        advanced_mode: bool = ...,
+    ) -> bytes:
+        ...  # fmt: skip
+
+    # advanced mode True
+    @overload
+    def get(
+        self,
+        path: str,
+        data: Union[dict, str, None] = ...,
+        flags: Optional[list] = ...,
+        params: Optional[dict] = ...,
+        headers: Optional[dict] = ...,
+        not_json_response: Optional[Literal[False]] = ...,
+        trailing: Optional[bool] = ...,
+        absolute: bool = ...,
+        *,
+        advanced_mode: Literal[True],
+    ) -> Response:
+        ...  # fmt: skip
+
+    # both False
+    @overload
+    def get(
+        self,
+        path: str,
+        data: Union[dict, str, None] = ...,
+        flags: Optional[list] = ...,
+        params: Optional[dict] = ...,
+        headers: Optional[dict] = ...,
+        not_json_response: Optional[Literal[False]] = ...,
+        trailing: Optional[bool] = ...,
+        absolute: bool = ...,
+        advanced_mode: Literal[False] = ...,
+    ) -> T_resp_json:
+        ...  # fmt: skip
+
+    # basic overall case
+    @overload
+    def get(
+        self,
+        path: str,
+        data: Union[dict, str, None] = ...,
+        flags: Optional[list] = ...,
+        params: Optional[dict] = ...,
+        headers: Optional[dict] = ...,
+        not_json_response: Optional[bool] = ...,
+        trailing: Optional[bool] = ...,
+        absolute: bool = ...,
+        advanced_mode: bool = ...,
+    ) -> T_resp_get:
+        ...  # fmt: skip
+
+    def get(
+        self,
+        path: str,
+        data: Union[dict, str, None] = None,
+        flags: Optional[list] = None,
+        params: Optional[dict] = None,
+        headers: Optional[dict] = None,
+        not_json_response: Optional[bool] = None,
+        trailing: Optional[bool] = None,
+        absolute: bool = False,
+        advanced_mode: bool = False,
+    ) -> T_resp_get:
         """
         Get request based on the python-requests module. You can override headers, and also, get not json response
         :param path:
@@ -490,18 +599,99 @@ class AtlassianRestAPI(object):
 
         return response
 
+    # advanced false
+    @overload
     def post(
         self,
-        path,
-        data=None,
-        json=None,
-        headers=None,
-        files=None,
-        params=None,
-        trailing=None,
-        absolute=False,
-        advanced_mode=False,
-    ):
+        path: str,
+        data: Union[dict, str],
+        *,
+        json: Union[dict, str, None] = ...,
+        headers: Optional[dict] = ...,
+        files: Optional[dict] = ...,
+        params: Optional[dict] = ...,
+        trailing: Optional[bool] = ...,
+        absolute: bool = ...,
+        advanced_mode: Literal[False] = ...,
+    ) -> T_resp_json:
+        ...  # fmt: skip
+
+    @overload
+    def post(
+        self,
+        path: str,
+        data: Union[dict, str, None] = ...,
+        json: Union[dict, str, None] = ...,
+        headers: Optional[dict] = ...,
+        files: Optional[dict] = ...,
+        params: Optional[dict] = ...,
+        trailing: Optional[bool] = ...,
+        absolute: bool = ...,
+        *,
+        advanced_mode: Literal[False] = ...,
+    ) -> T_resp_json:
+        ...  # fmt: skip
+
+    @overload
+    def post(
+        self,
+        path: str,
+        data: Union[dict, str, None] = ...,
+        json: Union[dict, str, None] = ...,
+        headers: Optional[dict] = ...,
+        files: Optional[dict] = ...,
+        params: Optional[dict] = ...,
+        trailing: Optional[bool] = ...,
+        absolute: bool = ...,
+        advanced_mode: Literal[False] = ...,
+    ) -> T_resp_json:
+        ...  # fmt: skip
+
+    # advanced True
+    @overload
+    def post(
+        self,
+        path: str,
+        data: Union[dict, str, None] = ...,
+        json: Union[dict, str, None] = ...,
+        headers: Optional[dict] = ...,
+        files: Optional[dict] = ...,
+        params: Optional[dict] = ...,
+        trailing: Optional[bool] = ...,
+        absolute: bool = ...,
+        *,
+        advanced_mode: Literal[True],
+    ) -> Response:
+        ...  # fmt: skip
+
+    # basic overall case
+    @overload
+    def post(
+        self,
+        path: str,
+        data: Union[dict, str, None] = ...,
+        json: Union[dict, str, None] = ...,
+        headers: Optional[dict] = ...,
+        files: Optional[dict] = ...,
+        params: Optional[dict] = ...,
+        trailing: Optional[bool] = ...,
+        absolute: bool = ...,
+        advanced_mode: bool = ...,
+    ) -> Union[Response, dict, None]:
+        ...  # fmt: skip
+
+    def post(
+        self,
+        path: str,
+        data: Union[dict, str, None] = None,
+        json: Union[dict, str, None] = None,
+        headers: Optional[dict] = None,
+        files: Optional[dict] = None,
+        params: Optional[dict] = None,
+        trailing: Optional[bool] = None,
+        absolute: bool = False,
+        advanced_mode: bool = False,
+    ) -> Union[Response, dict, None]:
         """
         :param path:
         :param data:
@@ -530,17 +720,78 @@ class AtlassianRestAPI(object):
             return response
         return self._response_handler(response)
 
+    # advanced False
+    @overload
     def put(
         self,
-        path,
-        data=None,
-        headers=None,
-        files=None,
-        trailing=None,
-        params=None,
-        absolute=False,
-        advanced_mode=False,
-    ):
+        path: str,
+        data: Union[dict, str, None] = ...,
+        headers: Optional[dict] = ...,
+        files: Optional[dict] = ...,
+        trailing: Optional[bool] = ...,
+        params: Optional[dict] = ...,
+        absolute: bool = ...,
+        *,
+        advanced_mode: Literal[False],
+    ) -> T_resp_json:
+        ...  # fmt: skip
+
+    @overload
+    def put(
+        self,
+        path: str,
+        data: Union[dict, str, None] = ...,
+        headers: Optional[dict] = ...,
+        files: Optional[dict] = ...,
+        trailing: Optional[bool] = ...,
+        params: Optional[dict] = ...,
+        absolute: bool = ...,
+        advanced_mode: Literal[False] = ...,
+    ) -> T_resp_json:
+        ...  # fmt: skip
+
+    # advanced True
+    @overload
+    def put(
+        self,
+        path: str,
+        data: Union[dict, str, None] = ...,
+        headers: Optional[dict] = ...,
+        files: Optional[dict] = ...,
+        trailing: Optional[bool] = ...,
+        params: Optional[dict] = ...,
+        absolute: bool = ...,
+        *,
+        advanced_mode: Literal[True],
+    ) -> Response:
+        ...  # fmt: skip
+
+    # basic overall case
+    @overload
+    def put(
+        self,
+        path: str,
+        data: Union[dict, str, None] = ...,
+        headers: Optional[dict] = ...,
+        files: Optional[dict] = ...,
+        trailing: Optional[bool] = ...,
+        params: Optional[dict] = ...,
+        absolute: bool = ...,
+        advanced_mode: bool = ...,
+    ) -> Union[Response, dict, None]:
+        ...  # fmt: skip
+
+    def put(
+        self,
+        path: str,
+        data: Union[dict, str, None] = None,
+        headers: Optional[dict] = None,
+        files: Optional[dict] = None,
+        trailing: Optional[bool] = None,
+        params: Optional[dict] = None,
+        absolute: bool = False,
+        advanced_mode: bool = False,
+    ) -> Union[Response, dict, None]:
         """
         :param path: Path of request
         :param data:
@@ -574,15 +825,15 @@ class AtlassianRestAPI(object):
 
     def patch(
         self,
-        path,
-        data=None,
-        headers=None,
-        files=None,
-        trailing=None,
-        params=None,
-        absolute=False,
-        advanced_mode=False,
-    ):
+        path: str,
+        data: Union[dict, str, None] = None,
+        headers: Optional[dict] = None,
+        files: Optional[dict] = None,
+        trailing: Optional[bool] = None,
+        params: Optional[dict] = None,
+        absolute: bool = False,
+        advanced_mode: bool = False,
+    ) -> T_resp:
         """
         :param path: Path of request
         :param data:
@@ -609,16 +860,73 @@ class AtlassianRestAPI(object):
             return response
         return self._response_handler(response)
 
+    # advanced False
+    @overload
     def delete(
         self,
-        path,
-        data=None,
-        headers=None,
-        params=None,
-        trailing=None,
-        absolute=False,
-        advanced_mode=False,
-    ):
+        path: str,
+        data: Union[dict, str, None] = ...,
+        headers: Optional[dict] = ...,
+        params: Optional[dict] = ...,
+        trailing: Optional[bool] = ...,
+        absolute: bool = ...,
+        *,
+        advanced_mode: Literal[False],
+    ) -> T_resp_json:
+        ...  # fmt: skip
+
+    @overload
+    def delete(
+        self,
+        path: str,
+        data: Union[dict, str, None] = ...,
+        headers: Optional[dict] = ...,
+        params: Optional[dict] = ...,
+        trailing: Optional[bool] = ...,
+        absolute: bool = ...,
+        advanced_mode: Literal[False] = ...,
+    ) -> T_resp_json:
+        ...  # fmt: skip
+
+    # advanced True
+    @overload
+    def delete(
+        self,
+        path: str,
+        data: Union[dict, str, None] = ...,
+        headers: Optional[dict] = ...,
+        params: Optional[dict] = ...,
+        trailing: Optional[bool] = ...,
+        absolute: bool = ...,
+        *,
+        advanced_mode: Literal[True],
+    ) -> Response:
+        ...  # fmt: skip
+
+    # basic overall case
+    @overload
+    def delete(
+        self,
+        path: str,
+        data: Union[dict, str, None] = ...,
+        headers: Optional[dict] = ...,
+        params: Optional[dict] = ...,
+        trailing: Optional[bool] = ...,
+        absolute: bool = ...,
+        advanced_mode: bool = ...,
+    ) -> T_resp:
+        ...  # fmt: skip
+
+    def delete(
+        self,
+        path: str,
+        data: Union[dict, str, None] = None,
+        headers: Optional[dict] = None,
+        params: Optional[dict] = None,
+        trailing: Optional[bool] = None,
+        absolute: bool = False,
+        advanced_mode: bool = False,
+    ) -> T_resp:
         """
         Deletes resources at given paths.
         :param path:
@@ -647,7 +955,7 @@ class AtlassianRestAPI(object):
             return response
         return self._response_handler(response)
 
-    def raise_for_status(self, response):
+    def raise_for_status(self, response: Response) -> None:
         """
         Checks the response for errors and throws an exception if return code >= 400
         Since different tools (Atlassian, Jira, ...) have different formats of returned json,
@@ -682,6 +990,6 @@ class AtlassianRestAPI(object):
             response.raise_for_status()
 
     @property
-    def session(self):
+    def session(self) -> Session:
         """Providing access to the restricted field"""
         return self._session
