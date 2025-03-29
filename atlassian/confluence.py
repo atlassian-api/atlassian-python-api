@@ -345,7 +345,7 @@ class Confluence(AtlassianRestAPI):
         try:
             return response.get("results")[0]
         except (IndexError, TypeError) as e:
-            log.error("Can't find '%s' page on the %s!", title, self.url)
+            log.error(f"Can't find '{title}' page on {self.url}")
             log.debug(e)
             return None
 
