@@ -746,11 +746,13 @@ class Bamboo(AtlassianRestAPI):
         return self.delete(self.resource_url(resource))
 
     @property
-    def get_projects(self):
+    def get_projects(self, start=0, limit=25):
         """Method used to list all projects defined in Bamboo.
-        Projects without any plan are not listed."""
-        start_idx = 0
-        max_results = 25
+        Projects without any plan are not listed.
+        :return: GET request
+        """
+        start_idx = start
+        max_results = limit
 
         while True:
             resource = f"project?start-index={start_idx}&max-result={max_results}"
