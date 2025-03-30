@@ -2711,7 +2711,7 @@ class Confluence(AtlassianRestAPI):
         """
         headers = self.form_token_headers
         url = f"spaces/flyingpdf/pdfpageexport.action?pageId={page_id}"
-        if self.api_version == "cloud":
+        if self.api_version == "cloud" or self.cloud:
             url = self.get_pdf_download_url_for_confluence_cloud(url)
             if not url:
                 log.error("Failed to get download PDF url.")
@@ -3349,7 +3349,7 @@ class Confluence(AtlassianRestAPI):
         To learn more about how to use these APIs,
         please refer to the Confluence JSON-RPC documentation on Atlassian Developers.
         """
-        if self.api_version == "cloud":
+        if self.api_version == "cloud" or self.cloud:
             return {}
         url = "rpc/json-rpc/confluenceservice-v2"
         data = {
@@ -3367,7 +3367,7 @@ class Confluence(AtlassianRestAPI):
         To learn more about how to use these APIs,
         please refer to the Confluence JSON-RPC documentation on Atlassian Developers.
         """
-        if self.api_version == "cloud":
+        if self.api_version == "cloud" or self.cloud:
             return self.get_space(space_key=space_key, expand="permissions")
         url = "rpc/json-rpc/confluenceservice-v2"
         data = {
