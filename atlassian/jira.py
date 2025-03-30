@@ -1525,15 +1525,50 @@ class Jira(AtlassianRestAPI):
         return self.delete(url, params=params)
 
     # @todo merge with edit_issue method
-    def issue_update(self, issue_key: str, fields: Union[str, dict]):
-        log.info('Updating issue "%s" with "%s"', issue_key, fields)
+    # https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-issues/#api-rest-api-2-issue-issueidorkey-put
+    def issue_update(
+        self,
+        issue_key: str,
+        fields: Union[str, dict],
+        update: Optional[dict[Any, Any]] = None,
+        history_metadata: Optional[dict[Any, Any]] = None,
+        properties: Optional[list[Any]] = None,
+        notify_users: bool = True,
+    ):
+        """
+         Updates a Jira issue with specified fields, updates, history metadata, and properties.
+
+
+        :param issue_key: The key or ID of the issue to update.
+        :param fields: A dictionary containing field updates.
+        :param update: A dictionary containing advanced updates (e.g., add/remove operations for labels).
+        :param history_metadata: Metadata for tracking the history of changes.
+        :param properties: A list of properties to add or update on the issue.
+        :param notify_users: Whether to notify users of the update. default: True
+        :return: Response from the PUT request.
+        """
+        log.info(f'Updating issue "{issue_key}" with "{fields}", "{update}", "{history_metadata}", and "{properties}"')
+
         base_url = self.resource_url("issue")
         url = f"{base_url}/{issue_key}"
-        return self.put(url, data={"fields": fields})
+        params = {
+            "fields": fields,
+            "update": update or {},
+            "historyMetadata": history_metadata or {},
+            "properties": properties or [],
+        }
+        # Remove empty keys to avoid sending unnecessary data
+        params = {key: value for key, value in params.items() if value}
+        if notify_users is True:
+            params["notifyUsers"] = "true"
+        else:
+            params["notifyUsers"] = "false"
+        return self.put(url, data=params)
 
+    # https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-issues/#api-rest-api-2-issue-issueidorkey-put
     def edit_issue(self, issue_id_or_key: str, fields: Union[str, dict], notify_users: bool = True):
         """
-        Edits an issue from a JSON representation
+        Edits an issue fields from a JSON representation
         The issue can either be updated by setting explicit the field
         value(s) or by using an operation to change the field value
 
