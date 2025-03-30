@@ -9,6 +9,9 @@ Projects & Plans
     # Get all Projects
     projects(expand=None, favourite=False, clover_enabled=False, max_results=25)
 
+    # Alternative way to get all Projects where pagination used only for soft iteration
+    jira.get_projects(start=0, limit=25)
+
     # Get a single project by the key
     project(project_key, expand=None, favourite=False, clover_enabled=False)
 
