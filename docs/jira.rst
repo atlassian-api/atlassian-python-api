@@ -602,6 +602,16 @@ Cluster methods (only for DC edition)
     # Request current index from node (the request is processed asynchronously).
     jira.request_current_index_from_node(node_id)
 
+    # Get cluster nodes where alive = True
+    jira.get_cluster_alive_nodes()
+
+    # Change the node's state to offline if the node is reporting as active, but is not alive
+    jira.set_node_to_offline(node_id)
+
+    #  Delete the node from the cluster if state of node is OFFLINE
+    jira.delete_cluster_node(node_id)
+
+
 Health checks methods (only for on-prem edition)
 ------------------------------------------------
 .. code-block:: python

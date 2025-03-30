@@ -424,6 +424,10 @@ class Jira(AtlassianRestAPI):
     """
 
     def get_cluster_all_nodes(self) -> T_resp_json:
+        """
+        Get all nodes in the cluster
+        :return:
+        """
         url = self.resource_url("cluster/nodes")
         return self.get(url)
 
@@ -457,7 +461,8 @@ class Jira(AtlassianRestAPI):
 
     def request_current_index_from_node(self, node_id: T_id) -> T_resp_json:
         """
-        Request current index from node (the request is processed asynchronously)
+        Request current index from node (the request is processed asynchronously).
+        This method is deprecated as it is Lucene specific and is planned for removal in Jira 11.
         :return:
         """
         base_url = self.resource_url("cluster/index-snapshot")
@@ -502,7 +507,43 @@ class Jira(AtlassianRestAPI):
     Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/cluster/zdu
     """
 
+    def approve_cluster_zdu_upgrade(self) -> T_resp_json:
+        """
+        Approves the cluster upgrade.
+        :return:
+        """
+        url = self.resource_url("cluster/zdu/approve")
+        return self.post(url)
+
+    def cancel_cluster_zdu_upgrade(self) -> T_resp_json:
+        """
+        Cancels the ongoing cluster upgrade.
+        :return:
+        """
+        url = self.resource_url("cluster/zdu/cancel")
+        return self.post(url)
+
+    def retry_cluster_zdu_upgrade(self) -> T_resp_json:
+        """
+        Retries the cluster upgrade.
+        :return:
+        """
+        url = self.resource_url("cluster/zdu/retryUpgrade")
+        return self.post(url)
+
+    def start_cluster_zdu_upgrade(self) -> T_resp_json:
+        """
+        Starts the cluster upgrade.
+        :return:
+        """
+        url = self.resource_url("cluster/zdu/start")
+        return self.post(url)
+
     def get_cluster_zdu_state(self) -> T_resp_json:
+        """
+        Get the state of the cluster upgrade.
+        :return:
+        """
         url = self.resource_url("cluster/zdu/state")
         return self.get(url)
 
