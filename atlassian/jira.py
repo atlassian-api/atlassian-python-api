@@ -1571,9 +1571,9 @@ class Jira(AtlassianRestAPI):
         self,
         issue_key: str,
         fields: Union[str, dict],
-        update: Optional[dict[Any, Any]] = None,
-        history_metadata: Optional[dict[Any, Any]] = None,
-        properties: Optional[list[Any]] = None,
+        update: Optional[Dict[Any, Any]] = None,
+        history_metadata: Optional[Dict[Any, Any]] = None,
+        properties: Optional[List[Any]] = None,
         notify_users: bool = True,
     ):
         """
@@ -4050,7 +4050,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         permission_id: str,
         name: str,
         description: Optional[str] = None,
-        permissions: Optional[list[dict]] = None,
+        permissions: Optional[List[dict]] = None,
         scope: Optional[str] = None,
         expand: Optional[str] = None,
     ):
@@ -4065,7 +4065,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param permission_id: int, REQUIRED: The ID of the permission scheme to update.
         :param name: str, REQUIRED: The name of the permission scheme. Must be unique.
         :param description: str, OPTIONAL: A description for the permission scheme. Defaults to None.
-        :param permissions: list[dict], OPTIONAL: A collection of permission grants. Defaults to None.
+        :param permissions: List[dict], OPTIONAL: A collection of permission grants. Defaults to None.
             Example:
                 [
                     {
@@ -5692,7 +5692,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         """
         Flags or un-flags one or multiple issues in Jira with a flag indicator.
         :param issue_keys: List of issue keys to flag or un-flag.
-        :type issue_keys: list[str]
+        :type issue_keys: List[str]
         :param flag: Flag indicating whether to flag or un-flag the issues (default is True for flagging).
         :type flag: bool
         :return: POST request response.
