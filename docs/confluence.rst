@@ -51,6 +51,9 @@ Get page info
     # max limit is 100. For more you have to loop over start values.
     confluence.get_all_pages_from_space(space, start=0, limit=100, status=None, expand=None, content_type='page')
 
+    # Get all pages from space as Generator
+    confluence.get_all_pages_from_space_as_generator(space, start=0, limit=100, status=None, expand=None, content_type='page')
+
     # Get list of pages from trash
     confluence.get_all_pages_from_space_trash(space, start=0, limit=500, status='trashed', content_type='page')
 

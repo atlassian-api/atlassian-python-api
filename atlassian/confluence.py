@@ -647,24 +647,80 @@ class Confluence(AtlassianRestAPI):
         content_type="page",
     ):
         """
-        Get all pages from space
+         Retrieve all pages from a Confluence space.
 
-        :param space:
-        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
-        :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
-                            fixed system limits. Default: 50
-        :param status: OPTIONAL: list of statuses the content to be found is in.
-                                 Defaults to current is not specified.
-                                 If set to 'any', content in 'current' and 'trashed' status will be fetched.
-                                 Does not support 'historical' status for now.
-        :param expand: OPTIONAL: a comma separated list of properties to expand on the content.
-                                 Default value: history,space,version.
-        :param content_type: the content type to return. Default value: page. Valid values: page, blogpost.
-        :return:
+        :param space: The space key to fetch pages from.
+        :param start: OPTIONAL: The starting point of the collection. Default: 0.
+        :param limit: OPTIONAL: The maximum number of pages per request. Default: 50.
+        :param status: OPTIONAL: Filter pages by status ('current', 'trashed', 'any'). Default: None.
+        :param expand: OPTIONAL: Comma-separated list of properties to expand. Default: history,space,version.
+        :param content_type: OPTIONAL: The content type to return ('page', 'blogpost'). Default: page.
+        :return: List containing all pages from the specified space.
         """
-        return self.get_all_pages_from_space_raw(
-            space=space, start=start, limit=limit, status=status, expand=expand, content_type=content_type
-        ).get("results")
+        all_pages = []  # Initialize an empty list to store all pages
+        while True:
+            # Fetch a single batch of pages
+            response = self.get_all_pages_from_space_raw(
+                space=space,
+                start=start,
+                limit=limit,
+                status=status,
+                expand=expand,
+                content_type=content_type,
+            )
+
+            # Extract results from the response
+            results = response.get("results", [])
+            all_pages.extend(results)  # Add the current batch of pages to the list
+
+            # Break the loop if no more pages are available
+            if len(results) < limit:
+                break
+
+            # Increment the start index for the next batch
+            start += limit
+        return all_pages
+
+    def get_all_pages_from_space_as_generator(
+        self,
+        space,
+        start=0,
+        limit=50,
+        status=None,
+        expand="history,space,version",
+        content_type="page",
+    ):
+        """
+        Retrieve all pages from a Confluence space using pagination.
+
+        :param space: The space key to fetch pages from.
+        :param start: OPTIONAL: The starting point of the collection. Default: 0.
+        :param limit: OPTIONAL: The maximum number of pages per request. Default: 50.
+        :param status: OPTIONAL: Filter pages by status ('current', 'trashed', 'any'). Default: None.
+        :param expand: OPTIONAL: Comma-separated list of properties to expand. Default: history,space,version.
+        :param content_type: OPTIONAL: The content type to return ('page', 'blogpost'). Default: page.
+        :return: Generator yielding pages one by one.
+        """
+        while True:
+            # Fetch a single batch of pages
+            response = self.get_all_pages_from_space_raw(
+                space=space,
+                start=start,
+                limit=limit,
+                status=status,
+                expand=expand,
+                content_type=content_type,
+            )
+
+            # Extract results from the response
+            results = response.get("results", [])
+            yield from results  # Yield each page individually
+
+            # Break the loop if no more pages are available
+            if len(results) < limit:
+                break
+            start += limit
+        pass
 
     def get_all_pages_from_space_trash(self, space, start=0, limit=500, status="trashed", content_type="page"):
         """
@@ -1238,7 +1294,7 @@ class Confluence(AtlassianRestAPI):
     def get_all_spaces(
         self,
         start=0,
-        limit=500,
+        limit=50,
         expand=None,
         space_type=None,
         space_status=None,

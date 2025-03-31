@@ -470,7 +470,7 @@ class Jira(AtlassianRestAPI):
         return self.put(url)
 
     """
-    Troubleshooting. (Available for DC) It gives the posibility to download support zips.
+    Troubleshooting. (Available for DC) It gives the possibility to download support zips.
     Reference: https://confluence.atlassian.com/support/create-a-support-zip-using-the-rest-api-in-data-center-applications-952054641.html
     """
 
