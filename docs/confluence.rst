@@ -243,6 +243,86 @@ Get spaces info
     # Get Space export download url
     confluence.get_space_export(space_key, export_type)
 
+Get space permissions
+---------------------
+
+.. code-block:: python
+
+    # Returns list of permissions granted to users and groups in the particular space.
+    confluence.get_all_space_permissions(space_key)
+
+    # Sets permissions to multiple users/groups in the given space.
+    confluence.set_permissions_to_multiple_items_for_space(self, space_key, user_key=None, group_name=None, operations=None)
+
+    # Get permissions granted to anonymous user for the given space
+    confluence.get_permissions_granted_to_anonymous_for_space(space_key)
+
+    # Grant permissions to anonymous user in the given space.
+    # Operation doesn't override existing permissions
+    # will only add those one that weren't granted before.
+    # Multiple permissions could be passed in one request.
+    # Supported targetType and operationKey pairs:
+    #    space read
+    #    space administer
+    #    space export
+    #    space restrict
+    #    space delete_own
+    #    space delete_mail
+    #    page create
+    #    page delete
+    #    blogpost create
+    #    blogpost delete
+    #    comment create
+    #    comment delete
+    #    attachment create
+    #    attachment delete
+    confluence.set_permissions_to_anonymous_for_space(space_key, operations=None)
+
+    # Remove permissions granted to anonymous user for the given space
+    confluence.remove_permissions_granted_to_anonymous_for_space(space_key)
+
+    # Get permissions granted to group for the given space
+    confluence.get_permissions_granted_to_group_for_space(space_key, user_key)
+
+    # Grant permissions to group in the given space.
+    # Operation doesn't override existing permissions
+    # will only add those one that weren't granted before.
+    # Multiple permissions could be passed in one request.
+    # Supported targetType and operationKey pairs:
+    #    space read
+    #    space administer
+    #    space export
+    #    space restrict
+    #    space delete_own
+    #    space delete_mail
+    #    page create
+    #    page delete
+    #    blogpost create
+    #    blogpost delete
+    #    comment create
+    #    comment delete
+    #    attachment create
+    #    attachment delete
+    confluence.set_permissions_to_group_for_space(space_key, user_key, operations=None)
+
+    # Remove permissions granted to group for the given space
+    confluence.remove_permissions_from_group_for_space(space_key, group_name)
+
+    # Get permissions granted to user for the given space
+    confluence.get_permissions_granted_to_user_for_space(space_key, user_key)
+
+    # Grant permissions to user in the given space.
+    confluence.set_permissions_to_user_for_space(space_key, user_key, operations=None)
+
+    # Remove permissions granted to user for the given space
+    confluence.remove_permissions_from_user_for_space(space_key, user_key)
+
+    # Add permissions to a space
+    confluence.add_space_permissions(space_key, user_key, group_name, operations)
+
+    # Remove permissions from a space
+    confluence.remove_space_permissions(space_key, user_key, group_name, permission)
+
 Users and Groups
 ----------------
 

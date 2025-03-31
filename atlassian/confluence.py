@@ -2425,7 +2425,7 @@ class Confluence(AtlassianRestAPI):
             else:
                 members.extend(values)
         if not members:
-            print((f"Did not get members from {group_name} group, please check permissions or connectivity"))
+            print(f"Did not get members from {group_name} group, please check permissions or connectivity")
         return members
 
     def get_space(self, space_key, expand="description.plain,homepage", params=None):
@@ -3314,6 +3314,250 @@ class Confluence(AtlassianRestAPI):
         """
         url = "rest/api/user/%s/group/%s" % (username, group_name)
         return self.put(url)
+
+    # Space Permissions
+    def get_all_space_permissions(self, space_key):
+        """
+        Returns list of permissions granted to users and groups in the particular space.
+        :param space_key:
+        :return:
+        """
+        url = f"rest/api/space/{space_key}/permissions"
+        return self.get(url)
+
+    def set_permissions_to_multiple_items_for_space(self, space_key, user_key=None, group_name=None, operations=None):
+        """
+        Sets permissions to multiple users/groups in the given space.
+        Request should contain all permissions that user/group/anonymous user will have in a given space.
+        If permission is absent in the request, but was granted before, it will be revoked.
+        If empty list of permissions passed to user/group/anonymous user,
+        then all their existing permissions will be revoked.
+        If user/group/anonymous user not mentioned in the request, their permissions will not be revoked.
+
+        Maximum 40 different users/groups/anonymous user could be passed in the request.
+        :param space_key:
+        :param user_key:
+        :param group_name:
+        :param operations:
+        :return:
+        """
+        url = f"rest/api/space/{space_key}/permissions"
+        params = []
+
+        if user_key:
+            params.append({"userKey": user_key, "operations": operations or []})
+
+        if group_name:
+            params.append({"groupName": group_name, "operations": operations or []})
+
+        if not user_key and not group_name:
+            params.append({"operations": operations or []})
+        payload_json = json.dumps(params)
+        return self.post(url, data=payload_json)
+
+    def get_permissions_granted_to_anonymous_for_space(self, space_key):
+        """
+        Get permissions granted to anonymous user for the given space
+        :param space_key:
+        :return:
+        """
+        url = f"rest/api/space/{space_key}/permissions/anonymous"
+        return self.get(url)
+
+    def set_permissions_to_anonymous_for_space(self, space_key, operations=None):
+        """
+        Grant permissions to anonymous user in the given space. Operation doesn't override existing permissions,
+        will only add those one that weren't granted before. Multiple permissions could be passed in one request.
+        Supported targetType and operationKey pairs:
+
+        space read
+        space administer
+        space export
+        space restrict
+        space delete_own
+        space delete_mail
+        page create
+        page delete
+        blogpost create
+        blogpost delete
+        comment create
+        comment delete
+        attachment create
+        attachment delete
+        :param space_key:
+        :param operations:
+        :return:
+        """
+        url = f"rest/api/space/{space_key}/permissions/anonymous"
+        data = {"operations": operations or []}
+        return self.put(url, data=data)
+
+    def remove_permissions_from_anonymous_for_space(self, space_key, operations=None):
+        """
+        Revoke permissions from anonymous user in the given space.
+        If anonymous user doesn't have permissions that we are trying to revoke,
+        those permissions will be silently skipped. Multiple permissions could be passed in one request.
+        Supported targetType and operationKey pairs:
+
+        space read
+        space administer
+        space export
+        space restrict
+        space delete_own
+        space delete_mail
+        page create
+        page delete
+        blogpost create
+        blogpost delete
+        comment create
+        comment delete
+        attachment create
+        attachment delete
+        :param space_key:
+        :param operations:
+        :return:
+        """
+        url = f"rest/api/space/{space_key}/permissions/anonymous/revoke"
+        data = {"operations": operations or []}
+        return self.put(url, data=data)
+
+    def get_permissions_granted_to_group_for_space(self, space_key, group_name):
+        """
+        Get permissions granted to group for the given space
+        :param space_key:
+        :param group_name:
+        :return:
+        """
+        url = f"rest/api/space/{space_key}/permissions/group/{group_name}"
+        return self.get(url)
+
+    def set_permissions_to_group_for_space(self, space_key, group_name, operations=None):
+        """
+        Grant permissions to group in the given space.
+        Operation doesn't override existing permissions, will only add those one that weren't granted before.
+        Multiple permissions could be passed in one request. Supported targetType and operationKey pairs:
+
+        space read
+        space administer
+        space export
+        space restrict
+        space delete_own
+        space delete_mail
+        page create
+        page delete
+        blogpost create
+        blogpost delete
+        comment create
+        comment delete
+        attachment create
+        attachment delete
+        :param space_key:
+        :param group_name:
+        :param operations:
+        :return:
+        """
+        url = f"rest/api/space/{space_key}/permissions/group/{group_name}"
+        data = {"operations": operations or []}
+        return self.put(url, data=data)
+
+    def remove_permissions_from_group_for_space(self, space_key, group_name, operations=None):
+        """
+        Revoke permissions from a group in the given space.
+        If group doesn't have permissions that we are trying to revoke,
+        those permissions will be silently skipped. Multiple permissions could be passed in one request.
+        Supported targetType and operationKey pairs:
+
+        space read
+        space administer
+        space export
+        space restrict
+        space delete_own
+        space delete_mail
+        page create
+        page delete
+        blogpost create
+        blogpost delete
+        comment create
+        comment delete
+        attachment create
+        attachment delete
+        :param space_key:
+        :param group_name:
+        :param operations:
+        :return:
+        """
+        url = f"rest/api/space/{space_key}/permissions/group/{group_name}/revoke"
+        data = {"operations": operations or []}
+        return self.put(url, data=data)
+
+    def get_permissions_granted_to_user_for_space(self, space_key, user_key):
+        """
+        Get permissions granted to user for the given space
+        :param space_key:
+        :param user_key:
+        :return:
+        """
+        url = f"rest/api/space/{space_key}/permissions/user/{user_key}"
+        return self.get(url)
+
+    def set_permissions_to_user_for_space(self, space_key, user_key, operations=None):
+        """
+        Grant permissions to user in the given space.
+        Operation doesn't override existing permissions, will only add those one that weren't granted before.
+        Multiple permissions could be passed in one request. Supported targetType and operationKey pairs:
+
+        space read
+        space administer
+        space export
+        space restrict
+        space delete_own
+        space delete_mail
+        page create
+        page delete
+        blogpost create
+        blogpost delete
+        comment create
+        comment delete
+        attachment create
+        attachment delete
+        :param space_key:
+        :param user_key:
+        :param operations:
+        :return:
+        """
+        url = f"rest/api/space/{space_key}/permissions/user/{user_key}"
+        data = {"operations": operations or []}
+        return self.put(url, data=data)
+
+    def remove_permissions_from_user_for_space(self, space_key, user_key, operations=None):
+        """
+        Revoke permissions from a user in the given space.
+        If user doesn't have permissions that we are trying to revoke,
+        those permissions will be silently skipped. Multiple permissions could be passed in one request.
+        Supported targetType and operationKey pairs:
+
+        space read
+        space administer
+        space export
+        space restrict
+        space delete_own
+        space delete_mail
+        page create
+        page delete
+        blogpost create
+        blogpost delete
+        comment create
+        comment delete
+        attachment create
+        attachment delete
+        :param space_key:
+        :param user_key:
+        :param operations:
+        :return:
+        """
+        url = f"rest/api/space/{space_key}/permissions/user/{user_key}/revoke"
+        data = {"operations": operations or []}
+        return self.put(url, params=data)
 
     def add_space_permissions(
         self,
