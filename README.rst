@@ -248,11 +248,12 @@ In addition to all the contributors we would like to thank these vendors:
 * Atlassian_ for developing such a powerful ecosystem.
 * JetBrains_ for providing us with free licenses of PyCharm_
 * Microsoft_ for providing us with free licenses of VSCode_
-* GitHub_ for hosting our repository and continuous integration
+* Cursor.com_ for AI assistance in development
+* John B Batzel (batzel@upenn.edu) for implementing the Confluence Cloud v2 API support
 
 .. _Atlassian: https://www.atlassian.com/
 .. _JetBrains: http://www.jetbrains.com
 .. _PyCharm: http://www.jetbrains.com/pycharm/
-.. _GitHub: https://github.com/
-.. _Microsoft: https://github.com/Microsoft/vscode/
-.. _VSCode: https://code.visualstudio.com/
+.. _Microsoft: https://www.microsoft.com
+.. _VSCode: https://code.visualstudio.com
+.. _Cursor.com: https://cursor.com
