@@ -1322,6 +1322,42 @@ class Confluence(AtlassianRestAPI):
             params["status"] = space_status
         return self.get(url, params=params)
 
+    def archive_space(self, space_key):
+        """
+        Archive space
+        :param space_key:
+        :return:
+        """
+        url = f"rest/api/space/{space_key}/archive"
+        return self.put(url)
+
+    def get_trashed_contents_by_space(self, space_key, cursor=None, expand=None, limit=100):
+        """
+        Get trashed contents by space
+        :param space_key:
+        :param cursor:
+        :param expand:
+        :param limit:
+        :return:
+        """
+        url = f"rest/api/space/{space_key}/content/trash"
+        params = {"limit": limit}
+        if cursor:
+            params["cursor"] = cursor
+        if expand:
+            params["expand"] = expand
+        return self.get(url, params=params)
+
+    def remove_trashed_contents_by_space(self, space_key):
+        """
+        Remove all content from the trash in the given space,
+        deleting them permanently.Example request URI:
+        :param space_key:
+        :return:
+        """
+        url = f"rest/api/space/{space_key}/content/trash"
+        return self.delete(url)
+
     def add_comment(self, page_id, text):
         """
         Add comment into page
