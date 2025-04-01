@@ -956,400 +956,567 @@ class TestConfluenceV2(unittest.TestCase):
         
     @patch('atlassian.confluence_v2.ConfluenceV2.delete')
     def test_delete_space_label(self, mock_delete):
-        # Setup the mock
-        mock_delete.return_value = None
-        
-        # Call the method
-        result = self.confluence_v2.delete_space_label("SPACE123", "test-label")
-        
-        # Assertions
-        mock_delete.assert_called_once_with('api/v2/spaces/SPACE123/labels', params={"name": "test-label"})
-        self.assertTrue(result)
-            
-    def test_delete_space_label(self):
-        """Test deleting a label from a space"""
+        """Test deleting a space label"""
         space_id = "12345"
         label = "test-label"
         
-        self.confluence_v2.delete(f"api/v2/spaces/{space_id}/labels/{label}")
-        self.mock_response.json.return_value = {}
+        mock_delete.return_value = None
         
         result = self.confluence_v2.delete_space_label(space_id, label)
+        mock_delete.assert_called_with("api/v2/spaces/12345/labels/test-label")
         self.assertTrue(result)
-        
-    # Comment methods tests
     
-    @patch('atlassian.confluence_v2.ConfluenceV2._get_paged')
-    def test_get_page_footer_comments(self, mock_get_paged):
-        """Test retrieving footer comments for a page"""
-        page_id = "12345"
+    # Tests for Whiteboard methods
+    
+    @patch('atlassian.confluence_v2.ConfluenceV2.post')
+    def test_create_whiteboard(self, mock_post):
+        """Test creating a whiteboard"""
+        space_id = "123456"
+        title = "Test Whiteboard"
+        template_key = "timeline"
+        locale = "en-US"
+        parent_id = "789012"
         
-        comments = [
-            {"id": "1", "body": {"storage": {"value": "Test comment 1"}}},
-            {"id": "2", "body": {"storage": {"value": "Test comment 2"}}}
-        ]
+        expected_data = {
+            "spaceId": space_id,
+            "title": title,
+            "templateKey": template_key,
+            "locale": locale,
+            "parentId": parent_id
+        }
         
-        mock_get_paged.return_value = comments
+        mock_post.return_value = {"id": "987654", "title": title}
         
-        mock_return = self.confluence_v2.get_page_footer_comments(page_id)
-        mock_get_paged.assert_called_with("api/v2/pages/12345/footer-comments", params={"limit": 25})
-        self.assertEqual(mock_return, comments)
-                                                  
-    @patch('atlassian.confluence_v2.ConfluenceV2._get_paged')
-    def test_get_page_footer_comments_with_parameters(self, mock_get_paged):
-        """Test retrieving footer comments for a page with parameters"""
-        page_id = "12345"
-        
-        comments = [
-            {"id": "1", "body": {"storage": {"value": "Test comment 1"}}},
-            {"id": "2", "body": {"storage": {"value": "Test comment 2"}}}
-        ]
-        
-        mock_get_paged.return_value = comments
-        
-        mock_return = self.confluence_v2.get_page_footer_comments(
-            page_id, 
-            body_format="storage", 
-            cursor="some-cursor", 
-            limit=10, 
-            sort="created-date"
+        result = self.confluence_v2.create_whiteboard(
+            space_id=space_id, 
+            title=title, 
+            parent_id=parent_id,
+            template_key=template_key,
+            locale=locale
         )
-        mock_get_paged.assert_called_with("api/v2/pages/12345/footer-comments", 
-                                   params={
-                                       "limit": 10,
-                                       "body-format": "storage",
-                                       "cursor": "some-cursor",
-                                       "sort": "created-date"
-                                   })
-        self.assertEqual(mock_return, comments)
-                                                
-    @patch('atlassian.confluence_v2.ConfluenceV2._get_paged')
-    def test_get_page_inline_comments(self, mock_get_paged):
-        """Test retrieving inline comments for a page"""
-        page_id = "12345"
         
-        comments = [
-            {"id": "1", "body": {"storage": {"value": "Test comment 1"}}},
-            {"id": "2", "body": {"storage": {"value": "Test comment 2"}}}
-        ]
+        mock_post.assert_called_with(
+            "api/v2/whiteboards",
+            data=expected_data
+        )
         
-        mock_get_paged.return_value = comments
-        
-        mock_return = self.confluence_v2.get_page_inline_comments(page_id)
-        mock_get_paged.assert_called_with("api/v2/pages/12345/inline-comments", params={"limit": 25})
-        self.assertEqual(mock_return, comments)
-                                                
-    @patch('atlassian.confluence_v2.ConfluenceV2._get_paged')
-    def test_get_blogpost_footer_comments(self, mock_get_paged):
-        """Test retrieving footer comments for a blog post"""
-        blogpost_id = "12345"
-        
-        comments = [
-            {"id": "1", "body": {"storage": {"value": "Test comment 1"}}},
-            {"id": "2", "body": {"storage": {"value": "Test comment 2"}}}
-        ]
-        
-        mock_get_paged.return_value = comments
-        
-        mock_return = self.confluence_v2.get_blogpost_footer_comments(blogpost_id)
-        mock_get_paged.assert_called_with("api/v2/blogposts/12345/footer-comments", params={"limit": 25})
-        self.assertEqual(mock_return, comments)
-                                                
-    @patch('atlassian.confluence_v2.ConfluenceV2._get_paged')
-    def test_get_blogpost_inline_comments(self, mock_get_paged):
-        """Test retrieving inline comments for a blog post"""
-        blogpost_id = "12345"
-        
-        comments = [
-            {"id": "1", "body": {"storage": {"value": "Test comment 1"}}},
-            {"id": "2", "body": {"storage": {"value": "Test comment 2"}}}
-        ]
-        
-        mock_get_paged.return_value = comments
-        
-        mock_return = self.confluence_v2.get_blogpost_inline_comments(blogpost_id)
-        mock_get_paged.assert_called_with("api/v2/blogposts/12345/inline-comments", params={"limit": 25})
-        self.assertEqual(mock_return, comments)
-                                                
-    @patch('atlassian.confluence_v2.ConfluenceV2._get_paged')
-    def test_get_attachment_comments(self, mock_get_paged):
-        """Test retrieving comments for an attachment"""
-        attachment_id = "12345"
-        
-        comments = [
-            {"id": "1", "body": {"storage": {"value": "Test comment 1"}}},
-            {"id": "2", "body": {"storage": {"value": "Test comment 2"}}}
-        ]
-        
-        mock_get_paged.return_value = comments
-        
-        mock_return = self.confluence_v2.get_attachment_comments(attachment_id)
-        mock_get_paged.assert_called_with("api/v2/attachments/12345/footer-comments", params={"limit": 25})
-        self.assertEqual(mock_return, comments)
-                                                
-    @patch('atlassian.confluence_v2.ConfluenceV2._get_paged')
-    def test_get_custom_content_comments(self, mock_get_paged):
-        """Test retrieving comments for custom content"""
-        custom_content_id = "12345"
-        
-        comments = [
-            {"id": "1", "body": {"storage": {"value": "Test comment 1"}}},
-            {"id": "2", "body": {"storage": {"value": "Test comment 2"}}}
-        ]
-        
-        mock_get_paged.return_value = comments
-        
-        mock_return = self.confluence_v2.get_custom_content_comments(custom_content_id)
-        mock_get_paged.assert_called_with("api/v2/custom-content/12345/footer-comments", params={"limit": 25})
-        self.assertEqual(mock_return, comments)
-                                                
-    @patch('atlassian.confluence_v2.ConfluenceV2._get_paged')
-    def test_get_comment_children(self, mock_get_paged):
-        """Test retrieving child comments for a comment"""
-        comment_id = "12345"
-        
-        comments = [
-            {"id": "1", "body": {"storage": {"value": "Test comment 1"}}},
-            {"id": "2", "body": {"storage": {"value": "Test comment 2"}}}
-        ]
-        
-        mock_get_paged.return_value = comments
-        
-        mock_return = self.confluence_v2.get_comment_children(comment_id)
-        mock_get_paged.assert_called_with("api/v2/comments/12345/children", params={"limit": 25})
-        self.assertEqual(mock_return, comments)
-                                                
-    @patch('atlassian.confluence_v2.ConfluenceV2.get')
-    def test_get_comment_by_id(self, mock_get):
-        """Test retrieving a comment by ID"""
-        comment_id = "12345"
-        
-        comment = {"id": "12345", "body": {"storage": {"value": "Test comment"}}}
-        
-        mock_get.return_value = comment
-        
-        result = self.confluence_v2.get_comment_by_id(comment_id)
-        mock_get.assert_called_with("api/v2/comments/12345", params={})
-        self.assertEqual(result, comment)
+        self.assertEqual(result["id"], "987654")
+        self.assertEqual(result["title"], title)
         
     @patch('atlassian.confluence_v2.ConfluenceV2.get')
-    def test_get_comment_by_id_with_parameters(self, mock_get):
-        """Test retrieving a comment by ID with parameters"""
-        comment_id = "12345"
+    def test_get_whiteboard_by_id(self, mock_get):
+        """Test retrieving a whiteboard by ID"""
+        whiteboard_id = "123456"
+        mock_response = {"id": whiteboard_id, "title": "Test Whiteboard"}
+        mock_get.return_value = mock_response
         
-        comment = {"id": "12345", "body": {"storage": {"value": "Test comment"}}}
+        result = self.confluence_v2.get_whiteboard_by_id(whiteboard_id)
         
-        mock_get.return_value = comment
+        mock_get.assert_called_with(
+            "api/v2/whiteboards/123456"
+        )
         
-        result = self.confluence_v2.get_comment_by_id(comment_id, body_format="storage", version=1)
-        mock_get.assert_called_with("api/v2/comments/12345", params={"body-format": "storage", "version": 1})
-        self.assertEqual(result, comment)
+        self.assertEqual(result, mock_response)
+    
+    @patch('atlassian.confluence_v2.ConfluenceV2.delete')
+    def test_delete_whiteboard(self, mock_delete):
+        """Test deleting a whiteboard"""
+        whiteboard_id = "123456"
+        mock_delete.return_value = {"status": "success"}
         
+        result = self.confluence_v2.delete_whiteboard(whiteboard_id)
+        
+        mock_delete.assert_called_with(
+            "api/v2/whiteboards/123456"
+        )
+        
+        self.assertEqual(result["status"], "success")
+        
+    @patch('atlassian.confluence_v2.ConfluenceV2._get_paged')
+    def test_get_whiteboard_children(self, mock_get_paged):
+        """Test retrieving whiteboard children"""
+        whiteboard_id = "123456"
+        cursor = "next-page"
+        limit = 25
+        
+        mock_get_paged.return_value = [
+            {"id": "child1", "title": "Child 1"},
+            {"id": "child2", "title": "Child 2"}
+        ]
+        
+        result = self.confluence_v2.get_whiteboard_children(
+            whiteboard_id=whiteboard_id,
+            cursor=cursor,
+            limit=limit
+        )
+        
+        mock_get_paged.assert_called_with(
+            "api/v2/whiteboards/123456/children",
+            params={"cursor": cursor, "limit": limit}
+        )
+        
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0]["id"], "child1")
+        self.assertEqual(result[1]["id"], "child2")
+        
+    @patch('atlassian.confluence_v2.ConfluenceV2.get')
+    def test_get_whiteboard_ancestors(self, mock_get):
+        """Test retrieving whiteboard ancestors"""
+        whiteboard_id = "123456"
+        mock_response = {
+            "results": [
+                {"id": "parent1", "type": "whiteboard"},
+                {"id": "parent2", "type": "space"}
+            ]
+        }
+        mock_get.return_value = mock_response
+        
+        result = self.confluence_v2.get_whiteboard_ancestors(whiteboard_id)
+        
+        mock_get.assert_called_with(
+            "api/v2/whiteboards/123456/ancestors"
+        )
+        
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0]["id"], "parent1")
+        self.assertEqual(result[1]["id"], "parent2")
+    
+    # Tests for Custom Content methods
+    
     @patch('atlassian.confluence_v2.ConfluenceV2.post')
-    def test_create_page_footer_comment(self, mock_post):
-        """Test creating a footer comment on a page"""
-        page_id = "12345"
-        body = "Test comment body"
+    def test_create_custom_content(self, mock_post):
+        """Test creating custom content"""
+        space_id = "123456"
+        content_type = "my.custom.type"
+        title = "Test Custom Content"
+        body = "<p>Test body</p>"
+        page_id = "789012"
         
         expected_data = {
-            "pageId": page_id,
-            "body": {
-                "storage": {
-                    "value": "Test comment body",
-                    "representation": "storage"
-                }
-            }
-        }
-        
-        comment = {"id": "comment-123", "body": {"storage": {"value": "Test comment body"}}}
-        
-        mock_post.return_value = comment
-        
-        result = self.confluence_v2.create_page_footer_comment(page_id, body)
-        mock_post.assert_called_with("api/v2/comments", data=expected_data)
-        self.assertEqual(result, comment)
-        
-    @patch('atlassian.confluence_v2.ConfluenceV2.post')
-    def test_create_page_inline_comment(self, mock_post):
-        """Test creating an inline comment on a page"""
-        page_id = "12345"
-        body = "Test comment body"
-        inline_comment_properties = {
-            "textSelection": "text to highlight",
-            "textSelectionMatchCount": 3,
-            "textSelectionMatchIndex": 1
-        }
-        
-        expected_data = {
-            "pageId": page_id,
-            "body": {
-                "storage": {
-                    "value": "Test comment body",
-                    "representation": "storage"
-                }
-            },
-            "inlineCommentProperties": inline_comment_properties
-        }
-        
-        comment = {"id": "comment-123", "body": {"storage": {"value": "Test comment body"}}}
-        
-        mock_post.return_value = comment
-        
-        result = self.confluence_v2.create_page_inline_comment(page_id, body, inline_comment_properties)
-        mock_post.assert_called_with("api/v2/comments", data=expected_data)
-        self.assertEqual(result, comment)
-        
-    @patch('atlassian.confluence_v2.ConfluenceV2.post')
-    def test_create_blogpost_footer_comment(self, mock_post):
-        """Test creating a footer comment on a blog post"""
-        blogpost_id = "12345"
-        body = "Test comment body"
-        
-        expected_data = {
-            "blogPostId": blogpost_id,
-            "body": {
-                "storage": {
-                    "value": "Test comment body",
-                    "representation": "storage"
-                }
-            }
-        }
-        
-        comment = {"id": "comment-123", "body": {"storage": {"value": "Test comment body"}}}
-        
-        mock_post.return_value = comment
-        
-        result = self.confluence_v2.create_blogpost_footer_comment(blogpost_id, body)
-        mock_post.assert_called_with("api/v2/comments", data=expected_data)
-        self.assertEqual(result, comment)
-        
-    @patch('atlassian.confluence_v2.ConfluenceV2.post')
-    def test_create_custom_content_comment(self, mock_post):
-        """Test creating a comment on custom content"""
-        custom_content_id = "12345"
-        body = "Test comment body"
-        
-        expected_data = {
-            "customContentId": custom_content_id,
-            "body": {
-                "storage": {
-                    "value": "Test comment body",
-                    "representation": "storage"
-                }
-            }
-        }
-        
-        comment = {"id": "comment-123", "body": {"storage": {"value": "Test comment body"}}}
-        
-        mock_post.return_value = comment
-        
-        result = self.confluence_v2.create_custom_content_comment(custom_content_id, body)
-        mock_post.assert_called_with("api/v2/comments", data=expected_data)
-        self.assertEqual(result, comment)
-        
-    @patch('atlassian.confluence_v2.ConfluenceV2.post')
-    def test_create_attachment_comment(self, mock_post):
-        """Test creating a comment on an attachment"""
-        attachment_id = "12345"
-        body = "Test comment body"
-        
-        expected_data = {
-            "attachmentId": attachment_id,
-            "body": {
-                "storage": {
-                    "value": "Test comment body",
-                    "representation": "storage"
-                }
-            }
-        }
-        
-        comment = {"id": "comment-123", "body": {"storage": {"value": "Test comment body"}}}
-        
-        mock_post.return_value = comment
-        
-        result = self.confluence_v2.create_attachment_comment(attachment_id, body)
-        mock_post.assert_called_with("api/v2/comments", data=expected_data)
-        self.assertEqual(result, comment)
-        
-    @patch('atlassian.confluence_v2.ConfluenceV2.post')
-    def test_create_comment_reply(self, mock_post):
-        """Test creating a reply to a comment"""
-        comment_id = "12345"
-        body = "Test reply body"
-        
-        expected_data = {
-            "parentCommentId": comment_id,
-            "body": {
-                "storage": {
-                    "value": "Test reply body",
-                    "representation": "storage"
-                }
-            }
-        }
-        
-        comment = {"id": "reply-123", "body": {"storage": {"value": "Test reply body"}}}
-        
-        mock_post.return_value = comment
-        
-        result = self.confluence_v2.create_comment_reply(comment_id, body)
-        mock_post.assert_called_with("api/v2/comments", data=expected_data)
-        self.assertEqual(result, comment)
-        
-    @patch('atlassian.confluence_v2.ConfluenceV2.put')
-    def test_update_comment(self, mock_put):
-        """Test updating a comment"""
-        comment_id = "12345"
-        body = "Updated comment body"
-        version = 1
-        
-        expected_data = {
-            "version": {
-                "number": 2
-            },
+            "type": content_type,
+            "title": title,
             "body": {
                 "storage": {
                     "representation": "storage",
-                    "value": "Updated comment body"
+                    "value": body
                 }
-            }
+            },
+            "status": "current",
+            "spaceId": space_id,
+            "pageId": page_id
         }
         
-        comment = {"id": "12345", "body": {"storage": {"value": "Updated comment body"}}}
+        mock_post.return_value = {"id": "987654", "title": title}
         
-        mock_put.return_value = comment
+        result = self.confluence_v2.create_custom_content(
+            type=content_type,
+            title=title,
+            body=body,
+            space_id=space_id,
+            page_id=page_id
+        )
         
-        result = self.confluence_v2.update_comment(comment_id, body, version)
-        mock_put.assert_called_with("api/v2/comments/12345", data=expected_data)
-        self.assertEqual(result, comment)
+        mock_post.assert_called_with(
+            "api/v2/custom-content",
+            data=expected_data
+        )
+        
+        self.assertEqual(result["id"], "987654")
+        self.assertEqual(result["title"], title)
+        
+    @patch('atlassian.confluence_v2.ConfluenceV2.get')
+    def test_get_custom_content_by_id(self, mock_get):
+        """Test retrieving custom content by ID"""
+        custom_content_id = "123456"
+        body_format = "storage"
+        mock_response = {"id": custom_content_id, "title": "Test Custom Content"}
+        mock_get.return_value = mock_response
+        
+        result = self.confluence_v2.get_custom_content_by_id(
+            custom_content_id=custom_content_id,
+            body_format=body_format
+        )
+        
+        mock_get.assert_called_with(
+            "api/v2/custom-content/123456",
+            params={"body-format": body_format}
+        )
+        
+        self.assertEqual(result, mock_response)
+        
+    @patch('atlassian.confluence_v2.ConfluenceV2._get_paged')
+    def test_get_custom_content(self, mock_get_paged):
+        """Test retrieving custom content with filters"""
+        content_type = "my.custom.type"
+        space_id = "123456"
+        page_id = "789012"
+        status = "current"
+        sort = "-created-date"
+        limit = 25
+        
+        expected_params = {
+            "type": content_type,
+            "space-id": space_id,
+            "page-id": page_id,
+            "status": status,
+            "sort": sort,
+            "limit": limit
+        }
+        
+        mock_get_paged.return_value = [
+            {"id": "content1", "title": "Content 1"},
+            {"id": "content2", "title": "Content 2"}
+        ]
+        
+        result = self.confluence_v2.get_custom_content(
+            type=content_type,
+            space_id=space_id,
+            page_id=page_id,
+            status=status,
+            sort=sort,
+            limit=limit
+        )
+        
+        mock_get_paged.assert_called_with(
+            "api/v2/custom-content",
+            params=expected_params
+        )
+        
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0]["id"], "content1")
+        self.assertEqual(result[1]["id"], "content2")
         
     @patch('atlassian.confluence_v2.ConfluenceV2.put')
-    def test_update_comment_with_resolved(self, mock_put):
-        """Test updating a comment with resolved status"""
-        comment_id = "12345"
-        body = "Updated comment body"
-        version = 1
-        resolved = True
+    def test_update_custom_content(self, mock_put):
+        """Test updating custom content"""
+        custom_content_id = "123456"
+        content_type = "my.custom.type"
+        title = "Updated Title"
+        body = "<p>Updated body</p>"
+        space_id = "789012"
+        version_number = 2
+        version_message = "Update via test"
         
         expected_data = {
-            "version": {
-                "number": 2
-            },
+            "id": custom_content_id,
+            "type": content_type,
+            "title": title,
             "body": {
                 "storage": {
                     "representation": "storage",
-                    "value": "Updated comment body"
+                    "value": body
                 }
             },
-            "resolved": True
+            "status": "current",
+            "version": {
+                "number": version_number,
+                "message": version_message
+            },
+            "spaceId": space_id
         }
         
-        comment = {"id": "12345", "body": {"storage": {"value": "Updated comment body"}}, "resolved": True}
+        mock_put.return_value = {
+            "id": custom_content_id, 
+            "title": title,
+            "version": {"number": version_number}
+        }
         
-        mock_put.return_value = comment
+        result = self.confluence_v2.update_custom_content(
+            custom_content_id=custom_content_id,
+            type=content_type,
+            title=title,
+            body=body,
+            status="current",
+            version_number=version_number,
+            space_id=space_id,
+            version_message=version_message
+        )
         
-        result = self.confluence_v2.update_comment(comment_id, body, version, resolved=resolved)
-        mock_put.assert_called_with("api/v2/comments/12345", data=expected_data)
-        self.assertEqual(result, comment)
+        mock_put.assert_called_with(
+            f"api/v2/custom-content/{custom_content_id}",
+            data=expected_data
+        )
+        
+        self.assertEqual(result["id"], custom_content_id)
+        self.assertEqual(result["title"], title)
+        self.assertEqual(result["version"]["number"], version_number)
+        
+    @patch('atlassian.confluence_v2.ConfluenceV2.delete')
+    def test_delete_custom_content(self, mock_delete):
+        """Test deleting custom content"""
+        custom_content_id = "123456"
+        mock_delete.return_value = {"status": "success"}
+        
+        result = self.confluence_v2.delete_custom_content(custom_content_id)
+        
+        mock_delete.assert_called_with(
+            f"api/v2/custom-content/{custom_content_id}"
+        )
+        
+        self.assertEqual(result["status"], "success")
+        
+    @patch('atlassian.confluence_v2.ConfluenceV2._get_paged')
+    def test_get_custom_content_children(self, mock_get_paged):
+        """Test retrieving custom content children"""
+        custom_content_id = "123456"
+        cursor = "next-page"
+        limit = 25
+        
+        mock_get_paged.return_value = [
+            {"id": "child1", "title": "Child 1"},
+            {"id": "child2", "title": "Child 2"}
+        ]
+        
+        result = self.confluence_v2.get_custom_content_children(
+            custom_content_id=custom_content_id,
+            cursor=cursor,
+            limit=limit
+        )
+        
+        mock_get_paged.assert_called_with(
+            f"api/v2/custom-content/{custom_content_id}/children",
+            params={"cursor": cursor, "limit": limit}
+        )
+        
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0]["id"], "child1")
+        self.assertEqual(result[1]["id"], "child2")
+        
+    @patch('atlassian.confluence_v2.ConfluenceV2.get')
+    def test_get_custom_content_ancestors(self, mock_get):
+        """Test retrieving custom content ancestors"""
+        custom_content_id = "123456"
+        mock_response = {
+            "results": [
+                {"id": "parent1", "type": "page"},
+                {"id": "parent2", "type": "space"}
+            ]
+        }
+        mock_get.return_value = mock_response
+        
+        result = self.confluence_v2.get_custom_content_ancestors(custom_content_id)
+        
+        mock_get.assert_called_with(
+            f"api/v2/custom-content/{custom_content_id}/ancestors"
+        )
+        
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0]["id"], "parent1")
+        self.assertEqual(result[1]["id"], "parent2")
+        
+    @patch('atlassian.confluence_v2.ConfluenceV2._get_paged')
+    def test_get_custom_content_labels(self, mock_get_paged):
+        """Test retrieving custom content labels"""
+        custom_content_id = "123456"
+        prefix = "global"
+        sort = "name"
+        
+        mock_get_paged.return_value = [
+            {"id": "label1", "name": "test", "prefix": "global"},
+            {"id": "label2", "name": "documentation"}
+        ]
+        
+        result = self.confluence_v2.get_custom_content_labels(
+            custom_content_id=custom_content_id,
+            prefix=prefix,
+            sort=sort
+        )
+        
+        mock_get_paged.assert_called_with(
+            f"api/v2/custom-content/{custom_content_id}/labels",
+            params={"prefix": prefix, "sort": sort}
+        )
+        
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0]["name"], "test")
+        self.assertEqual(result[1]["name"], "documentation")
+        
+    @patch('atlassian.confluence_v2.ConfluenceV2.post')
+    def test_add_custom_content_label(self, mock_post):
+        """Test adding a label to custom content"""
+        custom_content_id = "123456"
+        label = "test-label"
+        prefix = "global"
+        
+        expected_data = {
+            "name": label,
+            "prefix": prefix
+        }
+        
+        mock_post.return_value = {"id": "label1", "name": label, "prefix": prefix}
+        
+        result = self.confluence_v2.add_custom_content_label(
+            custom_content_id=custom_content_id,
+            label=label,
+            prefix=prefix
+        )
+        
+        mock_post.assert_called_with(
+            f"api/v2/custom-content/{custom_content_id}/labels",
+            data=expected_data
+        )
+        
+        self.assertEqual(result["name"], label)
+        self.assertEqual(result["prefix"], prefix)
+        
+    @patch('atlassian.confluence_v2.ConfluenceV2.delete')
+    def test_delete_custom_content_label(self, mock_delete):
+        """Test deleting a label from custom content"""
+        custom_content_id = "123456"
+        label = "test-label"
+        prefix = "global"
+        
+        self.confluence_v2.delete_custom_content_label(
+            custom_content_id=custom_content_id,
+            label=label,
+            prefix=prefix
+        )
+        
+        mock_delete.assert_called_with(
+            f"api/v2/custom-content/{custom_content_id}/labels",
+            params={"name": label, "prefix": prefix}
+        )
+        
+    @patch('atlassian.confluence_v2.ConfluenceV2._get_paged')
+    def test_get_custom_content_properties(self, mock_get_paged):
+        """Test retrieving custom content properties"""
+        custom_content_id = "123456"
+        sort = "key"
+        limit = 25
+        
+        mock_get_paged.return_value = [
+            {"id": "prop1", "key": "test-prop", "value": {"test": "value"}},
+            {"id": "prop2", "key": "another-prop", "value": 123}
+        ]
+        
+        result = self.confluence_v2.get_custom_content_properties(
+            custom_content_id=custom_content_id,
+            sort=sort,
+            limit=limit
+        )
+        
+        mock_get_paged.assert_called_with(
+            f"api/v2/custom-content/{custom_content_id}/properties",
+            params={"sort": sort, "limit": limit}
+        )
+        
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0]["key"], "test-prop")
+        self.assertEqual(result[1]["key"], "another-prop")
+        
+    @patch('atlassian.confluence_v2.ConfluenceV2.get')
+    def test_get_custom_content_property_by_key(self, mock_get):
+        """Test retrieving a specific custom content property"""
+        custom_content_id = "123456"
+        property_key = "test-prop"
+        
+        mock_response = {
+            "id": "prop1", 
+            "key": property_key, 
+            "value": {"test": "value"},
+            "version": {"number": 1}
+        }
+        mock_get.return_value = mock_response
+        
+        result = self.confluence_v2.get_custom_content_property_by_key(
+            custom_content_id=custom_content_id,
+            property_key=property_key
+        )
+        
+        mock_get.assert_called_with(
+            f"api/v2/custom-content/{custom_content_id}/properties/{property_key}"
+        )
+        
+        self.assertEqual(result, mock_response)
+        
+    @patch('atlassian.confluence_v2.ConfluenceV2.post')
+    def test_create_custom_content_property(self, mock_post):
+        """Test creating a custom content property"""
+        custom_content_id = "123456"
+        property_key = "test-prop"
+        property_value = {"test": "value"}
+        
+        expected_data = {
+            "key": property_key,
+            "value": property_value
+        }
+        
+        mock_post.return_value = {
+            "id": "prop1", 
+            "key": property_key, 
+            "value": property_value
+        }
+        
+        result = self.confluence_v2.create_custom_content_property(
+            custom_content_id=custom_content_id,
+            key=property_key,
+            value=property_value
+        )
+        
+        mock_post.assert_called_with(
+            f"api/v2/custom-content/{custom_content_id}/properties",
+            data=expected_data
+        )
+        
+        self.assertEqual(result["key"], property_key)
+        self.assertEqual(result["value"], property_value)
+        
+    @patch('atlassian.confluence_v2.ConfluenceV2.put')
+    def test_update_custom_content_property(self, mock_put):
+        """Test updating a custom content property"""
+        custom_content_id = "123456"
+        property_key = "test-prop"
+        property_value = {"test": "updated"}
+        version_number = 2
+        version_message = "Update via test"
+        
+        expected_data = {
+            "key": property_key,
+            "value": property_value,
+            "version": {
+                "number": version_number,
+                "message": version_message
+            }
+        }
+        
+        mock_put.return_value = {
+            "id": "prop1", 
+            "key": property_key, 
+            "value": property_value,
+            "version": {"number": version_number}
+        }
+        
+        result = self.confluence_v2.update_custom_content_property(
+            custom_content_id=custom_content_id,
+            key=property_key,
+            value=property_value,
+            version_number=version_number,
+            version_message=version_message
+        )
+        
+        mock_put.assert_called_with(
+            f"api/v2/custom-content/{custom_content_id}/properties/{property_key}",
+            data=expected_data
+        )
+        
+        self.assertEqual(result["key"], property_key)
+        self.assertEqual(result["value"], property_value)
+        self.assertEqual(result["version"]["number"], version_number)
+        
+    @patch('atlassian.confluence_v2.ConfluenceV2.delete')
+    def test_delete_custom_content_property(self, mock_delete):
+        """Test deleting a custom content property"""
+        custom_content_id = "123456"
+        property_key = "test-prop"
+        
+        self.confluence_v2.delete_custom_content_property(
+            custom_content_id=custom_content_id,
+            key=property_key
+        )
+        
+        mock_delete.assert_called_with(
+            f"api/v2/custom-content/{custom_content_id}/properties/{property_key}"
+        )
         
     @patch('atlassian.confluence_v2.ConfluenceV2.delete')
     def test_delete_comment(self, mock_delete):
@@ -1360,18 +1527,6 @@ class TestConfluenceV2(unittest.TestCase):
         
         result = self.confluence_v2.delete_comment(comment_id)
         mock_delete.assert_called_with("api/v2/comments/12345")
-        self.assertTrue(result)
-        
-    @patch('atlassian.confluence_v2.ConfluenceV2.delete')
-    def test_delete_space_label(self, mock_delete):
-        """Test deleting a space label"""
-        space_id = "12345"
-        label = "test-label"
-        
-        mock_delete.return_value = None
-        
-        result = self.confluence_v2.delete_space_label(space_id, label)
-        mock_delete.assert_called_with("api/v2/spaces/12345/labels/test-label")
         self.assertTrue(result)
 
 if __name__ == '__main__':

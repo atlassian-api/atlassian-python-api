@@ -12,9 +12,9 @@
 ## Implementation Progress Tracking
 - [x] Phase 1: Core Structure (80% complete)
 - [x] Phase 2: Core Methods (80% complete)
-- [ ] Phase 3: New V2 Features (60% complete)
-- [x] Phase 4: Testing (80% complete)
-- [ ] Phase 5: Documentation (45% complete)
+- [ ] Phase 3: New V2 Features (80% complete)
+- [x] Phase 4: Testing (90% complete)
+- [ ] Phase 5: Documentation (60% complete)
 
 ## Phase 1: Core Structure
 
@@ -84,9 +84,9 @@
 - [x] Add version-check for v2-only methods
 
 ### Content Types
-- [ ] Add support for new content types (whiteboard, custom content)
-- [ ] Implement methods specific to new content types
-- [ ] Ensure proper error handling for v1 when using v2-only features
+- [x] Add support for new content types (whiteboard, custom content)
+- [x] Implement methods specific to new content types
+- [x] Ensure proper error handling for v1 when using v2-only features
 
 ### Labels
 - [x] Implement v2 label methods
@@ -116,7 +116,7 @@
 - [ ] Test pagination for both versions
 
 ### Version-Specific Tests
-- [ ] Test v2-only features
+- [x] Test v2-only features
 - [ ] Test error handling for version-specific methods
 - [ ] Test compatibility layer
 
@@ -140,6 +140,8 @@
 - [x] Add examples for page properties methods
 - [x] Add examples for label methods
 - [x] Add examples for comment methods
+- [x] Add examples for whiteboard methods
+- [x] Add examples for custom content methods
 - [ ] Update README with v2 API support information
 - [ ] Document version-specific features
 
