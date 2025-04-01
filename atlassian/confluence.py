@@ -22,12 +22,12 @@ from .errors import (
     ApiPermissionError,
     ApiValueError,
 )
-from .rest_client import AtlassianRestAPI
+from .confluence_base import ConfluenceBase
 
 log = logging.getLogger(__name__)
 
 
-class Confluence(AtlassianRestAPI):
+class Confluence(ConfluenceBase):
     content_types = {
         ".gif": "image/gif",
         ".png": "image/png",
@@ -40,10 +40,8 @@ class Confluence(AtlassianRestAPI):
     }
 
     def __init__(self, url, *args, **kwargs):
-        if ("atlassian.net" in url or "jira.com" in url) and ("/wiki" not in url):
-            url = AtlassianRestAPI.url_joiner(url, "/wiki")
-            if "cloud" not in kwargs:
-                kwargs["cloud"] = True
+        # Set default API version to 1 for backward compatibility
+        kwargs.setdefault('api_version', 1)
         super(Confluence, self).__init__(url, *args, **kwargs)
 
     @staticmethod
