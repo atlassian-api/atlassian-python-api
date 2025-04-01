@@ -10,6 +10,7 @@ coverage
 codecov
 # used for example confluence attach file
 python-magic
+python-dotenv
 pylint
 mypy>=0.812
 doc8
