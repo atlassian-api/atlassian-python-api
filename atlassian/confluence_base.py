@@ -10,8 +10,10 @@ log = logging.getLogger(__name__)
 
 
 class ConfluenceEndpoints:
-    """Class for storing Confluence endpoints for different API versions"""
-
+    """
+    Class to define endpoint mappings for different Confluence API versions.
+    These endpoints can be accessed through the ConfluenceBase get_endpoint method.
+    """
     V1 = {
         "page": "rest/api/content",
         "page_by_id": "rest/api/content/{id}",
@@ -22,12 +24,14 @@ class ConfluenceEndpoints:
     }
 
     V2 = {
-        "page": "api/v2/pages",
-        "page_by_id": "api/v2/pages/{id}",
-        "child_pages": "api/v2/pages/{id}/children",
-        "content_search": "api/v2/search",
-        "space": "api/v2/spaces",
-        "space_by_key": "api/v2/spaces/{key}",
+        'page_by_id': 'api/v2/pages/{id}',
+        'page': 'api/v2/pages',
+        'child_pages': 'api/v2/pages/{id}/children/page',
+        'search': 'api/v2/search',
+        'spaces': 'api/v2/spaces',
+        'space_by_id': 'api/v2/spaces/{id}',
+        
+        # More v2 endpoints will be added in Phase 2 and 3
     }
 
 
