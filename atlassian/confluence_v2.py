@@ -32,6 +32,15 @@ class ConfluenceV2(ConfluenceBase):
         """
         # Set API version to 2
         kwargs.setdefault('api_version', 2)
+        
+        # Check if the URL already contains '/wiki'
+        # This prevents a double '/wiki/wiki' issue when the parent class adds it again
+        if ("atlassian.net" in url or "jira.com" in url) and ("/wiki" in url):
+            # Remove the '/wiki' suffix since the parent class will add it
+            url = url.rstrip("/")
+            if url.endswith("/wiki"):
+                url = url[:-5]
+                
         super(ConfluenceV2, self).__init__(url, *args, **kwargs)
         self._compatibility_method_mapping = {
             # V1 method => V2 method mapping
@@ -1980,10 +1989,44 @@ class ConfluenceV2(ConfluenceBase):
         except Exception as e:
             log.error(f"Failed to get ancestors for whiteboard {whiteboard_id}: {e}")
             raise
-
+    
+    def get_space_whiteboards(self, 
+                             space_id: str,
+                             cursor: Optional[str] = None,
+                             limit: int = 25) -> List[Dict[str, Any]]:
+        """
+        Get all whiteboards in a space.
+        
+        Args:
+            space_id: ID or key of the space
+            cursor: (optional) Cursor for pagination
+            limit: (optional) Maximum number of results to return (default: 25)
+                
+        Returns:
+            List of whiteboards in the space
+            
+        Raises:
+            HTTPError: If the API call fails
+        """
+        endpoint = self.get_endpoint('whiteboard')
+        
+        params = {
+            "spaceId": space_id, 
+            "limit": limit
+        }
+        
+        if cursor:
+            params["cursor"] = cursor
+            
+        try:
+            return list(self._get_paged(endpoint, params=params))
+        except Exception as e:
+            log.error(f"Failed to get whiteboards for space {space_id}: {e}")
+            raise
+    
     """
     ##############################################################################################
-    #   Custom Content API v2   #
+    #   Confluence Custom Content API (Cloud only)  #
     ##############################################################################################
     """
     

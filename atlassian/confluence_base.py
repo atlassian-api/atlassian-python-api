@@ -209,8 +209,19 @@ class ConfluenceBase(AtlassianRestAPI):
                     break
                 
                 # Use the next URL directly
-                url = next_url
-                absolute = False
+                # Check if the response has a base URL provided (common in Confluence v2 API)
+                base_url = response.get("_links", {}).get("base")
+                if base_url and next_url.startswith('/'):
+                    # Construct the full URL using the base URL from the response
+                    url = f"{base_url}{next_url}"
+                    absolute = True
+                else:
+                    url = next_url
+                    # Check if the URL is absolute (has http:// or https://) or contains the server's domain
+                    if next_url.startswith(('http://', 'https://')) or self.url.split('/')[2] in next_url:
+                        absolute = True
+                    else:
+                        absolute = False
                 params = {}
                 trailing = False
 
