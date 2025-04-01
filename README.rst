@@ -95,6 +95,43 @@ The traditional jql method is deprecated for Jira Cloud users, as Atlassian has 
     data = jira.enhanced_jql(JQL)
     print(data)
 
+Using Confluence v2 API
+_______________________
+
+The library now supports Confluence's v2 API for Cloud instances. The v2 API provides improved performance, new content types, and more consistent endpoint patterns.
+
+.. code-block:: python
+
+    from atlassian import Confluence
+
+    # Initialize with v2 API
+    confluence = Confluence(
+        url='https://your-instance.atlassian.net/wiki',
+        username='your-email@example.com',
+        password='your-api-token',
+        api_version=2,  # Specify API version 2
+        cloud=True      # v2 API is only available for cloud instances
+    )
+
+    # Get pages from a space
+    pages = confluence.get_pages(space_key='DEMO', limit=10)
+    
+    # Create a new page
+    new_page = confluence.create_page(
+        space_id='DEMO',
+        title='New Page with v2 API',
+        body='<p>This page was created using the v2 API</p>'
+    )
+    
+    # Use v2-only features like whiteboards
+    whiteboard = confluence.create_whiteboard(
+        space_id='DEMO',
+        title='My Whiteboard',
+        content='{"version":1,"type":"doc","content":[]}'
+    )
+
+The library includes a compatibility layer to ease migration from v1 to v2 API. See the migration guide in the documentation for details.
+
 Also, you can use the Bitbucket module e.g. for getting project list
 
 .. code-block:: python
