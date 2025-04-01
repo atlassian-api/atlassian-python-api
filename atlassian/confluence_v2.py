@@ -661,5 +661,1095 @@ class ConfluenceV2(ConfluenceBase):
         
         # Return just the results array
         return result.get("results", [])
+    
+    #--------------------------------------------------
+    # Page Property Methods (Phase 3)
+    #--------------------------------------------------
+    
+    def get_page_properties(self, page_id: str,
+                           cursor: Optional[str] = None,
+                           limit: int = 25) -> List[Dict[str, Any]]:
+        """
+        Returns all properties for a page.
+        
+        Args:
+            page_id: The ID of the page
+            cursor: (optional) Cursor for pagination
+            limit: (optional) Maximum number of properties to return per request. Default: 25
+                       
+        Returns:
+            List of page property objects
+            
+        Raises:
+            HTTPError: If the API call fails
+        """
+        endpoint = self.get_endpoint('page_properties', id=page_id)
+        params = {"limit": limit}
+        
+        if cursor:
+            params["cursor"] = cursor
+            
+        try:
+            return list(self._get_paged(endpoint, params=params))
+        except Exception as e:
+            log.error(f"Failed to retrieve properties for page {page_id}: {e}")
+            raise
+    
+    def get_page_property_by_key(self, page_id: str, property_key: str) -> Dict[str, Any]:
+        """
+        Returns a page property by key.
+        
+        Args:
+            page_id: The ID of the page
+            property_key: The key of the property to retrieve
+                       
+        Returns:
+            The page property object
+            
+        Raises:
+            HTTPError: If the API call fails or the property doesn't exist
+        """
+        endpoint = self.get_endpoint('page_property_by_key', id=page_id, key=property_key)
+        
+        try:
+            return self.get(endpoint)
+        except Exception as e:
+            log.error(f"Failed to retrieve property {property_key} for page {page_id}: {e}")
+            raise
+    
+    def create_page_property(self, page_id: str, 
+                            property_key: str,
+                            property_value: Any) -> Dict[str, Any]:
+        """
+        Creates a new property for a page.
+        
+        Args:
+            page_id: The ID of the page
+            property_key: The key of the property to create. Must only contain alphanumeric
+                         characters and periods
+            property_value: The value of the property. Can be any JSON-serializable value
+                       
+        Returns:
+            The created page property object
+            
+        Raises:
+            HTTPError: If the API call fails
+            ValueError: If the property_key has invalid characters
+        """
+        # Validate key format
+        import re
+        if not re.match(r'^[a-zA-Z0-9.]+$', property_key):
+            raise ValueError("Property key must only contain alphanumeric characters and periods.")
+        
+        endpoint = self.get_endpoint('page_properties', id=page_id)
+        
+        data = {
+            "key": property_key,
+            "value": property_value
+        }
+        
+        try:
+            return self.post(endpoint, data=data)
+        except Exception as e:
+            log.error(f"Failed to create property {property_key} for page {page_id}: {e}")
+            raise
+    
+    def update_page_property(self, page_id: str, 
+                            property_key: str,
+                            property_value: Any,
+                            version: Optional[int] = None) -> Dict[str, Any]:
+        """
+        Updates an existing property for a page.
+        
+        Args:
+            page_id: The ID of the page
+            property_key: The key of the property to update
+            property_value: The new value of the property. Can be any JSON-serializable value
+            version: (optional) The version number of the property for concurrency control.
+                    If not provided, the current version will be retrieved and incremented
+                       
+        Returns:
+            The updated page property object
+            
+        Raises:
+            HTTPError: If the API call fails
+            ValueError: If the property doesn't exist
+        """
+        endpoint = self.get_endpoint('page_property_by_key', id=page_id, key=property_key)
+        
+        # Get current version if not provided
+        if version is None:
+            try:
+                current_property = self.get_page_property_by_key(page_id, property_key)
+                version = current_property.get('version', {}).get('number', 1)
+            except Exception as e:
+                raise ValueError(f"Property {property_key} doesn't exist for page {page_id}") from e
+        
+        data = {
+            "key": property_key,
+            "value": property_value,
+            "version": {
+                "number": version + 1,
+                "message": "Updated via Python API"
+            }
+        }
+        
+        try:
+            return self.put(endpoint, data=data)
+        except Exception as e:
+            log.error(f"Failed to update property {property_key} for page {page_id}: {e}")
+            raise
+    
+    def delete_page_property(self, page_id: str, property_key: str) -> bool:
+        """
+        Deletes a property from a page.
+        
+        Args:
+            page_id: The ID of the page
+            property_key: The key of the property to delete
+                       
+        Returns:
+            True if the property was successfully deleted, False otherwise
+            
+        Raises:
+            HTTPError: If the API call fails
+        """
+        endpoint = self.get_endpoint('page_property_by_key', id=page_id, key=property_key)
+        
+        try:
+            self.delete(endpoint)
+            return True
+        except Exception as e:
+            log.error(f"Failed to delete property {property_key} for page {page_id}: {e}")
+            raise
+
+    #--------------------------------------------------
+    # Label Methods (Phase 3)
+    #--------------------------------------------------
+    
+    def get_page_labels(self, page_id: str, 
+                       prefix: Optional[str] = None,
+                       cursor: Optional[str] = None,
+                       limit: int = 25) -> List[Dict[str, Any]]:
+        """
+        Returns all labels for a page.
+        
+        Args:
+            page_id: The ID of the page
+            prefix: (optional) Filter the results to labels with a specific prefix
+            cursor: (optional) Cursor for pagination
+            limit: (optional) Maximum number of labels to return per request. Default: 25
+                       
+        Returns:
+            List of label objects
+            
+        Raises:
+            HTTPError: If the API call fails
+        """
+        endpoint = self.get_endpoint('page_labels', id=page_id)
+        params = {"limit": limit}
+        
+        if prefix:
+            params["prefix"] = prefix
+            
+        if cursor:
+            params["cursor"] = cursor
+            
+        try:
+            return list(self._get_paged(endpoint, params=params))
+        except Exception as e:
+            log.error(f"Failed to retrieve labels for page {page_id}: {e}")
+            raise
+    
+    def add_page_label(self, page_id: str, label: str) -> Dict[str, Any]:
+        """
+        Adds a label to a page.
+        
+        Args:
+            page_id: The ID of the page
+            label: The label to add
+                       
+        Returns:
+            The created label object
+            
+        Raises:
+            HTTPError: If the API call fails
+            ValueError: If the label is invalid
+        """
+        if not label:
+            raise ValueError("Label cannot be empty")
+            
+        endpoint = self.get_endpoint('page_labels', id=page_id)
+        
+        data = {
+            "name": label
+        }
+        
+        try:
+            return self.post(endpoint, data=data)
+        except Exception as e:
+            log.error(f"Failed to add label '{label}' to page {page_id}: {e}")
+            raise
+    
+    def add_page_labels(self, page_id: str, labels: List[str]) -> List[Dict[str, Any]]:
+        """
+        Adds multiple labels to a page.
+        
+        Args:
+            page_id: The ID of the page
+            labels: List of labels to add
+                       
+        Returns:
+            List of created label objects
+            
+        Raises:
+            HTTPError: If the API call fails
+            ValueError: If any of the labels are invalid
+        """
+        if not labels:
+            raise ValueError("Labels list cannot be empty")
+            
+        endpoint = self.get_endpoint('page_labels', id=page_id)
+        
+        data = [{"name": label} for label in labels]
+        
+        try:
+            return self.post(endpoint, data=data)
+        except Exception as e:
+            log.error(f"Failed to add labels {labels} to page {page_id}: {e}")
+            raise
+    
+    def delete_page_label(self, page_id: str, label: str) -> bool:
+        """
+        Deletes a label from a page.
+        
+        Args:
+            page_id: The ID of the page
+            label: The label to delete
+                       
+        Returns:
+            True if the label was successfully deleted, False otherwise
+            
+        Raises:
+            HTTPError: If the API call fails
+        """
+        if not label:
+            raise ValueError("Label cannot be empty")
+            
+        endpoint = self.get_endpoint('page_labels', id=page_id)
+        params = {"name": label}
+        
+        try:
+            self.delete(endpoint, params=params)
+            return True
+        except Exception as e:
+            log.error(f"Failed to delete label '{label}' from page {page_id}: {e}")
+            raise
+    
+    def get_space_labels(self, space_id: str,
+                        prefix: Optional[str] = None,
+                        cursor: Optional[str] = None,
+                        limit: int = 25) -> List[Dict[str, Any]]:
+        """
+        Returns all labels for a space.
+        
+        Args:
+            space_id: The ID of the space
+            prefix: (optional) Filter the results to labels with a specific prefix
+            cursor: (optional) Cursor for pagination
+            limit: (optional) Maximum number of labels to return per request. Default: 25
+                       
+        Returns:
+            List of label objects
+            
+        Raises:
+            HTTPError: If the API call fails
+        """
+        endpoint = self.get_endpoint('space_labels', id=space_id)
+        params = {"limit": limit}
+        
+        if prefix:
+            params["prefix"] = prefix
+            
+        if cursor:
+            params["cursor"] = cursor
+            
+        try:
+            return list(self._get_paged(endpoint, params=params))
+        except Exception as e:
+            log.error(f"Failed to retrieve labels for space {space_id}: {e}")
+            raise
+    
+    def add_space_label(self, space_id: str, label: str) -> Dict[str, Any]:
+        """
+        Adds a label to a space.
+        
+        Args:
+            space_id: The ID of the space
+            label: The label to add
+                       
+        Returns:
+            The created label object
+            
+        Raises:
+            HTTPError: If the API call fails
+            ValueError: If the label is invalid
+        """
+        if not label:
+            raise ValueError("Label cannot be empty")
+            
+        endpoint = self.get_endpoint('space_labels', id=space_id)
+        
+        data = {
+            "name": label
+        }
+        
+        try:
+            return self.post(endpoint, data=data)
+        except Exception as e:
+            log.error(f"Failed to add label '{label}' to space {space_id}: {e}")
+            raise
+    
+    def add_space_labels(self, space_id: str, labels: List[str]) -> List[Dict[str, Any]]:
+        """
+        Adds multiple labels to a space.
+        
+        Args:
+            space_id: The ID of the space
+            labels: List of labels to add
+                       
+        Returns:
+            List of created label objects
+            
+        Raises:
+            HTTPError: If the API call fails
+            ValueError: If any of the labels are invalid
+        """
+        if not labels:
+            raise ValueError("Labels list cannot be empty")
+            
+        endpoint = self.get_endpoint('space_labels', id=space_id)
+        
+        data = [{"name": label} for label in labels]
+        
+        try:
+            return self.post(endpoint, data=data)
+        except Exception as e:
+            log.error(f"Failed to add labels {labels} to space {space_id}: {e}")
+            raise
+    
+    def delete_space_label(self, space_id: str, label: str) -> bool:
+        """
+        Delete a label from a space.
+        
+        Args:
+            space_id: The ID of the space
+            label: The name of the label to delete
+                    
+        Returns:
+            True if successful
+            
+        Raises:
+            HTTPError: If the API call fails
+        """
+        endpoint = self.get_endpoint('space_labels', id=space_id)
+        
+        try:
+            self.delete(f"{endpoint}/{label}")
+            return True
+        except Exception as e:
+            log.error(f"Failed to delete label '{label}' from space {space_id}: {e}")
+            raise
+            
+    # Comment methods
+    
+    def get_page_footer_comments(self, 
+                           page_id: str,
+                           body_format: Optional[str] = None,
+                           cursor: Optional[str] = None,
+                           limit: int = 25,
+                           sort: Optional[str] = None) -> List[Dict[str, Any]]:
+        """
+        Get footer comments for a page.
+        
+        Args:
+            page_id: ID of the page
+            body_format: (optional) Format of the body to be returned. 
+                        Valid values: 'storage', 'atlas_doc_format', 'view'
+            cursor: (optional) Cursor to use for pagination
+            limit: (optional) Maximum number of comments to return per request. Default: 25
+            sort: (optional) Sort order for comments
+                Valid values: 'created-date', '-created-date', 'modified-date', '-modified-date'
+                
+        Returns:
+            List of footer comments
+            
+        Raises:
+            HTTPError: If the API call fails
+        """
+        endpoint = self.get_endpoint('page_footer_comments', id=page_id)
+        params = {"limit": limit}
+        
+        if body_format:
+            if body_format not in ('storage', 'atlas_doc_format', 'view'):
+                raise ValueError("body_format must be one of 'storage', 'atlas_doc_format', or 'view'")
+            params['body-format'] = body_format
+            
+        if cursor:
+            params['cursor'] = cursor
+            
+        if sort:
+            valid_sort_fields = ['created-date', '-created-date', 'modified-date', '-modified-date']
+            if sort not in valid_sort_fields:
+                raise ValueError(f"Sort must be one of: {', '.join(valid_sort_fields)}")
+            params['sort'] = sort
+            
+        try:
+            return list(self._get_paged(endpoint, params=params))
+        except Exception as e:
+            log.error(f"Failed to get footer comments for page {page_id}: {e}")
+            raise
+            
+    def get_page_inline_comments(self, 
+                          page_id: str,
+                          body_format: Optional[str] = None,
+                          cursor: Optional[str] = None,
+                          limit: int = 25,
+                          sort: Optional[str] = None) -> List[Dict[str, Any]]:
+        """
+        Get inline comments for a page.
+        
+        Args:
+            page_id: ID of the page
+            body_format: (optional) Format of the body to be returned. 
+                        Valid values: 'storage', 'atlas_doc_format', 'view'
+            cursor: (optional) Cursor to use for pagination
+            limit: (optional) Maximum number of comments to return per request. Default: 25
+            sort: (optional) Sort order for comments
+                Valid values: 'created-date', '-created-date', 'modified-date', '-modified-date'
+                
+        Returns:
+            List of inline comments
+            
+        Raises:
+            HTTPError: If the API call fails
+        """
+        endpoint = self.get_endpoint('page_inline_comments', id=page_id)
+        params = {"limit": limit}
+        
+        if body_format:
+            if body_format not in ('storage', 'atlas_doc_format', 'view'):
+                raise ValueError("body_format must be one of 'storage', 'atlas_doc_format', or 'view'")
+            params['body-format'] = body_format
+            
+        if cursor:
+            params['cursor'] = cursor
+            
+        if sort:
+            valid_sort_fields = ['created-date', '-created-date', 'modified-date', '-modified-date']
+            if sort not in valid_sort_fields:
+                raise ValueError(f"Sort must be one of: {', '.join(valid_sort_fields)}")
+            params['sort'] = sort
+            
+        try:
+            return list(self._get_paged(endpoint, params=params))
+        except Exception as e:
+            log.error(f"Failed to get inline comments for page {page_id}: {e}")
+            raise
+            
+    def get_blogpost_footer_comments(self, 
+                              blogpost_id: str,
+                              body_format: Optional[str] = None,
+                              cursor: Optional[str] = None,
+                              limit: int = 25,
+                              sort: Optional[str] = None) -> List[Dict[str, Any]]:
+        """
+        Get footer comments for a blog post.
+        
+        Args:
+            blogpost_id: ID of the blog post
+            body_format: (optional) Format of the body to be returned. 
+                        Valid values: 'storage', 'atlas_doc_format', 'view'
+            cursor: (optional) Cursor to use for pagination
+            limit: (optional) Maximum number of comments to return per request. Default: 25
+            sort: (optional) Sort order for comments
+                Valid values: 'created-date', '-created-date', 'modified-date', '-modified-date'
+                
+        Returns:
+            List of footer comments
+            
+        Raises:
+            HTTPError: If the API call fails
+        """
+        endpoint = self.get_endpoint('blogpost_footer_comments', id=blogpost_id)
+        params = {"limit": limit}
+        
+        if body_format:
+            if body_format not in ('storage', 'atlas_doc_format', 'view'):
+                raise ValueError("body_format must be one of 'storage', 'atlas_doc_format', or 'view'")
+            params['body-format'] = body_format
+            
+        if cursor:
+            params['cursor'] = cursor
+            
+        if sort:
+            valid_sort_fields = ['created-date', '-created-date', 'modified-date', '-modified-date']
+            if sort not in valid_sort_fields:
+                raise ValueError(f"Sort must be one of: {', '.join(valid_sort_fields)}")
+            params['sort'] = sort
+            
+        try:
+            return list(self._get_paged(endpoint, params=params))
+        except Exception as e:
+            log.error(f"Failed to get footer comments for blog post {blogpost_id}: {e}")
+            raise
+            
+    def get_blogpost_inline_comments(self, 
+                             blogpost_id: str,
+                             body_format: Optional[str] = None,
+                             cursor: Optional[str] = None,
+                             limit: int = 25,
+                             sort: Optional[str] = None) -> List[Dict[str, Any]]:
+        """
+        Get inline comments for a blog post.
+        
+        Args:
+            blogpost_id: ID of the blog post
+            body_format: (optional) Format of the body to be returned. 
+                        Valid values: 'storage', 'atlas_doc_format', 'view'
+            cursor: (optional) Cursor to use for pagination
+            limit: (optional) Maximum number of comments to return per request. Default: 25
+            sort: (optional) Sort order for comments
+                Valid values: 'created-date', '-created-date', 'modified-date', '-modified-date'
+                
+        Returns:
+            List of inline comments
+            
+        Raises:
+            HTTPError: If the API call fails
+        """
+        endpoint = self.get_endpoint('blogpost_inline_comments', id=blogpost_id)
+        params = {"limit": limit}
+        
+        if body_format:
+            if body_format not in ('storage', 'atlas_doc_format', 'view'):
+                raise ValueError("body_format must be one of 'storage', 'atlas_doc_format', or 'view'")
+            params['body-format'] = body_format
+            
+        if cursor:
+            params['cursor'] = cursor
+            
+        if sort:
+            valid_sort_fields = ['created-date', '-created-date', 'modified-date', '-modified-date']
+            if sort not in valid_sort_fields:
+                raise ValueError(f"Sort must be one of: {', '.join(valid_sort_fields)}")
+            params['sort'] = sort
+            
+        try:
+            return list(self._get_paged(endpoint, params=params))
+        except Exception as e:
+            log.error(f"Failed to get inline comments for blog post {blogpost_id}: {e}")
+            raise
+            
+    def get_attachment_comments(self, 
+                          attachment_id: str,
+                          body_format: Optional[str] = None,
+                          cursor: Optional[str] = None,
+                          limit: int = 25,
+                          sort: Optional[str] = None) -> List[Dict[str, Any]]:
+        """
+        Get comments for an attachment.
+        
+        Args:
+            attachment_id: ID of the attachment
+            body_format: (optional) Format of the body to be returned. 
+                        Valid values: 'storage', 'atlas_doc_format', 'view'
+            cursor: (optional) Cursor to use for pagination
+            limit: (optional) Maximum number of comments to return per request. Default: 25
+            sort: (optional) Sort order for comments
+                Valid values: 'created-date', '-created-date', 'modified-date', '-modified-date'
+                
+        Returns:
+            List of comments
+            
+        Raises:
+            HTTPError: If the API call fails
+        """
+        endpoint = self.get_endpoint('attachment_comments', id=attachment_id)
+        params = {"limit": limit}
+        
+        if body_format:
+            if body_format not in ('storage', 'atlas_doc_format', 'view'):
+                raise ValueError("body_format must be one of 'storage', 'atlas_doc_format', or 'view'")
+            params['body-format'] = body_format
+            
+        if cursor:
+            params['cursor'] = cursor
+            
+        if sort:
+            valid_sort_fields = ['created-date', '-created-date', 'modified-date', '-modified-date']
+            if sort not in valid_sort_fields:
+                raise ValueError(f"Sort must be one of: {', '.join(valid_sort_fields)}")
+            params['sort'] = sort
+            
+        try:
+            return list(self._get_paged(endpoint, params=params))
+        except Exception as e:
+            log.error(f"Failed to get comments for attachment {attachment_id}: {e}")
+            raise
+            
+    def get_custom_content_comments(self, 
+                             custom_content_id: str,
+                             body_format: Optional[str] = None,
+                             cursor: Optional[str] = None,
+                             limit: int = 25,
+                             sort: Optional[str] = None) -> List[Dict[str, Any]]:
+        """
+        Get comments for custom content.
+        
+        Args:
+            custom_content_id: ID of the custom content
+            body_format: (optional) Format of the body to be returned. 
+                        Valid values: 'storage', 'atlas_doc_format', 'view'
+            cursor: (optional) Cursor to use for pagination
+            limit: (optional) Maximum number of comments to return per request. Default: 25
+            sort: (optional) Sort order for comments
+                Valid values: 'created-date', '-created-date', 'modified-date', '-modified-date'
+                
+        Returns:
+            List of comments
+            
+        Raises:
+            HTTPError: If the API call fails
+        """
+        endpoint = self.get_endpoint('custom_content_comments', id=custom_content_id)
+        params = {"limit": limit}
+        
+        if body_format:
+            if body_format not in ('storage', 'atlas_doc_format', 'view'):
+                raise ValueError("body_format must be one of 'storage', 'atlas_doc_format', or 'view'")
+            params['body-format'] = body_format
+            
+        if cursor:
+            params['cursor'] = cursor
+            
+        if sort:
+            valid_sort_fields = ['created-date', '-created-date', 'modified-date', '-modified-date']
+            if sort not in valid_sort_fields:
+                raise ValueError(f"Sort must be one of: {', '.join(valid_sort_fields)}")
+            params['sort'] = sort
+            
+        try:
+            return list(self._get_paged(endpoint, params=params))
+        except Exception as e:
+            log.error(f"Failed to get comments for custom content {custom_content_id}: {e}")
+            raise
+            
+    def get_comment_children(self, 
+                       comment_id: str,
+                       body_format: Optional[str] = None,
+                       cursor: Optional[str] = None,
+                       limit: int = 25,
+                       sort: Optional[str] = None) -> List[Dict[str, Any]]:
+        """
+        Get child comments for a comment.
+        
+        Args:
+            comment_id: ID of the parent comment
+            body_format: (optional) Format of the body to be returned. 
+                        Valid values: 'storage', 'atlas_doc_format', 'view'
+            cursor: (optional) Cursor to use for pagination
+            limit: (optional) Maximum number of comments to return per request. Default: 25
+            sort: (optional) Sort order for comments
+                Valid values: 'created-date', '-created-date', 'modified-date', '-modified-date'
+                
+        Returns:
+            List of child comments
+            
+        Raises:
+            HTTPError: If the API call fails
+        """
+        endpoint = self.get_endpoint('comment_children', id=comment_id)
+        params = {"limit": limit}
+        
+        if body_format:
+            if body_format not in ('storage', 'atlas_doc_format', 'view'):
+                raise ValueError("body_format must be one of 'storage', 'atlas_doc_format', or 'view'")
+            params['body-format'] = body_format
+            
+        if cursor:
+            params['cursor'] = cursor
+            
+        if sort:
+            valid_sort_fields = ['created-date', '-created-date', 'modified-date', '-modified-date']
+            if sort not in valid_sort_fields:
+                raise ValueError(f"Sort must be one of: {', '.join(valid_sort_fields)}")
+            params['sort'] = sort
+            
+        try:
+            return list(self._get_paged(endpoint, params=params))
+        except Exception as e:
+            log.error(f"Failed to get child comments for comment {comment_id}: {e}")
+            raise
+            
+    def get_comment_by_id(self, 
+                    comment_id: str,
+                    body_format: Optional[str] = None,
+                    version: Optional[int] = None) -> Dict[str, Any]:
+        """
+        Get a comment by ID.
+        
+        Args:
+            comment_id: ID of the comment
+            body_format: (optional) Format of the body to be returned. 
+                        Valid values: 'storage', 'atlas_doc_format', 'view'
+            version: (optional) Version number to retrieve
+                
+        Returns:
+            Comment details
+            
+        Raises:
+            HTTPError: If the API call fails
+        """
+        endpoint = self.get_endpoint('comment_by_id', id=comment_id)
+        params = {}
+        
+        if body_format:
+            if body_format not in ('storage', 'atlas_doc_format', 'view'):
+                raise ValueError("body_format must be one of 'storage', 'atlas_doc_format', or 'view'")
+            params['body-format'] = body_format
+            
+        if version:
+            params['version'] = version
+            
+        try:
+            return self.get(endpoint, params=params)
+        except Exception as e:
+            log.error(f"Failed to get comment {comment_id}: {e}")
+            raise
+            
+    def create_page_footer_comment(self,
+                            page_id: str,
+                            body: str,
+                            body_format: str = "storage") -> Dict[str, Any]:
+        """
+        Create a footer comment on a page.
+        
+        Args:
+            page_id: ID of the page
+            body: Body of the comment
+            body_format: (optional) Format of the comment body. 
+                        Valid values: 'storage', 'atlas_doc_format', 'wiki'
+                
+        Returns:
+            The created comment
+            
+        Raises:
+            HTTPError: If the API call fails
+        """
+        endpoint = self.get_endpoint('comment')
+        
+        if body_format not in ('storage', 'atlas_doc_format', 'wiki'):
+            raise ValueError("body_format must be one of 'storage', 'atlas_doc_format', 'wiki'")
+            
+        data = {
+            "pageId": page_id,
+            "body": {
+                body_format: {
+                    "representation": body_format,
+                    "value": body
+                }
+            }
+        }
+            
+        try:
+            return self.post(endpoint, data=data)
+        except Exception as e:
+            log.error(f"Failed to create footer comment on page {page_id}: {e}")
+            raise
+            
+    def create_page_inline_comment(self,
+                            page_id: str,
+                            body: str,
+                            inline_comment_properties: Dict[str, Any],
+                            body_format: str = "storage") -> Dict[str, Any]:
+        """
+        Create an inline comment on a page.
+        
+        Args:
+            page_id: ID of the page
+            body: Body of the comment
+            inline_comment_properties: Properties for inline comment, e.g.:
+                {
+                   "textSelection": "text to highlight",
+                   "textSelectionMatchCount": 3,
+                   "textSelectionMatchIndex": 1
+                }
+            body_format: (optional) Format of the comment body. 
+                        Valid values: 'storage', 'atlas_doc_format', 'wiki'
+                
+        Returns:
+            The created comment
+            
+        Raises:
+            HTTPError: If the API call fails
+        """
+        endpoint = self.get_endpoint('comment')
+        
+        if body_format not in ('storage', 'atlas_doc_format', 'wiki'):
+            raise ValueError("body_format must be one of 'storage', 'atlas_doc_format', 'wiki'")
+            
+        required_props = ['textSelection', 'textSelectionMatchCount', 'textSelectionMatchIndex']
+        for prop in required_props:
+            if prop not in inline_comment_properties:
+                raise ValueError(f"inline_comment_properties must contain '{prop}'")
+            
+        data = {
+            "pageId": page_id,
+            "body": {
+                body_format: {
+                    "representation": body_format,
+                    "value": body
+                }
+            },
+            "inlineCommentProperties": inline_comment_properties
+        }
+            
+        try:
+            return self.post(endpoint, data=data)
+        except Exception as e:
+            log.error(f"Failed to create inline comment on page {page_id}: {e}")
+            raise
+            
+    def create_blogpost_footer_comment(self,
+                               blogpost_id: str,
+                               body: str,
+                               body_format: str = "storage") -> Dict[str, Any]:
+        """
+        Create a footer comment on a blog post.
+        
+        Args:
+            blogpost_id: ID of the blog post
+            body: Body of the comment
+            body_format: (optional) Format of the comment body. 
+                        Valid values: 'storage', 'atlas_doc_format', 'wiki'
+                
+        Returns:
+            The created comment
+            
+        Raises:
+            HTTPError: If the API call fails
+        """
+        endpoint = self.get_endpoint('comment')
+        
+        if body_format not in ('storage', 'atlas_doc_format', 'wiki'):
+            raise ValueError("body_format must be one of 'storage', 'atlas_doc_format', 'wiki'")
+            
+        data = {
+            "blogPostId": blogpost_id,
+            "body": {
+                body_format: {
+                    "representation": body_format,
+                    "value": body
+                }
+            }
+        }
+            
+        try:
+            return self.post(endpoint, data=data)
+        except Exception as e:
+            log.error(f"Failed to create footer comment on blog post {blogpost_id}: {e}")
+            raise
+            
+    def create_custom_content_comment(self,
+                              custom_content_id: str,
+                              body: str,
+                              body_format: str = "storage") -> Dict[str, Any]:
+        """
+        Create a comment on custom content.
+        
+        Args:
+            custom_content_id: ID of the custom content
+            body: Body of the comment
+            body_format: (optional) Format of the comment body. 
+                        Valid values: 'storage', 'atlas_doc_format', 'wiki'
+                
+        Returns:
+            The created comment
+            
+        Raises:
+            HTTPError: If the API call fails
+        """
+        endpoint = self.get_endpoint('comment')
+        
+        if body_format not in ('storage', 'atlas_doc_format', 'wiki'):
+            raise ValueError("body_format must be one of 'storage', 'atlas_doc_format', 'wiki'")
+            
+        data = {
+            "customContentId": custom_content_id,
+            "body": {
+                body_format: {
+                    "representation": body_format,
+                    "value": body
+                }
+            }
+        }
+            
+        try:
+            return self.post(endpoint, data=data)
+        except Exception as e:
+            log.error(f"Failed to create comment on custom content {custom_content_id}: {e}")
+            raise
+            
+    def create_attachment_comment(self,
+                           attachment_id: str,
+                           body: str,
+                           body_format: str = "storage") -> Dict[str, Any]:
+        """
+        Create a comment on an attachment.
+        
+        Args:
+            attachment_id: ID of the attachment
+            body: Body of the comment
+            body_format: (optional) Format of the comment body. 
+                        Valid values: 'storage', 'atlas_doc_format', 'wiki'
+                
+        Returns:
+            The created comment
+            
+        Raises:
+            HTTPError: If the API call fails
+        """
+        endpoint = self.get_endpoint('comment')
+        
+        if body_format not in ('storage', 'atlas_doc_format', 'wiki'):
+            raise ValueError("body_format must be one of 'storage', 'atlas_doc_format', 'wiki'")
+            
+        data = {
+            "attachmentId": attachment_id,
+            "body": {
+                body_format: {
+                    "representation": body_format,
+                    "value": body
+                }
+            }
+        }
+            
+        try:
+            return self.post(endpoint, data=data)
+        except Exception as e:
+            log.error(f"Failed to create comment on attachment {attachment_id}: {e}")
+            raise
+            
+    def create_comment_reply(self,
+                      parent_comment_id: str,
+                      body: str,
+                      body_format: str = "storage") -> Dict[str, Any]:
+        """
+        Create a reply to an existing comment.
+        
+        Args:
+            parent_comment_id: ID of the parent comment
+            body: Body of the comment
+            body_format: (optional) Format of the comment body. 
+                        Valid values: 'storage', 'atlas_doc_format', 'wiki'
+                
+        Returns:
+            The created comment
+            
+        Raises:
+            HTTPError: If the API call fails
+        """
+        endpoint = self.get_endpoint('comment')
+        
+        if body_format not in ('storage', 'atlas_doc_format', 'wiki'):
+            raise ValueError("body_format must be one of 'storage', 'atlas_doc_format', 'wiki'")
+            
+        data = {
+            "parentCommentId": parent_comment_id,
+            "body": {
+                body_format: {
+                    "representation": body_format,
+                    "value": body
+                }
+            }
+        }
+            
+        try:
+            return self.post(endpoint, data=data)
+        except Exception as e:
+            log.error(f"Failed to create reply to comment {parent_comment_id}: {e}")
+            raise
+            
+    def update_comment(self,
+                 comment_id: str,
+                 body: str,
+                 version: int,
+                 body_format: str = "storage",
+                 resolved: Optional[bool] = None) -> Dict[str, Any]:
+        """
+        Update an existing comment.
+        
+        Args:
+            comment_id: ID of the comment
+            body: Updated body of the comment
+            version: Current version number of the comment (will increment by 1)
+            body_format: (optional) Format of the comment body. 
+                        Valid values: 'storage', 'atlas_doc_format', 'wiki'
+            resolved: (optional) For inline comments - whether to mark as resolved
+                
+        Returns:
+            The updated comment
+            
+        Raises:
+            HTTPError: If the API call fails
+        """
+        endpoint = self.get_endpoint('comment_by_id', id=comment_id)
+        
+        if body_format not in ('storage', 'atlas_doc_format', 'wiki'):
+            raise ValueError("body_format must be one of 'storage', 'atlas_doc_format', 'wiki'")
+            
+        data = {
+            "version": {
+                "number": version + 1
+            },
+            "body": {
+                body_format: {
+                    "representation": body_format,
+                    "value": body
+                }
+            }
+        }
+        
+        if resolved is not None:
+            data["resolved"] = resolved
+            
+        try:
+            return self.put(endpoint, data=data)
+        except Exception as e:
+            log.error(f"Failed to update comment {comment_id}: {e}")
+            raise
+            
+    def delete_comment(self, comment_id: str) -> bool:
+        """
+        Delete a comment.
+        
+        Args:
+            comment_id: ID of the comment to delete
+                
+        Returns:
+            True if successful
+            
+        Raises:
+            HTTPError: If the API call fails
+        """
+        endpoint = self.get_endpoint('comment_by_id', id=comment_id)
+            
+        try:
+            self.delete(endpoint)
+            return True
+        except Exception as e:
+            log.error(f"Failed to delete comment {comment_id}: {e}")
+            raise
 
     # V2-specific methods will be implemented here in Phase 2 and Phase 3 

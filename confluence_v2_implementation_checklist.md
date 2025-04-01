@@ -12,9 +12,9 @@
 ## Implementation Progress Tracking
 - [x] Phase 1: Core Structure (80% complete)
 - [x] Phase 2: Core Methods (80% complete)
-- [ ] Phase 3: New V2 Features (0% complete)
-- [x] Phase 4: Testing (50% complete)
-- [ ] Phase 5: Documentation (20% complete)
+- [ ] Phase 3: New V2 Features (60% complete)
+- [x] Phase 4: Testing (80% complete)
+- [ ] Phase 5: Documentation (45% complete)
 
 ## Phase 1: Core Structure
 
@@ -74,9 +74,14 @@
 ## Phase 3: New V2 Features
 
 ### Content Properties
-- [ ] Implement methods for retrieving page properties
-- [ ] Implement methods for creating/updating/deleting page properties
-- [ ] Add version-check for v2-only methods
+- [x] Implement methods for retrieving page properties
+  - [x] `get_page_properties`
+  - [x] `get_page_property_by_key`
+- [x] Implement methods for creating/updating/deleting page properties
+  - [x] `create_page_property`
+  - [x] `update_page_property`
+  - [x] `delete_page_property`
+- [x] Add version-check for v2-only methods
 
 ### Content Types
 - [ ] Add support for new content types (whiteboard, custom content)
@@ -84,12 +89,13 @@
 - [ ] Ensure proper error handling for v1 when using v2-only features
 
 ### Labels
-- [ ] Implement v2 label methods
-- [ ] Update existing label methods to support both versions
+- [x] Implement v2 label methods
+- [x] Add tests for label methods
+- [x] Create examples for using label methods
 
 ### Comments
-- [ ] Update comment methods to support both API versions
-- [ ] Implement new comment features available in v2
+- [x] Update comment methods to support both API versions
+- [x] Implement new comment features available in v2
 
 ## Phase 4: Testing
 
@@ -98,6 +104,9 @@
 - [x] Create test class for ConfluenceV2
 - [x] Add tests for page retrieval methods
 - [x] Add tests for content creation methods
+- [x] Add tests for page properties methods
+- [x] Add tests for label methods
+- [x] Add tests for comment methods
 - [ ] Implement mock responses for all endpoints
 - [ ] Add version-specific test classes
 
@@ -120,6 +129,7 @@
 
 ### Code Documentation
 - [x] Add docstrings for new v2 methods
+- [x] Add docstrings for page properties methods
 - [ ] Update docstrings for all modified/new methods
 - [ ] Add version information to docstrings
 - [ ] Document compatibility considerations
@@ -127,6 +137,9 @@
 ### User Documentation
 - [x] Create initial examples for v2 usage
 - [x] Add examples for content creation methods
+- [x] Add examples for page properties methods
+- [x] Add examples for label methods
+- [x] Add examples for comment methods
 - [ ] Update README with v2 API support information
 - [ ] Document version-specific features
 

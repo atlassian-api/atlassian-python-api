@@ -30,6 +30,21 @@ class ConfluenceEndpoints:
         'search': 'api/v2/search',
         'spaces': 'api/v2/spaces',
         'space_by_id': 'api/v2/spaces/{id}',
+        'page_properties': 'api/v2/pages/{id}/properties',
+        'page_property_by_key': 'api/v2/pages/{id}/properties/{key}',
+        'page_labels': 'api/v2/pages/{id}/labels',
+        'space_labels': 'api/v2/spaces/{id}/labels',
+        
+        # Comment endpoints for V2 API
+        'page_footer_comments': 'api/v2/pages/{id}/footer-comments',
+        'page_inline_comments': 'api/v2/pages/{id}/inline-comments',
+        'blogpost_footer_comments': 'api/v2/blogposts/{id}/footer-comments',
+        'blogpost_inline_comments': 'api/v2/blogposts/{id}/inline-comments',
+        'attachment_comments': 'api/v2/attachments/{id}/footer-comments',
+        'custom_content_comments': 'api/v2/custom-content/{id}/footer-comments',
+        'comment': 'api/v2/comments',
+        'comment_by_id': 'api/v2/comments/{id}',
+        'comment_children': 'api/v2/comments/{id}/children',
         
         # More v2 endpoints will be added in Phase 2 and 3
     }
