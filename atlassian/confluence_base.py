@@ -46,6 +46,21 @@ class ConfluenceEndpoints:
         'comment_by_id': 'api/v2/comments/{id}',
         'comment_children': 'api/v2/comments/{id}/children',
         
+        # Whiteboard endpoints
+        'whiteboard': 'api/v2/whiteboards',
+        'whiteboard_by_id': 'api/v2/whiteboards/{id}',
+        'whiteboard_children': 'api/v2/whiteboards/{id}/children',
+        'whiteboard_ancestors': 'api/v2/whiteboards/{id}/ancestors',
+        
+        # Custom content endpoints
+        'custom_content': 'api/v2/custom-content',
+        'custom_content_by_id': 'api/v2/custom-content/{id}',
+        'custom_content_children': 'api/v2/custom-content/{id}/children',
+        'custom_content_ancestors': 'api/v2/custom-content/{id}/ancestors',
+        'custom_content_labels': 'api/v2/custom-content/{id}/labels',
+        'custom_content_properties': 'api/v2/custom-content/{id}/properties',
+        'custom_content_property_by_key': 'api/v2/custom-content/{id}/properties/{key}',
+        
         # More v2 endpoints will be added in Phase 2 and 3
     }
 
