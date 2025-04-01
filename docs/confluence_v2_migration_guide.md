@@ -1,286 +1,313 @@
-# Confluence API v1 to v2 Migration Guide
+# Confluence v2 API Migration Guide
 
-This guide explains how to migrate from Confluence API v1 to v2 in the `atlassian-python-api` library.
-
-## Table of Contents
-
-1. [Introduction](#introduction)
-2. [Major Changes](#major-changes)
-3. [Method Name Changes](#method-name-changes)
-4. [Parameter Changes](#parameter-changes)
-5. [Response Structure Changes](#response-structure-changes)
-6. [Using the Compatibility Layer](#using-the-compatibility-layer)
-7. [Migration Checklist](#migration-checklist)
-8. [New v2-Only Features](#new-v2-only-features)
+This document provides guidelines and instructions for migrating from the Confluence v1 API to the newer v2 API in the atlassian-python-api library.
 
 ## Introduction
 
-Atlassian has been transitioning from the older v1 REST API to the newer v2 REST API for Confluence Cloud. The v2 API provides several improvements:
+The Confluence v2 API is the latest REST API version for Confluence Cloud that offers several advantages over the v1 API:
 
-- More consistent and intuitive endpoint paths
-- Better performance for many operations
-- New features like whiteboards and custom content
-- More robust pagination with cursor-based results
-- Improved content type handling
-- Better error messages and validation
+- More consistent endpoint patterns
+- Improved pagination with cursor-based pagination
+- New content types (whiteboards, custom content)
+- Enhanced property management
+- Better performance
 
-Our library supports both v1 and v2 APIs. The v2 implementation is accessible via the `ConfluenceV2` class, whereas the original `Confluence` class uses v1.
+While the v1 API is still supported, we recommend migrating to the v2 API for new development and gradually updating existing code.
 
-## Major Changes
+## Getting Started with v2 API
 
-The main differences between the v1 and v2 APIs include:
+### Instantiating a v2 API Client
 
-1. **Endpoint Structure**: v2 uses `api/v2/...` instead of `rest/api/...`
-2. **Method Names**: Many method names have changed to be more descriptive
-3. **Parameter Names**: Some parameter names have changed
-4. **Response Structure**: Response JSON structures have changed
-5. **Pagination**: v2 uses cursor-based pagination instead of offset-based
-6. **New Features**: v2 adds support for whiteboards, custom content, etc.
-
-## Method Name Changes
-
-Here are the main method name changes between v1 and v2:
-
-| v1 Method Name | v2 Method Name |
-|----------------|---------------|
-| `get_content` | `get_pages` |
-| `get_content_by_id` | `get_page_by_id` |
-| `get_content_children` | `get_child_pages` |
-| `create_content` | `create_page` |
-| `update_content` | `update_page` |
-| `delete_content` | `delete_page` |
-| `get_space_by_name` | `get_space_by_key` |
-| `get_all_spaces` | `get_spaces` |
-| `add_content_label` | `add_page_label` |
-| `add_content_labels` | `add_page_labels` |
-| `remove_content_label` | `delete_page_label` |
-| `add_property` | `create_page_property` |
-| `update_property` | `update_page_property` |
-| `get_property` | `get_page_property_by_key` |
-| `get_properties` | `get_page_properties` |
-| `delete_property` | `delete_page_property` |
-
-## Parameter Changes
-
-When migrating to v2, be aware of these parameter changes:
-
-1. `content_type` is no longer needed for page operations
-2. `space_key` is replaced with `space_id` in most methods 
-3. `expand` parameters now accept arrays of strings instead of comma-separated values
-4. `body` format now uses a simpler structure in most cases
-5. `status` parameter now accepts `current` instead of `current` or `draft`
-
-Example of parameter changes:
+The simplest way to use the v2 API is to specify the API version when creating your Confluence instance:
 
 ```python
-# v1 API
-confluence.create_content(
-    space="SPACE",
-    title="Page Title",
-    body="<p>Content</p>",
-    type="page"
-)
+from atlassian import Confluence
 
-# v2 API
-confluence_v2.create_page(
-    space_id="123456",  # Note: space ID, not key
-    title="Page Title",
-    body="<p>Content</p>"
+# Create a v2 API client
+confluence = Confluence(
+    url="https://your-instance.atlassian.net/wiki",
+    username="your-email@example.com",
+    password="your-api-token",
+    api_version=2,  # Specify API version 2
+    cloud=True      # v2 API is only available for cloud instances
 )
 ```
+
+Or use the factory method:
+
+```python
+from atlassian import Confluence
+
+# Create a v2 API client using the factory method
+confluence = Confluence.factory(
+    url="https://your-instance.atlassian.net/wiki",
+    username="your-email@example.com",
+    password="your-api-token",
+    api_version=2,
+    cloud=True
+)
+```
+
+### Compatibility Layer
+
+The library includes a compatibility layer to make migration easier. You can use many v1 method names with a v2 client, and you'll receive deprecation warnings suggesting the v2 method name to use instead.
+
+```python
+# This will work but show a deprecation warning
+pages = confluence.get_all_pages_from_space("SPACEKEY")
+
+# The warning will suggest using the v2 method name instead
+pages = confluence.get_pages(space_key="SPACEKEY")
+```
+
+## Key Method Changes
+
+Below are the most common method name changes between v1 and v2:
+
+| v1 Method | v2 Method | Notes |
+|-----------|-----------|-------|
+| `get_page_by_id(page_id)` | `get_page_by_id(page_id)` | Same name, different response structure |
+| `get_all_pages_from_space(space)` | `get_pages(space_key=space)` | Parameter name changes |
+| `get_page_child_by_type(page_id, type="page")` | `get_child_pages(page_id)` | Simpler, focused on pages |
+| `create_page(space, title, body)` | `create_page(space_id, title, body)` | Parameter `space` renamed to `space_id` |
+| `update_page(page_id, title, body, version)` | `update_page(page_id, title, body, version)` | Same name, requires version number |
+| `update_or_create(page_id, title, body, ...)` | No direct equivalent | Use separate create/update methods |
+| `get_content_properties(page_id)` | `get_page_properties(page_id)` | More specific naming |
+| `get_content_property(page_id, key)` | `get_page_property_by_key(page_id, key)` | More specific naming |
 
 ## Response Structure Changes
 
-The structure of responses has changed in v2. Key differences include:
+The response structure differs significantly between v1 and v2 APIs:
 
-1. Pages now have a simpler top-level structure
-2. Page content is directly accessible in the `body` field
-3. Most IDs are now numeric strings instead of complex keys
-4. Metadata is more consistently organized
-5. Links to related resources are provided in the `_links` field
+### v1 Example Response
 
-Example response structure changes:
-
-```python
-# v1 API response
+```json
 {
-    "id": "123456",
-    "type": "page",
-    "status": "current",
-    "title": "Page Title",
-    "body": {
-        "storage": {
-            "value": "<p>Content</p>",
-            "representation": "storage"
-        }
-    },
-    "space": {
-        "key": "SPACE",
-        "name": "Space Name"
-    },
-    "version": {
-        "number": 1
+  "id": "123456",
+  "type": "page",
+  "status": "current",
+  "title": "Page Title",
+  "body": {
+    "storage": {
+      "value": "<p>Content</p>",
+      "representation": "storage"
     }
-}
-
-# v2 API response
-{
-    "id": "123456",
-    "title": "Page Title",
-    "status": "current",
-    "body": {
-        "storage": {
-            "value": "<p>Content</p>",
-            "representation": "storage"
-        }
-    },
-    "spaceId": "789012",
-    "version": {
-        "number": 1,
-        "message": "",
-        "createdAt": "2023-08-01T12:00:00Z",
-        "authorId": "112233"
-    },
-    "_links": {
-        "webui": "/spaces/SPACE/pages/123456/Page+Title",
-        "tinyui": "/x/AbCdEf",
-        "self": "https://your-domain.atlassian.net/wiki/api/v2/pages/123456"
-    }
+  },
+  "version": {
+    "number": 1
+  },
+  "space": {
+    "key": "SPACEKEY",
+    "name": "Space Name"
+  },
+  "_links": {
+    "self": "https://your-instance.atlassian.net/wiki/rest/api/content/123456"
+  }
 }
 ```
 
-## Using the Compatibility Layer
+### v2 Example Response
 
-The `ConfluenceV2` class includes a compatibility layer that allows you to use v1 method names with the v2 implementation:
+```json
+{
+  "id": "123456",
+  "status": "current",
+  "title": "Page Title",
+  "body": {
+    "storage": {
+      "value": "<p>Content</p>",
+      "representation": "storage"
+    }
+  },
+  "version": {
+    "number": 1,
+    "message": "",
+    "createdAt": "2023-01-01T12:00:00.000Z",
+    "authorId": "user123"
+  },
+  "spaceId": "SPACEKEY",
+  "_links": {
+    "webui": "/spaces/SPACEKEY/pages/123456/Page+Title",
+    "tinyui": "/x/ABCDE",
+    "self": "https://your-instance.atlassian.net/wiki/api/v2/pages/123456"
+  }
+}
+```
+
+Key differences:
+- The `type` field is no longer included as v2 endpoints are type-specific
+- `space` is now represented as `spaceId` and is just the key, not an object
+- `_links` structure provides more useful links
+- The v2 API version returns additional fields and metadata
+
+## Pagination Changes
+
+### v1 API Pagination
 
 ```python
-from atlassian import ConfluenceV2
+# v1 style pagination with start and limit
+pages = confluence.get_all_pages_from_space("SPACEKEY", start=0, limit=100)
+```
 
-# Initialize with v2 API
-confluence = ConfluenceV2(
-    url="https://your-domain.atlassian.net/wiki",
-    username="your-username",
-    password="your-api-token"
+### v2 API Pagination
+
+```python
+# v2 style pagination with cursor
+pages = confluence.get_pages(space_key="SPACEKEY", limit=100)
+
+# For subsequent pages, use the cursor from _links.next
+if "_links" in pages and "next" in pages["_links"]:
+    next_url = pages["_links"]["next"]
+    # Extract cursor from the URL
+    cursor = next_url.split("cursor=")[1].split("&")[0]
+    next_pages = confluence.get_pages(space_key="SPACEKEY", limit=100, cursor=cursor)
+```
+
+## New Features in v2 API
+
+### Whiteboards
+
+```python
+# Create a whiteboard
+whiteboard = confluence.create_whiteboard(
+    space_id="SPACEKEY",
+    title="My Whiteboard",
+    content='{"version":1,"type":"doc",...}' # Simplified for example
 )
 
-# Using v1 method name - will work but show deprecation warning
-page = confluence.get_content_by_id("123456")
+# Get whiteboard by ID
+whiteboard = confluence.get_whiteboard_by_id(whiteboard_id)
 
-# Using v2 method name - preferred approach
-page = confluence.get_page_by_id("123456")
+# Get whiteboard children
+children = confluence.get_whiteboard_children(whiteboard_id)
+
+# Get whiteboard ancestors
+ancestors = confluence.get_whiteboard_ancestors(whiteboard_id)
+
+# Delete whiteboard
+response = confluence.delete_whiteboard(whiteboard_id)
 ```
 
-When using v1 method names with the v2 implementation:
-
-1. The methods will work as expected
-2. Deprecation warnings will be shown
-3. Parameters are passed to the equivalent v2 method
-4. The response format will be the v2 format (not the v1 format)
-
-To suppress deprecation warnings:
+### Custom Content
 
 ```python
-import warnings
-warnings.filterwarnings("ignore", category=DeprecationWarning)
+# Create custom content
+custom_content = confluence.create_custom_content(
+    space_id="SPACEKEY",
+    title="My Custom Content",
+    body="<p>Custom content body</p>",
+    type="custom_content_type"
+)
+
+# Get custom content by ID
+content = confluence.get_custom_content_by_id(content_id)
+
+# Update custom content
+updated = confluence.update_custom_content(
+    content_id=content_id,
+    title="Updated Title",
+    body="<p>Updated body</p>",
+    version=content["version"]["number"]
+)
+
+# Get custom content properties
+properties = confluence.get_custom_content_properties(content_id)
+
+# Delete custom content
+response = confluence.delete_custom_content(content_id)
 ```
 
-To make deprecation warnings more visible:
+### Labels
 
 ```python
-import warnings
-warnings.filterwarnings("always", category=DeprecationWarning)
+# Get page labels
+labels = confluence.get_page_labels(page_id)
+
+# Add label to page
+response = confluence.add_page_label(page_id, "important")
+
+# Delete label from page
+response = confluence.delete_page_label(page_id, "important")
+
+# Get space labels
+space_labels = confluence.get_space_labels(space_key)
+
+# Add label to space
+response = confluence.add_space_label(space_key, "team")
+
+# Delete label from space
+response = confluence.delete_space_label(space_key, "team")
+```
+
+### Comments
+
+```python
+# Get page footer comments
+comments = confluence.get_page_footer_comments(page_id)
+
+# Get page inline comments
+inline_comments = confluence.get_page_inline_comments(page_id)
+
+# Create a footer comment
+comment = confluence.create_page_footer_comment(
+    page_id=page_id,
+    body="<p>This is a footer comment</p>"
+)
+
+# Create an inline comment
+inline_comment = confluence.create_page_inline_comment(
+    page_id=page_id,
+    body="<p>This is an inline comment</p>",
+    inline_comment_properties={
+        "highlight": "text to highlight",
+        "position": "after"
+    }
+)
+
+# Update a comment
+updated_comment = confluence.update_comment(
+    comment_id=comment_id,
+    body="<p>Updated comment</p>",
+    version=comment["version"]["number"]
+)
+
+# Delete a comment
+response = confluence.delete_comment(comment_id)
 ```
 
 ## Migration Checklist
 
-Follow these steps to migrate your code from v1 to v2:
+- [ ] Update your client initialization to specify `api_version=2`
+- [ ] Update method names according to the mapping table above
+- [ ] Adjust your code to handle the new response structures
+- [ ] Update pagination handling to use cursor-based pagination
+- [ ] Test thoroughly with a small portion of your code before full migration
+- [ ] Watch for deprecation warnings to identify methods that need updating
+- [ ] Take advantage of new v2 features when applicable
+- [ ] Update error handling to accommodate v2-specific error responses
 
-1. Change your client initialization:
-   ```python
-   # Before
-   from atlassian import Confluence
-   confluence = Confluence(url="...", username="...", password="...")
-   
-   # After
-   from atlassian import ConfluenceV2
-   confluence = ConfluenceV2(url="...", username="...", password="...")
-   ```
+## Troubleshooting
 
-2. Update method names to use v2 equivalents (see [Method Name Changes](#method-name-changes))
+### Common Issues
 
-3. Update method parameters:
-   - Replace space keys with space IDs
-   - Update parameter names according to v2 method signatures
-   - Update parameter values to use v2 format
+1. **Missing Fields**: If your code expects certain fields that exist in v1 but not in v2, update your code to use the v2 equivalent fields.
 
-4. Update response handling to account for the v2 response structure
+2. **Parameter Changes**: Many methods have slight parameter name changes (e.g., `space` to `space_id`). Check the method documentation.
 
-5. Test your code thoroughly with the v2 API
+3. **Version Requirements**: The v2 API requires providing the content version number for updates. Always fetch the current version before updating.
 
-6. Look for opportunities to use new v2-only features
+4. **Cloud Only**: The v2 API is only available for Confluence Cloud. Server/Data Center instances must use v1.
 
-## New v2-Only Features
+### Getting Help
 
-The v2 API includes several features not available in v1:
+If you encounter issues during migration, consider:
 
-1. **Whiteboards**: Create and manage whiteboards
-   ```python
-   # Create a whiteboard
-   whiteboard = confluence.create_whiteboard(
-       space_id="123456",
-       title="My Whiteboard",
-       template_key="timeline"
-   )
-   ```
-
-2. **Custom Content**: Create and manage custom content types
-   ```python
-   # Create custom content
-   content = confluence.create_custom_content(
-       type="my.custom.type",
-       title="My Custom Content",
-       body="<p>Content</p>",
-       space_id="123456"
-   )
-   ```
-
-3. **Improved Comments**: Better support for inline and footer comments
-   ```python
-   # Get page comments
-   comments = confluence.get_page_footer_comments(page_id="123456")
-   
-   # Create an inline comment
-   comment = confluence.create_page_inline_comment(
-       page_id="123456",
-       body="This is an inline comment",
-       inline_comment_properties={
-           "textSelection": "text to comment on",
-           "textSelectionMatchCount": 1,
-           "textSelectionMatchIndex": 0
-       }
-   )
-   ```
-
-4. **Better Label Support**: Enhanced methods for working with labels
-   ```python
-   # Add page label
-   label = confluence.add_page_label(page_id="123456", label="example-label")
-   ```
-
-5. **Content Properties**: More robust content property management
-   ```python
-   # Create page property
-   property = confluence.create_page_property(
-       page_id="123456",
-       property_key="my-key",
-       property_value={"data": "example"}
-   )
-   ```
-
-For more examples, check the example files in the `examples/` directory.
+1. Checking the [API documentation](https://developer.atlassian.com/cloud/confluence/rest/v2/intro/)
+2. Reviewing the example files in the `examples/` directory
+3. Filing an issue in the [GitHub repository](https://github.com/atlassian-api/atlassian-python-api/issues)
 
 ## Conclusion
 
-Migrating from v1 to v2 requires some changes, but the compatibility layer can help ease the transition. The v2 API offers many improvements and new features that make it worthwhile to update your code.
+Migrating to the Confluence v2 API provides access to improved functionality and new features. While the process requires some code changes, the compatibility layer makes the transition smoother by supporting v1 method names with deprecation warnings.
 
-For questions or issues, please open an issue on the GitHub repository. 
+We recommend a gradual migration approach, starting with updating your client initialization to use v2, and then incrementally updating method names and handling the new response structures. 

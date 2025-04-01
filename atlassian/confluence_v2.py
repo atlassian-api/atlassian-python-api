@@ -91,6 +91,11 @@ class ConfluenceV2(ConfluenceBase):
         """
         Returns a page by ID in the v2 API format.
         
+        API Version: 2 (Cloud only)
+        
+        Compatibility: This method provides similar functionality to the v1 get_page_by_id 
+        but with a different parameter set and response structure.
+        
         Args:
             page_id: The ID of the page to be returned
             body_format: (optional) The format of the page body to be returned. 
@@ -136,9 +141,15 @@ class ConfluenceV2(ConfluenceBase):
                  get_body: bool = False,
                  expand: Optional[List[str]] = None,
                  limit: int = 25,
-                 sort: Optional[str] = None) -> List[Dict[str, Any]]:
+                 sort: Optional[str] = None,
+                 cursor: Optional[str] = None) -> Dict[str, Any]:
         """
         Returns a list of pages based on the provided filters.
+        
+        API Version: 2 (Cloud only)
+        
+        Compatibility: This method is equivalent to get_all_pages_from_space in v1,
+        but uses cursor-based pagination and supports more filtering options.
         
         Args:
             space_id: (optional) The ID of the space to get pages from
@@ -152,9 +163,10 @@ class ConfluenceV2(ConfluenceBase):
             limit: (optional) Maximum number of pages to return per request. Default: 25
             sort: (optional) Sorting of the results. Format: [field] or [-field] for descending order
                  Valid fields: 'id', 'created-date', 'modified-date', 'title'
+            cursor: (optional) Cursor for pagination. Use the cursor from _links.next in previous response
                     
         Returns:
-            List of page objects in v2 API format
+            Dictionary containing results list and pagination information in v2 API format
             
         Raises:
             HTTPError: If the API call fails
@@ -190,8 +202,11 @@ class ConfluenceV2(ConfluenceBase):
                 raise ValueError(f"Sort must be one of: {', '.join(valid_sort_fields)}")
             params['sort'] = sort
             
+        if cursor:
+            params["cursor"] = cursor
+            
         try:
-            return list(self._get_paged(endpoint, params=params))
+            return self.get(endpoint, params=params)
         except Exception as e:
             log.error(f"Failed to retrieve pages: {e}")
             raise
@@ -267,17 +282,22 @@ class ConfluenceV2(ConfluenceBase):
                     status: str = "current",
                     representation: Optional[str] = None) -> Dict[str, Any]:
         """
-        Creates a new page in the specified space.
+        Creates a new page in Confluence.
+        
+        API Version: 2 (Cloud only)
+        
+        Compatibility: This method is equivalent to create_page in v1, but with parameter
+        differences: space_id instead of space, simplified body format, and no content type.
         
         Args:
             space_id: The ID of the space where the page will be created
-            title: The title of the new page
+            title: The title of the page
             body: The content of the page
             parent_id: (optional) The ID of the parent page
             body_format: (optional) The format of the body. Default is 'storage'.
                          Valid values: 'storage', 'atlas_doc_format', 'wiki'
             status: (optional) The status of the page. Default is 'current'.
-                     Valid values: 'current', 'draft'
+                    Valid values: 'current', 'draft'
             representation: (optional) The content representation - used only for wiki format.
                            Valid value: 'wiki'
                     
@@ -335,6 +355,12 @@ class ConfluenceV2(ConfluenceBase):
                     representation: Optional[str] = None) -> Dict[str, Any]:
         """
         Updates an existing page.
+        
+        API Version: 2 (Cloud only)
+        
+        Compatibility: This method is equivalent to update_page in v1, but requires
+        the version number and uses a simplified body format. The v2 update requires
+        at least one field (title, body, or status) to be provided.
         
         Args:
             page_id: The ID of the page to update
