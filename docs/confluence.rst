@@ -349,6 +349,12 @@ Users and Groups
     # Change calling user's password
     confluence.change_my_password(oldpass, newpass)
 
+    # Add given user to a group
+    confluence.add_user_to_group(username, group_name)
+
+    # Remove given user from a group
+    confluence.remove_user_from_group(username, group_name)
+
 CQL
 ---
 

@@ -3368,8 +3368,20 @@ class Confluence(AtlassianRestAPI):
         :param group_name: str - name of group to add user to
         :return: Current state of the group
         """
-        url = "rest/api/user/%s/group/%s" % (username, group_name)
+        url = f"rest/api/user/{username}/group/{group_name}"
         return self.put(url)
+
+    def remove_user_from_group(self, username, group_name):
+        """
+        Remove the given {@link User} identified by username from the given {@link Group} identified by groupName.
+        This method is idempotent i.e. if the membership is not present then no action will be taken.
+
+        :param username: str - username of user to add to group
+        :param group_name: str - name of group to add user to
+        :return: Current state of the group
+        """
+        url = f"rest/api/user/{username}/group/{group_name}"
+        return self.delete(url)
 
     # Space Permissions
     def get_all_space_permissions(self, space_key):
