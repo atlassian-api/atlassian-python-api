@@ -160,10 +160,21 @@ class ConfluenceBase(AtlassianRestAPI):
             args: Arguments to pass to AtlassianRestAPI constructor
             kwargs: Keyword arguments to pass to AtlassianRestAPI constructor
         """
-        if self._is_cloud_url(url) and "/wiki" not in url:
-            url = AtlassianRestAPI.url_joiner(url, "/wiki")
+        # Handle the URL correctly for Confluence Cloud
+        if self._is_cloud_url(url):
+            # Strip any trailing '/wiki' from the URL
+            if url.rstrip('/').endswith('/wiki'):
+                url = url.rstrip('/')[:-5]
+            
+            # Set cloud flag
             if "cloud" not in kwargs:
                 kwargs["cloud"] = True
+
+            # Add "/wiki" to the URL only if it's truly not present in any part
+            parsed_url = urlparse(url)
+            path_parts = parsed_url.path.split('/')
+            if 'wiki' not in path_parts:
+                url = AtlassianRestAPI.url_joiner(url, "/wiki")
 
         super(ConfluenceBase, self).__init__(url, *args, **kwargs)
         self.api_version = int(api_version)
@@ -289,10 +300,18 @@ class ConfluenceBase(AtlassianRestAPI):
                 base_url = response.get("_links", {}).get("base")
                 if base_url and next_url.startswith('/'):
                     # Construct the full URL using the base URL from the response
-                    url = f"{base_url}{next_url}"
+                    # Check for and prevent /wiki/wiki duplication
+                    if base_url.endswith('/wiki') and next_url.startswith('/wiki/'):
+                        url = f"{base_url}{next_url[5:]}"  # Strip the duplicate /wiki
+                    else:
+                        url = f"{base_url}{next_url}"
                     absolute = True
                 else:
+                    # Check for and prevent /wiki/wiki duplication in the URL
+                    if '/wiki/wiki/' in next_url:
+                        next_url = next_url.replace('/wiki/wiki/', '/wiki/')
                     url = next_url
+                    
                     # Check if the URL is absolute (has http:// or https://) or contains the server's domain
                     if next_url.startswith(('http://', 'https://')) or self.url.split('/')[2] in next_url:
                         absolute = True
