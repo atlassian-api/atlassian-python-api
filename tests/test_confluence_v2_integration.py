@@ -1,21 +1,20 @@
 #!/usr/bin/env python3
 """
-Integration tests for Confluence v2 API.
-These tests are designed to be run against a real Confluence instance.
-
-NOTE: To run these tests, you need to set the following environment variables:
-    - CONFLUENCE_URL: The URL of the Confluence instance
-    - CONFLUENCE_USERNAME: The username to use for authentication
-    - CONFLUENCE_API_TOKEN: The API token to use for authentication
-    - CONFLUENCE_SPACE_KEY: A space key to use for testing
+Integration tests for Confluence V2 API
 """
-
 import os
-import unittest
-import warnings
-from typing import Dict, Any, List, Union, Optional
+import sys
+import logging
+import pytest
+import responses
+import json
+import re
+from datetime import datetime, timezone
+from typing import Dict, List, Optional, Union, Any
 
-from atlassian.confluence_v2 import ConfluenceV2
+from atlassian import ConfluenceV2
+
+log = logging.getLogger(__name__)
 
 # Create a module-level object to store test data between tests
 class _STORED_TEST_PAGE_DATA:
@@ -403,21 +402,21 @@ class TestConfluenceV2(ConfluenceV2):
         return mock_response
 
 
-@unittest.skipIf(
+@pytest.mark.skipif(
     not (
         os.environ.get("CONFLUENCE_URL")
         and os.environ.get("CONFLUENCE_USERNAME")
         and os.environ.get("CONFLUENCE_API_TOKEN")
         and os.environ.get("CONFLUENCE_SPACE_KEY")
     ),
-    "Confluence credentials not found in environment variables",
+    reason="Confluence credentials not found in environment variables",
 )
-class TestConfluenceV2Integration(unittest.TestCase):
+class TestConfluenceV2Integration:
     """
     Test the ConfluenceV2 class.
     """
     
-    def setUp(self):
+    def setup(self):
         """
         Set up the test environment.
         """
@@ -442,7 +441,7 @@ class TestConfluenceV2Integration(unittest.TestCase):
             space_key=self.space_key
         )
     
-    def tearDown(self):
+    def teardown(self):
         """
         Clean up after tests.
         """
@@ -466,32 +465,32 @@ class TestConfluenceV2Integration(unittest.TestCase):
         
         # Test spaces with mock responses
         spaces = self.confluence.get_spaces(limit=1)
-        self.assertIn("results", spaces)
-        self.assertIsInstance(spaces["results"], list)
+        assert "results" in spaces
+        assert isinstance(spaces["results"], list)
         if len(spaces["results"]) > 0:
-            self.assertIn("id", spaces["results"][0])
-            self.assertIn("key", spaces["results"][0])
+            assert "id" in spaces["results"][0]
+            assert "key" in spaces["results"][0]
     
     def test_02_get_spaces(self):
         """Test getting spaces."""
         spaces = self.confluence.get_spaces(limit=3)
-        self.assertIsInstance(spaces, dict)
-        self.assertIn("results", spaces)
-        self.assertLessEqual(len(spaces["results"]), 3)
+        assert isinstance(spaces, dict)
+        assert "results" in spaces
+        assert len(spaces["results"]) <= 3
         
         if spaces["results"]:
             space = spaces["results"][0]
-            self.assertIn("id", space)
-            self.assertIn("key", space)
-            self.assertIn("name", space)
+            assert "id" in space
+            assert "key" in space
+            assert "name" in space
             
     def test_03_get_space_by_key(self):
         """Test getting a space by key."""
         space = self.confluence.get_space(self.space_key)
-        self.assertIsInstance(space, dict)
-        self.assertIn("id", space)
-        self.assertIn("key", space)
-        self.assertEqual(space["key"], self.space_key)
+        assert isinstance(space, dict)
+        assert "id" in space
+        assert "key" in space
+        assert space["key"] == self.space_key
     
     def test_04_page_operations(self):
         """Test creating, updating, and deleting a page."""
@@ -505,14 +504,14 @@ class TestConfluenceV2Integration(unittest.TestCase):
             body=body,
         )
         
-        self.assertIsInstance(page, dict)
-        self.assertIn("id", page)
+        assert isinstance(page, dict)
+        assert "id" in page
         page_id = page["id"]
         
         # Get the page
         retrieved_page = self.confluence.get_page_by_id(page_id)
-        self.assertEqual(retrieved_page["id"], page_id)
-        self.assertEqual(retrieved_page["title"], title)
+        assert retrieved_page["id"] == page_id
+        assert retrieved_page["title"] == title
         
         # Update the page
         updated_title = f"{title} - Updated"
@@ -525,19 +524,19 @@ class TestConfluenceV2Integration(unittest.TestCase):
             version=retrieved_page["version"]["number"],
         )
         
-        self.assertEqual(updated_page["id"], page_id)
-        self.assertEqual(updated_page["title"], updated_title)
+        assert updated_page["id"] == page_id
+        assert updated_page["title"] == updated_title
         
         # Get the updated page
         retrieved_updated_page = self.confluence.get_page_by_id(page_id)
-        self.assertEqual(retrieved_updated_page["title"], updated_title)
+        assert retrieved_updated_page["title"] == updated_title
         
         # Delete the page
         response = self.confluence.delete_page(page_id)
-        self.assertEqual(response.get("status", 204), 204)
+        assert response.get("status", 204) == 204
         
         # Verify it's deleted by trying to get it (should raise an exception)
-        with self.assertRaises(Exception):
+        with pytest.raises(Exception):
             self.confluence.get_page_by_id(page_id)
 
     def test_05_search(self):
@@ -550,15 +549,15 @@ class TestConfluenceV2Integration(unittest.TestCase):
             limit=5
         )
         
-        self.assertIsInstance(results, dict)
-        self.assertIn("results", results)
+        assert isinstance(results, dict)
+        assert "results" in results
     
     def test_06_pagination(self):
         """Test pagination of results."""
         # Get pages with pagination
         page1 = self.confluence.get_pages(limit=5)
-        self.assertIsInstance(page1, dict)
-        self.assertIn("results", page1)
+        assert isinstance(page1, dict)
+        assert "results" in page1
         
         # If there are more pages
         if "next" in page1.get("_links", {}):
@@ -574,26 +573,23 @@ class TestConfluenceV2Integration(unittest.TestCase):
             # Get next page using cursor
             if "cursor" in query_params:
                 page2 = self.confluence.get_pages(limit=5, cursor=query_params["cursor"])
-                self.assertIsInstance(page2, dict)
-                self.assertIn("results", page2)
+                assert isinstance(page2, dict)
+                assert "results" in page2
                 
                 # Verify we got different results
                 if page1["results"] and page2["results"]:
-                    self.assertNotEqual(
-                        page1["results"][0]["id"] if page1["results"] else None,
-                        page2["results"][0]["id"] if page2["results"] else None
-                    )
+                    assert page1["results"][0]["id"] != page2["results"][0]["id"]
     
     def test_07_error_handling(self):
         """Test error handling."""
         # Test with an invalid page ID
-        with self.assertRaises(Exception):
+        with pytest.raises(Exception):
             self.confluence.get_page_by_id("invalid-id")
         
         # Test with an invalid space key
-        with self.assertRaises(Exception):
+        with pytest.raises(Exception):
             self.confluence.get_space("invalid-space-key-that-does-not-exist")
 
 
 if __name__ == "__main__":
-    unittest.main() 
+    pytest.main() 
