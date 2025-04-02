@@ -19,12 +19,8 @@ CONFLUENCE_USERNAME = os.environ.get("CONFLUENCE_USERNAME", "email@example.com")
 CONFLUENCE_API_TOKEN = os.environ.get("CONFLUENCE_API_TOKEN", "api-token")
 
 # Initialize the ConfluenceV2 client
-confluence = ConfluenceV2(
-    url=CONFLUENCE_URL,
-    username=CONFLUENCE_USERNAME,
-    password=CONFLUENCE_API_TOKEN,
-    cloud=True
-)
+confluence = ConfluenceV2(url=CONFLUENCE_URL, username=CONFLUENCE_USERNAME, password=CONFLUENCE_API_TOKEN, cloud=True)
+
 
 def demonstrate_v1_v2_method_equivalence():
     """
@@ -32,25 +28,25 @@ def demonstrate_v1_v2_method_equivalence():
     Shows how to use both naming conventions with ConfluenceV2.
     """
     print("=== Confluence V2 API Method Name Compatibility ===\n")
-    
+
     # Show available method mappings
     print("Available method mappings from v1 to v2:")
     for v1_method, v2_method in sorted(confluence._compatibility_method_mapping.items()):
         print(f"  {v1_method} -> {v2_method}")
     print()
-    
+
     # Example 1: Get page by ID
     # -------------------------------------
     print("Example 1: Get page by ID")
     print("v1 method name: get_content_by_id(page_id)")
     print("v2 method name: get_page_by_id(page_id)")
-    
+
     page_id = "12345"  # Replace with a real page ID to test
-    
+
     # Enable warning capture
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
-        
+
         # Using v1 method name (will show deprecation warning)
         try:
             print("\nAttempting to use v1 method name:")
@@ -59,7 +55,7 @@ def demonstrate_v1_v2_method_equivalence():
             print("This would show a deprecation warning")
         except Exception as e:
             print(f"Error: {e}")
-        
+
         # Using v2 method name (preferred)
         try:
             print("\nUsing v2 method name (preferred):")
@@ -68,17 +64,17 @@ def demonstrate_v1_v2_method_equivalence():
             print("No deprecation warning")
         except Exception as e:
             print(f"Error: {e}")
-    
+
     # Example 2: Create content/page
     # -------------------------------------
     print("\nExample 2: Create content/page")
     print("v1 method name: create_content(space_id, title, body, ...)")
     print("v2 method name: create_page(space_id, title, body, ...)")
-    
+
     space_id = "67890"  # Replace with a real space ID to test
     title = "Test Page"
     body = "<p>This is a test page.</p>"
-    
+
     # Using v1 method name (will show deprecation warning)
     try:
         print("\nAttempting to use v1 method name:")
@@ -87,7 +83,7 @@ def demonstrate_v1_v2_method_equivalence():
         print("This would show a deprecation warning")
     except Exception as e:
         print(f"Error: {e}")
-    
+
     # Using v2 method name (preferred)
     try:
         print("\nUsing v2 method name (preferred):")
@@ -96,13 +92,13 @@ def demonstrate_v1_v2_method_equivalence():
         print("No deprecation warning")
     except Exception as e:
         print(f"Error: {e}")
-    
+
     # Example 3: Get spaces
     # -------------------------------------
     print("\nExample 3: Get spaces")
     print("v1 method name: get_all_spaces()")
     print("v2 method name: get_spaces()")
-    
+
     # Using v1 method name (will show deprecation warning)
     try:
         print("\nAttempting to use v1 method name:")
@@ -111,7 +107,7 @@ def demonstrate_v1_v2_method_equivalence():
         print("This would show a deprecation warning")
     except Exception as e:
         print(f"Error: {e}")
-    
+
     # Using v2 method name (preferred)
     try:
         print("\nUsing v2 method name (preferred):")
@@ -120,13 +116,13 @@ def demonstrate_v1_v2_method_equivalence():
         print("No deprecation warning")
     except Exception as e:
         print(f"Error: {e}")
-    
+
     # Example 4: Working with properties
     # -------------------------------------
     print("\nExample 4: Working with properties")
     print("v1 method names: add_property(), get_property(), get_properties()")
     print("v2 method names: create_page_property(), get_page_property_by_key(), get_page_properties()")
-    
+
     # Using v1 method names (will show deprecation warnings)
     try:
         print("\nAttempting to use v1 method names:")
@@ -139,7 +135,7 @@ def demonstrate_v1_v2_method_equivalence():
         print("These would show deprecation warnings")
     except Exception as e:
         print(f"Error: {e}")
-    
+
     # Using v2 method names (preferred)
     try:
         print("\nUsing v2 method names (preferred):")
@@ -152,6 +148,7 @@ def demonstrate_v1_v2_method_equivalence():
         print("No deprecation warnings")
     except Exception as e:
         print(f"Error: {e}")
+
 
 def show_migration_recommendations():
     """Show recommendations for migrating from v1 to v2 API."""
@@ -168,12 +165,13 @@ def show_migration_recommendations():
     print("5. Consult the method mapping dictionary for v1->v2 equivalents:")
     print("   confluence._compatibility_method_mapping")
 
+
 if __name__ == "__main__":
     print("Running Confluence V2 API Compatibility Example\n")
-    
+
     # Temporarily enable warnings to show deprecation messages
     warnings.filterwarnings("always", category=DeprecationWarning)
-    
+
     if not CONFLUENCE_URL or not CONFLUENCE_USERNAME or not CONFLUENCE_API_TOKEN:
         print(
             "NOTE: This example shows code snippets but doesn't execute real API calls.\n"
@@ -182,6 +180,6 @@ if __name__ == "__main__":
             "- CONFLUENCE_USERNAME\n"
             "- CONFLUENCE_API_TOKEN\n"
         )
-    
+
     demonstrate_v1_v2_method_equivalence()
-    show_migration_recommendations() 
+    show_migration_recommendations()

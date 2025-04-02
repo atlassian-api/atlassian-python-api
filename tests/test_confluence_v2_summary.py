@@ -43,20 +43,20 @@ if __name__ == "__main__":
     def create_test_suite():
         """Create a test suite with all tests."""
         test_suite = unittest.TestSuite()
-        
+
         # Add basic structure tests
         test_suite.addTest(unittest.makeSuite(TestConfluenceV2BasicStructure))
-        
+
         # Add mock tests if available
         if "TestConfluenceV2WithMocks" in globals():
             test_suite.addTest(unittest.makeSuite(TestConfluenceV2WithMocks))
-        
+
         # Add compatibility tests if available
         if "TestConfluenceVersionCompatibility" in globals():
             test_suite.addTest(unittest.makeSuite(TestConfluenceVersionCompatibility))
-        
+
         return test_suite
-    
+
     # Run the tests
     runner = unittest.TextTestRunner()
-    runner.run(create_test_suite()) 
+    runner.run(create_test_suite())
