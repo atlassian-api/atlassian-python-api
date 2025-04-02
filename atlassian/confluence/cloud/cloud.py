@@ -434,7 +434,7 @@ class ConfluenceCloud(ConfluenceBase):
         endpoint = self.get_endpoint('page_by_id', id=page_id)
         
         try:
-            response = self.delete(endpoint)
+            self.delete(endpoint)
             return True
         except Exception as e:
             log.error(f"Failed to delete page: {e}")
@@ -500,7 +500,7 @@ class ConfluenceCloud(ConfluenceBase):
             
     def search_content(self, 
                       query: str, 
-                      type: Optional[str] = None,
+                      _type: Optional[str] = None,
                       space_id: Optional[str] = None,
                       status: Optional[str] = "current",
                       limit: int = 25) -> List[Dict[str, Any]]:
@@ -510,7 +510,7 @@ class ConfluenceCloud(ConfluenceBase):
         
         Args:
             query: Text to search for
-            type: (optional) Content type to filter by. Valid values: 'page', 'blogpost', 'comment'
+            _type: (optional) Content type to filter by. Valid values: 'page', 'blogpost', 'comment'
             space_id: (optional) Space ID to restrict search to
             status: (optional) Content status. Valid values: 'current', 'archived', 'draft', 'any'
             limit: (optional) Maximum number of results to return per request. Default: 25
@@ -528,11 +528,11 @@ class ConfluenceCloud(ConfluenceBase):
         cql_parts.append(f"text ~ \"{query}\"")
         
         # Add type filter
-        if type:
+        if _type:
             valid_types = ["page", "blogpost", "comment"]
-            if type not in valid_types:
+            if _type not in valid_types:
                 raise ValueError(f"Type must be one of: {', '.join(valid_types)}")
-            cql_parts.append(f"type = \"{type}\"")
+            cql_parts.append(f"type = \"{_type}\"")
             
         # Add space filter
         if space_id:
@@ -558,7 +558,7 @@ class ConfluenceCloud(ConfluenceBase):
     def get_spaces(self, 
                   ids: Optional[List[str]] = None,
                   keys: Optional[List[str]] = None,
-                  type: Optional[str] = None,
+                  _type: Optional[str] = None,
                   status: Optional[str] = None,
                   labels: Optional[List[str]] = None,
                   sort: Optional[str] = None,
@@ -570,7 +570,7 @@ class ConfluenceCloud(ConfluenceBase):
         Args:
             ids: (optional) List of space IDs to filter by
             keys: (optional) List of space keys to filter by
-            type: (optional) Type of spaces to filter by. Valid values: 'global', 'personal'
+            _type: (optional) Type of spaces to filter by. Valid values: 'global', 'personal'
             status: (optional) Status of spaces to filter by. Valid values: 'current', 'archived'
             labels: (optional) List of labels to filter by (matches any)
             sort: (optional) Sort order. Format: [field] or [-field] for descending
@@ -595,11 +595,11 @@ class ConfluenceCloud(ConfluenceBase):
         if keys:
             params["key"] = ",".join(keys)
             
-        if type:
-            if type not in ('global', 'personal'):
+        if _type:
+            if _type not in ('global', 'personal'):
                 raise ValueError("Type must be one of 'global', 'personal'")
-            params["type"] = type
-            
+            params["type"] = _type
+
         if status:
             if status not in ('current', 'archived'):
                 raise ValueError("Status must be one of 'current', 'archived'")
@@ -2165,12 +2165,12 @@ class ConfluenceCloud(ConfluenceBase):
             raise
             
     def get_custom_content(self, 
-                          type: Optional[str] = None,
+                          _type: Optional[str] = None,
                           space_id: Optional[str] = None,
                           page_id: Optional[str] = None,
                           blog_post_id: Optional[str] = None,
                           custom_content_id: Optional[str] = None,
-                          id: Optional[List[str]] = None,
+                          ids: Optional[List[str]] = None,
                           status: Optional[str] = None,
                           body_format: Optional[str] = None,
                           sort: Optional[str] = None,
@@ -2180,7 +2180,7 @@ class ConfluenceCloud(ConfluenceBase):
         Get custom content with optional filtering.
         
         Args:
-            type: (optional) Filter by custom content type
+            _type: (optional) Filter by custom content type
             space_id: (optional) Filter by space ID
             page_id: (optional) Filter by page ID
             blog_post_id: (optional) Filter by blog post ID
@@ -2202,8 +2202,8 @@ class ConfluenceCloud(ConfluenceBase):
         endpoint = self.get_endpoint('custom_content')
         
         params = {}
-        if type:
-            params["type"] = type
+        if _type:
+            params["type"] = _type
         if space_id:
             params["space-id"] = space_id
         if page_id:
@@ -2212,429 +2212,22 @@ class ConfluenceCloud(ConfluenceBase):
             params["blog-post-id"] = blog_post_id
         if custom_content_id:
             params["custom-content-id"] = custom_content_id
-        if id:
-            params["id"] = ",".join(id)
+        if ids:
+            params["id"] = ",".join(ids)
         if status:
-            valid_statuses = ["current", "draft", "archived", "trashed", "deleted", "any"]
-            if status not in valid_statuses:
-                raise ValueError(f"status must be one of {valid_statuses}")
-            params["status"] = status
-        if body_format:
-            if body_format not in ('storage', 'atlas_doc_format', 'raw', 'view'):
-                raise ValueError("body_format must be one of 'storage', 'atlas_doc_format', 'raw', 'view'")
-            params["body-format"] = body_format
-        if sort:
-            params["sort"] = sort
-        if cursor:
-            params["cursor"] = cursor
-        if limit:
-            params["limit"] = limit
+            params['id'] = ','.join(ids)
             
-        try:
-            return list(self._get_paged(endpoint, params=params))
-        except Exception as e:
-            log.error(f"Failed to get custom content: {e}")
-            raise
-            
-    def update_custom_content(self,
-                           custom_content_id: str,
-                           type: str,
-                           title: str,
-                           body: str,
-                           status: str,
-                           version_number: int,
-                           space_id: Optional[str] = None,
-                           page_id: Optional[str] = None,
-                           blog_post_id: Optional[str] = None,
-                           parent_custom_content_id: Optional[str] = None,
-                           body_format: str = "storage",
-                           version_message: Optional[str] = None) -> Dict[str, Any]:
-        """
-        Updates existing custom content.
-        
-        Args:
-            custom_content_id: ID of the custom content to update
-            type: Type of custom content
-            title: Title of the custom content
-            body: Content body in the specified format
-            status: Status of the custom content. Must be "current"
-            version_number: New version number (should be current version number + 1)
-            space_id: (optional) ID of the containing space (must be same as original)
-            page_id: (optional) ID of the containing page
-            blog_post_id: (optional) ID of the containing blog post
-            parent_custom_content_id: (optional) ID of the containing custom content
-            body_format: (optional) Format of the body. Default is "storage".
-                        Valid values are "storage", "atlas_doc_format", or "raw"
-            version_message: (optional) Message for the new version
-                
-        Returns:
-            Updated custom content data
-            
-        Raises:
-            HTTPError: If the API call fails
-            ValueError: If invalid parameters are provided
-        """
-        endpoint = self.get_endpoint('custom_content_by_id', id=custom_content_id)
-        
-        if body_format not in ('storage', 'atlas_doc_format', 'raw'):
-            raise ValueError("body_format must be one of 'storage', 'atlas_doc_format', 'raw'")
-            
-        if status != "current":
-            raise ValueError("status must be 'current' for updates")
-            
-        data = {
-            "id": custom_content_id,
-            "type": type,
-            "title": title,
-            "body": {
-                body_format: {
-                    "representation": body_format,
-                    "value": body
-                }
-            },
-            "status": status,
-            "version": {
-                "number": version_number
-            }
-        }
-        
-        if version_message:
-            data["version"]["message"] = version_message
+        if key:
+            params['key'] = ','.join(key)
             
         if space_id:
-            data["spaceId"] = space_id
-        if page_id:
-            data["pageId"] = page_id
-        if blog_post_id:
-            data["blogPostId"] = blog_post_id
-        if parent_custom_content_id:
-            data["customContentId"] = parent_custom_content_id
+            params['spaceId'] = space_id
             
-        try:
-            return self.put(endpoint, data=data)
-        except Exception as e:
-            log.error(f"Failed to update custom content {custom_content_id}: {e}")
-            raise
-            
-    def delete_custom_content(self, custom_content_id: str) -> Dict[str, Any]:
-        """
-        Delete custom content by its ID.
-        This moves the custom content to the trash, where it can be restored later.
-        
-        Args:
-            custom_content_id: ID of the custom content to delete
-                
-        Returns:
-            Response data from the API
-            
-        Raises:
-            HTTPError: If the API call fails
-        """
-        endpoint = self.get_endpoint('custom_content_by_id', id=custom_content_id)
-        
-        try:
-            return self.delete(endpoint)
-        except Exception as e:
-            log.error(f"Failed to delete custom content {custom_content_id}: {e}")
-            raise
-            
-    def get_custom_content_children(self, 
-                                  custom_content_id: str, 
-                                  cursor: Optional[str] = None,
-                                  limit: Optional[int] = None) -> List[Dict[str, Any]]:
-        """
-        Get the children of custom content.
-        
-        Args:
-            custom_content_id: ID of the custom content
-            cursor: (optional) Cursor for pagination
-            limit: (optional) Maximum number of results to return
-                
-        Returns:
-            List of custom content children
-            
-        Raises:
-            HTTPError: If the API call fails
-        """
-        endpoint = self.get_endpoint('custom_content_children', id=custom_content_id)
-        
-        params = {}
         if cursor:
-            params["cursor"] = cursor
-        if limit:
-            params["limit"] = limit
+            params['cursor'] = cursor
             
         try:
             return list(self._get_paged(endpoint, params=params))
         except Exception as e:
-            log.error(f"Failed to get children for custom content {custom_content_id}: {e}")
+            log.error(f"Failed to retrieve content property settings: {e}")
             raise
-            
-    def get_custom_content_ancestors(self, custom_content_id: str) -> List[Dict[str, Any]]:
-        """
-        Get the ancestors of custom content.
-        
-        Args:
-            custom_content_id: ID of the custom content
-                
-        Returns:
-            List of ancestor content
-            
-        Raises:
-            HTTPError: If the API call fails
-        """
-        endpoint = self.get_endpoint('custom_content_ancestors', id=custom_content_id)
-        
-        try:
-            response = self.get(endpoint)
-            return response.get("results", [])
-        except Exception as e:
-            log.error(f"Failed to get ancestors for custom content {custom_content_id}: {e}")
-            raise
-            
-    # Custom content labels methods
-    
-    def get_custom_content_labels(self, 
-                               custom_content_id: str,
-                               prefix: Optional[str] = None,
-                               sort: Optional[str] = None,
-                               cursor: Optional[str] = None,
-                               limit: Optional[int] = None) -> List[Dict[str, Any]]:
-        """
-        Retrieves labels for a custom content.
-        
-        Args:
-            custom_content_id: ID of the custom content
-            prefix: (optional) Filters labels by prefix
-            sort: (optional) Sorts labels by specified field
-            cursor: (optional) Cursor for pagination
-            limit: (optional) Maximum number of results to return (default: 25)
-                
-        Returns:
-            List of labels for the custom content
-            
-        Raises:
-            HTTPError: If the API call fails
-        """
-        endpoint = self.get_endpoint('custom_content_labels', id=custom_content_id)
-        
-        params = {}
-        if prefix:
-            params["prefix"] = prefix
-        if sort:
-            params["sort"] = sort
-        if cursor:
-            params["cursor"] = cursor
-        if limit:
-            params["limit"] = limit
-            
-        try:
-            return list(self._get_paged(endpoint, params=params))
-        except Exception as e:
-            log.error(f"Failed to get labels for custom content {custom_content_id}: {e}")
-            raise
-            
-    def add_custom_content_label(self, custom_content_id: str, label: str, prefix: Optional[str] = None) -> Dict[str, Any]:
-        """
-        Adds a label to custom content.
-        
-        Args:
-            custom_content_id: ID of the custom content
-            label: The label to add
-            prefix: (optional) The prefix for the label
-                
-        Returns:
-            The added label
-            
-        Raises:
-            HTTPError: If the API call fails
-        """
-        endpoint = self.get_endpoint('custom_content_labels', id=custom_content_id)
-        
-        data = {
-            "name": label,
-        }
-        
-        if prefix:
-            data["prefix"] = prefix
-            
-        try:
-            return self.post(endpoint, data=data)
-        except Exception as e:
-            log.error(f"Failed to add label to custom content {custom_content_id}: {e}")
-            raise
-            
-    def delete_custom_content_label(self, custom_content_id: str, label: str, prefix: Optional[str] = None) -> None:
-        """
-        Deletes a label from custom content.
-        
-        Args:
-            custom_content_id: ID of the custom content
-            label: The label to delete
-            prefix: (optional) The prefix for the label
-                
-        Raises:
-            HTTPError: If the API call fails
-        """
-        endpoint = self.get_endpoint('custom_content_labels', id=custom_content_id)
-        
-        params = {
-            "name": label
-        }
-        
-        if prefix:
-            params["prefix"] = prefix
-            
-        try:
-            self.delete(endpoint, params=params)
-        except Exception as e:
-            log.error(f"Failed to delete label from custom content {custom_content_id}: {e}")
-            raise
-    
-    # Custom content properties methods
-    
-    def get_custom_content_properties(self, 
-                                    custom_content_id: str, 
-                                    sort: Optional[str] = None,
-                                    cursor: Optional[str] = None,
-                                    limit: Optional[int] = None) -> List[Dict[str, Any]]:
-        """
-        Retrieves properties for a custom content.
-        
-        Args:
-            custom_content_id: ID of the custom content
-            sort: (optional) Sorts properties by specified field
-            cursor: (optional) Cursor for pagination
-            limit: (optional) Maximum number of results to return (default: 25)
-                
-        Returns:
-            List of properties for the custom content
-            
-        Raises:
-            HTTPError: If the API call fails
-        """
-        endpoint = self.get_endpoint('custom_content_properties', id=custom_content_id)
-        
-        params = {}
-        if sort:
-            params["sort"] = sort
-        if cursor:
-            params["cursor"] = cursor
-        if limit:
-            params["limit"] = limit
-            
-        try:
-            return list(self._get_paged(endpoint, params=params))
-        except Exception as e:
-            log.error(f"Failed to get properties for custom content {custom_content_id}: {e}")
-            raise
-            
-    def get_custom_content_property_by_key(self, custom_content_id: str, property_key: str) -> Dict[str, Any]:
-        """
-        Retrieves a specific property for a custom content by key.
-        
-        Args:
-            custom_content_id: ID of the custom content
-            property_key: Key of the property to retrieve
-                
-        Returns:
-            The property
-            
-        Raises:
-            HTTPError: If the API call fails
-        """
-        endpoint = self.get_endpoint('custom_content_property_by_key', id=custom_content_id, key=property_key)
-        
-        try:
-            return self.get(endpoint)
-        except Exception as e:
-            log.error(f"Failed to get property {property_key} for custom content {custom_content_id}: {e}")
-            raise
-            
-    def create_custom_content_property(self, custom_content_id: str, key: str, value: Any) -> Dict[str, Any]:
-        """
-        Creates a property for a custom content.
-        
-        Args:
-            custom_content_id: ID of the custom content
-            key: Key of the property
-            value: Value of the property (must be JSON serializable)
-                
-        Returns:
-            The created property
-            
-        Raises:
-            HTTPError: If the API call fails
-        """
-        endpoint = self.get_endpoint('custom_content_properties', id=custom_content_id)
-        
-        data = {
-            "key": key,
-            "value": value
-        }
-            
-        try:
-            return self.post(endpoint, data=data)
-        except Exception as e:
-            log.error(f"Failed to create property for custom content {custom_content_id}: {e}")
-            raise
-            
-    def update_custom_content_property(self, 
-                                     custom_content_id: str, 
-                                     key: str, 
-                                     value: Any, 
-                                     version_number: int,
-                                     version_message: Optional[str] = None) -> Dict[str, Any]:
-        """
-        Updates a property for a custom content.
-        
-        Args:
-            custom_content_id: ID of the custom content
-            key: Key of the property to update
-            value: New value of the property (must be JSON serializable)
-            version_number: New version number (should be current version number + 1)
-            version_message: (optional) Message for the new version
-                
-        Returns:
-            The updated property
-            
-        Raises:
-            HTTPError: If the API call fails
-        """
-        endpoint = self.get_endpoint('custom_content_property_by_key', id=custom_content_id, key=key)
-        
-        data = {
-            "key": key,
-            "value": value,
-            "version": {
-                "number": version_number
-            }
-        }
-        
-        if version_message:
-            data["version"]["message"] = version_message
-            
-        try:
-            return self.put(endpoint, data=data)
-        except Exception as e:
-            log.error(f"Failed to update property {key} for custom content {custom_content_id}: {e}")
-            raise
-            
-    def delete_custom_content_property(self, custom_content_id: str, key: str) -> None:
-        """
-        Deletes a property from a custom content.
-        
-        Args:
-            custom_content_id: ID of the custom content
-            key: Key of the property to delete
-                
-        Raises:
-            HTTPError: If the API call fails
-        """
-        endpoint = self.get_endpoint('custom_content_property_by_key', id=custom_content_id, key=key)
-        
-        try:
-            self.delete(endpoint)
-        except Exception as e:
-            log.error(f"Failed to delete property {key} from custom content {custom_content_id}: {e}")
-            raise 
