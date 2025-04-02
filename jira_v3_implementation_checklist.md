@@ -17,7 +17,7 @@
 
 ## Implementation Progress Tracking
 - **Phase 1: Core Structure**: 100% complete
-- **Phase 2: Core Methods**: 10% complete
+- **Phase 2: Core Methods**: 100% complete
 - **Phase 3: New V3 Features**: 0% complete
 - **Phase 4: Testing**: 0% complete
 - **Phase 5: Documentation**: 0% complete
@@ -64,13 +64,13 @@
   - [x] `get_project`
   - [x] `get_project_components`
   - [x] `get_project_versions`
-- [ ] Remaining core methods (from the original Jira client)
-  - [ ] `get_custom_fields`
-  - [ ] `get_project_issues`
-  - [ ] `get_project_issues_count`
-  - [ ] `get_issue_remotelinks`
-  - [ ] `get_issue_transitions`
-  - [ ] `get_issue_watchers`
+- [x] Remaining core methods (from the original Jira client)
+  - [x] `get_custom_fields`
+  - [x] `get_project_issues`
+  - [x] `get_project_issues_count`
+  - [x] `get_issue_remotelinks`
+  - [x] `get_issue_transitions`
+  - [x] `get_issue_watchers`
 
 ## Phase 3: New V3 Features
 - [ ] Advanced search capabilities

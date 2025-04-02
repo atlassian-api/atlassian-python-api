@@ -633,4 +633,199 @@ class Jira(JiraBase):
             Dictionary containing the current user data
         """
         endpoint = self.get_endpoint("user_current")
-        return self.get(endpoint) 
+        return self.get(endpoint)
+
+    def get_custom_fields(self) -> List[Dict[str, Any]]:
+        """
+        Get all custom fields defined in the Jira instance.
+        
+        Returns:
+            List of custom field definitions
+        """
+        endpoint = self.get_endpoint("field")
+        
+        try:
+            fields = self.get(endpoint)
+            # Filter for custom fields only (custom fields have customfield_ prefix in their id)
+            return [field for field in fields if field.get("id", "").startswith("customfield_")]
+        except Exception as e:
+            log.error(f"Failed to retrieve custom fields: {e}")
+            raise
+            
+    def get_project_issues(
+        self, 
+        project_id_or_key: str, 
+        fields: Union[str, List[str]] = "*all", 
+        start_at: int = 0, 
+        max_results: Optional[int] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Get all issues for a project.
+        
+        Args:
+            project_id_or_key: Project ID or key
+            fields: Fields to include in the response (comma-separated string or list)
+            start_at: Index of the first issue to return
+            max_results: Maximum number of issues to return
+            
+        Returns:
+            List of issues in the project
+        """
+        jql = f'project = "{project_id_or_key}" ORDER BY key'
+        
+        # Handle fields parameter
+        if isinstance(fields, list):
+            fields = ",".join(fields)
+            
+        # Get search results
+        result = self.search_issues(
+            jql=jql, 
+            start_at=start_at, 
+            max_results=max_results or 50, 
+            fields=fields
+        )
+        
+        return result.get("issues", [])
+    
+    def get_project_issues_count(self, project_id_or_key: str) -> int:
+        """
+        Get the number of issues in a project.
+        
+        Args:
+            project_id_or_key: Project ID or key
+            
+        Returns:
+            Number of issues in the project
+        """
+        jql = f'project = "{project_id_or_key}"'
+        
+        # Search with no fields to minimize response size
+        result = self.search_issues(jql=jql, fields=["key"], max_results=1)
+        
+        return result.get("total", 0)
+    
+    def get_issue_remotelinks(
+        self, 
+        issue_id_or_key: str, 
+        global_id: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Get remote links for an issue.
+        
+        Args:
+            issue_id_or_key: Issue ID or key
+            global_id: Filter by global ID
+            
+        Returns:
+            List of remote links
+        """
+        issue_id_or_key = self.validate_id_or_key(issue_id_or_key, "issue_id_or_key")
+        endpoint = self.get_endpoint("issue_remotelinks", id=issue_id_or_key)
+        
+        params = {}
+        if global_id:
+            params["globalId"] = global_id
+            
+        try:
+            return self.get(endpoint, params=params)
+        except Exception as e:
+            log.error(f"Failed to retrieve remote links for issue {issue_id_or_key}: {e}")
+            raise
+    
+    def get_issue_watchers(self, issue_id_or_key: str) -> Dict[str, Any]:
+        """
+        Get watchers for an issue.
+        
+        Args:
+            issue_id_or_key: Issue ID or key
+            
+        Returns:
+            Dictionary containing watchers information
+        """
+        issue_id_or_key = self.validate_id_or_key(issue_id_or_key, "issue_id_or_key")
+        endpoint = self.get_endpoint("issue_watchers", id=issue_id_or_key)
+        
+        try:
+            return self.get(endpoint)
+        except Exception as e:
+            log.error(f"Failed to retrieve watchers for issue {issue_id_or_key}: {e}")
+            raise
+    
+    def get_issue_remote_link_by_id(self, issue_id_or_key: str, link_id: str) -> Dict[str, Any]:
+        """
+        Get a specific remote link for an issue.
+        
+        Args:
+            issue_id_or_key: Issue ID or key
+            link_id: Remote link ID
+            
+        Returns:
+            Remote link details
+        """
+        issue_id_or_key = self.validate_id_or_key(issue_id_or_key, "issue_id_or_key")
+        endpoint = f"{self.get_endpoint('issue_remotelinks', id=issue_id_or_key)}/{link_id}"
+        
+        try:
+            return self.get(endpoint)
+        except Exception as e:
+            log.error(f"Failed to retrieve remote link {link_id} for issue {issue_id_or_key}: {e}")
+            raise
+    
+    def create_or_update_issue_remote_link(
+        self,
+        issue_id_or_key: str,
+        link_url: str,
+        title: str,
+        global_id: Optional[str] = None,
+        relationship: Optional[str] = None,
+        icon_url: Optional[str] = None,
+        icon_title: Optional[str] = None,
+        status_resolved: bool = False
+    ) -> Dict[str, Any]:
+        """
+        Create or update a remote link for an issue.
+        
+        Args:
+            issue_id_or_key: Issue ID or key
+            link_url: URL of the remote link
+            title: Title of the remote link
+            global_id: Global ID for the remote link (used for updates)
+            relationship: Relationship of the link to the issue
+            icon_url: URL of an icon for the link
+            icon_title: Title for the icon
+            status_resolved: Whether the remote link is resolved
+            
+        Returns:
+            Created or updated remote link
+        """
+        issue_id_or_key = self.validate_id_or_key(issue_id_or_key, "issue_id_or_key")
+        endpoint = self.get_endpoint("issue_remotelinks", id=issue_id_or_key)
+        
+        # Build the payload
+        data = {
+            "object": {
+                "url": link_url,
+                "title": title,
+                "status": {"resolved": status_resolved}
+            }
+        }
+        
+        if global_id:
+            data["globalId"] = global_id
+            
+        if relationship:
+            data["relationship"] = relationship
+            
+        if icon_url or icon_title:
+            icon_data = {}
+            if icon_url:
+                icon_data["url16x16"] = icon_url
+            if icon_title:
+                icon_data["title"] = icon_title
+            data["object"]["icon"] = icon_data
+        
+        try:
+            return self.post(endpoint, data=data)
+        except Exception as e:
+            log.error(f"Failed to create/update remote link for issue {issue_id_or_key}: {e}")
+            raise 
