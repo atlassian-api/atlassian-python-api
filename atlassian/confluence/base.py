@@ -78,16 +78,48 @@ class ConfluenceBase(AtlassianRestAPI):
             url: The URL to validate
             
         Returns:
-            bool: True if the URL is a valid Confluence Cloud URL
+            bool: True if the URL is a valid Confluence Cloud URL, False otherwise
+            
+        Security:
+            This method implements strict URL validation:
+            - Only allows http:// and https:// schemes
+            - Properly validates domain names using full hostname matching
+            - Prevents common URL parsing attacks
         """
-        parsed = urlparse(url)
-        # Ensure we have a valid URL with a hostname
-        if not parsed.hostname:
+        try:
+            parsed = urlparse(url)
+            
+            # Validate scheme
+            if parsed.scheme not in ('http', 'https'):
+                return False
+                
+            # Ensure we have a valid hostname
+            if not parsed.hostname:
+                return False
+                
+            # Convert to lowercase for comparison
+            hostname = parsed.hostname.lower()
+            
+            # Split hostname into parts and validate
+            parts = hostname.split('.')
+            
+            # Must have at least 3 parts (e.g., site.atlassian.net)
+            if len(parts) < 3:
+                return False
+                
+            # Check exact matches for allowed domains
+            # This prevents attacks like: evil.com?atlassian.net
+            # or malicious-atlassian.net.evil.com
+            if hostname.endswith('.atlassian.net'):
+                return hostname == f"{parts[-3]}.atlassian.net"
+            elif hostname.endswith('.jira.com'):
+                return hostname == f"{parts[-3]}.jira.com"
+                
             return False
             
-        # Check if the hostname ends with .atlassian.net or .jira.com
-        hostname = parsed.hostname.lower()
-        return hostname.endswith('.atlassian.net') or hostname.endswith('.jira.com')
+        except Exception:
+            # Any parsing error means invalid URL
+            return False
 
     def __init__(
         self,
