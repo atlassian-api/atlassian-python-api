@@ -44,7 +44,31 @@ class JiraAdapter(CloudJira):
             'issue_get_comments': 'get_comments',
             'get_issue_watchers': 'get_issue_watchers',
             'jql': 'search_issues',
-            # Add more mappings as we implement methods
+            'get_projects': 'get_all_projects',
+            'get_project': 'get_project',
+            'get_project_components': 'get_project_components',
+            'get_project_versions': 'get_project_versions',
+            'get_user': 'get_user',
+            'myself': 'get_current_user',
+            'search_users': 'search_users',
+            'get_fields': 'get_fields',
+            'get_all_fields': 'get_all_fields',
+            'get_priorities': 'get_priorities',
+            'get_statuses': 'get_statuses',
+            'get_resolutions': 'get_resolutions',
+            'get_issue_types': 'get_issue_types',
+            'issue_add_attachment': 'add_attachment',
+            'issue_get_attachments': 'get_issue_attachments',
+            'issue_delete': 'delete_issue',
+            'issue_update': 'update_issue',
+            'issue_get_transitions': 'get_issue_transitions',
+            'issue_transition': 'transition_issue',
+            'issue_get_worklog': 'get_issue_worklog',
+            'issue_add_worklog': 'add_worklog',
+            'assign_issue': 'assign_issue',
+            'issue_add_watcher': 'add_watcher',
+            'issue_remove_watcher': 'remove_watcher',
+            'jql_get': 'get_all_issues',
         }
 
     def __getattr__(self, name: str) -> Any:
@@ -170,3 +194,18 @@ class JiraAdapter(CloudJira):
         return response.status_code == 204  # 204 No Content indicates success
 
     # Additional legacy method adapters will be added in Phase 2 
+
+    def myself(self) -> Dict[str, Any]:
+        """
+        Legacy method to get current user information.
+        
+        Returns:
+            Dictionary containing the current user data
+        """
+        warnings.warn(
+            "The method myself is deprecated and will be removed in a future version. "
+            "Please use get_current_user instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.get_current_user() 
