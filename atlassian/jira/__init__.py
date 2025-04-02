@@ -34,6 +34,8 @@ from atlassian.jira.errors import (
 from atlassian.jira.server import ServerJira
 from atlassian.jira.cloud.issuetypes import IssueTypesJira
 from atlassian.jira.cloud.issuetypes_adapter import IssueTypesJiraAdapter
+from atlassian.jira.cloud.projects import ProjectsJira
+from atlassian.jira.cloud.projects_adapter import ProjectsJiraAdapter
 
 # For backward compatibility
 Jira = JiraAdapter
@@ -50,6 +52,7 @@ __all__ = [
     "get_issues_jira_instance",
     "get_richtext_jira_instance",
     "get_issuetypes_jira_instance",
+    "get_projects_jira_instance",
     "JiraApiError",
     "JiraAuthenticationError",
     "JiraConflictError",
@@ -302,4 +305,39 @@ def get_issuetypes_jira_instance(
         return IssueTypesJiraAdapter(url, username, password, **kwargs)
     else:
         # Return direct issue types instance
-        return IssueTypesJira(url, username, password, **kwargs) 
+        return IssueTypesJira(url, username, password, **kwargs)
+
+
+def get_projects_jira_instance(
+    url: str,
+    username: str = None,
+    password: str = None,
+    api_version: Optional[int] = None,
+    legacy_mode: bool = True,
+    **kwargs,
+) -> Union[ProjectsJiraAdapter, ProjectsJira]:
+    """
+    Get a Jira Projects instance with specialized project management features.
+
+    Args:
+        url: Jira URL
+        username: Username for authentication
+        password: Password or API token for authentication
+        api_version: API version to use (2 or 3)
+        legacy_mode: If True, return a ProjectsJiraAdapter instance, otherwise return a direct ProjectsJira instance
+        **kwargs: Additional arguments to pass to the Jira constructor
+
+    Returns:
+        Jira Projects instance of the appropriate type
+    """
+    if api_version is None:
+        api_version = kwargs.pop("version", None) or 3
+
+    kwargs.setdefault("api_version", api_version)
+    
+    if legacy_mode:
+        # Wrap in adapter for backward compatibility
+        return ProjectsJiraAdapter(url, username, password, **kwargs)
+    else:
+        # Return direct projects instance
+        return ProjectsJira(url, username, password, **kwargs) 

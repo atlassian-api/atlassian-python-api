@@ -22,6 +22,8 @@ from atlassian.jira.cloud.richtext import RichTextJira
 from atlassian.jira.cloud.richtext_adapter import RichTextJiraAdapter
 from atlassian.jira.cloud.issuetypes import IssueTypesJira
 from atlassian.jira.cloud.issuetypes_adapter import IssueTypesJiraAdapter
+from atlassian.jira.cloud.projects import ProjectsJira
+from atlassian.jira.cloud.projects_adapter import ProjectsJiraAdapter
 
 __all__ = [
     "CloudJira",
@@ -40,4 +42,6 @@ __all__ = [
     "RichTextJiraAdapter",
     "IssueTypesJira",
     "IssueTypesJiraAdapter",
+    "ProjectsJira",
+    "ProjectsJiraAdapter",
 ] 
