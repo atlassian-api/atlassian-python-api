@@ -115,7 +115,7 @@ def create_page_comment_example(page_id):
         
         # Create a reply to the footer comment
         reply_comment = confluence.create_comment_reply(
-            comment_id=footer_comment.get('id'),
+            parent_comment_id=footer_comment.get('id'),
             body="This is a reply to the test footer comment."
         )
         
