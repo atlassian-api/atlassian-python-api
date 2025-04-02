@@ -17,7 +17,7 @@ class TestConfluenceV2(unittest.TestCase):
             password="password"
         )
         
-    @patch('atlassian.confluence_v2.ConfluenceV2.get')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.get')
     def test_get_page_by_id(self, mock_get):
         # Setup the mock
         mock_response = {"id": "123", "title": "Test Page"}
@@ -30,7 +30,7 @@ class TestConfluenceV2(unittest.TestCase):
         mock_get.assert_called_once_with('api/v2/pages/123', params={})
         self.assertEqual(response, mock_response)
         
-    @patch('atlassian.confluence_v2.ConfluenceV2.get')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.get')
     def test_get_page_by_id_with_body_format(self, mock_get):
         # Setup the mock
         mock_response = {"id": "123", "title": "Test Page"}
@@ -43,7 +43,7 @@ class TestConfluenceV2(unittest.TestCase):
         mock_get.assert_called_once_with('api/v2/pages/123', params={'body-format': 'storage'})
         self.assertEqual(response, mock_response)
         
-    @patch('atlassian.confluence_v2.ConfluenceV2.get')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.get')
     def test_get_page_by_id_without_body(self, mock_get):
         # Setup the mock
         mock_response = {"id": "123", "title": "Test Page"}
@@ -56,7 +56,7 @@ class TestConfluenceV2(unittest.TestCase):
         mock_get.assert_called_once_with('api/v2/pages/123', params={'body-format': 'none'})
         self.assertEqual(response, mock_response)
         
-    @patch('atlassian.confluence_v2.ConfluenceV2.get')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.get')
     def test_get_page_by_id_with_expand(self, mock_get):
         # Setup the mock
         mock_response = {"id": "123", "title": "Test Page"}
@@ -74,7 +74,7 @@ class TestConfluenceV2(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.confluence_v2.get_page_by_id("123", body_format="invalid")
             
-    @patch('atlassian.confluence_v2.ConfluenceV2._get_paged')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud._get_paged')
     def test_get_pages(self, mock_get_paged):
         # Setup the mock
         mock_pages = [{"id": "123", "title": "Test Page 1"}, {"id": "456", "title": "Test Page 2"}]
@@ -91,7 +91,7 @@ class TestConfluenceV2(unittest.TestCase):
         })
         self.assertEqual(response, mock_pages)
         
-    @patch('atlassian.confluence_v2.ConfluenceV2._get_paged')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud._get_paged')
     def test_get_pages_with_filters(self, mock_get_paged):
         # Setup the mock
         mock_pages = [{"id": "123", "title": "Test Page"}]
@@ -114,7 +114,7 @@ class TestConfluenceV2(unittest.TestCase):
             'space-id': 'SPACE123',
             'title': 'Test',
             'status': 'current',
-            'body-format': 'none',
+            'body-format': 'storage',
             'expand': 'version',
             'sort': 'title'
         }
@@ -131,7 +131,7 @@ class TestConfluenceV2(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.confluence_v2.get_pages(sort="invalid")
             
-    @patch('atlassian.confluence_v2.ConfluenceV2._get_paged')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud._get_paged')
     def test_get_child_pages(self, mock_get_paged):
         # Setup the mock
         mock_pages = [{"id": "123", "title": "Child Page 1"}, {"id": "456", "title": "Child Page 2"}]
@@ -151,7 +151,7 @@ class TestConfluenceV2(unittest.TestCase):
         )
         self.assertEqual(response, mock_pages)
         
-    @patch('atlassian.confluence_v2.ConfluenceV2._get_paged')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud._get_paged')
     def test_get_child_pages_with_filters(self, mock_get_paged):
         # Setup the mock
         mock_pages = [{"id": "123", "title": "Child Page"}]
@@ -189,7 +189,7 @@ class TestConfluenceV2(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.confluence_v2.get_child_pages("PARENT123", sort="invalid")
             
-    @patch('atlassian.confluence_v2.ConfluenceV2.post')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.post')
     def test_create_page(self, mock_post):
         # Setup the mock
         mock_response = {"id": "123", "title": "New Page", "status": "current"}
@@ -217,7 +217,7 @@ class TestConfluenceV2(unittest.TestCase):
         mock_post.assert_called_once_with('api/v2/pages', data=expected_data)
         self.assertEqual(response, mock_response)
         
-    @patch('atlassian.confluence_v2.ConfluenceV2.post')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.post')
     def test_create_page_with_parent(self, mock_post):
         # Setup the mock
         mock_response = {"id": "123", "title": "New Child Page"}
@@ -247,7 +247,7 @@ class TestConfluenceV2(unittest.TestCase):
         mock_post.assert_called_once_with('api/v2/pages', data=expected_data)
         self.assertEqual(response, mock_response)
         
-    @patch('atlassian.confluence_v2.ConfluenceV2.post')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.post')
     def test_create_page_with_wiki_format(self, mock_post):
         # Setup the mock
         mock_response = {"id": "123", "title": "Wiki Page"}
@@ -308,8 +308,8 @@ class TestConfluenceV2(unittest.TestCase):
                 # Missing representation="wiki"
             )
             
-    @patch('atlassian.confluence_v2.ConfluenceV2.get_page_by_id')
-    @patch('atlassian.confluence_v2.ConfluenceV2.put')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.get_page_by_id')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.put')
     def test_update_page(self, mock_put, mock_get_page):
         # Setup the mocks
         mock_page = {"id": "123", "title": "Existing Page", "version": {"number": 1}}
@@ -342,7 +342,7 @@ class TestConfluenceV2(unittest.TestCase):
         mock_put.assert_called_once_with('api/v2/pages/123', data=expected_data)
         self.assertEqual(response, mock_response)
         
-    @patch('atlassian.confluence_v2.ConfluenceV2.put')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.put')
     def test_update_page_with_explicit_version(self, mock_put):
         # Setup the mock
         mock_response = {"id": "123", "title": "Updated Page", "version": {"number": 5}}
@@ -367,7 +367,7 @@ class TestConfluenceV2(unittest.TestCase):
         mock_put.assert_called_once_with('api/v2/pages/123', data=expected_data)
         self.assertEqual(response, mock_response)
         
-    @patch('atlassian.confluence_v2.ConfluenceV2.put')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.put')
     def test_update_page_status(self, mock_put):
         # Setup the mock
         mock_response = {"id": "123", "status": "archived"}
@@ -409,7 +409,7 @@ class TestConfluenceV2(unittest.TestCase):
                 status="invalid"
             )
             
-    @patch('atlassian.confluence_v2.ConfluenceV2.delete')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.delete')
     def test_delete_page(self, mock_delete):
         # Setup the mock
         mock_delete.return_value = None
@@ -421,7 +421,7 @@ class TestConfluenceV2(unittest.TestCase):
         mock_delete.assert_called_once_with('api/v2/pages/123')
         self.assertTrue(result)
     
-    @patch('atlassian.confluence_v2.ConfluenceV2.get')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.get')
     def test_search(self, mock_get):
         # Setup the mock
         mock_response = {
@@ -443,7 +443,7 @@ class TestConfluenceV2(unittest.TestCase):
         })
         self.assertEqual(response, mock_response)
         
-    @patch('atlassian.confluence_v2.ConfluenceV2.get')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.get')
     def test_search_with_cql(self, mock_get):
         # Setup the mock
         mock_response = {"results": [{"content": {"id": "123"}}]}
@@ -475,7 +475,7 @@ class TestConfluenceV2(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.confluence_v2.search("test", body_format="invalid")
             
-    @patch('atlassian.confluence_v2.ConfluenceV2.search')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.search')
     def test_search_content(self, mock_search):
         # Setup the mock
         mock_results = [{"content": {"id": "123"}}, {"content": {"id": "456"}}]
@@ -498,7 +498,7 @@ class TestConfluenceV2(unittest.TestCase):
         )
         self.assertEqual(response, mock_results)
         
-    @patch('atlassian.confluence_v2.ConfluenceV2.search')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.search')
     def test_search_content_minimal(self, mock_search):
         # Setup the mock
         mock_results = [{"content": {"id": "123"}}]
@@ -525,7 +525,7 @@ class TestConfluenceV2(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.confluence_v2.search_content("test", status="invalid")
             
-    @patch('atlassian.confluence_v2.ConfluenceV2._get_paged')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud._get_paged')
     def test_get_spaces(self, mock_get_paged):
         # Setup the mock
         mock_spaces = [
@@ -541,7 +541,7 @@ class TestConfluenceV2(unittest.TestCase):
         mock_get_paged.assert_called_once_with('api/v2/spaces', params={'limit': 25})
         self.assertEqual(response, mock_spaces)
         
-    @patch('atlassian.confluence_v2.ConfluenceV2._get_paged')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud._get_paged')
     def test_get_spaces_with_filters(self, mock_get_paged):
         # Setup the mock
         mock_spaces = [{"id": "123", "key": "TEST", "name": "Test Space"}]
@@ -571,7 +571,7 @@ class TestConfluenceV2(unittest.TestCase):
         mock_get_paged.assert_called_once_with('api/v2/spaces', params=expected_params)
         self.assertEqual(response, mock_spaces)
         
-    @patch('atlassian.confluence_v2.ConfluenceV2.get')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.get')
     def test_get_space(self, mock_get):
         # Setup the mock
         mock_space = {"id": "123", "key": "TEST", "name": "Test Space"}
@@ -584,7 +584,7 @@ class TestConfluenceV2(unittest.TestCase):
         mock_get.assert_called_once_with('api/v2/spaces/123')
         self.assertEqual(response, mock_space)
         
-    @patch('atlassian.confluence_v2.ConfluenceV2.get_spaces')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.get_spaces')
     def test_get_space_by_key(self, mock_get_spaces):
         # Setup the mock
         mock_spaces = [{"id": "123", "key": "TEST", "name": "Test Space"}]
@@ -597,7 +597,7 @@ class TestConfluenceV2(unittest.TestCase):
         mock_get_spaces.assert_called_once_with(keys=["TEST"], limit=1)
         self.assertEqual(response, mock_spaces[0])
         
-    @patch('atlassian.confluence_v2.ConfluenceV2.get_spaces')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.get_spaces')
     def test_get_space_by_key_not_found(self, mock_get_spaces):
         # Setup the mock to return empty list (no spaces found)
         mock_get_spaces.return_value = []
@@ -621,7 +621,7 @@ class TestConfluenceV2(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.confluence_v2.get_spaces(sort="invalid")
             
-    @patch('atlassian.confluence_v2.ConfluenceV2.search')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.search')
     def test_get_space_content(self, mock_search):
         # Setup the mock
         mock_results = [{"content": {"id": "123", "title": "Page 1"}}]
@@ -634,7 +634,7 @@ class TestConfluenceV2(unittest.TestCase):
         mock_search.assert_called_once_with(query="", cql='space.id = "SPACE123"', limit=25)
         self.assertEqual(response, mock_results)
         
-    @patch('atlassian.confluence_v2.ConfluenceV2.search')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.search')
     def test_get_space_content_with_filters(self, mock_search):
         # Setup the mock
         mock_results = [{"content": {"id": "123", "title": "Root Page"}}]
@@ -663,7 +663,7 @@ class TestConfluenceV2(unittest.TestCase):
             
     # Tests for Page Property Methods (Phase 3)
     
-    @patch('atlassian.confluence_v2.ConfluenceV2._get_paged')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud._get_paged')
     def test_get_page_properties(self, mock_get_paged):
         # Setup the mock
         mock_properties = [
@@ -679,7 +679,7 @@ class TestConfluenceV2(unittest.TestCase):
         mock_get_paged.assert_called_once_with('api/v2/pages/PAGE123/properties', params={'limit': 25})
         self.assertEqual(response, mock_properties)
         
-    @patch('atlassian.confluence_v2.ConfluenceV2._get_paged')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud._get_paged')
     def test_get_page_properties_with_cursor(self, mock_get_paged):
         # Setup the mock
         mock_properties = [{"id": "123", "key": "prop1", "value": {"num": 42}}]
@@ -699,7 +699,7 @@ class TestConfluenceV2(unittest.TestCase):
         })
         self.assertEqual(response, mock_properties)
         
-    @patch('atlassian.confluence_v2.ConfluenceV2.get')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.get')
     def test_get_page_property_by_key(self, mock_get):
         # Setup the mock
         mock_property = {"id": "123", "key": "prop1", "value": {"num": 42}}
@@ -712,7 +712,7 @@ class TestConfluenceV2(unittest.TestCase):
         mock_get.assert_called_once_with('api/v2/pages/PAGE123/properties/prop1')
         self.assertEqual(response, mock_property)
         
-    @patch('atlassian.confluence_v2.ConfluenceV2.post')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.post')
     def test_create_page_property(self, mock_post):
         # Setup the mock
         mock_response = {"id": "123", "key": "test.prop", "value": {"data": "test"}}
@@ -742,8 +742,8 @@ class TestConfluenceV2(unittest.TestCase):
                 property_value="test"
             )
             
-    @patch('atlassian.confluence_v2.ConfluenceV2.get_page_property_by_key')
-    @patch('atlassian.confluence_v2.ConfluenceV2.put')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.get_page_property_by_key')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.put')
     def test_update_page_property(self, mock_put, mock_get_property):
         # Setup the mocks
         mock_current = {"id": "123", "key": "prop1", "version": {"number": 1}}
@@ -771,7 +771,7 @@ class TestConfluenceV2(unittest.TestCase):
         mock_put.assert_called_once_with('api/v2/pages/PAGE123/properties/prop1', data=expected_data)
         self.assertEqual(response, mock_response)
         
-    @patch('atlassian.confluence_v2.ConfluenceV2.put')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.put')
     def test_update_page_property_with_explicit_version(self, mock_put):
         # Setup the mock
         mock_response = {"id": "123", "key": "prop1", "value": "updated", "version": {"number": 5}}
@@ -797,7 +797,7 @@ class TestConfluenceV2(unittest.TestCase):
         mock_put.assert_called_once_with('api/v2/pages/PAGE123/properties/prop1', data=expected_data)
         self.assertEqual(response, mock_response)
         
-    @patch('atlassian.confluence_v2.ConfluenceV2.delete')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.delete')
     def test_delete_page_property(self, mock_delete):
         # Setup the mock
         mock_delete.return_value = None
@@ -811,7 +811,7 @@ class TestConfluenceV2(unittest.TestCase):
     
     # Tests for Label Methods (Phase 3)
     
-    @patch('atlassian.confluence_v2.ConfluenceV2._get_paged')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud._get_paged')
     def test_get_page_labels(self, mock_get_paged):
         # Setup the mock
         mock_labels = [
@@ -827,7 +827,7 @@ class TestConfluenceV2(unittest.TestCase):
         mock_get_paged.assert_called_once_with('api/v2/pages/PAGE123/labels', params={'limit': 25})
         self.assertEqual(response, mock_labels)
         
-    @patch('atlassian.confluence_v2.ConfluenceV2._get_paged')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud._get_paged')
     def test_get_page_labels_with_filters(self, mock_get_paged):
         # Setup the mock
         mock_labels = [{"id": "123", "name": "team-label"}]
@@ -849,7 +849,7 @@ class TestConfluenceV2(unittest.TestCase):
         })
         self.assertEqual(response, mock_labels)
         
-    @patch('atlassian.confluence_v2.ConfluenceV2.post')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.post')
     def test_add_page_label(self, mock_post):
         # Setup the mock
         mock_response = {"id": "123", "name": "test-label"}
@@ -868,7 +868,7 @@ class TestConfluenceV2(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.confluence_v2.add_page_label("PAGE123", "")
             
-    @patch('atlassian.confluence_v2.ConfluenceV2.post')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.post')
     def test_add_page_labels(self, mock_post):
         # Setup the mock
         mock_response = [
@@ -890,7 +890,7 @@ class TestConfluenceV2(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.confluence_v2.add_page_labels("PAGE123", [])
             
-    @patch('atlassian.confluence_v2.ConfluenceV2.delete')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.delete')
     def test_delete_page_label(self, mock_delete):
         # Setup the mock
         mock_delete.return_value = None
@@ -907,7 +907,7 @@ class TestConfluenceV2(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.confluence_v2.delete_page_label("PAGE123", "")
             
-    @patch('atlassian.confluence_v2.ConfluenceV2._get_paged')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud._get_paged')
     def test_get_space_labels(self, mock_get_paged):
         # Setup the mock
         mock_labels = [
@@ -923,7 +923,7 @@ class TestConfluenceV2(unittest.TestCase):
         mock_get_paged.assert_called_once_with('api/v2/spaces/SPACE123/labels', params={'limit': 25})
         self.assertEqual(response, mock_labels)
         
-    @patch('atlassian.confluence_v2.ConfluenceV2.post')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.post')
     def test_add_space_label(self, mock_post):
         # Setup the mock
         mock_response = {"id": "123", "name": "test-label"}
@@ -937,7 +937,7 @@ class TestConfluenceV2(unittest.TestCase):
         mock_post.assert_called_once_with('api/v2/spaces/SPACE123/labels', data=expected_data)
         self.assertEqual(response, mock_response)
         
-    @patch('atlassian.confluence_v2.ConfluenceV2.post')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.post')
     def test_add_space_labels(self, mock_post):
         # Setup the mock
         mock_response = [
@@ -954,7 +954,7 @@ class TestConfluenceV2(unittest.TestCase):
         mock_post.assert_called_once_with('api/v2/spaces/SPACE123/labels', data=expected_data)
         self.assertEqual(response, mock_response)
         
-    @patch('atlassian.confluence_v2.ConfluenceV2.delete')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.delete')
     def test_delete_space_label(self, mock_delete):
         """Test deleting a space label"""
         space_id = "12345"
@@ -968,7 +968,7 @@ class TestConfluenceV2(unittest.TestCase):
     
     # Tests for Whiteboard methods
     
-    @patch('atlassian.confluence_v2.ConfluenceV2.post')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.post')
     def test_create_whiteboard(self, mock_post):
         """Test creating a whiteboard"""
         space_id = "123456"
@@ -1003,7 +1003,7 @@ class TestConfluenceV2(unittest.TestCase):
         self.assertEqual(result["id"], "987654")
         self.assertEqual(result["title"], title)
         
-    @patch('atlassian.confluence_v2.ConfluenceV2.get')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.get')
     def test_get_whiteboard_by_id(self, mock_get):
         """Test retrieving a whiteboard by ID"""
         whiteboard_id = "123456"
@@ -1018,7 +1018,7 @@ class TestConfluenceV2(unittest.TestCase):
         
         self.assertEqual(result, mock_response)
     
-    @patch('atlassian.confluence_v2.ConfluenceV2.delete')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.delete')
     def test_delete_whiteboard(self, mock_delete):
         """Test deleting a whiteboard"""
         whiteboard_id = "123456"
@@ -1032,7 +1032,7 @@ class TestConfluenceV2(unittest.TestCase):
         
         self.assertEqual(result["status"], "success")
         
-    @patch('atlassian.confluence_v2.ConfluenceV2._get_paged')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud._get_paged')
     def test_get_whiteboard_children(self, mock_get_paged):
         """Test retrieving whiteboard children"""
         whiteboard_id = "123456"
@@ -1059,7 +1059,7 @@ class TestConfluenceV2(unittest.TestCase):
         self.assertEqual(result[0]["id"], "child1")
         self.assertEqual(result[1]["id"], "child2")
         
-    @patch('atlassian.confluence_v2.ConfluenceV2.get')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.get')
     def test_get_whiteboard_ancestors(self, mock_get):
         """Test retrieving whiteboard ancestors"""
         whiteboard_id = "123456"
@@ -1083,7 +1083,7 @@ class TestConfluenceV2(unittest.TestCase):
     
     # Tests for Custom Content methods
     
-    @patch('atlassian.confluence_v2.ConfluenceV2.post')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.post')
     def test_create_custom_content(self, mock_post):
         """Test creating custom content"""
         space_id = "123456"
@@ -1124,7 +1124,7 @@ class TestConfluenceV2(unittest.TestCase):
         self.assertEqual(result["id"], "987654")
         self.assertEqual(result["title"], title)
         
-    @patch('atlassian.confluence_v2.ConfluenceV2.get')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.get')
     def test_get_custom_content_by_id(self, mock_get):
         """Test retrieving custom content by ID"""
         custom_content_id = "123456"
@@ -1144,7 +1144,7 @@ class TestConfluenceV2(unittest.TestCase):
         
         self.assertEqual(result, mock_response)
         
-    @patch('atlassian.confluence_v2.ConfluenceV2._get_paged')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud._get_paged')
     def test_get_custom_content(self, mock_get_paged):
         """Test retrieving custom content with filters"""
         content_type = "my.custom.type"
@@ -1186,7 +1186,7 @@ class TestConfluenceV2(unittest.TestCase):
         self.assertEqual(result[0]["id"], "content1")
         self.assertEqual(result[1]["id"], "content2")
         
-    @patch('atlassian.confluence_v2.ConfluenceV2.put')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.put')
     def test_update_custom_content(self, mock_put):
         """Test updating custom content"""
         custom_content_id = "123456"
@@ -1241,7 +1241,7 @@ class TestConfluenceV2(unittest.TestCase):
         self.assertEqual(result["title"], title)
         self.assertEqual(result["version"]["number"], version_number)
         
-    @patch('atlassian.confluence_v2.ConfluenceV2.delete')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.delete')
     def test_delete_custom_content(self, mock_delete):
         """Test deleting custom content"""
         custom_content_id = "123456"
@@ -1255,7 +1255,7 @@ class TestConfluenceV2(unittest.TestCase):
         
         self.assertEqual(result["status"], "success")
         
-    @patch('atlassian.confluence_v2.ConfluenceV2._get_paged')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud._get_paged')
     def test_get_custom_content_children(self, mock_get_paged):
         """Test retrieving custom content children"""
         custom_content_id = "123456"
@@ -1282,7 +1282,7 @@ class TestConfluenceV2(unittest.TestCase):
         self.assertEqual(result[0]["id"], "child1")
         self.assertEqual(result[1]["id"], "child2")
         
-    @patch('atlassian.confluence_v2.ConfluenceV2.get')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.get')
     def test_get_custom_content_ancestors(self, mock_get):
         """Test retrieving custom content ancestors"""
         custom_content_id = "123456"
@@ -1304,7 +1304,7 @@ class TestConfluenceV2(unittest.TestCase):
         self.assertEqual(result[0]["id"], "parent1")
         self.assertEqual(result[1]["id"], "parent2")
         
-    @patch('atlassian.confluence_v2.ConfluenceV2._get_paged')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud._get_paged')
     def test_get_custom_content_labels(self, mock_get_paged):
         """Test retrieving custom content labels"""
         custom_content_id = "123456"
@@ -1331,7 +1331,7 @@ class TestConfluenceV2(unittest.TestCase):
         self.assertEqual(result[0]["name"], "test")
         self.assertEqual(result[1]["name"], "documentation")
         
-    @patch('atlassian.confluence_v2.ConfluenceV2.post')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.post')
     def test_add_custom_content_label(self, mock_post):
         """Test adding a label to custom content"""
         custom_content_id = "123456"
@@ -1359,7 +1359,7 @@ class TestConfluenceV2(unittest.TestCase):
         self.assertEqual(result["name"], label)
         self.assertEqual(result["prefix"], prefix)
         
-    @patch('atlassian.confluence_v2.ConfluenceV2.delete')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.delete')
     def test_delete_custom_content_label(self, mock_delete):
         """Test deleting a label from custom content"""
         custom_content_id = "123456"
@@ -1377,7 +1377,7 @@ class TestConfluenceV2(unittest.TestCase):
             params={"name": label, "prefix": prefix}
         )
         
-    @patch('atlassian.confluence_v2.ConfluenceV2._get_paged')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud._get_paged')
     def test_get_custom_content_properties(self, mock_get_paged):
         """Test retrieving custom content properties"""
         custom_content_id = "123456"
@@ -1404,7 +1404,7 @@ class TestConfluenceV2(unittest.TestCase):
         self.assertEqual(result[0]["key"], "test-prop")
         self.assertEqual(result[1]["key"], "another-prop")
         
-    @patch('atlassian.confluence_v2.ConfluenceV2.get')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.get')
     def test_get_custom_content_property_by_key(self, mock_get):
         """Test retrieving a specific custom content property"""
         custom_content_id = "123456"
@@ -1429,7 +1429,7 @@ class TestConfluenceV2(unittest.TestCase):
         
         self.assertEqual(result, mock_response)
         
-    @patch('atlassian.confluence_v2.ConfluenceV2.post')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.post')
     def test_create_custom_content_property(self, mock_post):
         """Test creating a custom content property"""
         custom_content_id = "123456"
@@ -1461,7 +1461,7 @@ class TestConfluenceV2(unittest.TestCase):
         self.assertEqual(result["key"], property_key)
         self.assertEqual(result["value"], property_value)
         
-    @patch('atlassian.confluence_v2.ConfluenceV2.put')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.put')
     def test_update_custom_content_property(self, mock_put):
         """Test updating a custom content property"""
         custom_content_id = "123456"
@@ -1503,7 +1503,7 @@ class TestConfluenceV2(unittest.TestCase):
         self.assertEqual(result["value"], property_value)
         self.assertEqual(result["version"]["number"], version_number)
         
-    @patch('atlassian.confluence_v2.ConfluenceV2.delete')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.delete')
     def test_delete_custom_content_property(self, mock_delete):
         """Test deleting a custom content property"""
         custom_content_id = "123456"
@@ -1518,7 +1518,7 @@ class TestConfluenceV2(unittest.TestCase):
             f"api/v2/custom-content/{custom_content_id}/properties/{property_key}"
         )
         
-    @patch('atlassian.confluence_v2.ConfluenceV2.delete')
+    @patch('atlassian.confluence.cloud.ConfluenceCloud.delete')
     def test_delete_comment(self, mock_delete):
         """Test deleting a comment"""
         comment_id = "12345"
