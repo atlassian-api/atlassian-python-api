@@ -246,6 +246,26 @@ Get spaces info
     # Get Space export download url
     confluence.get_space_export(space_key, export_type)
 
+Space
+-----
+
+.. code-block:: python
+
+    # Archive the given Space identified by spaceKey.
+    # This method is idempotent i.e.,
+    # if the Space is already archived then no action will be taken.
+    confluence.archive_space(space_key)
+
+    # Get trash contents of space
+    confluence.get_trashed_contents_by_space(space_key, cursor=None, expand=None, limit=100)
+
+    # Remove all trash contents of space
+    confluence.remove_trashed_contents_by_space(space_key)
+
+
+
+
+
 Get space permissions
 ---------------------
 
@@ -348,6 +368,12 @@ Users and Groups
 
     # Change calling user's password
     confluence.change_my_password(oldpass, newpass)
+
+    # Add given user to a group
+    confluence.add_user_to_group(username, group_name)
+
+    # Remove given user from a group
+    confluence.remove_user_from_group(username, group_name)
 
 CQL
 ---
