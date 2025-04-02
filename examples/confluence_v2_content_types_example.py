@@ -8,7 +8,6 @@ import os
 import logging
 from pprint import pprint
 
-from atlassian import Confluence
 from atlassian.confluence_base import ConfluenceBase
 
 # Set up logging
