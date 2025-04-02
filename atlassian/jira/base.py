@@ -26,17 +26,89 @@ class JiraEndpoints:
         "issue_by_id": "rest/api/2/issue/{id}",
         "issue_createmeta": "rest/api/2/issue/createmeta",
         "issue_changelog": "rest/api/2/issue/{id}/changelog",
+        "issue_editmeta": "rest/api/2/issue/{id}/editmeta",
+        "issue_remotelinks": "rest/api/2/issue/{id}/remotelink",
+        "issue_transitions": "rest/api/2/issue/{id}/transitions",
         "issue_watchers": "rest/api/2/issue/{id}/watchers",
+        "issue_voters": "rest/api/2/issue/{id}/votes",
         "issue_comment": "rest/api/2/issue/{id}/comment",
         "issue_comment_by_id": "rest/api/2/issue/{id}/comment/{comment_id}",
+        "issue_link": "rest/api/2/issueLink",
+        "issue_link_types": "rest/api/2/issueLinkType",
+        "issue_properties": "rest/api/2/issue/{id}/properties",
+        "issue_property": "rest/api/2/issue/{id}/properties/{key}",
         "issue_worklog": "rest/api/2/issue/{id}/worklog",
         "issue_worklog_by_id": "rest/api/2/issue/{id}/worklog/{worklog_id}",
+        "issue_attachments": "rest/api/2/issue/{id}/attachments",
+        
+        # Search API
         "search": "rest/api/2/search",
+        
+        # Project API
         "project": "rest/api/2/project",
         "project_by_id": "rest/api/2/project/{id}",
+        "project_components": "rest/api/2/project/{id}/components",
+        "project_versions": "rest/api/2/project/{id}/versions",
+        "project_roles": "rest/api/2/project/{id}/role",
+        "project_role": "rest/api/2/project/{id}/role/{role_id}",
+        "project_properties": "rest/api/2/project/{id}/properties",
+        "project_property": "rest/api/2/project/{id}/properties/{key}",
+        
+        # User API
         "user": "rest/api/2/user",
         "user_search": "rest/api/2/user/search",
-        # Additional endpoints will be added during Phase 2
+        "user_assignable_search": "rest/api/2/user/assignable/search",
+        "user_viewissue_search": "rest/api/2/user/viewissue/search",
+        "user_avatar": "rest/api/2/user/avatar",
+        "user_avatar_temporary": "rest/api/2/user/avatar/temporary",
+        "user_properties": "rest/api/2/user/properties",
+        "user_property": "rest/api/2/user/properties/{key}",
+        "user_current": "rest/api/2/myself",
+        
+        # Group API
+        "group": "rest/api/2/group",
+        "group_member": "rest/api/2/group/member",
+        
+        # Field API
+        "field": "rest/api/2/field",
+        "field_by_id": "rest/api/2/field/{id}",
+        
+        # Filter API
+        "filter": "rest/api/2/filter",
+        "filter_by_id": "rest/api/2/filter/{id}",
+        
+        # Component API
+        "component": "rest/api/2/component",
+        "component_by_id": "rest/api/2/component/{id}",
+        
+        # Workflow API
+        "workflow": "rest/api/2/workflow",
+        "workflow_scheme": "rest/api/2/workflowscheme",
+        
+        # Attachment API
+        "attachment": "rest/api/2/attachment",
+        "attachment_by_id": "rest/api/2/attachment/{id}",
+        "attachment_meta": "rest/api/2/attachment/meta",
+        
+        # Custom field API
+        "custom_field_option": "rest/api/2/customFieldOption/{id}",
+        
+        # Issue type API
+        "issue_type": "rest/api/2/issuetype",
+        "issue_type_by_id": "rest/api/2/issuetype/{id}",
+        
+        # Status API
+        "status": "rest/api/2/status",
+        "status_by_id": "rest/api/2/status/{id}",
+        "status_category": "rest/api/2/statuscategory",
+        
+        # Priority API
+        "priority": "rest/api/2/priority",
+        "priority_by_id": "rest/api/2/priority/{id}",
+        
+        # Resolution API
+        "resolution": "rest/api/2/resolution",
+        "resolution_by_id": "rest/api/2/resolution/{id}",
     }
 
     V3 = {
@@ -45,17 +117,89 @@ class JiraEndpoints:
         "issue_by_id": "rest/api/3/issue/{id}",
         "issue_createmeta": "rest/api/3/issue/createmeta",
         "issue_changelog": "rest/api/3/issue/{id}/changelog",
+        "issue_editmeta": "rest/api/3/issue/{id}/editmeta",
+        "issue_remotelinks": "rest/api/3/issue/{id}/remotelink",
+        "issue_transitions": "rest/api/3/issue/{id}/transitions",
         "issue_watchers": "rest/api/3/issue/{id}/watchers",
+        "issue_voters": "rest/api/3/issue/{id}/votes",
         "issue_comment": "rest/api/3/issue/{id}/comment",
         "issue_comment_by_id": "rest/api/3/issue/{id}/comment/{comment_id}",
+        "issue_link": "rest/api/3/issueLink",
+        "issue_link_types": "rest/api/3/issueLinkType",
+        "issue_properties": "rest/api/3/issue/{id}/properties",
+        "issue_property": "rest/api/3/issue/{id}/properties/{key}",
         "issue_worklog": "rest/api/3/issue/{id}/worklog",
         "issue_worklog_by_id": "rest/api/3/issue/{id}/worklog/{worklog_id}",
+        "issue_attachments": "rest/api/3/issue/{id}/attachments",
+        
+        # Search API
         "search": "rest/api/3/search",
+        
+        # Project API
         "project": "rest/api/3/project",
         "project_by_id": "rest/api/3/project/{id}",
+        "project_components": "rest/api/3/project/{id}/components",
+        "project_versions": "rest/api/3/project/{id}/versions",
+        "project_roles": "rest/api/3/project/{id}/role",
+        "project_role": "rest/api/3/project/{id}/role/{role_id}",
+        "project_properties": "rest/api/3/project/{id}/properties",
+        "project_property": "rest/api/3/project/{id}/properties/{key}",
+        
+        # User API
         "user": "rest/api/3/user",
         "user_search": "rest/api/3/user/search",
-        # Additional endpoints will be added during Phase 2
+        "user_assignable_search": "rest/api/3/user/assignable/search",
+        "user_viewissue_search": "rest/api/3/user/viewissue/search",
+        "user_avatar": "rest/api/3/user/avatar",
+        "user_avatar_temporary": "rest/api/3/user/avatar/temporary",
+        "user_properties": "rest/api/3/user/properties",
+        "user_property": "rest/api/3/user/properties/{key}",
+        "user_current": "rest/api/3/myself",
+        
+        # Group API
+        "group": "rest/api/3/group",
+        "group_member": "rest/api/3/group/member",
+        
+        # Field API
+        "field": "rest/api/3/field",
+        "field_by_id": "rest/api/3/field/{id}",
+        
+        # Filter API
+        "filter": "rest/api/3/filter",
+        "filter_by_id": "rest/api/3/filter/{id}",
+        
+        # Component API
+        "component": "rest/api/3/component",
+        "component_by_id": "rest/api/3/component/{id}",
+        
+        # Workflow API
+        "workflow": "rest/api/3/workflow",
+        "workflow_scheme": "rest/api/3/workflowscheme",
+        
+        # Attachment API
+        "attachment": "rest/api/3/attachment",
+        "attachment_by_id": "rest/api/3/attachment/{id}",
+        "attachment_meta": "rest/api/3/attachment/meta",
+        
+        # Custom field API
+        "custom_field_option": "rest/api/3/customFieldOption/{id}",
+        
+        # Issue type API
+        "issue_type": "rest/api/3/issuetype",
+        "issue_type_by_id": "rest/api/3/issuetype/{id}",
+        
+        # Status API
+        "status": "rest/api/3/status",
+        "status_by_id": "rest/api/3/status/{id}",
+        "status_category": "rest/api/3/statuscategory",
+        
+        # Priority API
+        "priority": "rest/api/3/priority",
+        "priority_by_id": "rest/api/3/priority/{id}",
+        
+        # Resolution API
+        "resolution": "rest/api/3/resolution",
+        "resolution_by_id": "rest/api/3/resolution/{id}",
     }
 
 
@@ -238,9 +382,55 @@ class JiraBase(AtlassianRestAPI):
                     yield response
                     break
         else:
-            # For server implementations, different pagination approach may be needed
-            # Will be implemented in Phase 2
-            raise ValueError("``_get_paged`` method is not fully implemented for Jira Server yet")
+            # For server implementations, different pagination approach
+            if params is None:
+                params = {}
+                
+            start_at = params.get("startAt", 0)
+            max_results = params.get("maxResults", 50)
+            
+            while True:
+                response = super(JiraBase, self).get(
+                    url,
+                    trailing=trailing,
+                    params=params,
+                    data=data,
+                    flags=flags,
+                    absolute=absolute,
+                )
+                
+                # Handle standard Jira server pagination
+                if isinstance(response, dict):
+                    # Different endpoints might use different keys for the actual data
+                    values = []
+                    if "values" in response:
+                        values = response.get("values", [])
+                    elif "issues" in response:
+                        values = response.get("issues", [])
+                    elif "comments" in response:
+                        values = response.get("comments", [])
+                    # Add more cases as needed for different endpoints
+                    
+                    # If we found values, yield them
+                    for value in values:
+                        yield value
+                        
+                    # Check if we need to get the next page
+                    total = response.get("total", 0)
+                    if total <= 0 or start_at + len(values) >= total or not values:
+                        break
+                        
+                    # Update pagination parameters for the next page
+                    start_at += max_results
+                    params["startAt"] = start_at
+                else:
+                    # For non-paginated responses
+                    if isinstance(response, list):
+                        for item in response:
+                            yield item
+                    else:
+                        yield response
+                    break
 
         return
 
@@ -251,6 +441,7 @@ class JiraBase(AtlassianRestAPI):
         password: str = None, 
         api_version: Union[str, int] = 2, 
         cloud: bool = None, 
+        legacy_mode: bool = True,
         **kwargs
     ):
         """
@@ -262,23 +453,46 @@ class JiraBase(AtlassianRestAPI):
             password: Password or API token for authentication
             api_version: API version (2 or 3)
             cloud: Force cloud instance if True, server if False, auto-detect if None
+            legacy_mode: Whether to return a JiraAdapter instance for backward compatibility
             kwargs: Additional arguments to pass to the constructor
             
         Returns:
             An instance of the appropriate Jira class
         """
         # Import here to avoid circular imports
-        from atlassian.jira.cloud import Jira as CloudJira
+        from atlassian.jira.cloud import Jira as CloudJira, JiraAdapter
+        from atlassian.jira.server import Jira as ServerJira
         
         # Determine if this is a cloud instance
         is_cloud = cloud
         if is_cloud is None and url:
             is_cloud = JiraBase._is_cloud_url(url)
             
-        # Create cloud instance
+        # Create appropriate instance
         if is_cloud:
-            return CloudJira(url=url, username=username, password=password, api_version=api_version, **kwargs)
+            if legacy_mode:
+                return JiraAdapter(
+                    url=url, 
+                    username=username, 
+                    password=password, 
+                    api_version=api_version, 
+                    **kwargs
+                )
+            else:
+                return CloudJira(
+                    url=url, 
+                    username=username, 
+                    password=password, 
+                    api_version=api_version, 
+                    **kwargs
+                )
         else:
-            # Server instance will be implemented in Phase 2
-            # For now, return cloud instance as fallback
-            return CloudJira(url=url, username=username, password=password, api_version=api_version, **kwargs) 
+            # For server, always return the Server implementation
+            # There's no adapter for server yet since it's still using API v2
+            return ServerJira(
+                url=url, 
+                username=username, 
+                password=password, 
+                api_version=api_version, 
+                **kwargs
+            ) 
