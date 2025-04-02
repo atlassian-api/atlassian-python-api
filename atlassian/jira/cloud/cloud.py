@@ -608,4 +608,14 @@ class Jira(JiraBase):
         if visibility:
             data["visibility"] = visibility
             
-        return self.post(endpoint, data=data) 
+        return self.post(endpoint, data=data)
+        
+    def get_current_user(self) -> Dict[str, Any]:
+        """
+        Get current user information.
+        
+        Returns:
+            Dictionary containing the current user data
+        """
+        endpoint = self.get_endpoint("user_current")
+        return self.get(endpoint) 
