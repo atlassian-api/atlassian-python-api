@@ -3,10 +3,14 @@ Jira module for Jira API v2 and v3.
 This module supports versioning.
 """
 
-from typing import Union
+from typing import Optional, Union
 
 from atlassian.jira.base import JiraBase
 from atlassian.jira.cloud import CloudJira, JiraAdapter
+from atlassian.jira.cloud.permissions import PermissionsJira
+from atlassian.jira.cloud.permissions_adapter import PermissionsJiraAdapter
+from atlassian.jira.cloud.software import SoftwareJira
+from atlassian.jira.cloud.software_adapter import SoftwareJiraAdapter
 from atlassian.jira.errors import (
     JiraApiError,
     JiraAuthenticationError,
@@ -28,6 +32,8 @@ __all__ = [
     "ServerJira",
     "JiraBase",
     "get_jira_instance",
+    "get_software_jira_instance",
+    "get_permissions_jira_instance",
     "JiraApiError",
     "JiraAuthenticationError",
     "JiraConflictError",
@@ -40,39 +46,116 @@ __all__ = [
 
 
 def get_jira_instance(
-    url: str, 
-    username: str = None, 
-    password: str = None, 
-    api_version: int = 3,
-    cloud: bool = None,
+    url: str,
+    username: str = None,
+    password: str = None,
+    api_version: Optional[int] = None,
+    cloud: Optional[bool] = None,
     legacy_mode: bool = True,
-    **kwargs
+    **kwargs,
 ) -> Union[JiraAdapter, CloudJira, ServerJira]:
     """
-    Factory function to create a Jira instance based on URL or explicit cloud parameter.
-    
+    Get a Jira instance based on the provided parameters.
+
     Args:
-        url: Jira instance URL
+        url: Jira URL
         username: Username for authentication
         password: Password or API token for authentication
         api_version: API version to use (2 or 3)
-        cloud: Explicitly set whether this is a cloud instance (True) or server instance (False)
-        legacy_mode: Whether to return a JiraAdapter instance for backward compatibility
-        **kwargs: Additional keyword arguments for the Jira client
-        
+        cloud: Force cloud or server instance, if not provided, will be determined from the URL
+        legacy_mode: If True, return a JiraAdapter instance, otherwise return a direct CloudJira instance
+        **kwargs: Additional arguments to pass to the Jira constructor
+
     Returns:
-        Jira instance configured for the right environment
+        Jira instance of the appropriate type
     """
-    # Determine if this is a cloud instance
-    is_cloud = cloud if cloud is not None else JiraBase._is_cloud_url(url)
-    
-    # Create the appropriate instance
-    if is_cloud:
-        instance = CloudJira(url, username, password, api_version=api_version, **kwargs)
+    if api_version is None:
+        api_version = kwargs.pop("version", None) or 2
+
+    # Auto-detect cloud, if not specified
+    if cloud is None:
+        cloud = ".atlassian.net" in url
+
+    if cloud:
+        # Return a cloud instance
+        kwargs.setdefault("api_version", api_version)
+        
         if legacy_mode:
             # Wrap in adapter for backward compatibility
-            return JiraAdapter(url, username, password, api_version=api_version, **kwargs)
-        return instance
+            return JiraAdapter(url, username, password, **kwargs)
+        else:
+            # Return direct cloud instance
+            return CloudJira(url, username, password, **kwargs)
     else:
-        # Fall back to server instance
-        return ServerJira(url, username, password, api_version=api_version, **kwargs) 
+        # Return a server instance
+        return ServerJira(url, username, password, **kwargs)
+
+
+def get_software_jira_instance(
+    url: str,
+    username: str = None,
+    password: str = None,
+    api_version: Optional[int] = None,
+    legacy_mode: bool = True,
+    **kwargs,
+) -> Union[SoftwareJiraAdapter, SoftwareJira]:
+    """
+    Get a Jira Software instance with specialized Jira Software features like boards, sprints, and backlog.
+
+    Args:
+        url: Jira URL
+        username: Username for authentication
+        password: Password or API token for authentication
+        api_version: API version to use (2 or 3)
+        legacy_mode: If True, return a SoftwareJiraAdapter instance, otherwise return a direct SoftwareJira instance
+        **kwargs: Additional arguments to pass to the Jira constructor
+
+    Returns:
+        Jira Software instance of the appropriate type
+    """
+    if api_version is None:
+        api_version = kwargs.pop("version", None) or 3
+
+    kwargs.setdefault("api_version", api_version)
+    
+    if legacy_mode:
+        # Wrap in adapter for backward compatibility
+        return SoftwareJiraAdapter(url, username, password, **kwargs)
+    else:
+        # Return direct software instance
+        return SoftwareJira(url, username, password, **kwargs)
+
+
+def get_permissions_jira_instance(
+    url: str,
+    username: str = None,
+    password: str = None,
+    api_version: Optional[int] = None,
+    legacy_mode: bool = True,
+    **kwargs,
+) -> Union[PermissionsJiraAdapter, PermissionsJira]:
+    """
+    Get a Jira Permissions instance with specialized permissions and security features.
+
+    Args:
+        url: Jira URL
+        username: Username for authentication
+        password: Password or API token for authentication
+        api_version: API version to use (2 or 3)
+        legacy_mode: If True, return a PermissionsJiraAdapter instance, otherwise return a direct PermissionsJira instance
+        **kwargs: Additional arguments to pass to the Jira constructor
+
+    Returns:
+        Jira Permissions instance of the appropriate type
+    """
+    if api_version is None:
+        api_version = kwargs.pop("version", None) or 3
+
+    kwargs.setdefault("api_version", api_version)
+    
+    if legacy_mode:
+        # Wrap in adapter for backward compatibility
+        return PermissionsJiraAdapter(url, username, password, **kwargs)
+    else:
+        # Return direct permissions instance
+        return PermissionsJira(url, username, password, **kwargs) 
