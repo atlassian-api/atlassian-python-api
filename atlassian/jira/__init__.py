@@ -32,6 +32,8 @@ from atlassian.jira.errors import (
     JiraValueError
 )
 from atlassian.jira.server import ServerJira
+from atlassian.jira.cloud.issuetypes import IssueTypesJira
+from atlassian.jira.cloud.issuetypes_adapter import IssueTypesJiraAdapter
 
 # For backward compatibility
 Jira = JiraAdapter
@@ -47,6 +49,7 @@ __all__ = [
     "get_users_jira_instance",
     "get_issues_jira_instance",
     "get_richtext_jira_instance",
+    "get_issuetypes_jira_instance",
     "JiraApiError",
     "JiraAuthenticationError",
     "JiraConflictError",
@@ -264,4 +267,39 @@ def get_richtext_jira_instance(url="", username="", password="", api_version=Non
     if legacy_mode:
         return RichTextJiraAdapter(url=url, username=username, password=password, api_version=api_version, **kwargs)
     else:
-        return RichTextJira(url=url, username=username, password=password, api_version=api_version, **kwargs) 
+        return RichTextJira(url=url, username=username, password=password, api_version=api_version, **kwargs)
+
+
+def get_issuetypes_jira_instance(
+    url: str,
+    username: str = None,
+    password: str = None,
+    api_version: Optional[int] = None,
+    legacy_mode: bool = True,
+    **kwargs,
+) -> Union[IssueTypesJiraAdapter, IssueTypesJira]:
+    """
+    Get a Jira Issue Types instance with specialized issue type and field configuration features.
+
+    Args:
+        url: Jira URL
+        username: Username for authentication
+        password: Password or API token for authentication
+        api_version: API version to use (2 or 3)
+        legacy_mode: If True, return a IssueTypesJiraAdapter instance, otherwise return a direct IssueTypesJira instance
+        **kwargs: Additional arguments to pass to the Jira constructor
+
+    Returns:
+        Jira Issue Types instance of the appropriate type
+    """
+    if api_version is None:
+        api_version = kwargs.pop("version", None) or 3
+
+    kwargs.setdefault("api_version", api_version)
+    
+    if legacy_mode:
+        # Wrap in adapter for backward compatibility
+        return IssueTypesJiraAdapter(url, username, password, **kwargs)
+    else:
+        # Return direct issue types instance
+        return IssueTypesJira(url, username, password, **kwargs) 

@@ -20,6 +20,8 @@ from atlassian.jira.cloud.users import UsersJira
 from atlassian.jira.cloud.users_adapter import UsersJiraAdapter
 from atlassian.jira.cloud.richtext import RichTextJira
 from atlassian.jira.cloud.richtext_adapter import RichTextJiraAdapter
+from atlassian.jira.cloud.issuetypes import IssueTypesJira
+from atlassian.jira.cloud.issuetypes_adapter import IssueTypesJiraAdapter
 
 __all__ = [
     "CloudJira",
@@ -36,4 +38,6 @@ __all__ = [
     "UsersJiraAdapter",
     "RichTextJira",
     "RichTextJiraAdapter",
+    "IssueTypesJira",
+    "IssueTypesJiraAdapter",
 ] 
