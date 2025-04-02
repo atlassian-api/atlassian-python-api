@@ -8,7 +8,6 @@ Example showing how to use both Confluence API v1 and v2 with the library
 from atlassian import Confluence, ConfluenceV2, create_confluence
 import os
 import logging
-from pprint import pprint
 import datetime
 
 # Set up logging

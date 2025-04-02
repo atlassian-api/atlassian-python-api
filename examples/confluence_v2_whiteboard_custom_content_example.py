@@ -145,8 +145,8 @@ def delete_whiteboard_example(whiteboard_id):
     print(f"\n=== Deleting whiteboard (ID: {whiteboard_id}) ===")
     
     try:
-        result = confluence.delete_whiteboard(whiteboard_id)
-        print(f"Whiteboard deleted successfully")
+        confluence.delete_whiteboard(whiteboard_id)
+        print(f"Deleted whiteboard {whiteboard_id}")
         return True
     
     except Exception as e:
@@ -267,7 +267,7 @@ def update_custom_content_example(custom_content_id, title, body, content_type, 
             type=content_type,
             title=title,
             body=body,
-            version_number=version_number,
+            version_number=current_version + 1,
             status="current",
             version_message="Updated via API example"
         )
@@ -293,7 +293,7 @@ def custom_content_labels_example(custom_content_id):
         # Add a label to the custom content
         label = "example-label"
         print(f"Adding label '{label}' to custom content")
-        added_label = confluence.add_custom_content_label(
+        confluence.add_custom_content_label(
             custom_content_id=custom_content_id,
             label=label
         )
@@ -344,7 +344,7 @@ def custom_content_properties_example(custom_content_id):
         }
         
         print(f"Creating property '{property_key}' for custom content")
-        created_prop = confluence.create_custom_content_property(
+        confluence.create_custom_content_property(
             custom_content_id=custom_content_id,
             key=property_key,
             value=property_value
@@ -362,7 +362,7 @@ def custom_content_properties_example(custom_content_id):
         updated_value["description"] = "This is an updated description"
         
         print(f"Updating property '{property_key}'")
-        updated_prop = confluence.update_custom_content_property(
+        confluence.update_custom_content_property(
             custom_content_id=custom_content_id,
             key=property_key,
             value=updated_value,
@@ -456,8 +456,9 @@ def delete_custom_content_example(custom_content_id):
     print(f"\n=== Deleting custom content (ID: {custom_content_id}) ===")
     
     try:
-        result = confluence.delete_custom_content(custom_content_id)
-        print(f"Custom content deleted successfully")
+        print(f"Deleting custom content with ID: {custom_content_id}")
+        confluence.delete_custom_content(custom_content_id)
+        print(f"Custom content successfully deleted")
         return True
     
     except Exception as e:
@@ -525,4 +526,58 @@ if __name__ == "__main__":
     # ancestors = get_custom_content_ancestors_example(custom_content_id)
     
     # Delete custom content
-    # delete_custom_content_example(custom_content_id) 
+    # delete_custom_content_example(custom_content_id)
+
+    # Delete whiteboards
+    print("\nDeleting nested whiteboard...")
+    confluence.delete_whiteboard(whiteboard_id)
+    print("Nested whiteboard deleted")
+    
+    print("\nDeleting parent whiteboard...")
+    confluence.delete_whiteboard(whiteboard_id)
+    print("Parent whiteboard deleted")
+
+    # Update custom content
+    print("\nUpdating custom content...")
+    updated_content = confluence.update_custom_content(
+        custom_content_id=custom_content_id,
+        type="my.custom.type",
+        title="Updated Custom Content",
+        body="<p>This content has been updated via API</p>",
+        status="current",
+        version_number=current.get("version", {}).get("number", 1) + 1,
+        space_id=space_id,
+        body_format="storage"
+    )
+
+    # Add labels to custom content
+    print("\nAdding labels to custom content...")
+    confluence.add_custom_content_label(
+        custom_content_id=custom_content_id,
+        label="api-example"
+    )
+
+    # Create property
+    confluence.create_custom_content_property(
+        custom_content_id=custom_content_id,
+        key=property_key,
+        value=property_data
+    )
+
+    # Update property
+    print("\nUpdating property...")
+    property_data["color"] = "red"
+    
+    confluence.update_custom_content_property(
+        custom_content_id=custom_content_id,
+        key=property_key,
+        value=property_data,
+        version_number=property_details['version']['number'] + 1
+    )
+
+    # Clean up - delete custom content
+    print("\nDeleting custom content...")
+    confluence.delete_custom_content(custom_content_id)
+    print(f"Deleted custom content {custom_content_id}")
+    
+    return True 
