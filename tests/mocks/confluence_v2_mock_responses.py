@@ -4,7 +4,6 @@ Mock responses for Confluence v2 API endpoints.
 This file contains predefined mock responses for testing the Confluence v2 implementation.
 """
 
-import json
 from copy import deepcopy
 
 

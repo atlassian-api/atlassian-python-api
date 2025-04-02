@@ -2,10 +2,8 @@
 
 import logging
 import os
-import sys
 import requests
 import json
-from atlassian import ConfluenceV2
 from dotenv import load_dotenv
 
 # Load environment variables from .env file

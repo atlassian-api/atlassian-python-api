@@ -118,8 +118,6 @@ class TestConfluenceV2WithMocks(unittest.TestCase):
     
     def test_get_pages_with_pagination(self):
         """Test retrieving pages with pagination."""
-        endpoint = "api/v2/pages"
-        
         # Set up a simple mock response
         page_data = {
             "results": [
@@ -219,7 +217,6 @@ class TestConfluenceV2WithMocks(unittest.TestCase):
     def test_get_page_properties(self):
         """Test retrieving properties for a page."""
         page_id = "123456"
-        endpoint = f"api/v2/pages/{page_id}/properties"
         
         # Mock response data explicitly
         mock_data = {"results": [
@@ -270,7 +267,6 @@ class TestConfluenceV2WithMocks(unittest.TestCase):
     def test_get_page_labels(self):
         """Test retrieving labels for a page."""
         page_id = "123456"
-        endpoint = f"api/v2/pages/{page_id}/labels"
         
         # Mock response data explicitly instead of relying on mock response generation
         mock_data = {"results": [
