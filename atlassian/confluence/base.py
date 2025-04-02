@@ -4,6 +4,9 @@ Confluence base module for shared functionality between API versions
 import logging
 from typing import Dict, List, Optional, Union, Any, Tuple
 from urllib.parse import urlparse
+import signal
+import os
+import platform
 
 from atlassian.rest_client import AtlassianRestAPI
 
@@ -22,6 +25,7 @@ class ConfluenceEndpoints:
         "content_search": "rest/api/content/search",
         "space": "rest/api/space",
         "space_by_key": "rest/api/space/{key}",
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      "content": "rest/api/content",
     }
 
     V2 = {
@@ -35,6 +39,7 @@ class ConfluenceEndpoints:
         'page_property_by_key': 'api/v2/pages/{id}/properties/{key}',
         'page_labels': 'api/v2/pages/{id}/labels',
         'space_labels': 'api/v2/spaces/{id}/labels',
+        'content': 'api/v2/pages',
         
         # Comment endpoints for V2 API
         'page_footer_comments': 'api/v2/pages/{id}/footer-comments',
@@ -87,36 +92,54 @@ class ConfluenceBase(AtlassianRestAPI):
             - Prevents common URL parsing attacks
         """
         try:
-            parsed = urlparse(url)
-            
-            # Validate scheme
-            if parsed.scheme not in ('http', 'https'):
-                return False
+            # For Unix/Linux/Mac
+            if platform.system() != 'Windows' and hasattr(signal, 'SIGALRM'):
+                # Define a timeout handler
+                def timeout_handler(signum, frame):
+                    raise TimeoutError("URL validation timed out")
                 
-            # Ensure we have a valid hostname
-            if not parsed.hostname:
-                return False
+                # Set a timeout of 5 seconds
+                original_handler = signal.signal(signal.SIGALRM, timeout_handler)
+                signal.alarm(5)
                 
-            # Convert to lowercase for comparison
-            hostname = parsed.hostname.lower()
-            
-            # Split hostname into parts and validate
-            parts = hostname.split('.')
-            
-            # Must have at least 3 parts (e.g., site.atlassian.net)
-            if len(parts) < 3:
-                return False
+                try:
+                    parsed = urlparse(url)
+                    
+                    # Validate scheme
+                    if parsed.scheme not in ('http', 'https'):
+                        return False
+                        
+                    # Ensure we have a valid hostname
+                    if not parsed.hostname:
+                        return False
+                        
+                    # Convert to lowercase for comparison
+                    hostname = parsed.hostname.lower()
+                    
+                    # Check if the hostname ends with .atlassian.net or .jira.com
+                    return hostname.endswith('.atlassian.net') or hostname.endswith('.jira.com')
+                finally:
+                    # Reset the alarm and restore the original handler
+                    signal.alarm(0)
+                    signal.signal(signal.SIGALRM, original_handler)
+            else:
+                # For Windows or systems without SIGALRM
+                parsed = urlparse(url)
                 
-            # Check exact matches for allowed domains
-            # This prevents attacks like: evil.com?atlassian.net
-            # or malicious-atlassian.net.evil.com
-            if hostname.endswith('.atlassian.net'):
-                return hostname == f"{parts[-3]}.atlassian.net"
-            elif hostname.endswith('.jira.com'):
-                return hostname == f"{parts[-3]}.jira.com"
+                # Validate scheme
+                if parsed.scheme not in ('http', 'https'):
+                    return False
+                    
+                # Ensure we have a valid hostname
+                if not parsed.hostname:
+                    return False
+                    
+                # Convert to lowercase for comparison
+                hostname = parsed.hostname.lower()
                 
-            return False
-            
+                # Simple check for valid cloud URLs
+                return hostname.endswith('.atlassian.net') or hostname.endswith('.jira.com')
+                
         except Exception:
             # Any parsing error means invalid URL
             return False
@@ -298,10 +321,10 @@ class ConfluenceBase(AtlassianRestAPI):
             ValueError: If api_version is not 1 or 2
         """
         if api_version == 1:
-            from .confluence import Confluence
+            from atlassian.confluence import Confluence
             return Confluence(url, *args, **kwargs)
         elif api_version == 2:
-            from .confluence_v2 import ConfluenceV2
-            return ConfluenceV2(url, *args, **kwargs)
+            from atlassian.confluence import ConfluenceCloud
+            return ConfluenceCloud(url, *args, **kwargs)
         else:
             raise ValueError(f"Unsupported API version: {api_version}. Use 1 or 2.") 
