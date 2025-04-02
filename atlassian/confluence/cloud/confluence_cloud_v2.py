@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Module for Confluence API v2 implementation
+Module for Confluence Cloud API v2 implementation
 """
 
 import logging
@@ -11,19 +11,19 @@ import functools
 
 from typing import Dict, List, Optional, Union, Any
 
-from .confluence_base import ConfluenceBase
+from ..base import ConfluenceBase
 
 log = logging.getLogger(__name__)
 
 
-class ConfluenceV2(ConfluenceBase):
+class ConfluenceCloud(ConfluenceBase):
     """
-    Confluence API v2 implementation class
+    Confluence Cloud API v2 implementation class
     """
 
     def __init__(self, url: str, *args, **kwargs):
         """
-        Initialize the ConfluenceV2 instance with API version 2
+        Initialize the ConfluenceCloud instance with API version 2
         
         Args:
             url: Confluence Cloud base URL
@@ -35,13 +35,13 @@ class ConfluenceV2(ConfluenceBase):
         
         # Check if the URL already contains '/wiki'
         # This prevents a double '/wiki/wiki' issue when the parent class adds it again
-        if ("atlassian.net" in url or "jira.com" in url) and ("/wiki" in url):
+        if self._is_cloud_url(url) and "/wiki" in url:
             # Remove the '/wiki' suffix since the parent class will add it
             url = url.rstrip("/")
             if url.endswith("/wiki"):
                 url = url[:-5]
                 
-        super(ConfluenceV2, self).__init__(url, *args, **kwargs)
+        super(ConfluenceCloud, self).__init__(url, *args, **kwargs)
         self._compatibility_method_mapping = {
             # V1 method => V2 method mapping
             "get_content": "get_pages",
@@ -82,7 +82,7 @@ class ConfluenceV2(ConfluenceBase):
             @functools.wraps(v2_method)
             def compatibility_wrapper(*args, **kwargs):
                 warnings.warn(
-                    f"The method '{name}' is deprecated in ConfluenceV2. "
+                    f"The method '{name}' is deprecated in ConfluenceCloud. "
                     f"Use '{v2_method_name}' instead.",
                     DeprecationWarning, 
                     stacklevel=2
