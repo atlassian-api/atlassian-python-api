@@ -1100,6 +1100,7 @@ class TestConfluenceV2(unittest.TestCase):
         custom_content_id = "123456"
         prefix = "global"
         sort = "name"
+        limit = 25
 
         mock_get_paged.return_value = [
             {"id": "label1", "name": "test", "prefix": "global"},
@@ -1107,11 +1108,11 @@ class TestConfluenceV2(unittest.TestCase):
         ]
 
         result = self.confluence_v2.get_custom_content_labels(
-            custom_content_id=custom_content_id, prefix=prefix, sort=sort
+            custom_content_id=custom_content_id, prefix=prefix, sort=sort, limit=limit
         )
 
         mock_get_paged.assert_called_with(
-            f"api/v2/custom-content/{custom_content_id}/labels", params={"prefix": prefix, "sort": sort}
+            f"api/v2/custom-content/{custom_content_id}/labels", params={"prefix": prefix, "sort": sort, "limit": limit}
         )
 
         self.assertEqual(len(result), 2)

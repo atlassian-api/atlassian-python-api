@@ -4,7 +4,10 @@
 """
 Confluence Cloud API implementation
 """
+import functools
+import json
 import logging
+import re
 import warnings
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -31,6 +34,14 @@ class ConfluenceCloud(ConfluenceBase):
         kwargs.setdefault("api_version", 2)
         super().__init__(url, *args, **kwargs)
 
+        # Initialize the compatibility method mapping
+        self._compatibility_method_mapping = {}
+        
+        # Add compatibility mapping here if needed
+        # self._compatibility_method_mapping = {
+        #    "old_method_name": "new_method_name"
+        # }
+
         # Warn about V1 method usage
         warnings.warn(
             "V1 methods are deprecated in ConfluenceCloud. Use V2 methods instead.", DeprecationWarning, stacklevel=2
@@ -49,7 +60,7 @@ class ConfluenceCloud(ConfluenceBase):
         Raises:
             AttributeError: If no mapping exists and the attribute isn't found
         """
-        if name in self._compatibility_method_mapping:
+        if hasattr(self, "_compatibility_method_mapping") and name in self._compatibility_method_mapping:
             v2_method_name = self._compatibility_method_mapping[name]
             v2_method = getattr(self, v2_method_name)
 
@@ -840,37 +851,35 @@ class ConfluenceCloud(ConfluenceBase):
             log.error(f"Failed to retrieve property {property_key} for page {page_id}: {e}")
             raise
 
-    def create_page_property(self, page_id: str, property_key: str, property_value: Any) -> Dict[str, Any]:
+    def create_page_property(self, page_id: str, key: str, value: Any) -> Dict[str, Any]:
         """
         Creates a new property for a page.
 
         Args:
             page_id: The ID of the page
-            property_key: The key of the property to create. Must only contain alphanumeric
-                         characters and periods
-            property_value: The value of the property. Can be any JSON-serializable value
+            key: The key of the property to create. Must only contain alphanumeric
+                characters and periods
+            value: The value of the property. Can be any JSON-serializable value
 
         Returns:
-            The created page property object
+            The created property object
 
         Raises:
             HTTPError: If the API call fails
-            ValueError: If the property_key has invalid characters
+            ValueError: If the key has invalid characters
         """
         # Validate key format
-        import re
-
-        if not re.match(r"^[a-zA-Z0-9.]+$", property_key):
+        if not re.match(r"^[a-zA-Z0-9.]+$", key):
             raise ValueError("Property key must only contain alphanumeric characters and periods.")
 
         endpoint = self.get_endpoint("page_properties", id=page_id)
 
-        data = {"key": property_key, "value": property_value}
+        data = {"key": key, "value": value}
 
         try:
             return self.post(endpoint, data=data)
         except Exception as e:
-            log.error(f"Failed to create property {property_key} for page {page_id}: {e}")
+            log.error(f"Failed to create property {key} for page {page_id}: {e}")
             raise
 
     def update_page_property(
@@ -2121,7 +2130,7 @@ class ConfluenceCloud(ConfluenceBase):
             page_id: (optional) Filter by page ID
             blog_post_id: (optional) Filter by blog post ID
             custom_content_id: (optional) Filter by parent custom content ID
-            id: (optional) List of custom content IDs to filter by
+            ids: (optional) List of custom content IDs to filter by
             status: (optional) Filter by status. Valid values: "current", "draft", "archived", "trashed", "deleted", "any"
             body_format: (optional) Format to retrieve the body in.
                         Valid values: "storage", "atlas_doc_format", "raw", "view"
@@ -2151,19 +2160,203 @@ class ConfluenceCloud(ConfluenceBase):
         if ids:
             params["id"] = ",".join(ids)
         if status:
-            params["id"] = ",".join(ids)
-
-        if key:
-            params["key"] = ",".join(key)
-
-        if space_id:
-            params["spaceId"] = space_id
-
+            params["status"] = status
+        if body_format:
+            params["body-format"] = body_format
+        if sort:
+            params["sort"] = sort
+        if limit:
+            params["limit"] = limit
         if cursor:
             params["cursor"] = cursor
 
         try:
             return list(self._get_paged(endpoint, params=params))
         except Exception as e:
-            log.error(f"Failed to retrieve content property settings: {e}")
+            log.error(f"Failed to retrieve custom content: {e}")
+            raise
+
+    def add_custom_content_label(self, custom_content_id: str, label: str, prefix: str = "global") -> Dict[str, Any]:
+        """
+        Adds a label to custom content.
+
+        Args:
+            custom_content_id: The ID of the custom content
+            label: The label to add
+            prefix: (optional) The prefix of the label. Default is "global"
+
+        Returns:
+            The created label object
+
+        Raises:
+            HTTPError: If the API call fails
+            ValueError: If the label is invalid
+        """
+        if not label:
+            raise ValueError("Label cannot be empty")
+
+        endpoint = self.get_endpoint("custom_content_labels", id=custom_content_id)
+
+        data = {"name": label, "prefix": prefix}
+
+        try:
+            return self.post(endpoint, data=data)
+        except Exception as e:
+            log.error(f"Failed to add label '{label}' to custom content {custom_content_id}: {e}")
+            raise
+
+    def delete_custom_content_label(self, custom_content_id: str, label: str, prefix: str = "global") -> bool:
+        """
+        Delete a label from custom content.
+
+        Args:
+            custom_content_id: The ID of the custom content
+            label: The label to delete
+            prefix: (optional) The prefix of the label. Default is "global"
+
+        Returns:
+            True if the label was successfully deleted, False otherwise
+
+        Raises:
+            HTTPError: If the API call fails
+            ValueError: If the label is invalid
+        """
+        if not label:
+            raise ValueError("Label cannot be empty")
+
+        endpoint = self.get_endpoint("custom_content_labels", id=custom_content_id)
+        params = {"name": label, "prefix": prefix}
+
+        try:
+            self.delete(endpoint, params=params)
+            return True
+        except Exception as e:
+            log.error(f"Failed to delete label '{label}' from custom content {custom_content_id}: {e}")
+            raise
+
+    def get_custom_content_labels(
+        self, custom_content_id: str, prefix: Optional[str] = None, cursor: Optional[str] = None, 
+        sort: Optional[str] = None, limit: int = 25
+    ) -> List[Dict[str, Any]]:
+        """
+        Returns all labels for custom content.
+
+        Args:
+            custom_content_id: The ID of the custom content
+            prefix: (optional) Filter the results to labels with a specific prefix
+            cursor: (optional) Cursor for pagination
+            sort: (optional) Sort order for the results. Valid values: 'name', '-name'
+            limit: (optional) Maximum number of labels to return per request. Default: 25
+
+        Returns:
+            List of label objects
+
+        Raises:
+            HTTPError: If the API call fails
+        """
+        endpoint = self.get_endpoint("custom_content_labels", id=custom_content_id)
+        params = {"limit": limit}
+
+        if prefix:
+            params["prefix"] = prefix
+
+        if cursor:
+            params["cursor"] = cursor
+
+        if sort:
+            if sort not in ("name", "-name"):
+                raise ValueError("Sort must be one of 'name', '-name'")
+            params["sort"] = sort
+
+        try:
+            return list(self._get_paged(endpoint, params=params))
+        except Exception as e:
+            log.error(f"Failed to retrieve labels for custom content {custom_content_id}: {e}")
+            raise
+
+    def create_custom_content_property(self, custom_content_id: str, key: str, value: Any) -> Dict[str, Any]:
+        """
+        Creates a new property for custom content.
+
+        Args:
+            custom_content_id: The ID of the custom content
+            key: The key of the property to create. Must only contain alphanumeric
+                characters, periods, and hyphens
+            value: The value of the property. Can be any JSON-serializable value
+
+        Returns:
+            The created property object
+
+        Raises:
+            HTTPError: If the API call fails
+            ValueError: If the key has invalid characters
+        """
+        # Validate key format
+        if not re.match(r"^[a-zA-Z0-9.\-]+$", key):
+            raise ValueError("Property key must only contain alphanumeric characters, periods, and hyphens.")
+
+        endpoint = self.get_endpoint("custom_content_properties", id=custom_content_id)
+
+        data = {"key": key, "value": value}
+
+        try:
+            return self.post(endpoint, data=data)
+        except Exception as e:
+            log.error(f"Failed to create property {key} for custom content {custom_content_id}: {e}")
+            raise
+
+    def update_custom_content_property(
+        self, custom_content_id: str, key: str, value: Any, version_number: int, version_message: str = ""
+    ) -> Dict[str, Any]:
+        """
+        Updates an existing property for custom content.
+
+        Args:
+            custom_content_id: The ID of the custom content
+            key: The key of the property to update
+            value: The new value of the property. Can be any JSON-serializable value
+            version_number: The version number for concurrency control
+            version_message: (optional) A message describing the change
+
+        Returns:
+            The updated property object
+
+        Raises:
+            HTTPError: If the API call fails
+        """
+        endpoint = self.get_endpoint("custom_content_property_by_key", id=custom_content_id, key=key)
+
+        data = {
+            "key": key,
+            "value": value,
+            "version": {"number": version_number, "message": version_message},
+        }
+
+        try:
+            return self.put(endpoint, data=data)
+        except Exception as e:
+            log.error(f"Failed to update property {key} for custom content {custom_content_id}: {e}")
+            raise
+
+    def delete_custom_content_property(self, custom_content_id: str, key: str) -> bool:
+        """
+        Deletes a property from custom content.
+
+        Args:
+            custom_content_id: The ID of the custom content
+            key: The key of the property to delete
+
+        Returns:
+            True if the property was successfully deleted, False otherwise
+
+        Raises:
+            HTTPError: If the API call fails
+        """
+        endpoint = self.get_endpoint("custom_content_property_by_key", id=custom_content_id, key=key)
+
+        try:
+            self.delete(endpoint)
+            return True
+        except Exception as e:
+            log.error(f"Failed to delete property {key} for custom content {custom_content_id}: {e}")
             raise
