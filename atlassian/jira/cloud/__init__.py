@@ -24,6 +24,8 @@ from atlassian.jira.cloud.issuetypes import IssueTypesJira
 from atlassian.jira.cloud.issuetypes_adapter import IssueTypesJiraAdapter
 from atlassian.jira.cloud.projects import ProjectsJira
 from atlassian.jira.cloud.projects_adapter import ProjectsJiraAdapter
+from atlassian.jira.cloud.search import SearchJira
+from atlassian.jira.cloud.search_adapter import SearchJiraAdapter
 
 __all__ = [
     "CloudJira",
@@ -44,4 +46,6 @@ __all__ = [
     "IssueTypesJiraAdapter",
     "ProjectsJira",
     "ProjectsJiraAdapter",
+    "SearchJira",
+    "SearchJiraAdapter",
 ] 
