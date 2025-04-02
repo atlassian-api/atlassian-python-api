@@ -1,8 +1,9 @@
 # coding: utf8
 import io
-import pytest
 import sys
 import zipfile
+
+import pytest
 
 from atlassian.bitbucket.server import Server
 

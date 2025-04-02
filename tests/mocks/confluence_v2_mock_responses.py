@@ -6,7 +6,6 @@ This file contains predefined mock responses for testing the Confluence v2 imple
 
 from copy import deepcopy
 
-
 # Page mocks
 PAGE_MOCK = {
     "id": "123456",

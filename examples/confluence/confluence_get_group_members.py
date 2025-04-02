@@ -1,6 +1,7 @@
 # coding=utf-8
-from atlassian import Confluence
 from pprint import pprint
+
+from atlassian import Confluence
 
 """This example shows how to get all users from group e.g. group_name """
 

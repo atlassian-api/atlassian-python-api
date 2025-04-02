@@ -20,7 +20,9 @@ except ImportError:
 
 # Import test classes from compatibility tests
 try:
-    from tests.test_confluence_version_compatibility import TestConfluenceVersionCompatibility
+    from tests.test_confluence_version_compatibility import (
+        TestConfluenceVersionCompatibility,
+    )
 except ImportError:
     print("Warning: tests/test_confluence_version_compatibility.py not found, skipping these tests")
 

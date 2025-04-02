@@ -11,10 +11,11 @@ This example shows how to:
 5. Retrieve worklog entries with ADF content
 """
 
-from atlassian import Jira
-from atlassian.jira_v3 import JiraV3
-from atlassian.jira_adf import JiraADF
 from pprint import pprint
+
+from atlassian import Jira
+from atlassian.jira_adf import JiraADF
+from atlassian.jira_v3 import JiraV3
 
 
 def main():

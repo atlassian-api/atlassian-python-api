@@ -1,7 +1,7 @@
 # coding: utf8
 import os
 
-from atlassian import Jira, Confluence, Bitbucket, Bamboo, Crowd, ServiceDesk, Xray
+from atlassian import Bamboo, Bitbucket, Confluence, Crowd, Jira, ServiceDesk, Xray
 
 BAMBOO_URL = os.environ.get("BAMBOO_URL", "http://localhost:8085")
 JIRA_URL = os.environ.get("BAMBOO_URL", "http://localhost:8080")

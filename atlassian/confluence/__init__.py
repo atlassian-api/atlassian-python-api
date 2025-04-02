@@ -2,10 +2,11 @@
 Confluence module for both Cloud and Server implementations
 """
 
+from typing import Union
+
 from .base import ConfluenceBase
 from .cloud import ConfluenceCloud
 from .server import ConfluenceServer
-from typing import Union
 
 
 def Confluence(url: str, *args, **kwargs) -> Union[ConfluenceCloud, ConfluenceServer]:

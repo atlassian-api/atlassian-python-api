@@ -6,30 +6,30 @@ This tests pagination, error handling, and v2 specific features.
 
 import json
 import unittest
-from unittest.mock import patch, Mock, MagicMock
+from unittest.mock import MagicMock, Mock, patch
 
-from requests.exceptions import HTTPError
 from requests import Response
+from requests.exceptions import HTTPError
 
 from atlassian import ConfluenceCloud as ConfluenceV2
 from tests.mocks.confluence_v2_mock_responses import (
-    PAGE_MOCK,
-    PAGE_RESULT_LIST,
     CHILD_PAGES_RESULT,
-    SPACE_MOCK,
-    SPACES_RESULT,
-    SEARCH_RESULT,
-    PROPERTY_MOCK,
-    PROPERTIES_RESULT,
-    LABEL_MOCK,
-    LABELS_RESULT,
     COMMENT_MOCK,
     COMMENTS_RESULT,
-    WHITEBOARD_MOCK,
     CUSTOM_CONTENT_MOCK,
     ERROR_NOT_FOUND,
     ERROR_PERMISSION_DENIED,
     ERROR_VALIDATION,
+    LABEL_MOCK,
+    LABELS_RESULT,
+    PAGE_MOCK,
+    PAGE_RESULT_LIST,
+    PROPERTIES_RESULT,
+    PROPERTY_MOCK,
+    SEARCH_RESULT,
+    SPACE_MOCK,
+    SPACES_RESULT,
+    WHITEBOARD_MOCK,
     get_mock_for_endpoint,
 )
 

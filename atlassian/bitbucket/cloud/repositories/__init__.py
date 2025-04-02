@@ -1,14 +1,15 @@
 # coding=utf-8
 
 from requests import HTTPError
+
 from ..base import BitbucketCloudBase
-from .issues import Issues
 from .branchRestrictions import BranchRestrictions
 from .commits import Commits
-from .hooks import Hooks
 from .defaultReviewers import DefaultReviewers
 from .deploymentEnvironments import DeploymentEnvironments
 from .groupPermissions import GroupPermissions
+from .hooks import Hooks
+from .issues import Issues
 from .pipelines import Pipelines
 from .pullRequests import PullRequests
 from .refs import Branches, Tags

@@ -5,7 +5,7 @@ Tests the class structure, inheritance, and endpoint handling.
 """
 
 import unittest
-from unittest.mock import patch, Mock, MagicMock
+from unittest.mock import MagicMock, Mock, patch
 
 from atlassian import ConfluenceV2
 from atlassian.confluence_base import ConfluenceBase

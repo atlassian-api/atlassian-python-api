@@ -3,9 +3,9 @@
 import copy
 import re
 import sys
-
 from datetime import datetime
 from pprint import PrettyPrinter
+
 from ..rest_client import AtlassianRestAPI
 
 RE_TIMEZONE = re.compile(r"(\d{2}):(\d{2})$")

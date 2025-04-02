@@ -6,7 +6,7 @@ Confluence Cloud API implementation
 """
 import logging
 import warnings
-from typing import Dict, List, Optional, Union, Any, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from ..base import ConfluenceBase
 
