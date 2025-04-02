@@ -6,9 +6,14 @@ import logging
 import os
 import platform
 import signal
+import sys
 from typing import Any, Dict, List, Optional, Tuple, Union
 from urllib.parse import urlparse
 
+from requests import Response
+from requests.utils import default_user_agent
+
+from atlassian.jira.errors import raise_error_from_response
 from atlassian.rest_client import AtlassianRestAPI
 
 log = logging.getLogger(__name__)
@@ -278,34 +283,60 @@ class JiraBase(AtlassianRestAPI):
 
     def __init__(self, url: str, *args, api_version: Union[str, int] = 2, **kwargs):
         """
-        Initialize the Jira Base instance with version support.
+        Initialize the Jira client with version support.
 
         Args:
-            url: The Jira instance URL
-            api_version: API version, 2 or 3, defaults to 2
-            args: Arguments to pass to AtlassianRestAPI constructor
-            kwargs: Keyword arguments to pass to AtlassianRestAPI constructor
+            url: Jira instance URL
+            api_version: API version (2 or 3)
+            *args: Arguments to pass to AtlassianRestAPI
+            **kwargs: Keyword arguments to pass to AtlassianRestAPI
         """
+        # Save API version
+        self.api_version = int(api_version)
+        if self.api_version not in [2, 3]:
+            raise ValueError("API version must be 2 or 3")
+            
         # Set cloud flag based on URL
         if self._is_cloud_url(url):
             if "cloud" not in kwargs:
                 kwargs["cloud"] = True
-
+        
+        # Add user agent and version information
+        client_info = f"atlassian-python-api/jira-v{self.api_version}"
+        python_version = f"Python/{sys.version.split()[0]}"
+        os_info = f"{platform.system()}/{platform.release()}"
+        user_agent = f"{client_info} ({default_user_agent()}) {python_version} {os_info}"
+        
+        # Set default headers with user agent
+        if "headers" not in kwargs:
+            kwargs["headers"] = {}
+        
+        if "User-Agent" not in kwargs["headers"]:
+            kwargs["headers"]["User-Agent"] = user_agent
+            
+        # Enable debug logging if requested via environment variable
+        self.debug = os.environ.get("JIRA_API_DEBUG", "").lower() in ("1", "true", "yes", "on")
+        if self.debug:
+            logging.getLogger("atlassian").setLevel(logging.DEBUG)
+            logging.getLogger("requests").setLevel(logging.DEBUG)
+            logging.getLogger("urllib3").setLevel(logging.DEBUG)
+            
+        # Pass on to parent class
         super(JiraBase, self).__init__(url, *args, **kwargs)
-        self.api_version = int(api_version)
-        if self.api_version not in [2, 3]:
-            raise ValueError("API version must be 2 or 3")
-
+        
     def get_endpoint(self, endpoint_key: str, **kwargs) -> str:
         """
-        Get the appropriate endpoint based on the API version.
+        Get API endpoint for the specified key with parameter substitution.
 
         Args:
-            endpoint_key: The key for the endpoint in the endpoints dictionary
-            kwargs: Format parameters for the endpoint
+            endpoint_key: Key to lookup in the endpoints mapping
+            **kwargs: Parameters to substitute in the endpoint URL
 
         Returns:
-            The formatted endpoint URL
+            Endpoint URL with parameters substituted
+
+        Raises:
+            ValueError: If endpoint_key is not found in the endpoints mapping
         """
         endpoints = JiraEndpoints.V2 if self.api_version == 2 else JiraEndpoints.V3
 
@@ -319,6 +350,127 @@ class JiraBase(AtlassianRestAPI):
             endpoint = endpoint.format(**kwargs)
 
         return endpoint
+
+    def raise_for_status(self, response: Response) -> None:
+        """
+        Override raise_for_status to use specialized Jira error handling.
+        
+        Args:
+            response: HTTP response object
+            
+        Raises:
+            JiraApiError: If the response indicates an error
+        """
+        # Use our specialized error handler
+        raise_error_from_response(response)
+    
+    def request(self, *args, **kwargs) -> Response:
+        """
+        Override request method to add additional debug logging
+        
+        Args:
+            *args: Arguments to pass to parent request method
+            **kwargs: Keyword arguments to pass to parent request method
+            
+        Returns:
+            Response object
+        """
+        # Call the parent method
+        response = super(JiraBase, self).request(*args, **kwargs)
+        
+        # Add additional debug logging if enabled
+        if self.debug and response:
+            method = kwargs.get('method', args[0] if args else 'GET')
+            path = kwargs.get('path', args[1] if len(args) > 1 else '/')
+            
+            log.debug("----- REQUEST -----")
+            log.debug(f"REQUEST: {method} {path}")
+            
+            if 'headers' in kwargs:
+                log.debug(f"HEADERS: {kwargs['headers']}")
+            
+            if 'data' in kwargs and kwargs['data']:
+                log.debug(f"DATA: {kwargs['data']}")
+            
+            if 'params' in kwargs and kwargs['params']:
+                log.debug(f"PARAMS: {kwargs['params']}")
+            
+            log.debug("----- RESPONSE -----")
+            log.debug(f"STATUS: {response.status_code} {response.reason}")
+            log.debug(f"HEADERS: {response.headers}")
+            
+            # For security, don't log the full response body if it's very large
+            if len(response.text) < 10000:  # Only log if less than 10KB
+                log.debug(f"BODY: {response.text}")
+            else:
+                log.debug(f"BODY: (truncated, {len(response.text)} bytes)")
+            
+            log.debug("-------------------")
+            
+        return response
+    
+    def validate_params(self, **kwargs) -> Dict[str, Any]:
+        """
+        Validate and prepare parameters for API calls.
+        
+        Args:
+            **kwargs: Parameters to validate
+            
+        Returns:
+            Dict of validated parameters
+            
+        Raises:
+            ValueError: If a parameter fails validation
+        """
+        result = {}
+        for key, value in kwargs.items():
+            if value is not None:  # Skip None values
+                # Special handling for certain parameter types
+                if key == 'expand' and isinstance(value, list):
+                    result[key] = ','.join(value)
+                elif key in ('fields', 'field') and isinstance(value, list):
+                    result[key] = ','.join(value)
+                else:
+                    result[key] = value
+        return result
+    
+    def validate_jql(self, jql: str) -> str:
+        """
+        Validate JQL query string
+        
+        Args:
+            jql: JQL query string
+            
+        Returns:
+            Validated JQL string
+            
+        Raises:
+            ValueError: If JQL is empty or invalid
+        """
+        if not jql or not jql.strip():
+            raise ValueError("JQL query cannot be empty")
+        
+        # Could add more validation here in the future
+        return jql.strip()
+    
+    def validate_id_or_key(self, id_or_key: str, param_name: str = "id") -> str:
+        """
+        Validate an ID or key parameter
+        
+        Args:
+            id_or_key: ID or key to validate
+            param_name: Name of the parameter for error messages
+            
+        Returns:
+            Validated ID or key
+            
+        Raises:
+            ValueError: If ID or key is empty
+        """
+        if not id_or_key or not str(id_or_key).strip():
+            raise ValueError(f"{param_name} cannot be empty")
+        
+        return str(id_or_key).strip()
 
     def _get_paged(
         self,
@@ -439,60 +591,51 @@ class JiraBase(AtlassianRestAPI):
         url: str = None, 
         username: str = None, 
         password: str = None, 
-        api_version: Union[str, int] = 2, 
+        api_version: Union[str, int] = 3, 
         cloud: bool = None, 
         legacy_mode: bool = True,
         **kwargs
     ):
         """
-        Factory method to create appropriate Jira instance.
+        Factory method to create a Jira instance based on URL or explicit cloud parameter.
         
         Args:
-            url: Jira URL
+            url: Jira instance URL
             username: Username for authentication
             password: Password or API token for authentication
-            api_version: API version (2 or 3)
-            cloud: Force cloud instance if True, server if False, auto-detect if None
+            api_version: API version to use (2 or 3)
+            cloud: Explicitly set whether this is a cloud instance (True) or server instance (False)
             legacy_mode: Whether to return a JiraAdapter instance for backward compatibility
-            kwargs: Additional arguments to pass to the constructor
+            **kwargs: Additional keyword arguments for the Jira client
             
         Returns:
-            An instance of the appropriate Jira class
+            Jira instance configured for the right environment
+            
+        Raises:
+            ValueError: If required arguments are missing or invalid
         """
+        if not url:
+            raise ValueError("URL is required")
+        
         # Import here to avoid circular imports
-        from atlassian.jira.cloud import Jira as CloudJira, JiraAdapter
-        from atlassian.jira.server import Jira as ServerJira
+        from atlassian.jira.cloud import CloudJira, JiraAdapter
+        from atlassian.jira.server import ServerJira
+        
+        # Validate API version
+        api_version = int(api_version)
+        if api_version not in [2, 3]:
+            raise ValueError(f"API version {api_version} is not supported. Use 2 or 3.")
         
         # Determine if this is a cloud instance
-        is_cloud = cloud
-        if is_cloud is None and url:
-            is_cloud = JiraBase._is_cloud_url(url)
-            
-        # Create appropriate instance
+        is_cloud = cloud if cloud is not None else JiraBase._is_cloud_url(url)
+        
+        # Create the appropriate instance
         if is_cloud:
+            instance = CloudJira(url, username, password, api_version=api_version, **kwargs)
             if legacy_mode:
-                return JiraAdapter(
-                    url=url, 
-                    username=username, 
-                    password=password, 
-                    api_version=api_version, 
-                    **kwargs
-                )
-            else:
-                return CloudJira(
-                    url=url, 
-                    username=username, 
-                    password=password, 
-                    api_version=api_version, 
-                    **kwargs
-                )
+                # Wrap in adapter for backward compatibility
+                return JiraAdapter(url, username, password, api_version=api_version, **kwargs)
+            return instance
         else:
-            # For server, always return the Server implementation
-            # There's no adapter for server yet since it's still using API v2
-            return ServerJira(
-                url=url, 
-                username=username, 
-                password=password, 
-                api_version=api_version, 
-                **kwargs
-            ) 
+            # Fall back to server instance
+            return ServerJira(url, username, password, api_version=api_version, **kwargs) 

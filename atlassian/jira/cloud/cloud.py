@@ -124,15 +124,16 @@ class Jira(JiraBase):
         Returns:
             Dictionary containing the issue data
         """
-        endpoint = self.get_endpoint("issue_by_id", id=issue_id_or_key)
-        params = {}
+        issue_id_or_key = self.validate_id_or_key(issue_id_or_key, "issue_id_or_key")
         
-        if fields:
-            params["fields"] = fields
-        if expand:
-            params["expand"] = expand
+        endpoint = self.get_endpoint("issue_by_id", id=issue_id_or_key)
+        params = self.validate_params(fields=fields, expand=expand)
             
-        return self.get(endpoint, params=params)
+        try:
+            return self.get(endpoint, params=params)
+        except Exception as e:
+            log.error(f"Failed to retrieve issue {issue_id_or_key}: {e}")
+            raise
         
     def create_issue(
         self, 
@@ -367,7 +368,12 @@ class Jira(JiraBase):
             Generator yielding project dictionaries
         """
         endpoint = self.get_endpoint("project")
-        return self._get_paged_resources(endpoint)
+        
+        try:
+            return self._get_paged_resources(endpoint)
+        except Exception as e:
+            log.error(f"Failed to retrieve projects: {e}")
+            raise
         
     def get_project(self, project_id_or_key: str, expand: str = None) -> Dict[str, Any]:
         """
@@ -435,19 +441,28 @@ class Jira(JiraBase):
         Returns:
             Dictionary containing the search results
         """
+        jql = self.validate_jql(jql)
         endpoint = self.get_endpoint("search")
+        
         data = {
             "jql": jql,
             "startAt": start_at,
             "maxResults": max_results
         }
         
+        # Handle fields parameter
         if fields:
-            data["fields"] = fields
+            data["fields"] = fields if isinstance(fields, str) else ",".join(fields)
+            
+        # Handle expand parameter
         if expand:
             data["expand"] = expand
             
-        return self.post(endpoint, data=data)
+        try:
+            return self.post(endpoint, data=data)
+        except Exception as e:
+            log.error(f"Failed to search issues with JQL '{jql}': {e}")
+            raise
         
     def get_all_issues(
         self, 
