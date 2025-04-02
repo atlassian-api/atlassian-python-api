@@ -190,12 +190,9 @@ def delete_comment_example(comment_id):
     
     try:
         # Delete the comment
-        result = confluence.delete_comment(comment_id)
+        confluence.delete_comment(comment_id)
         
-        if result:
-            print(f"Successfully deleted comment {comment_id}")
-        else:
-            print(f"Failed to delete comment {comment_id}")
+        print(f"Successfully deleted comment {comment_id}")
             
     except Exception as e:
         print(f"Error deleting comment: {e}")
