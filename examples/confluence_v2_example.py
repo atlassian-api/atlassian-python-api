@@ -5,10 +5,11 @@
 Example showing how to use both Confluence API v1 and v2 with the library
 """
 
-from atlassian import Confluence, ConfluenceV2, create_confluence
-import os
-import logging
 import datetime
+import logging
+import os
+
+from atlassian import Confluence, ConfluenceV2, create_confluence
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)

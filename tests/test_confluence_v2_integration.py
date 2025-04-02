@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import unittest
+import logging
 import os
 import re
-import logging
+import unittest
+from urllib.parse import urlparse
+
 import pytest
 from dotenv import load_dotenv
+
 from atlassian import ConfluenceV2
-from urllib.parse import urlparse
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)

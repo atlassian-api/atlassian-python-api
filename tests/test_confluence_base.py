@@ -1,6 +1,6 @@
 # coding=utf-8
 import unittest
-from unittest.mock import patch, MagicMock, mock_open
+from unittest.mock import MagicMock, mock_open, patch
 
 from atlassian import Confluence, ConfluenceBase, ConfluenceCloud, create_confluence
 from atlassian.confluence.cloud import ConfluenceCloud as ConcreteConfluenceCloud

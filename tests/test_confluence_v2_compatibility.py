@@ -3,7 +3,7 @@
 
 import unittest
 import warnings
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from atlassian import ConfluenceV2
 

@@ -3,7 +3,7 @@ Module for Confluence Server API implementation
 """
 
 import logging
-from typing import Dict, List, Optional, Union, Any
+from typing import Any, Dict, List, Optional, Union
 
 from ..base import ConfluenceBase
 

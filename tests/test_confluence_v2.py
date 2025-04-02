@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-from unittest.mock import patch, Mock, ANY
+from unittest.mock import ANY, Mock, patch
+
 from atlassian import ConfluenceV2
 
 

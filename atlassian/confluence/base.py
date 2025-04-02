@@ -3,11 +3,11 @@ Confluence base module for shared functionality between API versions
 """
 
 import logging
-from typing import Dict, List, Optional, Union, Any, Tuple
-from urllib.parse import urlparse
-import signal
 import os
 import platform
+import signal
+from typing import Any, Dict, List, Optional, Tuple, Union
+from urllib.parse import urlparse
 
 from atlassian.rest_client import AtlassianRestAPI
 

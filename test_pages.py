@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
-import requests
 import os
+
+import requests
 from dotenv import load_dotenv
 
 # Load environment variables from .env file

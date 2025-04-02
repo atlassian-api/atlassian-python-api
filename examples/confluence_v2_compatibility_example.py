@@ -4,8 +4,8 @@ Example demonstrating the compatibility layer of Confluence API v2.
 Shows how to use both v2 methods and v1 method names via the compatibility layer.
 """
 
-import os
 import logging
+import os
 import warnings
 
 from atlassian import ConfluenceV2

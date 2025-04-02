@@ -3,11 +3,11 @@
 Example script showing how to update issues with ADF content using Jira v3 API
 """
 
-import os
 import logging
+import os
 from pprint import pprint
 
-from atlassian import JiraV3, JiraADF
+from atlassian import JiraADF, JiraV3
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)

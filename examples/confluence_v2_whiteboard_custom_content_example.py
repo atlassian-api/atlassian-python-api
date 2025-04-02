@@ -3,9 +3,10 @@
 Example for working with Confluence API V2 whiteboards and custom content.
 """
 
+import json
 import logging
 import os
-import json
+
 from atlassian import ConfluenceV2
 
 logging.basicConfig(level=logging.INFO)

@@ -1,8 +1,8 @@
 # coding=utf-8
 import logging
 
-from jmespath import search
 from bs4 import BeautifulSoup
+from jmespath import search
 
 from .rest_client import AtlassianRestAPI
 

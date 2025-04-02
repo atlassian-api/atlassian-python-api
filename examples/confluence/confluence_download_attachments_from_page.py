@@ -1,5 +1,6 @@
-from atlassian import Confluence
 import os
+
+from atlassian import Confluence
 
 host = "<cloud_instance_url/wiki>"
 username = "<user_email>"

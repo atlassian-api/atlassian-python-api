@@ -4,8 +4,8 @@ Example demonstrating the usage of Whiteboard and Custom Content methods
 with the Confluence API v2.
 """
 
-import os
 import logging
+import os
 from pprint import pprint
 
 from atlassian.confluence_base import ConfluenceBase

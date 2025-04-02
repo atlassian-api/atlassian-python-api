@@ -2,6 +2,7 @@
 import logging
 
 from requests.exceptions import HTTPError
+
 from .rest_client import AtlassianRestAPI
 
 log = logging.getLogger(__name__)

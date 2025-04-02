@@ -6,10 +6,9 @@ This tests backward compatibility and consistent method behavior between both AP
 
 import json
 import unittest
-from unittest.mock import patch, Mock, MagicMock
+from unittest.mock import MagicMock, Mock, patch
 
-from atlassian import Confluence
-from atlassian import ConfluenceV2
+from atlassian import Confluence, ConfluenceV2
 
 
 class TestConfluenceVersionCompatibility(unittest.TestCase):

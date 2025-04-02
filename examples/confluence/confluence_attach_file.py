@@ -7,6 +7,7 @@ import logging
 
 # https://pypi.org/project/python-magic/
 import magic
+
 from atlassian import Confluence
 
 logging.basicConfig(level=logging.DEBUG)
