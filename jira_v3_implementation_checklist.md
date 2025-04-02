@@ -19,8 +19,8 @@
 - **Phase 1: Core Structure**: 100% complete
 - **Phase 2: Core Methods**: 100% complete
 - **Phase 3: New V3 Features**: 100% complete
-- **Phase 4: Testing**: 50% complete
-- **Phase 5: Documentation**: 0% complete
+- **Phase 4: Testing**: 75% complete
+- **Phase 5: Documentation**: 25% complete
 
 ## Phase 1: Core Structure
 - [x] Create `JiraBase` class with API version parameter
@@ -89,6 +89,28 @@
   - [x] Backlog management
   - [x] Ranking and prioritization
 
+## Integration Test Status
+
+Integration testing showed partial success with several issues:
+
+1. **Working Tests**:
+   - User authentication and basic user operations
+   - Getting all projects and basic project information
+   - Issue type and field retrieval
+   - Rich text document creation and conversion
+   - Board operations in Jira Software
+
+2. **Tests Requiring Attention**:
+   - Project-specific operations (404 errors - project key not found)
+   - Issue creation and management (400 errors - possibly due to project configuration)
+   - Permission-sensitive operations (403 errors - access denied)
+
+3. **Next Steps for Testing**:
+   - Create detailed documentation on test requirements (permissions, project setup)
+   - Add configuration options to skip tests requiring admin permissions
+   - Update test data to support varied Jira configurations
+   - Create sanitized test data generator
+
 ## Phase 4: Testing
 - [x] Unit tests for core functionality
 - [x] Integration tests for Jira Cloud
@@ -101,6 +123,6 @@
 - [ ] Method-level docstrings
 - [ ] Migration guide from v2 to v3
 - [ ] Examples
-- [ ] README updates
+- [x] README updates
 - [ ] API documentation
 - [ ] Changelog 
