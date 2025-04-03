@@ -22,7 +22,7 @@ from atlassian.jira.cloud import PermissionsJiraAdapter
 from atlassian.jira.cloud import SearchJira
 from atlassian.jira.cloud import SearchJiraAdapter
 
-from mocks.jira_v3_mock_responses import (
+from tests.mocks.jira_v3_mock_responses import (
     BOARD_MOCK,
     BOARDS_RESULT,
     COMMENT_MOCK,
