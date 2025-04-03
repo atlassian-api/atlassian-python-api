@@ -38,6 +38,9 @@ Manage groups
     # Get group's members
     crowd.group_members(group, kind='direct', max_results=99999)
 
+    # Create new group method
+    crowd.group_create(groupname, description, active=True)
+
 Get memberships
 ----------------
 
@@ -51,3 +54,32 @@ Get memberships
     #     ...
     # }
     crowd.memberships
+
+Healthcheck
+-------------
+
+.. code-block:: python
+
+    # Check if the Crowd server is reachable
+    crowd.health_check()
+
+    # Provide plugins info
+    crowd.get_plugins_info()
+
+    # Provide plugin info
+    crowd.get_plugin_info(plugin_key)
+
+    # Provide plugin license info
+    crowd.get_plugin_license_info(plugin_key)
+
+    # Provide plugin path for upload into Jira e.g. useful for auto deploy
+    crowd.upload_plugin(plugin_path)
+
+    # Delete plugin
+    crowd.delete_plugin(plugin_key)
+
+    # Check plugin manager status
+    crowd.check_plugin_manager_status()
+
+    # Update plugin license
+    crowd.update_plugin_license(plugin_key, license_key)
