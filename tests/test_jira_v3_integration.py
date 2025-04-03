@@ -9,12 +9,7 @@ import unittest
 import logging
 import atlassian
 from dotenv import load_dotenv
-import json
-import time
-import warnings
 import traceback
-from typing import Dict, Any, Union, Optional
-from datetime import datetime, timedelta
 
 from atlassian.jira import (
     get_jira_instance,
@@ -655,7 +650,7 @@ class TestJiraV3IssuesIntegration(JiraV3IntegrationTestCase):
             if "created_issue" in locals():
                 try:
                     jira_instance.delete_issue(created_issue["key"])
-                except:
+                except Exception:  # Using Exception instead of bare except
                     pass  # Ignore errors during cleanup
 
             print(f"Error adding/retrieving comments: {str(e)}")
@@ -990,9 +985,6 @@ class TestJiraV3SearchIntegration(JiraV3IntegrationTestCase):
     def test_search_issues(self):
         """Test searching for issues."""
         try:
-            # Validate that the project exists
-            project = self.get_jira_instance().get_project(self.jira_project_key)
-
             # Use a more specific JQL that will work even with empty projects
             jql = f"project = {self.jira_project_key}"
 
@@ -1041,7 +1033,7 @@ class TestJiraV3SearchIntegration(JiraV3IntegrationTestCase):
             if isinstance(field_data, dict):
                 # For API responses that return a dictionary
                 self.assertIn("visibleFieldNames", field_data)
-                
+
                 # If we have field names, verify their structure
                 if field_data.get("visibleFieldNames"):
                     field_names = field_data.get("visibleFieldNames")
@@ -1121,7 +1113,7 @@ class TestJiraV3RichTextIntegration(JiraV3IntegrationTestCase):
         # Skip test in offline mode
         if os.environ.get("JIRA_OFFLINE_TESTS", "").lower() == "true":
             self.skipTest("Skipping ADF comment test in offline mode")
-            
+
         # Validate the project key
         self.validate_project_key()
 
