@@ -1037,15 +1037,25 @@ class TestJiraV3SearchIntegration(JiraV3IntegrationTestCase):
         try:
             field_data = self.search_jira.get_field_reference_data()
 
-            # Verify field reference data structure
-            self.assertIsInstance(field_data, list)
+            # Verify field reference data structure - it can be a dictionary or a list depending on the API version
+            if isinstance(field_data, dict):
+                # For API responses that return a dictionary
+                self.assertIn("visibleFieldNames", field_data)
+                
+                # If we have field names, verify their structure
+                if field_data.get("visibleFieldNames"):
+                    field_names = field_data.get("visibleFieldNames")
+                    self.assertIsInstance(field_names, list)
+            else:
+                # For API responses that return a list
+                self.assertIsInstance(field_data, list)
 
-            # If there are fields, verify their structure
-            if field_data:
-                first_field = field_data[0]
-                self.assertIn("id", first_field)
-                self.assertIn("key", first_field)
-                self.assertIn("displayName", first_field)
+                # If there are fields, verify their structure
+                if field_data:
+                    first_field = field_data[0]
+                    self.assertIn("id", first_field)
+                    self.assertIn("key", first_field)
+                    self.assertIn("displayName", first_field)
         except Exception as e:
             if self.check_permissions(e):
                 return
@@ -1108,6 +1118,10 @@ class TestJiraV3RichTextIntegration(JiraV3IntegrationTestCase):
 
     def test_add_comment_with_adf(self):
         """Test adding a comment with ADF to an issue."""
+        # Skip test in offline mode
+        if os.environ.get("JIRA_OFFLINE_TESTS", "").lower() == "true":
+            self.skipTest("Skipping ADF comment test in offline mode")
+            
         # Validate the project key
         self.validate_project_key()
 
