@@ -26,23 +26,16 @@ class TestConfluenceV2Integration(unittest.TestCase):
     """
 
     def setUp(self):
-        # Get and process the URL from .env
+        # Get the URL from .env
         url = os.environ.get("CONFLUENCE_URL")
 
         # Debug information
-        logger.debug(f"Original URL from env: {url}")
+        logger.debug(f"Using URL from env: {url}")
 
-        # Properly parse the URL to avoid path issues
-        parsed_url = urlparse(url)
-
-        # Use hostname without any path to avoid duplicating /wiki
-        base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
-
-        logger.debug(f"Using base URL: {base_url}")
-
-        # Create the client
+        # Create the client with the exact URL provided in the environment
+        # Without modifying it, as URLs should now be provided exactly as needed
         self.confluence = ConfluenceV2(
-            url=base_url,
+            url=url,
             username=os.environ.get("CONFLUENCE_USERNAME"),
             password=os.environ.get("CONFLUENCE_API_TOKEN"),
         )

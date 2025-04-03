@@ -106,7 +106,7 @@ The library now supports Confluence's v2 API for Cloud instances. The v2 API pro
 
     # Initialize with v2 API
     confluence = Confluence(
-        url='https://your-instance.atlassian.net/wiki',
+        url='https://your-instance.atlassian.net/wiki',  # Include /wiki in the URL if required by your instance
         username='your-email@example.com',
         password='your-api-token',
         api_version=2,  # Specify API version 2
