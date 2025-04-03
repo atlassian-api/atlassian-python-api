@@ -3,9 +3,10 @@
 # Bitbucket. User has to grant access rights. After authorization the
 # token and the available workspaces are returned.
 
+from flask import Flask, redirect, request, session
 from requests_oauthlib import OAuth2Session
+
 from atlassian.bitbucket import Cloud
-from flask import Flask, request, redirect, session
 
 app = Flask(__name__)
 app.secret_key = ""

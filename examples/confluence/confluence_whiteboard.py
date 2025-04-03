@@ -1,7 +1,7 @@
 from atlassian import Confluence
 
 confluence = Confluence(
-    url="<instance_url>",
+    url="<instance_url>",  # For cloud instances, include /wiki: "https://your-instance.atlassian.net/wiki"
     username="<atlassian_username>",
     password="api_key",
 )

@@ -1,6 +1,7 @@
 # coding=utf-8
 
 from requests import HTTPError
+
 from ...base import BitbucketServerBase
 from ...common.permissions import Groups, Users
 

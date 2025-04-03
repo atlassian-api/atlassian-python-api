@@ -1,6 +1,7 @@
-from atlassian import Jira
-import networkx as nx  # for visualisation of the tree
 import matplotlib.pyplot as plt  # for visualisation of the tree
+import networkx as nx  # for visualisation of the tree
+
+from atlassian import Jira
 
 # use one of above objects depending on your instance type cloud or DC
 jira_cloud = Jira(url="<url>", username="username", password="password")

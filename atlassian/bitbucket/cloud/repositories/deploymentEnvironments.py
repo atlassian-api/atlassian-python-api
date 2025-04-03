@@ -1,8 +1,8 @@
 # coding=utf-8
 
-from ..base import BitbucketCloudBase
+from six.moves.urllib.parse import urlsplit, urlunsplit
 
-from six.moves.urllib.parse import urlunsplit, urlsplit
+from ..base import BitbucketCloudBase
 
 
 class DeploymentEnvironments(BitbucketCloudBase):
