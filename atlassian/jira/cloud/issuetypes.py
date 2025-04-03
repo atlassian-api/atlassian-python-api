@@ -2,7 +2,7 @@
 Jira Cloud API for working with issue types and field configurations
 """
 
-from atlassian.jira.cloud.cloud_base import CloudJira
+from atlassian.jira.cloud.cloud import CloudJira
 
 
 class IssueTypesJira(CloudJira):
@@ -151,15 +151,15 @@ class IssueTypesJira(CloudJira):
             "startAt": start_at,
             "maxResults": max_results,
         }
-        
+
         if id:
             if isinstance(id, list):
                 params["id"] = ",".join(map(str, id))
             else:
                 params["id"] = str(id)
-        
+
         return self.get(url, params=params)
-    
+
     def create_issue_type_scheme(self, name, description=None, default_issue_type_id=None, issue_type_ids=None):
         """
         Create a new issue type scheme
@@ -174,18 +174,18 @@ class IssueTypesJira(CloudJira):
         data = {
             "name": name,
         }
-        
+
         if description:
             data["description"] = description
-            
+
         if default_issue_type_id:
             data["defaultIssueTypeId"] = default_issue_type_id
-            
+
         if issue_type_ids:
             data["issueTypeIds"] = issue_type_ids
-            
+
         return self.post(url, data=data)
-    
+
     def get_issue_type_scheme_mapping(self, scheme_id):
         """
         Get issue type scheme mapping
@@ -195,7 +195,7 @@ class IssueTypesJira(CloudJira):
         """
         url = f"rest/api/3/issuetypescheme/{scheme_id}/mapping"
         return self.get(url)
-    
+
     def add_issue_types_to_scheme(self, scheme_id, issue_type_ids):
         """
         Add issue types to a scheme
@@ -205,11 +205,9 @@ class IssueTypesJira(CloudJira):
         :return: None
         """
         url = f"rest/api/3/issuetypescheme/{scheme_id}/issuetype"
-        data = {
-            "issueTypeIds": issue_type_ids
-        }
+        data = {"issueTypeIds": issue_type_ids}
         return self.put(url, data=data)
-    
+
     def remove_issue_type_from_scheme(self, scheme_id, issue_type_id):
         """
         Remove issue type from scheme
@@ -220,7 +218,7 @@ class IssueTypesJira(CloudJira):
         """
         url = f"rest/api/3/issuetypescheme/{scheme_id}/issuetype/{issue_type_id}"
         return self.delete(url)
-    
+
     def get_field_configurations(self, start_at=0, max_results=50, ids=None):
         """
         Get field configurations
@@ -235,15 +233,15 @@ class IssueTypesJira(CloudJira):
             "startAt": start_at,
             "maxResults": max_results,
         }
-        
+
         if ids:
             if isinstance(ids, list):
                 params["id"] = ",".join(map(str, ids))
             else:
                 params["id"] = str(ids)
-        
+
         return self.get(url, params=params)
-    
+
     def create_field_configuration(self, name, description=None):
         """
         Create a field configuration
@@ -256,12 +254,12 @@ class IssueTypesJira(CloudJira):
         data = {
             "name": name,
         }
-        
+
         if description:
             data["description"] = description
-            
+
         return self.post(url, data=data)
-    
+
     def update_field_configuration(self, field_config_id, name, description=None):
         """
         Update a field configuration
@@ -275,12 +273,12 @@ class IssueTypesJira(CloudJira):
         data = {
             "name": name,
         }
-        
+
         if description:
             data["description"] = description
-            
+
         return self.put(url, data=data)
-    
+
     def delete_field_configuration(self, field_config_id):
         """
         Delete a field configuration
@@ -290,7 +288,7 @@ class IssueTypesJira(CloudJira):
         """
         url = f"rest/api/3/fieldconfiguration/{field_config_id}"
         return self.delete(url)
-    
+
     def get_field_configuration_items(self, field_config_id, start_at=0, max_results=50):
         """
         Get field configuration items
@@ -306,7 +304,7 @@ class IssueTypesJira(CloudJira):
             "maxResults": max_results,
         }
         return self.get(url, params=params)
-    
+
     def update_field_configuration_items(self, field_config_id, field_configurations):
         """
         Update field configuration items
@@ -316,11 +314,9 @@ class IssueTypesJira(CloudJira):
         :return: None
         """
         url = f"rest/api/3/fieldconfiguration/{field_config_id}/fields"
-        data = {
-            "fieldConfigurationItems": field_configurations
-        }
+        data = {"fieldConfigurationItems": field_configurations}
         return self.put(url, data=data)
-    
+
     def get_all_fields(self, include_system=True, include_custom=True):
         """
         Get all fields
@@ -335,9 +331,9 @@ class IssueTypesJira(CloudJira):
             params["type"] = "custom"
         if not include_custom:
             params["type"] = "system"
-            
+
         return self.get(url, params=params)
-    
+
     def create_custom_field(self, name, description, type, search_key=None, project_ids=None, issue_type_ids=None):
         """
         Create a custom field
@@ -356,18 +352,18 @@ class IssueTypesJira(CloudJira):
             "description": description,
             "type": type,
         }
-        
+
         if search_key:
             data["searcherKey"] = search_key
-            
+
         context_data = {}
         if project_ids:
             context_data["projectIds"] = project_ids
-            
+
         if issue_type_ids:
             context_data["issueTypeIds"] = issue_type_ids
-            
+
         if context_data:
             data["scope"] = context_data
-            
-        return self.post(url, data=data) 
+
+        return self.post(url, data=data)

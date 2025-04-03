@@ -2,9 +2,7 @@
 Adapter for Jira Projects providing backward compatibility with the original Jira client
 """
 
-import logging
 import warnings
-from typing import Optional, List, Dict, Any, Union
 
 from atlassian.jira.cloud.projects import ProjectsJira
 
@@ -37,7 +35,7 @@ class ProjectsJiraAdapter(ProjectsJira):
         Get all projects with optional expansion
 
         Deprecated in favor of get_all_projects
-        
+
         :param expand: List of fields to expand
         :return: List of projects
         """
@@ -53,7 +51,7 @@ class ProjectsJiraAdapter(ProjectsJira):
         Get project by key
 
         Deprecated in favor of get_project
-        
+
         :param key: Project key
         :return: Project details
         """
@@ -69,7 +67,7 @@ class ProjectsJiraAdapter(ProjectsJira):
         Create project
 
         Deprecated in favor of the newer create_project method with more parameters
-        
+
         :param key: Project key
         :param name: Project name
         :param project_type: Project type key
@@ -95,7 +93,7 @@ class ProjectsJiraAdapter(ProjectsJira):
         Delete project
 
         Equivalent to the new delete_project method
-        
+
         :param key: Project key
         :return: None
         """
@@ -106,7 +104,7 @@ class ProjectsJiraAdapter(ProjectsJira):
         Get project components
 
         Deprecated in favor of get_project_components
-        
+
         :param key: Project key
         :return: List of components
         """
@@ -122,7 +120,7 @@ class ProjectsJiraAdapter(ProjectsJira):
         Get component by ID
 
         Deprecated in favor of get_component
-        
+
         :param component_id: Component ID
         :return: Component details
         """
@@ -138,7 +136,7 @@ class ProjectsJiraAdapter(ProjectsJira):
         Create component
 
         Deprecated in favor of the more explicit create_component method
-        
+
         :param component: Dictionary containing component details
         :return: Created component
         """
@@ -147,14 +145,14 @@ class ProjectsJiraAdapter(ProjectsJira):
             DeprecationWarning,
             stacklevel=2,
         )
-        
+
         project_key = component.get("project")
         name = component.get("name")
         description = component.get("description")
         lead_account_id = component.get("leadAccountId") or component.get("lead")
         assignee_type = component.get("assigneeType")
         assignee_account_id = component.get("assigneeAccountId")
-        
+
         return super().create_component(
             project_key=project_key,
             name=name,
@@ -169,7 +167,7 @@ class ProjectsJiraAdapter(ProjectsJira):
         Update component
 
         Deprecated in favor of the more explicit update_component method
-        
+
         :param component_id: Component ID
         :param component: Dictionary containing component details to update
         :return: Updated component
@@ -179,14 +177,14 @@ class ProjectsJiraAdapter(ProjectsJira):
             DeprecationWarning,
             stacklevel=2,
         )
-        
+
         name = component.get("name")
         description = component.get("description")
         lead_account_id = component.get("leadAccountId") or component.get("lead")
         assignee_type = component.get("assigneeType")
         assignee_account_id = component.get("assigneeAccountId")
         project_key = component.get("project")
-        
+
         return super().update_component(
             component_id=component_id,
             name=name,
@@ -202,7 +200,7 @@ class ProjectsJiraAdapter(ProjectsJira):
         Delete component
 
         Equivalent to the new delete_component method
-        
+
         :param component_id: Component ID
         :return: None
         """
@@ -213,7 +211,7 @@ class ProjectsJiraAdapter(ProjectsJira):
         Get project versions
 
         Deprecated in favor of get_project_versions
-        
+
         :param key: Project key
         :return: List of versions
         """
@@ -229,7 +227,7 @@ class ProjectsJiraAdapter(ProjectsJira):
         Create version
 
         Deprecated in favor of the more explicit create_version method
-        
+
         :param version: Dictionary containing version details
         :return: Created version
         """
@@ -238,7 +236,7 @@ class ProjectsJiraAdapter(ProjectsJira):
             DeprecationWarning,
             stacklevel=2,
         )
-        
+
         project = version.get("project")
         name = version.get("name")
         description = version.get("description")
@@ -246,7 +244,7 @@ class ProjectsJiraAdapter(ProjectsJira):
         release_date = version.get("releaseDate")
         released = version.get("released")
         archived = version.get("archived")
-        
+
         return super().create_version(
             project_id_or_key=project,
             name=name,
@@ -262,7 +260,7 @@ class ProjectsJiraAdapter(ProjectsJira):
         Update version
 
         Deprecated in favor of the more explicit update_version method
-        
+
         :param version_id: Version ID
         :param version: Dictionary containing version details to update
         :return: Updated version
@@ -272,7 +270,7 @@ class ProjectsJiraAdapter(ProjectsJira):
             DeprecationWarning,
             stacklevel=2,
         )
-        
+
         name = version.get("name")
         description = version.get("description")
         project_id = version.get("projectId")
@@ -280,7 +278,7 @@ class ProjectsJiraAdapter(ProjectsJira):
         release_date = version.get("releaseDate")
         released = version.get("released")
         archived = version.get("archived")
-        
+
         return super().update_version(
             version_id=version_id,
             name=name,
@@ -297,7 +295,7 @@ class ProjectsJiraAdapter(ProjectsJira):
         Delete version
 
         Equivalent to the new delete_version method
-        
+
         :param version_id: Version ID
         :return: None
         """
@@ -308,7 +306,7 @@ class ProjectsJiraAdapter(ProjectsJira):
         Get project roles
 
         Deprecated in favor of get_project_roles
-        
+
         :param project_key: Project key
         :return: Dictionary of roles
         """
@@ -324,7 +322,7 @@ class ProjectsJiraAdapter(ProjectsJira):
         Get project role
 
         Deprecated in favor of get_project_role
-        
+
         :param project_key: Project key
         :param role_id: Role ID
         :return: Role details
@@ -341,7 +339,7 @@ class ProjectsJiraAdapter(ProjectsJira):
         Add user to project role
 
         Deprecated in favor of add_actors_to_project_role
-        
+
         :param project_key: Project key
         :param role_id: Role ID
         :param user_id: User ID or account ID
@@ -360,7 +358,7 @@ class ProjectsJiraAdapter(ProjectsJira):
         Add group to project role
 
         Deprecated in favor of add_actors_to_project_role
-        
+
         :param project_key: Project key
         :param role_id: Role ID
         :param group_name: Group name or ID
@@ -378,7 +376,7 @@ class ProjectsJiraAdapter(ProjectsJira):
         Delete user from project role
 
         Deprecated in favor of remove_actor_from_project_role
-        
+
         :param project_key: Project key
         :param role_id: Role ID
         :param user_id: User ID
@@ -396,7 +394,7 @@ class ProjectsJiraAdapter(ProjectsJira):
         Delete group from project role
 
         Deprecated in favor of remove_actor_from_project_role
-        
+
         :param project_key: Project key
         :param role_id: Role ID
         :param group_name: Group name
@@ -407,4 +405,4 @@ class ProjectsJiraAdapter(ProjectsJira):
             DeprecationWarning,
             stacklevel=2,
         )
-        return self.remove_actor_from_project_role(project_key, role_id, group_id=group_name) 
+        return self.remove_actor_from_project_role(project_key, role_id, group_id=group_name)

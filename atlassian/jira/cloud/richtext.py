@@ -3,7 +3,8 @@ Atlassian Document Format (ADF) support for Jira descriptions and comments
 Reference: https://developer.atlassian.com/cloud/jira/platform/apis/document/structure/
 """
 
-from atlassian.jira.cloud.cloud_base import CloudJira
+
+from atlassian.jira.cloud.cloud import CloudJira
 
 
 class RichTextJira(CloudJira):
@@ -33,17 +34,7 @@ class RichTextJira(CloudJira):
         adf = {
             "version": 1,
             "type": "doc",
-            "content": [
-                {
-                    "type": "paragraph",
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": plain_text
-                        }
-                    ]
-                }
-            ]
+            "content": [{"type": "paragraph", "content": [{"type": "text", "text": plain_text}]}],
         }
         return adf
 
@@ -56,14 +47,11 @@ class RichTextJira(CloudJira):
         :return: ADF paragraph node
         """
         text_node = {"type": "text", "text": text}
-        
+
         if marks:
             text_node["marks"] = [{"type": mark} for mark in marks]
-            
-        return {
-            "type": "paragraph",
-            "content": [text_node]
-        }
+
+        return {"type": "paragraph", "content": [text_node]}
 
     def create_adf_bullet_list(self, items: list) -> dict:
         """
@@ -74,25 +62,11 @@ class RichTextJira(CloudJira):
         """
         content = []
         for item in items:
-            content.append({
-                "type": "listItem",
-                "content": [
-                    {
-                        "type": "paragraph",
-                        "content": [
-                            {
-                                "type": "text",
-                                "text": item
-                            }
-                        ]
-                    }
-                ]
-            })
-            
-        return {
-            "type": "bulletList",
-            "content": content
-        }
+            content.append(
+                {"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": item}]}]}
+            )
+
+        return {"type": "bulletList", "content": content}
 
     def create_adf_numbered_list(self, items: list) -> dict:
         """
@@ -103,25 +77,11 @@ class RichTextJira(CloudJira):
         """
         content = []
         for item in items:
-            content.append({
-                "type": "listItem",
-                "content": [
-                    {
-                        "type": "paragraph",
-                        "content": [
-                            {
-                                "type": "text",
-                                "text": item
-                            }
-                        ]
-                    }
-                ]
-            })
-            
-        return {
-            "type": "orderedList",
-            "content": content
-        }
+            content.append(
+                {"type": "listItem", "content": [{"type": "paragraph", "content": [{"type": "text", "text": item}]}]}
+            )
+
+        return {"type": "orderedList", "content": content}
 
     def create_adf_code_block(self, text: str, language: str = None) -> dict:
         """
@@ -131,19 +91,11 @@ class RichTextJira(CloudJira):
         :param language: Optional language for syntax highlighting
         :return: ADF code block node
         """
-        node = {
-            "type": "codeBlock",
-            "content": [
-                {
-                    "type": "text",
-                    "text": text
-                }
-            ]
-        }
-        
+        node = {"type": "codeBlock", "content": [{"type": "text", "text": text}]}
+
         if language:
             node["attrs"] = {"language": language}
-            
+
         return node
 
     def create_adf_quote(self, text: str) -> dict:
@@ -153,20 +105,7 @@ class RichTextJira(CloudJira):
         :param text: Quote content
         :return: ADF blockquote node
         """
-        return {
-            "type": "blockquote",
-            "content": [
-                {
-                    "type": "paragraph",
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": text
-                        }
-                    ]
-                }
-            ]
-        }
+        return {"type": "blockquote", "content": [{"type": "paragraph", "content": [{"type": "text", "text": text}]}]}
 
     def create_adf_heading(self, text: str, level: int = 1) -> dict:
         """
@@ -180,17 +119,8 @@ class RichTextJira(CloudJira):
             level = 1
         elif level > 6:
             level = 6
-            
-        return {
-            "type": "heading",
-            "attrs": {"level": level},
-            "content": [
-                {
-                    "type": "text",
-                    "text": text
-                }
-            ]
-        }
+
+        return {"type": "heading", "attrs": {"level": level}, "content": [{"type": "text", "text": text}]}
 
     def create_adf_link(self, text: str, url: str) -> dict:
         """
@@ -202,20 +132,7 @@ class RichTextJira(CloudJira):
         """
         return {
             "type": "paragraph",
-            "content": [
-                {
-                    "type": "text",
-                    "text": text,
-                    "marks": [
-                        {
-                            "type": "link",
-                            "attrs": {
-                                "href": url
-                            }
-                        }
-                    ]
-                }
-            ]
+            "content": [{"type": "text", "text": text, "marks": [{"type": "link", "attrs": {"href": url}}]}],
         }
 
     def create_adf_mention(self, account_id: str) -> dict:
@@ -225,18 +142,7 @@ class RichTextJira(CloudJira):
         :param account_id: User account ID
         :return: ADF mention node
         """
-        return {
-            "type": "paragraph",
-            "content": [
-                {
-                    "type": "mention",
-                    "attrs": {
-                        "id": account_id,
-                        "text": "@user"
-                    }
-                }
-            ]
-        }
+        return {"type": "paragraph", "content": [{"type": "mention", "attrs": {"id": account_id, "text": "@user"}}]}
 
     def create_adf_document(self, content: list) -> dict:
         """
@@ -245,11 +151,7 @@ class RichTextJira(CloudJira):
         :param content: List of ADF nodes
         :return: Complete ADF document
         """
-        return {
-            "version": 1,
-            "type": "doc",
-            "content": content
-        }
+        return {"version": 1, "type": "doc", "content": content}
 
     def create_issue_with_adf(self, fields: dict) -> dict:
         """
@@ -260,7 +162,7 @@ class RichTextJira(CloudJira):
         """
         url = "rest/api/3/issue"
         return self.post(url, data=fields)
-        
+
     def add_comment_with_adf(self, issue_key_or_id: str, adf_document: dict) -> dict:
         """
         Add a comment to an issue using ADF
@@ -272,16 +174,16 @@ class RichTextJira(CloudJira):
         url = f"rest/api/3/issue/{issue_key_or_id}/comment"
         data = {"body": adf_document}
         return self.post(url, data=data)
-    
+
     def update_comment_with_adf(self, issue_key_or_id: str, comment_id: str, adf_document: dict) -> dict:
         """
         Update an existing comment using ADF
 
         :param issue_key_or_id: Issue key or ID
-        :param comment_id: Comment ID 
+        :param comment_id: Comment ID
         :param adf_document: Comment content in ADF format
         :return: Updated comment
         """
-        url = f"rest/api/3/issue/{issue_key_or_id}/comment/{comment_id}" 
+        url = f"rest/api/3/issue/{issue_key_or_id}/comment/{comment_id}"
         data = {"body": adf_document}
-        return self.put(url, data=data) 
+        return self.put(url, data=data)

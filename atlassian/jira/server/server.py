@@ -3,7 +3,7 @@ Jira Server API implementation for Jira API v2
 """
 
 import logging
-from typing import Any, Dict, Generator, List, Optional, Union
+from typing import Any, Dict, Generator, List
 
 from atlassian.jira.base import JiraBase
 
@@ -30,12 +30,7 @@ class Jira(JiraBase):
         super(Jira, self).__init__(url, username, password, api_version=api_version, **kwargs)
 
     def _get_paged_resources(
-        self, 
-        endpoint: str, 
-        resource_key: str = None, 
-        params: dict = None, 
-        data: dict = None,
-        absolute: bool = False
+        self, endpoint: str, resource_key: str = None, params: dict = None, data: dict = None, absolute: bool = False
     ) -> Generator[Dict[str, Any], None, None]:
         """
         Generic method to retrieve paged resources from Jira Server API.
@@ -62,7 +57,7 @@ class Jira(JiraBase):
 
         while True:
             response = self.get(endpoint, params=params, data=data, absolute=absolute)
-            
+
             # Extract resources based on the response format
             resources = []
             if resource_key and isinstance(response, dict):
@@ -74,17 +69,17 @@ class Jira(JiraBase):
             else:
                 # If no resources found or format not recognized
                 resources = [response] if response else []
-            
+
             # Yield each resource
             for resource in resources:
                 yield resource
-                
+
             # Check for pagination indicators
             if isinstance(response, dict):
                 total = response.get("total", 0)
                 max_results = response.get("maxResults", 0)
                 start_at = response.get("startAt", 0)
-                
+
                 # Exit if we've reached the end based on counts
                 if total > 0 and start_at + len(resources) >= total:
                     break
@@ -114,12 +109,12 @@ class Jira(JiraBase):
         """
         endpoint = self.get_endpoint("issue_by_id", id=issue_id_or_key)
         params = {}
-        
+
         if fields:
             params["fields"] = fields
         if expand:
             params["expand"] = expand
-            
+
         return self.get(endpoint, params=params)
 
     def get_all_projects(self) -> Generator[Dict[str, Any], None, None]:
@@ -133,12 +128,7 @@ class Jira(JiraBase):
         return self._get_paged_resources(endpoint)
 
     def search_issues(
-        self, 
-        jql: str, 
-        start_at: int = 0, 
-        max_results: int = 50, 
-        fields: List[str] = None, 
-        expand: str = None
+        self, jql: str, start_at: int = 0, max_results: int = 50, fields: List[str] = None, expand: str = None
     ) -> Dict[str, Any]:
         """
         Search for issues using JQL.
@@ -154,15 +144,11 @@ class Jira(JiraBase):
             Dictionary containing the search results
         """
         endpoint = self.get_endpoint("search")
-        data = {
-            "jql": jql,
-            "startAt": start_at,
-            "maxResults": max_results
-        }
-        
+        data = {"jql": jql, "startAt": start_at, "maxResults": max_results}
+
         if fields:
             data["fields"] = fields
         if expand:
             data["expand"] = expand
-            
-        return self.post(endpoint, data=data) 
+
+        return self.post(endpoint, data=data)

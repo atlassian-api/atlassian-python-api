@@ -1,0 +1,29 @@
+[flake8]
+# Set the maximum line length to 120
+max-line-length = 120
+
+# Ignore some common errors that are not relevant for our codebase
+ignore = 
+    # Ignore unused imports for type hints
+    F401,
+    # Ignore redefinition of unused variables 
+    F811,
+    # Ignore whitespace warning in blank lines
+    W293,
+    # Ignore trailing whitespace
+    W291,
+    # Ignore whitespace around arithmetic operators
+    E226,
+    # Ignore missing placeholders in f-strings
+    F541,
+    # Ignore bare except (though we should fix these later)
+    E722
+    
+# Exclude specific directories from linting
+exclude =
+    .git,
+    __pycache__,
+    .tox,
+    .mypy_cache,
+    build,
+    dist 

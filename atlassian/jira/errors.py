@@ -4,7 +4,7 @@ Jira API specific error classes
 
 import json
 import logging
-from typing import Dict, Optional, Union
+from typing import Optional
 
 from requests import Response
 
@@ -33,17 +33,17 @@ class JiraApiError(ApiError):
         """
         self.response = response
         self.status_code = response.status_code if response else None
-        
+
         # Extract error details from JSON response if available
         self.error_messages = []
         self.errors = {}
-        
+
         if response and response.text:
             try:
                 error_data = json.loads(response.text)
                 self.error_messages = error_data.get("errorMessages", [])
                 self.errors = error_data.get("errors", {})
-                
+
                 # If reason not provided, try to extract it from the response
                 if not reason:
                     if self.error_messages:
@@ -54,15 +54,15 @@ class JiraApiError(ApiError):
                 # If the response is not JSON, use the raw text
                 if not reason and response.text:
                     reason = response.text[:100]  # Truncate long error messages
-        
+
         super().__init__(message, reason=reason)
-    
+
     def __str__(self) -> str:
         """User-friendly string representation of the error"""
         result = self.args[0] if self.args else "Jira API Error"
         if self.status_code:
             result = f"{result} (HTTP {self.status_code})"
-        
+
         # Print more detailed error information
         details = []
         if self.error_messages:
@@ -71,57 +71,63 @@ class JiraApiError(ApiError):
             details.append(f"Errors: {self.errors}")
         elif self.reason:
             details.append(f"Reason: {self.reason}")
-        
+
         if details:
             result = f"{result}\n{'; '.join(details)}"
-        
+
         # Log the full response for debugging
-        if self.response and hasattr(self.response, 'text'):
+        if self.response and hasattr(self.response, "text"):
             log.debug(f"Full error response: {self.response.text}")
-            
+
         return result
 
 
 class JiraNotFoundError(JiraApiError, ApiNotFoundError):
     """Raised when a requested resource is not found (404)"""
+
     pass
 
 
 class JiraPermissionError(JiraApiError, ApiPermissionError):
     """Raised when the user doesn't have permission to access a resource (403)"""
+
     pass
 
 
 class JiraValueError(JiraApiError, ApiValueError):
     """Raised when there's a problem with the values provided (400)"""
+
     pass
 
 
 class JiraConflictError(JiraApiError, ApiConflictError):
     """Raised when there's a conflict with the current state of the resource (409)"""
+
     pass
 
 
 class JiraAuthenticationError(JiraApiError):
     """Raised when authentication fails (401)"""
+
     pass
 
 
 class JiraRateLimitError(JiraApiError):
     """Raised when API rate limit is exceeded (429)"""
-    
+
     def __init__(self, message: str, response: Optional[Response] = None, reason: Optional[str] = None):
         super().__init__(message, response, reason)
-        
+
         # Extract retry-after information if available
-        if response and 'Retry-After' in response.headers:
-            self.retry_after = int(response.headers['Retry-After'])
+        if response and "Retry-After" in response.headers:
+            self.retry_after = int(response.headers["Retry-After"])
         else:
             self.retry_after = None
 
 
 class JiraServerError(JiraApiError):
     """Raised when the Jira server encounters an error (5xx)"""
+
     pass
 
 
@@ -145,10 +151,10 @@ def raise_error_from_response(response: Response, message: Optional[str] = None)
     """
     if response.status_code < 400:
         return
-        
+
     default_message = f"Jira API error: {response.status_code} {response.reason}"
     error_message = message or default_message
-    
+
     if response.status_code == 404:
         raise JiraNotFoundError(error_message, response)
     elif response.status_code == 403:
@@ -164,4 +170,4 @@ def raise_error_from_response(response: Response, message: Optional[str] = None)
     elif 500 <= response.status_code < 600:
         raise JiraServerError(error_message, response)
     else:
-        raise JiraApiError(error_message, response) 
+        raise JiraApiError(error_message, response)

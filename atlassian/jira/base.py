@@ -7,7 +7,7 @@ import os
 import platform
 import signal
 import sys
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, Optional, Union
 from urllib.parse import urlparse
 
 from requests import Response
@@ -45,10 +45,8 @@ class JiraEndpoints:
         "issue_worklog": "rest/api/2/issue/{id}/worklog",
         "issue_worklog_by_id": "rest/api/2/issue/{id}/worklog/{worklog_id}",
         "issue_attachments": "rest/api/2/issue/{id}/attachments",
-        
         # Search API
         "search": "rest/api/2/search",
-        
         # Project API
         "project": "rest/api/2/project",
         "project_by_id": "rest/api/2/project/{id}",
@@ -58,7 +56,6 @@ class JiraEndpoints:
         "project_role": "rest/api/2/project/{id}/role/{role_id}",
         "project_properties": "rest/api/2/project/{id}/properties",
         "project_property": "rest/api/2/project/{id}/properties/{key}",
-        
         # User API
         "user": "rest/api/2/user",
         "user_search": "rest/api/2/user/search",
@@ -69,48 +66,37 @@ class JiraEndpoints:
         "user_properties": "rest/api/2/user/properties",
         "user_property": "rest/api/2/user/properties/{key}",
         "user_current": "rest/api/2/myself",
-        
         # Group API
         "group": "rest/api/2/group",
         "group_member": "rest/api/2/group/member",
-        
         # Field API
         "field": "rest/api/2/field",
         "field_by_id": "rest/api/2/field/{id}",
-        
         # Filter API
         "filter": "rest/api/2/filter",
         "filter_by_id": "rest/api/2/filter/{id}",
-        
         # Component API
         "component": "rest/api/2/component",
         "component_by_id": "rest/api/2/component/{id}",
-        
         # Workflow API
         "workflow": "rest/api/2/workflow",
         "workflow_scheme": "rest/api/2/workflowscheme",
-        
         # Attachment API
         "attachment": "rest/api/2/attachment",
         "attachment_by_id": "rest/api/2/attachment/{id}",
         "attachment_meta": "rest/api/2/attachment/meta",
-        
         # Custom field API
         "custom_field_option": "rest/api/2/customFieldOption/{id}",
-        
         # Issue type API
         "issue_type": "rest/api/2/issuetype",
         "issue_type_by_id": "rest/api/2/issuetype/{id}",
-        
         # Status API
         "status": "rest/api/2/status",
         "status_by_id": "rest/api/2/status/{id}",
         "status_category": "rest/api/2/statuscategory",
-        
         # Priority API
         "priority": "rest/api/2/priority",
         "priority_by_id": "rest/api/2/priority/{id}",
-        
         # Resolution API
         "resolution": "rest/api/2/resolution",
         "resolution_by_id": "rest/api/2/resolution/{id}",
@@ -136,20 +122,19 @@ class JiraEndpoints:
         "issue_worklog": "rest/api/3/issue/{id}/worklog",
         "issue_worklog_by_id": "rest/api/3/issue/{id}/worklog/{worklog_id}",
         "issue_attachments": "rest/api/3/issue/{id}/attachments",
-        
         # Search API
         "search": "rest/api/3/search",
-        
         # Project API
         "project": "rest/api/3/project",
+        "projects": "rest/api/3/project",  # Alias for project
         "project_by_id": "rest/api/3/project/{id}",
+        "project_by_key": "rest/api/3/project/{key}",  # For accessing project by key instead of ID
         "project_components": "rest/api/3/project/{id}/components",
         "project_versions": "rest/api/3/project/{id}/versions",
         "project_roles": "rest/api/3/project/{id}/role",
         "project_role": "rest/api/3/project/{id}/role/{role_id}",
         "project_properties": "rest/api/3/project/{id}/properties",
         "project_property": "rest/api/3/project/{id}/properties/{key}",
-        
         # User API
         "user": "rest/api/3/user",
         "user_search": "rest/api/3/user/search",
@@ -160,48 +145,37 @@ class JiraEndpoints:
         "user_properties": "rest/api/3/user/properties",
         "user_property": "rest/api/3/user/properties/{key}",
         "user_current": "rest/api/3/myself",
-        
         # Group API
         "group": "rest/api/3/group",
         "group_member": "rest/api/3/group/member",
-        
         # Field API
         "field": "rest/api/3/field",
         "field_by_id": "rest/api/3/field/{id}",
-        
         # Filter API
         "filter": "rest/api/3/filter",
         "filter_by_id": "rest/api/3/filter/{id}",
-        
         # Component API
         "component": "rest/api/3/component",
         "component_by_id": "rest/api/3/component/{id}",
-        
         # Workflow API
         "workflow": "rest/api/3/workflow",
         "workflow_scheme": "rest/api/3/workflowscheme",
-        
         # Attachment API
         "attachment": "rest/api/3/attachment",
         "attachment_by_id": "rest/api/3/attachment/{id}",
         "attachment_meta": "rest/api/3/attachment/meta",
-        
         # Custom field API
         "custom_field_option": "rest/api/3/customFieldOption/{id}",
-        
         # Issue type API
         "issue_type": "rest/api/3/issuetype",
         "issue_type_by_id": "rest/api/3/issuetype/{id}",
-        
         # Status API
         "status": "rest/api/3/status",
         "status_by_id": "rest/api/3/status/{id}",
         "status_category": "rest/api/3/statuscategory",
-        
         # Priority API
         "priority": "rest/api/3/priority",
         "priority_by_id": "rest/api/3/priority/{id}",
-        
         # Resolution API
         "resolution": "rest/api/3/resolution",
         "resolution_by_id": "rest/api/3/resolution/{id}",
@@ -281,49 +255,53 @@ class JiraBase(AtlassianRestAPI):
             # Any parsing error means invalid URL
             return False
 
-    def __init__(self, url: str, *args, api_version: Union[str, int] = 2, **kwargs):
+    def __init__(self, url: str, *args, **kwargs):
         """
-        Initialize the Jira client with version support.
+        Initialize the Jira base object.
 
         Args:
-            url: Jira instance URL
-            api_version: API version (2 or 3)
-            *args: Arguments to pass to AtlassianRestAPI
-            **kwargs: Keyword arguments to pass to AtlassianRestAPI
+            url: Jira URL
+            *args: Any arguments to pass to the AtlassianRestAPI constructor
+            **kwargs: Any keyword arguments to pass to the AtlassianRestAPI constructor
         """
-        # Save API version
-        self.api_version = int(api_version)
-        if self.api_version not in [2, 3]:
-            raise ValueError("API version must be 2 or 3")
-            
-        # Set cloud flag based on URL
+        self.api_version = kwargs.pop("api_version", 2)
+
+        if "session" in kwargs:
+            # session = kwargs["session"]
+            pass
+
+        # Auto-detect if this is a cloud install
         if self._is_cloud_url(url):
             if "cloud" not in kwargs:
                 kwargs["cloud"] = True
-        
+
         # Add user agent and version information
         client_info = f"atlassian-python-api/jira-v{self.api_version}"
         python_version = f"Python/{sys.version.split()[0]}"
         os_info = f"{platform.system()}/{platform.release()}"
         user_agent = f"{client_info} ({default_user_agent()}) {python_version} {os_info}"
-        
-        # Set default headers with user agent
-        if "headers" not in kwargs:
-            kwargs["headers"] = {}
-        
-        if "User-Agent" not in kwargs["headers"]:
-            kwargs["headers"]["User-Agent"] = user_agent
-            
+
+        # Extract headers before passing to parent constructor
+        headers = kwargs.pop("headers", {}) if "headers" in kwargs else {}
+
+        if "User-Agent" not in headers:
+            headers["User-Agent"] = user_agent
+
         # Enable debug logging if requested via environment variable
         self.debug = os.environ.get("JIRA_API_DEBUG", "").lower() in ("1", "true", "yes", "on")
         if self.debug:
             logging.getLogger("atlassian").setLevel(logging.DEBUG)
             logging.getLogger("requests").setLevel(logging.DEBUG)
             logging.getLogger("urllib3").setLevel(logging.DEBUG)
-            
+
         # Pass on to parent class
         super(JiraBase, self).__init__(url, *args, **kwargs)
-        
+
+        # Set headers after initialization
+        if headers:
+            for key, value in headers.items():
+                self._update_header(key, value)
+
     def get_endpoint(self, endpoint_key: str, **kwargs) -> str:
         """
         Get API endpoint for the specified key with parameter substitution.
@@ -354,71 +332,71 @@ class JiraBase(AtlassianRestAPI):
     def raise_for_status(self, response: Response) -> None:
         """
         Override raise_for_status to use specialized Jira error handling.
-        
+
         Args:
             response: HTTP response object
-            
+
         Raises:
             JiraApiError: If the response indicates an error
         """
         # Use our specialized error handler
         raise_error_from_response(response)
-    
+
     def request(self, *args, **kwargs) -> Response:
         """
         Override request method to add additional debug logging
-        
+
         Args:
             *args: Arguments to pass to parent request method
             **kwargs: Keyword arguments to pass to parent request method
-            
+
         Returns:
             Response object
         """
         # Call the parent method
         response = super(JiraBase, self).request(*args, **kwargs)
-        
+
         # Add additional debug logging if enabled
         if self.debug and response:
-            method = kwargs.get('method', args[0] if args else 'GET')
-            path = kwargs.get('path', args[1] if len(args) > 1 else '/')
-            
+            method = kwargs.get("method", args[0] if args else "GET")
+            path = kwargs.get("path", args[1] if len(args) > 1 else "/")
+
             log.debug("----- REQUEST -----")
             log.debug(f"REQUEST: {method} {path}")
-            
-            if 'headers' in kwargs:
+
+            if "headers" in kwargs:
                 log.debug(f"HEADERS: {kwargs['headers']}")
-            
-            if 'data' in kwargs and kwargs['data']:
+
+            if "data" in kwargs and kwargs["data"]:
                 log.debug(f"DATA: {kwargs['data']}")
-            
-            if 'params' in kwargs and kwargs['params']:
+
+            if "params" in kwargs and kwargs["params"]:
                 log.debug(f"PARAMS: {kwargs['params']}")
-            
+
             log.debug("----- RESPONSE -----")
             log.debug(f"STATUS: {response.status_code} {response.reason}")
             log.debug(f"HEADERS: {response.headers}")
-            
+
             # For security, don't log the full response body if it's very large
             if len(response.text) < 10000:  # Only log if less than 10KB
                 log.debug(f"BODY: {response.text}")
             else:
                 log.debug(f"BODY: (truncated, {len(response.text)} bytes)")
-            
+
             log.debug("-------------------")
-            
+
         return response
-    
+
     def validate_params(self, **kwargs) -> Dict[str, Any]:
         """
         Validate and prepare parameters for API calls.
-        
+
         Args:
             **kwargs: Parameters to validate
-            
+
         Returns:
             Dict of validated parameters
-            
+
         Raises:
             ValueError: If a parameter fails validation
         """
@@ -426,50 +404,50 @@ class JiraBase(AtlassianRestAPI):
         for key, value in kwargs.items():
             if value is not None:  # Skip None values
                 # Special handling for certain parameter types
-                if key == 'expand' and isinstance(value, list):
-                    result[key] = ','.join(value)
-                elif key in ('fields', 'field') and isinstance(value, list):
-                    result[key] = ','.join(value)
+                if key == "expand" and isinstance(value, list):
+                    result[key] = ",".join(value)
+                elif key in ("fields", "field") and isinstance(value, list):
+                    result[key] = ",".join(value)
                 else:
                     result[key] = value
         return result
-    
+
     def validate_jql(self, jql: str) -> str:
         """
         Validate JQL query string
-        
+
         Args:
             jql: JQL query string
-            
+
         Returns:
             Validated JQL string
-            
+
         Raises:
             ValueError: If JQL is empty or invalid
         """
         if not jql or not jql.strip():
             raise ValueError("JQL query cannot be empty")
-        
+
         # Could add more validation here in the future
         return jql.strip()
-    
+
     def validate_id_or_key(self, id_or_key: str, param_name: str = "id") -> str:
         """
         Validate an ID or key parameter
-        
+
         Args:
             id_or_key: ID or key to validate
             param_name: Name of the parameter for error messages
-            
+
         Returns:
             Validated ID or key
-            
+
         Raises:
             ValueError: If ID or key is empty
         """
         if not id_or_key or not str(id_or_key).strip():
             raise ValueError(f"{param_name} cannot be empty")
-        
+
         return str(id_or_key).strip()
 
     def _get_paged(
@@ -507,7 +485,7 @@ class JiraBase(AtlassianRestAPI):
                     flags=flags,
                     absolute=absolute,
                 )
-                
+
                 # Handle differences in pagination format between Cloud API versions
                 if isinstance(response, dict):
                     values = response.get("values", [])
@@ -521,7 +499,7 @@ class JiraBase(AtlassianRestAPI):
                     next_page = response.get("nextPage")
                     if next_page is None:
                         break
-                        
+
                     # From now on we have absolute URLs with parameters
                     url = next_page
                     absolute = True
@@ -537,10 +515,10 @@ class JiraBase(AtlassianRestAPI):
             # For server implementations, different pagination approach
             if params is None:
                 params = {}
-                
+
             start_at = params.get("startAt", 0)
             max_results = params.get("maxResults", 50)
-            
+
             while True:
                 response = super(JiraBase, self).get(
                     url,
@@ -550,7 +528,7 @@ class JiraBase(AtlassianRestAPI):
                     flags=flags,
                     absolute=absolute,
                 )
-                
+
                 # Handle standard Jira server pagination
                 if isinstance(response, dict):
                     # Different endpoints might use different keys for the actual data
@@ -562,16 +540,16 @@ class JiraBase(AtlassianRestAPI):
                     elif "comments" in response:
                         values = response.get("comments", [])
                     # Add more cases as needed for different endpoints
-                    
+
                     # If we found values, yield them
                     for value in values:
                         yield value
-                        
+
                     # Check if we need to get the next page
                     total = response.get("total", 0)
                     if total <= 0 or start_at + len(values) >= total or not values:
                         break
-                        
+
                     # Update pagination parameters for the next page
                     start_at += max_results
                     params["startAt"] = start_at
@@ -588,17 +566,17 @@ class JiraBase(AtlassianRestAPI):
 
     @staticmethod
     def factory(
-        url: str = None, 
-        username: str = None, 
-        password: str = None, 
-        api_version: Union[str, int] = 3, 
-        cloud: bool = None, 
+        url: str = None,
+        username: str = None,
+        password: str = None,
+        api_version: Union[str, int] = 3,
+        cloud: bool = None,
         legacy_mode: bool = True,
-        **kwargs
+        **kwargs,
     ):
         """
         Factory method to create a Jira instance based on URL or explicit cloud parameter.
-        
+
         Args:
             url: Jira instance URL
             username: Username for authentication
@@ -607,28 +585,28 @@ class JiraBase(AtlassianRestAPI):
             cloud: Explicitly set whether this is a cloud instance (True) or server instance (False)
             legacy_mode: Whether to return a JiraAdapter instance for backward compatibility
             **kwargs: Additional keyword arguments for the Jira client
-            
+
         Returns:
             Jira instance configured for the right environment
-            
+
         Raises:
             ValueError: If required arguments are missing or invalid
         """
         if not url:
             raise ValueError("URL is required")
-        
+
         # Import here to avoid circular imports
         from atlassian.jira.cloud import CloudJira, JiraAdapter
         from atlassian.jira.server import ServerJira
-        
+
         # Validate API version
         api_version = int(api_version)
         if api_version not in [2, 3]:
             raise ValueError(f"API version {api_version} is not supported. Use 2 or 3.")
-        
+
         # Determine if this is a cloud instance
         is_cloud = cloud if cloud is not None else JiraBase._is_cloud_url(url)
-        
+
         # Create the appropriate instance
         if is_cloud:
             instance = CloudJira(url, username, password, api_version=api_version, **kwargs)
@@ -638,4 +616,4 @@ class JiraBase(AtlassianRestAPI):
             return instance
         else:
             # Fall back to server instance
-            return ServerJira(url, username, password, api_version=api_version, **kwargs) 
+            return ServerJira(url, username, password, api_version=api_version, **kwargs)

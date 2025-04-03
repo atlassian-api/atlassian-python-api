@@ -6,12 +6,10 @@ This module supports versioning.
 from typing import Optional, Union
 
 from atlassian.jira.base import JiraBase
-from atlassian.jira.cloud.cloud_base import CloudJira
+from atlassian.jira.base import JiraEndpoints
+from atlassian.jira.cloud.cloud import CloudJira
 from atlassian.jira.cloud.adapter import JiraAdapter
 from atlassian.jira.cloud.cloud import Jira
-from atlassian.jira.cloud.endpoints import JiraEndpoints
-from atlassian.jira.cloud.issues import IssuesJira
-from atlassian.jira.cloud.issues_adapter import IssuesJiraAdapter
 from atlassian.jira.cloud.permissions import PermissionsJira
 from atlassian.jira.cloud.permissions_adapter import PermissionsJiraAdapter
 from atlassian.jira.cloud.software import SoftwareJira
@@ -20,38 +18,37 @@ from atlassian.jira.cloud.users import UsersJira
 from atlassian.jira.cloud.users_adapter import UsersJiraAdapter
 from atlassian.jira.cloud.richtext import RichTextJira
 from atlassian.jira.cloud.richtext_adapter import RichTextJiraAdapter
-from atlassian.jira.cloud.jira_versions import JiraVersions
-from atlassian.jira.errors import (
-    JiraApiError,
-    JiraAuthenticationError,
-    JiraConflictError,
-    JiraNotFoundError,
-    JiraPermissionError, 
-    JiraRateLimitError,
-    JiraServerError,
-    JiraValueError
-)
-from atlassian.jira.server import ServerJira
 from atlassian.jira.cloud.issuetypes import IssueTypesJira
 from atlassian.jira.cloud.issuetypes_adapter import IssueTypesJiraAdapter
 from atlassian.jira.cloud.projects import ProjectsJira
 from atlassian.jira.cloud.projects_adapter import ProjectsJiraAdapter
 from atlassian.jira.cloud.search import SearchJira
 from atlassian.jira.cloud.search_adapter import SearchJiraAdapter
+from atlassian.jira.errors import (
+    JiraApiError,
+    JiraAuthenticationError,
+    JiraConflictError,
+    JiraNotFoundError,
+    JiraPermissionError,
+    JiraRateLimitError,
+    JiraServerError,
+    JiraValueError,
+)
+from atlassian.jira.server import Jira as ServerJira
 
 # For backward compatibility
-Jira = JiraAdapter
+# Jira = JiraAdapter
 
 __all__ = [
     "Jira",
     "CloudJira",
     "ServerJira",
     "JiraBase",
+    "JiraEndpoints",
     "get_jira_instance",
     "get_software_jira_instance",
     "get_permissions_jira_instance",
     "get_users_jira_instance",
-    "get_issues_jira_instance",
     "get_richtext_jira_instance",
     "get_issuetypes_jira_instance",
     "get_projects_jira_instance",
@@ -63,7 +60,7 @@ __all__ = [
     "JiraPermissionError",
     "JiraRateLimitError",
     "JiraServerError",
-    "JiraValueError"
+    "JiraValueError",
 ]
 
 
@@ -101,7 +98,7 @@ def get_jira_instance(
     if cloud:
         # Return a cloud instance
         kwargs.setdefault("api_version", api_version)
-        
+
         if legacy_mode:
             # Wrap in adapter for backward compatibility
             return JiraAdapter(url, username, password, **kwargs)
@@ -139,7 +136,7 @@ def get_software_jira_instance(
         api_version = kwargs.pop("version", None) or 3
 
     kwargs.setdefault("api_version", api_version)
-    
+
     if legacy_mode:
         # Wrap in adapter for backward compatibility
         return SoftwareJiraAdapter(url, username, password, **kwargs)
@@ -174,7 +171,7 @@ def get_permissions_jira_instance(
         api_version = kwargs.pop("version", None) or 3
 
     kwargs.setdefault("api_version", api_version)
-    
+
     if legacy_mode:
         # Wrap in adapter for backward compatibility
         return PermissionsJiraAdapter(url, username, password, **kwargs)
@@ -209,48 +206,13 @@ def get_users_jira_instance(
         api_version = kwargs.pop("version", None) or 3
 
     kwargs.setdefault("api_version", api_version)
-    
+
     if legacy_mode:
         # Wrap in adapter for backward compatibility
         return UsersJiraAdapter(url, username, password, **kwargs)
     else:
         # Return direct users instance
         return UsersJira(url, username, password, **kwargs)
-
-
-def get_issues_jira_instance(
-    url: str,
-    username: str = None,
-    password: str = None,
-    api_version: Optional[int] = None,
-    legacy_mode: bool = True,
-    **kwargs,
-) -> Union[IssuesJiraAdapter, IssuesJira]:
-    """
-    Get a Jira Issues instance with specialized issue management features.
-
-    Args:
-        url: Jira URL
-        username: Username for authentication
-        password: Password or API token for authentication
-        api_version: API version to use (2 or 3)
-        legacy_mode: If True, return a IssuesJiraAdapter instance, otherwise return a direct IssuesJira instance
-        **kwargs: Additional arguments to pass to the Jira constructor
-
-    Returns:
-        Jira Issues instance of the appropriate type
-    """
-    if api_version is None:
-        api_version = kwargs.pop("version", None) or 3
-
-    kwargs.setdefault("api_version", api_version)
-    
-    if legacy_mode:
-        # Wrap in adapter for backward compatibility
-        return IssuesJiraAdapter(url, username, password, **kwargs)
-    else:
-        # Return direct issues instance
-        return IssuesJira(url, username, password, **kwargs)
 
 
 def get_richtext_jira_instance(url="", username="", password="", api_version=None, legacy_mode=False, **kwargs):
@@ -268,8 +230,8 @@ def get_richtext_jira_instance(url="", username="", password="", api_version=Non
     :return: RichTextJiraAdapter in legacy mode, RichTextJira instance in direct mode
     :rtype: Union[RichTextJiraAdapter, RichTextJira]
     """
-    api_version = api_version or JiraVersions.JIRA_CLOUD_API_V3
-    
+    api_version = api_version or 3
+
     if legacy_mode:
         return RichTextJiraAdapter(url=url, username=username, password=password, api_version=api_version, **kwargs)
     else:
@@ -302,7 +264,7 @@ def get_issuetypes_jira_instance(
         api_version = kwargs.pop("version", None) or 3
 
     kwargs.setdefault("api_version", api_version)
-    
+
     if legacy_mode:
         # Wrap in adapter for backward compatibility
         return IssueTypesJiraAdapter(url, username, password, **kwargs)
@@ -337,7 +299,7 @@ def get_projects_jira_instance(
         api_version = kwargs.pop("version", None) or 3
 
     kwargs.setdefault("api_version", api_version)
-    
+
     if legacy_mode:
         # Wrap in adapter for backward compatibility
         return ProjectsJiraAdapter(url, username, password, **kwargs)
@@ -372,10 +334,10 @@ def get_search_jira_instance(
         api_version = kwargs.pop("version", None) or 3
 
     kwargs.setdefault("api_version", api_version)
-    
+
     if legacy_mode:
         # Wrap in adapter for backward compatibility
         return SearchJiraAdapter(url, username, password, **kwargs)
     else:
         # Return direct search instance
-        return SearchJira(url, username, password, **kwargs) 
+        return SearchJira(url, username, password, **kwargs)

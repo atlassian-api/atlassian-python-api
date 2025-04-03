@@ -2,7 +2,6 @@
 Jira Cloud API implementation for Jira API v3
 """
 
-import json
 import logging
 from typing import Any, Dict, Generator, List, Optional, Union
 
@@ -31,12 +30,7 @@ class Jira(JiraBase):
         super(Jira, self).__init__(url, username, password, api_version=api_version, **kwargs)
 
     def _get_paged_resources(
-        self, 
-        endpoint: str, 
-        resource_key: str = None, 
-        params: dict = None, 
-        data: dict = None,
-        absolute: bool = False
+        self, endpoint: str, resource_key: str = None, params: dict = None, data: dict = None, absolute: bool = False
     ) -> Generator[Dict[str, Any], None, None]:
         """
         Generic method to retrieve paged resources from Jira Cloud API.
@@ -62,7 +56,7 @@ class Jira(JiraBase):
 
         while True:
             response = self.get(endpoint, params=params, data=data, absolute=absolute)
-            
+
             # Extract resources based on the response format
             resources = []
             if resource_key and isinstance(response, dict):
@@ -74,11 +68,11 @@ class Jira(JiraBase):
             else:
                 # If no resources found or format not recognized
                 resources = [response] if response else []
-            
+
             # Yield each resource
             for resource in resources:
                 yield resource
-                
+
             # Check for pagination indicators
             if isinstance(response, dict):
                 # Check different pagination indicators
@@ -87,11 +81,11 @@ class Jira(JiraBase):
                 total = response.get("total", 0)
                 max_results = response.get("maxResults", 0)
                 start_at = response.get("startAt", 0)
-                
+
                 # Exit if explicitly marked as last page
                 if is_last:
                     break
-                    
+
                 # Exit if next page URL is not provided and we've reached the end
                 if next_page is None:
                     # Check if we've reached the end based on counts
@@ -111,7 +105,7 @@ class Jira(JiraBase):
             else:
                 # If response is not a dict, we can't determine pagination
                 break
-                
+
     def get_issue(self, issue_id_or_key: str, fields: str = None, expand: str = None) -> Dict[str, Any]:
         """
         Get an issue by ID or key.
@@ -125,22 +119,22 @@ class Jira(JiraBase):
             Dictionary containing the issue data
         """
         issue_id_or_key = self.validate_id_or_key(issue_id_or_key, "issue_id_or_key")
-        
+
         endpoint = self.get_endpoint("issue_by_id", id=issue_id_or_key)
         params = self.validate_params(fields=fields, expand=expand)
-            
+
         try:
             return self.get(endpoint, params=params)
         except Exception as e:
             log.error(f"Failed to retrieve issue {issue_id_or_key}: {e}")
             raise
-        
+
     def create_issue(
-        self, 
-        fields: Dict[str, Any], 
-        update: Dict[str, Any] = None, 
+        self,
+        fields: Dict[str, Any],
+        update: Dict[str, Any] = None,
         transition: Dict[str, Any] = None,
-        update_history: bool = False
+        update_history: bool = False,
     ) -> Dict[str, Any]:
         """
         Create a new issue.
@@ -156,26 +150,26 @@ class Jira(JiraBase):
         """
         endpoint = self.get_endpoint("issue")
         data = {"fields": fields}
-        
+
         if update:
             data["update"] = update
         if transition:
             data["transition"] = transition
-            
+
         params = {}
         if update_history:
             params["updateHistory"] = "true"
-            
+
         return self.post(endpoint, data=data, params=params)
-        
+
     def update_issue(
-        self, 
-        issue_id_or_key: str, 
-        fields: Dict[str, Any] = None, 
+        self,
+        issue_id_or_key: str,
+        fields: Dict[str, Any] = None,
         update: Dict[str, Any] = None,
         notify_users: bool = True,
         override_screen_security: bool = False,
-        override_editmeta: bool = False
+        override_editmeta: bool = False,
     ) -> None:
         """
         Update an existing issue.
@@ -190,20 +184,20 @@ class Jira(JiraBase):
         """
         endpoint = self.get_endpoint("issue_by_id", id=issue_id_or_key)
         data = {}
-        
+
         if fields:
             data["fields"] = fields
         if update:
             data["update"] = update
-            
+
         params = {
             "notifyUsers": str(notify_users).lower(),
             "overrideScreenSecurity": str(override_screen_security).lower(),
-            "overrideEditableFlag": str(override_editmeta).lower()
+            "overrideEditableFlag": str(override_editmeta).lower(),
         }
-        
+
         return self.put(endpoint, data=data, params=params)
-        
+
     def delete_issue(self, issue_id_or_key: str, delete_subtasks: bool = False) -> None:
         """
         Delete an issue.
@@ -214,7 +208,7 @@ class Jira(JiraBase):
         """
         endpoint = self.get_endpoint("issue_by_id", id=issue_id_or_key)
         params = {"deleteSubtasks": str(delete_subtasks).lower()}
-        
+
         return self.delete(endpoint, params=params)
 
     def get_issue_transitions(self, issue_id_or_key: str) -> Dict[str, Any]:
@@ -229,14 +223,14 @@ class Jira(JiraBase):
         """
         endpoint = self.get_endpoint("issue_transitions", id=issue_id_or_key)
         return self.get(endpoint)
-        
+
     def transition_issue(
-        self, 
-        issue_id_or_key: str, 
-        transition_id: str, 
-        fields: Dict[str, Any] = None, 
-        update: Dict[str, Any] = None, 
-        comment: Dict[str, Any] = None
+        self,
+        issue_id_or_key: str,
+        transition_id: str,
+        fields: Dict[str, Any] = None,
+        update: Dict[str, Any] = None,
+        comment: Dict[str, Any] = None,
     ) -> None:
         """
         Transition an issue.
@@ -250,7 +244,7 @@ class Jira(JiraBase):
         """
         endpoint = self.get_endpoint("issue_transitions", id=issue_id_or_key)
         data = {"transition": {"id": transition_id}}
-        
+
         if fields:
             data["fields"] = fields
         if update:
@@ -259,53 +253,47 @@ class Jira(JiraBase):
             # Comment can be in ADF format
             data["update"] = data.get("update", {})
             data["update"]["comment"] = [{"add": comment}]
-            
+
         return self.post(endpoint, data=data)
 
     def add_comment(
-        self, 
-        issue_id_or_key: str, 
-        body: Union[str, Dict[str, Any]], 
-        visibility: Dict[str, Any] = None
+        self, issue_id_or_key: str, body: Union[str, Dict[str, Any]], visibility: Dict[str, Any] = None
     ) -> Dict[str, Any]:
         """
         Add a comment to an issue.
 
         Args:
             issue_id_or_key: Issue ID or key
-            body: Comment body (string for simple text or dict for ADF)
+            body: Comment body (string for simple text, dict with ADF body, or ADF content directly)
             visibility: Visibility settings for the comment
 
         Returns:
             Dictionary containing the created comment
         """
         endpoint = self.get_endpoint("issue_comment", id=issue_id_or_key)
-        
+
         # Convert string body to ADF if needed
         if isinstance(body, str):
             data = {
                 "body": {
                     "type": "doc",
                     "version": 1,
-                    "content": [
-                        {
-                            "type": "paragraph",
-                            "content": [
-                                {
-                                    "type": "text",
-                                    "text": body
-                                }
-                            ]
-                        }
-                    ]
+                    "content": [{"type": "paragraph", "content": [{"type": "text", "text": body}]}],
                 }
             }
+        elif isinstance(body, dict):
+            # If body already has 'body' key, use it as is, otherwise wrap it
+            if "body" in body:
+                data = body
+            else:
+                data = {"body": body}
         else:
-            data = {"body": body}
-            
+            # Unsupported type
+            raise ValueError(f"Unsupported comment body type: {type(body)}")
+
         if visibility:
             data["visibility"] = visibility
-            
+
         return self.post(endpoint, data=data)
 
     def get_comments(self, issue_id_or_key: str, expand: str = None) -> Generator[Dict[str, Any], None, None]:
@@ -321,12 +309,12 @@ class Jira(JiraBase):
         """
         endpoint = self.get_endpoint("issue_comment", id=issue_id_or_key)
         params = {}
-        
+
         if expand:
             params["expand"] = expand
-            
+
         return self._get_paged_resources(endpoint, "comments", params=params)
-        
+
     def get_issue_attachments(self, issue_id_or_key: str) -> List[Dict[str, Any]]:
         """
         Get attachments for an issue.
@@ -339,10 +327,10 @@ class Jira(JiraBase):
         """
         endpoint = self.get_endpoint("issue_by_id", id=issue_id_or_key)
         params = {"fields": "attachment"}
-        
+
         response = self.get(endpoint, params=params)
         return response.get("fields", {}).get("attachment", [])
-        
+
     def add_attachment(self, issue_id_or_key: str, filename: str, content) -> List[Dict[str, Any]]:
         """
         Add an attachment to an issue.
@@ -357,24 +345,27 @@ class Jira(JiraBase):
         """
         endpoint = self.get_endpoint("issue_attachments", id=issue_id_or_key)
         headers = {"X-Atlassian-Token": "no-check"}
-        
+
         return self.post(endpoint, files={"file": (filename, content)}, headers=headers)
-        
-    def get_all_projects(self) -> Generator[Dict[str, Any], None, None]:
+
+    def get_all_projects(self, expand: str = None) -> List[Dict[str, Any]]:
         """
         Get all projects.
 
+        Args:
+            expand: Fields to expand, comma-separated
+
         Returns:
-            Generator yielding project dictionaries
+            List of projects
         """
         endpoint = self.get_endpoint("project")
-        
-        try:
-            return self._get_paged_resources(endpoint)
-        except Exception as e:
-            log.error(f"Failed to retrieve projects: {e}")
-            raise
-        
+        params = {}
+
+        if expand:
+            params["expand"] = expand
+
+        return self.get(endpoint, params=params)
+
     def get_project(self, project_id_or_key: str, expand: str = None) -> Dict[str, Any]:
         """
         Get a project by ID or key.
@@ -388,45 +379,54 @@ class Jira(JiraBase):
         """
         endpoint = self.get_endpoint("project_by_id", id=project_id_or_key)
         params = {}
-        
+
         if expand:
             params["expand"] = expand
-            
+
         return self.get(endpoint, params=params)
-        
-    def get_project_components(self, project_id_or_key: str) -> Generator[Dict[str, Any], None, None]:
+
+    def get_project_components(self, project_key_or_id: str) -> List[Dict[str, Any]]:
         """
         Get components for a project.
 
         Args:
-            project_id_or_key: Project ID or key
+            project_key_or_id: Project key or ID
 
         Returns:
-            Generator yielding component dictionaries
+            List of components
         """
-        endpoint = self.get_endpoint("project_components", id=project_id_or_key)
-        return self._get_paged_resources(endpoint)
-        
-    def get_project_versions(self, project_id_or_key: str) -> Generator[Dict[str, Any], None, None]:
+        project_key_or_id = self.validate_id_or_key(project_key_or_id, "project_key_or_id")
+
+        if project_key_or_id.isdigit():
+            endpoint = self.get_endpoint("project_components", id=project_key_or_id)
+        else:
+            # If it's a key, use the key format endpoint
+            endpoint = f"{self.get_endpoint('project_by_key', key=project_key_or_id)}/components"
+
+        return self.get(endpoint)
+
+    def get_project_versions(self, project_key_or_id: str) -> List[Dict[str, Any]]:
         """
         Get versions for a project.
 
         Args:
-            project_id_or_key: Project ID or key
+            project_key_or_id: Project key or ID
 
         Returns:
-            Generator yielding version dictionaries
+            List of versions
         """
-        endpoint = self.get_endpoint("project_versions", id=project_id_or_key)
-        return self._get_paged_resources(endpoint)
-        
+        project_key_or_id = self.validate_id_or_key(project_key_or_id, "project_key_or_id")
+
+        if project_key_or_id.isdigit():
+            endpoint = self.get_endpoint("project_versions", id=project_key_or_id)
+        else:
+            # If it's a key, use the key format endpoint
+            endpoint = f"{self.get_endpoint('project_by_key', key=project_key_or_id)}/versions"
+
+        return self.get(endpoint)
+
     def search_issues(
-        self, 
-        jql: str, 
-        start_at: int = 0, 
-        max_results: int = 50, 
-        fields: List[str] = None, 
-        expand: str = None
+        self, jql: str, start_at: int = 0, max_results: int = 50, fields: List[str] = None, expand: str = None
     ) -> Dict[str, Any]:
         """
         Search for issues using JQL.
@@ -443,32 +443,25 @@ class Jira(JiraBase):
         """
         jql = self.validate_jql(jql)
         endpoint = self.get_endpoint("search")
-        
-        data = {
-            "jql": jql,
-            "startAt": start_at,
-            "maxResults": max_results
-        }
-        
+
+        data = {"jql": jql, "startAt": start_at, "maxResults": max_results}
+
         # Handle fields parameter
         if fields:
             data["fields"] = fields if isinstance(fields, str) else ",".join(fields)
-            
+
         # Handle expand parameter
         if expand:
             data["expand"] = expand
-            
+
         try:
             return self.post(endpoint, data=data)
         except Exception as e:
             log.error(f"Failed to search issues with JQL '{jql}': {e}")
             raise
-        
+
     def get_all_issues(
-        self, 
-        jql: str, 
-        fields: List[str] = None, 
-        expand: str = None
+        self, jql: str, fields: List[str] = None, expand: str = None
     ) -> Generator[Dict[str, Any], None, None]:
         """
         Get all issues matching a JQL query, handling pagination.
@@ -483,16 +476,16 @@ class Jira(JiraBase):
         """
         endpoint = self.get_endpoint("search")
         data = {"jql": jql}
-        
+
         if fields:
             data["fields"] = fields
         if expand:
             data["expand"] = expand
-            
+
         # Use POST for search as it supports larger JQL queries
         for page in self._get_paged_resources(endpoint, "issues", data=data):
             yield page
-            
+
     def add_watcher(self, issue_id_or_key: str, username: str) -> None:
         """
         Add a watcher to an issue.
@@ -502,25 +495,25 @@ class Jira(JiraBase):
             username: Username of the watcher to add
         """
         endpoint = self.get_endpoint("issue_watchers", id=issue_id_or_key)
-        
+
         # For API v3, we need to use accountId instead of username
         if self.api_version == 3:
             # First get the account ID for the username
             user_endpoint = self.get_endpoint("user_search")
             users = self.get(user_endpoint, params={"query": username})
-            
+
             if not users:
                 raise ValueError(f"User '{username}' not found")
-                
+
             account_id = users[0].get("accountId")
             if not account_id:
                 raise ValueError(f"Account ID not found for user '{username}'")
-                
+
             return self.post(endpoint, data=f'"{account_id}"')
         else:
             # For API v2, we can use the username directly
             return self.post(endpoint, data=f'"{username}"')
-            
+
     def remove_watcher(self, issue_id_or_key: str, username: str) -> None:
         """
         Remove a watcher from an issue.
@@ -530,26 +523,26 @@ class Jira(JiraBase):
             username: Username of the watcher to remove
         """
         endpoint = self.get_endpoint("issue_watchers", id=issue_id_or_key)
-        
+
         if self.api_version == 3:
             # First get the account ID for the username
             user_endpoint = self.get_endpoint("user_search")
             users = self.get(user_endpoint, params={"query": username})
-            
+
             if not users:
                 raise ValueError(f"User '{username}' not found")
-                
+
             account_id = users[0].get("accountId")
             if not account_id:
                 raise ValueError(f"Account ID not found for user '{username}'")
-                
+
             params = {"accountId": account_id}
         else:
             # For API v2, we can use the username directly
             params = {"username": username}
-            
+
         return self.delete(endpoint, params=params)
-        
+
     def get_issue_worklog(self, issue_id_or_key: str) -> Generator[Dict[str, Any], None, None]:
         """
         Get worklog for an issue.
@@ -562,15 +555,15 @@ class Jira(JiraBase):
         """
         endpoint = self.get_endpoint("issue_worklog", id=issue_id_or_key)
         return self._get_paged_resources(endpoint, "worklogs")
-        
+
     def add_worklog(
-        self, 
-        issue_id_or_key: str, 
-        time_spent: str = None, 
+        self,
+        issue_id_or_key: str,
+        time_spent: str = None,
         time_spent_seconds: int = None,
         comment: Union[str, Dict[str, Any]] = None,
         started: str = None,
-        visibility: Dict[str, Any] = None
+        visibility: Dict[str, Any] = None,
     ) -> Dict[str, Any]:
         """
         Add worklog to an issue.
@@ -588,14 +581,14 @@ class Jira(JiraBase):
         """
         endpoint = self.get_endpoint("issue_worklog", id=issue_id_or_key)
         data = {}
-        
+
         if time_spent:
             data["timeSpent"] = time_spent
         if time_spent_seconds:
             data["timeSpentSeconds"] = time_spent_seconds
         if started:
             data["started"] = started
-            
+
         # Handle comment
         if comment:
             if isinstance(comment, str) and self.api_version == 3:
@@ -603,32 +596,22 @@ class Jira(JiraBase):
                 data["comment"] = {
                     "type": "doc",
                     "version": 1,
-                    "content": [
-                        {
-                            "type": "paragraph",
-                            "content": [
-                                {
-                                    "type": "text",
-                                    "text": comment
-                                }
-                            ]
-                        }
-                    ]
+                    "content": [{"type": "paragraph", "content": [{"type": "text", "text": comment}]}],
                 }
             elif isinstance(comment, dict):
                 data["comment"] = comment
             else:
                 data["comment"] = comment
-                
+
         if visibility:
             data["visibility"] = visibility
-            
+
         return self.post(endpoint, data=data)
-        
+
     def get_current_user(self) -> Dict[str, Any]:
         """
         Get current user information.
-        
+
         Returns:
             Dictionary containing the current user data
         """
@@ -638,12 +621,12 @@ class Jira(JiraBase):
     def get_custom_fields(self) -> List[Dict[str, Any]]:
         """
         Get all custom fields defined in the Jira instance.
-        
+
         Returns:
             List of custom field definitions
         """
         endpoint = self.get_endpoint("field")
-        
+
         try:
             fields = self.get(endpoint)
             # Filter for custom fields only (custom fields have customfield_ prefix in their id)
@@ -651,126 +634,117 @@ class Jira(JiraBase):
         except Exception as e:
             log.error(f"Failed to retrieve custom fields: {e}")
             raise
-            
+
     def get_project_issues(
-        self, 
-        project_id_or_key: str, 
-        fields: Union[str, List[str]] = "*all", 
-        start_at: int = 0, 
-        max_results: Optional[int] = None
+        self,
+        project_id_or_key: str,
+        fields: Union[str, List[str]] = "*all",
+        start_at: int = 0,
+        max_results: Optional[int] = None,
     ) -> List[Dict[str, Any]]:
         """
         Get all issues for a project.
-        
+
         Args:
             project_id_or_key: Project ID or key
             fields: Fields to include in the response (comma-separated string or list)
             start_at: Index of the first issue to return
             max_results: Maximum number of issues to return
-            
+
         Returns:
             List of issues in the project
         """
         jql = f'project = "{project_id_or_key}" ORDER BY key'
-        
+
         # Handle fields parameter
         if isinstance(fields, list):
             fields = ",".join(fields)
-            
+
         # Get search results
-        result = self.search_issues(
-            jql=jql, 
-            start_at=start_at, 
-            max_results=max_results or 50, 
-            fields=fields
-        )
-        
+        result = self.search_issues(jql=jql, start_at=start_at, max_results=max_results or 50, fields=fields)
+
         return result.get("issues", [])
-    
+
     def get_project_issues_count(self, project_id_or_key: str) -> int:
         """
         Get the number of issues in a project.
-        
+
         Args:
             project_id_or_key: Project ID or key
-            
+
         Returns:
             Number of issues in the project
         """
         jql = f'project = "{project_id_or_key}"'
-        
+
         # Search with no fields to minimize response size
         result = self.search_issues(jql=jql, fields=["key"], max_results=1)
-        
+
         return result.get("total", 0)
-    
-    def get_issue_remotelinks(
-        self, 
-        issue_id_or_key: str, 
-        global_id: Optional[str] = None
-    ) -> List[Dict[str, Any]]:
+
+    def get_issue_remotelinks(self, issue_id_or_key: str, global_id: Optional[str] = None) -> List[Dict[str, Any]]:
         """
         Get remote links for an issue.
-        
+
         Args:
             issue_id_or_key: Issue ID or key
             global_id: Filter by global ID
-            
+
         Returns:
             List of remote links
         """
         issue_id_or_key = self.validate_id_or_key(issue_id_or_key, "issue_id_or_key")
         endpoint = self.get_endpoint("issue_remotelinks", id=issue_id_or_key)
-        
+
         params = {}
         if global_id:
             params["globalId"] = global_id
-            
+
         try:
             return self.get(endpoint, params=params)
         except Exception as e:
             log.error(f"Failed to retrieve remote links for issue {issue_id_or_key}: {e}")
             raise
-    
+
     def get_issue_watchers(self, issue_id_or_key: str) -> Dict[str, Any]:
         """
         Get watchers for an issue.
-        
+
         Args:
             issue_id_or_key: Issue ID or key
-            
+
         Returns:
             Dictionary containing watchers information
         """
         issue_id_or_key = self.validate_id_or_key(issue_id_or_key, "issue_id_or_key")
         endpoint = self.get_endpoint("issue_watchers", id=issue_id_or_key)
-        
+
         try:
             return self.get(endpoint)
         except Exception as e:
             log.error(f"Failed to retrieve watchers for issue {issue_id_or_key}: {e}")
             raise
-    
+
     def get_issue_remote_link_by_id(self, issue_id_or_key: str, link_id: str) -> Dict[str, Any]:
         """
         Get a specific remote link for an issue.
-        
+
         Args:
             issue_id_or_key: Issue ID or key
             link_id: Remote link ID
-            
+
         Returns:
             Remote link details
         """
         issue_id_or_key = self.validate_id_or_key(issue_id_or_key, "issue_id_or_key")
         endpoint = f"{self.get_endpoint('issue_remotelinks', id=issue_id_or_key)}/{link_id}"
-        
+
         try:
             return self.get(endpoint)
         except Exception as e:
             log.error(f"Failed to retrieve remote link {link_id} for issue {issue_id_or_key}: {e}")
             raise
-    
+
     def create_or_update_issue_remote_link(
         self,
         issue_id_or_key: str,
@@ -780,11 +754,11 @@ class Jira(JiraBase):
         relationship: Optional[str] = None,
         icon_url: Optional[str] = None,
         icon_title: Optional[str] = None,
-        status_resolved: bool = False
+        status_resolved: bool = False,
     ) -> Dict[str, Any]:
         """
         Create or update a remote link for an issue.
-        
+
         Args:
             issue_id_or_key: Issue ID or key
             link_url: URL of the remote link
@@ -794,28 +768,22 @@ class Jira(JiraBase):
             icon_url: URL of an icon for the link
             icon_title: Title for the icon
             status_resolved: Whether the remote link is resolved
-            
+
         Returns:
             Created or updated remote link
         """
         issue_id_or_key = self.validate_id_or_key(issue_id_or_key, "issue_id_or_key")
         endpoint = self.get_endpoint("issue_remotelinks", id=issue_id_or_key)
-        
+
         # Build the payload
-        data = {
-            "object": {
-                "url": link_url,
-                "title": title,
-                "status": {"resolved": status_resolved}
-            }
-        }
-        
+        data = {"object": {"url": link_url, "title": title, "status": {"resolved": status_resolved}}}
+
         if global_id:
             data["globalId"] = global_id
-            
+
         if relationship:
             data["relationship"] = relationship
-            
+
         if icon_url or icon_title:
             icon_data = {}
             if icon_url:
@@ -823,9 +791,34 @@ class Jira(JiraBase):
             if icon_title:
                 icon_data["title"] = icon_title
             data["object"]["icon"] = icon_data
-        
+
         try:
             return self.post(endpoint, data=data)
         except Exception as e:
             log.error(f"Failed to create/update remote link for issue {issue_id_or_key}: {e}")
-            raise 
+            raise
+
+    def get_issue_comments(self, issue_id_or_key: str, expand: str = None) -> Dict[str, Any]:
+        """
+        Get comments for an issue.
+
+        Args:
+            issue_id_or_key: Issue ID or key
+            expand: Fields to expand, comma-separated
+
+        Returns:
+            Dictionary containing comments data
+        """
+        issue_id_or_key = self.validate_id_or_key(issue_id_or_key, "issue_id_or_key")
+
+        endpoint = f"{self.get_endpoint('issue_by_id', id=issue_id_or_key)}/comment"
+        params = {}
+
+        if expand:
+            params["expand"] = expand
+
+        return self.get(endpoint, params=params)
+
+
+# Create an alias for Jira as CloudJira for backward compatibility
+CloudJira = Jira

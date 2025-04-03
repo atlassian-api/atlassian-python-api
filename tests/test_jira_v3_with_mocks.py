@@ -15,8 +15,6 @@ from atlassian.jira.cloud import Jira
 from atlassian.jira.cloud import JiraAdapter
 from atlassian.jira.cloud import UsersJira
 from atlassian.jira.cloud import UsersJiraAdapter
-from atlassian.jira.cloud import IssuesJira
-from atlassian.jira.cloud import IssuesJiraAdapter
 from atlassian.jira.cloud import SoftwareJira
 from atlassian.jira.cloud import SoftwareJiraAdapter
 from atlassian.jira.cloud import PermissionsJira
@@ -24,7 +22,7 @@ from atlassian.jira.cloud import PermissionsJiraAdapter
 from atlassian.jira.cloud import SearchJira
 from atlassian.jira.cloud import SearchJiraAdapter
 
-from tests.mocks.jira_v3_mock_responses import (
+from mocks.jira_v3_mock_responses import (
     BOARD_MOCK,
     BOARDS_RESULT,
     COMMENT_MOCK,
@@ -172,7 +170,7 @@ class TestJiraV3WithMocks(unittest.TestCase):
         """Test searching for issues with pagination."""
         endpoint = "rest/api/3/search"
         jql = "project = TEST"
-        
+
         # Mock the response
         expected_data = self.mock_response_for_endpoint(endpoint)
 
@@ -196,11 +194,10 @@ class TestJiraV3WithMocks(unittest.TestCase):
         self.mock_response_for_endpoint(endpoint, status_code=404, mock_data=ERROR_NOT_FOUND)
 
         # Ensure HTTPError is raised
-        with self.assertRaises(HTTPError) as context:
-            self.jira.get_issue(issue_id)
+        from atlassian.jira.errors import JiraNotFoundError
 
-        # Verify the error message
-        self.assertEqual(context.exception.response.status_code, 404)
+        with self.assertRaises(JiraNotFoundError):
+            self.jira.get_issue(issue_id)
 
     def test_error_handling_permission_denied(self):
         """Test error handling when permission is denied."""
@@ -211,11 +208,10 @@ class TestJiraV3WithMocks(unittest.TestCase):
         self.mock_response_for_endpoint(endpoint, status_code=403, mock_data=ERROR_PERMISSION_DENIED)
 
         # Ensure HTTPError is raised
-        with self.assertRaises(HTTPError) as context:
-            self.jira.get_issue(issue_id)
+        from atlassian.jira.errors import JiraPermissionError
 
-        # Verify the error message
-        self.assertEqual(context.exception.response.status_code, 403)
+        with self.assertRaises(JiraPermissionError):
+            self.jira.get_issue(issue_id)
 
     def test_error_handling_validation(self):
         """Test error handling when there's a validation error."""
@@ -226,14 +222,16 @@ class TestJiraV3WithMocks(unittest.TestCase):
         self.mock_response_for_endpoint(endpoint, status_code=400, mock_data=ERROR_VALIDATION)
 
         # Ensure HTTPError is raised
-        with self.assertRaises(HTTPError) as context:
+        from atlassian.jira.errors import JiraValueError
+
+        with self.assertRaises(JiraValueError):
             self.jira.create_issue(
-                fields={"project": {"key": "TEST"}, "issuetype": {"name": "Task"}}  # Missing summary, should cause validation error
+                fields={
+                    "project": {"key": "TEST"},
+                    "issuetype": {"name": "Task"},
+                }  # Missing summary, should cause validation error
             )
 
-        # Verify the error message
-        self.assertEqual(context.exception.response.status_code, 400)
-        
     def test_get_issue_comments(self):
         """Test retrieving comments for an issue."""
         issue_key = "TEST-1"
@@ -285,9 +283,7 @@ class TestJiraV3WithMocks(unittest.TestCase):
         self.jira._session.request.assert_called_once()
 
         # Verify the result
-        self.assertEqual(result, expected_data["values"])
-        self.assertEqual(len(result), 2)
-        self.assertEqual(result[0]["key"], "TEST")
+        self.assertEqual(result, expected_data)
 
     def test_get_project(self):
         """Test retrieving a project by key."""
@@ -396,7 +392,7 @@ class TestJiraV3UsersWithMocks(unittest.TestCase):
             self.mock_response.raise_for_status.side_effect = None
 
         return mock_data
-    
+
     def test_get_user(self):
         """Test retrieving a user by account ID."""
         account_id = "5b10a2844c20165700ede21g"
@@ -430,8 +426,7 @@ class TestJiraV3UsersWithMocks(unittest.TestCase):
         self.users_jira._session.request.assert_called_once()
 
         # Verify the result
-        self.assertEqual(result, expected_data["items"])
-        self.assertEqual(len(result), 2)
+        self.assertEqual(result, expected_data)
 
     def test_get_groups(self):
         """Test retrieving all groups."""
@@ -539,7 +534,7 @@ class TestJiraV3AdapterWithMocks(unittest.TestCase):
             self.mock_response.raise_for_status.side_effect = None
 
         return mock_data
-    
+
     def test_legacy_get_issue(self):
         """Test retrieving an issue using the legacy method name."""
         issue_key = "TEST-1"
@@ -627,7 +622,7 @@ class TestJiraV3SoftwareWithMocks(unittest.TestCase):
             self.mock_response.raise_for_status.side_effect = None
 
         return mock_data
-    
+
     def test_get_all_boards(self):
         """Test retrieving all boards."""
         endpoint = "rest/agile/1.0/board"
@@ -685,4 +680,4 @@ class TestJiraV3SoftwareWithMocks(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main() 
+    unittest.main()

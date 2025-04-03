@@ -2,7 +2,7 @@
 Jira Cloud API for advanced project configuration operations
 """
 
-from atlassian.jira.cloud.cloud_base import CloudJira
+from atlassian.jira.cloud.cloud import CloudJira
 
 
 class ProjectsJira(CloudJira):
@@ -21,22 +21,22 @@ class ProjectsJira(CloudJira):
         """
         url = "rest/api/3/project"
         params = {}
-        
+
         if expand:
             if isinstance(expand, list):
                 params["expand"] = ",".join(expand)
             else:
                 params["expand"] = expand
-        
+
         if recent is not None:
             params["recent"] = recent
-        
+
         if properties:
             if isinstance(properties, list):
                 params["properties"] = ",".join(properties)
             else:
                 params["properties"] = properties
-        
+
         return self.get(url, params=params)
 
     def get_project(self, project_id_or_key, expand=None, properties=None):
@@ -50,27 +50,41 @@ class ProjectsJira(CloudJira):
         """
         url = f"rest/api/3/project/{project_id_or_key}"
         params = {}
-        
+
         if expand:
             if isinstance(expand, list):
                 params["expand"] = ",".join(expand)
             else:
                 params["expand"] = expand
-        
+
         if properties:
             if isinstance(properties, list):
                 params["properties"] = ",".join(properties)
             else:
                 params["properties"] = properties
-        
+
         return self.get(url, params=params)
 
-    def create_project(self, key, name, project_type_key, project_template_key, 
-                       description=None, lead_account_id=None, url=None, 
-                       assignee_type=None, avatar_id=None, issue_security_scheme=None, 
-                       permission_scheme=None, notification_scheme=None, 
-                       category_id=None, workflow_scheme=None, issue_type_scheme=None,
-                       issue_type_screen_scheme=None, field_configuration_scheme=None):
+    def create_project(
+        self,
+        key,
+        name,
+        project_type_key,
+        project_template_key,
+        description=None,
+        lead_account_id=None,
+        url=None,
+        assignee_type=None,
+        avatar_id=None,
+        issue_security_scheme=None,
+        permission_scheme=None,
+        notification_scheme=None,
+        category_id=None,
+        workflow_scheme=None,
+        issue_type_scheme=None,
+        issue_type_screen_scheme=None,
+        field_configuration_scheme=None,
+    ):
         """
         Create a new project
 
@@ -100,52 +114,63 @@ class ProjectsJira(CloudJira):
             "projectTypeKey": project_type_key,
             "projectTemplateKey": project_template_key,
         }
-        
+
         if description:
             data["description"] = description
-        
+
         if lead_account_id:
             data["leadAccountId"] = lead_account_id
-        
+
         if url:
             data["url"] = url
-        
+
         if assignee_type:
             data["assigneeType"] = assignee_type
-        
+
         if avatar_id:
             data["avatarId"] = avatar_id
-        
+
         if issue_security_scheme:
             data["issueSecurityScheme"] = issue_security_scheme
-        
+
         if permission_scheme:
             data["permissionScheme"] = permission_scheme
-        
+
         if notification_scheme:
             data["notificationScheme"] = notification_scheme
-        
+
         if category_id:
             data["categoryId"] = category_id
-            
+
         if workflow_scheme:
             data["workflowScheme"] = workflow_scheme
-            
+
         if issue_type_scheme:
             data["issueTypeScheme"] = issue_type_scheme
-            
+
         if issue_type_screen_scheme:
             data["issueTypeScreenScheme"] = issue_type_screen_scheme
-            
+
         if field_configuration_scheme:
             data["fieldConfigurationScheme"] = field_configuration_scheme
-        
+
         return self.post(url, data=data)
 
-    def update_project(self, project_id_or_key, name=None, key=None, description=None, 
-                      lead_account_id=None, url=None, assignee_type=None, 
-                      avatar_id=None, issue_security_scheme=None, permission_scheme=None, 
-                      notification_scheme=None, category_id=None):
+    def update_project(
+        self,
+        project_id_or_key,
+        name=None,
+        key=None,
+        description=None,
+        lead_account_id=None,
+        url=None,
+        assignee_type=None,
+        avatar_id=None,
+        issue_security_scheme=None,
+        permission_scheme=None,
+        notification_scheme=None,
+        category_id=None,
+    ):
         """
         Update an existing project
 
@@ -165,40 +190,40 @@ class ProjectsJira(CloudJira):
         """
         url = f"rest/api/3/project/{project_id_or_key}"
         data = {}
-        
+
         if name:
             data["name"] = name
-        
+
         if key:
             data["key"] = key
-        
+
         if description:
             data["description"] = description
-        
+
         if lead_account_id:
             data["leadAccountId"] = lead_account_id
-        
+
         if url:
             data["url"] = url
-        
+
         if assignee_type:
             data["assigneeType"] = assignee_type
-        
+
         if avatar_id:
             data["avatarId"] = avatar_id
-        
+
         if issue_security_scheme:
             data["issueSecurityScheme"] = issue_security_scheme
-        
+
         if permission_scheme:
             data["permissionScheme"] = permission_scheme
-        
+
         if notification_scheme:
             data["notificationScheme"] = notification_scheme
-        
+
         if category_id:
             data["categoryId"] = category_id
-        
+
         return self.put(url, data=data)
 
     def delete_project(self, project_id_or_key):
@@ -241,8 +266,9 @@ class ProjectsJira(CloudJira):
         url = f"rest/api/3/project/{project_id_or_key}/components"
         return self.get(url)
 
-    def create_component(self, project_key, name, description=None, lead_account_id=None, 
-                         assignee_type=None, assignee_account_id=None):
+    def create_component(
+        self, project_key, name, description=None, lead_account_id=None, assignee_type=None, assignee_account_id=None
+    ):
         """
         Create a project component
 
@@ -259,19 +285,19 @@ class ProjectsJira(CloudJira):
             "project": project_key,
             "name": name,
         }
-        
+
         if description:
             data["description"] = description
-        
+
         if lead_account_id:
             data["leadAccountId"] = lead_account_id
-        
+
         if assignee_type:
             data["assigneeType"] = assignee_type
-        
+
         if assignee_account_id:
             data["assigneeAccountId"] = assignee_account_id
-        
+
         return self.post(url, data=data)
 
     def get_component(self, component_id):
@@ -284,9 +310,16 @@ class ProjectsJira(CloudJira):
         url = f"rest/api/3/component/{component_id}"
         return self.get(url)
 
-    def update_component(self, component_id, name=None, description=None, 
-                        lead_account_id=None, assignee_type=None, 
-                        assignee_account_id=None, project_key=None):
+    def update_component(
+        self,
+        component_id,
+        name=None,
+        description=None,
+        lead_account_id=None,
+        assignee_type=None,
+        assignee_account_id=None,
+        project_key=None,
+    ):
         """
         Update a component
 
@@ -301,25 +334,25 @@ class ProjectsJira(CloudJira):
         """
         url = f"rest/api/3/component/{component_id}"
         data = {}
-        
+
         if name:
             data["name"] = name
-        
+
         if description:
             data["description"] = description
-        
+
         if lead_account_id:
             data["leadAccountId"] = lead_account_id
-        
+
         if assignee_type:
             data["assigneeType"] = assignee_type
-        
+
         if assignee_account_id:
             data["assigneeAccountId"] = assignee_account_id
-        
+
         if project_key:
             data["project"] = project_key
-        
+
         return self.put(url, data=data)
 
     def delete_component(self, component_id, move_issues_to=None):
@@ -332,11 +365,21 @@ class ProjectsJira(CloudJira):
         """
         url = f"rest/api/3/component/{component_id}"
         params = {}
-        
+
         if move_issues_to:
             params["moveIssuesTo"] = move_issues_to
-        
+
         return self.delete(url, params=params)
+
+    def get_project_issue_types(self, project_id_or_key):
+        """
+        Get issue types for a specific project
+
+        :param project_id_or_key: Project ID or key
+        :return: List of issue types for the project
+        """
+        url = f"rest/api/3/project/{project_id_or_key}/issueTypes"
+        return self.get(url)
 
     def get_project_versions(self, project_id_or_key, expand=None):
         """
@@ -348,18 +391,25 @@ class ProjectsJira(CloudJira):
         """
         url = f"rest/api/3/project/{project_id_or_key}/versions"
         params = {}
-        
+
         if expand:
             if isinstance(expand, list):
                 params["expand"] = ",".join(expand)
             else:
                 params["expand"] = expand
-        
+
         return self.get(url, params=params)
 
-    def create_version(self, project_id_or_key, name, description=None, 
-                       start_date=None, release_date=None, released=None, 
-                       archived=None):
+    def create_version(
+        self,
+        project_id_or_key,
+        name,
+        description=None,
+        start_date=None,
+        release_date=None,
+        released=None,
+        archived=None,
+    ):
         """
         Create a project version
 
@@ -377,22 +427,22 @@ class ProjectsJira(CloudJira):
             "project": project_id_or_key,
             "name": name,
         }
-        
+
         if description:
             data["description"] = description
-        
+
         if start_date:
             data["startDate"] = start_date
-        
+
         if release_date:
             data["releaseDate"] = release_date
-        
+
         if released is not None:
             data["released"] = released
-        
+
         if archived is not None:
             data["archived"] = archived
-        
+
         return self.post(url, data=data)
 
     def get_version(self, version_id, expand=None):
@@ -405,18 +455,26 @@ class ProjectsJira(CloudJira):
         """
         url = f"rest/api/3/version/{version_id}"
         params = {}
-        
+
         if expand:
             if isinstance(expand, list):
                 params["expand"] = ",".join(expand)
             else:
                 params["expand"] = expand
-        
+
         return self.get(url, params=params)
 
-    def update_version(self, version_id, name=None, description=None, 
-                      project_id=None, start_date=None, release_date=None, 
-                      released=None, archived=None):
+    def update_version(
+        self,
+        version_id,
+        name=None,
+        description=None,
+        project_id=None,
+        start_date=None,
+        release_date=None,
+        released=None,
+        archived=None,
+    ):
         """
         Update a version
 
@@ -432,32 +490,31 @@ class ProjectsJira(CloudJira):
         """
         url = f"rest/api/3/version/{version_id}"
         data = {}
-        
+
         if name:
             data["name"] = name
-        
+
         if description:
             data["description"] = description
-        
+
         if project_id:
             data["projectId"] = project_id
-        
+
         if start_date:
             data["startDate"] = start_date
-        
+
         if release_date:
             data["releaseDate"] = release_date
-        
+
         if released is not None:
             data["released"] = released
-        
+
         if archived is not None:
             data["archived"] = archived
-        
+
         return self.put(url, data=data)
 
-    def delete_version(self, version_id, move_fix_issues_to=None, 
-                      move_affected_issues_to=None):
+    def delete_version(self, version_id, move_fix_issues_to=None, move_affected_issues_to=None):
         """
         Delete a version
 
@@ -468,13 +525,13 @@ class ProjectsJira(CloudJira):
         """
         url = f"rest/api/3/version/{version_id}"
         params = {}
-        
+
         if move_fix_issues_to:
             params["moveFixIssuesTo"] = move_fix_issues_to
-        
+
         if move_affected_issues_to:
             params["moveAffectedIssuesTo"] = move_affected_issues_to
-        
+
         return self.delete(url, params=params)
 
     def get_project_roles(self, project_id_or_key):
@@ -498,8 +555,7 @@ class ProjectsJira(CloudJira):
         url = f"rest/api/3/project/{project_id_or_key}/role/{role_id}"
         return self.get(url)
 
-    def set_actors_to_project_role(self, project_id_or_key, role_id, 
-                                  user_account_ids=None, group_ids=None):
+    def set_actors_to_project_role(self, project_id_or_key, role_id, user_account_ids=None, group_ids=None):
         """
         Set actors to a project role
 
@@ -511,19 +567,18 @@ class ProjectsJira(CloudJira):
         """
         url = f"rest/api/3/project/{project_id_or_key}/role/{role_id}"
         data = {}
-        
+
         if user_account_ids:
             data["categorisedActors"] = {"atlassian-user-role-actor": user_account_ids}
-        
+
         if group_ids:
             if "categorisedActors" not in data:
                 data["categorisedActors"] = {}
             data["categorisedActors"]["atlassian-group-role-actor"] = group_ids
-        
+
         return self.put(url, data=data)
 
-    def add_actors_to_project_role(self, project_id_or_key, role_id, 
-                                  user_account_ids=None, group_ids=None):
+    def add_actors_to_project_role(self, project_id_or_key, role_id, user_account_ids=None, group_ids=None):
         """
         Add actors to a project role
 
@@ -535,19 +590,18 @@ class ProjectsJira(CloudJira):
         """
         url = f"rest/api/3/project/{project_id_or_key}/role/{role_id}"
         data = {}
-        
+
         if user_account_ids:
             data["categorisedActors"] = {"atlassian-user-role-actor": user_account_ids}
-        
+
         if group_ids:
             if "categorisedActors" not in data:
                 data["categorisedActors"] = {}
             data["categorisedActors"]["atlassian-group-role-actor"] = group_ids
-        
+
         return self.post(url, data=data)
 
-    def remove_actor_from_project_role(self, project_id_or_key, role_id, 
-                                      user_account_id=None, group_id=None):
+    def remove_actor_from_project_role(self, project_id_or_key, role_id, user_account_id=None, group_id=None):
         """
         Remove an actor from a project role
 
@@ -559,11 +613,11 @@ class ProjectsJira(CloudJira):
         """
         url = f"rest/api/3/project/{project_id_or_key}/role/{role_id}"
         params = {}
-        
+
         if user_account_id:
             params["user"] = user_account_id
-        
+
         if group_id:
             params["group"] = group_id
-        
-        return self.delete(url, params=params) 
+
+        return self.delete(url, params=params)

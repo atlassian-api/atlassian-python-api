@@ -2,7 +2,7 @@
 Jira Cloud API for advanced search capabilities
 """
 
-from atlassian.jira.cloud.cloud_base import CloudJira
+from atlassian.jira.cloud.cloud import CloudJira
 
 
 class SearchJira(CloudJira):
@@ -10,8 +10,16 @@ class SearchJira(CloudJira):
     Jira Cloud API for advanced search capabilities
     """
 
-    def search_issues(self, jql, start_at=0, max_results=50, fields=None, expand=None, 
-                    validate_query=None, validate_query_type="strict"):
+    def search_issues(
+        self,
+        jql,
+        start_at=0,
+        max_results=50,
+        fields=None,
+        expand=None,
+        validate_query=None,
+        validate_query_type="strict",
+    ):
         """
         Search for issues using JQL
 
@@ -25,34 +33,29 @@ class SearchJira(CloudJira):
         :return: Search results containing issues that match the query
         """
         url = "rest/api/3/search"
-        data = {
-            "jql": jql,
-            "startAt": start_at,
-            "maxResults": max_results
-        }
-        
+        data = {"jql": jql, "startAt": start_at, "maxResults": max_results}
+
         if fields:
             if isinstance(fields, list):
                 data["fields"] = fields
             else:
                 data["fields"] = [fields]
-        
+
         if expand:
             if isinstance(expand, list):
                 data["expand"] = expand
             else:
                 data["expand"] = [expand]
-        
+
         if validate_query is not None:
             data["validateQuery"] = validate_query
-        
+
         if validate_query_type:
             data["validateQueryType"] = validate_query_type
-        
+
         return self.post(url, data=data)
 
-    def search_users(self, query, start_at=0, max_results=50, include_inactive=False, 
-                    include_active=True):
+    def search_users(self, query, start_at=0, max_results=50, include_inactive=False, include_active=True):
         """
         Search for users
 
@@ -69,9 +72,9 @@ class SearchJira(CloudJira):
             "startAt": start_at,
             "maxResults": max_results,
             "includeInactive": include_inactive,
-            "includeActive": include_active
+            "includeActive": include_active,
         }
-        
+
         return self.get(url, params=params)
 
     def get_issue_search_metadata(self, jql_queries=None):
@@ -82,14 +85,14 @@ class SearchJira(CloudJira):
         :return: Metadata for the JQL search
         """
         url = "rest/api/3/jql/parse"
-        
+
         data = {}
         if jql_queries:
             if isinstance(jql_queries, list):
                 data["queries"] = jql_queries
             else:
                 data["queries"] = [jql_queries]
-        
+
         return self.post(url, data=data)
 
     def get_field_reference_data(self):
@@ -110,13 +113,11 @@ class SearchJira(CloudJira):
         :return: Autocompletion suggestions
         """
         url = "rest/api/3/jql/autocompletedata/suggestions"
-        params = {
-            "fieldName": field_name
-        }
-        
+        params = {"fieldName": field_name}
+
         if field_value:
             params["fieldValue"] = field_value
-        
+
         return self.get(url, params=params)
 
     def parse_jql_queries(self, queries, validation_level="strict"):
@@ -128,16 +129,14 @@ class SearchJira(CloudJira):
         :return: Parse results
         """
         url = "rest/api/3/jql/parse"
-        
-        data = {
-            "queries": queries,
-            "validation": validation_level
-        }
-        
+
+        data = {"queries": queries, "validation": validation_level}
+
         return self.post(url, data=data)
 
-    def convert_user_identifiers(self, query, start_at=0, max_results=100, username=True, 
-                               account_id=True, query_filter=None):
+    def convert_user_identifiers(
+        self, query, start_at=0, max_results=100, username=True, account_id=True, query_filter=None
+    ):
         """
         Find users based on various identifiers
 
@@ -155,16 +154,17 @@ class SearchJira(CloudJira):
             "startAt": start_at,
             "maxResults": max_results,
             "includeUsername": username,
-            "includeAccountId": account_id
+            "includeAccountId": account_id,
         }
-        
+
         if query_filter:
             params["filter"] = query_filter
-        
+
         return self.get(url, params=params)
 
-    def find_users_with_permissions(self, permissions, project_key=None, issue_key=None, 
-                                  start_at=0, max_results=50, query=None):
+    def find_users_with_permissions(
+        self, permissions, project_key=None, issue_key=None, start_at=0, max_results=50, query=None
+    ):
         """
         Find users with specified permissions
 
@@ -177,26 +177,24 @@ class SearchJira(CloudJira):
         :return: List of users with the specified permissions
         """
         url = "rest/api/3/user/permission/search"
-        params = {
-            "startAt": start_at,
-            "maxResults": max_results
-        }
-        
+        params = {"startAt": start_at, "maxResults": max_results}
+
         data = {"permissions": permissions}
-        
+
         if project_key:
             data["projectKey"] = project_key
-        
+
         if issue_key:
             data["issueKey"] = issue_key
-        
+
         if query:
             data["query"] = query
-        
+
         return self.post(url, data=data, params=params)
 
-    def find_assignable_users(self, query, project_key=None, issue_key=None, max_results=50, 
-                             username=False, account_id=True, start_at=0):
+    def find_assignable_users(
+        self, query, project_key=None, issue_key=None, max_results=50, username=False, account_id=True, start_at=0
+    ):
         """
         Find users assignable to issues
 
@@ -215,20 +213,27 @@ class SearchJira(CloudJira):
             "maxResults": max_results,
             "includeUsername": username,
             "includeAccountId": account_id,
-            "startAt": start_at
+            "startAt": start_at,
         }
-        
+
         if project_key:
             params["project"] = project_key
-        
+
         if issue_key:
             params["issueKey"] = issue_key
-        
+
         return self.get(url, params=params)
 
-    def find_users_for_picker(self, query, max_results=50, show_avatar=True, exclude_account_ids=None, 
-                            exclude_project_roles=None, project_key=None, 
-                            exclude_connected_accounts=None):
+    def find_users_for_picker(
+        self,
+        query,
+        max_results=50,
+        show_avatar=True,
+        exclude_account_ids=None,
+        exclude_project_roles=None,
+        project_key=None,
+        exclude_connected_accounts=None,
+    ):
         """
         Find users for the user picker
 
@@ -242,34 +247,38 @@ class SearchJira(CloudJira):
         :return: List of users for the picker
         """
         url = "rest/api/3/user/picker"
-        params = {
-            "query": query,
-            "maxResults": max_results,
-            "showAvatar": show_avatar
-        }
-        
+        params = {"query": query, "maxResults": max_results, "showAvatar": show_avatar}
+
         if exclude_account_ids:
             if isinstance(exclude_account_ids, list):
                 params["excludeAccountIds"] = ",".join(exclude_account_ids)
             else:
                 params["excludeAccountIds"] = exclude_account_ids
-        
+
         if exclude_project_roles:
             if isinstance(exclude_project_roles, list):
                 params["excludeProjectRoles"] = ",".join(map(str, exclude_project_roles))
             else:
                 params["excludeProjectRoles"] = exclude_project_roles
-        
+
         if project_key:
             params["projectKey"] = project_key
-        
+
         if exclude_connected_accounts is not None:
             params["excludeConnectUsers"] = exclude_connected_accounts
-        
+
         return self.get(url, params=params)
 
-    def find_users_by_query(self, query=None, account_id=None, property_key=None, 
-                          property_value=None, start_at=0, max_results=50, exclude=None):
+    def find_users_by_query(
+        self,
+        query=None,
+        account_id=None,
+        property_key=None,
+        property_value=None,
+        start_at=0,
+        max_results=50,
+        exclude=None,
+    ):
         """
         Find users by query
 
@@ -283,29 +292,26 @@ class SearchJira(CloudJira):
         :return: List of users matching the query
         """
         url = "rest/api/3/user/search"
-        params = {
-            "startAt": start_at,
-            "maxResults": max_results
-        }
-        
+        params = {"startAt": start_at, "maxResults": max_results}
+
         if query:
             params["query"] = query
-        
+
         if account_id:
             params["accountId"] = account_id
-        
+
         if property_key:
             params["propertyKey"] = property_key
-        
+
         if property_value:
             params["propertyValue"] = property_value
-        
+
         if exclude:
             if isinstance(exclude, list):
                 params["exclude"] = ",".join(exclude)
             else:
                 params["exclude"] = exclude
-        
+
         return self.get(url, params=params)
 
     def validate_jql(self, jql_queries, validation_level="strict"):
@@ -317,12 +323,9 @@ class SearchJira(CloudJira):
         :return: Validation results
         """
         url = "rest/api/3/jql/parse"
-        
-        data = {
-            "queries": jql_queries,
-            "validation": validation_level
-        }
-        
+
+        data = {"queries": jql_queries, "validation": validation_level}
+
         return self.post(url, data=data)
 
     def get_visible_issue_types_for_project(self, project_id_or_key):
@@ -333,4 +336,4 @@ class SearchJira(CloudJira):
         :return: List of visible issue types
         """
         url = f"rest/api/3/project/{project_id_or_key}/statuses"
-        return self.get(url) 
+        return self.get(url)

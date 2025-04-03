@@ -3,9 +3,7 @@ Adapter for Jira Issue Types and Field Configurations providing backward compati
 with the original Jira client
 """
 
-import logging
 import warnings
-from typing import Optional, List, Dict, Any, Union
 
 from atlassian.jira.cloud.issuetypes import IssueTypesJira
 
@@ -33,7 +31,7 @@ class IssueTypesJiraAdapter(IssueTypesJira):
         Get all issue types
 
         Deprecated in favor of get_all_issue_types
-        
+
         :return: List of issue types
         """
         warnings.warn(
@@ -48,7 +46,7 @@ class IssueTypesJiraAdapter(IssueTypesJira):
         Get issue type by ID
 
         Deprecated in favor of get_issue_type
-        
+
         :param issue_type_id: Issue type ID
         :return: Issue type details
         """
@@ -64,7 +62,7 @@ class IssueTypesJiraAdapter(IssueTypesJira):
         Create a new issue type
 
         Deprecated in favor of create_issue_type
-        
+
         :param name: Name of the issue type
         :param description: Description of the issue type
         :param type: Type of the issue type (standard, subtask)
@@ -82,7 +80,7 @@ class IssueTypesJiraAdapter(IssueTypesJira):
         Update an issue type
 
         Deprecated in favor of update_issue_type
-        
+
         :param issue_type_id: Issue type ID
         :param name: New name for the issue type
         :param description: New description for the issue type
@@ -100,7 +98,7 @@ class IssueTypesJiraAdapter(IssueTypesJira):
         Delete an issue type
 
         Deprecated in favor of delete_issue_type
-        
+
         :param issue_type_id: ID of the issue type to delete
         :return: None
         """
@@ -116,7 +114,7 @@ class IssueTypesJiraAdapter(IssueTypesJira):
         Get field configurations
 
         Deprecated in favor of get_field_configurations
-        
+
         :param config_id: Field configuration ID
         :return: Field configuration details
         """
@@ -132,7 +130,7 @@ class IssueTypesJiraAdapter(IssueTypesJira):
         Get all custom fields
 
         Deprecated in favor of get_all_fields with include_system=False
-        
+
         :return: List of custom fields
         """
         warnings.warn(
@@ -145,9 +143,9 @@ class IssueTypesJiraAdapter(IssueTypesJira):
     def projecttype(self, key):
         """
         Get project type by key
-        
+
         Legacy method, not directly mapped to new API
-        
+
         :param key: Project type key
         :return: Project type details
         """
@@ -157,4 +155,4 @@ class IssueTypesJiraAdapter(IssueTypesJira):
             stacklevel=2,
         )
         url = f"rest/api/3/project/type/{key}"
-        return self.get(url) 
+        return self.get(url)
