@@ -29,13 +29,13 @@ class TestConfluenceBase(unittest.TestCase):
         """Test initialization with API version 1"""
         client = Confluence("https://example.atlassian.net", api_version=1)
         self.assertEqual(client.api_version, 1)
-        self.assertEqual(client.url, "https://example.atlassian.net/wiki")
+        self.assertEqual(client.url, "https://example.atlassian.net")
 
     def test_init_with_api_version_2(self):
         """Test initialization with API version 2"""
         client = Confluence("https://example.atlassian.net", api_version=2)
         self.assertEqual(client.api_version, 2)
-        self.assertEqual(client.url, "https://example.atlassian.net/wiki")
+        self.assertEqual(client.url, "https://example.atlassian.net")
 
     def test_get_endpoint_v1(self):
         """Test retrieving v1 endpoint"""
@@ -183,7 +183,7 @@ class TestConfluenceV2(unittest.TestCase):
         """Test ConfluenceV2 initialization sets correct API version"""
         client = ConfluenceCloud("https://example.atlassian.net")
         self.assertEqual(client.api_version, 2)
-        self.assertEqual(client.url, "https://example.atlassian.net/wiki")
+        self.assertEqual(client.url, "https://example.atlassian.net")
 
     def test_init_with_explicit_version(self):
         """Test ConfluenceV2 initialization with explicit API version"""

@@ -1,6 +1,13 @@
 # Confluence v2 API Migration Guide
 
-This document provides guidelines and instructions for migrating from the Confluence v1 API to the newer v2 API in the atlassian-python-api library.
+## URL Requirements
+
+**Important:** The URL format is different in v2. You must provide the complete URL as required by your Confluence instance:
+
+- For Confluence Cloud, include `/wiki` in the URL: `https://your-instance.atlassian.net/wiki`
+- For Confluence Server/Data Center, use the base URL as appropriate for your installation
+
+The library no longer automatically adds `/wiki` to cloud URLs. Instead, it uses the URL exactly as provided.
 
 ## Introduction
 

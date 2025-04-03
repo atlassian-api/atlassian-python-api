@@ -3,10 +3,9 @@ Confluence base module for shared functionality between API versions
 """
 
 import logging
-import os
 import platform
 import signal
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Union
 from urllib.parse import urlparse
 
 from atlassian.rest_client import AtlassianRestAPI
@@ -147,27 +146,23 @@ class ConfluenceBase(AtlassianRestAPI):
         Initialize the Confluence Base instance with version support.
 
         Args:
-            url: The Confluence instance URL
+            url: The Confluence instance URL. This should be the complete URL as required by your Confluence
+                 instance, including any context path like '/wiki' if necessary.
             api_version: API version, 1 or 2, defaults to 1
             args: Arguments to pass to AtlassianRestAPI constructor
             kwargs: Keyword arguments to pass to AtlassianRestAPI constructor
-        """
-        # Handle the URL correctly for Confluence Cloud
-        if self._is_cloud_url(url):
-            # Strip any trailing '/wiki' from the URL
-            if url.rstrip("/").endswith("/wiki"):
-                url = url.rstrip("/")[:-5]
 
-            # Set cloud flag
+        Note:
+            The URL is used exactly as provided without any automatic modification.
+            For Confluence Cloud, you typically need to include '/wiki' in the URL, e.g.,
+            'https://your-instance.atlassian.net/wiki'.
+        """
+        # Set cloud flag for Atlassian Cloud URLs
+        if self._is_cloud_url(url):
             if "cloud" not in kwargs:
                 kwargs["cloud"] = True
 
-            # Add "/wiki" to the URL only if it's truly not present in any part
-            parsed_url = urlparse(url)
-            path_parts = parsed_url.path.split("/")
-            if "wiki" not in path_parts:
-                url = AtlassianRestAPI.url_joiner(url, "/wiki")
-
+        # Use the URL exactly as provided by the user without modification
         super(ConfluenceBase, self).__init__(url, *args, **kwargs)
         self.api_version = int(api_version)
         if self.api_version not in [1, 2]:
@@ -293,18 +288,10 @@ class ConfluenceBase(AtlassianRestAPI):
                 base_url = response.get("_links", {}).get("base")
                 if base_url and next_url.startswith("/"):
                     # Construct the full URL using the base URL from the response
-                    # Check for and prevent /wiki/wiki duplication
-                    if base_url.endswith("/wiki") and next_url.startswith("/wiki/"):
-                        url = f"{base_url}{next_url[5:]}"  # Strip the duplicate /wiki
-                    else:
-                        url = f"{base_url}{next_url}"
+                    url = f"{base_url}{next_url}"
                     absolute = True
                 else:
-                    # Check for and prevent /wiki/wiki duplication in the URL
-                    if "/wiki/wiki/" in next_url:
-                        next_url = next_url.replace("/wiki/wiki/", "/wiki/")
                     url = next_url
-
                     # Check if the URL is absolute (has http:// or https://) or contains the server's domain
                     if next_url.startswith(("http://", "https://")) or self.url.split("/")[2] in next_url:
                         absolute = True
@@ -321,7 +308,8 @@ class ConfluenceBase(AtlassianRestAPI):
         Factory method to create a Confluence client with the specified API version
 
         Args:
-            url: Confluence Cloud base URL
+            url: Confluence instance URL. This should be the complete URL including any necessary
+                 context path like '/wiki' for cloud instances (e.g., 'https://your-instance.atlassian.net/wiki').
             api_version: API version to use (1 or 2)
             *args: Variable length argument list
             **kwargs: Keyword arguments

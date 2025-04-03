@@ -3,7 +3,7 @@ Confluence base module for shared functionality between API versions
 """
 
 import logging
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Union
 from urllib.parse import urlparse
 
 from atlassian.rest_client import AtlassianRestAPI
@@ -92,16 +92,23 @@ class ConfluenceBase(AtlassianRestAPI):
         Initialize the Confluence Base instance with version support.
 
         Args:
-            url: The Confluence instance URL
+            url: The Confluence instance URL. This should be the complete URL as required by your Confluence
+                 instance, including any context path like '/wiki' if necessary.
             api_version: API version, 1 or 2, defaults to 1
             args: Arguments to pass to AtlassianRestAPI constructor
             kwargs: Keyword arguments to pass to AtlassianRestAPI constructor
+
+        Note:
+            The URL is used exactly as provided without any automatic modification.
+            For Confluence Cloud, you typically need to include '/wiki' in the URL, e.g.,
+            'https://your-instance.atlassian.net/wiki'.
         """
-        if self._is_cloud_url(url) and "/wiki" not in url:
-            url = AtlassianRestAPI.url_joiner(url, "/wiki")
+        # Set cloud flag for Atlassian Cloud URLs
+        if self._is_cloud_url(url):
             if "cloud" not in kwargs:
                 kwargs["cloud"] = True
 
+        # Use the URL exactly as provided by the user without modification
         super(ConfluenceBase, self).__init__(url, *args, **kwargs)
         self.api_version = int(api_version)
         if self.api_version not in [1, 2]:
