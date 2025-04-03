@@ -62,10 +62,23 @@ class JiraApiError(ApiError):
         result = self.args[0] if self.args else "Jira API Error"
         if self.status_code:
             result = f"{result} (HTTP {self.status_code})"
+        
+        # Print more detailed error information
+        details = []
         if self.error_messages:
-            result = f"{result}: {', '.join(self.error_messages)}"
+            details.append(f"Error messages: {self.error_messages}")
+        if self.errors:
+            details.append(f"Errors: {self.errors}")
         elif self.reason:
-            result = f"{result}: {self.reason}"
+            details.append(f"Reason: {self.reason}")
+        
+        if details:
+            result = f"{result}\n{'; '.join(details)}"
+        
+        # Log the full response for debugging
+        if self.response and hasattr(self.response, 'text'):
+            log.debug(f"Full error response: {self.response.text}")
+            
         return result
 
 
