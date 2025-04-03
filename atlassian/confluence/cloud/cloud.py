@@ -36,7 +36,7 @@ class ConfluenceCloud(ConfluenceBase):
 
         # Initialize the compatibility method mapping
         self._compatibility_method_mapping = {}
-        
+
         # Add compatibility mapping here if needed
         # self._compatibility_method_mapping = {
         #    "old_method_name": "new_method_name"
@@ -2235,8 +2235,12 @@ class ConfluenceCloud(ConfluenceBase):
             raise
 
     def get_custom_content_labels(
-        self, custom_content_id: str, prefix: Optional[str] = None, cursor: Optional[str] = None, 
-        sort: Optional[str] = None, limit: int = 25
+        self,
+        custom_content_id: str,
+        prefix: Optional[str] = None,
+        cursor: Optional[str] = None,
+        sort: Optional[str] = None,
+        limit: int = 25,
     ) -> List[Dict[str, Any]]:
         """
         Returns all labels for custom content.

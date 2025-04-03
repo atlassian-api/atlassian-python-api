@@ -19,20 +19,18 @@ PROJECT_KEY = os.environ.get("JIRA_PROJECT_KEY", "DEMO")
 # For debugging
 print(f"Connecting to Jira at {JIRA_URL}")
 
+
 def main():
     # Example 1: Using the direct PermissionsJira class (no legacy compatibility)
     print("\n=== Example 1: Using PermissionsJira directly ===")
     jira_permissions = jira.get_permissions_jira_instance(
-        url=JIRA_URL,
-        username=JIRA_USERNAME,
-        password=JIRA_API_TOKEN,
-        legacy_mode=False
+        url=JIRA_URL, username=JIRA_USERNAME, password=JIRA_API_TOKEN, legacy_mode=False
     )
-    
+
     # Get current user
     user = jira_permissions.get_current_user()
     print(f"Current user: {user.get('displayName', 'Unknown')}")
-    
+
     # Example 2: Get my permissions
     print("\n=== Example 2: My Permissions ===")
     try:
@@ -46,7 +44,7 @@ def main():
                 count += 1
         if count >= 5:
             print("  - ...")
-        
+
         # Get project-specific permissions
         my_project_permissions = jira_permissions.get_my_permissions(project_key=PROJECT_KEY)
         print(f"\nPermissions for project {PROJECT_KEY}:")
@@ -59,7 +57,7 @@ def main():
             print("  - ...")
     except Exception as e:
         print(f"Error getting permissions: {str(e)}")
-    
+
     # Example 3: Permission schemes
     print("\n=== Example 3: Permission Schemes ===")
     try:
@@ -68,12 +66,12 @@ def main():
         print("\nPermission schemes:")
         for scheme in permission_schemes.get("permissionSchemes", []):
             print(f"  - {scheme.get('name', 'Unknown')} (ID: {scheme.get('id', 'Unknown')})")
-            
+
         # If we have at least one scheme, look at its permissions
         if permission_schemes.get("permissionSchemes"):
             scheme_id = permission_schemes["permissionSchemes"][0]["id"]
             print(f"\nPermission grants for scheme ID {scheme_id}:")
-            
+
             grants = jira_permissions.get_permission_scheme_grants(scheme_id)
             count = 0
             for grant in grants.get("permissions", []):
@@ -88,7 +86,7 @@ def main():
                 print("  - ...")
     except Exception as e:
         print(f"Error getting permission schemes: {str(e)}")
-    
+
     # Example 4: Issue security schemes
     print("\n=== Example 4: Issue Security Schemes ===")
     try:
@@ -99,16 +97,13 @@ def main():
             print(f"    Description: {scheme.get('description', 'None')}")
     except Exception as e:
         print(f"Error getting security schemes: {str(e)}")
-    
+
     # Example 5: Using the adapter for backward compatibility
     print("\n=== Example 5: Using the adapter (legacy mode) ===")
     jira_adapter = jira.get_permissions_jira_instance(
-        url=JIRA_URL,
-        username=JIRA_USERNAME,
-        password=JIRA_API_TOKEN,
-        legacy_mode=True
+        url=JIRA_URL, username=JIRA_USERNAME, password=JIRA_API_TOKEN, legacy_mode=True
     )
-    
+
     try:
         # Use a legacy method name
         permissions = jira_adapter.get_permissions(project_key=PROJECT_KEY)
@@ -128,4 +123,4 @@ if __name__ == "__main__":
     if not all([JIRA_URL, JIRA_USERNAME, JIRA_API_TOKEN]):
         print("Error: Environment variables JIRA_URL, JIRA_USERNAME, and JIRA_API_TOKEN must be set")
     else:
-        main() 
+        main()

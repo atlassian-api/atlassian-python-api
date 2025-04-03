@@ -3,7 +3,6 @@ Atlassian Document Format (ADF) support for Jira descriptions and comments
 Reference: https://developer.atlassian.com/cloud/jira/platform/apis/document/structure/
 """
 
-
 from atlassian.jira.cloud.cloud import CloudJira
 
 
