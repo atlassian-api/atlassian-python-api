@@ -1,11 +1,11 @@
 # coding=utf-8
 
-from ..base import BitbucketCloudBase
-from .diffstat import DiffStat
 from ...cloud.repositories.commits import Commit
+from ..base import BitbucketCloudBase
 from ..common.builds import Build
 from ..common.comments import Comment
-from ..common.users import User, Participant
+from ..common.users import Participant, User
+from .diffstat import DiffStat
 
 
 class PullRequests(BitbucketCloudBase):

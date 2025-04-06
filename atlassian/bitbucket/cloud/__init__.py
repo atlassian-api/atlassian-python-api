@@ -1,8 +1,8 @@
 # coding=utf-8
 
 from .base import BitbucketCloudBase
-from .workspaces import Workspaces
 from .repositories import Repositories
+from .workspaces import Workspaces
 
 
 class Cloud(BitbucketCloudBase):

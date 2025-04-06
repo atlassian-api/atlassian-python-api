@@ -1,5 +1,6 @@
-from atlassian import Jira
 import logging
+
+from atlassian import Jira
 
 """
     That example related to the cleanup inactive users from project role configurations
