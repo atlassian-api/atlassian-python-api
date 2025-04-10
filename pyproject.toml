@@ -330,7 +330,7 @@ init-import = 'no'
 
 # List of qualified module names which can have objects that can redefine
 # builtins.
-redefining-builtins-modules = 'six.moves,past.builtins,future.builtins,builtins,io'
+redefining-builtins-modules = 'past.builtins,future.builtins,builtins,io'
 
 
 [tool.pylint.FORMAT]

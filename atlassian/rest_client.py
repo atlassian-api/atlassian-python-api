@@ -12,6 +12,7 @@ from typing import (
     Union,
     overload,
 )
+from urllib.parse import urlencode
 
 import requests
 import urllib3
@@ -27,7 +28,6 @@ except ImportError:
 
 from requests import HTTPError, Response, Session
 from requests_oauthlib import OAuth1, OAuth2
-from six.moves.urllib.parse import urlencode
 from typing_extensions import Self
 from urllib3.util import Retry
 

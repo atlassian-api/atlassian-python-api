@@ -1,6 +1,5 @@
 Deprecated
 requests>=2.8.1
-six
 oauthlib
 requests-oauthlib
 requests-kerberos==0.14.0
