@@ -2,7 +2,7 @@
 import logging
 
 from .rest_client import AtlassianRestAPI
-from deprecated import deprecated
+# from deprecated import deprecated
 
 log = logging.getLogger(__name__)
 
