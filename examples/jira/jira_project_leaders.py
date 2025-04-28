@@ -1,6 +1,6 @@
 # coding=utf-8
 
-from six.moves.urllib.parse import quote
+from urllib.parse import quote
 
 from atlassian import Jira
 

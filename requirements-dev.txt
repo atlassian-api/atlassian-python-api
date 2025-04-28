@@ -15,7 +15,6 @@ mypy>=0.812
 doc8
 types-Deprecated
 types-requests
-types-six
 types-beautifulsoup4
 types-jmespath
 types-oauthlib
