@@ -35,6 +35,12 @@ From PyPI
 
    $ pip install atlassian-python-api
 
+And if you want to use Crowd() or Confluence()
+
+.. code-block:: console
+
+   $ pip install atlassian-python-api[html]
+
 From Source
 
 - Git clone repository

@@ -15,6 +15,10 @@ Install package using pip:
 
 ``pip install atlassian-python-api``
 
+and if you want to use Crowd() or Confluence() use:
+
+``pip install atlassian-python-api[html]``
+
 Add a connection:
 
 .. code-block:: python
