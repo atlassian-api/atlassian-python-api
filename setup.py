@@ -26,8 +26,8 @@ setup(
     package_dir={"atlassian": "atlassian"},
     include_package_data=True,
     zip_safe=False,
-    install_requires=["deprecated", "requests", "oauthlib", "requests_oauthlib", "jmespath", "beautifulsoup4", "typing-extensions"],
-    extras_require={"kerberos": ["requests-kerberos"]},
+    install_requires=["deprecated", "requests", "oauthlib", "requests_oauthlib", "jmespath", "typing-extensions"],
+    extras_require={"kerberos": ["requests-kerberos"], "html": ["beautifulsoup4"]},
     platforms="Platform Independent",
     classifiers=[
         "Development Status :: 4 - Beta",

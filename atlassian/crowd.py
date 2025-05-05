@@ -2,7 +2,10 @@
 import logging
 
 from jmespath import search
-from bs4 import BeautifulSoup
+try:
+    from bs4 import BeautifulSoup
+except ImportError:
+    raise ImportError("Please install atlassian-python-api with extra=html like `pip install atlassian-python-api[html]`.")
 
 from .rest_client import AtlassianRestAPI
 
