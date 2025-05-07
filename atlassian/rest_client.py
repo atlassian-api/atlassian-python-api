@@ -94,7 +94,8 @@ class AtlassianRestAPI(object):
         max_backoff_retries: int = 1000,
         backoff_factor=1.0,
         backoff_jitter=1.0,
-        retry_with_header=True,
+        retry_with_header=True,        
+        header=None
     ):
         """
         init function for the AtlassianRestAPI object.
@@ -197,6 +198,8 @@ class AtlassianRestAPI(object):
             self._create_kerberos_session(kerberos)
         elif cookies is not None:
             self._session.cookies.update(cookies)
+        elif header is not None:
+            self._create_header_session(header)
 
     def __enter__(self) -> Self:
         return self
@@ -210,7 +213,10 @@ class AtlassianRestAPI(object):
     def _create_token_session(self, token: str) -> None:
         self._update_header("Authorization", f"Bearer {token.strip()}")
 
-    def _create_kerberos_session(self, _: object) -> None:
+    def _create_header_session(self, header: dict) -> None:
+		self._session.headers.update(header)
+
+    def _create_kerberos_session(self, _):
         from requests_kerberos import OPTIONAL, HTTPKerberosAuth
 
         self._session.auth = HTTPKerberosAuth(mutual_authentication=OPTIONAL)
