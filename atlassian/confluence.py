@@ -1502,16 +1502,15 @@ class Confluence(AtlassianRestAPI):
             content_type = self.content_types.get(extension, "application/binary")
 
         with open(filename, "rb") as infile:
-            content = infile.read()
-        return self.attach_content(
-            content,
-            name,
-            content_type,
-            page_id=page_id,
-            title=title,
-            space=space,
-            comment=comment,
-        )
+            return self.attach_content(
+                infile,
+                name,
+                content_type,
+                page_id=page_id,
+                title=title,
+                space=space,
+                comment=comment,
+            )
 
     def download_attachments_from_page(self, page_id, path=None, start=0, limit=50, filename=None, to_memory=False):
         """
