@@ -2,12 +2,13 @@
 import logging
 
 from .rest_client import AtlassianRestAPI
+
 # from deprecated import deprecated
 
 log = logging.getLogger(__name__)
 
 
-class Assets(AtlassianRestAPI):
+class AssetsCloud(AtlassianRestAPI):
     """Assets for Jira API wrapper."""
 
     # https://developer.atlassian.com/cloud/assets/rest
@@ -24,7 +25,7 @@ class Assets(AtlassianRestAPI):
         # If cloud is set to true, trigger private __cloud__init method
         if kwargs.get("cloud"):
             args, kwargs = self.__cloud_init(*args, **kwargs)
-        super(Assets, self).__init__(*args, **kwargs)
+        super(AssetsCloud, self).__init__(*args, **kwargs)
 
     def __cloud_init(self, *args, **kwargs):
         """
@@ -35,7 +36,7 @@ class Assets(AtlassianRestAPI):
         """
         # trigger a normal init and avoid looping
         del kwargs["cloud"]
-        temp = Assets(*args, **kwargs)
+        temp = AssetsCloud(*args, **kwargs)
         # retrieve cloud workspace id and generate the api_root
         kwargs["api_root"] = f"/jsm/assets/workspace/{temp.__get_workspace_id()}/v1/"
         # Assets cloud uses the atlassian base url, not custom instance urls
@@ -257,13 +258,7 @@ class Assets(AtlassianRestAPI):
     # Fetch Objects by AQL
     # Cloud-only. Server use navlist_aql()
     # https://developer.atlassian.com/cloud/assets/rest/api-group-object/#api-object-aql-post
-    def aql(
-        self,
-        query,
-        start=0,
-        max_results=25,
-        include_attributes=True
-    ):
+    def aql(self, query, start=0, max_results=25, include_attributes=True):
         """
         Resource dedicated to finding objects based on the Assets Query Language (AQL)
 
@@ -275,14 +270,8 @@ class Assets(AtlassianRestAPI):
         """
         if not self.cloud:
             raise NotImplementedError
-        params = {
-            "startAt": start,
-            "maxResults": max_results,
-            "includeAttributes": include_attributes
-        }
-        data = {
-            "qlQuery": query
-        }
+        params = {"startAt": start, "maxResults": max_results, "includeAttributes": include_attributes}
+        data = {"qlQuery": query}
         url = self.url_joiner(self.api_root, "object/aql")
         return self.post(url, params=params, data=data)
 
@@ -331,7 +320,7 @@ class Assets(AtlassianRestAPI):
             "includeAttributes": include_attributes,
             "includeAttributesDeep": include_attributes_deep,
             "includeTypeAttributes": include_type_attributes,
-            "includeExtendedInfo": include_extended_info
+            "includeExtendedInfo": include_extended_info,
         }
         if order_by_attribute_id:
             data["orderByAttributeId"] = order_by_attribute_id
