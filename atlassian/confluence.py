@@ -8,7 +8,10 @@ import time
 from typing import cast
 
 import requests
-from bs4 import BeautifulSoup
+try:
+    from bs4 import BeautifulSoup
+except ImportError:
+    raise ImportError("Please install atlassian-python-api with extra=html like `pip install atlassian-python-api[html]`.")
 from deprecated import deprecated
 from requests import HTTPError
 
