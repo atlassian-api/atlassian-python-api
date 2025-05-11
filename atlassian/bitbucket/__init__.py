@@ -162,7 +162,6 @@ class Bitbucket(BitbucketBase):
             params["filter"] = user_filter
         return self._get_paged(url, params=params)
 
-    
     def get_current_license(self):
         """
         Retrieves details about the current license, as well as the current status of the system with
