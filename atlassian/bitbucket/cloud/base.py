@@ -1,9 +1,9 @@
 # coding=utf-8
 
 import logging
-from ..base import BitbucketBase
-
 from requests import HTTPError
+
+from ..base import BitbucketBase
 
 log = logging.getLogger(__name__)
 

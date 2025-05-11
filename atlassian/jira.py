@@ -5744,7 +5744,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :return: POST request response.
         :rtype: dict
         """
-        resource = f"xboard/issue/flag/flag.json"
+        resource = "xboard/issue/flag/flag.json"
         url = self.get_agile_resource_url(resource, legacy_api=True)
         data = {"issueKeys": issue_keys, "flag": flag}
         return self.post(url, data)
