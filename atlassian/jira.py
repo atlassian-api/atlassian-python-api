@@ -4993,6 +4993,19 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
     #   Resource: https://docs.atlassian.com/jira-software/REST/7.3.1/
     #######################################################################
     # /rest/agile/1.0/backlog/issue
+    def get_agile_resource_url(self, resource: str, legacy_api: bool = False) -> str:
+        """
+        Prepare an 'Agile' API-specific URL relying on defaults set for the client.
+
+        :param resource: Name of an endpoint
+        :param legacy_api: If True - use 'greenhopper' as an API type, else - use a newer, 'agile', name.
+        :return: String with a full URL path to resource
+        """
+        api_version = "1.0"
+        api_type = "greenhopper" if legacy_api else "agile"
+        api_root = self.api_root.replace("rest/api", f"rest/{api_type}")
+        return self.resource_url(resource=resource, api_root=api_root, api_version=api_version)
+
     def move_issues_to_backlog(self, issue_keys: list) -> T_resp_json:
         """
         Move issues to backlog
@@ -5012,7 +5025,8 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         """
         if not isinstance(issues, list):
             raise ValueError("`issues` param should be List of Issue Keys")
-        url = "/rest/agile/1.0/backlog/issue"
+        resource = "backlog/issue"
+        url = self.get_agile_resource_url(resource)
         data = dict(issues=issues)
         return self.post(url, data=data)
 
@@ -5021,7 +5035,8 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         Gets an agile board by the filter id
         :param filter_id: int, str
         """
-        url = f"rest/agile/1.0/board/filter/{filter_id}"
+        resource = f"board/filter/{filter_id}"
+        url = self.get_agile_resource_url(resource)
         return self.get(url)
 
     # /rest/agile/1.0/board
@@ -5033,10 +5048,11 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param filter_id: int
         :param location: dict, Optional. Only specify this for Jira Cloud!
         """
+        resource = "board"
+        url = self.get_agile_resource_url(resource)
         data: dict = {"name": name, "type": type, "filterId": filter_id}
         if location:
             data["location"] = location
-        url = "rest/agile/1.0/board"
         return self.post(url, data=data)
 
     def get_all_agile_boards(
@@ -5056,7 +5072,8 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param limit:
         :return:
         """
-        url = "rest/agile/1.0/board"
+        resource = "board"
+        url = self.get_agile_resource_url(resource)
         params: dict = {}
         if board_name:
             params["name"] = board_name
@@ -5077,7 +5094,8 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param board_id:
         :return:
         """
-        url = f"rest/agile/1.0/board/{str(board_id)}"
+        resource = f"board/{board_id}"
+        url = self.get_agile_resource_url(resource)
         return self.delete(url)
 
     def get_agile_board(self, board_id: T_id) -> T_resp_json:
@@ -5086,7 +5104,8 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param board_id:
         :return:
         """
-        url = f"rest/agile/1.0/board/{str(board_id)}"
+        resource = f"board/{board_id}"
+        url = self.get_agile_resource_url(resource)
         return self.get(url)
 
     def get_issues_for_backlog(self, board_id: T_id) -> T_resp_json:
@@ -5099,7 +5118,8 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         By default, the returned issues are ordered by rank.
         :param board_id: int, str
         """
-        url = f"rest/agile/1.0/board/{board_id}/backlog"
+        resource = f"board/{board_id}/backlog"
+        url = self.get_agile_resource_url(resource)
         return self.get(url)
 
     def get_agile_board_configuration(self, board_id: T_id) -> T_resp_json:
@@ -5126,7 +5146,8 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param board_id:
         :return:
         """
-        url = f"rest/agile/1.0/board/{str(board_id)}/configuration"
+        resource = f"board/{board_id}/configuration"
+        url = self.get_agile_resource_url(resource)
         return self.get(url)
 
     def get_issues_for_board(
@@ -5153,6 +5174,8 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param expand: OPTIONAL: expand the search result
         :return:
         """
+        resource = f"board/{board_id}/issue"
+        url = self.get_agile_resource_url(resource)
         params: dict = {}
         if start is not None:
             params["startAt"] = int(start)
@@ -5167,7 +5190,6 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         if expand is not None:
             params["expand"] = expand
 
-        url = f"rest/agile/1.0/board/{board_id}/issue"
         return self.get(url, params=params)
 
     # /rest/agile/1.0/board/{boardId}/epic
@@ -5190,7 +5212,8 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
                       See the 'Pagination' section at the top of this page for more details.
         :return:
         """
-        url = f"rest/agile/1.0/board/{board_id}/epic"
+        resource = f"board/{board_id}/epic"
+        url = self.get_agile_resource_url(resource)
         params: dict = {}
         if done:
             params["done"] = done
@@ -5236,7 +5259,8 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
                       If you exceed this limit, your results will be truncated.
         :return:
         """
-        url = f"/rest/agile/1.0/board/{board_id}/epic/{epic_id}/issue"
+        resource = f"board/{board_id}/epic/{epic_id}/issue"
+        url = self.get_agile_resource_url(resource)
         params: dict = {}
         if jql:
             params["jql"] = jql
@@ -5285,7 +5309,8 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
                         If you exceed this limit, your results will be truncated.
         :return:
         """
-        url = f"/rest/agile/1.0/board/{board_id}/epic/none/issue"
+        resource = f"board/{board_id}/epic/none/issue"
+        url = self.get_agile_resource_url(resource)
         params: dict = {}
         if jql:
             params["jql"] = jql
@@ -5321,7 +5346,8 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
                       See the 'Pagination' section at the top of this page for more details
         :return:
         """
-        url = f"/rest/agile/1.0/board/{board_id}/project"
+        resource = f"board/{board_id}/project"
+        url = self.get_agile_resource_url(resource)
         params: dict = {}
         if start:
             params["startAt"] = start
@@ -5336,7 +5362,8 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         The user who retrieves the property keys is required to have permissions to view the board.
         :param board_id: int, str
         """
-        url = f"rest/agile/1.0/board/{board_id}/properties"
+        resource = f"board/{board_id}/properties"
+        url = self.get_agile_resource_url(resource)
         return self.get(url)
 
     def set_agile_board_property(self, board_id: T_id, property_key: str) -> T_resp_json:
@@ -5349,7 +5376,8 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param property_key:
         :return:
         """
-        url = f"/rest/agile/1.0/board/{board_id}/properties/{property_key}"
+        resource = f"board/{board_id}/properties/{property_key}"
+        url = self.get_agile_resource_url(resource)
         return self.put(url)
 
     def get_agile_board_property(self, board_id: T_id, property_key: str) -> T_resp_json:
@@ -5360,7 +5388,8 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param property_key:
         :return:
         """
-        url = f"/rest/agile/1.0/board/{board_id}/properties/{property_key}"
+        resource = f"board/{board_id}/properties/{property_key}"
+        url = self.get_agile_resource_url(resource)
         return self.get(url)
 
     def delete_agile_board_property(self, board_id: T_id, property_key: str) -> T_resp_json:
@@ -5371,7 +5400,8 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param property_key:
         :return:
         """
-        url = f"/rest/agile/1.0/board/{board_id}/properties/{property_key}"
+        resource = f"board/{board_id}/properties/{property_key}"
+        url = self.get_agile_resource_url(resource)
         return self.delete(url)
 
     # /rest/agile/1.0/board/{boardId}/settings/refined-velocity
@@ -5381,7 +5411,8 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param board_id:
         :return:
         """
-        url = f"/rest/agile/1.0/board/{board_id}/settings/refined-velocity"
+        resource = f"board/{board_id}/settings/refined-velocity"
+        url = self.get_agile_resource_url(resource)
         return self.get(url)
 
     def set_agile_board_refined_velocity(self, board_id: T_id, data: dict) -> T_resp_json:
@@ -5391,7 +5422,8 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param data:
         :return:
         """
-        url = f"/rest/agile/1.0/board/{board_id}/settings/refined-velocity"
+        resource = f"board/{board_id}/settings/refined-velocity"
+        url = self.get_agile_resource_url(resource)
         return self.put(url, data=data)
 
     # /rest/agile/1.0/board/{boardId}/sprint
@@ -5414,6 +5446,8 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
                       See the 'Pagination' section at the top of this page for more details.
         :return:
         """
+        resource = f"board/{board_id}/sprint"
+        url = self.get_agile_resource_url(resource)
         params: dict = {}
         if start:
             params["startAt"] = start
@@ -5421,7 +5455,6 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
             params["maxResults"] = limit
         if state:
             params["state"] = state
-        url = f"rest/agile/1.0/board/{board_id}/sprint"
         return self.get(url, params=params)
 
     @deprecated(version="3.42.0", reason="Use get_all_sprints_from_board instead")
@@ -5472,7 +5505,8 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
                       'jira.search.views.default.max' in your JIRA instance.
                       If you exceed this limit, your results will be truncated.
         """
-        url = f"/rest/agile/1.0/board/{board_id}/sprint/{sprint_id}/issue"
+        resource = f"board/{board_id}/sprint/{sprint_id}/issue"
+        url = self.get_agile_resource_url(resource)
         params: dict = {}
         if jql:
             params["jql"] = jql
@@ -5510,6 +5544,8 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
                       See the 'Pagination' section at the top of this page for more details.
         :return:
         """
+        resource = f"board/{board_id}/version"
+        url = self.get_agile_resource_url(resource)
         params: dict = {}
         if released:
             params["released"] = released
@@ -5517,7 +5553,6 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
             params["startAt"] = start
         if limit:
             params["maxResults"] = limit
-        url = f"rest/agile/1.0/board/{board_id}/version"
         return self.get(url, params=params)
 
     def create_sprint(
@@ -5544,7 +5579,8 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         https://docs.atlassian.com/jira-software/REST/8.9.0/#agile/1.0/sprint
         isoformat can be created with datetime.datetime.isoformat()
         """
-        url = "/rest/agile/1.0/sprint"
+        resource = "sprint"
+        url = self.get_agile_resource_url(resource)
         data = dict(name=name, originBoardId=board_id)
         if start_date:
             data["startDate"] = start_date
@@ -5580,7 +5616,8 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param sprint_id:
         :return:
         """
-        url = f"rest/agile/1.0/sprint/{sprint_id}"
+        resource = f"sprint/{sprint_id}"
+        url = self.get_agile_resource_url(resource)
         return self.get(url)
 
     def rename_sprint(self, sprint_id: T_id, name: str, start_date: str, end_date: str) -> T_resp_json:
@@ -5592,8 +5629,10 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param end_date:
         :return:
         """
+        resource = f"sprint/{sprint_id}"
+        url = self.get_agile_resource_url(resource, legacy_api=True)
         return self.put(
-            f"rest/greenhopper/1.0/sprint/{sprint_id}",
+            url,
             data={"name": name, "startDate": start_date, "endDate": end_date},
         )
 
@@ -5605,7 +5644,9 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param sprint_id:
         :return:
         """
-        return self.delete(f"rest/agile/1.0/sprint/{sprint_id}")
+        resource = f"sprint/{sprint_id}"
+        url = self.get_agile_resource_url(resource)
+        return self.delete(url)
 
     def update_partially_sprint(self, sprint_id: T_id, data: dict) -> T_resp_json:
         """
@@ -5625,7 +5666,9 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param data: { "name": "new name"}
         :return:
         """
-        return self.post(f"rest/agile/1.0/sprint/{sprint_id}", data=data)
+        resource = f"sprint/{sprint_id}"
+        url = self.get_agile_resource_url(resource)
+        return self.post(url, data=data)
 
     def get_sprint_issues(self, sprint_id: T_id, start: T_id, limit: T_id) -> T_resp_json:
         """
@@ -5644,12 +5687,13 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
                       If you exceed this limit, your results will be truncated.
         :return:
         """
+        resource = f"sprint/{sprint_id}/issue"
+        url = self.get_agile_resource_url(resource)
         params: dict = {}
         if start:
             params["startAt"] = start
         if limit:
             params["maxResults"] = limit
-        url = f"rest/agile/1.0/sprint/{sprint_id}/issue"
         return self.get(url, params=params)
 
     def update_rank(self, issues_to_rank: list, rank_before: str, customfield_number: T_id) -> T_resp_json:
@@ -5660,9 +5704,11 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :param customfield_number: The number of the custom field Rank
         :return:
         """
+        resource = "issue/rank"
+        url = self.get_agile_resource_url(resource)
 
         return self.put(
-            "rest/agile/1.0/issue/rank",
+            url,
             data={
                 "issues": issues_to_rank,
                 "rankBeforeIssue": rank_before,
@@ -5698,7 +5744,8 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :return: POST request response.
         :rtype: dict
         """
-        url = "rest/greenhopper/1.0/xboard/issue/flag/flag.json"
+        resource = "xboard/issue/flag/flag.json"
+        url = self.get_agile_resource_url(resource, legacy_api=True)
         data = {"issueKeys": issue_keys, "flag": flag}
         return self.post(url, data)
 

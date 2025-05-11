@@ -1,3 +1,7 @@
+"""
+Atlassian Python API
+"""
+
 from .bamboo import Bamboo
 from .bitbucket import Bitbucket
 from .bitbucket import Bitbucket as Stash
