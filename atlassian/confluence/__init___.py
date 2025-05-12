@@ -13,8 +13,7 @@ from deprecated import deprecated
 from requests import HTTPError
 
 from atlassian import utils
-
-from .errors import (
+from atlassian.errors import (
     ApiConflictError,
     ApiError,
     ApiNotAcceptable,
@@ -22,7 +21,7 @@ from .errors import (
     ApiPermissionError,
     ApiValueError,
 )
-from .rest_client import AtlassianRestAPI
+from atlassian.rest_client import AtlassianRestAPI
 
 log = logging.getLogger(__name__)
 
