@@ -103,7 +103,7 @@ class TestConfluenceAdvancedModeCalls(unittest.TestCase):
                 self.confluence.remove_page(page_id=page_id)
             except ApiError as e:
                 if e.args[0].startswith("There is no content with the given id"):
-                    # Page was probably already deleted
+                    # The Page was probably already deleted
                     pass
                 else:
                     raise e
