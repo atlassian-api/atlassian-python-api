@@ -1,5 +1,10 @@
 from atlassian import Assets
-import pandas as pd
+
+try:
+    import pandas as pd
+except ImportError:
+    print("Please install Flask library to run this example")
+    exit(1)
 
 
 def delete_object(ins, object_id):
@@ -11,8 +16,9 @@ def delete_object(ins, object_id):
 
 
 if __name__ == "__main__":
-    ins = Assets(url="https://jira.example.com", username="admin",
-                  token="--------------------------------", cloud=False)
+    ins = Assets(
+        url="https://jira.example.com", username="admin", token="--------------------------------", cloud=False
+    )
 
-    df = pd.read_csv('diff.csv')
-    df['Internal Object ID'].drop_duplicates().apply(lambda x: delete_object(ins, x))
+    df = pd.read_csv("diff.csv")
+    df["Internal Object ID"].drop_duplicates().apply(lambda x: delete_object(ins, x))

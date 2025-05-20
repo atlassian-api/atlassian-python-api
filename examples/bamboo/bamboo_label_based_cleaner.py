@@ -31,28 +31,26 @@ def get_plans_from_project(project_key):
 if __name__ == "__main__":
     bamboo = Bamboo(url=BAMBOO_URL, username=BAMBOO_LOGIN, password=BAMBOO_PASSWORD, timeout=180)
     projects = get_all_projects()
-    print((f"Start analyzing the {len(projects)} projects"))
+    print(f"Start analyzing the {len(projects)} projects")
     for project in projects:
-        print((f"Inspecting {project} project"))
+        print(f"Inspecting {project} project")
         plans = get_plans_from_project(project)
-        print((f"Start analyzing the {len(plans)} plans"))
+        print(f"Start analyzing the {len(plans)} plans")
         for plan in plans:
-            print((f"Inspecting {plan} plan"))
+            print(f"Inspecting {plan} plan")
             build_results = [
                 x for x in bamboo.results(plan_key=plan, label=LABEL, max_results=100, include_all_states=True)
             ]
             for build in build_results:
                 build_key = build.get("buildResultKey") or None
-                print((f"Inspecting {build_key} build"))
+                print(f"Inspecting {build_key} build")
                 build_value = bamboo.build_result(build_key)
                 build_complete_time = build_value.get("buildCompletedTime") or None
                 if not build_complete_time:
                     continue
                 datetimeObj = datetime.strptime(build_complete_time.split("+")[0] + "000", "%Y-%m-%dT%H:%M:%S.%f")
                 if datetime.now() > datetimeObj + timedelta(days=OLDER_DAYS):
-                    print(
-                        (f"Build is old {build_key} as build complete date {build_complete_time.strftime('%Y-%m-%d')}")
-                    )
+                    print(f"Build is old {build_key} as build complete date {build_complete_time.strftime('%Y-%m-%d')}")
                     if not DRY_RUN:
-                        print((f"Removing {build_key} build"))
+                        print(f"Removing {build_key} build")
                         bamboo.delete_build_result(build_key)
