@@ -5792,3 +5792,18 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         """
         response = self.get("rest/api/2/user/duplicated/count")
         return response
+
+    def dark_feature_management(self, key: str, enable: bool = True) -> T_resp_json:
+        """
+        Dark Feature Management
+        https://confluence.atlassian.com/jirakb/dark-feature-management-1063554355.html
+        https://confluence.atlassian.com/jirakb/how-to-manage-dark-features-in-jira-server-and-data-center-959286331.html
+        i.e. sd.sla.improved.rendering.enabled
+        :return:
+        """
+        if enable:
+            data = {"enabled": "true"}
+        else:
+            data = {"enabled": "false"}
+        response = self.put(f"/rest/internal/1.0/darkFeatures/{key}", data=data)
+        return response
