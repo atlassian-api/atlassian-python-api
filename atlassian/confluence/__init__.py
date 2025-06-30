@@ -5,6 +5,7 @@ import logging
 import os
 import re
 import time
+import warnings
 from typing import cast
 
 import requests
@@ -1569,6 +1570,15 @@ class Confluence(AtlassianRestAPI):
                     file_obj = io.BytesIO(response)
                     downloaded_files[file_name] = file_obj
                 else:
+                    # Sanitize filename if needed
+                    if re.search(r'[<>:"/\\|?*\x00-\x1F]', file_name):
+                        sanitized = re.sub(r'[<>:"/\\|?*\x00-\x1F]', '_', file_name)
+                        warnings.warn(
+                            f"File name '{file_name}' contained invalid characters and was renamed to '{sanitized}'.",
+                            UserWarning
+                        )
+                        file_name = sanitized
+                    file_path = os.path.join(path, file_name)
                     # Save file to disk
                     file_path = os.path.join(path, file_name)
                     with open(file_path, "wb") as file:
