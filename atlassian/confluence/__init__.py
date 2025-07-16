@@ -3698,6 +3698,24 @@ class Confluence(AtlassianRestAPI):
 
         return self.post(url, data=data, headers=self.experimental_headers)
 
+    def add_space_permission_json_rpc(self, space_key, user, permission):
+        """
+        The JSON-RPC APIs for Confluence are provided here to help you browse and discover APIs you have access to.
+        JSON-RPC APIs operate differently than REST APIs.
+        To learn more about how to use these APIs,
+        please refer to the Confluence JSON-RPC documentation on Atlassian Developers.
+        """
+        if self.api_version == "cloud" or self.cloud:
+            return {}
+        url = "rpc/json-rpc/confluenceservice-v2"
+        data = {
+            "jsonrpc": "2.0",
+            "method": "addPermissionToSpace",
+            "id": 9,
+            "params": [permission, user, space_key],
+        }
+        return self.post(url, data=data).get("result") or {}
+
     def remove_space_permission(self, space_key, user, permission):
         """
         The JSON-RPC APIs for Confluence are provided here to help you browse and discover APIs you have access to.
