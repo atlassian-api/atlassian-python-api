@@ -13,7 +13,7 @@ setup(
     name="atlassian-python-api",
     description="Python Atlassian REST API Wrapper",
     long_description=long_description,
-    license="Apache License 2.0",
+    license="Apache-2.0",
     version=version,
     download_url="https://github.com/atlassian-api/atlassian-python-api",
     author="Matt Harasymczuk",
