@@ -7,6 +7,11 @@ class ApiError(Exception):
         super(ApiError, self).__init__(*args)
 
 
+class JsonRPCError(Exception):
+    def __init__(self, *args):
+        super(JsonRPCError, self).__init__(*args)
+
+
 class ApiNotFoundError(ApiError):
     pass
 
@@ -24,4 +29,7 @@ class ApiConflictError(ApiError):
 
 
 class ApiNotAcceptable(ApiError):
+    pass
+
+class JsonRPCRestrictionsError(JsonRPCError):
     pass
