@@ -78,7 +78,7 @@ class AtlassianRestAPI(object):
         api_root: str = "rest/api",
         api_version: Union[str, int] = "latest",
         verify_ssl: bool = True,
-        session: Optional[requests.Session] = None,
+        session: Optional[requests.Session] = requests.Session(),
         oauth: Optional[dict] = None,
         oauth2: Optional[dict] = None,
         cookies: Optional[CookieJar] = None,
