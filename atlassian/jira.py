@@ -2058,6 +2058,16 @@ class Jira(AtlassianRestAPI):
         url = f"{base_url}/{issue_key}/transitions"
         return self.post(url, data={"transition": {"id": transition_id}})
 
+    def set_issue_status_by_transition_name(self, issue_key: str, transition_name: str):
+        """
+        Setting status by transition_name
+        :param issue_key: str
+        :param transition_name: str
+        """
+        base_url = self.resource_url("issue")
+        url = f"{base_url}/{issue_key}/transitions"
+        return self.post(url, data={"transition": {"name": transition_name}})
+
     def get_issue_status(self, issue_key: str):
         base_url = self.resource_url("issue")
         url = f"{base_url}/{issue_key}?fields=status"
