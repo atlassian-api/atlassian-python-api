@@ -87,9 +87,9 @@ class Participant(BitbucketCloudBase):
     @property
     def user(self):
         """User object with user information of the participant."""
-        if self.get_data("type") == "app_user":
+        if self.get_data("user")["type"] == "app_user":
             # If the participant is an app user, return an AppUser instance
-            return AppUser(None, self.get_data("app_user"), **self._new_session_args)
+            return AppUser(None, self.get_data("user"), **self._new_session_args)
         return User(None, self.get_data("user"), **self._new_session_args)
 
     @property

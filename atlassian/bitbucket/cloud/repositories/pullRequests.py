@@ -5,7 +5,7 @@ from .diffstat import DiffStat
 from ...cloud.repositories.commits import Commit
 from ..common.builds import Build
 from ..common.comments import Comment
-from ..common.users import User, Participant
+from ..common.users import User, Participant, AppUser
 
 
 class PullRequests(BitbucketCloudBase):
@@ -209,6 +209,9 @@ class PullRequest(BitbucketCloudBase):
     @property
     def author(self):
         """User object of the author"""
+        if self.get_data("author")["type"] == "app_user":
+            # If the author is an app user, return an AppUser instance
+            return AppUser(None, self.get_data("author"), **self._new_session_args)
         return User(None, self.get_data("author"))
 
     @property
@@ -451,11 +454,17 @@ class Task(BitbucketCloudBase):
     @property
     def creator(self):
         """User object with user information of the task creator"""
+        if self.get_data("creator")["type"] == "app_user":
+            # If the creator is an app user, return an AppUser instance
+            return AppUser(None, self.get_data("creator"), **self._new_session_args)
         return User(None, self.get_data("creator"), **self._new_session_args)
 
     @property
     def resolved_by(self):
         """User object with user information of the task resolver"""
+        if self.get_data("resolved_by")["type"] == "app_user":
+            # If the resolver is an app user, return an AppUser instance
+            return AppUser(None, self.get_data("resolved_by"), **self._new_session_args)
         return User(None, self.get_data("resolved_by"), **self._new_session_args)
 
     def update(self, raw_message):
