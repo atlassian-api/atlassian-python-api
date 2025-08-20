@@ -301,6 +301,26 @@ Manage issues
     # Get Issue Edit Meta
     jira.issue_editmeta(issue_key)
 
+    # Creates an issue or a sub-task from a JSON representation
+    jira.create_issue(fields, update_history=None, history=None)
+    example:
+                fields = dict(summary='Into The Night',
+                              project = dict(key='APA'),
+                              issuetype = dict(name='Story')
+                              )
+                update = dict(issuelinks={
+                    "add": {
+                        "type": {
+                            "name": "Child-Issue"
+                            },
+                        "inwardIssue": {
+                            "key": "ISSUE-KEY"
+                            }
+                        }
+                    }
+                )
+                jira.create_issue(fields=fields, update=update)
+
     # Get issue create meta, deprecated on Cloud and from Jira 9.0
     jira.issue_createmeta(project, expand="projects.issuetypes.fields")
 
