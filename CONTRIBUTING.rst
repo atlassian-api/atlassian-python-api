@@ -3,7 +3,8 @@ How to contribute
 
 You’re very welcome to make bug fixes or enhancements to this library.
 This document lays out the guidelines for how to get those changes into
-the main package repository.
+the main package repository. As it's a community project, we welcome all
+contributions, whether they are small bug fixes or large new features.
 
 Getting Started
 ---------------

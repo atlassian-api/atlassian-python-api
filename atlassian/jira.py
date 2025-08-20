@@ -7,8 +7,12 @@ from warnings import warn
 
 from deprecated import deprecated
 from requests import HTTPError, Response
-from typing_extensions import Literal
+import sys
 
+if sys.version_info >= (3, 8):
+    from typing import Literal  # Python 3.8+
+else:
+    from typing_extensions import Literal  # Python <=3.7
 from .errors import ApiNotFoundError, ApiPermissionError
 from .rest_client import AtlassianRestAPI
 from .typehints import T_id, T_resp_json

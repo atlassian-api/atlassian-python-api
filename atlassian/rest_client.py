@@ -1,4 +1,5 @@
 # coding=utf-8
+
 import logging
 import random
 import time
@@ -13,11 +14,15 @@ from typing import (
     overload,
 )
 from urllib.parse import urlencode
-
+import sys
 import requests
 import urllib3
 from requests.adapters import HTTPAdapter
-from typing_extensions import Literal
+
+if sys.version_info >= (3, 8):
+    from typing import Literal  # Python 3.8+
+else:
+    from typing_extensions import Literal  # Python <=3.7
 
 from atlassian.typehints import T_resp_json
 

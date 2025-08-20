@@ -16,7 +16,7 @@ and is compatible with both Atlassian Server and Cloud instances.
 
 Overall, the **atlassian-python-api** is a useful tool for Python developers who want to work with Atlassian products.
 It is well-documented and actively maintained, and provides a convenient way to access the full range of
-functionality offered by the Atlassian REST APIs.
+functionality offered by the Atlassian REST APIs and made with love for Atlassian.
 
 
 Documentation

@@ -31,5 +31,6 @@ class ApiConflictError(ApiError):
 class ApiNotAcceptable(ApiError):
     pass
 
+
 class JsonRPCRestrictionsError(JsonRPCError):
     pass
