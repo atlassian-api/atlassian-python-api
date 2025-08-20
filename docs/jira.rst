@@ -10,6 +10,10 @@ Get issues from jql search result with all related fields
     issues = jira.jql(jql_request)
     print(issues)
 
+    # Check issues against JQL
+    # Checks whether one or more issues would be returned by one or more JQL queries.
+    jira.match_jql(issue_ids, jqls)
+
 Reindex Jira
 ------------
 
