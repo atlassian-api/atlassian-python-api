@@ -682,7 +682,7 @@ class Confluence(AtlassianRestAPI):
             all_pages.extend(results)  # Add the current batch of pages to the list
 
             # Break the loop if no more pages are available
-            if len(results) < limit:
+            if len(results) <= limit:
                 break
 
             # Increment the start index for the next batch
