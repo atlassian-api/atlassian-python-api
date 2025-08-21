@@ -3701,7 +3701,7 @@ class Jira(AtlassianRestAPI):
             params["expand"] = expand
         if validate_query is not None:
             params["validateQuery"] = validate_query
-        if self.cloud:
+        if not self.cloud:
             url = self.resource_url("search")
         else:
             url = self.resource_url("search/jql")
