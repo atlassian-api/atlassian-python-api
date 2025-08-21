@@ -122,7 +122,7 @@ class Branch(Ref):
         """User object of the author."""
         if self.get_data("author")["type"] == "app_user":
             # If the author is an app user, return an AppUser instance
-            return AppUser(None, self.get_data("author").get("user"), **self._new_session_args)
+            return AppUser(None, self.get_data("author"), **self._new_session_args)
         return User(None, self.get_data("author"))
 
 

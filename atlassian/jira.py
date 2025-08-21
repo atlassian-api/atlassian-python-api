@@ -3560,9 +3560,9 @@ class Jira(AtlassianRestAPI):
         if validate_query is not None:
             params["validateQuery"] = validate_query
         if self.cloud:
-            url = self.resource_url("search")
-        else:
             url = self.resource_url("search/jql")
+        else:
+            url = self.resource_url("search")
         return self.get(url, params=params)
 
     def enhanced_jql(
@@ -3701,10 +3701,10 @@ class Jira(AtlassianRestAPI):
             params["expand"] = expand
         if validate_query is not None:
             params["validateQuery"] = validate_query
-        if not self.cloud:
-            url = self.resource_url("search")
-        else:
+        if self.cloud:
             url = self.resource_url("search/jql")
+        else:
+            url = self.resource_url("search")
 
         results: List[object] = []
         while True:

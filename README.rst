@@ -50,11 +50,15 @@ Here's a short example of how to create a Confluence page:
 .. code-block:: python
 
     from atlassian import Confluence
-
+    import requests
+    # If you want to use a session, you can create it like this:
+    session =  requests.Session()
+    # and pass it to the Confluence constructor
     confluence = Confluence(
         url='http://localhost:8090',
         username='admin',
-        password='admin')
+        password='admin',
+        session=session,)
 
     status = confluence.create_page(
         space='DEMO',
@@ -69,11 +73,14 @@ And here's another example of how to get issues from Jira using JQL Query:
 .. code-block:: python
 
     from atlassian import Jira
+    import requests
 
+    session = requests.Session()
     jira = Jira(
         url='http://localhost:8080',
         username='admin',
-        password='admin')
+        password='admin',
+        session=session)  # Optional: use a session for persistent connections
     JQL = 'project = DEMO AND status IN ("To Do", "In Progress") ORDER BY issuekey'
     data = jira.jql(JQL)
     print(data)
@@ -83,12 +90,14 @@ The traditional jql method is deprecated for Jira Cloud users, as Atlassian has 
 .. code-block:: python
 
     from atlassian import Jira
-
+    import requests
+    session = requests.Session()
     jira = Jira(
         url='https://your-jira-instance.atlassian.net',
         username='your-email@example.com',
         password='your-api-token',
-        cloud=True  # Ensure this is set to True for Jira Cloud
+        cloud=True,  # Ensure this is set to True for Jira Cloud
+        session=session  # Optional: use a session for persistent connections
     )
     JQL = 'project = DEMO AND status IN ("To Do", "In Progress") ORDER BY issuekey'
     # Fetch issues using the new enhanced_jql method
@@ -100,11 +109,14 @@ Also, you can use the Bitbucket module e.g. for getting project list
 .. code-block:: python
 
     from atlassian import Bitbucket
+    import requests
 
+    session= requests.Session()
     bitbucket = Bitbucket(
             url='http://localhost:7990',
             username='admin',
-            password='admin')
+            password='admin',
+            session=session)
 
     data = bitbucket.project_list()
     print(data)
@@ -115,11 +127,12 @@ Example to get your requests:
 .. code-block:: python
 
     from atlassian import ServiceDesk
-
+    import requests
     sd = ServiceDesk(
             url='http://localhost:7990',
             username='admin',
-            password='admin')
+            password='admin',
+            session=requests.Session())
 
     data = sd.get_my_customer_requests()
     print(data)
@@ -129,11 +142,14 @@ Using Insight (CMDB Tool for Jira):
 .. code-block:: python
 
     from atlassian import Insight
+    import requests
 
+    session = requests.Session()
     insight = Insight(
             url='http://localhost:7990',
             username='admin',
-            password='admin')
+            password='admin',
+            session=session)
 
     data = insight.get_object(88)
     print(data)
@@ -144,11 +160,14 @@ Using Xray (Test Management tool for Jira):
 .. code-block:: python
 
     from atlassian import Xray
+    import requests
 
+    session = requests.Session()
     xr = Xray(
            url='http://localhost:7990',
             username='admin',
-            password='admin')
+            password='admin',
+            session=session)
 
     data = xr.get_tests('TEST-001')
     print(data)
@@ -158,10 +177,13 @@ Using Bamboo:
 .. code-block:: python
 
     from atlassian import Bamboo
+    import requests
 
+    session = requests.Session()
     bamboo = Bamboo(
             url='http://localhost:6990/bamboo/',
-            token="<TOKEN>")
+            token="<TOKEN>",
+            session=session)
 
     data = bamboo.get_elastic_configurations()
     print(data)
