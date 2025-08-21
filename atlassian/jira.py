@@ -748,17 +748,33 @@ class Jira(AtlassianRestAPI):
     ) -> T_resp_json:
         """
         Creates a custom field with the given name and type
-        :param name: str - name of the custom field
-        :param type: str, like 'com.atlassian.jira.plugin.system.customfieldtypes:textfield'
-        :param search_key: str, like above
-        :param description: str
+        This method is primarily for Jira Server/Data Center. For Jira Cloud, the
+        `searcher_key` is not applicable.
+        :param name: str - The name of the custom field (e.g., "My Custom Field"). Cannot be empty.
+        :param type: str, The type of the custom field, which defines its behavior.
+                          Example: 'com.atlassian.jira.plugin.system.customfieldtypes:textfield'
+        :param search_key: str, (For Jira Server/DC) The searcher key to make the field searchable.
+                                Example: 'com.atlassian.jira.plugin.system.customfieldtypes:textsearcher'
+        :param description: str, An optional description for the custom field.
+        :return: A dictionary representing the created custom field, or None if the
+                 API returns no content. Raises HTTPError for API-level errors.
+        API References:
+        - Jira Server: https://docs.atlassian.com/software/jira/docs/api/REST/9.17.0/#api/2/field-createCustomField
+        - Jira Cloud: https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-issue-fields/#api-rest-api-2-field-post
         """
         url = self.resource_url("field")
-        data = {"name": name, "type": type}
-        if search_key:
-            data["search_key"] = search_key
+        data = {"name": name.strip(), "type": type.strip()}
+        if not data["name"]:
+            raise ValueError("The 'name' for the custom field cannot be empty.")
+        if not data["type"]:
+            raise ValueError("The 'type' for the custom field cannot be empty.")
+        # Add optional fields if they are provided
         if description:
-            data["description"] = description
+            data["description"] = description.strip()
+        # The API expects 'searcherKey' (camelCase)
+        if search_key:
+            data["searcherKey"] = search_key.strip()
+
         return self.post(url, data=data)
 
     def get_custom_field_option_context(self, field_id: T_id, context_id: T_id) -> T_resp_json:
