@@ -2,74 +2,75 @@
 import logging
 
 from .rest_client import AtlassianRestAPI
-from deprecated import deprecated
+
+# from deprecated import deprecated
 
 log = logging.getLogger(__name__)
 
 
-class Insight(AtlassianRestAPI):
-    """Insight for Jira API wrapper."""
+class AssetsCloud(AtlassianRestAPI):
+    """Assets for Jira API wrapper."""
 
-    # https://insight-javadoc.riada.io/insight-javadoc-8.6/insight-rest/
+    # https://developer.atlassian.com/cloud/assets/rest
 
     def __init__(self, *args, **kwargs):
         """
-        Initialize Insight()
+        Initialize Assets()
 
         :param args:
         :param kwargs:
-        :return: Insight()
+        :return: Assets()
         """
-        kwargs["api_root"] = "rest/insight/1.0"
+        kwargs["api_root"] = "rest/assets/1.0"
         # If cloud is set to true, trigger private __cloud__init method
         if kwargs.get("cloud"):
             args, kwargs = self.__cloud_init(*args, **kwargs)
-        super(Insight, self).__init__(*args, **kwargs)
+        super(AssetsCloud, self).__init__(*args, **kwargs)
 
     def __cloud_init(self, *args, **kwargs):
         """
-        Creates an InsightCloud specific version of Insight()
+        Creates a Cloud specific version of Assets()
 
         Returns:
-            Insight(AtlassianRestAPI)
+            Assets(AtlassianRestAPI)
         """
         # trigger a normal init and avoid looping
         del kwargs["cloud"]
-        temp = Insight(*args, **kwargs)
+        temp = AssetsCloud(*args, **kwargs)
         # retrieve cloud workspace id and generate the api_root
-        kwargs["api_root"] = f"/jsm/insight/workspace/{temp.__get_workspace_id()}/v1/"
-        # insight cloud uses the atlassian base url, not custom instnace urls
+        kwargs["api_root"] = f"/jsm/assets/workspace/{temp.__get_workspace_id()}/v1/"
+        # Assets cloud uses the atlassian base url, not custom instance urls
         kwargs["url"] = "https://api.atlassian.com"
         # set cloud back to true and return
         kwargs["cloud"] = True
-        # Insight cloud is particular about its headers.
+        # Assets cloud is particular about its headers.
         self.default_headers = {"Accept": "application/json", "Content-Type": "application/json"}
         return args, kwargs
 
     def __get_workspace_id(self):
         result = self.get(
-            "rest/servicedeskapi/insight/workspace",
+            "rest/servicedeskapi/assets/workspace",
             headers=self.default_headers,
         )
         return result["values"][0]["workspaceId"]
 
-    def _get_insight_workspace_ids(self):
+    def _get_assets_workspace_ids(self):
         """
-        Returns all Insight workspace Ids.
+        Returns all Assets workspace Ids.
         :return: List
         """
         result = self.get(
-            "rest/servicedeskapi/insight/workspace",
+            "rest/servicedeskapi/assets/workspace",
             headers=self.experimental_headers,
         )
         return [i["workspaceId"] for i in result["values"]]
 
-    def _get_insight_workspace_id(self):
+    def _get_assets_workspace_id(self):
         """
-        Returns the first Insight workspace ID.
+        Returns the first Assets workspace ID.
         :return: str
         """
-        return next(iter(self._get_insight_workspace_ids()))
+        return next(iter(self._get_assets_workspace_ids()))
 
     # Attachments
     def get_attachments_of_objects(self, object_id):
@@ -86,7 +87,7 @@ class Insight(AtlassianRestAPI):
                 "created": "2019-11-27T11:42:22.283Z",
                 "comment": "",
                 "commentOutput": "",
-                "url": "http://jira/rest/insight/1.0/attachments/1"
+                "url": "http://jira/rest/assets/1.0/attachments/1"
             }
         ]
 
@@ -119,7 +120,7 @@ class Insight(AtlassianRestAPI):
         if self.cloud:
             raise NotImplementedError
         log.info("Adding attachment...")
-        url = f"rest/insight/1.0/attachments/object/{object_id}"
+        url = f"rest/assets/1.0/attachments/object/{object_id}"
         with open(filename, "rb") as attachment:
             files = {"file": attachment}
             return self.post(url, headers=self.no_check_headers, files=files)
@@ -132,7 +133,7 @@ class Insight(AtlassianRestAPI):
         if self.cloud:
             raise NotImplementedError
         log.info("Deleting attachment...")
-        url = f"rest/insight/1.0/attachments/{attachment_id}"
+        url = f"rest/assets/1.0/attachments/{attachment_id}"
         return self.delete(url)
 
     # Comments
@@ -144,10 +145,10 @@ class Insight(AtlassianRestAPI):
         :param comment: str
         :param object_id: int - Object ID
         :param role: int - Role ID
-            0	Insight Users
-            1	Insight Managers
-            2	Insight Administrators
-            3	Insight Developers
+            0	Assets Users
+            1	Assets Managers
+            2	Assets Administrators
+            3	Assets Developers
         :return:
         {
             "created": "2019-11-27T12:37:41.492Z",
@@ -172,7 +173,7 @@ class Insight(AtlassianRestAPI):
         if self.cloud:
             raise NotImplementedError
         params = {"comment": comment, "objectId": object_id, "role": role}
-        url = "rest/insight/1.0/comment/create"
+        url = "rest/assets/1.0/comment/create"
         return self.post(url, params=params)
 
     def get_comment_of_object(self, object_id):
@@ -184,7 +185,7 @@ class Insight(AtlassianRestAPI):
         """
         if self.cloud:
             raise NotImplementedError
-        url = f"rest/insight/1.0/comment/object/{object_id}"
+        url = f"rest/assets/1.0/comment/object/{object_id}"
         return self.get(url)
 
     # Icon
@@ -198,8 +199,8 @@ class Insight(AtlassianRestAPI):
         {
             "id": 1,
             "name": "Delete",
-            "url16": "http://jira/rest/insight/1.0/icon/1/icon.png?size=16",
-            "url48": "http://jira/rest/insight/1.0/icon/1/icon.png?size=48"
+            "url16": "http://jira/rest/assets/1.0/icon/1/icon.png?size=16",
+            "url48": "http://jira/rest/assets/1.0/icon/1/icon.png?size=48"
         }
         """
         url = self.url_joiner(self.api_root, f"icon/{icon_id}")
@@ -230,8 +231,8 @@ class Insight(AtlassianRestAPI):
         return self.post(url)
 
     # Index
-    # Handle the indexing of Insight
-    def reindex_insight(self):
+    # Handle the indexing of Assets
+    def reindex_assets(self):
         """
         Should the reindex clean the index before doing the reindex
 
@@ -242,7 +243,7 @@ class Insight(AtlassianRestAPI):
         url = self.url_joiner(self.api_root, "index/reindex/start")
         return self.post(url)
 
-    def reindex_current_node_insight(self):
+    def reindex_current_node_assets(self):
         """
         Should the reindex clean the index before doing the reindex
 
@@ -253,11 +254,34 @@ class Insight(AtlassianRestAPI):
         url = self.url_joiner(self.api_root, "index/reindex/currentnode")
         return self.post(url)
 
-    # IQL
-    # Resource dedicated to finding objects based on the Insight Query Language (IQL)
-    def iql(
+    # AQL
+    # Fetch Objects by AQL
+    # Cloud-only. Server use navlist_aql()
+    # https://developer.atlassian.com/cloud/assets/rest/api-group-object/#api-object-aql-post
+    def aql(self, query, start=0, max_results=25, include_attributes=True):
+        """
+        Resource dedicated to finding objects based on the Assets Query Language (AQL)
+
+        :param query:
+        :param start:
+        :param max_results:
+        :param include_attributes:
+        :return:
+        """
+        if not self.cloud:
+            raise NotImplementedError
+        params = {"startAt": start, "maxResults": max_results, "includeAttributes": include_attributes}
+        data = {"qlQuery": query}
+        url = self.url_joiner(self.api_root, "object/aql")
+        return self.post(url, params=params, data=data)
+
+    # Navlist AQL
+    # Retrieve a list of objects based on an AQL query
+    # Server-only. Cloud use aql()
+    # https://developer.atlassian.com/server/jira-servicedesk/rest/v1006/api-group-assets---object/#api-assets-1-0-object-navlist-aql-post
+    def navlist_aql(
         self,
-        iql,
+        query,
         object_schema_id,
         page=1,
         order_by_attribute_id=None,
@@ -272,7 +296,7 @@ class Insight(AtlassianRestAPI):
         """
         Resource dedicated to finding objects based on the Insight Query Language (IQL)
 
-        :param iql:
+        :param query:
         :param object_schema_id:
         :param page:
         :param order_by_attribute_id:
@@ -285,19 +309,25 @@ class Insight(AtlassianRestAPI):
         :param extended:
         :return:
         """
-        params = {"iql": iql, "objectSchemaId": object_schema_id, "page": page}
+        if self.cloud:
+            raise NotImplementedError
+        data = {
+            "qlQuery": query,
+            "objectSchemaId": object_schema_id,
+            "page": page,
+            "orderAsc": order_asc,
+            "resultPerPage": result_per_page,
+            "includeAttributes": include_attributes,
+            "includeAttributesDeep": include_attributes_deep,
+            "includeTypeAttributes": include_type_attributes,
+            "includeExtendedInfo": include_extended_info,
+        }
         if order_by_attribute_id:
-            params["orderByAttributeId"] = order_by_attribute_id
-        params["orderAsc"] = order_asc
-        params["resultPerPage"] = result_per_page
-        params["includeAttributes"] = include_attributes
-        params["includeAttributesDeep"] = include_attributes_deep
-        params["includeTypeAttributes"] = include_type_attributes
-        params["includeExtendedInfo"] = include_extended_info
+            data["orderByAttributeId"] = order_by_attribute_id
         if extended:
-            params["extended"] = extended
-        url = self.url_joiner(self.api_root, "iql/objects")
-        return self.get(url, params=params)
+            data["extended"] = extended
+        url = self.url_joiner(self.api_root, "object/navlist/aql")
+        return self.get(url, data=data)
 
     # Object
     def get_object(self, object_id):
@@ -319,7 +349,7 @@ class Insight(AtlassianRestAPI):
         avatar_uuid="",
     ):
         """
-        Update an existing object in Insight
+        Update an existing object in Assets
 
         :param object_id:
         :param object_type_id:
@@ -370,11 +400,6 @@ class Insight(AtlassianRestAPI):
         url = self.url_joiner(self.api_root, f"object/{object_id}/history")
         return self.get(url, params=params)
 
-    @deprecated(version="3.29.0", reason="Use get_object_reference_info()")
-    def get_object_referenceinfo(self, object_id):
-        """Let's use the get_object_reference_info()"""
-        self.get_object_reference_info(object_id)
-
     def get_object_reference_info(self, object_id):
         """
         Find all references for an object
@@ -387,7 +412,7 @@ class Insight(AtlassianRestAPI):
 
     def create_object(self, object_type_id, attributes, has_avatar=False, avatar_uuid=""):
         """
-        Create a new object in Insight
+        Create a new object in Assets
 
         :param object_type_id:
         :param attributes:
@@ -405,58 +430,10 @@ class Insight(AtlassianRestAPI):
         url = self.url_joiner(self.api_root, "object/create")
         return self.post(url, data=data)
 
-    def create_object_navlist_iql(
-        self,
-        iql,
-        object_type_id,
-        results_per_page,
-        order_by_type_attr_id=None,
-        object_id=None,
-        object_schema_id=None,
-        include_attributes=None,
-        attributes_to_display=None,
-        page=1,
-        asc=0,
-    ):
-        """
-        A filter object that is used to find a paginated result set based on an object type and an IQL query
-
-        :param iql:
-        :param object_type_id:
-        :param page:
-        :param results_per_page:
-        :param order_by_type_attr_id:
-        :param asc:
-        :param object_id:
-        :param object_schema_id:
-        :param include_attributes:
-        :param attributes_to_display:
-        :return:
-        """
-        data = {
-            "objectTypeId": object_type_id,
-            "iql": iql,
-            "resultsPerPage": results_per_page,
-            "page": page,
-            "asc": asc,
-        }
-        if attributes_to_display is not None:
-            data["attributesToDisplay"] = attributes_to_display
-        if include_attributes is not None:
-            data["includeAttributes"] = include_attributes
-        if object_schema_id is not None:
-            data["objectSchemaId"] = object_schema_id
-        if order_by_type_attr_id is not None:
-            data["orderByTypeAttrId"] = order_by_type_attr_id
-        if object_id is not None:
-            data["objectId"] = object_id
-        url = self.url_joiner(self.api_root, "iql/objects")
-        return self.post(url, data=data)
-
     # Objectconnectedtickets
     def get_object_connected_tickets(self, object_id):
         """
-        Relation between Jira issues and Insight objects
+        Relation between Jira issues and Assets objects
 
         :param object_id:
         :return:
@@ -467,14 +444,9 @@ class Insight(AtlassianRestAPI):
         )
         return self.get(url)
 
-    # Object schema
-    @deprecated(version="3.29.1", reason="Use list_object_schema()")
-    def list_objectschema(self):
-        return self.list_object_schema()
-
     def list_object_schema(self):
         """
-        Resource to find object schemas in Insight
+        Resource to find object schemas in Assets
         :return:
         {
             "objectschemas": [
@@ -497,10 +469,6 @@ class Insight(AtlassianRestAPI):
     def create_object_schema(self, object_schema_key, description):
         raise NotImplementedError
 
-    @deprecated(version="3.29.1", reason="Use get_objectschema()")
-    def get_objectschema(self, schema_id):
-        return self.get_objectschema(schema_id=schema_id)
-
     def get_object_schema(self, schema_id):
         """
         Find a schema by id
@@ -518,7 +486,6 @@ class Insight(AtlassianRestAPI):
     def delete_object_schema(self, schema_id):
         """
         Delete a schema
-
         """
         raise NotImplementedError
 
@@ -559,7 +526,7 @@ class Insight(AtlassianRestAPI):
     ):
         """
         Find all attributes for this object type
-        https://developer.atlassian.com/cloud/insight/rest/api-group-objecttype/#api-objecttype-id-attributes-get
+        https://developer.atlassian.com/cloud/assets/rest/api-group-objecttype/#api-objecttype-id-attributes-get
         Args:
             type_id (str): id of the object type
             only_value_editable (bool, optional): only return editable values, defaults to None (Use API default)
@@ -583,34 +550,36 @@ class Insight(AtlassianRestAPI):
 
     # Objecttype
     # TODO: Post objecttype {id} position:
-    #       https://developer.atlassian.com/cloud/insight/rest/api-group-objecttype/#api-objecttype-id-position-post
+    #       https://developer.atlassian.com/cloud/assets/rest/api-group-objecttype/#api-objecttype-id-position-post
     # TODO: Post objecttype create:
-    #       https://developer.atlassian.com/cloud/insight/rest/api-group-objecttype/#api-objecttype-create-post
+    #       https://developer.atlassian.com/cloud/assets/rest/api-group-objecttype/#api-objecttype-create-post
 
-    # Insight ObjectTypeAttribute API
+    # Assets ObjectTypeAttribute API
     # TODO: Post objecttypeattribute {objectTypeId}:
-    #       https://developer.atlassian.com/cloud/insight/rest/api-group-objecttypeattribute/#api-objecttypeattribute-objecttypeid-post
+    #       https://developer.atlassian.com/cloud/assets/rest/api-group-objecttypeattribute/#api-objecttypeattribute-objecttypeid-post
     # TODO: Put objecttypeattribute {objectTypeId} {id}:
-    #       https://developer.atlassian.com/cloud/insight/rest/api-group-objecttypeattribute/#api-objecttypeattribute-objecttypeid-id-put
+    #       https://developer.atlassian.com/cloud/assets/rest/api-group-objecttypeattribute/#api-objecttypeattribute-objecttypeid-id-put
     # TODO: Delete objecttypeattribute {id}:
-    #       https://developer.atlassian.com/cloud/insight/rest/api-group-objecttypeattribute/#api-objecttypeattribute-id-delete
+    #       https://developer.atlassian.com/cloud/assets/rest/api-group-objecttypeattribute/#api-objecttypeattribute-id-delete
 
-    # Insight Progress API
+    # Assets Progress API
     # TODO: Get progress category imports {id}:
-    #       https://developer.atlassian.com/cloud/insight/rest/api-group-progress/#api-progress-category-imports-id-get
+    #       https://developer.atlassian.com/cloud/assets/rest/api-group-progress/#api-progress-category-imports-id-get
     def get_progress_of_reindex(self):
         """
-        Show ongoing insight processes
+        Show ongoing assets processes
         :return:
         """
         if self.cloud:
             raise NotImplementedError
+        # Yes, the Assets Server API still uses "insight-reindex" as a category (as of April 2025)
+        # https://developer.atlassian.com/server/jira-servicedesk/rest/v1006/api-group-assets---progress/#api-assets-1-0-progress-category-category-resourceid-get
         url = self.url_joiner(self.api_root, "progress/category/insight-reindex/reindex")
         return self.get(url)
 
     def get_progress_of_import(self, import_id):
         """
-        Show ongoing insight processes
+        Show ongoing assets processes
         :type import_id: int: The id of the import source configuration
                               that the progress should be fetched for
         :return:
@@ -620,58 +589,38 @@ class Insight(AtlassianRestAPI):
         url = self.url_joiner(self.api_root, f"progress/category/imports/{import_id}")
         return self.get(url)
 
-    # Insight Config API
+    # Assets Config API
     # TODO: Get config statustype:
-    #       https://developer.atlassian.com/cloud/insight/rest/api-group-config/#api-config-statustype-get
+    #       https://developer.atlassian.com/cloud/assets/rest/api-group-config/#api-config-statustype-get
     # TODO: Post config statustype:
-    #       https://developer.atlassian.com/cloud/insight/rest/api-group-config/#api-config-statustype-post
+    #       https://developer.atlassian.com/cloud/assets/rest/api-group-config/#api-config-statustype-post
     # TODO: Get config statustype {id}:
-    #       https://developer.atlassian.com/cloud/insight/rest/api-group-config/#api-config-statustype-id-get
+    #       https://developer.atlassian.com/cloud/assets/rest/api-group-config/#api-config-statustype-id-get
     # TODO: Put config statustype {id}:
-    #       https://developer.atlassian.com/cloud/insight/rest/api-group-config/#api-config-statustype-id-put
+    #       https://developer.atlassian.com/cloud/assets/rest/api-group-config/#api-config-statustype-id-put
     # TODO: Delete config statustype {id}:
-    #       https://developer.atlassian.com/cloud/insight/rest/api-group-config/#api-config-statustype-id-delete
+    #       https://developer.atlassian.com/cloud/assets/rest/api-group-config/#api-config-statustype-id-delete
 
-    # Update Issue with Insight Field
-    def update_issue_insight_field(self, key, field_id, insight_keys, add=False):
+    # Update Issue with Assets Field
+    def update_issue_assets_field(self, key, field_id, assets_keys, add=False):
         """
-        Set the value of an Insight field.
+        Set the value of an Assets field.
         Args:
             key (str): Jira issue key, eg. SFT-446
-            field_id (str): The internal Jira name of the Insight field, e.g. customfield_10200
-            insight_keys (list): List of Insight objects to associate with the field. Limited
+            field_id (str): The internal Jira name of the Assets field, e.g. customfield_10200
+            assets_keys (list): List of Assets objects to associate with the field. Limited
                 to 20 objects. If the field only takes a single object pass a single value list.
             add (bool, optional): Add to the existing field rather than setting the field value.
                 Defaults to False.
         Returns:
-            [type]: The insight object updated.
+            [type]: The assets object updated.
         """
         base_url = self.resource_url("issue")
         action = "add" if add else "set"
         data = {
             "update": {
-                field_id: [{action: [{"key": i} for i in insight_keys]}],
+                field_id: [{action: [{"key": i} for i in assets_keys]}],
             }
         }
-        data = {"fields": {field_id: [{"key": i} for i in insight_keys]}}
+        data = {"fields": {field_id: [{"key": i} for i in assets_keys]}}
         return self.put(f"{base_url}/{key}", data=data)
-
-    def check_duplicate_attribute_values(self):
-        """
-        Check for duplicate attribute values in Insight objects with cardinality maximum 1
-        used for Data Center
-        link: https://confluence.atlassian.com/jirakb/duplicated-attribute-values-in-insight-objects-with-cardinality-maximum-1-1114816155.html
-        :return:
-        """
-        url = "rest/insight/1.0/health/consistency/duplicates/attributevalues"
-        return self.get(url)
-
-    def delete_duplicate_attribute_values(self):
-        """
-        Delete duplicate attribute values in Insight objects with cardinality maximum 1
-        used for Data Center
-        link: https://confluence.atlassian.com/jirakb/duplicated-attribute-values-in-insight-objects-with-cardinality-maximum-1-1114816155.html
-        :return:
-        """
-        url = "rest/insight/1.0/health/consistency/duplicates/attributevalues"
-        return self.delete(url)

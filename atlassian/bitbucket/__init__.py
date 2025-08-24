@@ -1577,14 +1577,7 @@ class Bitbucket(BitbucketBase):
             return f"{self._url_repo(project_key, repository_slug)}/pull-requests"
 
     def get_pull_requests(
-        self,
-        project_key,
-        repository_slug,
-        state="OPEN",
-        order="newest",
-        limit=100,
-        start=0,
-        at=None,
+        self, project_key, repository_slug, state="OPEN", order="newest", limit=100, start=0, at=None, filter_text=None
     ):
         """
         Get pull requests
@@ -1596,6 +1589,8 @@ class Bitbucket(BitbucketBase):
         :param limit:
         :param start:
         :param at:
+        :param filter_text: (optional) If specified, only pull requests where the title or description
+                            contains the supplied string will be returned.
         :return:
         """
         url = self._url_pull_requests(project_key, repository_slug)
@@ -1610,6 +1605,8 @@ class Bitbucket(BitbucketBase):
             params["order"] = order
         if at:
             params["at"] = at
+        if filter_text:
+            params["filterText"] = filter_text
         return self._get_paged(url, params=params)
 
     def get_required_reviewers_for_pull_request(

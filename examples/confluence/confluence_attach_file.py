@@ -35,11 +35,15 @@ def attach_file(page_title, file_location, file_name, mime_type, space):
 mime_type = magic.Magic(mime=True)
 
 file_location_with_page = "~/test/test_file.pdf"
-file_name = "So excited overview of report.pdf"
+file_name_pdf = "So excited overview of report.pdf"
 title = "The page with attachments"
 space = "TST"
 
-content_type = magic.from_file(file_name, mime=True)
+content_type = magic.from_file(file_name_pdf, mime=True)
 attach_file(
-    file_location=file_location_with_page, file_name=file_name, mime_type=content_type, page_title=title, space=space
+    file_location=file_location_with_page,
+    file_name=file_name_pdf,
+    mime_type=content_type,
+    page_title=title,
+    space=space,
 )

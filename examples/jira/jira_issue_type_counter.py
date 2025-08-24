@@ -17,4 +17,4 @@ for i in issue_types:
     else:
         percent_of_deprecated = 0
     percentage = round(percent_of_deprecated, 1)
-    print((f"{issue_type}, {number}, {percentage}% of {category}"))
+    print(f"{issue_type}, {number}, {percentage}% of {category}")

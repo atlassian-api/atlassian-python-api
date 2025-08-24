@@ -1,7 +1,7 @@
 # coding=utf-8
 
 from ..base import BitbucketCloudBase
-from ..common.users import User
+from ..common.users import User, AppUser
 
 
 class Refs(BitbucketCloudBase):
@@ -120,6 +120,9 @@ class Branch(Ref):
     @property
     def author(self):
         """User object of the author."""
+        if self.get_data("author")["type"] == "app_user":
+            # If the author is an app user, return an AppUser instance
+            return AppUser(None, self.get_data("author"), **self._new_session_args)
         return User(None, self.get_data("author"))
 
 

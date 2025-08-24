@@ -1,6 +1,6 @@
 # coding=utf-8
 from atlassian import Confluence
-from atlassian.confluence import ApiError
+from atlassian.confluence_old import ApiError
 
 """ This example shows a way to get the real reason for an exception"""
 try:

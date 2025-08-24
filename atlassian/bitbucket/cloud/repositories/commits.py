@@ -3,7 +3,7 @@
 from ..base import BitbucketCloudBase
 from ..common.builds import Build
 from ..common.comments import Comment
-from ..common.users import Participant, User
+from ..common.users import Participant, User, AppUser
 
 
 class Commits(BitbucketCloudBase):
@@ -89,6 +89,9 @@ class Commit(BitbucketCloudBase):
     @property
     def author(self):
         """User object of the author."""
+        if self.get_data("author")["type"] == "app_user":
+            # If the author is an app user, return an AppUser instance
+            return AppUser(None, self.get_data("author").get("user"), **self._new_session_args)
         return User(None, self.get_data("author").get("user"))
 
     def parents(self):

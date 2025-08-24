@@ -1,5 +1,6 @@
 from ..base import BitbucketCloudBase
 from ..common.users import User
+from ..common.users import AppUser
 
 
 class Comment(BitbucketCloudBase):
@@ -31,6 +32,9 @@ class Comment(BitbucketCloudBase):
     @property
     def user(self):
         """User object with user information of the comment."""
+        if self.get_data("user")["type"] == "app_user":
+            # If the participant is an app user, return an AppUser instance
+            return AppUser(None, self.get_data("user"), **self._new_session_args)
         return User(None, self.get_data("user"), **self._new_session_args)
 
     def update(self, **kwargs):

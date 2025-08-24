@@ -5,8 +5,12 @@
 
 from requests_oauthlib import OAuth2Session
 from atlassian.bitbucket import Cloud
-from flask import Flask, request, redirect, session
 
+try:
+    from flask import Flask, request, redirect, session
+except ImportError:
+    print("Please install Flask library to run this example")
+    exit(1)
 app = Flask(__name__)
 app.secret_key = ""
 

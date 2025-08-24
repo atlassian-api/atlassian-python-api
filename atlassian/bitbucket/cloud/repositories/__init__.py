@@ -1,18 +1,20 @@
 # coding=utf-8
 
 from requests import HTTPError
-from ..base import BitbucketCloudBase
-from .issues import Issues
+
 from .branchRestrictions import BranchRestrictions
 from .commits import Commits
-from .hooks import Hooks
 from .defaultReviewers import DefaultReviewers
 from .deploymentEnvironments import DeploymentEnvironments
+from .downloads import Downloads
 from .groupPermissions import GroupPermissions
+from .hooks import Hooks
+from .issues import Issues
 from .pipelines import Pipelines
 from .pullRequests import PullRequests
 from .refs import Branches, Tags
 from .repositoryVariables import RepositoryVariables
+from ..base import BitbucketCloudBase
 
 
 class RepositoriesBase(BitbucketCloudBase):
@@ -277,6 +279,7 @@ class Repository(BitbucketCloudBase):
             f"{self.url}/pipelines_config/variables", **self._new_session_args
         )
         self.__tags = Tags(f"{self.url}/refs/tags", **self._new_session_args)
+        self.__downloads = Downloads(f"{self.url}/downloads", **self._new_session_args)
 
     def update(self, **kwargs):
         """
@@ -433,3 +436,8 @@ class Repository(BitbucketCloudBase):
     def tags(self):
         """The repository tags."""
         return self.__tags
+
+    @property
+    def downloads(self):
+        """The repository downloads"""
+        return self.__downloads

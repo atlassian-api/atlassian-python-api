@@ -4,7 +4,12 @@ from .base import BitbucketCloudBase
 from .repositories import Repositories
 from .workspaces import Workspaces
 
+
 class Cloud(BitbucketCloudBase):
+    """
+    Bitbucket Cloud REST API wrapper
+    """
+
     def __init__(self, url="https://api.bitbucket.org/", *args, **kwargs):
         kwargs["cloud"] = True
         kwargs["api_root"] = None

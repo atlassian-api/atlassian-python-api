@@ -10,6 +10,10 @@ Get issues from jql search result with all related fields
     issues = jira.jql(jql_request)
     print(issues)
 
+    # Check issues against JQL
+    # Checks whether one or more issues would be returned by one or more JQL queries.
+    jira.match_jql(issue_ids, jqls)
+
 Reindex Jira
 ------------
 
@@ -301,6 +305,26 @@ Manage issues
     # Get Issue Edit Meta
     jira.issue_editmeta(issue_key)
 
+    # Creates an issue or a sub-task from a JSON representation
+    jira.create_issue(fields, update_history=None, history=None)
+    example:
+                fields = dict(summary='Into The Night',
+                              project = dict(key='APA'),
+                              issuetype = dict(name='Story')
+                              )
+                update = dict(issuelinks={
+                    "add": {
+                        "type": {
+                            "name": "Child-Issue"
+                            },
+                        "inwardIssue": {
+                            "key": "ISSUE-KEY"
+                            }
+                        }
+                    }
+                )
+                jira.create_issue(fields=fields, update=update)
+
     # Get issue create meta, deprecated on Cloud and from Jira 9.0
     jira.issue_createmeta(project, expand="projects.issuetypes.fields")
 
@@ -395,8 +419,13 @@ Manage issues
     # Scrap regex matches from issue description and comments:
     jira.scrap_regex_from_issue(issue_key, regex)
 
-    # Get tree representation of issue and its subtasks + inward issue links
-    jira.get_issue_tree(issue_key)
+    # Get a list that contains the tree structure of the root issue, with all subtasks and inward linked issues.
+    # (!) Function only returns child issues from the same Jira instance or from an instance to which the API key has access.
+    # :param issue_key: Jira issue key
+    # :param tree: list to store the tree structure for recursion. Do not change it.
+    # :param depth: current depth of the tree for recursion. Do not change it.
+    # :return: list of dictionaries containing the tree structure. Dictionary element contains a key (parent issue) and value (child issue).
+    jira.get_issue_tree_recursive(issue_key, tree=[], depth=0)
 
 Epic Issues
 -------------

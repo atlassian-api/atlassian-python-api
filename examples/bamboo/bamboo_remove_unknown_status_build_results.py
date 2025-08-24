@@ -42,7 +42,7 @@ def remove_build_result(build_key, status):
 
 def project_review(plans):
     for plan in plans:
-        print((f"Inspecting {plan} plan"))
+        print(f"Inspecting {plan} plan")
         branches = get_branches_from_plan(plan)
         for branch in branches:
             build_results = get_results_from_branch(branch)
