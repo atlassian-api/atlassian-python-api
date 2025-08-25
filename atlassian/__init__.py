@@ -16,6 +16,7 @@ from .marketplace import MarketPlace
 from .portfolio import Portfolio
 from .service_desk import ServiceDesk
 from .service_desk import ServiceDesk as ServiceManagement
+from .tempo import TempoCloud, TempoServer
 from .xray import Xray
 
 __all__ = [
@@ -35,4 +36,6 @@ __all__ = [
     "Insight",
     "Assets",
     "AssetsCloud",
+    "TempoCloud",
+    "TempoServer",
 ]
