@@ -435,7 +435,7 @@ class Confluence(AtlassianRestAPI):
                     reason=e,
                 )
         except Exception as e:
-            log.error("Error occured", e)
+            log.error("Error occurred", e)
 
     def scrap_regex_from_page(self, page_id, regex):
         """
