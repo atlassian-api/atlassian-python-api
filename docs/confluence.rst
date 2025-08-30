@@ -1,6 +1,74 @@
 Confluence module
 =================
 
+The Confluence module now provides both Cloud and Server implementations
+with dedicated APIs for each platform.
+
+New Implementation
+------------------
+
+The new Confluence implementation follows the same pattern as other modules
+with dedicated Cloud and Server classes:
+
+.. code-block:: python
+
+    from atlassian.confluence import ConfluenceCloud, ConfluenceServer
+
+    # For Confluence Cloud
+    confluence_cloud = ConfluenceCloud(
+        url="https://your-domain.atlassian.net",
+        token="your-api-token"
+    )
+
+    # For Confluence Server
+    confluence_server = ConfluenceServer(
+        url="https://your-confluence-server.com",
+        username="your-username",
+        password="your-password"
+    )
+
+Cloud vs Server Differences
+---------------------------
+
+| Feature | Cloud | Server |
+| Authentication | API Token | Username/Password |
+| API Version | v2 | v1.0 |
+| API Root | `wiki/api/v2` | `rest/api/1.0` |
+| Content IDs | UUID strings | Numeric IDs |
+| Space IDs | UUID strings | Space keys |
+
+Common Operations
+-----------------
+
+Both implementations support:
+
+- Content management (create, read, update, delete)
+- Space management
+- User and group management
+- Label management
+- Attachment handling
+- Comment management
+- Search functionality
+- Page properties
+- Export capabilities
+
+Server-Specific Features
+------------------------
+
+The Server implementation includes additional features:
+
+- Draft content management
+- Trash content management
+- Reindex operations
+- Space permissions
+- Space settings
+
+Legacy Implementation
+---------------------
+
+The original Confluence implementation is still available
+for backward compatibility.
+
 Get page info
 -------------
 

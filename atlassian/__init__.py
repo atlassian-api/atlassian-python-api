@@ -6,7 +6,7 @@ from .bamboo import Bamboo
 from .bitbucket import Bitbucket
 from .bitbucket import Bitbucket as Stash
 from .cloud_admin import CloudAdminOrgs, CloudAdminUsers
-from .confluence import Confluence
+from .confluence import ConfluenceCloud, ConfluenceServer, Confluence
 from .crowd import Crowd
 from .insight import Insight
 from .insight import Insight as Assets  # used for Insight on-premise
@@ -19,8 +19,11 @@ from .service_desk import ServiceDesk as ServiceManagement
 from .tempo import TempoCloud, TempoServer
 from .xray import Xray
 
+
 __all__ = [
     "Confluence",
+    "ConfluenceCloud",
+    "ConfluenceServer",
     "Jira",
     "Bitbucket",
     "CloudAdminOrgs",
