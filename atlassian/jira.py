@@ -3638,7 +3638,7 @@ class Jira(AtlassianRestAPI):
         url = self.resource_url("search/approximate-count")
         return self.post(url, data)
 
-    def match_jql(self, issue_ids: List[int], jqls: List[str]) -> Optional[dict[Any, Any]]:
+    def match_jql(self, issue_ids: List[int], jqls: List[str]) -> Optional[Dict[Any, Any]]:
         """
         Checks which issues match a list of JQL queries.
 
