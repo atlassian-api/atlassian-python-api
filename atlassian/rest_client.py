@@ -153,7 +153,12 @@ class AtlassianRestAPI(object):
         self.username = username
         self.password = password
         self.timeout = int(timeout)
-        self.verify_ssl = verify_ssl
+        if session:
+            # don't override verify if session is passed
+            self.verify_ssl = session.verify
+        else:
+            # otherwise use the passed value or default to True
+            self.verify_ssl = verify_ssl
         self.api_root = api_root
         self.api_version = api_version
         self.cookies = cookies
