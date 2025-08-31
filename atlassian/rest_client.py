@@ -990,8 +990,10 @@ class AtlassianRestAPI(object):
                     elif isinstance(errors, dict) and "message" in errors:
                         error_msg_list.append(errors.get("message", ""))
                     elif isinstance(errors, list):
-                        error_msg_list.extend([v.get("message", "") if isinstance(v, dict) else v for v in errors])
-                    error_msg = "\n".join(error_msg_list)
+                        error_msg_list.extend(
+                            [v.get("message", "") if isinstance(v, dict) else v for v in errors]
+                        )
+                    error_msg = "\n".join(error_msg_list) if error_msg_list else "Unknown error"
             except Exception as e:
                 log.error(e)
                 response.raise_for_status()
