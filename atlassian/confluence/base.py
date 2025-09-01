@@ -2,7 +2,7 @@
 
 import copy
 import logging
-
+from requests import HTTPError
 from ..rest_client import AtlassianRestAPI
 
 log = logging.getLogger(__name__)
@@ -157,3 +157,31 @@ class ConfluenceBase(AtlassianRestAPI):
                 trailing = False
 
         return
+
+    def raise_for_status(self, response):
+        """
+        Checks the response for errors and throws an exception if return code >= 400
+
+        Implementation for Confluence Server according to
+            https://developer.atlassian.com/server/confluence/rest/v1002/intro/#about
+        Implementation for Confluence Cloud according to
+            https://developer.atlassian.com/cloud/confluence/rest/v2/intro/#about
+        :param response:
+        :return:
+        """
+        if 400 <= response.status_code < 600:
+            try:
+                j = response.json()
+                if "message" in j:
+                    error_msg = j["message"]
+                    if "detail" in j:
+                        error_msg = f"{error_msg}\n{str(j['detail'])}"
+                else:
+                    error_msg = f"HTTP {response.status_code}: {response.reason}"
+            except Exception as e:
+                log.error(e)
+                response.raise_for_status()
+            else:
+                raise HTTPError(error_msg, response=response)
+        else:
+            response.raise_for_status()
