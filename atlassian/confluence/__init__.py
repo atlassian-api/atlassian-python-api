@@ -17,11 +17,16 @@ class Confluence(ConfluenceBase):
     """Legacy Confluence class for backward compatibility."""
 
     def __init__(self, url, *args, **kwargs):
-        # Auto-detect if it's cloud or server based on URL
+        # Detect which implementation to use
         if ("atlassian.net" in url or "jira.com" in url) and ("/wiki" not in url):
-            if "cloud" not in kwargs:
-                kwargs["cloud"] = True
-        super().__init__(url, *args, **kwargs)
+            impl = ConfluenceCloud(url, *args, **kwargs)
+        else:
+            impl = ConfluenceServer(url, *args, **kwargs)
+        self._impl = impl
+
+    def __getattr__(self, attr):
+        # Delegate all unknown attributes to the true client
+        return getattr(self._impl, attr)
 
 
 __all__ = [

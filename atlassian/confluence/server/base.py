@@ -24,7 +24,6 @@ class ConfluenceServerBase(ConfluenceBase):
         """
         super(ConfluenceServerBase, self).__init__(url, *args, **kwargs)
 
-
     def _get_paged(
         self,
         url,
