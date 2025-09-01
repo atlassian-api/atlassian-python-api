@@ -1,6 +1,13 @@
 # coding=utf-8
 
+import logging
 from .base import ConfluenceCloudBase
+from requests import HTTPError
+from atlassian.errors import (
+    ApiError,
+)
+
+log = logging.getLogger(__name__)
 
 
 class Cloud(ConfluenceCloudBase):
@@ -67,6 +74,81 @@ class Cloud(ConfluenceCloudBase):
     def get_content_ancestors(self, content_id, **kwargs):
         """Get ancestor content."""
         return self.get(f"content/{content_id}/ancestors", **kwargs)
+
+    def get_page_by_title(self, space_key, title, **kwargs):
+        """Get page by title and space key."""
+        return self.get("content", params={"spaceKey": space_key, "title": title, "type": "page", **kwargs})
+
+    def page_exists(self, space_key, title, **kwargs):
+        """Check if page exists in Confluence Cloud."""
+        result = self.get_page_by_title(space_key, title, **kwargs)
+        return len(result.get("results", [])) > 0
+
+    def get_page_child_by_type(self, page_id, type="page", start=None, limit=None, expand=None):
+        """
+        Provide content by type (page, blog, comment)
+        :param page_id: A string containing the id of the type content container.
+        :param type:
+        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
+        :param limit: OPTIONAL: how many items should be returned after the start index. Default: Site limit 200.
+        :param expand: OPTIONAL: expand e.g. history
+        :return:
+        """
+        params = {}
+        if start is not None:
+            params["start"] = int(start)
+        if limit is not None:
+            params["limit"] = int(limit)
+        if expand is not None:
+            params["expand"] = expand
+
+        url = f"rest/api/content/{page_id}/child/{type}"
+        log.info(url)
+
+        try:
+            if not self.advanced_mode and start is None and limit is None:
+                return self._get_paged(url, params=params)
+            else:
+                response = self.get(url, params=params)
+                if self.advanced_mode:
+                    return response
+                return response.get("results")
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                # Raise ApiError as the documented reason is ambiguous
+                raise ApiError(
+                    "There is no content with the given id, "
+                    "or the calling user does not have permission to view the content",
+                    reason=e,
+                )
+
+            raise
+
+    def get_child_title_list(self, page_id, type="page", start=None, limit=None):
+        """
+        Find a list of Child title
+        :param page_id: A string containing the id of the type content container.
+        :param type:
+        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
+        :param limit: OPTIONAL: how many items should be returned after the start index. Default: Site limit 200.
+        :return:
+        """
+        child_page = self.get_page_child_by_type(page_id, type, start, limit)
+        child_title_list = [child["title"] for child in child_page]
+        return child_title_list
+
+    def get_child_id_list(self, page_id, type="page", start=None, limit=None):
+        """
+        Find a list of Child id
+        :param page_id: A string containing the id of the type content container.
+        :param type:
+        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
+        :param limit: OPTIONAL: how many items should be returned after the start index. Default: Site limit 200.
+        :return:
+        """
+        child_page = self.get_page_child_by_type(page_id, type, start, limit)
+        child_id_list = [child["id"] for child in child_page]
+        return child_id_list
 
     # Space Management
     def get_spaces(self, **kwargs):

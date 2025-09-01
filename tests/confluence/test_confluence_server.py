@@ -302,7 +302,7 @@ class TestConfluenceServer:
         """Test get_space method."""
         mock_get.return_value = {"key": "TEST", "name": "Test Space"}
         result = confluence_server.get_space("TEST")
-        mock_get.assert_called_once_with("space/TEST", **{})
+        mock_get.assert_called_once_with("space/TEST", )
         assert result == {"key": "TEST", "name": "Test Space"}
 
     @patch.object(ConfluenceServer, "post")
