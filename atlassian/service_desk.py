@@ -921,7 +921,10 @@ class ServiceDesk(AtlassianRestAPI):
         if 400 <= response.status_code < 600:
             try:
                 j = response.json()
-                error_msg = j["errorMessage"]
+                if "errorMessage" in j:
+                    error_msg = j["errorMessage"]
+                elif "errorMessages" in j:
+                    error_msg = ", ".join(j["errorMessages"] or [])
             except Exception as e:
                 log.error(e)
                 response.raise_for_status()
