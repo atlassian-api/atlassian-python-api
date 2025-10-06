@@ -160,17 +160,35 @@ class BitbucketBase(AtlassianRestAPI):
             return value_str
 
         if isinstance(value_str, str):
-            # The format contains a : in the timezone which is supported from 3.7 on.
-            if sys.version_info <= (3, 7):
+            # Normalize timestamps that include a timezone followed by an
+            # extraneous 'Z' (e.g. '2025-09-18T21:26:38+00:00Z') by removing the
+            # final 'Z'. This pattern appears in some Bitbucket responses.
+            if re.search(r"[+-]\d{2}:\d{2}Z$", value_str):
+                value_str = value_str[:-1]
+
+            # Python < 3.7 does not accept a ':' in the %z timezone, so strip
+            # it for older interpreters.
+            if sys.version_info < (3, 7):
                 value_str = RE_TIMEZONE.sub(r"\1\2", value_str)
-            try:
-                value_str = value_str[:26] + "Z"
-                value = datetime.strptime(value_str, self.CONF_TIMEFORMAT)
-            except ValueError:
-                value = datetime.strptime(
-                    value_str,
-                    "%Y-%m-%dT%H:%M:%S.%fZ",
-                )
+
+            # Try several likely formats, from most to least specific.
+            value = None
+            for fmt in (
+                "%Y-%m-%dT%H:%M:%S.%f%z",
+                "%Y-%m-%dT%H:%M:%S%z",
+                "%Y-%m-%dT%H:%M:%S.%f",
+                "%Y-%m-%dT%H:%M:%S",
+            ):
+                try:
+                    value = datetime.strptime(value_str, fmt)
+                    break
+                except ValueError:
+                    continue
+
+            # If parsing failed for all formats, leave the original string
+            # intact so the timeformat lambda can decide what to do with it.
+            if value is None:
+                value = value_str
         else:
             value = value_str
 
