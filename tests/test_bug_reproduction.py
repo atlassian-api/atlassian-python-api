@@ -1,5 +1,3 @@
-import pytest
-
 from atlassian.bitbucket.cloud.repositories.commits import Commit
 
 

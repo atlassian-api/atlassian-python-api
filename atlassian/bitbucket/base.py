@@ -10,6 +10,14 @@ from ..rest_client import AtlassianRestAPI
 
 RE_TIMEZONE = re.compile(r"(\d{2}):(\d{2})$")
 
+# dateutil is optional but handles many ISO8601 variants more robustly than
+# strptime across Python versions. Import if available and fall back to the
+# built-in parsing logic below when it's not.
+try:
+    from dateutil import parser as _dateutil_parser  # type: ignore
+except Exception:  # pragma: no cover - optional dependency
+    _dateutil_parser = None
+
 
 class BitbucketBase(AtlassianRestAPI):
     CONF_TIMEFORMAT = "%Y-%m-%dT%H:%M:%S.%f%z"
@@ -160,35 +168,53 @@ class BitbucketBase(AtlassianRestAPI):
             return value_str
 
         if isinstance(value_str, str):
-            # Normalize timestamps that include a timezone followed by an
-            # extraneous 'Z' (e.g. '2025-09-18T21:26:38+00:00Z') by removing the
-            # final 'Z'. This pattern appears in some Bitbucket responses.
-            if re.search(r"[+-]\d{2}:\d{2}Z$", value_str):
-                value_str = value_str[:-1]
-
-            # Python < 3.7 does not accept a ':' in the %z timezone, so strip
-            # it for older interpreters.
-            if sys.version_info < (3, 7):
-                value_str = RE_TIMEZONE.sub(r"\1\2", value_str)
-
-            # Try several likely formats, from most to least specific.
+            # Try to use dateutil when available because it correctly handles
+            # many ISO8601 edge cases across Python versions (for example,
+            # '2025-09-18T21:26:38+00:00Z'). If dateutil isn't present or it
+            # fails to parse, fall back to the existing strptime-based logic.
             value = None
-            for fmt in (
-                "%Y-%m-%dT%H:%M:%S.%f%z",
-                "%Y-%m-%dT%H:%M:%S%z",
-                "%Y-%m-%dT%H:%M:%S.%f",
-                "%Y-%m-%dT%H:%M:%S",
-            ):
+            if _dateutil_parser is not None:
                 try:
-                    value = datetime.strptime(value_str, fmt)
-                    break
-                except ValueError:
-                    continue
+                    # isoparse is preferable for strict ISO parsing when
+                    # available; otherwise fall back to parse.
+                    if hasattr(_dateutil_parser, "isoparse"):
+                        value = _dateutil_parser.isoparse(value_str)
+                    else:
+                        value = _dateutil_parser.parse(value_str)
+                except Exception:
+                    # If dateutil can't parse it for any reason, we'll
+                    # continue to the manual fallback below.
+                    value = None
 
-            # If parsing failed for all formats, leave the original string
-            # intact so the timeformat lambda can decide what to do with it.
             if value is None:
-                value = value_str
+                # Normalize timestamps that include a timezone followed by an
+                # extraneous 'Z' (e.g. '2025-09-18T21:26:38+00:00Z') by removing the
+                # final 'Z'. This pattern appears in some Bitbucket responses.
+                if re.search(r"[+-]\d{2}:\d{2}Z$", value_str):
+                    value_str = value_str[:-1]
+
+                # Python < 3.7 does not accept a ':' in the %z timezone, so strip
+                # it for older interpreters.
+                if sys.version_info < (3, 7):
+                    value_str = RE_TIMEZONE.sub(r"\1\2", value_str)
+
+                # Try several likely formats, from most to least specific.
+                for fmt in (
+                    "%Y-%m-%dT%H:%M:%S.%f%z",
+                    "%Y-%m-%dT%H:%M:%S%z",
+                    "%Y-%m-%dT%H:%M:%S.%f",
+                    "%Y-%m-%dT%H:%M:%S",
+                ):
+                    try:
+                        value = datetime.strptime(value_str, fmt)
+                        break
+                    except ValueError:
+                        continue
+
+                # If parsing failed for all formats, leave the original string
+                # intact so the timeformat lambda can decide what to do with it.
+                if value is None:
+                    value = value_str
         else:
             value = value_str
 
