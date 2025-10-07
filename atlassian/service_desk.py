@@ -202,7 +202,7 @@ class ServiceDesk(AtlassianRestAPI):
             f"rest/servicedeskapi/servicedesk/{service_desk_id}/requesttype/{request_type_id}/field",
             headers=self.experimental_headers,
         )
-        
+
     # Participants actions
     def get_request_participants(self, issue_id_or_key, start=0, limit=50):
         """
