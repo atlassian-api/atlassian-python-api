@@ -66,8 +66,24 @@ Manage a Participants
     # The calling user must have permission to manage participants for this customer request
     sd.remove_request_participants(issue_id_or_key, users_list=None, account_list=None)
 
+
+Request types
+---------------------
+
+.. code-block:: python
+
+    # Get all request types in a serrvice desk project
+    sd.get_request_types(service_desk_id)
+
+    # Get single request type in a given serrvice desk project
+    sd.get_request_type(service_desk_id, request_type_id)
+
+    # Get field composition of a given request type
+    sd.get_request_type_fields(service_desk_id, request_type_id)
+
+
 Transitions
------------
+---------------------
 
 **EXPERIMENTAL** (may change without notice)
 

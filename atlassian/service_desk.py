@@ -166,6 +166,42 @@ class ServiceDesk(AtlassianRestAPI):
             f"rest/servicedeskapi/servicedesk/{service_desk_id}/requesttype",
             headers=self.experimental_headers,
         )
+    def get_request_type(self, service_desk_id, request_type_id):
+        """
+        Fetches detailed information about a specific request type within a service desk.
+
+        :param service_desk_id: The ID of the service desk where the request type
+            exists.
+        :type service_desk_id: str
+        :param request_type_id: The ID of the request type to retrieve.
+        :type request_type_id: str
+        :return: A dictionary containing the details of the specified request type.
+        :rtype: dict
+        """
+        return self.get(
+            f"rest/servicedeskapi/servicedesk/{service_desk_id}/requesttype/{request_type_id}",
+            headers=self.experimental_headers,
+        )
+
+    def get_request_type_fields(self, service_desk_id, request_type_id):
+        """
+        Retrieve the fields for a specific request type in a service desk.
+
+        :param service_desk_id: The ID of the service desk for which the request type
+            fields are to be retrieved.
+        :type service_desk_id: str
+        :param request_type_id: The ID of the request type within the specified service
+            desk.
+        :type request_type_id: str
+        :return: A response object containing the fields information for the specified
+            request type.
+        :rtype: requests.Response
+        """
+
+        return self.get(
+            f"rest/servicedeskapi/servicedesk/{service_desk_id}/requesttype/{request_type_id}/field",
+            headers=self.experimental_headers,
+        )
 
     # Participants actions
     def get_request_participants(self, issue_id_or_key, start=0, limit=50):
