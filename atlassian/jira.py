@@ -3202,7 +3202,7 @@ class Jira(AtlassianRestAPI):
         response = self.jql(jql, fields="*none")
         if self.advanced_mode:
             return cast("Response", response)
-        return cast("dict", response)["total"]
+        return len(cast("dict", response)["issues"])
 
     def get_all_project_issues(
         self, project: str, fields: Union[str, List[str]] = "*all", start: int = 0, limit: Optional[int] = None
