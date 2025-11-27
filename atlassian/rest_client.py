@@ -346,13 +346,20 @@ class AtlassianRestAPI(object):
         returns `True` if the request should be retried, or `False` otherwise.
         """
         retries = 0
+        retry_with_header_count = 0
+        max_retry_with_header_attempts = 1  # Only retry once for Retry-After header
 
         def _handle(response):
-            nonlocal retries
+            nonlocal retries, retry_with_header_count
 
             if self.retry_with_header and response.status_code == 429:
+                if retry_with_header_count >= max_retry_with_header_attempts:
+                    log.debug("Max retry attempts for Retry-After header reached, not retrying")
+                    return False
                 delay = self._parse_retry_after_header(response.headers.get("Retry-After"))
                 if delay is not None:
+                    retry_with_header_count += 1
+                    log.debug("Retrying after %s seconds (attempt %d/%d)", delay, retry_with_header_count, max_retry_with_header_attempts)
                     time.sleep(delay)
                     return True
 
