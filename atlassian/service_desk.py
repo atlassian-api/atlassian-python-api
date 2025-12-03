@@ -166,6 +166,7 @@ class ServiceDesk(AtlassianRestAPI):
             f"rest/servicedeskapi/servicedesk/{service_desk_id}/requesttype",
             headers=self.experimental_headers,
         )
+
     def get_request_type(self, service_desk_id, request_type_id):
         """
         Fetches detailed information about a specific request type within a service desk.

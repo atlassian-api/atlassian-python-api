@@ -46,6 +46,7 @@ docker-qa: | docker-qa-build
 
 docker-qa-build: Dockerfile.qa requirements.txt requirements-dev.txt
 	docker build \
+		--pull \
 		--tag $(QA_CONTAINER) \
 		--build-arg PYTHON_VERSION=$(PYTHON_VERSION) \
 		--file $< .
@@ -55,5 +56,6 @@ docker-fmt: docker-qa-build
 
 docker-atlassian-standalone: Dockerfile.standalone
 	docker build \
+		--pull \
 		--tag $(ATLASSIAN_SDK) \
 		--file $< .

@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG PYTHON_VERSION
@@ -22,9 +22,10 @@ RUN if [ $PYTHON_VERSION = '2.7' ] ; then \
   fi
 
 # Install python development
-RUN apt install -y \
-  python$PYTHON_VERSION-dev \
-  python3-pip
+RUN apt-get update && \
+  apt-get install -y \
+    python$PYTHON_VERSION-dev \
+    python3-pip
 
 # Install curl
 RUN apt-get install -y curl
@@ -34,6 +35,9 @@ RUN if [ $PYTHON_VERSION = '3.7' ] ; then \
   apt install -y python$PYTHON_VERSION-distutils python3-distutils-extra python3-apt --reinstall ;\
   elif [ $PYTHON_VERSION = '3.6' ] ; then \
   apt install -y python$PYTHON_VERSION-distutils python3-distutils-extra python3-apt --reinstall ;\
+  elif [ $PYTHON_VERSION = '3.9' ] ; then \
+  apt install -y python$PYTHON_VERSION-distutils python3-distutils-extra python3-apt --reinstall ; \
+  curl -sS https://bootstrap.pypa.io/get-pip.py | python$PYTHON_VERSION ; \
   elif [ $PYTHON_VERSION = '3.10' ] ; then \
   apt install -y python$PYTHON_VERSION-distutils python3-distutils-extra python3-apt --reinstall ; \
   curl -sS https://bootstrap.pypa.io/get-pip.py | python$PYTHON_VERSION ; \
