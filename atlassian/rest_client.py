@@ -3,6 +3,8 @@
 import logging
 import random
 import time
+from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 from http.cookiejar import CookieJar
 from json import dumps
 from typing import (
@@ -295,6 +297,44 @@ class AtlassianRestAPI(object):
             backoff_value += random.uniform(0, self.backoff_jitter)  # nosec B311
         return float(max(0, min(self.max_backoff_seconds, backoff_value)))
 
+    def _parse_retry_after_header(self, header_value: Optional[str]) -> Optional[float]:
+        """
+        Parse the Retry-After header and return a safe delay (seconds).
+        The Retry-After header may contain either an integer (delta-seconds)
+        or an HTTP-date. Values are clamped to ``self.max_backoff_seconds`` to
+        avoid ``time.sleep`` overflow on some platforms.
+        """
+        if not header_value:
+            return None
+
+        delay_seconds: Optional[float]
+        try:
+            delay_seconds = float(header_value)
+        except (TypeError, ValueError):
+            try:
+                retry_after_dt = parsedate_to_datetime(header_value)
+            except (TypeError, ValueError):
+                log.warning("Unable to parse Retry-After header value '%s'", header_value)
+                return None
+
+            if retry_after_dt.tzinfo is None:
+                retry_after_dt = retry_after_dt.replace(tzinfo=timezone.utc)
+            delay_seconds = (retry_after_dt - datetime.now(timezone.utc)).total_seconds()
+
+        if delay_seconds is None:
+            return None
+
+        delay_seconds = max(0.0, delay_seconds)
+        if delay_seconds > self.max_backoff_seconds:
+            log.debug(
+                "Retry-After value %.2f exceeds max_backoff_seconds (%s); clamping",
+                delay_seconds,
+                self.max_backoff_seconds,
+            )
+            delay_seconds = float(self.max_backoff_seconds)
+
+        return delay_seconds
+
     def _retry_handler(self):
         """
         Creates and returns a retry handler function for managing HTTP request retries.
@@ -306,13 +346,22 @@ class AtlassianRestAPI(object):
         returns `True` if the request should be retried, or `False` otherwise.
         """
         retries = 0
+        retry_with_header_count = 0
+        max_retry_with_header_attempts = 1  # Only retry once for Retry-After header
 
         def _handle(response):
-            nonlocal retries
+            nonlocal retries, retry_with_header_count
 
-            if self.retry_with_header and "Retry-After" in response.headers and response.status_code == 429:
-                time.sleep(int(response.headers["Retry-After"]))
-                return True
+            if self.retry_with_header and response.status_code == 429:
+                if retry_with_header_count >= max_retry_with_header_attempts:
+                    log.debug("Max retry attempts for Retry-After header reached, not retrying")
+                    return False
+                delay = self._parse_retry_after_header(response.headers.get("Retry-After"))
+                if delay is not None:
+                    retry_with_header_count += 1
+                    log.debug("Retrying after %s seconds (attempt %d/%d)", delay, retry_with_header_count, max_retry_with_header_attempts)
+                    time.sleep(delay)
+                    return True
 
             if not self.backoff_and_retry or self.use_urllib3_retry:
                 return False
