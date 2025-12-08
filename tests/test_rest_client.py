@@ -3,7 +3,11 @@
 Unit tests for atlassian.rest_client module
 """
 
+from datetime import datetime, timedelta
+from types import SimpleNamespace
+
 import pytest
+
 from .mockup import mockup_server
 from atlassian.rest_client import AtlassianRestAPI
 
@@ -369,3 +373,66 @@ class TestAtlassianRestAPI:
         # Cloud flag should be different
         assert cloud_api.cloud is True
         assert server_api.cloud is False
+
+    def test_retry_handler_clamps_retry_after(self, monkeypatch):
+        """Ensure large Retry-After headers are clamped to max_backoff_seconds."""
+        captured = {}
+
+        def fake_sleep(delay):
+            captured["delay"] = delay
+
+        monkeypatch.setattr("atlassian.rest_client.time.sleep", fake_sleep)
+
+        api = AtlassianRestAPI(
+            url=f"{mockup_server()}/test",
+            retry_with_header=True,
+            max_backoff_seconds=5,
+        )
+
+        handler = api._retry_handler()
+        response = SimpleNamespace(headers={"Retry-After": "99999999999"}, status_code=429)
+
+        assert handler(response) is True
+        assert captured["delay"] == 5
+
+    def test_retry_handler_parses_http_date(self, monkeypatch):
+        """Ensure HTTP-date Retry-After headers are converted to delta seconds."""
+        captured = {}
+
+        def fake_sleep(delay):
+            captured["delay"] = delay
+
+        monkeypatch.setattr("atlassian.rest_client.time.sleep", fake_sleep)
+
+        api = AtlassianRestAPI(
+            url=f"{mockup_server()}/test",
+            retry_with_header=True,
+            max_backoff_seconds=60,
+        )
+
+        handler = api._retry_handler()
+        future_delay = 10
+        future_date = datetime.utcnow().replace(tzinfo=None) + timedelta(seconds=future_delay)
+        retry_after_value = future_date.strftime("%a, %d %b %Y %H:%M:%S GMT")
+        response = SimpleNamespace(headers={"Retry-After": retry_after_value}, status_code=429)
+
+        assert handler(response) is True
+        assert pytest.approx(captured["delay"], rel=0.1) == future_delay
+
+    def test_retry_handler_skips_invalid_header(self, monkeypatch):
+        """Ensure invalid Retry-After headers fall back to regular logic."""
+        def fake_sleep(_):
+            raise AssertionError("sleep should not be called for invalid header")
+
+        monkeypatch.setattr("atlassian.rest_client.time.sleep", fake_sleep)
+
+        api = AtlassianRestAPI(
+            url=f"{mockup_server()}/test",
+            retry_with_header=True,
+        )
+
+        handler = api._retry_handler()
+        response = SimpleNamespace(headers={"Retry-After": "invalid-value"}, status_code=429)
+
+        # Should return False so that other retry mechanisms can take over
+        assert handler(response) is False
