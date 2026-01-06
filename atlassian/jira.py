@@ -713,6 +713,60 @@ class Jira(AtlassianRestAPI):
         url = f"{base_url}/{option_id}"
         return self.get(url)
 
+    def get_custom_field_options(
+        self,
+        field_id: T_id,
+        project_id: T_id,
+        issue_type_id: Optional[T_id | list[T_id]] = None,
+        query: Optional[str] = None,
+        page: Optional[int] = None,
+        limit: Optional[int] = None,
+        sort: Optional[bool] = None,
+        use_all_contexts: Optional[bool] = None,
+    ) -> T_resp_json:
+        """
+        Get list of all options available for a custom field in a specified project.
+        Numeric field ID and numeric project ID must be used.
+
+        This is Experimental API available to Jira data Center.
+        At the time of testing, providing multiple project IDs results in 404 response.
+
+        Reference: https://developer.atlassian.com/server/jira/platform/rest/v11003/api-group-customfields/#api-api-2-customfields-customfieldid-options-get
+
+        :param field_id: str - The ID of the custom field.
+        :param project_id: str - The project ID in a context.
+        :param issue_type_id: str, Optional - A list of issue type IDs in a context.
+        :param query: str, Optional - A string used to filter options.
+        :param page: int, Optional - The page of options to return, starting from 1.
+        :param limit: int, Optional - The maximum number of results to return. If empty, return all results.
+        :param sort: bool, Optional - Flag to sort options by their names.
+        :param use_all_contexts: bool, Optional - Flag to fetch all options regardless of context, project IDs, or issue type IDs.
+        """
+        url = self.resource_url(
+            f"customFields/{field_id}/options",
+            api_version=2,
+        )
+        params: dict = {}
+        if project_id:
+            if isinstance(project_id, (list, tuple, set)):
+                project_id = ",".join(project_id)
+            params["projectIds"] = project_id
+        if issue_type_id:
+            if isinstance(issue_type_id, (list, tuple, set)):
+                issue_type_id = ",".join(issue_type_id)
+            params["issueTypeIds"] = issue_type_id
+        if query:
+            params["query"] = query
+        if page is not None:
+            params["page"] = page
+        if limit is not None:
+            params["maxResults"] = limit
+        if sort is not None:
+            params["sortByOptionName"] = sort
+        if use_all_contexts is not None:
+            params["useAllContexts"] = use_all_contexts
+        return self.get(url, params=params)
+
     def get_custom_fields(self, search: Optional[str] = None, start: int = 1, limit: int = 50) -> T_resp_json:
         """
         Get custom fields. Evaluated on 7.12
