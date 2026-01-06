@@ -436,6 +436,13 @@ Manage issues
     # :return: list of dictionaries containing the tree structure. Dictionary element contains a key (parent issue) and value (child issue).
     jira.get_issue_tree_recursive(issue_key, tree=[], depth=0)
 
+    # Returns full information about visible fields that can be autocompleted in JQL.
+    jira.get_autocomplete_data()
+
+    # Returns auto complete suggestions for JQL search.
+    field_name = "Custom Field"
+    jira.get_autocomplete_suggestion(field_name, field_value=None, predicate_name=None, predicate_value=None)
+
 Epic Issues
 -------------
 
@@ -466,13 +473,6 @@ Epic Issues
     # Issues returned from this resource include Agile fields, like sprint, closedSprints, flagged, and epic.
     # By default, the returned issues are ordered by rank.
     jira.get_issues_for_epic(board_id, epic_id, jql="", validate_query="", fields="*all", expand="", start=0, limit=50, )
-
-    # Returns full information about visible fields that can be autocompleted in JQL.
-    jira.get_autocomplete_data()
-
-    # Returns auto complete suggestions for JQL search.
-    field_name = "Custom Field"
-    jira.get_autocomplete_suggestion(field_name, field_value=None, predicate_name=None, predicate_value=None)
 
 Manage Boards
 -------------
