@@ -717,7 +717,7 @@ class Jira(AtlassianRestAPI):
         self,
         field_id: T_id,
         project_id: T_id,
-        issue_type_id: Optional[T_id | list[T_id]] = None,
+        issue_type_id: Union[T_id, list[T_id], None] = None,
         query: Optional[str] = None,
         page: Optional[int] = None,
         limit: Optional[int] = None,
