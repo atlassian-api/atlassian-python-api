@@ -359,7 +359,12 @@ class AtlassianRestAPI(object):
                 delay = self._parse_retry_after_header(response.headers.get("Retry-After"))
                 if delay is not None:
                     retry_with_header_count += 1
-                    log.debug("Retrying after %s seconds (attempt %d/%d)", delay, retry_with_header_count, max_retry_with_header_attempts)
+                    log.debug(
+                        "Retrying after %s seconds (attempt %d/%d)",
+                        delay,
+                        retry_with_header_count,
+                        max_retry_with_header_attempts,
+                    )
                     time.sleep(delay)
                     return True
 
