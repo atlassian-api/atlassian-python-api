@@ -3964,6 +3964,54 @@ class Jira(AtlassianRestAPI):
         url = f"{base_url}/{priority_id}"
         return self.get(url)
 
+    def get_autocomplete_data(self) -> T_resp_json:
+        """
+        Returns full information about visible fields that can be used in JQL.
+
+        Available in Jira Data Center, Jira Cloud v2, Jira Cloud v3.
+
+        Reference: https://developer.atlassian.com/server/jira/platform/rest/v11003/api-group-jql/#api-group-jql
+                   https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-jql/#api-group-jql
+        :return:
+        """
+        url = self.resource_url("jql/autocompletedata")
+        return self.get(url)
+
+    def get_autocomplete_suggestion(
+        self,
+        field_name: Optional[str] = None,
+        field_value: Optional[str] = None,
+        predicate_name: Optional[str] = None,
+        predicate_value: Optional[str] = None,
+    ) -> T_resp_json:
+        """
+        Returns auto complete suggestions for JQL search.
+
+        Suggestions can be obtained by providing:
+
+            `fieldName` to get a list of all values for the field.
+            `fieldName` and `fieldValue` to get a list of values containing the text in `fieldValue`.
+            `fieldName` and `predicateName` to get a list of all predicate values for the field.
+            `fieldName`, `predicateName`, and `predicateValue` to get a list of predicate values containing the text in `predicateValue`.
+
+        :param field_name: str, Optional - The field name for which the suggestions are generated.
+        :param field_value: str, Optional - The portion of the field value that has already been provided by the user.
+        :param predicate_name: str, Optional - The predicate for which the suggestions are generated. Suggestions are generated only for: "by", "from" and "to".
+        :param predicate_value: str, Optional - The portion of the predicate value that has already been provided by the user.
+        :return:
+        """
+        url = self.resource_url("jql/autocompletedata/suggestions")
+        params: dict = {}
+        if field_name:
+            params["fieldName"] = field_name
+        if field_value:
+            params["fieldValue"] = field_value
+        if predicate_name:
+            params["predicateName"] = predicate_name
+        if predicate_value:
+            params["predicateValue"] = predicate_value
+        return self.get(url, params=params)
+
     """
     Workflow
     Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/workflow
