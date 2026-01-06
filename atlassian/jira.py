@@ -3966,12 +3966,12 @@ class Jira(AtlassianRestAPI):
 
     def get_autocomplete_data(self) -> T_resp_json:
         """
-        Returns full information about visible fields that can be used in JQL.
+        Returns full information about visible fields that can be autocompleted in JQL.
 
         Available in Jira Data Center, Jira Cloud v2, Jira Cloud v3.
 
-        Reference: https://developer.atlassian.com/server/jira/platform/rest/v11003/api-group-jql/#api-group-jql
-                   https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-jql/#api-group-jql
+        Reference: https://developer.atlassian.com/server/jira/platform/rest/v11003/api-group-jql/#api-api-2-jql-autocompletedata-get
+                   https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-jql/#api-rest-api-2-jql-autocompletedata-get
         :return:
         """
         url = self.resource_url("jql/autocompletedata")
@@ -3993,6 +3993,12 @@ class Jira(AtlassianRestAPI):
             `fieldName` and `fieldValue` to get a list of values containing the text in `fieldValue`.
             `fieldName` and `predicateName` to get a list of all predicate values for the field.
             `fieldName`, `predicateName`, and `predicateValue` to get a list of predicate values containing the text in `predicateValue`.
+
+        Although auto complete suggestion can be used to retrieve possible option for a field,
+        it may be more appropriate to use `get_custom_field_options()` method to get project-specific options for a field.
+
+        Reference: https://developer.atlassian.com/server/jira/platform/rest/v11003/api-group-jql/#api-api-2-jql-autocompletedata-suggestions-get
+                   https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-jql/#api-rest-api-2-jql-autocompletedata-suggestions-get
 
         :param field_name: str, Optional - The field name for which the suggestions are generated.
         :param field_value: str, Optional - The portion of the field value that has already been provided by the user.
