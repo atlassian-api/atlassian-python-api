@@ -29,6 +29,7 @@ setup(
     install_requires=["deprecated", "requests", "oauthlib", "requests_oauthlib", "jmespath", "beautifulsoup4", "typing-extensions"],
     extras_require={"kerberos": ["requests-kerberos"]},
     platforms="Platform Independent",
+    python_requires='>=3.9',
     classifiers=[
         "Development Status :: 4 - Beta",
         "Environment :: Web Environment",
