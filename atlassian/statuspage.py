@@ -1,5 +1,6 @@
 # coding=utf-8
 """Statuspage API wrapper."""
+
 import logging
 from enum import Enum
 

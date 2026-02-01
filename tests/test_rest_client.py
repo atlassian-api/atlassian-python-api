@@ -421,6 +421,7 @@ class TestAtlassianRestAPI:
 
     def test_retry_handler_skips_invalid_header(self, monkeypatch):
         """Ensure invalid Retry-After headers fall back to regular logic."""
+
         def fake_sleep(_):
             raise AssertionError("sleep should not be called for invalid header")
 

@@ -33,4 +33,5 @@ __all__ = [
     "ConfluenceCloud",
     "ConfluenceServer",
     "ConfluenceBase",
+    "Confluence",
 ]

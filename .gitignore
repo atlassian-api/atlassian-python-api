@@ -2,6 +2,13 @@
 .idea
 .sonarlint
 .pytest_cache
+
+# Development test files (not part of main project)
+dev-tests/
+
+# Kiro AI assistant files
+.kiro/
+
 # Created by .ignore support plugin (hsz.mobi)
 ### Python template
 # Byte-compiled / optimized / DLL files
@@ -123,3 +130,9 @@ venv_/
 
 Pipfile
 Pipfile.lock
+
+# Kiro AI assistant artifacts
+.kiro/
+
+# Test configuration and credentials
+test_config.py

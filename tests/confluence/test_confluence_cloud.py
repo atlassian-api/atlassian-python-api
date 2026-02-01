@@ -21,8 +21,8 @@ class TestConfluenceCloud:
     def test_init_defaults(self):
         """Test ConfluenceCloud client initialization with default values."""
         confluence = ConfluenceCloud(url="https://test.atlassian.net", token="test-token")
-        assert confluence.api_version == "2"
-        assert confluence.api_root == "wiki/api/v2"
+        assert confluence.api_version == "latest"
+        assert confluence.api_root == "wiki/rest/api"
         assert confluence.cloud is True
 
     def test_init_custom_values(self):
@@ -107,7 +107,7 @@ class TestConfluenceCloud:
         """Test get_spaces method."""
         mock_get.return_value = {"results": [{"id": "TEST", "name": "Test Space"}]}
         result = confluence_cloud.get_spaces()
-        mock_get.assert_called_once_with("space", **{})
+        mock_get.assert_called_once_with("wiki/rest/api/latest/space", **{})
         assert result == {"results": [{"id": "TEST", "name": "Test Space"}]}
 
     @patch.object(ConfluenceCloud, "get")
@@ -174,7 +174,7 @@ class TestConfluenceCloud:
         """Test get_current_user method."""
         mock_get.return_value = {"id": "current", "name": "Current User"}
         result = confluence_cloud.get_current_user()
-        mock_get.assert_called_once_with("user/current", **{})
+        mock_get.assert_called_once_with("wiki/rest/api/latest/user/current", **{})
         assert result == {"id": "current", "name": "Current User"}
 
     # Group Management Tests

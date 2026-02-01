@@ -359,7 +359,12 @@ class AtlassianRestAPI(object):
                 delay = self._parse_retry_after_header(response.headers.get("Retry-After"))
                 if delay is not None:
                     retry_with_header_count += 1
-                    log.debug("Retrying after %s seconds (attempt %d/%d)", delay, retry_with_header_count, max_retry_with_header_attempts)
+                    log.debug(
+                        "Retrying after %s seconds (attempt %d/%d)",
+                        delay,
+                        retry_with_header_count,
+                        max_retry_with_header_attempts,
+                    )
                     time.sleep(delay)
                     return True
 
@@ -1053,6 +1058,138 @@ class AtlassianRestAPI(object):
                 raise HTTPError(error_msg, response=response)
         else:
             response.raise_for_status()
+
+    def _get_paged(
+        self,
+        url: str,
+        params: Optional[dict] = None,
+        data: Optional[dict] = None,
+        flags: Optional[list] = None,
+        trailing: Optional[bool] = None,
+        absolute: bool = False,
+    ):
+        """
+        Used to get paged data with support for both offset-based and cursor-based pagination.
+
+        Supports:
+        - Offset-based pagination (Server APIs): uses startAt/maxResults
+        - Cursor-based pagination (Cloud APIs): uses cursor tokens
+        - Link header processing (v2 APIs): parses Link headers for next page URLs
+
+        :param url: string: The url to retrieve
+        :param params: dict (default is None): The parameters
+        :param data: dict (default is None): The data
+        :param flags: string[] (default is None): The flags
+        :param trailing: bool (default is None): If True, a trailing slash is added to the url
+        :param absolute: bool (default is False): If True, the url is used absolute and not relative to the root
+
+        :return: A generator object for the data elements
+        """
+        if params is None:
+            params = {}
+
+        while True:
+            response = self.get(
+                url,
+                trailing=trailing,
+                params=params,
+                data=data,
+                flags=flags,
+                absolute=absolute,
+                advanced_mode=True,  # Get raw response to access headers
+            )
+
+            # Parse JSON response
+            try:
+                response_data = response.json()
+            except ValueError:
+                log.debug("Received response with no JSON content")
+                return
+
+            # Handle different response structures
+            results = []
+            next_url = None
+
+            if "results" in response_data:
+                # Standard Atlassian pagination format
+                results = response_data.get("results", [])
+                # Check for next page using _links (current method)
+                next_url = response_data.get("_links", {}).get("next", {}).get("href")
+
+            elif "values" in response_data:
+                # Alternative pagination format (used by some APIs)
+                results = response_data.get("values", [])
+                # Check for next page using _links
+                next_url = response_data.get("_links", {}).get("next", {}).get("href")
+
+            elif isinstance(response_data, list):
+                # Direct array response
+                results = response_data
+
+            else:
+                # Unknown format, try to extract results
+                log.debug("Unknown pagination response format")
+                return
+
+            # Yield results if any
+            if not results:
+                return
+            yield from results
+
+            # Try Link header processing first (v2 requirement)
+            link_header = response.headers.get("Link")
+            if link_header:
+                parsed_next_url = self._parse_link_header(link_header)
+                if parsed_next_url:
+                    next_url = parsed_next_url
+
+            # Check for cursor-based pagination (v2 requirement)
+            cursor = response_data.get("cursor")
+            if cursor and not next_url:
+                # Update params with cursor for next request
+                params = params.copy()
+                params["cursor"] = cursor
+                continue
+
+            # If we have a next URL, use it
+            if next_url:
+                url = next_url
+                absolute = True
+                params = {}  # Parameters are in the URL
+                trailing = False
+                continue
+
+            # No more pages
+            break
+
+        return
+
+    def _parse_link_header(self, link_header: str) -> Optional[str]:
+        """
+        Parse Link header to extract next page URL.
+
+        Link header format: <url>; rel="next", <url>; rel="prev"
+
+        :param link_header: The Link header value
+        :return: Next page URL if found, None otherwise
+        """
+        if not link_header:
+            return None
+
+        # Split by comma to get individual links
+        links = link_header.split(",")
+
+        for link in links:
+            link = link.strip()
+            # Look for rel="next"
+            if 'rel="next"' in link or "rel='next'" in link:
+                # Extract URL from <url>
+                url_start = link.find("<")
+                url_end = link.find(">")
+                if url_start != -1 and url_end != -1:
+                    return link[url_start + 1 : url_end]
+
+        return None
 
     @property
     def session(self) -> Session:

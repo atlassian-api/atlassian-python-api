@@ -245,6 +245,8 @@ Add a connection:
 
    jira
    confluence
+   confluence_adf
+   confluence_v2_migration
    crowd
    bitbucket
    bamboo
