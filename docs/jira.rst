@@ -10,6 +10,18 @@ Get issues from jql search result with all related fields
     issues = jira.jql(jql_request)
     print(issues)
 
+    # Or if dealing with pagination
+    issues = []
+    isLast = False
+    nextPageToken = None
+
+    while not isLast:
+        response = jira.enhanced_jql(jql_request, fields="id,summary" nextPageToken=nextPageToken, expand='names')
+        issues.extend(response.get('issues'))
+        isLast = response.get('isLast')
+        if not isLast:
+            nextPageToken = response.get('nextPageToken')
+
     # Check issues against JQL
     # Checks whether one or more issues would be returned by one or more JQL queries.
     jira.match_jql(issue_ids, jqls)
