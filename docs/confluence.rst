@@ -422,9 +422,6 @@ Users and Groups
     # Get all groups from Confluence User management
     confluence.get_all_groups(start=0, limit=1000)
 
-    # Get a paginated collection of users in the given group
-    confluence.get_group_members(group_name='confluence-users', start=0, limit=1000)
-
     # Get information about a user through username
     confluence.get_user_details_by_username(username, expand=None)
 
