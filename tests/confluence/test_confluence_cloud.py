@@ -51,6 +51,52 @@ class TestConfluenceCloud:
         mock_get.assert_called_once_with("content", params={"type": "page", **{}})
         assert result == {"results": [{"id": "123", "title": "Test Page"}]}
 
+    @patch.object(ConfluenceCloud, "get")
+    def test_get_all_pages_from_space(self, mock_get, confluence_cloud):
+        """Test get_all_pages_from_space method."""
+        mock_get.return_value = {"results": [{"id": "123", "title": "Page in Space"}]}
+        result = confluence_cloud.get_all_pages_from_space("TEST")
+        assert list(result) == [{"id": "123", "title": "Page in Space"}]
+        mock_get.assert_called_once_with(
+            "content",
+            params={"spaceKey": "TEST", "type": "page", **{}},
+            trailing=None,
+            data=None,
+            flags=None,
+            absolute=False,
+        )
+
+    @patch.object(ConfluenceCloud, "get")
+    def test_get_all_pages_from_space_pagination(self, mock_get, confluence_cloud):
+        """Test get_all_pages_from_space paginates correctly."""
+        mock_get.side_effect = [
+            {
+                "results": [{"id": "1", "title": "Page 1"}],
+                "_links": {"next": "https://test.atlassian.net/wiki/api/v2/content?cursor=1"},
+            },
+            {
+                "results": [{"id": "2", "title": "Page 2"}],
+            },
+        ]
+        result = list(confluence_cloud.get_all_pages_from_space("TEST"))
+        assert result == [{"id": "1", "title": "Page 1"}, {"id": "2", "title": "Page 2"}]
+        assert mock_get.call_count == 2
+
+    @patch.object(ConfluenceCloud, "get")
+    def test_get_all_blog_posts_from_space(self, mock_get, confluence_cloud):
+        """Test get_all_blog_posts_from_space method."""
+        mock_get.return_value = {"results": [{"id": "456", "title": "Blog Post"}]}
+        result = confluence_cloud.get_all_blog_posts_from_space("TEST")
+        assert list(result) == [{"id": "456", "title": "Blog Post"}]
+        mock_get.assert_called_once_with(
+            "content",
+            params={"spaceKey": "TEST", "type": "blogpost", **{}},
+            trailing=None,
+            data=None,
+            flags=None,
+            absolute=False,
+        )
+
     @patch.object(ConfluenceCloud, "post")
     def test_create_content(self, mock_post, confluence_cloud):
         """Test create_content method."""
@@ -449,3 +495,92 @@ class TestConfluenceCloud:
         result = confluence_cloud.get_health()
         mock_get.assert_called_once_with("health", **{})
         assert result == {"status": "healthy"}
+
+    # Pagination Tests for _get_paged (tested directly since Cloud has no paginated public methods yet)
+    @patch.object(ConfluenceCloud, "get")
+    def test_pagination_with_next_link_as_string(self, mock_get, confluence_cloud):
+        """Test multi-page pagination when _links.next is a string URL."""
+        mock_get.side_effect = [
+            {
+                "results": [{"id": "1", "title": "Page 1"}],
+                "_links": {"next": "https://test.atlassian.net/wiki/api/v2/content?cursor=1"},
+            },
+            {
+                "results": [{"id": "2", "title": "Page 2"}],
+            },
+        ]
+        result = list(confluence_cloud._get_paged("content"))
+        assert result == [{"id": "1", "title": "Page 1"}, {"id": "2", "title": "Page 2"}]
+        assert mock_get.call_count == 2
+
+    @patch.object(ConfluenceCloud, "get")
+    def test_pagination_with_next_link_as_dict(self, mock_get, confluence_cloud):
+        """Test multi-page pagination when _links.next is a dict with href."""
+        mock_get.side_effect = [
+            {
+                "results": [{"id": "1", "title": "Page 1"}],
+                "_links": {"next": {"href": "https://test.atlassian.net/wiki/api/v2/content?cursor=1"}},
+            },
+            {
+                "results": [{"id": "2", "title": "Page 2"}],
+            },
+        ]
+        result = list(confluence_cloud._get_paged("content"))
+        assert result == [{"id": "1", "title": "Page 1"}, {"id": "2", "title": "Page 2"}]
+        assert mock_get.call_count == 2
+
+    @patch.object(ConfluenceCloud, "get")
+    def test_pagination_stops_when_next_link_is_none(self, mock_get, confluence_cloud):
+        """Test pagination stops when _links.next is explicitly None."""
+        mock_get.return_value = {
+            "results": [{"id": "1", "title": "Page 1"}],
+            "_links": {"next": None},
+        }
+        result = list(confluence_cloud._get_paged("content"))
+        assert result == [{"id": "1", "title": "Page 1"}]
+        assert mock_get.call_count == 1
+
+    @patch.object(ConfluenceCloud, "get")
+    def test_pagination_stops_when_next_link_dict_missing_href(self, mock_get, confluence_cloud):
+        """Test pagination stops when _links.next is a dict without href."""
+        mock_get.return_value = {
+            "results": [{"id": "1", "title": "Page 1"}],
+            "_links": {"next": {}},
+        }
+        result = list(confluence_cloud._get_paged("content"))
+        assert result == [{"id": "1", "title": "Page 1"}]
+        assert mock_get.call_count == 1
+
+    @patch.object(ConfluenceCloud, "get")
+    def test_pagination_returns_empty_when_no_results_key(self, mock_get, confluence_cloud):
+        """Test _get_paged returns immediately when response has no results key."""
+        mock_get.return_value = {"error": "something went wrong"}
+        result = list(confluence_cloud._get_paged("content"))
+        assert result == []
+        assert mock_get.call_count == 1
+
+    @patch.object(ConfluenceCloud, "get")
+    def test_pagination_with_relative_next_link_and_base(self, mock_get, confluence_cloud):
+        """Test pagination with relative next link and base URL."""
+        mock_get.side_effect = [
+            {
+                "results": [{"id": "1", "title": "Page 1"}],
+                "_links": {
+                    "next": "/rest/api/content?cursor=1",
+                    "base": "https://test.atlassian.net/wiki",
+                },
+            },
+            {
+                "results": [{"id": "2", "title": "Page 2"}],
+            },
+        ]
+        result = list(confluence_cloud._get_paged("content"))
+
+        assert result == [{"id": "1", "title": "Page 1"}, {"id": "2", "title": "Page 2"}]
+
+        assert mock_get.call_count == 2
+        
+        # Verify the second call used scheme+host from self.url (preserving API gateway routing)
+        args, kwargs = mock_get.call_args_list[1]
+        assert args[0] == "https://test.atlassian.net/rest/api/content?cursor=1"
+        assert kwargs["absolute"] is True

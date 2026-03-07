@@ -5,6 +5,8 @@ Confluence API client package for Atlassian Python API.
 This package provides both Cloud and Server implementations of the Confluence API.
 """
 
+from urllib.parse import urlparse
+
 from .cloud import Cloud as ConfluenceCloud
 from .server import Server as ConfluenceServer
 
@@ -18,7 +20,16 @@ class Confluence(ConfluenceBase):
 
     def __init__(self, url, *args, **kwargs):
         # Detect which implementation to use
-        if ("atlassian.net" in url or "jira.com" in url) and ("/wiki" not in url):
+        # Priority: explicit cloud= kwarg > URL-based heuristic
+        is_cloud = kwargs.get("cloud")
+        if is_cloud is None:
+            hostname = urlparse(url).hostname or ""
+            is_cloud = (
+                hostname == "atlassian.net" or hostname.endswith(".atlassian.net")
+                or hostname == "jira.com" or hostname.endswith(".jira.com")
+                or hostname == "api.atlassian.com" or hostname.endswith(".api.atlassian.com")
+            )
+        if is_cloud:
             impl = ConfluenceCloud(url, *args, **kwargs)
         else:
             impl = ConfluenceServer(url, *args, **kwargs)
