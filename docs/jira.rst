@@ -229,6 +229,18 @@ Manage projects
     # Using " " string (space) for username gives All the active users who have browse permission for a project
     jira.get_users_with_browse_permission_to_a_project(username, issue_key=None, project_key=None, start=0, limit=100)
 
+    # Get existing custom fields or find by filter
+    jira.get_custom_fields(search=None, start=1, limit=50):
+
+    # Returns a full representation of a Custom Field Option that has the given id.
+    option_id = 10001
+    jira.get_custom_field_option(option_id)
+
+    # Returns full list of Custom Field Options in a specified project.
+    field_id = 10000
+    project_id = 1234
+    jira.get_custom_field_options(field_id, project_id, issue_type_id=None)
+
 Manage issues
 -------------
 
@@ -251,9 +263,6 @@ Manage issues
     field = "customfield_10000"
     value = {"name": "username"}
     jira.issue_field_value_append(issue_id_or_key, field, value, notify_users=True)
-
-    # Get existing custom fields or find by filter
-    jira.get_custom_fields(search=None, start=1, limit=50):
 
     # Check issue exists
     jira.issue_exists(issue_key)
@@ -438,6 +447,13 @@ Manage issues
     # :param depth: current depth of the tree for recursion. Do not change it.
     # :return: list of dictionaries containing the tree structure. Dictionary element contains a key (parent issue) and value (child issue).
     jira.get_issue_tree_recursive(issue_key, tree=[], depth=0)
+
+    # Returns full information about visible fields that can be autocompleted in JQL.
+    jira.get_autocomplete_data()
+
+    # Returns auto complete suggestions for JQL search.
+    field_name = "Custom Field"
+    jira.get_autocomplete_suggestion(field_name, field_value=None, predicate_name=None, predicate_value=None)
 
 Epic Issues
 -------------
