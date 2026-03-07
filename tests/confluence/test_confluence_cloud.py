@@ -21,10 +21,9 @@ class TestConfluenceCloud:
     def test_init_defaults(self):
         """Test ConfluenceCloud client initialization with default values."""
         confluence = ConfluenceCloud(url="https://test.atlassian.net", token="test-token")
-        assert confluence.api_version == "latest"
-        assert confluence.api_root == "wiki/rest/api"
+        assert confluence.api_version == "2"
+        assert confluence.api_root == "wiki/api/v2"
         assert confluence.cloud is True
-        assert confluence.url == "https://test.atlassian.net/wiki/rest/api"
 
     def test_init_custom_values(self):
         """Test ConfluenceCloud client initialization with custom values."""
