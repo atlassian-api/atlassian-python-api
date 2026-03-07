@@ -1,6 +1,7 @@
 # coding=utf-8
 
 import copy
+from urllib.parse import urlparse
 import logging
 from requests import HTTPError
 from ..rest_client import AtlassianRestAPI
@@ -145,21 +146,9 @@ class ConfluenceBase(AtlassianRestAPI):
                 break
 
             if url.startswith("/"):
-                # Prepend base URL from self.url, stripping the API root suffix to preserve path prefix
-                # Example: self.url = "https://api.atlassian.com/ex/confluence/abc/wiki/rest/api"
-                #          api_root = "wiki/rest/api"
-                #          base = "https://api.atlassian.com/ex/confluence/abc"
-                #          relative = "/rest/api/content?cursor=1"
-                #          result = "https://api.atlassian.com/ex/confluence/abc/rest/api/content?cursor=1"
-                api_root_suffix = f"/{self.api_root}"
-                if self.url.endswith(api_root_suffix):
-                    base = self.url[:-len(api_root_suffix)]
-                else:
-                    # Fallback: extract scheme+netloc if api_root suffix not found
-                    from urllib.parse import urlparse
-                    parsed = urlparse(self.url)
-                    base = f"{parsed.scheme}://{parsed.netloc}"
-                url = base + url
+                # Relative URL from Confluence Server: prepend scheme+host from self.url
+                parsed = urlparse(self.url)
+                url = f"{parsed.scheme}://{parsed.netloc}{url}"
 
             # From now on we have absolute URLs with parameters
             absolute = True
