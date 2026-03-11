@@ -3,6 +3,7 @@
 This is example to attach file with mimetype
 
 """
+
 import logging
 
 # https://pypi.org/project/python-magic/

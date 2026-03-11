@@ -19,7 +19,6 @@ from .service_desk import ServiceDesk as ServiceManagement
 from .tempo import TempoCloud, TempoServer
 from .xray import Xray
 
-
 __all__ = [
     "Confluence",
     "ConfluenceCloud",
