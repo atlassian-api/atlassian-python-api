@@ -367,6 +367,7 @@ class Jira(AtlassianRestAPI):
         :return: content as bytes
         """
         attachment_info = self.get_attachment(attachment_id)
+        # Type check for mypy. If attachment is not found, or unavailable, it would raise HTTPError anyways.
         if attachment_info is None:
             return b""
         url = attachment_info["content"]
