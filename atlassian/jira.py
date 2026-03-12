@@ -255,14 +255,68 @@ class Jira(AtlassianRestAPI):
         url = f"{base_url}/{attachment_id}"
         return self.get(url)
 
-    def download_issue_attachments(self, issue: T_id, path: Optional[str] = None) -> Optional[str]:
+    def download_issue_attachments(
+        self,
+        issue: str,
+        path: Optional[str] = None,
+        overwrite: bool = False,
+        stream: bool = False,
+        block_size: Optional[int] = 16384,
+        timeout: Optional[int] = None,
+    ) -> Optional[str]:
         """
         Downloads all attachments from a Jira issue.
         :param issue: The issue-key of the Jira issue
         :param path: Path to directory where attachments will be saved. If None, current working directory will be used.
+        :param overwrite: If True, always download and create new zip file.
+                          If False (default), download will be skipped when zip file already exists in path.
+        :param stream: If True, request stream mode will be used to download and write files.
+                       If False (default), whole attachment content will be downloaded into memory first, then will be written to disk afterwards.
+        :param block_size: Block size of each stream content chunks. This option is only applicable when stream=True is set.
+                           Default size of 16 KiB is used to balance speed and memory usage.
+                           Smaller value will decrease memory usage, but may also decrease download speed if too small.
+        :param timeout: Request timeout parameter in seconds. None (default) will never cause timeout.
         :return: A message indicating the result of the download operation.
         """
-        return self.download_attachments_from_issue(issue=issue, path=path, cloud=self.cloud)
+        try:
+            if path is None:
+                path = os.getcwd()
+            issue_id = self.issue(issue, fields="id")["id"]
+            attachment_name = f"{issue_id}_attachments.zip"
+            file_path = os.path.join(path, attachment_name)
+            if not overwrite and os.path.isfile(file_path):
+                return "File already exists"
+
+            if self.cloud:
+                url = self.url + f"/secure/issueAttachments/{issue_id}.zip"
+            else:
+                url = self.url + f"/secure/attachmentzip/{issue_id}.zip"
+            response = self._session.get(url, stream=stream, timeout=timeout)
+            response.raise_for_status()
+
+            # if Jira issue doesn't have any attachments _session.get
+            # request response will return 22 bytes of PKzip format
+            file_size = int(response.headers.get("Content-Length", 0))
+            if file_size == 22:
+                return "No attachments found on the Jira issue"
+
+            with open(file_path, "wb") as file:
+                if not stream:
+                    file.write(response.content)
+                else:
+                    for data in response.iter_content(block_size):
+                        file.write(data)
+
+            return "Attachments downloaded successfully"
+
+        except FileNotFoundError:
+            raise FileNotFoundError("Verify if directory path is correct and/or if directory exists")
+        except PermissionError:
+            raise PermissionError(
+                "Directory found, but there is a problem with saving file to this directory. Check directory permissions"
+            )
+        except Exception as e:
+            raise e
 
     @deprecated(version="3.41.20", reason="Use download_issue_attachments instead")
     def download_attachments_from_issue(
