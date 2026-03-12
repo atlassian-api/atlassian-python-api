@@ -713,6 +713,60 @@ class Jira(AtlassianRestAPI):
         url = f"{base_url}/{option_id}"
         return self.get(url)
 
+    def get_custom_field_options(
+        self,
+        field_id: T_id,
+        project_id: T_id,
+        issue_type_id: Union[T_id, list[str], None] = None,
+        query: Optional[str] = None,
+        page: Optional[int] = None,
+        limit: Optional[int] = None,
+        sort: Optional[bool] = None,
+        use_all_contexts: Optional[bool] = None,
+    ) -> T_resp_json:
+        """
+        Get list of all options available for a custom field in a specified project.
+        Numeric field ID and numeric project ID must be used.
+
+        This is Experimental API available to Jira data Center.
+        At the time of testing, providing multiple project IDs results in 404 response.
+
+        Reference: https://developer.atlassian.com/server/jira/platform/rest/v11003/api-group-customfields/#api-api-2-customfields-customfieldid-options-get
+
+        :param field_id: str - The ID of the custom field.
+        :param project_id: str - The project ID in a context.
+        :param issue_type_id: str, Optional - A list of issue type IDs in a context.
+        :param query: str, Optional - A string used to filter options.
+        :param page: int, Optional - The page of options to return, starting from 1.
+        :param limit: int, Optional - The maximum number of results to return. If empty, return all results.
+        :param sort: bool, Optional - Flag to sort options by their names.
+        :param use_all_contexts: bool, Optional - Flag to fetch all options regardless of context, project IDs, or issue type IDs.
+        """
+        url = self.resource_url(
+            f"customFields/{field_id}/options",
+            api_version=2,
+        )
+        params: dict = {}
+        if project_id:
+            if isinstance(project_id, (list, tuple, set)):
+                project_id = ",".join(project_id)
+            params["projectIds"] = project_id
+        if issue_type_id:
+            if isinstance(issue_type_id, (list, tuple, set)):
+                issue_type_id = ",".join(issue_type_id)
+            params["issueTypeIds"] = issue_type_id
+        if query:
+            params["query"] = query
+        if page is not None:
+            params["page"] = page
+        if limit is not None:
+            params["maxResults"] = limit
+        if sort is not None:
+            params["sortByOptionName"] = sort
+        if use_all_contexts is not None:
+            params["useAllContexts"] = use_all_contexts
+        return self.get(url, params=params)
+
     def get_custom_fields(self, search: Optional[str] = None, start: int = 1, limit: int = 50) -> T_resp_json:
         """
         Get custom fields. Evaluated on 7.12
@@ -3909,6 +3963,60 @@ class Jira(AtlassianRestAPI):
         base_url = self.resource_url("priority")
         url = f"{base_url}/{priority_id}"
         return self.get(url)
+
+    def get_autocomplete_data(self) -> T_resp_json:
+        """
+        Returns full information about visible fields that can be autocompleted in JQL.
+
+        Available in Jira Data Center, Jira Cloud v2, Jira Cloud v3.
+
+        Reference: https://developer.atlassian.com/server/jira/platform/rest/v11003/api-group-jql/#api-api-2-jql-autocompletedata-get
+                   https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-jql/#api-rest-api-2-jql-autocompletedata-get
+        :return:
+        """
+        url = self.resource_url("jql/autocompletedata")
+        return self.get(url)
+
+    def get_autocomplete_suggestion(
+        self,
+        field_name: Optional[str] = None,
+        field_value: Optional[str] = None,
+        predicate_name: Optional[str] = None,
+        predicate_value: Optional[str] = None,
+    ) -> T_resp_json:
+        """
+        Returns auto complete suggestions for JQL search.
+
+        Suggestions can be obtained by providing:
+
+            `fieldName` to get a list of all values for the field.
+            `fieldName` and `fieldValue` to get a list of values containing the text in `fieldValue`.
+            `fieldName` and `predicateName` to get a list of all predicate values for the field.
+            `fieldName`, `predicateName`, and `predicateValue` to get a list of predicate values containing the text in `predicateValue`.
+
+        Although auto complete suggestion can be used to retrieve possible option for a field,
+        it may be more appropriate to use `get_custom_field_options()` method to get project-specific options for a field.
+
+        Reference: https://developer.atlassian.com/server/jira/platform/rest/v11003/api-group-jql/#api-api-2-jql-autocompletedata-suggestions-get
+                   https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-jql/#api-rest-api-2-jql-autocompletedata-suggestions-get
+
+        :param field_name: str, Optional - The field name for which the suggestions are generated.
+        :param field_value: str, Optional - The portion of the field value that has already been provided by the user.
+        :param predicate_name: str, Optional - The predicate for which the suggestions are generated. Suggestions are generated only for: "by", "from" and "to".
+        :param predicate_value: str, Optional - The portion of the predicate value that has already been provided by the user.
+        :return:
+        """
+        url = self.resource_url("jql/autocompletedata/suggestions")
+        params: dict = {}
+        if field_name:
+            params["fieldName"] = field_name
+        if field_value:
+            params["fieldValue"] = field_value
+        if predicate_name:
+            params["predicateName"] = predicate_name
+        if predicate_value:
+            params["predicateValue"] = predicate_value
+        return self.get(url, params=params)
 
     """
     Workflow
