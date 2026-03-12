@@ -366,9 +366,16 @@ class Jira(AtlassianRestAPI):
         :param attachment_id: int
         :return: content as bytes
         """
-        base_url = self.resource_url("attachment")
-        url = f"{base_url}/content/{attachment_id}"
-        return self.get(url, not_json_response=True)
+        attachment_info = self.get_attachment(attachment_id)
+        if attachment_info is None:
+            return b""
+        url = attachment_info["content"]
+        return self.get(
+            url,
+            not_json_response=True,
+            absolute=True,
+            headers={"Accept": "*/*"},
+        )
 
     def remove_attachment(self, attachment_id: T_id) -> T_resp_json:
         """
