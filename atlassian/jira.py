@@ -239,7 +239,7 @@ class Jira(AtlassianRestAPI):
         :param issue: str : jira issue key
         :return: list of integers attachment IDs
         """
-        issue_id = self.get_issue(issue)["fields"]["attachment"]
+        issue_id = self.get_issue(issue, fields="attachment")["fields"]["attachment"]
         list_attachments_id = []
         for attachment in issue_id:
             list_attachments_id.append({"filename": attachment["filename"], "attachment_id": attachment["id"]})
@@ -1895,7 +1895,7 @@ class Jira(AtlassianRestAPI):
         list: A list of matches.
         """
         regex_output = []
-        issue_output = self.get_issue(issue)
+        issue_output = self.get_issue(issue, fields="description,comment")
         description = issue_output["fields"]["description"]
         comments = issue_output["fields"]["comment"]["comments"]
 
@@ -1965,7 +1965,7 @@ class Jira(AtlassianRestAPI):
         # Check the recursion depth. In case of any bugs that would result in infinite recursion, this will prevent the function from crashing your app. Python default for REcursionError  is 1000
         if depth > 150:
             raise Exception("Recursion depth exceeded")
-        issue = self.get_issue(issue_key)
+        issue = self.get_issue(issue_key, fields="issuelinks,subtasks")
         issue_links = issue["fields"]["issuelinks"]
         subtasks = issue["fields"]["subtasks"]
         for issue_link in issue_links:
@@ -2118,7 +2118,7 @@ class Jira(AtlassianRestAPI):
 
     def get_issue_status_changelog(self, issue_id: T_id):
         # Get the issue details with changelog
-        response_get_issue = self.get_issue(issue_id, expand="changelog")
+        response_get_issue = self.get_issue(issue_id, fields="id", expand="changelog")
         status_change_history = []
         for history in response_get_issue["changelog"]["histories"]:
             for item in history["items"]:
