@@ -28,6 +28,14 @@ class Cloud(ConfluenceCloudBase):
         """Get content by type (page, blogpost, etc.)."""
         return self.get("content", params={"type": content_type, **kwargs})
 
+    def get_all_pages_from_space(self, space_key, **kwargs):
+        """Get all pages from space."""
+        return self._get_paged("content", params={"spaceKey": space_key, "type": "page", **kwargs})
+
+    def get_all_blog_posts_from_space(self, space_key, **kwargs):
+        """Get all blog posts from space."""
+        return self._get_paged("content", params={"spaceKey": space_key, "type": "blogpost", **kwargs})
+
     def create_content(self, data, **kwargs):
         """Create new content."""
         return self.post("content", data=data, **kwargs)

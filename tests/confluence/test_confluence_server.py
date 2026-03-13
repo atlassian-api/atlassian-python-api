@@ -125,16 +125,93 @@ class TestConfluenceServer:
         """Test get_all_pages_from_space method."""
         mock_get.return_value = {"results": [{"id": "123", "title": "Page in Space"}]}
         result = confluence_server.get_all_pages_from_space("TEST")
-        mock_get.assert_called_once_with("content", params={"spaceKey": "TEST", "type": "page", **{}})
-        assert result == {"results": [{"id": "123", "title": "Page in Space"}]}
+        assert list(result) == [{"id": "123", "title": "Page in Space"}]
+        mock_get.assert_called_once_with(
+            "content",
+            params={"spaceKey": "TEST", "type": "page", **{}},
+            trailing=None,
+            data=None,
+            flags=None,
+            absolute=False,
+        )
+
+    # Pagination Tests for _get_paged (fix for issue #1598)
+    @patch.object(ConfluenceServer, "get")
+    def test_pagination_with_next_link_as_string(self, mock_get, confluence_server):
+        """Test multi-page pagination when _links.next is a string URL."""
+        mock_get.side_effect = [
+            {
+                "results": [{"id": "1", "title": "Page 1"}],
+                "_links": {"next": "https://test.confluence.com/rest/api/1.0/content?start=1"},
+            },
+            {
+                "results": [{"id": "2", "title": "Page 2"}],
+            },
+        ]
+        result = list(confluence_server.get_all_pages_from_space("TEST"))
+        assert result == [{"id": "1", "title": "Page 1"}, {"id": "2", "title": "Page 2"}]
+        assert mock_get.call_count == 2
+
+    @patch.object(ConfluenceServer, "get")
+    def test_pagination_with_next_link_as_dict(self, mock_get, confluence_server):
+        """Test multi-page pagination when _links.next is a dict with href."""
+        mock_get.side_effect = [
+            {
+                "results": [{"id": "1", "title": "Page 1"}],
+                "_links": {"next": {"href": "https://test.confluence.com/rest/api/1.0/content?start=1"}},
+            },
+            {
+                "results": [{"id": "2", "title": "Page 2"}],
+            },
+        ]
+        result = list(confluence_server.get_all_pages_from_space("TEST"))
+        assert result == [{"id": "1", "title": "Page 1"}, {"id": "2", "title": "Page 2"}]
+        assert mock_get.call_count == 2
+
+    @patch.object(ConfluenceServer, "get")
+    def test_pagination_stops_when_next_link_is_none(self, mock_get, confluence_server):
+        """Test pagination stops when _links.next is explicitly None."""
+        mock_get.return_value = {
+            "results": [{"id": "1", "title": "Page 1"}],
+            "_links": {"next": None},
+        }
+        result = list(confluence_server.get_all_pages_from_space("TEST"))
+        assert result == [{"id": "1", "title": "Page 1"}]
+        assert mock_get.call_count == 1
+
+    @patch.object(ConfluenceServer, "get")
+    def test_pagination_stops_when_next_link_dict_missing_href(self, mock_get, confluence_server):
+        """Test pagination stops when _links.next is a dict without href."""
+        mock_get.return_value = {
+            "results": [{"id": "1", "title": "Page 1"}],
+            "_links": {"next": {}},
+        }
+        result = list(confluence_server.get_all_pages_from_space("TEST"))
+        assert result == [{"id": "1", "title": "Page 1"}]
+        assert mock_get.call_count == 1
+
+    @patch.object(ConfluenceServer, "get")
+    def test_pagination_returns_empty_when_no_results_key(self, mock_get, confluence_server):
+        """Test _get_paged returns immediately when response has no results key."""
+        mock_get.return_value = {"error": "something went wrong"}
+        result = list(confluence_server.get_all_pages_from_space("TEST"))
+        assert result == []
+        assert mock_get.call_count == 1
 
     @patch.object(ConfluenceServer, "get")
     def test_get_all_blog_posts_from_space(self, mock_get, confluence_server):
         """Test get_all_blog_posts_from_space method."""
         mock_get.return_value = {"results": [{"id": "456", "title": "Blog Post in Space"}]}
         result = confluence_server.get_all_blog_posts_from_space("TEST")
-        mock_get.assert_called_once_with("content", params={"spaceKey": "TEST", "type": "blogpost", **{}})
-        assert result == {"results": [{"id": "456", "title": "Blog Post in Space"}]}
+        assert list(result) == [{"id": "456", "title": "Blog Post in Space"}]
+        mock_get.assert_called_once_with(
+            "content",
+            params={"spaceKey": "TEST", "type": "blogpost", **{}},
+            trailing=None,
+            data=None,
+            flags=None,
+            absolute=False,
+        )
 
     @patch.object(ConfluenceServer, "get")
     def test_get_page_by_title(self, mock_get, confluence_server):
@@ -391,16 +468,30 @@ class TestConfluenceServer:
         """Test get_all_pages_by_label method."""
         mock_get.return_value = {"results": [{"id": "123", "title": "Page with Label"}]}
         result = confluence_server.get_all_pages_by_label("label1")
-        mock_get.assert_called_once_with("content", params={"label": "label1", "type": "page", **{}})
-        assert result == {"results": [{"id": "123", "title": "Page with Label"}]}
+        assert list(result) == [{"id": "123", "title": "Page with Label"}]
+        mock_get.assert_called_once_with(
+            "content",
+            params={"label": "label1", "type": "page", **{}},
+            trailing=None,
+            data=None,
+            flags=None,
+            absolute=False,
+        )
 
     @patch.object(ConfluenceServer, "get")
     def test_get_all_blog_posts_by_label(self, mock_get, confluence_server):
         """Test get_all_blog_posts_by_label method."""
         mock_get.return_value = {"results": [{"id": "456", "title": "Blog Post with Label"}]}
         result = confluence_server.get_all_blog_posts_by_label("label1")
-        mock_get.assert_called_once_with("content", params={"label": "label1", "type": "blogpost", **{}})
-        assert result == {"results": [{"id": "456", "title": "Blog Post with Label"}]}
+        assert list(result) == [{"id": "456", "title": "Blog Post with Label"}]
+        mock_get.assert_called_once_with(
+            "content",
+            params={"label": "label1", "type": "blogpost", **{}},
+            trailing=None,
+            data=None,
+            flags=None,
+            absolute=False,
+        )
 
     # Attachment Management Tests
     @patch.object(ConfluenceServer, "get")
@@ -587,20 +678,30 @@ class TestConfluenceServer:
         """Test get_all_draft_pages_from_space method."""
         mock_get.return_value = {"results": [{"id": "123", "title": "Draft Page"}]}
         result = confluence_server.get_all_draft_pages_from_space("TEST")
+        assert list(result) == [{"id": "123", "title": "Draft Page"}]
         mock_get.assert_called_once_with(
-            "content", params={"spaceKey": "TEST", "type": "page", "status": "draft", **{}}
+            "content",
+            params={"spaceKey": "TEST", "type": "page", "status": "draft", **{}},
+            trailing=None,
+            data=None,
+            flags=None,
+            absolute=False,
         )
-        assert result == {"results": [{"id": "123", "title": "Draft Page"}]}
 
     @patch.object(ConfluenceServer, "get")
     def test_get_all_draft_blog_posts_from_space(self, mock_get, confluence_server):
         """Test get_all_draft_blog_posts_from_space method."""
         mock_get.return_value = {"results": [{"id": "456", "title": "Draft Blog Post"}]}
         result = confluence_server.get_all_draft_blog_posts_from_space("TEST")
+        assert list(result) == [{"id": "456", "title": "Draft Blog Post"}]
         mock_get.assert_called_once_with(
-            "content", params={"spaceKey": "TEST", "type": "blogpost", "status": "draft", **{}}
+            "content",
+            params={"spaceKey": "TEST", "type": "blogpost", "status": "draft", **{}},
+            trailing=None,
+            data=None,
+            flags=None,
+            absolute=False,
         )
-        assert result == {"results": [{"id": "456", "title": "Draft Blog Post"}]}
 
     # Trash Management Tests
     @patch.object(ConfluenceServer, "get")
@@ -608,28 +709,45 @@ class TestConfluenceServer:
         """Test get_trash_content method."""
         mock_get.return_value = {"results": [{"id": "123", "title": "Trashed Page"}]}
         result = confluence_server.get_trash_content("TEST")
-        mock_get.assert_called_once_with("content", params={"spaceKey": "TEST", "status": "trashed", **{}})
-        assert result == {"results": [{"id": "123", "title": "Trashed Page"}]}
+        assert list(result) == [{"id": "123", "title": "Trashed Page"}]
+        mock_get.assert_called_once_with(
+            "content",
+            params={"spaceKey": "TEST", "status": "trashed", **{}},
+            trailing=None,
+            data=None,
+            flags=None,
+            absolute=False,
+        )
 
     @patch.object(ConfluenceServer, "get")
     def test_get_all_pages_from_space_trash(self, mock_get, confluence_server):
         """Test get_all_pages_from_space_trash method."""
         mock_get.return_value = {"results": [{"id": "123", "title": "Trashed Page"}]}
         result = confluence_server.get_all_pages_from_space_trash("TEST")
+        assert list(result) == [{"id": "123", "title": "Trashed Page"}]
         mock_get.assert_called_once_with(
-            "content", params={"spaceKey": "TEST", "type": "page", "status": "trashed", **{}}
+            "content",
+            params={"spaceKey": "TEST", "type": "page", "status": "trashed", **{}},
+            trailing=None,
+            data=None,
+            flags=None,
+            absolute=False,
         )
-        assert result == {"results": [{"id": "123", "title": "Trashed Page"}]}
 
     @patch.object(ConfluenceServer, "get")
     def test_get_all_blog_posts_from_space_trash(self, mock_get, confluence_server):
         """Test get_all_blog_posts_from_space_trash method."""
         mock_get.return_value = {"results": [{"id": "456", "title": "Trashed Blog Post"}]}
         result = confluence_server.get_all_blog_posts_from_space_trash("TEST")
+        assert list(result) == [{"id": "456", "title": "Trashed Blog Post"}]
         mock_get.assert_called_once_with(
-            "content", params={"spaceKey": "TEST", "type": "blogpost", "status": "trashed", **{}}
+            "content",
+            params={"spaceKey": "TEST", "type": "blogpost", "status": "trashed", **{}},
+            trailing=None,
+            data=None,
+            flags=None,
+            absolute=False,
         )
-        assert result == {"results": [{"id": "456", "title": "Trashed Blog Post"}]}
 
     # Export Tests
     @patch.object(ConfluenceServer, "get")
