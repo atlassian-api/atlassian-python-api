@@ -23,5 +23,3 @@ class ConfluenceServerBase(ConfluenceBase):
         :return: nothing
         """
         super(ConfluenceServerBase, self).__init__(url, *args, **kwargs)
-
-
