@@ -2,6 +2,7 @@
 
 import logging
 import random
+import math
 import time
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
@@ -323,6 +324,10 @@ class AtlassianRestAPI(object):
 
         if delay_seconds is None:
             return None
+
+        if not math.isfinite(delay_seconds):
+            log.debug("Retry-After value is not finite; clamping to max_backoff_seconds")
+            delay_seconds = float(self.max_backoff_seconds)
 
         delay_seconds = max(0.0, delay_seconds)
         if delay_seconds > self.max_backoff_seconds:
