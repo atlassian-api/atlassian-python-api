@@ -403,19 +403,27 @@ class Jira(AtlassianRestAPI):
         try:
             if path is None:
                 path = os.getcwd()
-            issue_id = self.issue(issue, fields="id")["id"]
+            issue_data = self.issue(issue, fields="id,attachment")
+            issue_id = issue_data["id"]
             attachment_name = f"{issue_id}_attachments.zip"
             file_path = os.path.join(path, attachment_name)
             if not overwrite and os.path.isfile(file_path):
                 return file_path
 
-            attachments_metadata = self.get_attachments_ids_from_issue(issue)
+            attachments_metadata = issue_data["fields"]["attachment"]
             if not attachments_metadata:
                 return None
 
             with zipfile.ZipFile(file_path, "w", compression=compression) as file:
                 for meta in attachments_metadata:
-                    file.writestr(meta["filename"], self.get_attachment_content(meta["attachment_id"]))
+                    # stream download should not be used, as writestr expects full content with filename.
+                    content = self.get(
+                        meta["content"],
+                        not_json_response=True,
+                        absolute=True,
+                        headers={"Accept": "*/*"},
+                    )
+                    file.writestr(meta["filename"], content)
 
             return file_path
 
