@@ -579,7 +579,7 @@ class TestConfluenceCloud:
         assert result == [{"id": "1", "title": "Page 1"}, {"id": "2", "title": "Page 2"}]
 
         assert mock_get.call_count == 2
-        
+
         # Verify the second call used scheme+host from self.url (preserving API gateway routing)
         args, kwargs = mock_get.call_args_list[1]
         assert args[0] == "https://test.atlassian.net/rest/api/content?cursor=1"
