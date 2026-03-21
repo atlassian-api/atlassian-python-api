@@ -297,7 +297,9 @@ class Server(ConfluenceServerBase):
 
     def get_all_draft_blog_posts_from_space(self, space_key, **kwargs):
         """Get all draft blog posts from space."""
-        return self._get_paged("content", params={"spaceKey": space_key, "type": "blogpost", "status": "draft", **kwargs})
+        return self._get_paged(
+            "content", params={"spaceKey": space_key, "type": "blogpost", "status": "draft", **kwargs}
+        )
 
     # Trash Management
     def get_trash_content(self, space_key, **kwargs):
@@ -310,7 +312,9 @@ class Server(ConfluenceServerBase):
 
     def get_all_blog_posts_from_space_trash(self, space_key, **kwargs):
         """Get all blog posts from space trash."""
-        return self._get_paged("content", params={"spaceKey": space_key, "type": "blogpost", "status": "trashed", **kwargs})
+        return self._get_paged(
+            "content", params={"spaceKey": space_key, "type": "blogpost", "status": "trashed", **kwargs}
+        )
 
     # Export
     def export_content(self, content_id, **kwargs):
