@@ -56,6 +56,14 @@ class Cloud(ConfluenceCloudBase):
         """Get descendant content."""
         return self.get(f"content/{content_id}/descendants", **kwargs)
 
+    def get_child_pages(self, content_id, **kwargs):
+        """Get child pages of a content item."""
+        return self.get(f"content/{content_id}/child/page", **kwargs)
+
+    def get_descendant_pages(self, content_id, **kwargs):
+        """Get all descendant pages of a content item."""
+        return self.get(f"content/{content_id}/descendant/page", **kwargs)
+
     def get_content_ancestors(self, content_id, **kwargs):
         """Get ancestor content."""
         return self.get(f"content/{content_id}/ancestors", **kwargs)
