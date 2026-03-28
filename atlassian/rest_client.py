@@ -439,6 +439,7 @@ class AtlassianRestAPI(object):
         trailing: Optional[bool] = None,
         absolute: bool = False,
         advanced_mode: bool = False,
+        allow_redirects: bool = True,
     ) -> Response:
         """
 
@@ -492,6 +493,7 @@ class AtlassianRestAPI(object):
                 files=files,
                 proxies=self.proxies,
                 cert=self.cert,
+                allow_redirects=allow_redirects,
             )
             continue_retries = retry_handler(response)
             if continue_retries:

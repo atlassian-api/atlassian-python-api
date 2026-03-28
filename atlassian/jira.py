@@ -4614,7 +4614,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
             params["indexChangeHistory"] = change_history
         if not worklogs:
             params["indexWorklogs"] = worklogs
-        if not indexing_type:
+        if indexing_type:
             params["type"] = indexing_type
         url = self.resource_url("reindex")
         return self.post(url, params=params)
@@ -4642,7 +4642,8 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :return:
         """
         url = self.resource_url("reindex")
-        return self.get(url)
+        response = self.request("GET", path=url, allow_redirects=False)
+        return response.json()
 
     def reindex_project(self, project_key: str) -> T_resp_json:
         return self.post(
@@ -4651,8 +4652,15 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
             headers=self.form_token_headers,
         )
 
-    def reindex_issue(self, list_of_: list) -> None:
-        pass
+    def reindex_issue(self, issue_ids: list) -> T_resp_json:
+        """
+        Reindex specific issues by their IDs.
+        :param issue_ids: list of issue IDs (numeric) to reindex
+        :return:
+        """
+        url = self.resource_url("reindex/issue")
+        params = {"issueId": ",".join(str(i) for i in issue_ids)}
+        return self.post(url, params=params)
 
     def index_checker(self, max_results: int = 100) -> T_resp_json:
         """
