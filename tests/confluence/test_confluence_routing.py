@@ -1,9 +1,7 @@
 # coding=utf-8
 """Tests for legacy Confluence class URL routing."""
 
-from unittest.mock import patch, MagicMock
-
-import pytest
+from unittest.mock import patch
 
 from atlassian.confluence import Confluence, ConfluenceCloud, ConfluenceServer
 
