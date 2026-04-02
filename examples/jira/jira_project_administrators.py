@@ -17,7 +17,9 @@ for data in jira.project_leaders():
                     <td>{project_name}</td>
                     <td>{lead_name}</td>
                     <td><a href="mailto:{lead_email}">{lead_email}</a></td>
-                </tr>""".format(**data)
+                </tr>""".format(
+        **data
+    )
 
 html += "</table>"
 

@@ -1457,6 +1457,40 @@ class Jira(AtlassianRestAPI):
             url = f"{base_url}/{issue_key}?expand=changelog"
             return self._get_response_content(url, fields=[("changelog", params)])
 
+    def get_changelogs_bulk(
+        self,
+        issue_ids_or_keys: List[str],
+        fields_by: Optional[str] = None,
+        next_page_token: Optional[str] = None,
+        max_results: Optional[int] = None,
+    ) -> T_resp_json:
+        """
+        Returns changelogs for multiple issues in bulk.
+        Only Jira Cloud platform.
+
+        Reference: https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-changelog-bulkfetch-post
+
+        :param issue_ids_or_keys: List of issue IDs or keys to fetch changelogs for. Required.
+        :param fields_by: OPTIONAL: Whether to filter changelog entries by field ID or field name.
+                          Valid values: "id", "name".
+        :param next_page_token: OPTIONAL: Token for the next page of results (pagination).
+        :param max_results: OPTIONAL: Maximum number of results to return.
+        :return: Paginated list of changelogs for the given issues.
+        """
+        if not self.cloud:
+            raise ValueError("``get_changelogs_bulk`` method is only available for Jira Cloud platform")
+        url = self.resource_url("changelog/bulkfetch", api_version=3)
+        data: dict = {"issueIdsOrKeys": issue_ids_or_keys}
+        if fields_by is not None:
+            if fields_by not in ("id", "name"):
+                raise ValueError("``fields_by`` must be either 'id' or 'name'")
+            data["fieldsByKeys"] = fields_by == "name"
+        if next_page_token is not None:
+            data["nextPageToken"] = next_page_token
+        if max_results is not None:
+            data["maxResults"] = int(max_results)
+        return self.post(url, data=data)
+
     def issue_add_json_worklog(self, key: str, worklog: Union[dict, str]):
         """
 
