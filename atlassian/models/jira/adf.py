@@ -82,7 +82,7 @@ class ADFBuilder:
         )
         return self
 
-    def bullet_list(self, items: list[str]) -> ADFBuilder:
+    def _list_node(self, list_type: str, items: list[str]) -> ADFBuilder:
         list_items = [
             {
                 "type": "listItem",
@@ -95,24 +95,14 @@ class ADFBuilder:
             }
             for item in items
         ]
-        self._content.append({"type": "bulletList", "content": list_items})
+        self._content.append({"type": list_type, "content": list_items})
         return self
 
+    def bullet_list(self, items: list[str]) -> ADFBuilder:
+        return self._list_node("bulletList", items)
+
     def ordered_list(self, items: list[str]) -> ADFBuilder:
-        list_items = [
-            {
-                "type": "listItem",
-                "content": [
-                    {
-                        "type": "paragraph",
-                        "content": [{"type": "text", "text": item}],
-                    }
-                ],
-            }
-            for item in items
-        ]
-        self._content.append({"type": "orderedList", "content": list_items})
-        return self
+        return self._list_node("orderedList", items)
 
     def code_block(self, code: str, language: Optional[str] = None) -> ADFBuilder:
         node: dict[str, Any] = {

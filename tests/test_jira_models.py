@@ -5,45 +5,50 @@ import re
 
 import pytest
 
-from atlassian.models.jira.adf import ADFBuilder, MentionNode, TextNode
-from atlassian.models.jira.builders import (
-    EpicBuilder,
-    IssueBuilder,
-    SubTaskBuilder,
-    bug,
-    epic,
-    story,
-    subtask,
-    task,
-)
-from atlassian.models.jira.comment import Comment, Visibility
-from atlassian.models.jira.fields import (
+from atlassian.models.jira import (
+    ADFBuilder,
+    Bug,
+    Comment,
     Component,
     CustomField,
+    Epic,
+    EpicBuilder,
+    FieldMapping,
+    IssueBuilder,
     IssueFields,
     IssueLink,
     IssueType,
+    JiraIssue,
+    MentionNode,
     Parent,
     Priority,
     PriorityLevel,
     Project,
-    User,
-    Version,
-)
-from atlassian.models.jira.issues import (
-    Bug,
-    Epic,
-    JiraIssue,
     Story,
     SubTask,
+    SubTaskBuilder,
     Task,
+    TextNode,
+    Transition,
+    TransitionBuilder,
+    UpdateBuilder,
+    UpdatePayload,
+    User,
+    Version,
+    Visibility,
+    bug,
+    bulk_serialize,
+    epic,
     get_issue_type_registry,
     issue_type_for,
+    serialize,
+    story,
+    subtask,
+    task,
+    to_fields_dict,
+    validate,
+    validate_or_raise,
 )
-from atlassian.models.jira.serializer import FieldMapping, bulk_serialize, serialize, to_fields_dict
-from atlassian.models.jira.transition import Transition, TransitionBuilder
-from atlassian.models.jira.update import UpdateBuilder, UpdatePayload
-from atlassian.models.jira.validation import validate, validate_or_raise
 
 
 def test_project_key_only_to_dict():

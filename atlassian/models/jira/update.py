@@ -26,7 +26,8 @@ class UpdateBuilder:  # pylint: disable=too-many-public-methods
     Produces the dict format expected by Jira.issue_update() and
     Jira.update_issue_field().
 
-    Example:
+    Example::
+
         payload = (
             UpdateBuilder("PLAT-123")
             .set_summary("New title")
