@@ -17,10 +17,7 @@ def issue_type_for(name: str) -> type[JiraIssue]:
     try:
         return _ISSUE_TYPE_REGISTRY[name]
     except KeyError:
-        raise ValueError(
-            f"Unknown issue type '{name}'. "
-            f"Registered: {sorted(_ISSUE_TYPE_REGISTRY)}"
-        )
+        raise ValueError(f"Unknown issue type '{name}'. " f"Registered: {sorted(_ISSUE_TYPE_REGISTRY)}")
 
 
 @dataclass
@@ -30,18 +27,21 @@ class JiraIssue:
     fields: IssueFields = field(default_factory=IssueFields)
 
     def __init_subclass__(cls, **kwargs: Any) -> None:
+        """Register subclass in the issue type registry."""
         super().__init_subclass__(**kwargs)
         name = getattr(cls, "_issue_type_name", "")
         if name:
             _ISSUE_TYPE_REGISTRY[name] = cls
 
     def __post_init__(self) -> None:
+        """Stamp issue type from class variable."""
         if self._issue_type_name:
             self.fields.issue_type = IssueType(name=self._issue_type_name)
 
     @classmethod
     def from_dict(cls, data: dict[str, Any], *, mapping: Any = None) -> JiraIssue:
-        """Create a JiraIssue from a Jira REST API response dict.
+        """
+        Create a JiraIssue from a Jira REST API response dict.
 
         If a ``fields`` key is present, extracts fields from it.
         Otherwise treats the dict itself as the fields block.
@@ -64,6 +64,7 @@ class JiraIssue:
         return issue
 
     def __repr__(self) -> str:
+        """Return a concise string representation."""
         parts = [self.__class__.__name__]
         if self.fields.project and self.fields.project.key:
             parts.append(f"project={self.fields.project.key!r}")

@@ -28,11 +28,12 @@ class IssueBuilder(Generic[T]):
     """Fluent, type-safe builder for any JiraIssue subclass."""
 
     def __init__(self, issue_cls: Type[T]) -> None:
+        """Initialize the builder for the given issue class."""
         self._issue_cls = issue_cls
         self._fields = IssueFields()
 
-    def project(self, key: Optional[str] = None, *, id: Optional[str] = None) -> IssueBuilder[T]:
-        self._fields.project = Project(key=key, id=id)
+    def project(self, key: Optional[str] = None, *, id_: Optional[str] = None) -> IssueBuilder[T]:
+        self._fields.project = Project(key=key, id=id_)
         return self
 
     def summary(self, text: str) -> IssueBuilder[T]:
@@ -57,13 +58,13 @@ class IssueBuilder(Generic[T]):
         self,
         name: Optional[str] = None,
         *,
-        id: Optional[str] = None,
+        id_: Optional[str] = None,
         level: Optional[PriorityLevel] = None,
     ) -> IssueBuilder[T]:
         if level is not None:
             self._fields.priority = Priority.from_level(level)
         else:
-            self._fields.priority = Priority(name=name, id=id)
+            self._fields.priority = Priority(name=name, id=id_)
         return self
 
     def labels(self, *labels: str) -> IssueBuilder[T]:
@@ -78,8 +79,8 @@ class IssueBuilder(Generic[T]):
         self._fields.components = [Component(name=n) for n in names]
         return self
 
-    def add_component(self, name: Optional[str] = None, *, id: Optional[str] = None) -> IssueBuilder[T]:
-        self._fields.components.append(Component(name=name, id=id))
+    def add_component(self, name: Optional[str] = None, *, id_: Optional[str] = None) -> IssueBuilder[T]:
+        self._fields.components.append(Component(name=name, id=id_))
         return self
 
     def assignee(self, *, account_id: Optional[str] = None, name: Optional[str] = None) -> IssueBuilder[T]:
@@ -100,16 +101,16 @@ class IssueBuilder(Generic[T]):
         self._fields.fix_versions = [Version(name=n) for n in names]
         return self
 
-    def add_fix_version(self, name: Optional[str] = None, *, id: Optional[str] = None) -> IssueBuilder[T]:
-        self._fields.fix_versions.append(Version(name=name, id=id))
+    def add_fix_version(self, name: Optional[str] = None, *, id_: Optional[str] = None) -> IssueBuilder[T]:
+        self._fields.fix_versions.append(Version(name=name, id=id_))
         return self
 
     def affected_versions(self, *names: str) -> IssueBuilder[T]:
         self._fields.affected_versions = [Version(name=n) for n in names]
         return self
 
-    def parent(self, key: Optional[str] = None, *, id: Optional[str] = None) -> IssueBuilder[T]:
-        self._fields.parent = Parent(key=key, id=id)
+    def parent(self, key: Optional[str] = None, *, id_: Optional[str] = None) -> IssueBuilder[T]:
+        self._fields.parent = Parent(key=key, id=id_)
         return self
 
     def epic_link(self, epic_key: str) -> IssueBuilder[T]:
@@ -127,9 +128,7 @@ class IssueBuilder(Generic[T]):
         outward: Optional[str] = None,
         inward: Optional[str] = None,
     ) -> IssueBuilder[T]:
-        self._fields.issue_links.append(
-            IssueLink(link_type=link_type, outward_issue=outward, inward_issue=inward)
-        )
+        self._fields.issue_links.append(IssueLink(link_type=link_type, outward_issue=outward, inward_issue=inward))
         return self
 
     def custom_field(self, field_id: str, value: Any) -> IssueBuilder[T]:
@@ -137,7 +136,8 @@ class IssueBuilder(Generic[T]):
         return self
 
     def validate(self) -> IssueBuilder[T]:
-        """Validate the current fields and raise ValueError if invalid.
+        """
+        Validate the current fields and raise ValueError if invalid.
 
         Can be chained: task().project("P").summary("S").validate().build()
         """
@@ -170,6 +170,7 @@ class _ADFBridge(Generic[T]):
     """Bridges IssueBuilder into ADFBuilder, returning control on done()."""
 
     def __init__(self, parent: IssueBuilder[T]) -> None:
+        """Initialize the ADF bridge for the given parent builder."""
         self._parent = parent
         self._adf = ADFBuilder()
 
@@ -220,21 +221,25 @@ class _ADFBridge(Generic[T]):
 
 class TaskBuilder(IssueBuilder[Task]):
     def __init__(self) -> None:
+        """Initialize a builder for Task issues."""
         super().__init__(Task)
 
 
 class BugBuilder(IssueBuilder[Bug]):
     def __init__(self) -> None:
+        """Initialize a builder for Bug issues."""
         super().__init__(Bug)
 
 
 class StoryBuilder(IssueBuilder[Story]):
     def __init__(self) -> None:
+        """Initialize a builder for Story issues."""
         super().__init__(Story)
 
 
 class EpicBuilder(IssueBuilder[Epic]):
     def __init__(self) -> None:
+        """Initialize a builder for Epic issues."""
         super().__init__(Epic)
 
     def epic_name(self, name: str) -> EpicBuilder:
@@ -244,6 +249,7 @@ class EpicBuilder(IssueBuilder[Epic]):
 
 class SubTaskBuilder(IssueBuilder[SubTask]):
     def __init__(self) -> None:
+        """Initialize a builder for SubTask issues."""
         super().__init__(SubTask)
 
 

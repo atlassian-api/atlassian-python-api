@@ -197,12 +197,7 @@ def test_adf_heading_invalid_level():
 
 
 def test_adf_bullet_and_ordered_list():
-    doc = (
-        ADFBuilder()
-        .bullet_list(["a", "b"])
-        .ordered_list(["c"])
-        .build()
-    )
+    doc = ADFBuilder().bullet_list(["a", "b"]).ordered_list(["c"]).build()
     assert doc["content"][0]["type"] == "bulletList"
     assert doc["content"][1]["type"] == "orderedList"
     assert len(doc["content"][0]["content"]) == 2
@@ -221,14 +216,7 @@ def test_adf_rule():
 
 
 def test_adf_text_marks():
-    node = (
-        TextNode("hi")
-        .bold()
-        .italic()
-        .code()
-        .link("https://e.example")
-        .strike()
-    )
+    node = TextNode("hi").bold().italic().code().link("https://e.example").strike()
     assert node.to_dict() == {
         "type": "text",
         "text": "hi",
@@ -434,15 +422,7 @@ def test_build_dict_and_build_payload():
 
 
 def test_adf_bridge_description_builder_done():
-    issue = (
-        bug()
-        .project(key="P")
-        .summary("S")
-        .description_builder()
-        .text_paragraph("Hello")
-        .done()
-        .build()
-    )
+    issue = bug().project(key="P").summary("S").description_builder().text_paragraph("Hello").done().build()
     desc = issue.fields.description
     assert isinstance(desc, dict)
     assert desc["type"] == "doc"
@@ -471,13 +451,7 @@ def test_subtask_builder_parent_method():
 
 
 def test_builder_custom_field_in_serialize():
-    payload = (
-        task()
-        .project(key="P")
-        .summary("S")
-        .custom_field("customfield_70000", [1, 2])
-        .build_payload()
-    )
+    payload = task().project(key="P").summary("S").custom_field("customfield_70000", [1, 2]).build_payload()
     assert payload["fields"]["customfield_70000"] == [1, 2]
 
 
@@ -587,12 +561,7 @@ def test_update_builder_set_priority():
 
 
 def test_update_builder_add_and_remove_labels():
-    p = (
-        UpdateBuilder("PLAT-3")
-        .add_labels("a", "b")
-        .remove_label("stale")
-        .build()
-    )
+    p = UpdateBuilder("PLAT-3").add_labels("a", "b").remove_label("stale").build()
     assert p.update["labels"] == [
         {"add": "a"},
         {"add": "b"},
@@ -630,12 +599,7 @@ def test_update_builder_add_issue_link():
 
 
 def test_update_builder_build_dict_format():
-    d = (
-        UpdateBuilder("PLAT-8")
-        .set_summary("S")
-        .add_labels("x")
-        .build_dict()
-    )
+    d = UpdateBuilder("PLAT-8").set_summary("S").add_labels("x").build_dict()
     assert d == {
         "fields": {"summary": "S"},
         "update": {"labels": [{"add": "x"}]},
@@ -668,12 +632,7 @@ def test_transition_as_args():
 
 
 def test_transition_builder_chain():
-    t = (
-        TransitionBuilder("FOO-4", "Done")
-        .resolution("Won't Do")
-        .set_field("timeSpent", "1h")
-        .build()
-    )
+    t = TransitionBuilder("FOO-4", "Done").resolution("Won't Do").set_field("timeSpent", "1h").build()
     assert isinstance(t, Transition)
     assert t.resolution == "Won't Do"
     assert t.fields["resolution"] == {"name": "Won't Do"}
@@ -716,14 +675,7 @@ def test_user_from_dict_cloud_and_server():
 
 
 def test_issue_fields_from_dict_round_trip():
-    issue = (
-        task()
-        .project(key="RT")
-        .summary("Round trip")
-        .priority(level=PriorityLevel.HIGH)
-        .labels("l1", "l2")
-        .build()
-    )
+    issue = task().project(key="RT").summary("Round trip").priority(level=PriorityLevel.HIGH).labels("l1", "l2").build()
     raw_fields = serialize(issue)["fields"]
     parsed = IssueFields.from_dict(raw_fields)
     assert parsed.project == Project(key="RT")

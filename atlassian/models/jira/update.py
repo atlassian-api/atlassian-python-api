@@ -20,12 +20,15 @@ class UpdatePayload:
 
 
 class UpdateBuilder:
-    """Fluent builder for Jira issue update payloads.
+    """
+
+    Fluent builder for Jira issue update payloads.
 
     Produces the dict format expected by Jira.issue_update() and
     Jira.update_issue_field().
 
-    Example:
+    Example
+    -------
         payload = (
             UpdateBuilder("PLAT-123")
             .set_summary("New title")
@@ -36,9 +39,11 @@ class UpdateBuilder:
             .build()
         )
         jira.issue_update(payload.issue_key, payload.fields, update=payload.update)
+
     """
 
     def __init__(self, issue_key: str) -> None:
+        """Initialize the builder for the given issue key."""
         self._issue_key = issue_key
         self._fields: dict[str, Any] = {}
         self._update: dict[str, list[dict[str, Any]]] = {}
@@ -59,19 +64,17 @@ class UpdateBuilder:
         self,
         name: Optional[str] = None,
         *,
-        id: Optional[str] = None,
+        id_: Optional[str] = None,
         level: Optional[PriorityLevel] = None,
     ) -> UpdateBuilder:
         if level is not None:
             p = Priority.from_level(level)
         else:
-            p = Priority(name=name, id=id)
+            p = Priority(name=name, id=id_)
         self._fields["priority"] = p.to_dict()
         return self
 
-    def set_assignee(
-        self, *, account_id: Optional[str] = None, name: Optional[str] = None
-    ) -> UpdateBuilder:
+    def set_assignee(self, *, account_id: Optional[str] = None, name: Optional[str] = None) -> UpdateBuilder:
         self._fields["assignee"] = User(account_id=account_id, name=name).to_dict()
         return self
 
@@ -79,9 +82,7 @@ class UpdateBuilder:
         self._fields["assignee"] = None
         return self
 
-    def set_reporter(
-        self, *, account_id: Optional[str] = None, name: Optional[str] = None
-    ) -> UpdateBuilder:
+    def set_reporter(self, *, account_id: Optional[str] = None, name: Optional[str] = None) -> UpdateBuilder:
         self._fields["reporter"] = User(account_id=account_id, name=name).to_dict()
         return self
 
@@ -101,31 +102,31 @@ class UpdateBuilder:
         self._fields["components"] = [Component(name=n).to_dict() for n in names]
         return self
 
-    def add_component(self, name: Optional[str] = None, *, id: Optional[str] = None) -> UpdateBuilder:
-        return self._add_op("components", "add", Component(name=name, id=id).to_dict())
+    def add_component(self, name: Optional[str] = None, *, id_: Optional[str] = None) -> UpdateBuilder:
+        return self._add_op("components", "add", Component(name=name, id=id_).to_dict())
 
-    def remove_component(self, name: Optional[str] = None, *, id: Optional[str] = None) -> UpdateBuilder:
-        return self._add_op("components", "remove", Component(name=name, id=id).to_dict())
+    def remove_component(self, name: Optional[str] = None, *, id_: Optional[str] = None) -> UpdateBuilder:
+        return self._add_op("components", "remove", Component(name=name, id=id_).to_dict())
 
     def set_fix_versions(self, *names: str) -> UpdateBuilder:
         self._fields["fixVersions"] = [Version(name=n).to_dict() for n in names]
         return self
 
-    def add_fix_version(self, name: Optional[str] = None, *, id: Optional[str] = None) -> UpdateBuilder:
-        return self._add_op("fixVersions", "add", Version(name=name, id=id).to_dict())
+    def add_fix_version(self, name: Optional[str] = None, *, id_: Optional[str] = None) -> UpdateBuilder:
+        return self._add_op("fixVersions", "add", Version(name=name, id=id_).to_dict())
 
-    def remove_fix_version(self, name: Optional[str] = None, *, id: Optional[str] = None) -> UpdateBuilder:
-        return self._add_op("fixVersions", "remove", Version(name=name, id=id).to_dict())
+    def remove_fix_version(self, name: Optional[str] = None, *, id_: Optional[str] = None) -> UpdateBuilder:
+        return self._add_op("fixVersions", "remove", Version(name=name, id=id_).to_dict())
 
     def set_affected_versions(self, *names: str) -> UpdateBuilder:
         self._fields["versions"] = [Version(name=n).to_dict() for n in names]
         return self
 
-    def add_affected_version(self, name: Optional[str] = None, *, id: Optional[str] = None) -> UpdateBuilder:
-        return self._add_op("versions", "add", Version(name=name, id=id).to_dict())
+    def add_affected_version(self, name: Optional[str] = None, *, id_: Optional[str] = None) -> UpdateBuilder:
+        return self._add_op("versions", "add", Version(name=name, id=id_).to_dict())
 
-    def remove_affected_version(self, name: Optional[str] = None, *, id: Optional[str] = None) -> UpdateBuilder:
-        return self._add_op("versions", "remove", Version(name=name, id=id).to_dict())
+    def remove_affected_version(self, name: Optional[str] = None, *, id_: Optional[str] = None) -> UpdateBuilder:
+        return self._add_op("versions", "remove", Version(name=name, id=id_).to_dict())
 
     def set_due_date(self, date: str) -> UpdateBuilder:
         self._fields["duedate"] = date

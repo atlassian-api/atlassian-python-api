@@ -6,10 +6,12 @@ from typing import Any, Optional
 
 @dataclass
 class Transition:
-    """Represents a Jira issue status transition.
+    """
+    Represents a Jira issue status transition.
 
     Used with Jira.set_issue_status(issue_key, status_name, fields=..., update=...).
     """
+
     issue_key: str
     status: str
     fields: dict[str, Any] = field(default_factory=dict)
@@ -17,6 +19,7 @@ class Transition:
     resolution: Optional[str] = None
 
     def __post_init__(self) -> None:
+        """Validate required fields and apply resolution."""
         if not self.issue_key:
             raise ValueError("Transition requires an 'issue_key'")
         if not self.status:
@@ -25,7 +28,8 @@ class Transition:
             self.fields["resolution"] = {"name": self.resolution}
 
     def as_args(self) -> dict[str, Any]:
-        """Return keyword arguments for Jira.set_issue_status().
+        """
+        Return keyword arguments for Jira.set_issue_status().
 
         Usage:
             t = Transition("PLAT-123", "Done", resolution="Fixed")
@@ -46,6 +50,7 @@ class TransitionBuilder:
     """Fluent builder for issue transitions."""
 
     def __init__(self, issue_key: str, status: str) -> None:
+        """Initialize the builder with issue key and target status."""
         self._issue_key = issue_key
         self._status = status
         self._fields: dict[str, Any] = {}

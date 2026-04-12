@@ -202,8 +202,50 @@ class IssueFields:
     custom_fields: list[CustomField] = field(default_factory=list)
 
     @classmethod
+    def _parse_entity_fields(cls, fields, data, mapping):
+        if "project" in data and data["project"]:
+            fields.project = Project.from_dict(data["project"])
+        if "issuetype" in data and data["issuetype"]:
+            fields.issue_type = IssueType.from_dict(data["issuetype"])
+        if "priority" in data and data["priority"]:
+            fields.priority = Priority.from_dict(data["priority"])
+        if "assignee" in data and data["assignee"]:
+            fields.assignee = User.from_dict(data["assignee"])
+        if "reporter" in data and data["reporter"]:
+            fields.reporter = User.from_dict(data["reporter"])
+        if "parent" in data and data["parent"]:
+            fields.parent = Parent.from_dict(data["parent"])
+
+    @classmethod
+    def _parse_collection_fields(cls, fields, data):
+        if "summary" in data:
+            fields.summary = data["summary"]
+        if "description" in data:
+            fields.description = data["description"]
+        if "labels" in data:
+            fields.labels = list(data["labels"])
+        if "components" in data:
+            fields.components = [Component.from_dict(c) for c in data["components"]]
+        if "fixVersions" in data:
+            fields.fix_versions = [Version.from_dict(v) for v in data["fixVersions"]]
+        if "versions" in data:
+            fields.affected_versions = [Version.from_dict(v) for v in data["versions"]]
+        if "duedate" in data and data["duedate"]:
+            fields.due_date = datetime.date.fromisoformat(data["duedate"])
+
+    @classmethod
+    def _parse_custom_mapped_fields(cls, fields, data, mapping):
+        if mapping.epic_link_field in data:
+            fields.epic_link = data[mapping.epic_link_field]
+        if mapping.epic_name_field in data:
+            fields.epic_name = data[mapping.epic_name_field]
+        if mapping.story_points_field in data and data[mapping.story_points_field] is not None:
+            fields.story_points = data[mapping.story_points_field]
+
+    @classmethod
     def from_dict(cls, data: dict[str, Any], *, mapping: Optional[Any] = None) -> IssueFields:
-        """Parse a Jira REST API fields dict into an IssueFields instance.
+        """
+        Parse a Jira REST API fields dict into an IssueFields instance.
 
         Handles the standard Jira field keys (issuetype, fixVersions, etc.)
         and maps them back to Python attribute names.
@@ -218,36 +260,7 @@ class IssueFields:
             mapping = FieldMapping()
 
         fields = cls()
-        if "project" in data and data["project"]:
-            fields.project = Project.from_dict(data["project"])
-        if "issuetype" in data and data["issuetype"]:
-            fields.issue_type = IssueType.from_dict(data["issuetype"])
-        if "summary" in data:
-            fields.summary = data["summary"]
-        if "description" in data:
-            fields.description = data["description"]
-        if "priority" in data and data["priority"]:
-            fields.priority = Priority.from_dict(data["priority"])
-        if "labels" in data:
-            fields.labels = list(data["labels"])
-        if "components" in data:
-            fields.components = [Component.from_dict(c) for c in data["components"]]
-        if "assignee" in data and data["assignee"]:
-            fields.assignee = User.from_dict(data["assignee"])
-        if "reporter" in data and data["reporter"]:
-            fields.reporter = User.from_dict(data["reporter"])
-        if "parent" in data and data["parent"]:
-            fields.parent = Parent.from_dict(data["parent"])
-        if "fixVersions" in data:
-            fields.fix_versions = [Version.from_dict(v) for v in data["fixVersions"]]
-        if "versions" in data:
-            fields.affected_versions = [Version.from_dict(v) for v in data["versions"]]
-        if "duedate" in data and data["duedate"]:
-            fields.due_date = datetime.date.fromisoformat(data["duedate"])
-        if mapping.epic_link_field in data:
-            fields.epic_link = data[mapping.epic_link_field]
-        if mapping.epic_name_field in data:
-            fields.epic_name = data[mapping.epic_name_field]
-        if mapping.story_points_field in data and data[mapping.story_points_field] is not None:
-            fields.story_points = data[mapping.story_points_field]
+        cls._parse_entity_fields(fields, data, mapping)
+        cls._parse_collection_fields(fields, data)
+        cls._parse_custom_mapped_fields(fields, data, mapping)
         return fields

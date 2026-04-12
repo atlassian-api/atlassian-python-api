@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """Type-safe Jira issue models with fluent builders.
 
 Quick start:
@@ -14,6 +12,8 @@ Quick start:
     )
     jira.issue_create(fields=serialize(issue)["fields"])
 """
+
+from __future__ import annotations
 
 from atlassian.models.jira.adf import ADFBuilder, InlineNode, MentionNode, TextNode
 from atlassian.models.jira.builders import (

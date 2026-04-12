@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import datetime
 from dataclasses import dataclass
-from typing import Any
 
 from atlassian.models.jira.issues import JiraIssue, SubTask
 
@@ -39,10 +38,12 @@ def validate(issue: JiraIssue) -> list[ValidationError]:
 
     if f.description and isinstance(f.description, dict):
         if f.description.get("type") != "doc" or f.description.get("version") != 1:
-            errors.append(ValidationError(
-                "description",
-                "ADF description must have type='doc' and version=1",
-            ))
+            errors.append(
+                ValidationError(
+                    "description",
+                    "ADF description must have type='doc' and version=1",
+                )
+            )
 
     return errors
 

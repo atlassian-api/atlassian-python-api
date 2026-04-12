@@ -55,13 +55,16 @@ class ADFBuilder:
     """Fluent builder that produces an Atlassian Document Format dict."""
 
     def __init__(self) -> None:
+        """Initialize an empty ADF document builder."""
         self._content: list[dict[str, Any]] = []
 
     def paragraph(self, *nodes: InlineNode) -> ADFBuilder:
-        self._content.append({
-            "type": "paragraph",
-            "content": [n.to_dict() for n in nodes],
-        })
+        self._content.append(
+            {
+                "type": "paragraph",
+                "content": [n.to_dict() for n in nodes],
+            }
+        )
         return self
 
     def text_paragraph(self, text: str) -> ADFBuilder:
@@ -70,21 +73,25 @@ class ADFBuilder:
     def heading(self, text: str, level: int = 1) -> ADFBuilder:
         if level not in range(1, 7):
             raise ValueError(f"Heading level must be 1-6, got {level}")
-        self._content.append({
-            "type": "heading",
-            "attrs": {"level": level},
-            "content": [{"type": "text", "text": text}],
-        })
+        self._content.append(
+            {
+                "type": "heading",
+                "attrs": {"level": level},
+                "content": [{"type": "text", "text": text}],
+            }
+        )
         return self
 
     def bullet_list(self, items: list[str]) -> ADFBuilder:
         list_items = [
             {
                 "type": "listItem",
-                "content": [{
-                    "type": "paragraph",
-                    "content": [{"type": "text", "text": item}],
-                }],
+                "content": [
+                    {
+                        "type": "paragraph",
+                        "content": [{"type": "text", "text": item}],
+                    }
+                ],
             }
             for item in items
         ]
@@ -95,10 +102,12 @@ class ADFBuilder:
         list_items = [
             {
                 "type": "listItem",
-                "content": [{
-                    "type": "paragraph",
-                    "content": [{"type": "text", "text": item}],
-                }],
+                "content": [
+                    {
+                        "type": "paragraph",
+                        "content": [{"type": "text", "text": item}],
+                    }
+                ],
             }
             for item in items
         ]
@@ -120,13 +129,17 @@ class ADFBuilder:
         return self
 
     def blockquote(self, *nodes: InlineNode) -> ADFBuilder:
-        self._content.append({
-            "type": "blockquote",
-            "content": [{
-                "type": "paragraph",
-                "content": [n.to_dict() for n in nodes],
-            }],
-        })
+        self._content.append(
+            {
+                "type": "blockquote",
+                "content": [
+                    {
+                        "type": "paragraph",
+                        "content": [n.to_dict() for n in nodes],
+                    }
+                ],
+            }
+        )
         return self
 
     def table(self, headers: list[str], rows: list[list[str]]) -> ADFBuilder:
@@ -153,11 +166,13 @@ class ADFBuilder:
             }
             for row in rows
         ]
-        self._content.append({
-            "type": "table",
-            "attrs": {"isNumberColumnEnabled": False, "layout": "default"},
-            "content": [header_row] + data_rows,
-        })
+        self._content.append(
+            {
+                "type": "table",
+                "attrs": {"isNumberColumnEnabled": False, "layout": "default"},
+                "content": [header_row] + data_rows,
+            }
+        )
         return self
 
     def raw_node(self, node: dict[str, Any]) -> ADFBuilder:
