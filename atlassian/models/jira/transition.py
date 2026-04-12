@@ -29,7 +29,8 @@ class Transition:
     def as_args(self) -> dict[str, Any]:
         """Return keyword arguments for Jira.set_issue_status().
 
-        Usage:
+        Usage::
+
             t = Transition("PLAT-123", "Done", resolution="Fixed")
             jira.set_issue_status(**t.as_args())
         """

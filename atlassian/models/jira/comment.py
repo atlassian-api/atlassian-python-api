@@ -41,7 +41,8 @@ class Comment:
     def as_args(self) -> dict[str, Any]:
         """Return keyword arguments for Jira.issue_add_comment().
 
-        Usage:
+        Usage::
+
             c = Comment("Fixed in PR #42", visibility=Visibility("role", "Developers"))
             jira.issue_add_comment("PLAT-123", **c.as_args())
         """
