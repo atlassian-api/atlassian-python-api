@@ -24,7 +24,7 @@ from atlassian.models.jira.validation import validate_or_raise
 T = TypeVar("T", bound=JiraIssue)
 
 
-class IssueBuilder(Generic[T]):
+class IssueBuilder(Generic[T]):  # pylint: disable=too-many-public-methods
     """Fluent, type-safe builder for any JiraIssue subclass."""
 
     def __init__(self, issue_cls: Type[T]) -> None:
@@ -136,8 +136,7 @@ class IssueBuilder(Generic[T]):
         return self
 
     def validate(self) -> IssueBuilder[T]:
-        """
-        Validate the current fields and raise ValueError if invalid.
+        """Validate the current fields and raise ValueError if invalid.
 
         Can be chained: task().project("P").summary("S").validate().build()
         """

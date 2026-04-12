@@ -9,8 +9,7 @@ from atlassian.models.jira.issues import JiraIssue
 
 @dataclass
 class FieldMapping:
-    """
-    Maps well-known model fields to instance-specific Jira custom field IDs.
+    """Maps well-known model fields to instance-specific Jira custom field IDs.
 
     Different Jira instances use different custom field IDs for concepts like
     epic link or story points. Override the defaults here.
@@ -68,8 +67,7 @@ def _ser_custom_and_mapped_fields(f: IssueFields, fields: dict[str, Any], mappin
 
 
 def _ser_issue_links(links: list[IssueLink]) -> list[dict[str, Any]]:
-    """
-    Produce the update payload for issue links.
+    """Produce the update payload for issue links.
 
     Issue links go into the `update.issuelinks` block as "add" operations,
     not into the top-level `fields` dict.
@@ -90,8 +88,7 @@ def serialize(
     *,
     mapping: Optional[FieldMapping] = None,
 ) -> dict[str, Any]:
-    """
-    Convert a JiraIssue into the dict that Jira.create_issue() expects.
+    """Convert a JiraIssue into the dict that Jira.create_issue() expects.
 
     Returns a dict with top-level keys "fields" and optionally "update".
     """
@@ -121,8 +118,7 @@ def to_fields_dict(
     *,
     mapping: Optional[FieldMapping] = None,
 ) -> dict[str, Any]:
-    """
-    Convenience: returns only the inner fields dict.
+    """Return only the inner fields dict for jira.issue_create(fields=...).
 
     Use with jira.issue_create(fields=to_fields_dict(issue)).
     """
@@ -134,8 +130,7 @@ def bulk_serialize(
     *,
     mapping: Optional[FieldMapping] = None,
 ) -> list[dict[str, Any]]:
-    """
-    Serialize a list of issues for Jira.create_issues() bulk endpoint.
+    """Serialize a list of issues for Jira.create_issues() bulk endpoint.
 
     Returns a list of dicts, each with "fields" and optionally "update" keys,
     matching the format expected by POST /rest/api/2/issue/bulk.
