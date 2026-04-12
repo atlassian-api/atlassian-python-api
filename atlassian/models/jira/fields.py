@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Optional, Union
+from typing import Any, ClassVar, Optional, TypeVar, Union
 
 
 class PriorityLevel(Enum):
@@ -14,14 +14,47 @@ class PriorityLevel(Enum):
     LOWEST = "Lowest"
 
 
+_NI = TypeVar("_NI", bound="_NameIdEntity")
+_KI = TypeVar("_KI", bound="_KeyIdEntity")
+
+
 @dataclass(frozen=True)
-class Project:
+class _NameIdEntity:
+    """Base for frozen entities resolved by name or id."""
+
+    name: Optional[str] = None
+    id: Optional[str] = None
+
+    _entity_label: ClassVar[str] = "Entity"
+
+    def __post_init__(self) -> None:
+        """Validate that at least one identifier is provided."""
+        if not self.name and not self.id:
+            raise ValueError(f"{self._entity_label} requires either 'name' or 'id'")
+
+    def to_dict(self) -> dict[str, Any]:
+        if self.name:
+            return {"name": self.name}
+        return {"id": self.id}
+
+    @classmethod
+    def from_dict(cls: type[_NI], data: dict[str, Any]) -> _NI:
+        return cls(name=data.get("name"), id=data.get("id"))
+
+
+@dataclass(frozen=True)
+class _KeyIdEntity:
+    """Base for frozen entities resolved by key or id."""
+
     key: Optional[str] = None
     id: Optional[str] = None
 
+    _entity_label: ClassVar[str] = "Entity"
+
     def __post_init__(self) -> None:
+        """Validate that at least one identifier is provided."""
         if not self.key and not self.id:
-            raise ValueError("Project requires either 'key' or 'id'")
+            raise ValueError(f"{self._entity_label} requires either 'key' or 'id'")
 
     def to_dict(self) -> dict[str, Any]:
         if self.key:
@@ -29,50 +62,27 @@ class Project:
         return {"id": self.id}
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> Project:
+    def from_dict(cls: type[_KI], data: dict[str, Any]) -> _KI:
         return cls(key=data.get("key"), id=data.get("id"))
 
 
 @dataclass(frozen=True)
-class IssueType:
-    name: Optional[str] = None
-    id: Optional[str] = None
-
-    def __post_init__(self) -> None:
-        if not self.name and not self.id:
-            raise ValueError("IssueType requires either 'name' or 'id'")
-
-    def to_dict(self) -> dict[str, Any]:
-        if self.name:
-            return {"name": self.name}
-        return {"id": self.id}
-
-    @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> IssueType:
-        return cls(name=data.get("name"), id=data.get("id"))
+class Project(_KeyIdEntity):
+    _entity_label: ClassVar[str] = "Project"
 
 
 @dataclass(frozen=True)
-class Priority:
-    name: Optional[str] = None
-    id: Optional[str] = None
+class IssueType(_NameIdEntity):
+    _entity_label: ClassVar[str] = "IssueType"
 
-    def __post_init__(self) -> None:
-        if not self.name and not self.id:
-            raise ValueError("Priority requires either 'name' or 'id'")
+
+@dataclass(frozen=True)
+class Priority(_NameIdEntity):
+    _entity_label: ClassVar[str] = "Priority"
 
     @classmethod
     def from_level(cls, level: PriorityLevel) -> Priority:
         return cls(name=level.value)
-
-    def to_dict(self) -> dict[str, Any]:
-        if self.name:
-            return {"name": self.name}
-        return {"id": self.id}
-
-    @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> Priority:
-        return cls(name=data.get("name"), id=data.get("id"))
 
 
 @dataclass(frozen=True)
@@ -81,6 +91,7 @@ class User:
     name: Optional[str] = None
 
     def __post_init__(self) -> None:
+        """Validate that at least one identifier is provided."""
         if not self.account_id and not self.name:
             raise ValueError("User requires either 'account_id' (Cloud) or 'name' (Server)")
 
@@ -95,60 +106,18 @@ class User:
 
 
 @dataclass(frozen=True)
-class Component:
-    name: Optional[str] = None
-    id: Optional[str] = None
-
-    def __post_init__(self) -> None:
-        if not self.name and not self.id:
-            raise ValueError("Component requires either 'name' or 'id'")
-
-    def to_dict(self) -> dict[str, Any]:
-        if self.name:
-            return {"name": self.name}
-        return {"id": self.id}
-
-    @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> Component:
-        return cls(name=data.get("name"), id=data.get("id"))
+class Component(_NameIdEntity):
+    _entity_label: ClassVar[str] = "Component"
 
 
 @dataclass(frozen=True)
-class Version:
-    name: Optional[str] = None
-    id: Optional[str] = None
-
-    def __post_init__(self) -> None:
-        if not self.name and not self.id:
-            raise ValueError("Version requires either 'name' or 'id'")
-
-    def to_dict(self) -> dict[str, Any]:
-        if self.name:
-            return {"name": self.name}
-        return {"id": self.id}
-
-    @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> Version:
-        return cls(name=data.get("name"), id=data.get("id"))
+class Version(_NameIdEntity):
+    _entity_label: ClassVar[str] = "Version"
 
 
 @dataclass(frozen=True)
-class Parent:
-    key: Optional[str] = None
-    id: Optional[str] = None
-
-    def __post_init__(self) -> None:
-        if not self.key and not self.id:
-            raise ValueError("Parent requires either 'key' or 'id'")
-
-    def to_dict(self) -> dict[str, Any]:
-        if self.key:
-            return {"key": self.key}
-        return {"id": self.id}
-
-    @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> Parent:
-        return cls(key=data.get("key"), id=data.get("id"))
+class Parent(_KeyIdEntity):
+    _entity_label: ClassVar[str] = "Parent"
 
 
 @dataclass(frozen=True)
@@ -158,6 +127,7 @@ class IssueLink:
     inward_issue: Optional[str] = None
 
     def __post_init__(self) -> None:
+        """Validate that at least one linked issue is provided."""
         if not self.outward_issue and not self.inward_issue:
             raise ValueError("IssueLink requires either 'outward_issue' or 'inward_issue'")
 
@@ -176,12 +146,13 @@ class CustomField:
     value: Any
 
     def __post_init__(self) -> None:
+        """Validate that field_id is not empty."""
         if not self.field_id:
             raise ValueError("CustomField requires a 'field_id'")
 
 
 @dataclass
-class IssueFields:
+class IssueFields:  # pylint: disable=too-many-instance-attributes
     project: Optional[Project] = None
     issue_type: Optional[IssueType] = None
     summary: Optional[str] = None
@@ -244,8 +215,7 @@ class IssueFields:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any], *, mapping: Optional[Any] = None) -> IssueFields:
-        """
-        Parse a Jira REST API fields dict into an IssueFields instance.
+        """Parse a Jira REST API fields dict into an IssueFields instance.
 
         Handles the standard Jira field keys (issuetype, fixVersions, etc.)
         and maps them back to Python attribute names.
@@ -254,7 +224,7 @@ class IssueFields:
         ``issue_links`` are not reconstructed (their schema varies per
         instance). Use ``serialize()`` output for the authoritative format.
         """
-        from atlassian.models.jira.serializer import FieldMapping
+        from atlassian.models.jira.serializer import FieldMapping  # pylint: disable=import-outside-toplevel
 
         if mapping is None:
             mapping = FieldMapping()

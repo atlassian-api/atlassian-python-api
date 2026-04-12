@@ -40,8 +40,7 @@ class JiraIssue:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any], *, mapping: Any = None) -> JiraIssue:
-        """
-        Create a JiraIssue from a Jira REST API response dict.
+        """Create a JiraIssue from a Jira REST API response dict.
 
         If a ``fields`` key is present, extracts fields from it.
         Otherwise treats the dict itself as the fields block.

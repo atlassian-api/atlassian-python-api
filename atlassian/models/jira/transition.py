@@ -6,8 +6,7 @@ from typing import Any, Optional
 
 @dataclass
 class Transition:
-    """
-    Represents a Jira issue status transition.
+    """Represents a Jira issue status transition.
 
     Used with Jira.set_issue_status(issue_key, status_name, fields=..., update=...).
     """
@@ -28,8 +27,7 @@ class Transition:
             self.fields["resolution"] = {"name": self.resolution}
 
     def as_args(self) -> dict[str, Any]:
-        """
-        Return keyword arguments for Jira.set_issue_status().
+        """Return keyword arguments for Jira.set_issue_status().
 
         Usage:
             t = Transition("PLAT-123", "Done", resolution="Fixed")

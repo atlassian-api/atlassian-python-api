@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Optional, Union
+from typing import Any, Optional, Type, Union
 
 from atlassian.models.jira.fields import (
     Component,
@@ -9,6 +9,7 @@ from atlassian.models.jira.fields import (
     PriorityLevel,
     User,
     Version,
+    _NameIdEntity,
 )
 
 
@@ -19,16 +20,13 @@ class UpdatePayload:
     update: dict[str, Any] = field(default_factory=dict)
 
 
-class UpdateBuilder:
-    """
-
-    Fluent builder for Jira issue update payloads.
+class UpdateBuilder:  # pylint: disable=too-many-public-methods
+    """Fluent builder for Jira issue update payloads.
 
     Produces the dict format expected by Jira.issue_update() and
     Jira.update_issue_field().
 
-    Example
-    -------
+    Example:
         payload = (
             UpdateBuilder("PLAT-123")
             .set_summary("New title")
@@ -50,6 +48,15 @@ class UpdateBuilder:
 
     def _add_op(self, field_name: str, operation: str, value: Any) -> UpdateBuilder:
         self._update.setdefault(field_name, []).append({operation: value})
+        return self
+
+    def _entity_op(self, field_name: str, operation: str, entity: _NameIdEntity) -> UpdateBuilder:
+        return self._add_op(field_name, operation, entity.to_dict())
+
+    def _set_entity_list(
+        self, field_name: str, entity_cls: Type[_NameIdEntity], names: tuple[str, ...]
+    ) -> UpdateBuilder:
+        self._fields[field_name] = [entity_cls(name=n).to_dict() for n in names]
         return self
 
     def set_summary(self, text: str) -> UpdateBuilder:
@@ -99,34 +106,31 @@ class UpdateBuilder:
         return self._add_op("labels", "remove", label)
 
     def set_components(self, *names: str) -> UpdateBuilder:
-        self._fields["components"] = [Component(name=n).to_dict() for n in names]
-        return self
+        return self._set_entity_list("components", Component, names)
 
     def add_component(self, name: Optional[str] = None, *, id_: Optional[str] = None) -> UpdateBuilder:
-        return self._add_op("components", "add", Component(name=name, id=id_).to_dict())
+        return self._entity_op("components", "add", Component(name=name, id=id_))
 
     def remove_component(self, name: Optional[str] = None, *, id_: Optional[str] = None) -> UpdateBuilder:
-        return self._add_op("components", "remove", Component(name=name, id=id_).to_dict())
+        return self._entity_op("components", "remove", Component(name=name, id=id_))
 
     def set_fix_versions(self, *names: str) -> UpdateBuilder:
-        self._fields["fixVersions"] = [Version(name=n).to_dict() for n in names]
-        return self
+        return self._set_entity_list("fixVersions", Version, names)
 
     def add_fix_version(self, name: Optional[str] = None, *, id_: Optional[str] = None) -> UpdateBuilder:
-        return self._add_op("fixVersions", "add", Version(name=name, id=id_).to_dict())
+        return self._entity_op("fixVersions", "add", Version(name=name, id=id_))
 
     def remove_fix_version(self, name: Optional[str] = None, *, id_: Optional[str] = None) -> UpdateBuilder:
-        return self._add_op("fixVersions", "remove", Version(name=name, id=id_).to_dict())
+        return self._entity_op("fixVersions", "remove", Version(name=name, id=id_))
 
     def set_affected_versions(self, *names: str) -> UpdateBuilder:
-        self._fields["versions"] = [Version(name=n).to_dict() for n in names]
-        return self
+        return self._set_entity_list("versions", Version, names)
 
     def add_affected_version(self, name: Optional[str] = None, *, id_: Optional[str] = None) -> UpdateBuilder:
-        return self._add_op("versions", "add", Version(name=name, id=id_).to_dict())
+        return self._entity_op("versions", "add", Version(name=name, id=id_))
 
     def remove_affected_version(self, name: Optional[str] = None, *, id_: Optional[str] = None) -> UpdateBuilder:
-        return self._add_op("versions", "remove", Version(name=name, id=id_).to_dict())
+        return self._entity_op("versions", "remove", Version(name=name, id=id_))
 
     def set_due_date(self, date: str) -> UpdateBuilder:
         self._fields["duedate"] = date

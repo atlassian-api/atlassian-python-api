@@ -24,8 +24,7 @@ class Visibility:
 
 @dataclass
 class Comment:
-    """
-    Represents a Jira issue comment.
+    """Represents a Jira issue comment.
 
     Used with Jira.issue_add_comment(issue_key, comment, visibility=...).
     Supports both plain text and ADF body.
@@ -40,8 +39,7 @@ class Comment:
             raise ValueError("Comment requires a 'body'")
 
     def as_args(self) -> dict[str, Any]:
-        """
-        Return keyword arguments for Jira.issue_add_comment().
+        """Return keyword arguments for Jira.issue_add_comment().
 
         Usage:
             c = Comment("Fixed in PR #42", visibility=Visibility("role", "Developers"))
