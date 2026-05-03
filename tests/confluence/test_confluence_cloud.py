@@ -150,52 +150,72 @@ class TestConfluenceCloud:
     # Space Management Tests
     @patch.object(ConfluenceCloud, "get")
     def test_get_spaces(self, mock_get, confluence_cloud):
-        """Test get_spaces method."""
+        """get_spaces calls the v2 plural endpoint /wiki/api/v2/spaces."""
         mock_get.return_value = {"results": [{"id": "TEST", "name": "Test Space"}]}
         result = confluence_cloud.get_spaces()
-        mock_get.assert_called_once_with("space", **{})
+        mock_get.assert_called_once_with("spaces", **{})
         assert result == {"results": [{"id": "TEST", "name": "Test Space"}]}
 
     @patch.object(ConfluenceCloud, "get")
+    def test_get_all_spaces_paginates(self, mock_get, confluence_cloud):
+        """get_all_spaces yields every space across paginated v2 responses."""
+        mock_get.side_effect = [
+            {
+                "results": [{"id": "1", "name": "A"}, {"id": "2", "name": "B"}],
+                "_links": {"next": "/wiki/api/v2/spaces?cursor=NEXT"},
+            },
+            {"results": [{"id": "3", "name": "C"}], "_links": {}},
+        ]
+        result = list(confluence_cloud.get_all_spaces())
+        assert result == [
+            {"id": "1", "name": "A"},
+            {"id": "2", "name": "B"},
+            {"id": "3", "name": "C"},
+        ]
+        # Entry-point URL is the v2 plural path; pagination URL handling is
+        # covered by existing _get_paged tests.
+        assert mock_get.call_args_list[0].args[0] == "spaces"
+
+    @patch.object(ConfluenceCloud, "get")
     def test_get_space(self, mock_get, confluence_cloud):
-        """Test get_space method."""
+        """get_space calls the v2 plural endpoint."""
         mock_get.return_value = {"id": "TEST", "name": "Test Space"}
         result = confluence_cloud.get_space("TEST")
-        mock_get.assert_called_once_with("space/TEST", **{})
+        mock_get.assert_called_once_with("spaces/TEST", **{})
         assert result == {"id": "TEST", "name": "Test Space"}
 
     @patch.object(ConfluenceCloud, "post")
     def test_create_space(self, mock_post, confluence_cloud):
-        """Test create_space method."""
+        """create_space calls the v2 plural endpoint."""
         space_data = {"name": "New Space", "key": "NEW"}
         mock_post.return_value = {"id": "NEW", "name": "New Space", "key": "NEW"}
         result = confluence_cloud.create_space(space_data)
-        mock_post.assert_called_once_with("space", data=space_data, **{})
+        mock_post.assert_called_once_with("spaces", data=space_data, **{})
         assert result == {"id": "NEW", "name": "New Space", "key": "NEW"}
 
     @patch.object(ConfluenceCloud, "put")
     def test_update_space(self, mock_put, confluence_cloud):
-        """Test update_space method."""
+        """update_space calls the v2 plural endpoint."""
         space_data = {"name": "Updated Space"}
         mock_put.return_value = {"id": "TEST", "name": "Updated Space"}
         result = confluence_cloud.update_space("TEST", space_data)
-        mock_put.assert_called_once_with("space/TEST", data=space_data, **{})
+        mock_put.assert_called_once_with("spaces/TEST", data=space_data, **{})
         assert result == {"id": "TEST", "name": "Updated Space"}
 
     @patch.object(ConfluenceCloud, "delete")
     def test_delete_space(self, mock_delete, confluence_cloud):
-        """Test delete_space method."""
+        """delete_space calls the v2 plural endpoint."""
         mock_delete.return_value = {"success": True}
         result = confluence_cloud.delete_space("TEST")
-        mock_delete.assert_called_once_with("space/TEST", **{})
+        mock_delete.assert_called_once_with("spaces/TEST", **{})
         assert result == {"success": True}
 
     @patch.object(ConfluenceCloud, "get")
     def test_get_space_content(self, mock_get, confluence_cloud):
-        """Test get_space_content method."""
+        """get_space_content calls the v2 plural endpoint."""
         mock_get.return_value = {"results": [{"id": "123", "title": "Page in Space"}]}
         result = confluence_cloud.get_space_content("TEST")
-        mock_get.assert_called_once_with("space/TEST/content", **{})
+        mock_get.assert_called_once_with("spaces/TEST/content", **{})
         assert result == {"results": [{"id": "123", "title": "Page in Space"}]}
 
     # User Management Tests

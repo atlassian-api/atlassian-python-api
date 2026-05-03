@@ -70,28 +70,43 @@ class Cloud(ConfluenceCloudBase):
 
     # Space Management
     def get_spaces(self, **kwargs):
-        """Get all spaces."""
-        return self.get("space", **kwargs)
+        """Get all spaces (single page).
+
+        Calls the Confluence Cloud v2 endpoint ``/wiki/api/v2/spaces``.
+        For paginated enumeration of every space, use :meth:`get_all_spaces`.
+        """
+        return self.get("spaces", **kwargs)
+
+    def get_all_spaces(self, **kwargs):
+        """Get all spaces with full pagination.
+
+        Returns a generator yielding each space dict from the Confluence Cloud
+        v2 endpoint ``/wiki/api/v2/spaces``. Replaces the legacy v1
+        ``get_all_spaces`` (which hit ``/rest/api/space``) — that endpoint is
+        not available on the OAuth API gateway and returns
+        ``GoneException: This deprecated endpoint has been removed``.
+        """
+        return self._get_paged("spaces", params=kwargs)
 
     def get_space(self, space_id, **kwargs):
         """Get space by ID."""
-        return self.get(f"space/{space_id}", **kwargs)
+        return self.get(f"spaces/{space_id}", **kwargs)
 
     def create_space(self, data, **kwargs):
         """Create new space."""
-        return self.post("space", data=data, **kwargs)
+        return self.post("spaces", data=data, **kwargs)
 
     def update_space(self, space_id, data, **kwargs):
         """Update existing space."""
-        return self.put(f"space/{space_id}", data=data, **kwargs)
+        return self.put(f"spaces/{space_id}", data=data, **kwargs)
 
     def delete_space(self, space_id, **kwargs):
         """Delete space."""
-        return self.delete(f"space/{space_id}", **kwargs)
+        return self.delete(f"spaces/{space_id}", **kwargs)
 
     def get_space_content(self, space_id, **kwargs):
         """Get space content."""
-        return self.get(f"space/{space_id}/content", **kwargs)
+        return self.get(f"spaces/{space_id}/content", **kwargs)
 
     # User Management
     def get_users(self, **kwargs):
