@@ -70,7 +70,8 @@ class Cloud(ConfluenceCloudBase):
 
     # Space Management
     def get_spaces(self, **kwargs):
-        """Get all spaces (single page).
+        """
+        Get all spaces (single page).
 
         Calls the Confluence Cloud v2 endpoint ``/wiki/api/v2/spaces``.
         For paginated enumeration of every space, use :meth:`get_all_spaces`.
@@ -78,7 +79,8 @@ class Cloud(ConfluenceCloudBase):
         return self.get("spaces", **kwargs)
 
     def get_all_spaces(self, **kwargs):
-        """Get all spaces with full pagination.
+        """
+        Get all spaces with full pagination.
 
         Returns a generator yielding each space dict from the Confluence Cloud
         v2 endpoint ``/wiki/api/v2/spaces``. Replaces the legacy v1
