@@ -1056,7 +1056,7 @@ class Bitbucket(BitbucketBase):
         repo_administrators = []
         for user in self.repo_users(project_key, repo_key):
             if user["permission"] == "REPO_ADMIN":
-                repo_administrators.append(user)
+                repo_administrators.append(user['user'])
         for group in self.repo_groups_with_administrator_permissions(project_key, repo_key):
             for user in self.group_members(group):
                 repo_administrators.append(user)
