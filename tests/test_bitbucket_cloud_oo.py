@@ -39,6 +39,28 @@ class TestBasic:
     def test_exists_repository(self):
         assert CLOUD.workspaces.get("TestWorkspace1").repositories.exists("testrepository1"), "Exists repository"
 
+    def test_repository_commits_each_uses_paged_commit_data(self, monkeypatch):
+        repository = CLOUD.workspaces.get("TestWorkspace1").repositories.get("testrepository1")
+        commits = repository.commits
+        commit_data = {
+            "type": "commit",
+            "hash": "1fbd047cd99a",
+            "message": "src created online with Bitbucket",
+        }
+
+        monkeypatch.setattr(commits, "_get_paged", lambda *args, **kwargs: iter([commit_data]))
+
+        def fail_get(*args, **kwargs):
+            raise AssertionError("repository commits should not be fetched again by hash")
+
+        monkeypatch.setattr("atlassian.bitbucket.base.BitbucketBase.get", fail_get)
+
+        commit = list(commits.each())[0]
+
+        assert isinstance(commit, Commit)
+        assert commit.hash == "1fbd047cd99a"
+        assert commit.message == "src created online with Bitbucket"
+
     def test_not_exists_repository(self):
         assert not CLOUD.workspaces.get("TestWorkspace1").repositories.exists(
             "testrepository1xxx"
