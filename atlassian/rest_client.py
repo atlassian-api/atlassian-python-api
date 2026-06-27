@@ -1,6 +1,7 @@
 # coding=utf-8
 
 import logging
+import math
 import random
 import time
 from datetime import datetime, timezone
@@ -319,7 +320,7 @@ class AtlassianRestAPI(object):
 
             if retry_after_dt.tzinfo is None:
                 retry_after_dt = retry_after_dt.replace(tzinfo=timezone.utc)
-            delay_seconds = (retry_after_dt - datetime.now(timezone.utc)).total_seconds()
+            delay_seconds = float(math.ceil((retry_after_dt - datetime.now(timezone.utc)).total_seconds()))
 
         if delay_seconds is None:
             return None

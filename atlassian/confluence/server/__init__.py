@@ -105,10 +105,6 @@ class Server(ConfluenceServerBase):
         """Get descendant content."""
         return self.get(f"content/{content_id}/descendant", **kwargs)
 
-    def get_child_pages(self, content_id, **kwargs):
-        """Get child pages of a content item."""
-        return self.get(f"content/{content_id}/child/page", **kwargs)
-
     def get_descendant_pages(self, content_id, **kwargs):
         """Get all descendant pages of a content item."""
         return self.get(f"content/{content_id}/descendant/page", **kwargs)
@@ -236,12 +232,14 @@ class Server(ConfluenceServerBase):
         child_id_list = [child["id"] for child in child_page]
         return child_id_list
 
-    def get_child_pages(self, page_id):
+    def get_child_pages(self, page_id, **kwargs):
         """
         Get child pages for the provided page_id
         :param page_id:
         :return:
         """
+        if self.cloud:
+            return self.get(f"content/{page_id}/child/page", **kwargs)
         return self.get_page_child_by_type(page_id=page_id, type="page")
 
     def get_page_id(self, space, title, type="page"):
@@ -2032,7 +2030,7 @@ class Server(ConfluenceServerBase):
         """Get all spaces."""
         return self.get("space", **kwargs)
 
-    def get_space(self, space_key, expand="description.plain,homepage", params=None):
+    def get_space(self, space_key, expand=None, params=None, **kwargs):
         """
         Get information about a space through space key
         :param space_key: The unique space key name
@@ -2040,15 +2038,17 @@ class Server(ConfluenceServerBase):
         :param params: OPTIONAL: dictionary of additional URL parameters
         :return: Returns the space along with its ID
         """
-        url = f"rest/api/space/{space_key}"
-        params = params or {}
+        url = f"space/{space_key}"
+        request_params = params.copy() if params else {}
         if expand:
-            params["expand"] = expand
+            request_params["expand"] = expand
+        request_kwargs = dict(kwargs)
+        if request_params:
+            request_kwargs["params"] = request_params
         try:
-            response = self.get(url, params=params)
+            response = self.get(url, **request_kwargs)
         except HTTPError as e:
             if e.response.status_code == 404:
-                # Raise ApiError as the documented reason is ambiguous
                 raise ApiError(
                     "There is no space with the given key, "
                     "or the calling user does not have permission to view the space",
@@ -2057,33 +2057,30 @@ class Server(ConfluenceServerBase):
             raise
         return response
 
-    def create_space(self, space_key, space_name):
+    def create_space(self, space_key, space_name=None, **kwargs):
         """
-        Create space
-        :param space_key:
-        :param space_name:
-        :return:
+        Create space.
+        Accepts either a full data dictionary or the legacy space_key/space_name pair.
         """
-        data = {"key": space_key, "name": space_name}
-        self.post("rest/api/space", data=data)
+        data = space_key if isinstance(space_key, dict) else {"key": space_key, "name": space_name}
+        return self.post("space", data=data, **kwargs)
 
     def update_space(self, space_key, data, **kwargs):
         """Update existing space."""
         return self.put(f"space/{space_key}", data=data, **kwargs)
 
-    def delete_space(self, space_key):
+    def delete_space(self, space_key, **kwargs):
         """
         Delete space
         :param space_key:
         :return:
         """
-        url = f"rest/api/space/{space_key}"
+        url = f"space/{space_key}"
 
         try:
-            response = self.delete(url)
+            response = self.delete(url, **kwargs)
         except HTTPError as e:
             if e.response.status_code == 404:
-                # Raise ApiError as the documented reason is ambiguous
                 raise ApiError(
                     "There is no space with the given key, "
                     "or the calling user does not have permission to delete it",
@@ -2118,11 +2115,12 @@ class Server(ConfluenceServerBase):
     def get_space_content(
         self,
         space_key,
-        depth="all",
-        start=0,
-        limit=500,
+        depth=None,
+        start=None,
+        limit=None,
         content_type=None,
-        expand="body.storage",
+        expand=None,
+        **kwargs,
     ):
         """
         Get space content.
@@ -2131,29 +2129,26 @@ class Server(ConfluenceServerBase):
         :param content_type:
         :param space_key: The unique space key name
         :param depth: OPTIONAL: all|root
-                                Gets all space pages or only root pages
-        :param start: OPTIONAL: The start point of the collection to return. Default: 0.
-        :param limit: OPTIONAL: The limit of the number of pages to return, this may be restricted by
-                                fixed system limits. Default: 500
-        :param expand: OPTIONAL: by default expands page body in confluence storage format.
-                                 See atlassian documentation for more information.
-        :return: Returns the space along with its ID
+        :param start: OPTIONAL: The start point of the collection to return.
+        :param limit: OPTIONAL: The limit of the number of pages to return.
+        :param expand: OPTIONAL: additional content properties to expand.
+        :return: Returns the space content
         """
-
-        content_type = f"{'/' + content_type if content_type else ''}"
-        url = f"rest/api/space/{space_key}/content{content_type}"
-        params = {
-            "depth": depth,
-            "start": start,
-            "limit": limit,
-        }
-        if expand:
+        params = {"spaceKey": space_key, **kwargs}
+        if depth is not None:
+            params["depth"] = depth
+        if start is not None:
+            params["start"] = start
+        if limit is not None:
+            params["limit"] = limit
+        if content_type is not None:
+            params["type"] = content_type
+        if expand is not None:
             params["expand"] = expand
         try:
-            response = self.get(url, params=params)
+            response = self.get("content", params=params)
         except HTTPError as e:
             if e.response.status_code == 404:
-                # Raise ApiError as the documented reason is ambiguous
                 raise ApiError(
                     "There is no space with the given key, "
                     "or the calling user does not have permission to view the space",
@@ -2293,20 +2288,28 @@ class Server(ConfluenceServerBase):
         """Get group by name."""
         return self.get("group", params={"groupname": group_name, **kwargs})
 
-    def get_group_members(self, group_name="confluence-users", start=0, limit=1000, expand=None):
+    def get_group_members(self, group_name="confluence-users", start=None, limit=None, expand=None, **kwargs):
         """
         Get a paginated collection of users in the given group
         :param group_name
-        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
-        :param limit: OPTIONAL: The limit of the number of users to return, this may be restricted by
-                            fixed system limits. Default: 1000
-        :param expand: OPTIONAL: A comma separated list of properties to expand on the content. status
+        :param start: OPTIONAL: The start point of the collection to return.
+        :param limit: OPTIONAL: The limit of the number of users to return.
+        :param expand: OPTIONAL: A comma separated list of properties to expand.
         :return:
         """
-        url = f"rest/api/group/{group_name}/member?limit={limit}&start={start}&expand={expand}"
+        request_kwargs = dict(kwargs)
+        params = {}
+        if start is not None:
+            params["start"] = start
+        if limit is not None:
+            params["limit"] = limit
+        if expand is not None:
+            params["expand"] = expand
+        if params:
+            request_kwargs["params"] = params
 
         try:
-            response = self.get(url)
+            response = self.get(f"group/{group_name}/member", **request_kwargs)
         except HTTPError as e:
             if e.response.status_code == 403:
                 raise ApiPermissionError(
@@ -2316,7 +2319,7 @@ class Server(ConfluenceServerBase):
 
             raise
 
-        return response.get("results")
+        return response
 
     # Label Management
     def get_labels(self, **kwargs):
@@ -2360,24 +2363,22 @@ class Server(ConfluenceServerBase):
         """Update existing attachment."""
         return self.put(f"content/{attachment_id}", data=data, **kwargs)
 
-    def delete_attachment(self, page_id, filename="", version=None):
+    def delete_attachment(self, attachment_id, filename="", version=None, **kwargs):
         """
-        Remove completely a file if version is None or delete version
-        :param version:
-        :param page_id: file version
-        :param filename:
-        :return:
+        Delete an attachment by content ID, or remove a legacy page attachment when filename/version is supplied.
         """
-        params = {"pageId": page_id}
-        if filename:
-            params["filename"] = filename
-        if version:
-            params["version"] = version
-        return self.post(
-            "json/removeattachment.action",
-            params=params,
-            headers=self.form_token_headers,
-        )
+        if filename or version:
+            params = {"pageId": attachment_id}
+            if filename:
+                params["filename"] = filename
+            if version:
+                params["version"] = version
+            return self.post(
+                "json/removeattachment.action",
+                params=params,
+                headers=self.form_token_headers,
+            )
+        return self.delete(f"content/{attachment_id}", **kwargs)
 
     def download_attachment(self, attachment_id, **kwargs):
         """Download attachment."""
@@ -3135,8 +3136,7 @@ class Server(ConfluenceServerBase):
         It is not public method for reindex Confluence
         :return:
         """
-        url = "rest/prototype/1/index/reindex"
-        return self.post(url)
+        return self.post("reindex")
 
     def get_reindex_progress(self, **kwargs):
         """Get reindex progress."""
@@ -3476,18 +3476,16 @@ class Server(ConfluenceServerBase):
         }
         self.post(url, data=data)
 
-    def add_user_to_group(self, username, group_name):
+    def add_user_to_group(self, group_name, username, **kwargs):
         """
         Add given user to a group
-
-        :param username: str - username of user to add to group
         :param group_name: str - name of group to add user to
+        :param username: str - username of user to add to group
         :return: Current state of the group
         """
-        url = f"rest/api/user/{username}/group/{group_name}"
-        return self.put(url)
+        return self.post(f"group/{group_name}/member", data={"name": username}, **kwargs)
 
-    def remove_user_from_group(self, username, group_name):
+    def remove_user_from_group(self, group_name, username, **kwargs):
         """
         Remove the given {@link User} identified by username from the given {@link Group} identified by groupName.
         This method is idempotent i.e. if the membership is not present then no action will be taken.
@@ -3496,8 +3494,7 @@ class Server(ConfluenceServerBase):
         :param group_name: str - name of group to add user to
         :return: Current state of the group
         """
-        url = f"rest/api/user/{username}/group/{group_name}"
-        return self.delete(url)
+        return self.delete(f"group/{group_name}/member/{username}", **kwargs)
 
     # Space Permissions
     def get_all_space_permissions(self, space_key):
@@ -3805,19 +3802,8 @@ class Server(ConfluenceServerBase):
     def get_space_permissions(self, space_key, **kwargs):
         """
         Get space permissions.
-        The JSON-RPC APIs for Confluence are provided here to help you browse and discover APIs you have access to.
-        JSON-RPC APIs operate differently than REST APIs.
-        To learn more about how to use these APIs,
-        please refer to the Confluence JSON-RPC documentation on Atlassian Developers.
         """
-        url = "rpc/json-rpc/confluenceservice-v2"
-        data = {
-            "jsonrpc": "2.0",
-            "method": "getSpacePermissionSets",
-            "id": 7,
-            "params": [space_key],
-        }
-        return self.post(url, data=data).get("result") or {}
+        return self.get(f"space/{space_key}/permission", **kwargs)
 
     def get_subtree_of_content_ids(self, page_id):
         """
