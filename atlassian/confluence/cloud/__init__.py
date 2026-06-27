@@ -1,6 +1,13 @@
 # coding=utf-8
 
+import logging
 from .base import ConfluenceCloudBase
+from requests import HTTPError
+from atlassian.errors import (
+    ApiError,
+)
+
+log = logging.getLogger(__name__)
 
 
 class Cloud(ConfluenceCloudBase):
@@ -56,6 +63,14 @@ class Cloud(ConfluenceCloudBase):
         """Get descendant content."""
         return self.get(f"content/{content_id}/descendants", **kwargs)
 
+    def get_child_pages(self, content_id, **kwargs):
+        """Get child pages of a content item."""
+        return self.get(f"content/{content_id}/child/page", **kwargs)
+
+    def get_descendant_pages(self, content_id, **kwargs):
+        """Get all descendant pages of a content item."""
+        return self.get(f"content/{content_id}/descendant/page", **kwargs)
+
     def get_content_ancestors(self, content_id, **kwargs):
         """Get ancestor content."""
         return self.get(f"content/{content_id}/ancestors", **kwargs)
@@ -68,40 +83,123 @@ class Cloud(ConfluenceCloudBase):
         """Get blog post by title and space key."""
         return self.get("content", params={"spaceKey": space_key, "title": title, "type": "blogpost", **kwargs})
 
-    def page_exists(self, space_key, title, **kwargs):
-        """Check if page exists."""
-        result = self.get_page_by_title(space_key, title, **kwargs)
-        return len(result.get("results", [])) > 0
-
     def blog_post_exists(self, space_key, title, **kwargs):
         """Check if blog post exists."""
         result = self.get_blog_post_by_title(space_key, title, **kwargs)
         return len(result.get("results", [])) > 0
+      
+    def page_exists(self, space_key, title, **kwargs):
+        """Check if page exists in Confluence Cloud."""
+        result = self.get_page_by_title(space_key, title, **kwargs)
+        return len(result.get("results", [])) > 0
+
+    def get_page_child_by_type(self, page_id, type="page", start=None, limit=None, expand=None):
+        """
+        Provide content by type (page, blog, comment)
+        :param page_id: A string containing the id of the type content container.
+        :param type:
+        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
+        :param limit: OPTIONAL: how many items should be returned after the start index. Default: Site limit 200.
+        :param expand: OPTIONAL: expand e.g. history
+        :return:
+        """
+        params = {}
+        if start is not None:
+            params["start"] = int(start)
+        if limit is not None:
+            params["limit"] = int(limit)
+        if expand is not None:
+            params["expand"] = expand
+
+        url = f"rest/api/content/{page_id}/child/{type}"
+        log.info(url)
+
+        try:
+            if not self.advanced_mode and start is None and limit is None:
+                return self._get_paged(url, params=params)
+            else:
+                response = self.get(url, params=params)
+                if self.advanced_mode:
+                    return response
+                return response.get("results")
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                # Raise ApiError as the documented reason is ambiguous
+                raise ApiError(
+                    "There is no content with the given id, "
+                    "or the calling user does not have permission to view the content",
+                    reason=e,
+                )
+
+            raise
+
+    def get_child_title_list(self, page_id, type="page", start=None, limit=None):
+        """
+        Find a list of Child title
+        :param page_id: A string containing the id of the type content container.
+        :param type:
+        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
+        :param limit: OPTIONAL: how many items should be returned after the start index. Default: Site limit 200.
+        :return:
+        """
+        child_page = self.get_page_child_by_type(page_id, type, start, limit)
+        child_title_list = [child["title"] for child in child_page]
+        return child_title_list
+
+    def get_child_id_list(self, page_id, type="page", start=None, limit=None):
+        """
+        Find a list of Child id
+        :param page_id: A string containing the id of the type content container.
+        :param type:
+        :param start: OPTIONAL: The start point of the collection to return. Default: None (0).
+        :param limit: OPTIONAL: how many items should be returned after the start index. Default: Site limit 200.
+        :return:
+        """
+        child_page = self.get_page_child_by_type(page_id, type, start, limit)
+        child_id_list = [child["id"] for child in child_page]
+        return child_id_list
 
     # Space Management
     def get_spaces(self, **kwargs):
-        """Get all spaces."""
-        return self.get("space", **kwargs)
+        """
+        Get all spaces (single page).
+
+        Calls the Confluence Cloud v2 endpoint ``/wiki/api/v2/spaces``.
+        For paginated enumeration of every space, use :meth:`get_all_spaces`.
+        """
+        return self.get("spaces", **kwargs)
+
+    def get_all_spaces(self, **kwargs):
+        """
+        Get all spaces with full pagination.
+
+        Returns a generator yielding each space dict from the Confluence Cloud
+        v2 endpoint ``/wiki/api/v2/spaces``. Replaces the legacy v1
+        ``get_all_spaces`` (which hit ``/rest/api/space``) — that endpoint is
+        not available on the OAuth API gateway and returns
+        ``GoneException: This deprecated endpoint has been removed``.
+        """
+        return self._get_paged("spaces", params=kwargs)
 
     def get_space(self, space_id, **kwargs):
         """Get space by ID."""
-        return self.get(f"space/{space_id}", **kwargs)
+        return self.get(f"spaces/{space_id}", **kwargs)
 
     def create_space(self, data, **kwargs):
         """Create new space."""
-        return self.post("space", data=data, **kwargs)
+        return self.post("spaces", data=data, **kwargs)
 
     def update_space(self, space_id, data, **kwargs):
         """Update existing space."""
-        return self.put(f"space/{space_id}", data=data, **kwargs)
+        return self.put(f"spaces/{space_id}", data=data, **kwargs)
 
     def delete_space(self, space_id, **kwargs):
         """Delete space."""
-        return self.delete(f"space/{space_id}", **kwargs)
+        return self.delete(f"spaces/{space_id}", **kwargs)
 
     def get_space_content(self, space_id, **kwargs):
         """Get space content."""
-        return self.get(f"space/{space_id}/content", **kwargs)
+        return self.get(f"spaces/{space_id}/content", **kwargs)
 
     # User Management
     def get_users(self, **kwargs):

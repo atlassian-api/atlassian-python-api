@@ -2484,7 +2484,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = f"v1/pages/{page_id}/component_groups"
+        url = f"v1/pages/{page_id}/component-groups"
         return self.post(url, data={"description": description, "components_group": components_group})
 
     def page_get_list_of_component_groups(self, page_id, per_page=100, page=1):
@@ -2513,7 +2513,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = f"v1/pages/{page_id}/component_groups"
+        url = f"v1/pages/{page_id}/component-groups"
         return self.get(url, params={"per_page": per_page, "page": page})
 
     def page_update_component_group(self, page_id, component_group_id, description, component_group):
@@ -2545,7 +2545,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = f"v1/pages/{page_id}/component_groups/{component_group_id}"
+        url = f"v1/pages/{page_id}/component-groups/{component_group_id}"
         return self.patch(url, data={"description": description, "component_group": component_group})
 
     def page_delete_component_group(self, page_id, component_group_id):
@@ -2572,7 +2572,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = f"v1/pages/{page_id}/component_groups/{component_group_id}"
+        url = f"v1/pages/{page_id}/component-groups/{component_group_id}"
         return self.delete(url)
 
     def page_get_component_group(self, page_id, component_group_id):
@@ -2599,7 +2599,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = f"v1/pages/{page_id}/component_groups/{component_group_id}"
+        url = f"v1/pages/{page_id}/component-groups/{component_group_id}"
         return self.get(url)
 
     def page_get_uptime_for_component_group(self, page_id, component_group_id, start=None, end=None):
@@ -2640,7 +2640,7 @@ class StatusPage(AtlassianRestAPI):
         -------
         any
         """
-        url = f"v1/pages/{page_id}/component_groups/{component_group_id}/uptime"
+        url = f"v1/pages/{page_id}/component-groups/{component_group_id}/uptime"
 
         params = {}
         if start is not None:

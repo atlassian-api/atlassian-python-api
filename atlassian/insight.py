@@ -173,7 +173,7 @@ class Insight(AtlassianRestAPI):
             raise NotImplementedError
         params = {"comment": comment, "objectId": object_id, "role": role}
         url = "rest/insight/1.0/comment/create"
-        return self.post(url, params=params)
+        return self.post(url, data=params)
 
     def get_comment_of_object(self, object_id):
         """

@@ -25,9 +25,12 @@ class Confluence(ConfluenceBase):
         if is_cloud is None:
             hostname = urlparse(url).hostname or ""
             is_cloud = (
-                hostname == "atlassian.net" or hostname.endswith(".atlassian.net")
-                or hostname == "jira.com" or hostname.endswith(".jira.com")
-                or hostname == "api.atlassian.com" or hostname.endswith(".api.atlassian.com")
+                hostname == "atlassian.net"
+                or hostname.endswith(".atlassian.net")
+                or hostname == "jira.com"
+                or hostname.endswith(".jira.com")
+                or hostname == "api.atlassian.com"
+                or hostname.endswith(".api.atlassian.com")
             )
         if is_cloud:
             impl = ConfluenceCloud(url, *args, **kwargs)
