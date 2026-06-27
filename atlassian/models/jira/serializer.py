@@ -96,8 +96,8 @@ def serialize(
         mapping = FieldMapping()
 
     f = issue.fields
-    fields = {}
-    update = {}
+    fields: dict[str, Any] = {}
+    update: dict[str, Any] = {}
 
     _ser_entity_fields(f, fields)
     _ser_scalar_fields(f, fields)
