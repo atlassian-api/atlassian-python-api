@@ -87,7 +87,7 @@ class Cloud(ConfluenceCloudBase):
         """Check if blog post exists."""
         result = self.get_blog_post_by_title(space_key, title, **kwargs)
         return len(result.get("results", [])) > 0
-      
+
     def page_exists(self, space_key, title, **kwargs):
         """Check if page exists in Confluence Cloud."""
         result = self.get_page_by_title(space_key, title, **kwargs)
