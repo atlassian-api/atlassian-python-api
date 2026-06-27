@@ -37,7 +37,7 @@ RUN if [ $PYTHON_VERSION = '3.7' ] ; then \
   apt install -y python$PYTHON_VERSION-distutils python3-distutils-extra python3-apt --reinstall ;\
   elif [ $PYTHON_VERSION = '3.9' ] ; then \
   apt install -y python$PYTHON_VERSION-distutils python3-distutils-extra python3-apt --reinstall ; \
-  curl -sS https://bootstrap.pypa.io/get-pip.py | python$PYTHON_VERSION ; \
+  curl -sS https://bootstrap.pypa.io/pip/$PYTHON_VERSION/get-pip.py | python$PYTHON_VERSION ; \
   elif [ $PYTHON_VERSION = '3.10' ] ; then \
   apt install -y python$PYTHON_VERSION-distutils python3-distutils-extra python3-apt --reinstall ; \
   curl -sS https://bootstrap.pypa.io/get-pip.py | python$PYTHON_VERSION ; \
