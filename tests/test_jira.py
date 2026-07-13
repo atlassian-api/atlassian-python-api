@@ -46,6 +46,14 @@ class TestJira(TestCase):
         with self.assertRaises(HTTPError):
             self.jira.epic_issues("BAR-11")
 
+    def test_pin_issue_comment(self):
+        """Can pin a comment on an issue"""
+        self.jira.issue_pin_comment("FOO-123", 10000)
+
+    def test_unpin_issue_comment(self):
+        """Can unpin a comment on an issue"""
+        self.jira.issue_unpin_comment("FOO-123", 10000)
+
     def test_post_issue_with_invalid_request(self):
         """Post an issue but receive a 400 error response"""
         with self.assertRaises(HTTPError):

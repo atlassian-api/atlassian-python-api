@@ -1971,6 +1971,28 @@ class Jira(AtlassianRestAPI):
         params: dict = {"notifyUsers": "true" if notify_users else "false"}
         return self.put(url, data=data, params=params)
 
+    def issue_pin_comment(self, issue_key: str, comment_id: T_id) -> T_resp_json:
+        """
+        Pin a comment on a Jira issue
+        :param issue_key: str
+        :param comment_id: int or str
+        :return:
+        """
+        base_url = self.resource_url("issue")
+        url = f"{base_url}/{issue_key}/comment/{comment_id}/pin"
+        return self.put(url, data=True)
+
+    def issue_unpin_comment(self, issue_key: str, comment_id: T_id) -> T_resp_json:
+        """
+        Unpin a comment on a Jira issue
+        :param issue_key: str
+        :param comment_id: int or str
+        :return:
+        """
+        base_url = self.resource_url("issue")
+        url = f"{base_url}/{issue_key}/comment/{comment_id}/pin"
+        return self.put(url, data=False)
+
     def scrap_regex_from_issue(self, issue: str, regex: str):
         """
         This function scrapes the output of the given regex matches from the issue's description and comments.

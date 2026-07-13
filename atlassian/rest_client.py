@@ -470,7 +470,7 @@ class AtlassianRestAPI(object):
             url += ("&" if params or params_already_in_url else "") + "&".join(flags or [])
         json_dump = None
         if files is None:
-            data = None if not data else dumps(data)
+            data = None if data is None else dumps(data)
             json_dump = None if not json else dumps(json)
 
         headers = headers or self.default_headers
