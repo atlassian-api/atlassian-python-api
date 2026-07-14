@@ -5,7 +5,6 @@ from typing import Any, ClassVar
 
 from atlassian.models.jira.fields import IssueFields, IssueType
 
-
 _ISSUE_TYPE_REGISTRY: dict[str, type[JiraIssue]] = {}
 
 
