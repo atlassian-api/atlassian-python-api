@@ -2,6 +2,7 @@
 import logging
 import os
 import re
+import zipfile
 from typing import Any, BinaryIO, Dict, List, Optional, Union, cast
 from warnings import warn
 
@@ -257,7 +258,7 @@ class Jira(AtlassianRestAPI):
 
     def download_issue_attachments(
         self,
-        issue: str,
+        issue: T_id,
         path: Optional[str] = None,
         overwrite: bool = False,
         stream: bool = False,
@@ -266,6 +267,8 @@ class Jira(AtlassianRestAPI):
     ) -> Optional[str]:
         """
         Downloads all attachments from a Jira issue.
+        This method downloads zip file compressed from Jira server side, and may fail if total attachment size is too large.
+        Use `get_all_attachment_contents()` to download individual attachments and zip from client side.
         :param issue: The issue-key of the Jira issue
         :param path: Path to directory where attachments will be saved. If None, current working directory will be used.
         :param overwrite: If True, always download and create new zip file.
@@ -377,6 +380,61 @@ class Jira(AtlassianRestAPI):
             absolute=True,
             headers={"Accept": "*/*"},
         )
+
+    def get_all_attachment_contents(
+        self,
+        issue: T_id,
+        path: Optional[str] = None,
+        overwrite: bool = False,
+        compression: int = zipfile.ZIP_STORED,
+    ) -> Optional[str]:
+        """
+        Downloads all attachments from a Jira issue by downloading individual files and creating zip file.
+        This method is useful when total attachment size is too large for Jira server to compress as single file.
+        If total attachment size is small enough, using `download_issue_attachments()` may be more efficient.
+        :param issue: The issue-key of the Jira issue
+        :param path: Path to directory where attachments will be saved. If None, current working directory will be used.
+        :param overwrite: If True, always download and create new zip file.
+                          If False (default), download will be skipped when zip file already exists in path.
+        :param compression: Compression method for zipfile. Should be one of the constants listed in documentation page.
+                            https://docs.python.org/3/library/zipfile.html#zipfile.ZipFile
+        :return: File path of the zip file if file is existing or download is successful. None if attachment does not exist.
+        """
+        try:
+            if path is None:
+                path = os.getcwd()
+            issue_data = self.issue(issue, fields="id,attachment")
+            issue_id = issue_data["id"]
+            attachment_name = f"{issue_id}_attachments.zip"
+            file_path = os.path.join(path, attachment_name)
+            if not overwrite and os.path.isfile(file_path):
+                return file_path
+
+            attachments_metadata = issue_data["fields"]["attachment"]
+            if not attachments_metadata:
+                return None
+
+            with zipfile.ZipFile(file_path, "w", compression=compression) as file:
+                for meta in attachments_metadata:
+                    # stream download should not be used, as writestr expects full content with filename.
+                    content = self.get(
+                        meta["content"],
+                        not_json_response=True,
+                        absolute=True,
+                        headers={"Accept": "*/*"},
+                    )
+                    file.writestr(meta["filename"], content)
+
+            return file_path
+
+        except FileNotFoundError:
+            raise FileNotFoundError("Verify if directory path is correct and/or if directory exists")
+        except PermissionError:
+            raise PermissionError(
+                "Directory found, but there is a problem with saving file to this directory. Check directory permissions"
+            )
+        except Exception as e:
+            raise e
 
     def remove_attachment(self, attachment_id: T_id) -> T_resp_json:
         """
