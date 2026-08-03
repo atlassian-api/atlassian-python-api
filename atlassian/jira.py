@@ -15,7 +15,7 @@ else:
     from typing_extensions import Literal  # Python <=3.7
 from .errors import ApiNotFoundError, ApiPermissionError
 from .rest_client import AtlassianRestAPI
-from .typehints import T_id, T_resp_json
+from .typehints import T_id, T_resp_json, copy_type
 
 log = logging.getLogger(__name__)
 
@@ -26,6 +26,7 @@ class Jira(AtlassianRestAPI):
     Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2
     """
 
+    @copy_type(AtlassianRestAPI.__init__)
     def __init__(self, url: str, *args: Any, **kwargs: Any):
         if "api_version" not in kwargs:
             kwargs["api_version"] = "2"
