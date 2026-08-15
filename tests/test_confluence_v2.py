@@ -267,6 +267,42 @@ class TestConfluenceV2(unittest.TestCase):
         self.assertEqual(response, mock_response)
 
     @patch("atlassian.confluence.cloud.ConfluenceCloud.post")
+    def test_create_folder(self, mock_post):
+        mock_response = {"id": "FOLDER123", "title": "Release assets"}
+        mock_post.return_value = mock_response
+
+        response = self.confluence_v2.create_folder(space_id="SPACE123", title="Release assets", parent_id="PARENT123")
+
+        mock_post.assert_called_once_with(
+            "api/v2/folders",
+            data={"spaceId": "SPACE123", "title": "Release assets", "parentId": "PARENT123"},
+        )
+        self.assertEqual(response, mock_response)
+
+    @patch("atlassian.confluence.cloud.ConfluenceCloud.get")
+    def test_get_folder(self, mock_get):
+        mock_response = {"id": "FOLDER123", "title": "Release assets"}
+        mock_get.return_value = mock_response
+
+        response = self.confluence_v2.get_folder("FOLDER123", include_direct_children=True, include_properties=False)
+
+        mock_get.assert_called_once_with(
+            "api/v2/folders/FOLDER123",
+            params={"include-direct-children": True, "include-properties": False},
+        )
+        self.assertEqual(response, mock_response)
+
+    @patch("atlassian.confluence.cloud.ConfluenceCloud.delete")
+    def test_delete_folder(self, mock_delete):
+        mock_response = {"id": "FOLDER123", "status": "trashed"}
+        mock_delete.return_value = mock_response
+
+        response = self.confluence_v2.delete_folder("FOLDER123")
+
+        mock_delete.assert_called_once_with("api/v2/folders/FOLDER123")
+        self.assertEqual(response, mock_response)
+
+    @patch("atlassian.confluence.cloud.ConfluenceCloud.post")
     def test_create_page_with_wiki_format(self, mock_post):
         # Setup the mock
         mock_response = {"id": "123", "title": "Wiki Page"}

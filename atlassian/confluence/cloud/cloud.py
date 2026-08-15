@@ -12,11 +12,12 @@ import warnings
 from typing import Any, Dict, List, Optional
 
 from .databases import DatabaseOperations
+from .folders import FolderOperations
 
 log = logging.getLogger(__name__)
 
 
-class ConfluenceCloud(DatabaseOperations):
+class ConfluenceCloud(FolderOperations, DatabaseOperations):
     """
     Confluence Cloud API implementation class
     """

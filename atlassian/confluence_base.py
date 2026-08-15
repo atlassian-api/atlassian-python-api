@@ -58,6 +58,9 @@ class ConfluenceEndpoints:
         "whiteboard_by_id": "api/v2/whiteboards/{id}",
         "whiteboard_children": "api/v2/whiteboards/{id}/children",
         "whiteboard_ancestors": "api/v2/whiteboards/{id}/ancestors",
+        # Folder endpoints
+        "folder": "api/v2/folders",
+        "folder_by_id": "api/v2/folders/{id}",
         # Database endpoints
         "database": "api/v2/databases",
         "database_by_id": "api/v2/databases/{id}",

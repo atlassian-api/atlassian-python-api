@@ -544,6 +544,26 @@ fields, views, or queries.
 Scoped tokens require the corresponding ``write:database:confluence``,
 ``read:database:confluence``, or ``delete:database:confluence`` scope.
 
+Confluence Cloud folders
+------------------------
+
+Confluence Cloud v2 supports creating, retrieving, and moving folders to
+trash. A folder may have a page or another folder as its parent. Use
+``ConfluenceV2`` (or a gateway URL as above).
+
+.. code-block:: python
+
+    folder = confluence.create_folder(
+        space_id="<space-id>",
+        title="Release assets",
+        parent_id="<parent-page-or-folder-id>",
+    )
+    details = confluence.get_folder(folder["id"], include_direct_children=True)
+    confluence.delete_folder(folder["id"])
+
+Scoped tokens require the corresponding ``write:folder:confluence``,
+``read:folder:confluence``, or ``delete:folder:confluence`` scope.
+
 Cloud group members
 -------------------
 
