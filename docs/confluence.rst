@@ -314,19 +314,67 @@ already valid storage XML and must not be escaped a second time. Parentheses do
 not require XML escaping. ``representation='wiki'`` is legacy wiki markup;
 prefer storage XHTML for pages users will edit in the browser.
 
-Confluence Whiteboards
-----------------------
+Word document imports
+~~~~~~~~~~~~~~~~~~~~~
+
+Confluence Server/Data Center's **Import Word document** action is provided by
+the Office Connector user interface. It is not exposed as a supported REST API,
+and Confluence Cloud's REST APIs likewise do not accept a ``.doc`` or ``.docx``
+file as a page body. Consequently, this package intentionally has no
+``import_word_document()`` method: using an internal browser endpoint would be
+fragile and could lose document content.
+
+For a faithful, one-off import (including the UI options to replace a page or
+split a document by headings), use the Confluence web interface. For automated
+workflows, convert the document with a tool chosen and controlled by your
+application, validate the resulting storage XHTML, and then use the normal page
+methods. Conversion of Word styles, images, tables, and macros is outside the
+scope of the REST API and must be validated for the documents you support.
 
 .. code-block:: python
 
-    # Create  new whiteboard  - cloud only
-    confluence.create_whiteboard(spaceId, title=None, parentId=None)
+    # ``storage_xhtml`` is produced and validated by your own DOCX conversion
+    # step. It is Confluence storage XHTML, not the original DOCX bytes.
+    page = confluence.create_page(space_key, title, storage_xhtml,
+                                  representation='storage')
 
-    # Delete existing whiteboard - cloud only
-    confluence.delete_whiteboard(whiteboard_id)
+    # Optionally retain the original source document as an attachment. This
+    # uploads the file; it does not convert it into page content.
+    confluence.attach_file('report.docx', page_id=page['id'])
 
-    # Get whiteboard by id  - cloud only!
-    confluence.get_whiteboard(whiteboard_id)
+Confluence Whiteboards
+----------------------
+
+Whiteboards are available through Confluence Cloud REST API V2 only. Use
+``ConfluenceV2`` (or ``ConfluenceCloud``) and a token with the relevant
+``read:whiteboard:confluence``, ``write:whiteboard:confluence``, and
+``delete:whiteboard:confluence`` scopes.
+
+.. code-block:: python
+
+    from atlassian import ConfluenceV2
+
+    confluence = ConfluenceV2(url, username=email, password=api_token)
+
+    # Create a whiteboard in a space. ``private`` is an optional API query
+    # parameter; parent_id, template_key, and locale are optional body fields.
+    whiteboard = confluence.create_whiteboard(
+        space_id, title='Planning', parent_id=page_id, private=True
+    )
+
+    # Fetch it, optionally expanding related information.
+    whiteboard = confluence.get_whiteboard(
+        whiteboard['id'], include_collaborators=True,
+        include_direct_children=True, include_operations=True,
+        include_properties=True,
+    )
+
+    # Deletion moves the whiteboard to trash, where Confluence can restore it.
+    confluence.delete_whiteboard(whiteboard['id'])
+
+``get_whiteboard_by_id()`` remains as a compatible alias for
+``get_whiteboard()``. Whiteboards are not supported by Confluence Server or
+Data Center.
 
 Confluence Cloud tasks
 ----------------------

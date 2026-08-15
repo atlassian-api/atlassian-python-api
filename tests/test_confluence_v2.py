@@ -966,6 +966,15 @@ class TestConfluenceV2(unittest.TestCase):
         self.assertEqual(result["id"], "987654")
         self.assertEqual(result["title"], title)
 
+    @patch("atlassian.confluence.cloud.ConfluenceCloud.post")
+    def test_create_private_whiteboard(self, mock_post):
+        """The documented ``private`` option is sent as a query parameter."""
+        mock_post.return_value = {"id": "987654"}
+
+        self.confluence_v2.create_whiteboard(space_id="123456", private=True)
+
+        mock_post.assert_called_once_with("api/v2/whiteboards", data={"spaceId": "123456"}, params={"private": True})
+
     @patch("atlassian.confluence.cloud.ConfluenceCloud.get")
     def test_get_whiteboard_by_id(self, mock_get):
         """Test retrieving a whiteboard by ID"""
@@ -978,6 +987,25 @@ class TestConfluenceV2(unittest.TestCase):
         mock_get.assert_called_with("api/v2/whiteboards/123456")
 
         self.assertEqual(result, mock_response)
+
+    @patch("atlassian.confluence.cloud.ConfluenceCloud.get")
+    def test_get_whiteboard_with_expansions(self, mock_get):
+        """Whiteboard expansions use the hyphenated V2 query parameters."""
+        mock_get.return_value = {"id": "123456"}
+
+        result = self.confluence_v2.get_whiteboard(
+            "123456", include_collaborators=True, include_direct_children=False, include_properties=True
+        )
+
+        mock_get.assert_called_once_with(
+            "api/v2/whiteboards/123456",
+            params={
+                "include-collaborators": True,
+                "include-direct-children": False,
+                "include-properties": True,
+            },
+        )
+        self.assertEqual(result["id"], "123456")
 
     @patch("atlassian.confluence.cloud.ConfluenceCloud.delete")
     def test_delete_whiteboard(self, mock_delete):
