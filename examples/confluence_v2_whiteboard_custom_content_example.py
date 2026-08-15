@@ -501,7 +501,6 @@ if __name__ == "__main__":
     # Get custom content ancestors
     # ancestors = get_custom_content_ancestors_example(custom_content_id)
 
-    # Delete custom content
-    print("\nDeleting custom content...")
-    confluence.delete_custom_content(custom_content_id)
-    print(f"Deleted custom content {custom_content_id}")
+    # Delete custom content after assigning ``custom_content_id`` by enabling
+    # the creation example above.
+    # delete_custom_content_example(custom_content_id)

@@ -3,7 +3,7 @@ Confluence base module for shared functionality between API versions
 """
 
 import logging
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Union
 from urllib.parse import urlparse
 
 from atlassian.rest_client import AtlassianRestAPI
@@ -25,6 +25,10 @@ class ConfluenceEndpoints:
         "content_search": "rest/api/content/search",
         "space": "rest/api/space",
         "space_by_key": "rest/api/space/{key}",
+        "spaces": "rest/api/space",
+        "page_properties": "rest/api/content/{id}/property",
+        "page_property_by_key": "rest/api/content/{id}/property/{key}",
+        "page_labels": "rest/api/content/{id}/label",
     }
 
     V2 = {
@@ -172,7 +176,7 @@ class ConfluenceBase(AtlassianRestAPI):
                     flags=flags,
                     absolute=absolute,
                 )
-                if "results" not in response:
+                if not isinstance(response, dict) or "results" not in response:
                     return
 
                 for value in response.get("results", []):
@@ -203,7 +207,11 @@ class ConfluenceBase(AtlassianRestAPI):
                     absolute=absolute,
                 )
 
-                if "results" not in response:
+                if isinstance(response, list):
+                    yield from response
+                    return
+
+                if not isinstance(response, dict) or "results" not in response:
                     return
 
                 for value in response.get("results", []):

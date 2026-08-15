@@ -9,7 +9,6 @@ from urllib.parse import urlparse
 
 from ..confluence_base import ConfluenceBase
 from .cloud import Cloud as LegacyConfluenceCloud
-from .cloud.cloud import ConfluenceCloud
 from .server import Server as ConfluenceServer
 from .base import ConfluenceBase as LegacyConfluenceBase
 
@@ -20,10 +19,10 @@ class Confluence(LegacyConfluenceBase):
 
     def __new__(cls, url, *args, **kwargs):
         api_version = kwargs.get("api_version")
-        if api_version in {1, 2}:
-            versioned_kwargs = dict(kwargs)
-            versioned_kwargs.pop("api_version")
-            return ConfluenceBase(url, *args, api_version=api_version, **versioned_kwargs)
+        if api_version in (1, 2):
+            from .cloud.cloud import ConfluenceCloud as VersionedConfluenceCloud
+
+            return VersionedConfluenceCloud(url, *args, **kwargs)
         return super().__new__(cls)
 
     def __init__(self, url, *args, **kwargs):
@@ -58,3 +57,7 @@ __all__ = [
     "ConfluenceServer",
     "ConfluenceBase",
 ]
+
+# ``ConfluenceCloud`` is the established Cloud REST client.  The separate v2
+# implementation is intentionally exported as ``atlassian.ConfluenceV2``.
+ConfluenceCloud = LegacyConfluenceCloud

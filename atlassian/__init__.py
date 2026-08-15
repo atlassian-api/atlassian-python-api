@@ -7,6 +7,7 @@ from .bitbucket import Bitbucket
 from .bitbucket import Bitbucket as Stash
 from .cloud_admin import CloudAdminOrgs, CloudAdminUsers
 from .confluence import Confluence, ConfluenceBase, ConfluenceCloud, ConfluenceServer
+from .confluence.cloud.cloud import ConfluenceCloud as ConfluenceV2
 from .crowd import Crowd
 from .insight import Insight
 from .insight import Insight as Assets  # used for Insight on-premise
@@ -22,12 +23,10 @@ from .xray import Xray
 
 # Confluence REST API v2 client.  The existing ``Confluence`` class remains
 # the backwards-compatible v1/v2 URL-dispatching client.
-ConfluenceV2 = ConfluenceCloud
-
-
 def create_confluence(url, *args, api_version=1, **kwargs):
     """Create a version-aware Confluence client."""
     return ConfluenceBase.factory(url, *args, api_version=api_version, **kwargs)
+
 
 __all__ = [
     "Confluence",

@@ -25,7 +25,7 @@ from atlassian.errors import (
     JsonRPCError,
     JsonRPCRestrictionsError,
 )
-from .confluence_server import ConfluenceServer
+from .confluence_server import ConfluenceServer  # noqa: F401
 
 log = logging.getLogger(__name__)
 

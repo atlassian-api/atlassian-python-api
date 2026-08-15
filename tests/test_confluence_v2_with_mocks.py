@@ -11,7 +11,7 @@ from unittest.mock import MagicMock, Mock, patch
 from requests import Response
 from requests.exceptions import HTTPError
 
-from atlassian import ConfluenceCloud as ConfluenceV2
+from atlassian import ConfluenceV2
 from tests.mocks.confluence_v2_mock_responses import (
     CHILD_PAGES_RESULT,
     COMMENT_MOCK,

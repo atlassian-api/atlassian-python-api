@@ -2,7 +2,7 @@
 import unittest
 from unittest.mock import MagicMock, mock_open, patch
 
-from atlassian import Confluence, ConfluenceBase, ConfluenceCloud, create_confluence
+from atlassian import Confluence, ConfluenceBase, ConfluenceV2, create_confluence
 from atlassian.confluence.cloud import ConfluenceCloud as ConcreteConfluenceCloud
 from atlassian.confluence.server import ConfluenceServer
 
@@ -181,19 +181,19 @@ class TestConfluenceV2(unittest.TestCase):
 
     def test_init(self):
         """Test ConfluenceV2 initialization sets correct API version"""
-        client = ConfluenceCloud("https://example.atlassian.net")
+        client = ConfluenceV2("https://example.atlassian.net")
         self.assertEqual(client.api_version, 2)
         self.assertEqual(client.url, "https://example.atlassian.net/wiki")
 
     def test_init_with_explicit_version(self):
         """Test ConfluenceV2 initialization with explicit API version"""
         # This actually is just calling ConfluenceCloud directly so always uses v2
-        client = ConfluenceCloud("https://example.atlassian.net", api_version=2)
+        client = ConfluenceV2("https://example.atlassian.net", api_version=2)
         self.assertEqual(client.api_version, 2)
 
         # The v2 client actually uses the version provided when called directly
         # (even though when used as ConfluenceV2 alias, it would force v2)
-        client = ConfluenceCloud("https://example.atlassian.net", api_version=1)
+        client = ConcreteConfluenceCloud("https://example.atlassian.net", api_version=1)
         self.assertEqual(client.api_version, 1)  # This actually matches behavior
 
 

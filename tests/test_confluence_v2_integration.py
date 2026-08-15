@@ -3,12 +3,18 @@
 
 import logging
 import os
-import re
 import unittest
 from urllib.parse import urlparse
 
 import pytest
-from dotenv import load_dotenv
+
+try:
+    from dotenv import load_dotenv
+except ImportError:
+
+    def load_dotenv():
+        return False
+
 
 from atlassian import ConfluenceV2
 
@@ -18,6 +24,11 @@ logger = logging.getLogger(__name__)
 
 # Load environment variables from .env file
 load_dotenv()
+
+pytestmark = pytest.mark.skipif(
+    not all(os.environ.get(name) for name in ("CONFLUENCE_URL", "CONFLUENCE_USERNAME", "CONFLUENCE_API_TOKEN")),
+    reason="requires Confluence Cloud credentials configured in the environment",
+)
 
 
 class TestConfluenceV2Integration(unittest.TestCase):
