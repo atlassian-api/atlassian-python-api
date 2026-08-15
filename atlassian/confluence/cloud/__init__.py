@@ -1,10 +1,14 @@
 # coding=utf-8
 
 import logging
+import re
+import time
 from .base import ConfluenceCloudBase
+import requests
 from requests import HTTPError
 from atlassian.errors import (
     ApiError,
+    ApiNotFoundError,
 )
 from .cloud import ConfluenceCloud  # noqa: F401
 
@@ -26,6 +30,61 @@ class Cloud(ConfluenceCloudBase):
             kwargs["api_root"] = "wiki/api/v2"
         url = url.strip("/")
         super(Cloud, self).__init__(url, *args, **kwargs)
+
+    def _cloud_wiki_url(self, path):
+        """Return an absolute Cloud URL under the site's ``/wiki`` context."""
+        base_url = self.url.rstrip("/")
+        if not base_url.endswith("/wiki"):
+            base_url += "/wiki"
+        return self.url_joiner(base_url, path)
+
+    def get_pdf_download_url_for_confluence_cloud(self, url):
+        """Start a Cloud PDF export and return its signed download URL.
+
+        Confluence Cloud creates PDF exports asynchronously.  The legacy task
+        endpoint was removed; the current task state is available from the V2
+        ``pdfexporttask`` endpoint.
+        """
+        try:
+            response = self.get(url, headers=self.form_token_headers, not_json_response=True, absolute=True)
+            task_match = re.search(br'name="ajs-taskId"\s+content="([^"]+)"', response)
+            if not task_match:
+                log.error("Could not find the PDF export task ID in the response")
+                return None
+
+            task_id = task_match.group(1).decode("utf-8", errors="ignore")
+            poll_url = self._cloud_wiki_url(f"api/v2/pdfexporttask/progress/{task_id}")
+
+            while True:
+                log.info("Check if PDF export task has completed.")
+                progress_response = self.get(poll_url, absolute=True) or {}
+                task_state = progress_response.get("state")
+                if task_state == "FAILED" or progress_response.get("status") == "failed":
+                    log.error("PDF conversion was not successful.")
+                    return None
+
+                download_url = progress_response.get("result")
+                if isinstance(download_url, str) and download_url:
+                    return self._cloud_wiki_url(download_url) if download_url.startswith("/") else download_url
+
+                percentage_complete = int(progress_response.get("progress", 0))
+                log.info("%s%% - %s", percentage_complete, task_state)
+                time.sleep(3)
+        except (AttributeError, TypeError, ValueError) as error:
+            log.error("Could not initiate or poll the PDF export: %s", error)
+            return None
+
+    def get_page_as_pdf(self, page_id):
+        """Export a Cloud page as PDF using Confluence's asynchronous exporter."""
+        export_url = self._cloud_wiki_url(f"spaces/flyingpdf/pdfpageexport.action?pageId={page_id}")
+        download_url = self.get_pdf_download_url_for_confluence_cloud(export_url)
+        if not download_url:
+            raise ApiNotFoundError("Failed to export page as PDF", reason="Failed to get download PDF URL")
+        return requests.get(download_url, timeout=75).content
+
+    def export_page(self, page_id):
+        """Alias for :meth:`get_page_as_pdf`."""
+        return self.get_page_as_pdf(page_id)
 
     # Content Management
     def get_content(self, content_id, **kwargs):

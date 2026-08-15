@@ -34,6 +34,22 @@ class TestConfluenceCloud:
         assert confluence.api_version == "1"
         assert confluence.api_root == "custom/api/root"
 
+    @patch("atlassian.confluence.cloud.requests.get")
+    @patch.object(ConfluenceCloud, "get")
+    def test_export_page_uses_v2_pdf_export_task_endpoint(self, mock_get, mock_requests_get, confluence_cloud):
+        mock_get.side_effect = [
+            b'<meta name="ajs-taskId" content="task-123">',
+            {"state": "SUCCEEDED", "progress": 100, "result": "https://downloads.example.test/page.pdf"},
+        ]
+        mock_requests_get.return_value.content = b"%PDF-1.7"
+
+        result = confluence_cloud.export_page("456")
+
+        assert result == b"%PDF-1.7"
+        assert mock_get.call_args_list[1].args[0] == "https://test.atlassian.net/wiki/api/v2/pdfexporttask/progress/task-123"
+        assert mock_get.call_args_list[1].kwargs["absolute"] is True
+        mock_requests_get.assert_called_once_with("https://downloads.example.test/page.pdf", timeout=75)
+
     # Content Management Tests
     @patch.object(ConfluenceCloud, "get")
     def test_get_content(self, mock_get, confluence_cloud):
