@@ -1203,8 +1203,25 @@ class Bamboo(AtlassianRestAPI):
             params={"includeShared": include_shared},
         )
 
-    def activity(self):
-        return self.get("build/admin/ajax/getDashboardSummary.action")
+    def activity(self, busy=None):
+        """Return active online agents and their current build activity.
+
+        The former dashboard AJAX endpoint was an internal Bamboo UI endpoint
+        and is not present in current Bamboo releases.  The supported agent
+        REST resource exposes ``active`` and ``busy`` for each online agent.
+
+        :param busy: Optional filter for busy (``True``) or idle (``False``)
+                     agents. By default, return all active online agents.
+        :return: List of active agent dictionaries, including ``busy``.
+        """
+        agents = self.agent_status(online=True)
+        if not isinstance(agents, list):
+            return agents
+
+        active_agents = [agent for agent in agents if agent.get("active", agent.get("online", False))]
+        if busy is None:
+            return active_agents
+        return [agent for agent in active_agents if agent.get("busy") is busy]
 
     def get_custom_expiry(self, limit=25):
         """

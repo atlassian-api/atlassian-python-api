@@ -256,8 +256,11 @@ Other actions
     # Get server information
     server_info()
 
-    # Get activity
+    # Get active online agents, including each agent's ``busy`` state
     activity()
+
+    # Get only idle active agents
+    activity(busy=False)
 
     # Get custom expiry
     get_custom_expiry(limit=25)
