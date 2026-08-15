@@ -194,6 +194,7 @@ Page actions
     confluence.attach_content(content, name=None, content_type=None, page_id=None, title=None, space=None, comment=None)
 
     # Download attachments from a page to local system. If path is None, current working directory will be used.
+    # Downloads every attachment, following Confluence pagination automatically.
     confluence.download_attachments_from_page(page_id, path=None)
 
     # Remove completely a file if version is None or delete version

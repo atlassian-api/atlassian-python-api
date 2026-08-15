@@ -601,6 +601,30 @@ class TestConfluenceServer:
         )
         assert result["report.pdf"].read() == b"attachment_content"
 
+    @patch.object(ConfluenceServer, "get")
+    @patch.object(ConfluenceServer, "get_attachments_from_content")
+    def test_download_attachments_fetches_all_attachment_pages(self, mock_get_attachments, mock_get, confluence_server):
+        mock_get_attachments.side_effect = [
+            {
+                "results": [
+                    {"id": "att1", "title": "first.txt", "_links": {"download": "download/first"}},
+                    {"id": "att2", "title": "second.txt", "_links": {"download": "download/second"}},
+                ],
+                "totalSize": 3,
+            },
+            {
+                "results": [{"id": "att3", "title": "third.txt", "_links": {"download": "download/third"}}],
+                "totalSize": 3,
+            },
+        ]
+        mock_get.return_value = b"attachment_content"
+
+        result = confluence_server.download_attachments_from_page("123", limit=2, to_memory=True)
+
+        assert list(result) == ["first.txt", "second.txt", "third.txt"]
+        assert mock_get_attachments.call_args_list[0].kwargs == {"page_id": "123", "start": 0, "limit": 2}
+        assert mock_get_attachments.call_args_list[1].kwargs == {"page_id": "123", "start": 2, "limit": 2}
+
     # Comment Management Tests
     @patch.object(ConfluenceServer, "get")
     def test_get_comments(self, mock_get, confluence_server):

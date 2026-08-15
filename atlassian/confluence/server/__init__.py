@@ -1126,8 +1126,25 @@ class Server(ConfluenceServerBase):
                 if not attachments:
                     return f"No attachment with filename '{filename}' found on the page."
             else:
-                # Fetch all attachments with pagination
-                attachments = self.get_attachments_from_content(page_id=page_id, start=start, limit=limit)["results"]
+                # Fetch all attachment pages. Confluence defaults to 50 results,
+                # so a single request silently omits attachments on larger pages.
+                attachments = []
+                current_start = start
+                while True:
+                    attachment_page = self.get_attachments_from_content(
+                        page_id=page_id, start=current_start, limit=limit
+                    )
+                    page_results = attachment_page.get("results", [])
+                    attachments.extend(page_results)
+
+                    total_size = attachment_page.get("totalSize")
+                    if not page_results or (
+                        total_size is not None and current_start + len(page_results) >= total_size
+                    ):
+                        break
+                    if total_size is None and len(page_results) < limit:
+                        break
+                    current_start += len(page_results)
                 if not attachments:
                     return "No attachments found on the page."
 
@@ -1158,8 +1175,6 @@ class Server(ConfluenceServerBase):
                             UserWarning,
                         )
                         file_name = sanitized
-                    file_path = os.path.join(path, file_name)
-                    # Save file to disk
                     file_path = os.path.join(path, file_name)
                     with open(file_path, "wb") as file:
                         file.write(response)
