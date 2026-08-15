@@ -380,6 +380,12 @@ Bitbucket Cloud
     # Get a repository
     repository = workplace.repositories.get(repository_slug)
 
+    # Read raw bytes from a file at a branch, tag, or commit SHA
+    readme = repository.get_source_file("main", "README.md")
+
+    # List directory entries at a branch, tag, or commit SHA
+    source_entries = repository.get_source_directory("main", "src")["values"]
+
     # Get a list of deployment environments from a repository
     repository.deployment_environments.each():
 

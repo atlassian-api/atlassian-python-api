@@ -1,5 +1,7 @@
 # coding=utf-8
 
+from urllib.parse import quote
+
 from requests import HTTPError
 
 from .branchRestrictions import BranchRestrictions
@@ -376,6 +378,37 @@ class Repository(BitbucketCloudBase):
     def get_avatar(self):
         """The repository avatar"""
         return self.get(self.get_link("avatar"), absolute=True)
+
+    def get_source_file(self, commit, path):
+        """Return the raw bytes of a file at a branch, tag, or commit.
+
+        :param commit: Branch name, tag, or commit hash to read from.
+        :param path: Repository-relative path of the file.
+        :return: Raw file content as bytes.
+
+        API docs:
+        https://developer.atlassian.com/cloud/bitbucket/rest/api-group-source/#api-repositories-workspace-repo-slug-src-commit-path-get
+        """
+        source_path = quote(path.strip("/"), safe="/")
+        if not source_path:
+            raise ValueError("path must identify a file")
+        return self.get(
+            f"src/{quote(str(commit), safe='')}/{source_path}",
+            not_json_response=True,
+        )
+
+    def get_source_directory(self, commit, path=""):
+        """Return the JSON directory listing at a branch, tag, or commit.
+
+        :param commit: Branch name, tag, or commit hash to browse.
+        :param path: Optional repository-relative directory path.
+        :return: Paginated Bitbucket directory listing.
+        """
+        source_path = quote(path.strip("/"), safe="/")
+        endpoint = f"src/{quote(str(commit), safe='')}"
+        if source_path:
+            endpoint = f"{endpoint}/{source_path}"
+        return self.get(endpoint)
 
     @property
     def branch_restrictions(self):

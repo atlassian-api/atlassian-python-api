@@ -4,6 +4,11 @@ Here you can find different examples of how to use a library.
 
 You can use it as a reference for your apps or just use it "as is" for your needs.
 Feel free to send us new examples if you think, that we miss something important.
+
+For Bitbucket Cloud's object-oriented client, see
+`bitbucket/bitbucket_cloud_read_source.py` for reading a repository file and
+browsing a directory without using the legacy Bitbucket Server API.
+
 There are simple rules each example should follow:
 
 * **Do not store** any credentials in VCS
