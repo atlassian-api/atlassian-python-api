@@ -1870,7 +1870,7 @@ class Server(ConfluenceServerBase):
         :param data: data should be as json data
         :return:
         """
-        url = f"rest/api/content/{page_id}/property"
+        url = f"content/{page_id}/property"
         json_data = data
 
         try:
@@ -1904,7 +1904,7 @@ class Server(ConfluenceServerBase):
         :data: property data in json format
         :return:
         """
-        url = f"rest/api/content/{page_id}/property/{data.get('key')}"
+        url = f"content/{page_id}/property/{data.get('key')}"
         try:
             response = self.put(path=url, data=data)
         except HTTPError as e:
@@ -1943,7 +1943,7 @@ class Server(ConfluenceServerBase):
         :param page_property: key of property
         :return:
         """
-        url = f"rest/api/content/{page_id}/property/{str(page_property)}"
+        url = f"content/{page_id}/property/{str(page_property)}"
         try:
             response = self.delete(path=url)
         except HTTPError as e:
@@ -1966,7 +1966,7 @@ class Server(ConfluenceServerBase):
         :param page_property_key: key of property
         :return:
         """
-        url = f"rest/api/content/{page_id}/property/{str(page_property_key)}"
+        url = f"content/{page_id}/property/{str(page_property_key)}"
         try:
             response = self.get(path=url)
         except HTTPError as e:
@@ -1983,16 +1983,28 @@ class Server(ConfluenceServerBase):
 
         return response
 
-    def get_page_properties(self, page_id):
+    def get_page_properties(self, page_id, limit=100, expand=None):
+        """Return every property attached to a page.
+
+        Confluence paginates this endpoint and otherwise returns only its small
+        server-defined default page (commonly ten properties).  Pagination is
+        handled internally; ``limit`` controls the size of each HTTP request,
+        not the number of properties returned.
+
+        :param page_id: content ID
+        :param limit: maximum properties requested per API call
+        :param expand: optional property fields to expand
+        :return: list of page property objects
         """
-        Get the page (content) properties
-        :param page_id: content_id format
-        :return: get properties
-        """
-        url = f"rest/api/content/{page_id}/property"
+        if limit <= 0:
+            raise ValueError("limit must be greater than zero")
+
+        params = {"limit": limit}
+        if expand:
+            params["expand"] = expand
 
         try:
-            response = self.get(path=url)
+            return list(self._get_paged(f"content/{page_id}/property", params=params))
         except HTTPError as e:
             if e.response.status_code == 404:
                 # Raise ApiError as the documented reason is ambiguous
@@ -2003,8 +2015,6 @@ class Server(ConfluenceServerBase):
                 )
 
             raise
-
-        return response
 
     def get_page_ancestors(self, page_id):
         """

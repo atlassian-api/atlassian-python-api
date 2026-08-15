@@ -244,6 +244,20 @@ class TestConfluenceServer:
         assert confluence_server.cql_all("type=page") == [{"id": "1"}, {"id": "2"}]
         mock_iter_cql.assert_called_once_with("type=page")
 
+    @patch.object(ConfluenceServer, "_get_paged")
+    def test_get_page_properties_follows_every_result_page(self, mock_get_paged, confluence_server):
+        mock_get_paged.return_value = iter([{"key": "one"}, {"key": "two"}])
+
+        assert confluence_server.get_page_properties("123", limit=50, expand="version") == [
+            {"key": "one"},
+            {"key": "two"},
+        ]
+        mock_get_paged.assert_called_once_with("content/123/property", params={"limit": 50, "expand": "version"})
+
+    def test_get_page_properties_rejects_non_positive_limit(self, confluence_server):
+        with pytest.raises(ValueError, match="limit must be greater than zero"):
+            confluence_server.get_page_properties("123", limit=0)
+
     # Content Management Tests
     @patch.object(ConfluenceServer, "get")
     def test_get_content(self, mock_get, confluence_server):

@@ -210,7 +210,8 @@ Page actions
     # Get the page (content) property e.g. get key of hash
     confluence.get_page_property(page_id, page_property_key)
 
-    # Get the page (content) properties
+    # Get every page (content) property. Pagination is handled automatically;
+    # limit controls the size of each request, not the final result size.
     confluence.get_page_properties(page_id)
 
     # Get page ancestors
