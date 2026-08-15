@@ -459,8 +459,8 @@ Pipelines management
         # Get first ten Pipelines results for repository
         r.pipelines.each()
 
-        # Get twenty last Pipelines results for repository
-        r.pipelines.each(sort="-created_on", pagelen=20)
+        # Get Pipelines results for repository, newest first
+        r.pipelines.each(sort="-created_on")
 
         # Trigger default Pipeline on the latest revision of the master branch
         r.pipelines.trigger()
@@ -469,13 +469,13 @@ Pipelines management
         r.pipelines.trigger(branch="develop")
 
         # Trigger default Pipeline on a specific revision of the develop branch
-        r.pipelines.trigger(branch="develop", revision="<40-char hash>")
+        r.pipelines.trigger(branch="develop", commit="<40-char hash>")
 
         # Trigger specific Pipeline on a specific revision of the master branch
-        r.pipelines.trigger(revision="<40-char hash>", name="style-check")
+        r.pipelines.trigger(commit="<40-char hash>", pattern="style-check")
 
         # Trigger specific Pipeline of the master branch with specific variables
-        r.pipelines.trigger(name="style-check", variables=[{ "key": "var-name", "value": "var-value" }])
+        r.pipelines.trigger(pattern="style-check", variables=[{ "key": "var-name", "value": "var-value" }])
 
         # Get specific Pipeline by UUID
         pl = r.pipelines.get("{7d6c327d-6336-4721-bfeb-c24caf25045c}")
