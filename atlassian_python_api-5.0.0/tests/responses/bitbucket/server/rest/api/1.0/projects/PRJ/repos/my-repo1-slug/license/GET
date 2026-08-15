@@ -1,0 +1,5 @@
+responses = {
+    None: b"Test license.md",
+    "at=CommitId": b"Test license.md at CommitId",
+    "at=CommitId&markup=True": b"<p>Test rendered license.md at CommitId</p>",
+}

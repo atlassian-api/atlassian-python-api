@@ -1,0 +1,28 @@
+responses[None] = {
+    "slug": "my-repo1-slug",
+    "id": 1,
+    "name": "My repo 1",
+    "description": "My repo 1 description",
+    "hierarchyId": "e3c939f9ef4a7fae272e",
+    "scmId": "git",
+    "state": "AVAILABLE",
+    "statusMessage": "Available",
+    "forkable": true,
+    "project": {
+        "key": "PRJ",
+        "id": 1,
+        "name": "My Cool Project",
+        "description": "The description for my cool project.",
+        "public": true,
+        "type": "NORMAL",
+        "links": {"self": [{"href": "bitbucket/server/rest/api/1.0/projects/PRJ"}]},
+    },
+    "public": true,
+    "links": {
+        "clone": [
+            {"href": "ssh://git@<baseURL>/PRJ/my-repo1.git", "name": "ssh"},
+            {"href": "https://<baseURL>/scm/PRJ/my-repo1.git", "name": "http"},
+        ],
+        "self": [{"href": "bitbucket/server/rest/api/1.0/projects/PRJ/repos/my-repo1-slug"}],
+    },
+}

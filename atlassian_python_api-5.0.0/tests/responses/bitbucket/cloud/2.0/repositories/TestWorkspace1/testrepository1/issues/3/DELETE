@@ -1,0 +1,44 @@
+responses[None] = {
+    "assignee": None,
+    "component": None,
+    "content": {"html": "<p>Description</p>", "markup": "markdown", "raw": "Description", "type": "rendered"},
+    "created_on": "2020-11-17T20:48:07.907857+00:00",
+    "edited_on": None,
+    "id": 3,
+    "kind": "bug",
+    "links": {"self": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/issues/3/"}},
+    "milestone": None,
+    "priority": "trivial",
+    "reporter": {
+        "account_id": "ReporterAccountId",
+        "display_name": "ReporterDisplayName",
+        "links": {
+            "avatar": {
+                "href": "https://secure.gravatar.com/avatar/31a164e6406a8deeb56e94c778030a9f?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FS-3.png"
+            },
+            "html": {"href": "https://bitbucket.org/%7BReporterUuid%7D/"},
+            "self": {"href": "bitbucket/cloud/2.0/users/%7BReporterUuid%7D"},
+        },
+        "nickname": "ReporterNickName",
+        "type": "user",
+        "uuid": "{ReporterUuid}",
+    },
+    "repository": {
+        "full_name": "TestWorkspace1/TestRepository1",
+        "links": {
+            "avatar": {"href": "https://bytebucket.org/ravatar/%7BRepositoryUuid%7D?ts=c"},
+            "html": {"href": "https://bitbucket.org/TestWorkspace1/TestRepository1"},
+            "self": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/TestRepository1"},
+        },
+        "name": "TestRepository",
+        "type": "repository",
+        "uuid": "{RepositoryUuid}",
+    },
+    "state": "new",
+    "title": "Title deleted issue",
+    "type": "issue",
+    "updated_on": "2020-11-17T20:48:07.907857+00:00",
+    "version": None,
+    "votes": 0,
+    "watches": None,
+}

@@ -1,0 +1,70 @@
+responses[None] = {
+    "page": 1,
+    "pagelen": 2,
+    "size": 3,
+    "next": "workspaces?nextPage",
+    "values": [
+        {
+            "created_on": "2020-10-28T12:00:00.0+00:00",
+            "is_private": False,
+            "links": {
+                "avatar": {"href": "https://bitbucket.org/workspaces/TestWorkspace1/avatar/?ts=1604430491"},
+                "html": {"href": "https://bitbucket.org/TestWorkspace1/"},
+                "members": {"href": "workspaces/TestWorkspace1/members"},
+                "owners": {"href": "workspaces/TestWorkspace1/members?q=permission%3D%22owner%22"},
+                "projects": {"href": "workspaces/TestWorkspace1/projects"},
+                "repositories": {"href": "repositories1/TestWorkspace"},
+                "self": {"href": "workspaces/TestWorkspace1"},
+                "snippets": {"href": "snippets/TestWorkspace1"},
+            },
+            "name": "TestWorkspace1",
+            "slug": "TestWorkspace1",
+            "type": "workspace",
+            "uuid": "{TestWorkspace1Uuid}",
+        },
+        {
+            "created_on": "2020-10-28T12:00:00.0+00:00",
+            "is_private": False,
+            "links": {
+                "avatar": {"href": "https://bitbucket.org/workspaces/TestWorkspace2/avatar/?ts=1604430491"},
+                "html": {"href": "https://bitbucket.org/TestWorkspace2/"},
+                "members": {"href": "workspaces/TestWorkspace2/members"},
+                "owners": {"href": "workspaces/TestWorkspace2/members?q=permission%3D%22owner%22"},
+                "projects": {"href": "workspaces/TestWorkspace2/projects"},
+                "repositories": {"href": "repositories1/TestWorkspace"},
+                "self": {"href": "workspaces/TestWorkspace2"},
+                "snippets": {"href": "snippets/TestWorkspace2"},
+            },
+            "name": "TestWorkspace2",
+            "slug": "TestWorkspace2",
+            "type": "workspace",
+            "uuid": "{TestWorkspace2Uuid}",
+        },
+    ],
+}
+
+responses["nextPage"] = {
+    "page": 2,
+    "pagelen": 2,
+    "size": 3,
+    "values": [
+        {
+            "created_on": "2020-10-28T12:00:00.0+00:00",
+            "is_private": False,
+            "links": {
+                "avatar": {"href": "https://bitbucket.org/workspaces/TestWorkspace3/avatar/?ts=1604430491"},
+                "html": {"href": "https://bitbucket.org/TestWorkspace3/"},
+                "members": {"href": "workspaces/TestWorkspace3/members"},
+                "owners": {"href": "workspaces/TestWorkspace3/members?q=permission%3D%22owner%22"},
+                "projects": {"href": "workspaces/TestWorkspace3/projects"},
+                "repositories": {"href": "repositories1/TestWorkspace"},
+                "self": {"href": "workspaces/TestWorkspace3"},
+                "snippets": {"href": "snippets/TestWorkspace3"},
+            },
+            "name": "TestWorkspace3",
+            "slug": "TestWorkspace3",
+            "type": "workspace",
+            "uuid": "{TestWorkspace3Uuid}",
+        }
+    ],
+}

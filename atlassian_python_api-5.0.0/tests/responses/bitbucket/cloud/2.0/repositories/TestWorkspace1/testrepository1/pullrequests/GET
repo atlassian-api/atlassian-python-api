@@ -1,0 +1,241 @@
+responses[None] = {
+    "pagelen": 10,
+    "size": 2,
+    "values": [
+        {
+            "description": "PRDescription",
+            "links": {
+                "decline": {
+                    "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/pullrequests/1/decline"
+                },
+                "diffstat": {
+                    "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/diffstat/TestWorkspace1/testrepository1:16182c4123fb%0D1fbd047cd99a?from_pullrequest_id=1"
+                },
+                "commits": {
+                    "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/pullrequests/1/commits"
+                },
+                "self": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/pullrequests/1"},
+                "comments": {
+                    "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/pullrequests/1/comments"
+                },
+                "merge": {
+                    "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/pullrequests/1/merge"
+                },
+                "html": {"href": "https://bitbucket.org/TestWorkspace1/testrepository1/pull-requests/123"},
+                "activity": {
+                    "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/pullrequests/1/activity"
+                },
+                "request-changes": {
+                    "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/pullrequests/1/request-changes"
+                },
+                "diff": {
+                    "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/diff/TestWorkspace1/testrepository1:16182c4123fb%0D1fbd047cd99a?from_pullrequest_id=1"
+                },
+                "approve": {
+                    "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/pullrequests/1/approve"
+                },
+                "statuses": {
+                    "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/pullrequests/1/statuses"
+                },
+            },
+            "title": "PRTitle",
+            "close_source_branch": true,
+            "type": "pullrequest",
+            "id": 1,
+            "destination": {
+                "commit": {
+                    "hash": "1fbd047cd99a",
+                    "type": "commit",
+                    "links": {
+                        "self": {
+                            "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/commit/1fbd047cd99a"
+                        },
+                        "html": {"href": "https://bitbucket.org/TestWorkspace1/testrepository1/commits/1fbd047cd99a"},
+                    },
+                },
+                "repository": {
+                    "links": {
+                        "self": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1"},
+                        "html": {"href": "https://bitbucket.org/TestWorkspace1/testrepository1"},
+                        "avatar": {"href": "https://bytebucket.org/ravatar/%7BRepoUUID%7D?ts=default"},
+                    },
+                    "type": "repository",
+                    "name": "testrepository1",
+                    "full_name": "TestWorkspace1/testrepository1",
+                    "uuid": "{RepoUUID}",
+                },
+                "branch": {"name": "master"},
+            },
+            "created_on": "2020-03-19T12:00:03.494356+00:00",
+            "summary": {
+                "raw": "PRDescription",
+                "markup": "markdown",
+                "html": "<p>PRDescription</p>",
+                "type": "rendered",
+            },
+            "source": {
+                "commit": {
+                    "hash": "16182c4123fb",
+                    "type": "commit",
+                    "links": {
+                        "self": {
+                            "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/commit/16182c4123fb"
+                        },
+                        "html": {"href": "https://bitbucket.org/TestWorkspace1/testrepository1/commits/16182c4123fb"},
+                    },
+                },
+                "repository": {
+                    "links": {
+                        "self": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1"},
+                        "html": {"href": "https://bitbucket.org/TestWorkspace1/testrepository1"},
+                        "avatar": {"href": "https://bytebucket.org/ravatar/%7BRepoUUID%7D?ts=default"},
+                    },
+                    "type": "repository",
+                    "name": "testrepository1",
+                    "full_name": "TestWorkspace1/testrepository1",
+                    "uuid": "{RepoUUID}",
+                },
+                "branch": {"name": "feature/test-branch"},
+            },
+            "comment_count": 5,
+            "state": "OPEN",
+            "task_count": 0,
+            "reason": "",
+            "updated_on": "2020-12-27T14:09:32.769040+00:00",
+            "author": {
+                "display_name": "User03DisplayName",
+                "uuid": "{User03UUID}",
+                "links": {
+                    "self": {"href": "users/%7BUser03UUID%7D"},
+                    "html": {"href": "https://bitbucket.org/%7BUser03UUID%7D/"},
+                    "avatar": {
+                        "href": "https://secure.gravatar.com/avatar/ad2424dafaasdssaew12232344434432?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FU3-0.png"
+                    },
+                },
+                "nickname": "User03Nickname",
+                "type": "user",
+                "account_id": "User03AccountID",
+            },
+            "merge_commit": null,
+            "closed_by": null,
+        },
+        {
+            "description": "PRDescription",
+            "links": {
+                "decline": {
+                    "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/pullrequests/1/decline"
+                },
+                "diffstat": {
+                    "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/diffstat/TestWorkspace1/testrepository1:16182c4123fb%0D1fbd047cd99a?from_pullrequest_id=1"
+                },
+                "commits": {
+                    "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/pullrequests/1/commits"
+                },
+                "self": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/pullrequests/1"},
+                "comments": {
+                    "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/pullrequests/1/comments"
+                },
+                "merge": {
+                    "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/pullrequests/1/merge"
+                },
+                "html": {"href": "https://bitbucket.org/TestWorkspace1/testrepository1/pull-requests/123"},
+                "activity": {
+                    "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/pullrequests/1/activity"
+                },
+                "request-changes": {
+                    "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/pullrequests/1/request-changes"
+                },
+                "diff": {
+                    "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/diff/TestWorkspace1/testrepository1:16182c4123fb%0D1fbd047cd99a?from_pullrequest_id=1"
+                },
+                "approve": {
+                    "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/pullrequests/1/approve"
+                },
+                "statuses": {
+                    "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/pullrequests/1/statuses"
+                },
+            },
+            "title": "PRTitle",
+            "close_source_branch": true,
+            "type": "pullrequest",
+            "id": 25,
+            "destination": {
+                "commit": {
+                    "hash": "1fbd047cd99a",
+                    "type": "commit",
+                    "links": {
+                        "self": {
+                            "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/commit/1fbd047cd99a"
+                        },
+                        "html": {"href": "https://bitbucket.org/TestWorkspace1/testrepository1/commits/1fbd047cd99a"},
+                    },
+                },
+                "repository": {
+                    "links": {
+                        "self": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1"},
+                        "html": {"href": "https://bitbucket.org/TestWorkspace1/testrepository1"},
+                        "avatar": {"href": "https://bytebucket.org/ravatar/%7BRepoUUID%7D?ts=default"},
+                    },
+                    "type": "repository",
+                    "name": "testrepository1",
+                    "full_name": "TestWorkspace1/testrepository1",
+                    "uuid": "{RepoUUID}",
+                },
+                "branch": {"name": "master"},
+            },
+            "created_on": "2020-03-19T12:00:03.494356+00:00",
+            "summary": {
+                "raw": "PRDescription",
+                "markup": "markdown",
+                "html": "<p>PRDescription</p>",
+                "type": "rendered",
+            },
+            "source": {
+                "commit": {
+                    "hash": "16182c4123fb",
+                    "type": "commit",
+                    "links": {
+                        "self": {
+                            "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/commit/16182c4123fb"
+                        },
+                        "html": {"href": "https://bitbucket.org/TestWorkspace1/testrepository1/commits/16182c4123fb"},
+                    },
+                },
+                "repository": {
+                    "links": {
+                        "self": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1"},
+                        "html": {"href": "https://bitbucket.org/TestWorkspace1/testrepository1"},
+                        "avatar": {"href": "https://bytebucket.org/ravatar/%7BRepoUUID%7D?ts=default"},
+                    },
+                    "type": "repository",
+                    "name": "testrepository1",
+                    "full_name": "TestWorkspace1/testrepository1",
+                    "uuid": "{RepoUUID}",
+                },
+                "branch": {"name": "feature/test-branch"},
+            },
+            "comment_count": 5,
+            "state": "OPEN",
+            "task_count": 0,
+            "reason": "",
+            "updated_on": "2020-12-27T14:09:32.769040+00:00",
+            "author": {
+                "display_name": "User03DisplayName",
+                "uuid": "{User03UUID}",
+                "links": {
+                    "self": {"href": "users/%7BUser03UUID%7D"},
+                    "html": {"href": "https://bitbucket.org/%7BUser03UUID%7D/"},
+                    "avatar": {
+                        "href": "https://secure.gravatar.com/avatar/ad2424dafaasdssaew12232344434432?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FU3-0.png"
+                    },
+                },
+                "nickname": "User03Nickname",
+                "type": "user",
+                "account_id": "User03AccountID",
+            },
+            "merge_commit": null,
+            "closed_by": null,
+        },
+    ],
+    "page": 1,
+}

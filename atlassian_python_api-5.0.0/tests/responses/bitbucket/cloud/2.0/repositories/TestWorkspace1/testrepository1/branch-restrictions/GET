@@ -1,0 +1,112 @@
+responses[None] = {
+    "pagelen": 10,
+    "values": [
+        {
+            "kind": "delete",
+            "users": [],
+            "links": {
+                "self": {
+                    "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/branch-restrictions/17203842"
+                }
+            },
+            "pattern": "*",
+            "value": None,
+            "branch_match_kind": "glob",
+            "groups": [],
+            "type": "branchrestriction",
+            "id": 17203842,
+        },
+        {
+            "kind": "force",
+            "users": [],
+            "links": {
+                "self": {
+                    "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/branch-restrictions/16678280"
+                }
+            },
+            "pattern": "master",
+            "value": None,
+            "branch_match_kind": "glob",
+            "groups": [],
+            "type": "branchrestriction",
+            "id": 16678280,
+        },
+        {
+            "kind": "delete",
+            "users": [],
+            "links": {
+                "self": {
+                    "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/branch-restrictions/16678279"
+                }
+            },
+            "pattern": "master",
+            "value": None,
+            "branch_match_kind": "glob",
+            "groups": [],
+            "type": "branchrestriction",
+            "id": 16678279,
+        },
+        {
+            "kind": "restrict_merges",
+            "users": [
+                {
+                    "display_name": "MergeRestrictUserDisplayName",
+                    "uuid": "{MergeRestrictUserUuid}",
+                    "links": {
+                        "self": {"href": "bitbucket/cloud/2.0/users/%7BMergeRestrictUserUuid%7D"},
+                        "html": {"href": "https://bitbucket.org/%7BMergeRestrictUserUuid%7D/"},
+                        "avatar": {
+                            "href": "https://secure.gravatar.com/avatar/31a164e6406a8deeb56e94c778030a9f?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FS-3.png"
+                        },
+                    },
+                    "nickname": "MergeRestrictUserNickname",
+                    "type": "user",
+                    "account_id": "MergeRestrictUserAccountId",
+                }
+            ],
+            "links": {
+                "self": {
+                    "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/branch-restrictions/16678278"
+                }
+            },
+            "pattern": "master",
+            "value": None,
+            "branch_match_kind": "glob",
+            "groups": [],
+            "type": "branchrestriction",
+            "id": 16678278,
+        },
+        {
+            "kind": "push",
+            "users": [
+                {
+                    "display_name": "MergeRestrictUserDisplayName",
+                    "uuid": "{MergeRestrictUserUuid}",
+                    "links": {
+                        "self": {"href": "bitbucket/cloud/2.0/users/%7BMergeRestrictUserUuid%7D"},
+                        "html": {"href": "https://bitbucket.org/%7BMergeRestrictUserUuid%7D/"},
+                        "avatar": {
+                            "href": "https://secure.gravatar.com/avatar/31a164e6406a8deeb56e94c778030a9f?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FS-3.png"
+                        },
+                    },
+                    "nickname": "Spacetown",
+                    "type": "user",
+                    "account_id": "MergeRestrictUserAccountId",
+                }
+            ],
+            "links": {
+                "self": {
+                    "href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/testrepository1/branch-restrictions/16678277"
+                }
+            },
+            "pattern": "master",
+            "value": None,
+            "branch_match_kind": "glob",
+            "groups": [],
+            "type": "branchrestriction",
+            "id": 16678277,
+        },
+    ],
+    "page": 1,
+    "size": 5,
+}

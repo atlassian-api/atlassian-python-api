@@ -1,0 +1,21 @@
+responses['{"request-changes": true}'] = {
+    "participated_on": "2020-12-27T20:29:21.593140+00:00",
+    "state": "changes_requested",
+    "role": "REVIEWER",
+    "user": {
+        "display_name": "User04DisplayName",
+        "uuid": "{User04UUID}",
+        "links": {
+            "self": {"href": "users/%7BUser04UUID%7D"},
+            "html": {"href": "https://bitbucket.org/%7BUser04UUID%7D/"},
+            "avatar": {
+                "href": "https://secure.gravatar.com/avatar/46a979e676028e3ec208927d6d537a3f?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FTS-2.png"
+            },
+        },
+        "nickname": "User04Nickname",
+        "type": "user",
+        "account_id": "User04AccountID",
+    },
+    "type": "participant",
+    "approved": false,
+}

@@ -1,0 +1,12 @@
+responses[
+    '{"name": "fake_name_1", "events": ["repo:refs_changed", "pr:merged", "pr:opened"], "url": "https://example1.com", "active": true, "configuration": {"secret": "fake_secret_1"}}'
+] = {
+    "id": 3,
+    "name": "fake_name_1",
+    "createdDate": 1628494949928,
+    "updatedDate": 1628494949928,
+    "events": ["repo:refs_changed", "pr:merged", "pr:opened"],
+    "configuration": {"secret": "fake_secret_1"},
+    "url": "https://example1.com",
+    "active": true,
+}

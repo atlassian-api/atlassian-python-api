@@ -1,0 +1,12 @@
+responses = {
+    None: {
+        "size": 2,
+        "limit": 25,
+        "isLastPage": true,
+        "values": [
+            {"name": "group_a_1", "deletable": true},
+            {"name": "group_b_1", "deletable": false},
+        ],
+        "start": 0,
+    },
+}

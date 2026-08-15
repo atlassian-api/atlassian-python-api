@@ -1,0 +1,164 @@
+responses['{"scm": "git"}'] = {
+    "created_on": "2020-11-03T12:09:39.418592+00:00",
+    "description": "Test newly created repository",
+    "fork_policy": "no_forks",
+    "full_name": "TestWorkspace1/TestRepositoryCreated",
+    "has_issues": True,
+    "has_wiki": False,
+    "is_private": True,
+    "language": "c",
+    "links": {
+        "avatar": {"href": "https://bytebucket.org/ravatar/%7BTestRepositoryCreatedUuid%7D?ts=c"},
+        "branches": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/TestRepositoryCreated/refs/branches"},
+        "clone": [
+            {
+                "href": "https://User@bitbucket.org/TestWorkspace1/TestRepositoryCreated.git",
+                "name": "https",
+            },
+            {
+                "href": "git@bitbucket.org:TestWorkspace1/TestRepositoryCreated.git",
+                "name": "ssh",
+            },
+        ],
+        "commits": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/TestRepositoryCreated/commits"},
+        "downloads": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/TestRepositoryCreated/downloads"},
+        "forks": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/TestRepositoryCreated/forks"},
+        "hooks": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/TestRepositoryCreated/hooks"},
+        "html": {"href": "https://bitbucket.org/TestWorkspace1/TestRepositoryCreated"},
+        "issues": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/TestRepositoryCreated/issues"},
+        "pullrequests": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/TestRepositoryCreated/pullrequests"},
+        "self": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/TestRepositoryCreated"},
+        "source": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/TestRepositoryCreated/src"},
+        "tags": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/TestRepositoryCreated/refs/tags"},
+        "watchers": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/TestRepositoryCreated/watchers"},
+    },
+    "mainbranch": {"name": "master", "type": "branch"},
+    "name": "TestRepositoryCreated",
+    "owner": {
+        "account_id": "OwnerTestWorkspace1AccountId",
+        "display_name": "OwnerTestWorkspace1",
+        "links": {
+            "avatar": {
+                "href": "https://secure.gravatar.com/avatar/31a164e6406a8deeb56e94c778030a9f?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FS-3.png"
+            },
+            "html": {"href": "https://bitbucket.org/%7BOwnerTestWorkspace1AccountId%7D/"},
+            "self": {"href": "users/%7BOwnerTestWorkspace1AccountId%7D"},
+        },
+        "nickname": "OwnerTestWorkspace1Nickname",
+        "type": "user",
+        "uuid": "{OwnerTestWorkspace1AccountId}",
+    },
+    "project": {
+        "key": "TEST",
+        "links": {
+            "avatar": {
+                "href": "https://bitbucket.org/account/user/OwnerTestWorkspace1/projects/TEST/avatar/32?ts=1604524147"
+            },
+            "html": {"href": "https://bitbucket.org/OwnerTestWorkspace1/workspace/projects/TEST"},
+            "self": {"href": "workspaces/OwnerTestWorkspace1/projects/TEST"},
+        },
+        "name": "TestProject",
+        "type": "project",
+        "uuid": "{a434eea2-b09e-495e-a5a7-f8370ef492c1}",
+    },
+    "scm": "git",
+    "size": 117206,
+    "slug": "TestRepositoryCreated",
+    "type": "repository",
+    "updated_on": "2020-11-03T20:37:07.693412+00:00",
+    "uuid": "{TestRepositoryCreatedUuid}",
+    "website": None,
+    "workspace": {
+        "links": {
+            "avatar": {"href": "https://bitbucket.org/workspaces/TestWorkspace1/avatar/?ts=1604430491"},
+            "html": {"href": "https://bitbucket.org/TestWorkspace1/"},
+            "self": {"href": "workspaces/TestWorkspace1"},
+        },
+        "name": "TestWorkspace1",
+        "slug": "TestWorkspace1",
+        "type": "workspace",
+        "uuid": "{TestWorkspace1}",
+    },
+}
+responses['{"scm": "git", "project": {"key": "TEST1"}, "fork_policy": "allow_forks"}'] = {
+    "created_on": "2020-11-03T12:09:39.418592+00:00",
+    "description": "Test newly created repository in project TEST1",
+    "fork_policy": "allow_forks",
+    "full_name": "TestWorkspace1/TestRepositoryCreated",
+    "has_issues": True,
+    "has_wiki": False,
+    "is_private": True,
+    "language": "c",
+    "links": {
+        "avatar": {"href": "https://bytebucket.org/ravatar/%7BTestRepositoryCreatedUuid%7D?ts=c"},
+        "branches": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/TestRepositoryCreated/refs/branches"},
+        "clone": [
+            {
+                "href": "https://User@bitbucket.org/TestWorkspace1/TestRepositoryCreated.git",
+                "name": "https",
+            },
+            {
+                "href": "git@bitbucket.org:TestWorkspace1/TestRepositoryCreated.git",
+                "name": "ssh",
+            },
+        ],
+        "commits": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/TestRepositoryCreated/commits"},
+        "downloads": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/TestRepositoryCreated/downloads"},
+        "forks": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/TestRepositoryCreated/forks"},
+        "hooks": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/TestRepositoryCreated/hooks"},
+        "html": {"href": "https://bitbucket.org/TestWorkspace1/TestRepositoryCreated"},
+        "issues": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/TestRepositoryCreated/issues"},
+        "pullrequests": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/TestRepositoryCreated/pullrequests"},
+        "self": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/TestRepositoryCreated"},
+        "source": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/TestRepositoryCreated/src"},
+        "tags": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/TestRepositoryCreated/refs/tags"},
+        "watchers": {"href": "bitbucket/cloud/2.0/repositories/TestWorkspace1/TestRepositoryCreated/watchers"},
+    },
+    "mainbranch": {"name": "master", "type": "branch"},
+    "name": "TestRepositoryCreated",
+    "owner": {
+        "account_id": "OwnerTestWorkspace1AccountId",
+        "display_name": "OwnerTestWorkspace1",
+        "links": {
+            "avatar": {
+                "href": "https://secure.gravatar.com/avatar/31a164e6406a8deeb56e94c778030a9f?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FS-3.png"
+            },
+            "html": {"href": "https://bitbucket.org/%7BOwnerTestWorkspace1AccountId%7D/"},
+            "self": {"href": "users/%7BOwnerTestWorkspace1AccountId%7D"},
+        },
+        "nickname": "OwnerTestWorkspace1Nickname",
+        "type": "user",
+        "uuid": "{OwnerTestWorkspace1AccountId}",
+    },
+    "project": {
+        "key": "TEST1",
+        "links": {
+            "avatar": {
+                "href": "https://bitbucket.org/account/user/OwnerTestWorkspace1/projects/TEST1/avatar/32?ts=1604524147"
+            },
+            "html": {"href": "https://bitbucket.org/OwnerTestWorkspace1/workspace/projects/TEST"},
+            "self": {"href": "workspaces/OwnerTestWorkspace1/projects/TEST"},
+        },
+        "name": "TestProject",
+        "type": "project",
+        "uuid": "{a434eea2-b09e-495e-a5a7-f8370ef492c1}",
+    },
+    "scm": "git",
+    "size": 117206,
+    "slug": "TestRepositoryCreated",
+    "type": "repository",
+    "updated_on": "2020-11-03T20:37:07.693412+00:00",
+    "uuid": "{TestRepositoryCreatedUuid}",
+    "website": None,
+    "workspace": {
+        "links": {
+            "avatar": {"href": "https://bitbucket.org/workspaces/TestWorkspace1/avatar/?ts=1604430491"},
+            "html": {"href": "https://bitbucket.org/TestWorkspace1/"},
+            "self": {"href": "workspaces/TestWorkspace1"},
+        },
+        "name": "TestWorkspace1",
+        "slug": "TestWorkspace1",
+        "type": "workspace",
+        "uuid": "{TestWorkspace1}",
+    },
+}

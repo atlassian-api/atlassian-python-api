@@ -1,0 +1,30 @@
+responses["start=0&limit=50"] = {
+    "_expands": [],
+    "size": 3,
+    "start": 3,
+    "limit": 3,
+    "isLastPage": false,
+    "_links": {
+        "base": "https://your-domain.atlassian.net/rest/servicedeskapi",
+        "context": "context",
+        "next": "https://your-domain.atlassian.net/rest/servicedeskapi/servicedesk/10001/organization?start=6&limit=3",
+        "prev": "https://your-domain.atlassian.net/rest/servicedeskapi/servicedesk/10001/organization?start=0&limit=3",
+    },
+    "values": [
+        {
+            "id": "1",
+            "name": "Charlie Cakes Franchises",
+            "_links": {"self": "https://your-domain.atlassian.net/rest/servicedeskapi/organization/1"},
+        },
+        {
+            "id": "2",
+            "name": "Atlas Coffee Co",
+            "_links": {"self": "https://your-domain.atlassian.net/rest/servicedeskapi/organization/2"},
+        },
+        {
+            "id": "3",
+            "name": "The Adjustment Bureau",
+            "_links": {"self": "https://your-domain.atlassian.net/rest/servicedeskapi/organization/3"},
+        },
+    ],
+}

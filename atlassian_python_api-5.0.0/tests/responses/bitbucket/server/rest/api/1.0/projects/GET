@@ -1,0 +1,27 @@
+responses[None] = {
+    "size": 2,
+    "limit": 25,
+    "isLastPage": true,
+    "values": [
+        {
+            "key": "PRJ",
+            "id": 1,
+            "name": "My Cool Project",
+            "description": "The description for my cool project.",
+            "public": true,
+            "type": "NORMAL",
+            "links": {"self": [{"href": "bitbucket/server/rest/api/1.0/projects/PRJ"}]},
+        },
+        {
+            "key": "PRJ1",
+            "id": 2,
+            "name": "My Cool Project 1",
+            "description": "The description for my cool project 1.",
+            "public": true,
+            "type": "NORMAL",
+            "links": {"self": [{"href": "bitbucket/server/rest/api/1.0/projects/PRJ1"}]},
+        },
+    ],
+    "start": 0,
+}
+responses["name=My+Cool+Project"] = responses[None]

@@ -1,0 +1,17 @@
+responses[
+    '{"object": {"url": "https://confluence.atlassian-python.atlassian.net/display/Test", "title": "Unused link text", "status": {"resolved": false}}}'
+] = {
+    "id": 10000,
+    "self": "https://atlassian-python.atlassian.net/rest/api/2/issue/FOO-123/remotelink/10000",
+    "application": {},
+}
+responses[
+    '{"object": {"url": "https://confluence.atlassian-python.atlassian.net/display/Test", "title": "Unused link text", "status": {"resolved": false}}, "globalId": "appId=00000000-0000-0000-0000-000000000000&pageId=0", "application": {"type": "com.atlassian.confluence", "name": "Confluence"}}'
+] = {
+    "id": 10000,
+    "self": "https://atlassian-python.atlassian.net/rest/api/2/issue/FOO-123/remotelink/10000",
+    "application": {
+        "type": "com.atlassian.confluence",
+        "name": "Confluence",
+    },
+}

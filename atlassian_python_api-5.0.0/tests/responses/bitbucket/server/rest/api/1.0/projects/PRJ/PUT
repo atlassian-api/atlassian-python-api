@@ -1,0 +1,36 @@
+responses['{"name": "New name"}'] = {
+    "key": "PRJ",
+    "id": 1,
+    "name": "New name",
+    "description": "The description for my cool project.",
+    "public": true,
+    "type": "NORMAL",
+    "links": {"self": [{"href": "bitbucket/server/rest/api/1.0/projects/PRJ"}]},
+}
+responses['{"key": "NEWKEY"}'] = {
+    "key": "NEWKEY",
+    "id": 1,
+    "name": "My Cool Project",
+    "description": "The description for my cool project.",
+    "public": true,
+    "type": "NORMAL",
+    "links": {"self": [{"href": "bitbucket/server/rest/api/1.0/projects/NEWKEY"}]},
+}
+responses['{"description": "New description."}'] = {
+    "key": "PRJ",
+    "id": 1,
+    "name": "My Cool Project",
+    "description": "New description.",
+    "public": true,
+    "type": "NORMAL",
+    "links": {"self": [{"href": "bitbucket/server/rest/api/1.0/projects/PRJ"}]},
+}
+responses['{"public": false}'] = {
+    "key": "PRJ",
+    "id": 1,
+    "name": "My Cool Project",
+    "description": "The description for my cool project.",
+    "public": false,
+    "type": "NORMAL",
+    "links": {"self": [{"href": "bitbucket/server/rest/api/1.0/projects/PRJ"}]},
+}
