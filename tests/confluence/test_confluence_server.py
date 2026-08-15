@@ -183,6 +183,20 @@ class TestConfluenceServer:
 
         mock_delete.assert_called_once_with("rest/api/content/123/version/2")
 
+    @patch.object(ConfluenceServer, "_get_paged")
+    def test_iter_cql_follows_all_result_pages(self, mock_get_paged, confluence_server):
+        mock_get_paged.return_value = iter([{"id": "1"}, {"id": "2"}])
+
+        assert list(confluence_server.iter_cql("type=page", limit=250)) == [{"id": "1"}, {"id": "2"}]
+        mock_get_paged.assert_called_once_with("rest/api/search", params={"start": 0, "limit": 250, "cql": "type=page"})
+
+    @patch.object(ConfluenceServer, "iter_cql")
+    def test_cql_all_materializes_iter_cql_results(self, mock_iter_cql, confluence_server):
+        mock_iter_cql.return_value = iter([{"id": "1"}, {"id": "2"}])
+
+        assert confluence_server.cql_all("type=page") == [{"id": "1"}, {"id": "2"}]
+        mock_iter_cql.assert_called_once_with("type=page")
+
     # Content Management Tests
     @patch.object(ConfluenceServer, "get")
     def test_get_content(self, mock_get, confluence_server):

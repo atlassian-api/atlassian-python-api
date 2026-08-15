@@ -95,6 +95,13 @@ Get page info
     child_count = confluence.get_page_child_count(page_id)
     has_children = confluence.page_has_children(page_id)
 
+    # Stream all CQL matches without accumulating them in memory.
+    for result in confluence.iter_cql('type=page', limit=250):
+        process(result)
+
+    # Use this only when a complete in-memory list is required.
+    all_results = confluence.cql_all('type=page', limit=250)
+
     # Provide content id from search result by title and space
     confluence.get_page_id(space, title)
 

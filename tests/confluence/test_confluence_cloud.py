@@ -35,6 +35,20 @@ class TestConfluenceCloud:
         assert confluence.api_version == "1"
         assert confluence.api_root == "custom/api/root"
 
+    @patch.object(ConfluenceCloud, "_get_paged")
+    def test_iter_cql_follows_all_result_pages(self, mock_get_paged, confluence_cloud):
+        mock_get_paged.return_value = iter([{"id": "1"}, {"id": "2"}])
+
+        assert list(confluence_cloud.iter_cql("type=page", limit=250)) == [{"id": "1"}, {"id": "2"}]
+        mock_get_paged.assert_called_once_with("content/search", params={"cql": "type=page", "limit": 250})
+
+    @patch.object(ConfluenceCloud, "iter_cql")
+    def test_cql_all_materializes_iter_cql_results(self, mock_iter_cql, confluence_cloud):
+        mock_iter_cql.return_value = iter([{"id": "1"}, {"id": "2"}])
+
+        assert confluence_cloud.cql_all("type=page") == [{"id": "1"}, {"id": "2"}]
+        mock_iter_cql.assert_called_once_with("type=page")
+
     @patch("atlassian.confluence.cloud.requests.get")
     @patch.object(ConfluenceCloud, "get")
     def test_export_page_uses_v2_pdf_export_task_endpoint(self, mock_get, mock_requests_get, confluence_cloud):

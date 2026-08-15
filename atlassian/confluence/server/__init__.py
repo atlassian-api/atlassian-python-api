@@ -3035,6 +3035,39 @@ class Server(ConfluenceServerBase):
 
         return response
 
+    def iter_cql(
+        self,
+        cql,
+        start=0,
+        limit=None,
+        expand=None,
+        include_archived_spaces=None,
+        excerpt=None,
+    ):
+        """Yield every result of a CQL search, following Confluence pagination.
+
+        Unlike :meth:`cql`, this does not materialize all results in memory.
+        """
+        params = {"start": int(start)} if start is not None else {}
+        if limit is not None:
+            params["limit"] = int(limit)
+        if cql is not None:
+            params["cql"] = cql
+        if expand is not None:
+            params["expand"] = expand
+        if include_archived_spaces is not None:
+            params["includeArchivedSpaces"] = include_archived_spaces
+        if excerpt is not None:
+            params["excerpt"] = excerpt
+        return self._get_paged("rest/api/search", params=params)
+
+    def cql_all(self, *args, **kwargs):
+        """Return all paginated CQL results as a list.
+
+        Prefer :meth:`iter_cql` for large result sets.
+        """
+        return list(self.iter_cql(*args, **kwargs))
+
     def get_page_as_pdf(self, page_id):
         """
         Export page as standard pdf exporter

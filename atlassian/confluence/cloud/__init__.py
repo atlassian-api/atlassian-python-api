@@ -443,6 +443,21 @@ class Cloud(ConfluenceCloudBase):
         """Search content."""
         return self.get("content/search", params={"cql": query, **kwargs})
 
+    def cql(self, cql, **kwargs):
+        """Return one page of Cloud CQL search results."""
+        return self.search_content(cql, **kwargs)
+
+    def iter_cql(self, cql, **kwargs):
+        """Yield every Cloud CQL result, following pagination links."""
+        return self._get_paged("content/search", params={"cql": cql, **kwargs})
+
+    def cql_all(self, cql, **kwargs):
+        """Return all paginated Cloud CQL results as a list.
+
+        Prefer :meth:`iter_cql` for large result sets.
+        """
+        return list(self.iter_cql(cql, **kwargs))
+
     def search_spaces(self, query, **kwargs):
         """Search spaces."""
         return self.get("space/search", params={"query": query, **kwargs})
