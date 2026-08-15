@@ -91,9 +91,21 @@ class ConfluenceBase(AtlassianRestAPI):
         if not parsed.hostname:
             return False
 
-        # Check if the hostname ends with .atlassian.net or .jira.com
+        # Check Cloud tenant and API-gateway hostnames.
         hostname = parsed.hostname.lower()
-        return hostname.endswith(".atlassian.net") or hostname.endswith(".jira.com")
+        return (
+            hostname.endswith(".atlassian.net")
+            or hostname.endswith(".jira.com")
+            or ConfluenceBase._is_api_gateway_url(url)
+        )
+
+    @staticmethod
+    def _is_api_gateway_url(url: str) -> bool:
+        """Return whether *url* is an Atlassian API gateway Confluence URL."""
+        parsed = urlparse(url)
+        if parsed.scheme not in {"http", "https"} or parsed.hostname != "api.atlassian.com":
+            return False
+        return parsed.path.startswith("/ex/confluence/")
 
     def __init__(self, url: str, *args, api_version: Union[str, int] = 1, **kwargs):
         """
@@ -105,7 +117,9 @@ class ConfluenceBase(AtlassianRestAPI):
             args: Arguments to pass to AtlassianRestAPI constructor
             kwargs: Keyword arguments to pass to AtlassianRestAPI constructor
         """
-        if self._is_cloud_url(url) and "/wiki" not in url:
+        # Tenant URLs need the Confluence context path. Gateway URLs already
+        # contain ``/ex/confluence/{cloudId}`` and must not be rewritten.
+        if self._is_cloud_url(url) and not self._is_api_gateway_url(url) and "/wiki" not in url:
             url = AtlassianRestAPI.url_joiner(url, "/wiki")
             if "cloud" not in kwargs:
                 kwargs["cloud"] = True

@@ -17,6 +17,7 @@ class TestConfluenceBase(unittest.TestCase):
         self.assertTrue(ConfluenceBase._is_cloud_url("https://example.atlassian.net"))
         self.assertTrue(ConfluenceBase._is_cloud_url("https://example.atlassian.net/wiki"))
         self.assertTrue(ConfluenceBase._is_cloud_url("https://example.jira.com"))
+        self.assertTrue(ConfluenceBase._is_cloud_url("https://api.atlassian.com/ex/confluence/cloud-id"))
 
         # Invalid URLs
         self.assertFalse(ConfluenceBase._is_cloud_url("https://example.com"))
@@ -24,6 +25,14 @@ class TestConfluenceBase(unittest.TestCase):
         self.assertFalse(ConfluenceBase._is_cloud_url("https://atlassian.net.evil.com"))
         self.assertFalse(ConfluenceBase._is_cloud_url("ftp://example.atlassian.net"))
         self.assertFalse(ConfluenceBase._is_cloud_url("not a url"))
+
+    def test_scoped_token_gateway_uses_v2_without_wiki_context(self):
+        client = Confluence("https://api.atlassian.com/ex/confluence/cloud-id", cloud=True)
+
+        self.assertIsInstance(client, ConcreteConfluenceCloud)
+        self.assertEqual(client.api_version, 2)
+        self.assertEqual(client.url, "https://api.atlassian.com/ex/confluence/cloud-id")
+        self.assertEqual(client.get_endpoint("page_by_id", id="123"), "api/v2/pages/123")
 
     def test_init_with_api_version_1(self):
         """Test initialization with API version 1"""

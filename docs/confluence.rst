@@ -480,3 +480,20 @@ Other actions
     # Add inline task setting checkbox method
     confluence.set_inline_tasks_checkbox(page_id, task_id, status)
 
+Scoped Cloud API tokens
+-----------------------
+
+Scoped Confluence Cloud API tokens use the Atlassian API gateway and the v2
+API. Pass the gateway URL containing the cloud ID; ``Confluence`` selects the
+v2 Cloud client automatically and does not append ``/wiki``.
+
+.. code-block:: python
+
+    confluence = Confluence(
+        url="https://api.atlassian.com/ex/confluence/<cloud-id>",
+        username="user@example.com",
+        password="scoped-api-token",
+        cloud=True,
+    )
+
+    page = confluence.get_page_by_id("<page-id>")

@@ -19,7 +19,10 @@ class Confluence(LegacyConfluenceBase):
 
     def __new__(cls, url, *args, **kwargs):
         api_version = kwargs.get("api_version")
-        if api_version in (1, 2):
+        # Scoped API tokens use the Atlassian API gateway and only support the
+        # Cloud v2 endpoints. Route gateway URLs there automatically so callers
+        # do not have to know the internal client split.
+        if api_version in (1, 2) or ConfluenceBase._is_api_gateway_url(url):
             from .cloud.cloud import ConfluenceCloud as VersionedConfluenceCloud
 
             return VersionedConfluenceCloud(url, *args, **kwargs)
