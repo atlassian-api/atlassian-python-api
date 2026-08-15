@@ -213,12 +213,14 @@ def block_code_macro_confluence(code, lang=None):
     """
     if not lang:
         lang = ""
-    return ("""\
+    return (
+        """\
                 <ac:structured-macro ac:name="code" ac:schema-version="1">
                     <ac:parameter ac:name="language">{lang}</ac:parameter>
                     <ac:plain-text-body><![CDATA[{code}]]></ac:plain-text-body>
                 </ac:structured-macro>
-            """).format(lang=lang, code=code)
+            """
+    ).format(lang=lang, code=code)
 
 
 def html_code__macro_confluence(text):
@@ -227,11 +229,13 @@ def html_code__macro_confluence(text):
     :param text:
     :return:
     """
-    return ("""\
+    return (
+        """\
                 <ac:structured-macro ac:name="html" ac:schema-version="1">
                     <ac:plain-text-body><![CDATA[{text}]]></ac:plain-text-body>
                 </ac:structured-macro>
-            """).format(text=text)
+            """
+    ).format(text=text)
 
 
 def noformat_code_macro_confluence(text, nopanel=None):
@@ -243,12 +247,14 @@ def noformat_code_macro_confluence(text, nopanel=None):
     """
     if not nopanel:
         nopanel = False
-    return ("""\
+    return (
+        """\
                 <ac:structured-macro ac:name="noformat" ac:schema-version="1">
                     <ac:parameter ac:name="nopanel">{nopanel}</ac:parameter>
                     <ac:plain-text-body><![CDATA[{text}]]></ac:plain-text-body>
                 </ac:structured-macro>
-            """).format(nopanel=nopanel, text=text)
+            """
+    ).format(nopanel=nopanel, text=text)
 
 
 def symbol_normalizer(text):

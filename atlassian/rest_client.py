@@ -386,7 +386,7 @@ class AtlassianRestAPI(object):
         self,
         method: str,
         url: str,
-        data: Union[dict, str, None] = None,
+        data: Union[dict, str, bool, None] = None,
         headers: Optional[dict] = None,
         level: int = logging.DEBUG,
     ) -> None:
@@ -431,7 +431,7 @@ class AtlassianRestAPI(object):
         self,
         method: str = "GET",
         path: str = "/",
-        data: Union[dict, str, None] = None,
+        data: Union[dict, str, bool, None] = None,
         json: Union[dict, str, None] = None,
         flags: Optional[list] = None,
         params: Optional[dict] = None,
@@ -798,7 +798,7 @@ class AtlassianRestAPI(object):
     def put(
         self,
         path: str,
-        data: Union[dict, str, None] = ...,
+        data: Union[dict, str, bool, None] = ...,
         headers: Optional[dict] = ...,
         files: Optional[dict] = ...,
         trailing: Optional[bool] = ...,
@@ -813,7 +813,7 @@ class AtlassianRestAPI(object):
     def put(
         self,
         path: str,
-        data: Union[dict, str, None] = ...,
+        data: Union[dict, str, bool, None] = ...,
         headers: Optional[dict] = ...,
         files: Optional[dict] = ...,
         trailing: Optional[bool] = ...,
@@ -828,7 +828,7 @@ class AtlassianRestAPI(object):
     def put(
         self,
         path: str,
-        data: Union[dict, str, None] = ...,
+        data: Union[dict, str, bool, None] = ...,
         headers: Optional[dict] = ...,
         files: Optional[dict] = ...,
         trailing: Optional[bool] = ...,
@@ -844,7 +844,7 @@ class AtlassianRestAPI(object):
     def put(
         self,
         path: str,
-        data: Union[dict, str, None] = ...,
+        data: Union[dict, str, bool, None] = ...,
         headers: Optional[dict] = ...,
         files: Optional[dict] = ...,
         trailing: Optional[bool] = ...,
@@ -857,7 +857,7 @@ class AtlassianRestAPI(object):
     def put(
         self,
         path: str,
-        data: Union[dict, str, None] = None,
+        data: Union[dict, str, bool, None] = None,
         headers: Optional[dict] = None,
         files: Optional[dict] = None,
         trailing: Optional[bool] = None,
