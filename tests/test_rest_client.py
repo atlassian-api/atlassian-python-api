@@ -3,6 +3,7 @@
 Unit tests for atlassian.rest_client module
 """
 
+import io
 from datetime import datetime, timedelta
 from types import SimpleNamespace
 
@@ -183,6 +184,37 @@ class TestAtlassianRestAPI:
         """Test advanced mode configuration"""
         api = AtlassianRestAPI(url=f"{mockup_server()}/test", advanced_mode=True)
         assert api.advanced_mode is True
+
+    def test_request_rewinds_uploaded_file_before_retry(self):
+        class RetryingSession:
+            def __init__(self):
+                self.verify = True
+                self.payloads = []
+                self.responses = [
+                    SimpleNamespace(status_code=503, headers={}, reason="Unavailable", text=""),
+                    SimpleNamespace(status_code=200, headers={}, reason="OK", text=""),
+                ]
+
+            def request(self, **kwargs):
+                self.payloads.append(kwargs["files"]["file"][1].read())
+                return self.responses.pop(0)
+
+        session = RetryingSession()
+        api = AtlassianRestAPI(
+            url="https://example.test",
+            session=session,
+            advanced_mode=True,
+            retry_status_codes=[503],
+            max_backoff_retries=1,
+            backoff_factor=0,
+            backoff_jitter=0,
+        )
+        api.backoff_and_retry = True
+        api.use_urllib3_retry = False
+
+        api.request("POST", "attachment", files={"file": ("report.csv", io.BytesIO(b"small report"))})
+
+        assert session.payloads == [b"small report", b"small report"]
 
     def test_kerberos_configuration(self):
         """Test kerberos configuration"""

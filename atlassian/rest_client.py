@@ -479,8 +479,23 @@ class AtlassianRestAPI(object):
 
         headers = headers or self.default_headers
 
+        # ``requests`` reads file-like multipart values when preparing a
+        # request. Reset them before every attempt so a retry cannot upload an
+        # already-consumed, zero-byte file.
+        file_positions = []
+        if files:
+            for upload in files.values():
+                stream = upload[1] if isinstance(upload, (tuple, list)) and len(upload) > 1 else upload
+                if hasattr(stream, "seek") and hasattr(stream, "tell"):
+                    try:
+                        file_positions.append((stream, stream.tell()))
+                    except (OSError, ValueError):
+                        pass
+
         retry_handler = self._retry_handler()
         while True:
+            for stream, position in file_positions:
+                stream.seek(position)
             self.log_curl_debug(
                 method=method,
                 url=url,
