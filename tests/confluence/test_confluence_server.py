@@ -76,6 +76,38 @@ class TestConfluenceServer:
         with pytest.raises(ApiNotFoundError):
             confluence_server.update_page("123", "Missing page")
 
+    @patch.object(ConfluenceServer, "put")
+    @patch.object(ConfluenceServer, "history")
+    def test_update_page_uses_configured_api_root_without_duplicate_rest_api_prefix(
+        self, mock_history, mock_put, confluence_server
+    ):
+        mock_history.return_value = {"lastUpdated": {"number": 1}}
+        mock_put.return_value = {"id": "123"}
+
+        result = confluence_server.update_page("123", "Updated", body="<p>Updated</p>", always_update=True)
+
+        assert result == {"id": "123"}
+        assert mock_put.call_args.args[0] == "content/123"
+        assert mock_put.call_args.kwargs["data"]["body"] == {
+            "storage": {"value": "<p>Updated</p>", "representation": "storage"}
+        }
+
+    @patch.object(ConfluenceServer, "get")
+    def test_get_page_by_id_uses_configured_api_root_without_duplicate_rest_api_prefix(
+        self, mock_get, confluence_server
+    ):
+        mock_get.return_value = {"id": "123"}
+
+        assert confluence_server.get_page_by_id("123") == {"id": "123"}
+        mock_get.assert_called_once_with("content/123", params={})
+
+    @patch.object(ConfluenceServer, "get")
+    def test_history_uses_configured_api_root_without_duplicate_rest_api_prefix(self, mock_get, confluence_server):
+        mock_get.return_value = {"lastUpdated": {"number": 1}}
+
+        assert confluence_server.history("123") == {"lastUpdated": {"number": 1}}
+        mock_get.assert_called_once_with("content/123/history")
+
     @patch.object(ConfluenceServer, "get")
     def test_get_page_id_by_url_resolves_short_url(self, mock_get, confluence_server):
         mock_get.return_value = SimpleNamespace(
@@ -763,7 +795,9 @@ class TestConfluenceServer:
         assert result["report.pdf"].read() == b"attachment_content"
 
     @patch.object(ConfluenceServer, "get_attachments_from_content")
-    def test_download_attachments_returns_empty_result_when_no_attachments(self, mock_get_attachments, confluence_server):
+    def test_download_attachments_returns_empty_result_when_no_attachments(
+        self, mock_get_attachments, confluence_server
+    ):
         mock_get_attachments.return_value = {"results": []}
 
         assert confluence_server.download_attachments_from_page("123", to_memory=True) == {}

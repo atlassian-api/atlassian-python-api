@@ -264,9 +264,7 @@ class ConfluenceCloud(FolderOperations, DatabaseOperations):
 
     def get_page_version(self, page_id: str, version_number: int) -> Dict[str, Any]:
         """Return details for one Confluence Cloud page version."""
-        return self.get(
-            self.get_endpoint("page_version", id=page_id, version_number=version_number), params={}
-        )
+        return self.get(self.get_endpoint("page_version", id=page_id, version_number=version_number), params={})
 
     def get_child_pages(
         self,

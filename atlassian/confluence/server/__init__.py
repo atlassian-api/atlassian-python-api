@@ -343,7 +343,7 @@ class Server(ConfluenceServerBase):
             params["status"] = status
         if version:
             params["version"] = version
-        url = f"rest/api/content/{page_id}"
+        url = f"content/{page_id}"
 
         try:
             response = self.get(url, params=params)
@@ -382,7 +382,7 @@ class Server(ConfluenceServerBase):
         if page_content:
             tables_raw = [
                 [[cell.text for cell in row("th") + row("td")] for row in table("tr")]
-                for table in BeautifulSoup(page_content, features="lxml")("table")
+                for table in BeautifulSoup(page_content, features="html.parser")("table")
             ]
         return {
             "page_id": page_id,
@@ -1367,7 +1367,7 @@ class Server(ConfluenceServerBase):
         return response
 
     def history(self, page_id):
-        url = f"rest/api/content/{page_id}/history"
+        url = f"content/{page_id}/history"
         try:
             response = self.get(url)
         except HTTPError as e:
@@ -1608,7 +1608,7 @@ class Server(ConfluenceServerBase):
             data["metadata"]["properties"]["content-appearance-published"] = {"value": "fixed-width"}
         try:
             response = self.put(
-                f"rest/api/content/{page_id}",
+                f"content/{page_id}",
                 data=data,
                 params=params,
             )

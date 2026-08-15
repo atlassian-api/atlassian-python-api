@@ -185,6 +185,8 @@ Page actions
     # Update page if already exist
     confluence.update_page(page_id, title, body, parent_id=None, type='page', representation='storage', minor_edit=False, full_width=False)
 
+    # Server/Data Center updates use the configured REST API root and send a JSON body.
+
     # Update page or create page if it is not exists
     confluence.update_or_create(parent_id, title, body, representation='storage', full_width=False)
 
