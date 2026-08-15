@@ -36,6 +36,8 @@ class ConfluenceEndpoints:
         "page_by_id": "api/v2/pages/{id}",
         "page": "api/v2/pages",
         "child_pages": "api/v2/pages/{id}/children/page",
+        "page_versions": "api/v2/pages/{id}/versions",
+        "page_version": "api/v2/pages/{id}/versions/{version_number}",
         "search": "api/v2/search",
         "spaces": "api/v2/spaces",
         "space_by_id": "api/v2/spaces/{id}",

@@ -55,6 +55,31 @@ class TestConfluenceV2(unittest.TestCase):
         self.assertEqual(response, mock_response)
 
     @patch("atlassian.confluence.cloud.ConfluenceCloud.get")
+    def test_get_page_versions(self, mock_get):
+        mock_response = {"results": [{"number": 2}]}
+        mock_get.return_value = mock_response
+
+        response = self.confluence_v2.get_page_versions(
+            "123", body_format="storage", limit=10, sort="desc", cursor="next-cursor"
+        )
+
+        mock_get.assert_called_once_with(
+            "api/v2/pages/123/versions",
+            params={"limit": 10, "body-format": "storage", "sort": "desc", "cursor": "next-cursor"},
+        )
+        self.assertEqual(response, mock_response)
+
+    @patch("atlassian.confluence.cloud.ConfluenceCloud.get")
+    def test_get_page_version(self, mock_get):
+        mock_response = {"number": 2}
+        mock_get.return_value = mock_response
+
+        response = self.confluence_v2.get_page_version("123", 2)
+
+        mock_get.assert_called_once_with("api/v2/pages/123/versions/2", params={})
+        self.assertEqual(response, mock_response)
+
+    @patch("atlassian.confluence.cloud.ConfluenceCloud.get")
     def test_get_page_by_id_with_expand(self, mock_get):
         # Setup the mock
         mock_response = {"id": "123", "title": "Test Page"}

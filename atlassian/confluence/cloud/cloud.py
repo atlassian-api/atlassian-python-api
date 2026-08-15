@@ -238,6 +238,36 @@ class ConfluenceCloud(FolderOperations, DatabaseOperations):
             log.error(f"Failed to retrieve pages: {e}")
             raise
 
+    def get_page_versions(
+        self,
+        page_id: str,
+        body_format: Optional[str] = None,
+        limit: int = 25,
+        sort: Optional[str] = None,
+        cursor: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Return the version history for a Confluence Cloud page.
+
+        This uses the Cloud V2 version endpoint. Cloud V2 exposes version
+        retrieval only; deletion remains unavailable in that API.
+        """
+        if body_format is not None and body_format not in ("storage", "atlas_doc_format", "view"):
+            raise ValueError("body_format must be 'storage', 'atlas_doc_format', or 'view'")
+        params: Dict[str, Any] = {"limit": limit}
+        if body_format is not None:
+            params["body-format"] = body_format
+        if sort is not None:
+            params["sort"] = sort
+        if cursor is not None:
+            params["cursor"] = cursor
+        return self.get(self.get_endpoint("page_versions", id=page_id), params=params)
+
+    def get_page_version(self, page_id: str, version_number: int) -> Dict[str, Any]:
+        """Return details for one Confluence Cloud page version."""
+        return self.get(
+            self.get_endpoint("page_version", id=page_id, version_number=version_number), params={}
+        )
+
     def get_child_pages(
         self,
         parent_id: str,

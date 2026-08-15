@@ -137,6 +137,37 @@ class TestConfluenceServer:
         with pytest.raises(ValueError, match="positive integer"):
             confluence_server.remove_page_history_keep_version("123", keep_last_versions=0)
 
+    @patch.object(ConfluenceServer, "remove_page_history")
+    @patch.object(ConfluenceServer, "get_page_by_id")
+    def test_remove_page_history_keep_version_skips_versions_already_deleted(
+        self, mock_get_page, mock_remove_history, confluence_server
+    ):
+        mock_get_page.return_value = {"title": "Test Page", "version": {"number": 5}}
+        response = Response()
+        response.status_code = 404
+        mock_remove_history.side_effect = [HTTPError(response=response), None, None]
+
+        confluence_server.remove_page_history_keep_version("123", keep_last_versions=2)
+
+        assert mock_remove_history.call_args_list == [
+            ((), {"page_id": "123", "version_number": 1}),
+            ((), {"page_id": "123", "version_number": 2}),
+            ((), {"page_id": "123", "version_number": 3}),
+        ]
+
+    @patch.object(ConfluenceServer, "get")
+    def test_content_history_by_version_uses_supported_server_data_center_endpoint(self, mock_get, confluence_server):
+        mock_get.return_value = {"number": 2}
+
+        assert confluence_server.get_content_history_by_version_number("123", 2) == {"number": 2}
+        mock_get.assert_called_once_with("rest/api/content/123/version/2")
+
+    @patch.object(ConfluenceServer, "delete")
+    def test_remove_content_history_uses_supported_server_data_center_endpoint(self, mock_delete, confluence_server):
+        confluence_server.remove_content_history("123", 2)
+
+        mock_delete.assert_called_once_with("rest/api/content/123/version/2")
+
     # Content Management Tests
     @patch.object(ConfluenceServer, "get")
     def test_get_content(self, mock_get, confluence_server):

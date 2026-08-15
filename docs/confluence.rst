@@ -511,6 +511,20 @@ target page cannot be resolved instead of returning ``None``. Title lookups
 remain search-result responses; an empty ``results`` collection means that no
 matching page exists.
 
+Content history
+---------------
+
+``get_content_history_by_version_number`` and the history-removal methods use
+the supported Server/Data Center ``/rest/api/content/{id}/version/{number}``
+endpoint. ``remove_page_history_keep_version`` also tolerates historical gaps,
+so rerunning it after a partial cleanup does not fail on an already-deleted
+version.
+
+For Confluence Cloud V2, use ``get_page_versions`` or ``get_page_version`` to
+read page history. The published V2 API does not provide a delete-version
+operation, so deletion requires the compatible V1 endpoint and appropriate
+permission.
+
 Scoped Cloud API tokens
 -----------------------
 

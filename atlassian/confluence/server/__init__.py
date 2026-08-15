@@ -1375,10 +1375,10 @@ class Server(ConfluenceServerBase):
         :param version_number:
         :return:
         """
-        if self.cloud:
-            url = f"rest/api/content/{content_id}/version/{version_number}"
-        else:
-            url = f"rest/experimental/content/{content_id}/version/{version_number}"
+        # The experimental endpoint was retired by recent Server/Data Center
+        # releases. Cloud and Server/Data Center now expose this operation at
+        # the same REST API path.
+        url = f"rest/api/content/{content_id}/version/{version_number}"
         return self.get(url)
 
     def remove_content_history(self, page_id, version_number):
@@ -1388,11 +1388,8 @@ class Server(ConfluenceServerBase):
         :param version_number: version number
         :return:
         """
-        if self.cloud:
-            url = f"rest/api/content/{page_id}/version/{version_number}"
-        else:
-            url = f"rest/experimental/content/{page_id}/version/{version_number}"
-        self.delete(url)
+        url = f"rest/api/content/{page_id}/version/{version_number}"
+        return self.delete(url)
 
     def remove_page_history(self, page_id, version_number):
         """
@@ -1410,8 +1407,7 @@ class Server(ConfluenceServerBase):
         :param version_id:
         :return:
         """
-        url = f"rest/api/content/{page_id}/version/{version_id}"
-        self.delete(url)
+        return self.remove_content_history(page_id, version_id)
 
     def remove_page_history_keep_version(self, page_id, keep_last_versions):
         """
@@ -1435,7 +1431,16 @@ class Server(ConfluenceServerBase):
             raise ValueError("Page response does not contain a valid version number")
 
         for version_number in range(1, max(page_number - keep_last_versions, 0) + 1):
-            self.remove_page_history(page_id=page_id, version_number=version_number)
+            try:
+                self.remove_page_history(page_id=page_id, version_number=version_number)
+            except HTTPError as error:
+                # Version numbers are immutable and may contain gaps when a
+                # previous run already deleted an older version. That is a
+                # successful pruning outcome, not a fatal error.
+                if error.response is None or error.response.status_code != 404:
+                    raise
+                log.debug("Version %s for %s is already absent", version_number, page_id)
+                continue
             log.info("Removed version %s for %s", version_number, page.get("title"))
         log.info("Kept versions %s for %s", keep_last_versions, page.get("title"))
 
