@@ -37,6 +37,27 @@ class TestConfluenceServer:
         assert confluence.api_version == "2.0"
         assert confluence.api_root == "custom/api/root"
 
+    @patch.object(ConfluenceServer, "remove_page_history")
+    @patch.object(ConfluenceServer, "get_page_by_id")
+    def test_remove_page_history_keep_version_uses_distinct_version_numbers(
+        self, mock_get_page, mock_remove_history, confluence_server
+    ):
+        """Deleting a version must not assume Confluence renumbers history."""
+        mock_get_page.return_value = {"title": "Test Page", "version": {"number": 5}}
+
+        confluence_server.remove_page_history_keep_version("123", keep_last_versions=2)
+
+        mock_get_page.assert_called_once_with(page_id="123", expand="version")
+        assert mock_remove_history.call_args_list == [
+            ((), {"page_id": "123", "version_number": 1}),
+            ((), {"page_id": "123", "version_number": 2}),
+            ((), {"page_id": "123", "version_number": 3}),
+        ]
+
+    def test_remove_page_history_keep_version_requires_positive_retention(self, confluence_server):
+        with pytest.raises(ValueError, match="positive integer"):
+            confluence_server.remove_page_history_keep_version("123", keep_last_versions=0)
+
     # Content Management Tests
     @patch.object(ConfluenceServer, "get")
     def test_get_content(self, mock_get, confluence_server):

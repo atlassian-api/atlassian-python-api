@@ -1400,18 +1400,28 @@ class Server(ConfluenceServerBase):
 
     def remove_page_history_keep_version(self, page_id, keep_last_versions):
         """
-        Keep last versions
-        :param page_id:
-        :param keep_last_versions:
-        :return:
+        Remove the oldest page versions while retaining the requested number of
+        newest versions.
+
+        Confluence version numbers are immutable: deleting version 1 does not
+        cause version 2 to become version 1.  Delete each obsolete version
+        number exactly once rather than repeatedly deleting version 1.
+
+        :param page_id: Page whose history should be pruned.
+        :param keep_last_versions: Number of latest versions to retain. Must be
+            a positive integer.
         """
+        if not isinstance(keep_last_versions, int) or isinstance(keep_last_versions, bool) or keep_last_versions < 1:
+            raise ValueError("keep_last_versions must be a positive integer")
+
         page = self.get_page_by_id(page_id=page_id, expand="version")
-        page_number = page.get("version").get("number")
-        while page_number > keep_last_versions:
-            self.remove_page_history(page_id=page_id, version_number=1)
-            page = self.get_page_by_id(page_id=page_id, expand="version")
-            page_number = page.get("version").get("number")
-            log.info("Removed oldest version for %s, now it's %s", page.get("title"), page_number)
+        page_number = page.get("version", {}).get("number")
+        if not isinstance(page_number, int):
+            raise ValueError("Page response does not contain a valid version number")
+
+        for version_number in range(1, max(page_number - keep_last_versions, 0) + 1):
+            self.remove_page_history(page_id=page_id, version_number=version_number)
+            log.info("Removed version %s for %s", version_number, page.get("title"))
         log.info("Kept versions %s for %s", keep_last_versions, page.get("title"))
 
     def has_unknown_attachment_error(self, page_id):
