@@ -1,10 +1,12 @@
 # coding=utf-8
 
 import copy
+import re
 from urllib.parse import urlparse
 import logging
 from requests import HTTPError
 from ..rest_client import AtlassianRestAPI
+from ..errors import ApiValueError
 
 log = logging.getLogger(__name__)
 
@@ -46,6 +48,42 @@ class ConfluenceBase(AtlassianRestAPI):
         :return: The absolute url
         """
         return self.url_joiner(self.url, url)
+
+    def get_page_id_by_url(self, page_url):
+        """Resolve a Confluence page URL to its page ID.
+
+        ``viewpage.action?pageId=...`` URLs are resolved without a request.
+        Display and short ``/x/...`` URLs are requested through the configured
+        authenticated session, which follows the Confluence redirect and reads
+        the page ID from the resulting URL or HTML metadata.
+        """
+        parsed_url = urlparse(page_url)
+        page_id_match = re.search(r"(?:[?&]pageId=)([^&#]+)", page_url, re.IGNORECASE)
+        if page_id_match:
+            return page_id_match.group(1)
+
+        client_host = urlparse(self.url).hostname
+        if not parsed_url.scheme or not parsed_url.hostname:
+            raise ApiValueError("page_url must be an absolute Confluence page URL")
+        if client_host and parsed_url.hostname != client_host:
+            raise ApiValueError("page_url must belong to the configured Confluence instance")
+
+        response = self.get(page_url, absolute=True, advanced_mode=True)
+        resolved_url = response.url
+        page_id_match = re.search(r"(?:[?&]pageId=)([^&#]+)", resolved_url, re.IGNORECASE)
+        if page_id_match:
+            return page_id_match.group(1)
+
+        content = response.content.decode("utf-8", errors="ignore")
+        page_id_match = re.search(
+            r'<meta[^>]+name=["\']ajs-page-id["\'][^>]+content=["\']([^"\']+)["\']',
+            content,
+            re.IGNORECASE,
+        )
+        if page_id_match:
+            return page_id_match.group(1)
+
+        raise ApiValueError("Could not determine a page ID from page_url")
 
     @property
     def _new_session_args(self):

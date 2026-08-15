@@ -4,6 +4,7 @@ Test cases for Confluence Server API client.
 """
 
 import pytest
+from types import SimpleNamespace
 from unittest.mock import patch
 
 from atlassian.confluence import ConfluenceServer
@@ -37,6 +38,36 @@ class TestConfluenceServer:
         )
         assert confluence.api_version == "2.0"
         assert confluence.api_root == "custom/api/root"
+
+    @patch.object(ConfluenceServer, "get")
+    def test_get_page_id_by_url_resolves_short_url(self, mock_get, confluence_server):
+        mock_get.return_value = SimpleNamespace(
+            url="https://test.confluence.com/pages/viewpage.action?pageId=40734334", content=b""
+        )
+
+        assert confluence_server.get_page_id_by_url("https://test.confluence.com/x/-_Z3") == "40734334"
+        mock_get.assert_called_once_with(
+            "https://test.confluence.com/x/-_Z3", absolute=True, advanced_mode=True
+        )
+
+    @patch.object(ConfluenceServer, "get")
+    def test_get_page_id_by_url_reads_display_page_metadata(self, mock_get, confluence_server):
+        mock_get.return_value = SimpleNamespace(
+            url="https://test.confluence.com/display/DOCS/A+page",
+            content=b'<meta name="ajs-page-id" content="40734334">',
+        )
+
+        assert confluence_server.get_page_id_by_url("https://test.confluence.com/display/DOCS/A+page") == "40734334"
+
+    @patch.object(ConfluenceServer, "get")
+    def test_get_page_id_by_url_reads_page_id_query_without_request(self, mock_get, confluence_server):
+        assert (
+            confluence_server.get_page_id_by_url(
+                "https://test.confluence.com/pages/viewpage.action?pageId=40734334"
+            )
+            == "40734334"
+        )
+        mock_get.assert_not_called()
 
     def test_license_endpoints_explain_they_are_not_available_in_cloud(self):
         confluence = ConfluenceServer(
