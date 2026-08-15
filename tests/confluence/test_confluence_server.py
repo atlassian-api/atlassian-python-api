@@ -110,6 +110,21 @@ class TestConfluenceServer:
 
         assert confluence_server.page_exists("TEST", "Missing") is False
 
+    @patch.object(ConfluenceServer, "get_page_by_id")
+    def test_get_page_child_count_uses_expanded_child_metadata(self, mock_get_page, confluence_server):
+        mock_get_page.return_value = {"children": {"page": {"size": 3, "results": [{"id": "1"}]}}}
+
+        assert confluence_server.get_page_child_count("123") == 3
+        assert confluence_server.page_has_children("123") is True
+        mock_get_page.assert_called_with("123", expand="children.page")
+
+    @patch.object(ConfluenceServer, "get_page_by_id")
+    def test_page_has_children_uses_empty_children_result_when_size_is_absent(self, mock_get_page, confluence_server):
+        mock_get_page.return_value = {"children": {"page": {"results": []}}}
+
+        assert confluence_server.get_page_child_count("123") == 0
+        assert confluence_server.page_has_children("123") is False
+
     def test_license_endpoints_explain_they_are_not_available_in_cloud(self):
         confluence = ConfluenceServer(url="https://test.atlassian.net", username="test", password="test", cloud=True)
 

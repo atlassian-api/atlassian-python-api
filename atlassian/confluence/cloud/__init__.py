@@ -231,6 +231,19 @@ class Cloud(ConfluenceCloudBase):
 
             raise
 
+    def get_page_child_count(self, page_id, type="page"):
+        """Return the number of direct children of ``type`` without listing them."""
+        page = self.get_page_by_id(page_id, expand=f"children.{type}")
+        collection = page.get("children", {}).get(type, {})
+        size = collection.get("size")
+        if size is not None:
+            return int(size)
+        return len(collection.get("results", []))
+
+    def page_has_children(self, page_id, type="page"):
+        """Return whether a page has at least one direct child of ``type``."""
+        return self.get_page_child_count(page_id, type=type) > 0
+
     def get_child_title_list(self, page_id, type="page", start=None, limit=None):
         """
         Find a list of Child title

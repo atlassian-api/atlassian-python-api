@@ -91,6 +91,10 @@ Get page info
     # Provide content by type (page, blog, comment)
     confluence.get_page_child_by_type(page_id, type='page', start=None, limit=None, expand=None)
 
+    # Get child information without listing or paginating every child.
+    child_count = confluence.get_page_child_count(page_id)
+    has_children = confluence.page_has_children(page_id)
+
     # Provide content id from search result by title and space
     confluence.get_page_id(space, title)
 
