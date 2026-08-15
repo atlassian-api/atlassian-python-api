@@ -1576,13 +1576,21 @@ class Server(ConfluenceServerBase):
         full_width=False,
     ):
         """
-        Update page if already exist
-        :param page_id:
-        :param title:
-        :param body:
-        :param parent_id:
-        :param type:
-        :param representation: OPTIONAL: either Confluence 'storage' or 'wiki' markup format
+        Update an existing page.
+
+        ``body`` must be Confluence storage XHTML when ``representation`` is
+        ``"storage"`` (the default), not arbitrary browser HTML. Escape only
+        dynamic text or attribute values; do not escape the complete markup or
+        Confluence macros. A literal ``&`` in text must be ``&amp;``. Existing
+        entities such as ``&quot;`` must not be escaped a second time.
+
+        :param page_id: existing Confluence page ID
+        :param title: page title
+        :param body: storage XHTML or wiki markup matching ``representation``
+        :param parent_id: optional parent page ID; omit to retain the parent
+        :param type: content type; normally ``"page"``
+        :param representation: ``"storage"`` for editable storage XHTML or
+            ``"wiki"`` for legacy wiki markup
         :param minor_edit: Indicates whether to notify watchers about changes.
             If False then notifications will be sent.
         :param version_comment: Version comment
@@ -1637,9 +1645,10 @@ class Server(ConfluenceServerBase):
         except HTTPError as e:
             if e.response.status_code == 400:
                 raise ApiValueError(
-                    "No space or no content type, or setup a wrong version "
-                    "type set to content, or status param is not draft and "
-                    "status content is current",
+                    "Confluence rejected the page update. Verify that the page "
+                    "is current and that body is valid storage XHTML: preserve "
+                    "Confluence macros, escape dynamic '&' as '&amp;', and do "
+                    "not escape the complete document or existing entities.",
                     reason=e,
                 )
             if e.response.status_code == 404:

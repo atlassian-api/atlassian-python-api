@@ -92,6 +92,17 @@ class TestConfluenceServer:
             "storage": {"value": "<p>Updated</p>", "representation": "storage"}
         }
 
+    @patch.object(ConfluenceServer, "put")
+    @patch.object(ConfluenceServer, "history")
+    def test_update_page_400_explains_storage_markup_requirements(self, mock_history, mock_put, confluence_server):
+        mock_history.return_value = {"lastUpdated": {"number": 1}}
+        response = Response()
+        response.status_code = 400
+        mock_put.side_effect = HTTPError(response=response)
+
+        with pytest.raises(ApiValueError, match="valid storage XHTML"):
+            confluence_server.update_page("123", "Updated", body="<p>Invalid & text</p>", always_update=True)
+
     @patch.object(ConfluenceServer, "get")
     def test_get_page_by_id_uses_configured_api_root_without_duplicate_rest_api_prefix(
         self, mock_get, confluence_server

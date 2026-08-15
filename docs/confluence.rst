@@ -277,6 +277,31 @@ Page actions
     # Get regex matches from Confluence page
     confluence.scrap_regex_from_page(page_id, regex)
 
+Storage-format updates
+~~~~~~~~~~~~~~~~~~~~~~
+
+``representation='storage'`` expects Confluence storage XHTML, including
+``ac:`` and ``ri:`` macros already present in the page. It is not generic
+browser HTML. Fetch ``body.storage``, preserve macros, and replace only the
+dynamic values you own.
+
+.. code-block:: python
+
+    from xml.sax.saxutils import escape
+
+    page = confluence.get_page_by_id(page_id, expand='body.storage')
+    storage = page['body']['storage']['value']
+
+    # Escape dynamic text only. Do not escape the complete document: that
+    # would turn <ac:...> macros into literal text.
+    storage = storage.replace('{{SUMMARY}}', escape('Revenue & growth'))
+    confluence.update_page(page_id, page['title'], storage, representation='storage')
+
+A literal ``&`` must be ``&amp;``. Existing entities such as ``&quot;`` are
+already valid storage XML and must not be escaped a second time. Parentheses do
+not require XML escaping. ``representation='wiki'`` is legacy wiki markup;
+prefer storage XHTML for pages users will edit in the browser.
+
 Confluence Whiteboards
 ----------------------
 
