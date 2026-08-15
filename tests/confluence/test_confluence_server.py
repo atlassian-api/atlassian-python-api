@@ -327,6 +327,16 @@ class TestConfluenceServer:
         mock_get.assert_called_once_with("space", **{})
         assert result == {"results": [{"key": "TEST", "name": "Test Space"}]}
 
+    @patch.object(ConfluenceServer, "get_all_spaces")
+    def test_get_space_names_paginates(self, mock_get_all_spaces, confluence_server):
+        mock_get_all_spaces.side_effect = [
+            {"results": [{"name": "Engineering"}, {"name": "Operations"}], "totalSize": 3},
+            {"results": [{"name": "Support"}], "totalSize": 3},
+        ]
+
+        assert confluence_server.get_space_names(limit=2) == ["Engineering", "Operations", "Support"]
+        assert mock_get_all_spaces.call_args_list[1].kwargs["start"] == 2
+
     @patch.object(ConfluenceServer, "get")
     def test_get_space(self, mock_get, confluence_server):
         """Test get_space method."""

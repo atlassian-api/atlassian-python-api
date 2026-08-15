@@ -676,6 +676,10 @@ class ConfluenceCloud(ConfluenceBase):
             log.error(f"Failed to retrieve spaces: {e}")
             raise
 
+    def get_space_names(self, **kwargs) -> List[str]:
+        """Return every visible space name without retrieving page content."""
+        return [space["name"] for space in self.get_spaces(**kwargs) if space.get("name")]
+
     def get_space(self, space_id: str) -> Dict[str, Any]:
         """
         Returns a specific space by ID.

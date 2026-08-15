@@ -230,6 +230,12 @@ class TestConfluenceCloud:
         # covered by existing _get_paged tests.
         assert mock_get.call_args_list[0].args[0] == "spaces"
 
+    @patch.object(ConfluenceCloud, "get_all_spaces")
+    def test_get_space_names(self, mock_get_all_spaces, confluence_cloud):
+        mock_get_all_spaces.return_value = iter([{"name": "Engineering"}, {"name": "Operations"}])
+
+        assert confluence_cloud.get_space_names() == ["Engineering", "Operations"]
+
     @patch.object(ConfluenceCloud, "get")
     def test_get_space(self, mock_get, confluence_cloud):
         """get_space calls the v2 plural endpoint."""

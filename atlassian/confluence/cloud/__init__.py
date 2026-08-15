@@ -269,6 +269,10 @@ class Cloud(ConfluenceCloudBase):
         """
         return self._get_paged("spaces", params=kwargs)
 
+    def get_space_names(self, **kwargs):
+        """Return the names of every space without fetching page content."""
+        return [space["name"] for space in self.get_all_spaces(**kwargs) if space.get("name")]
+
     def get_space(self, space_id, **kwargs):
         """Get space by ID."""
         return self.get(f"spaces/{space_id}", **kwargs)

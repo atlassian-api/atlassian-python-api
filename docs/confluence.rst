@@ -79,6 +79,9 @@ Get page info
     # Cloud uses V2 space/page lookups; Server/Data Center keeps its REST API.
     confluence.page_exists(space, title, type=None)
 
+    # Returns only space names and follows the space-directory pagination.
+    space_names = confluence.get_space_names()
+
     # Provide content by type (page, blog, comment)
     confluence.get_page_child_by_type(page_id, type='page', start=None, limit=None, expand=None)
 

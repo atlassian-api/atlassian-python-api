@@ -2022,6 +2022,30 @@ class Server(ConfluenceServerBase):
             params["status"] = space_status
         return self.get(url, params=params)
 
+    def get_space_names(self, start=0, limit=50, space_type=None, space_status=None):
+        """Return every visible Server/Data Center space name.
+
+        Only the space directory metadata endpoint is requested; no page or
+        space content is downloaded.
+        """
+        names = []
+        current_start = start
+        while True:
+            response = self.get_all_spaces(
+                start=current_start,
+                limit=limit,
+                space_type=space_type,
+                space_status=space_status,
+            )
+            spaces = response.get("results", [])
+            names.extend(space["name"] for space in spaces if space.get("name"))
+            total_size = response.get("totalSize")
+            if not spaces or (total_size is not None and current_start + len(spaces) >= total_size):
+                return names
+            if total_size is None and len(spaces) < limit:
+                return names
+            current_start += len(spaces)
+
     def archive_space(self, space_key):
         """
         Archive space
