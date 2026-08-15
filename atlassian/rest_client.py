@@ -3,7 +3,6 @@
 import logging
 import math
 import random
-import math
 import time
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
