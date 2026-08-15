@@ -112,6 +112,31 @@ class TestConfluenceCloud:
         assert mock_get.call_count == 2
 
     @patch.object(ConfluenceCloud, "get")
+    def test_page_exists_uses_v2_space_and_page_endpoints(self, mock_get, confluence_cloud):
+        mock_get.side_effect = [{"results": [{"id": "42", "key": "TEST"}]}, {"results": [{"id": "123"}]}]
+
+        assert confluence_cloud.page_exists("TEST", "Test Page") is True
+        assert mock_get.call_args_list[0].args == ("spaces",)
+        assert mock_get.call_args_list[0].kwargs == {"params": {"keys": ["TEST"], "limit": 1}}
+        assert mock_get.call_args_list[1].args == ("pages",)
+        assert mock_get.call_args_list[1].kwargs == {
+            "params": {
+                "space-id": "42",
+                "title": "Test Page",
+                "status": "current",
+                "body-format": "none",
+                "limit": 1,
+            }
+        }
+
+    @patch.object(ConfluenceCloud, "get")
+    def test_page_exists_returns_false_for_unknown_space(self, mock_get, confluence_cloud):
+        mock_get.return_value = {"results": []}
+
+        assert confluence_cloud.page_exists("MISSING", "Test Page") is False
+        mock_get.assert_called_once_with("spaces", params={"keys": ["MISSING"], "limit": 1})
+
+    @patch.object(ConfluenceCloud, "get")
     def test_get_all_blog_posts_from_space(self, mock_get, confluence_cloud):
         """Test get_all_blog_posts_from_space method."""
         mock_get.return_value = {"results": [{"id": "456", "title": "Blog Post"}]}

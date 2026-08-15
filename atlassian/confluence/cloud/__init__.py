@@ -157,9 +157,29 @@ class Cloud(ConfluenceCloudBase):
         return len(result.get("results", [])) > 0
 
     def page_exists(self, space_key, title, **kwargs):
-        """Check if page exists in Confluence Cloud."""
-        result = self.get_page_by_title(space_key, title, **kwargs)
-        return len(result.get("results", [])) > 0
+        """Check whether a page exists using the Cloud V2 page endpoint.
+
+        The retired V1 content lookup accepted a space key directly. V2 page
+        queries require a space ID, so resolve the key first and request only
+        one matching page.
+        """
+        spaces = self.get("spaces", params={"keys": [space_key], "limit": 1})
+        space_results = spaces.get("results", [])
+        if not space_results:
+            return False
+
+        result = self.get(
+            "pages",
+            params={
+                "space-id": space_results[0]["id"],
+                "title": title,
+                "status": "current",
+                "body-format": "none",
+                "limit": 1,
+                **kwargs,
+            },
+        )
+        return bool(result.get("results", []))
 
     def get_page_child_by_type(self, page_id, type="page", start=None, limit=None, expand=None):
         """

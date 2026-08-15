@@ -76,6 +76,7 @@ Get page info
 
     # Check page exists
     # type of the page, 'page' or 'blogpost'. Defaults to 'page'
+    # Cloud uses V2 space/page lookups; Server/Data Center keeps its REST API.
     confluence.page_exists(space, title, type=None)
 
     # Provide content by type (page, blog, comment)
