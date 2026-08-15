@@ -11,12 +11,12 @@ import re
 import warnings
 from typing import Any, Dict, List, Optional
 
-from ...confluence_base import ConfluenceBase
+from .databases import DatabaseOperations
 
 log = logging.getLogger(__name__)
 
 
-class ConfluenceCloud(ConfluenceBase):
+class ConfluenceCloud(DatabaseOperations):
     """
     Confluence Cloud API implementation class
     """

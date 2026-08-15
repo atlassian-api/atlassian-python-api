@@ -90,7 +90,7 @@ class TestAtlassianRestAPI:
         )
 
         assert "curl --show-error -X POST" in messages[0]
-        assert "--data '{\"body\": {\"storage\": {\"value\": \"example\"}}}'" in messages[0]
+        assert '--data \'{"body": {"storage": {"value": "example"}}}\'' in messages[0]
         assert '\\"body\\"' not in messages[0]
 
     def test_request_logs_json_payload_once(self, monkeypatch):

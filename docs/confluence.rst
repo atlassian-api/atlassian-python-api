@@ -514,6 +514,36 @@ v2 Cloud client automatically and does not append ``/wiki``.
 
     page = confluence.get_page_by_id("<page-id>")
 
+Confluence Cloud databases
+--------------------------
+
+Confluence Cloud v2 supports database lifecycle metadata: create, retrieve by
+ID, and move to trash. Use ``ConfluenceV2`` (or a gateway URL as above) for
+these endpoints. The public API does not currently expose database records,
+fields, views, or queries.
+
+.. code-block:: python
+
+    from atlassian import ConfluenceV2
+
+    confluence = ConfluenceV2(
+        url="https://your-domain.atlassian.net/wiki",
+        username="user@example.com",
+        password="api-token",
+    )
+
+    database = confluence.create_database(
+        space_id="<space-id>",
+        title="Release tracker",
+        parent_id="<parent-page-or-folder-id>",
+        private=False,
+    )
+    details = confluence.get_database(database["id"], include_properties=True)
+    confluence.delete_database(database["id"])
+
+Scoped tokens require the corresponding ``write:database:confluence``,
+``read:database:confluence``, or ``delete:database:confluence`` scope.
+
 Cloud group members
 -------------------
 

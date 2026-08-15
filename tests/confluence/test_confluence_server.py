@@ -47,9 +47,7 @@ class TestConfluenceServer:
         )
 
         assert confluence_server.get_page_id_by_url("https://test.confluence.com/x/-_Z3") == "40734334"
-        mock_get.assert_called_once_with(
-            "https://test.confluence.com/x/-_Z3", absolute=True, advanced_mode=True
-        )
+        mock_get.assert_called_once_with("https://test.confluence.com/x/-_Z3", absolute=True, advanced_mode=True)
 
     @patch.object(ConfluenceServer, "get")
     def test_get_page_id_by_url_reads_display_page_metadata(self, mock_get, confluence_server):
@@ -63,9 +61,7 @@ class TestConfluenceServer:
     @patch.object(ConfluenceServer, "get")
     def test_get_page_id_by_url_reads_page_id_query_without_request(self, mock_get, confluence_server):
         assert (
-            confluence_server.get_page_id_by_url(
-                "https://test.confluence.com/pages/viewpage.action?pageId=40734334"
-            )
+            confluence_server.get_page_id_by_url("https://test.confluence.com/pages/viewpage.action?pageId=40734334")
             == "40734334"
         )
         mock_get.assert_not_called()
@@ -79,9 +75,7 @@ class TestConfluenceServer:
         assert confluence_server.page_exists("TEST", "Missing") is False
 
     def test_license_endpoints_explain_they_are_not_available_in_cloud(self):
-        confluence = ConfluenceServer(
-            url="https://test.atlassian.net", username="test", password="test", cloud=True
-        )
+        confluence = ConfluenceServer(url="https://test.atlassian.net", username="test", password="test", cloud=True)
 
         with pytest.raises(ApiNotAcceptable, match="Cloud does not provide license details"):
             confluence.get_license_details()

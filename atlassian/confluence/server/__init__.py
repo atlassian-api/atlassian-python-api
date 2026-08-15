@@ -1143,9 +1143,7 @@ class Server(ConfluenceServerBase):
                     attachments.extend(page_results)
 
                     total_size = attachment_page.get("totalSize")
-                    if not page_results or (
-                        total_size is not None and current_start + len(page_results) >= total_size
-                    ):
+                    if not page_results or (total_size is not None and current_start + len(page_results) >= total_size):
                         break
                     if total_size is None and len(page_results) < limit:
                         break

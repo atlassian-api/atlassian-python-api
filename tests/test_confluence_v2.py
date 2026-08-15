@@ -228,6 +228,45 @@ class TestConfluenceV2(unittest.TestCase):
         self.assertEqual(response, mock_response)
 
     @patch("atlassian.confluence.cloud.ConfluenceCloud.post")
+    def test_create_database(self, mock_post):
+        mock_response = {"id": "DATABASE123", "title": "Release tracker"}
+        mock_post.return_value = mock_response
+
+        response = self.confluence_v2.create_database(
+            space_id="SPACE123", title="Release tracker", parent_id="PARENT123", private=True
+        )
+
+        mock_post.assert_called_once_with(
+            "api/v2/databases",
+            data={"spaceId": "SPACE123", "title": "Release tracker", "parentId": "PARENT123"},
+            params={"private": True},
+        )
+        self.assertEqual(response, mock_response)
+
+    @patch("atlassian.confluence.cloud.ConfluenceCloud.get")
+    def test_get_database(self, mock_get):
+        mock_response = {"id": "DATABASE123", "title": "Release tracker"}
+        mock_get.return_value = mock_response
+
+        response = self.confluence_v2.get_database("DATABASE123", include_collaborators=True, include_operations=False)
+
+        mock_get.assert_called_once_with(
+            "api/v2/databases/DATABASE123",
+            params={"include-collaborators": True, "include-operations": False},
+        )
+        self.assertEqual(response, mock_response)
+
+    @patch("atlassian.confluence.cloud.ConfluenceCloud.delete")
+    def test_delete_database(self, mock_delete):
+        mock_response = {"id": "DATABASE123", "status": "trashed"}
+        mock_delete.return_value = mock_response
+
+        response = self.confluence_v2.delete_database("DATABASE123")
+
+        mock_delete.assert_called_once_with("api/v2/databases/DATABASE123")
+        self.assertEqual(response, mock_response)
+
+    @patch("atlassian.confluence.cloud.ConfluenceCloud.post")
     def test_create_page_with_wiki_format(self, mock_post):
         # Setup the mock
         mock_response = {"id": "123", "title": "Wiki Page"}
