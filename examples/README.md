@@ -14,6 +14,9 @@ For Bitbucket Server/Data Center pagination, see
 projects, repositories, or pull requests return generators: use them directly
 in a `for` loop, or call `list(...)` only for small result sets.
 
+For a Server/Data Center release report that lists merged pull requests between
+two tags or commits, see `bitbucket/bitbucket_server_release_report.py`.
+
 There are simple rules each example should follow:
 
 * **Do not store** any credentials in VCS

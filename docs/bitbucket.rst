@@ -21,6 +21,28 @@ already a Python dictionary.
 objects from individual requests. Do not enable it for the high-level paginated
 methods above; use their yielded dictionaries instead.
 
+Release report from two refs (Server/Data Center)
+-------------------------------------------------
+
+To report merged pull requests between two release tags or commit hashes, first
+iterate ``get_changelog()`` and then resolve the pull requests associated with
+each returned commit. A pull request can be associated with multiple commits,
+so retain the results by pull request ID to avoid duplicates.
+
+.. code-block:: python
+
+    merged_pull_requests = {}
+    for commit in bitbucket.get_changelog("PROJ", "repository", "refs/tags/v1.0", "refs/tags/v1.1"):
+        for pull_request in bitbucket.get_pull_requests_contain_commit("PROJ", "repository", commit["id"]):
+            if pull_request["state"] == "MERGED":
+                merged_pull_requests[pull_request["id"]] = pull_request
+
+    for pull_request in merged_pull_requests.values():
+        print(pull_request["title"])
+
+See ``examples/bitbucket/bitbucket_server_release_report.py`` for a complete
+environment-variable-based script.
+
 Manage projects
 ---------------
 
