@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from types import SimpleNamespace
 
 import pytest
+import requests
 
 from .mockup import mockup_server
 from atlassian.rest_client import AtlassianRestAPI
@@ -67,6 +68,15 @@ class TestAtlassianRestAPI:
         api = AtlassianRestAPI(url=f"{mockup_server()}/test", token="apitoken123")
         # The token should be stored in the session configuration
         assert hasattr(api, "session")
+
+    def test_token_authentication_is_not_overridden_by_netrc(self, monkeypatch):
+        api = AtlassianRestAPI(url="https://confluence.example.test", token="expected-token")
+        monkeypatch.setattr(requests.sessions, "get_netrc_auth", lambda *_args, **_kwargs: ("old", "credentials"))
+
+        prepared_request = api.session.prepare_request(requests.Request("GET", "https://confluence.example.test"))
+
+        assert prepared_request.headers["Authorization"] == "Bearer expected-token"
+        assert api.session.trust_env is True
 
     def test_init_with_cert(self):
         """Test initialization with certificate"""

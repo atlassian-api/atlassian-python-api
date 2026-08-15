@@ -35,6 +35,7 @@ except ImportError:
     from oauthlib.oauth1 import SIGNATURE_RSA
 
 from requests import HTTPError, Response, Session
+from requests.auth import AuthBase
 from requests_oauthlib import OAuth1, OAuth2
 from typing_extensions import Self
 from urllib3.util import Retry
@@ -46,6 +47,13 @@ T_resp_get = Union[Response, T_resp_json, str, bytes]
 
 
 log = get_default_logger(__name__)
+
+
+class _ExplicitTokenAuth(AuthBase):
+    """Prevent Requests from replacing an explicit token with ``.netrc`` auth."""
+
+    def __call__(self, request):
+        return request
 
 
 class AtlassianRestAPI(object):
@@ -225,6 +233,11 @@ class AtlassianRestAPI(object):
 
     def _create_token_session(self, token: str) -> None:
         self._update_header("Authorization", f"Bearer {token.strip()}")
+        # Requests consults ``.netrc`` when no auth handler is set, even when
+        # an Authorization header is present. A no-op handler preserves the
+        # explicit Bearer token without disabling proxy and CA environment
+        # settings through ``Session.trust_env``.
+        self._session.auth = _ExplicitTokenAuth()
 
     def _create_header_session(self, header: dict) -> None:
         self._session.headers.update(header)
