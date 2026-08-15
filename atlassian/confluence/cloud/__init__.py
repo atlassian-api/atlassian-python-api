@@ -47,7 +47,7 @@ class Cloud(ConfluenceCloudBase):
         """
         try:
             response = self.get(url, headers=self.form_token_headers, not_json_response=True, absolute=True)
-            task_match = re.search(br'name="ajs-taskId"\s+content="([^"]+)"', response)
+            task_match = re.search(rb'name="ajs-taskId"\s+content="([^"]+)"', response)
             if not task_match:
                 log.error("Could not find the PDF export task ID in the response")
                 return None

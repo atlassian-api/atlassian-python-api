@@ -585,9 +585,7 @@ class TestConfluenceServer:
         }
         mock_get.return_value = b"attachment_content"
 
-        result = confluence_server.download_attachments_from_page(
-            "123", filename="report.pdf", to_memory=True
-        )
+        result = confluence_server.download_attachments_from_page("123", filename="report.pdf", to_memory=True)
 
         mock_get.assert_called_once_with(
             "rest/api/content/123/child/attachment/att123/download", not_json_response=True

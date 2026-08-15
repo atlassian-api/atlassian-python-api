@@ -35,6 +35,21 @@ def _datetimetostr(dtime):
 
 @pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3.4")
 class TestBasic:
+    def test_each_workspace_uses_user_workspaces_endpoint(self, monkeypatch):
+        workspaces = CLOUD.workspaces
+        workspace = object()
+        calls = []
+
+        def get_paged(url, params=None, absolute=False):
+            calls.append((url, params, absolute))
+            return iter([{"workspace": {"slug": "TestWorkspace1"}}])
+
+        monkeypatch.setattr(workspaces, "_get_paged", get_paged)
+        monkeypatch.setattr(workspaces, "get", lambda slug: workspace)
+
+        assert list(workspaces.each()) == [workspace]
+        assert calls == [(f"{workspaces.url.rsplit('/', 1)[0]}/user/workspaces", {}, True)]
+
     def test_exists_workspace(self):
         assert CLOUD.workspaces.exists("TestWorkspace1"), "Exists workspace"
 

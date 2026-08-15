@@ -46,7 +46,10 @@ class TestConfluenceCloud:
         result = confluence_cloud.export_page("456")
 
         assert result == b"%PDF-1.7"
-        assert mock_get.call_args_list[1].args[0] == "https://test.atlassian.net/wiki/api/v2/pdfexporttask/progress/task-123"
+        assert (
+            mock_get.call_args_list[1].args[0]
+            == "https://test.atlassian.net/wiki/api/v2/pdfexporttask/progress/task-123"
+        )
         assert mock_get.call_args_list[1].kwargs["absolute"] is True
         mock_requests_get.assert_called_once_with("https://downloads.example.test/page.pdf", timeout=75)
 

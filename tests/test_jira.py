@@ -29,7 +29,9 @@ class TestJira(TestCase):
     def test_get_custom_fields_uses_query_parameter_in_cloud(self, mock_get):
         self.jira.get_custom_fields(search="Customer tier")
 
-        self.assertEqual(mock_get.call_args.kwargs["params"], {"query": "Customer tier", "startAt": 1, "maxResults": 50})
+        self.assertEqual(
+            mock_get.call_args.kwargs["params"], {"query": "Customer tier", "startAt": 1, "maxResults": 50}
+        )
 
     def test_get_epic_issues(self):
         resp = self.jira.epic_issues("BAR-22")
