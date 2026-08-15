@@ -892,7 +892,8 @@ class Jira(AtlassianRestAPI):
         """
         Get custom fields. Evaluated on 7.12
         Get fields paginated in cloud
-        :param search: str
+        :param search: str. For Jira Cloud this is sent as the API's ``query``
+            parameter; Jira Server/Data Center continues to use ``search``.
         :param start: long Default: 1
         :param limit: int Default: 50
         :return:
@@ -903,7 +904,7 @@ class Jira(AtlassianRestAPI):
             url = self.resource_url("customFields")
         params: dict = {}
         if search:
-            params["search"] = search
+            params["query" if self.cloud else "search"] = search
         if start:
             params["startAt"] = start
         if limit:

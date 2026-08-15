@@ -2,6 +2,7 @@
 """Tests for Jira Modules"""
 
 from unittest import TestCase
+from unittest.mock import patch
 
 from requests import HTTPError
 
@@ -23,6 +24,12 @@ class TestJira(TestCase):
         """Receive HTTP Error when Issue does not exist"""
         with self.assertRaises(HTTPError):
             self.jira.issue("FOO-321")
+
+    @patch.object(jira.Jira, "get")
+    def test_get_custom_fields_uses_query_parameter_in_cloud(self, mock_get):
+        self.jira.get_custom_fields(search="Customer tier")
+
+        self.assertEqual(mock_get.call_args.kwargs["params"], {"query": "Customer tier", "startAt": 1, "maxResults": 50})
 
     def test_get_epic_issues(self):
         resp = self.jira.epic_issues("BAR-22")
