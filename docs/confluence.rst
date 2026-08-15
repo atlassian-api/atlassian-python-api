@@ -496,6 +496,21 @@ Other actions
     # Add inline task setting checkbox method
     confluence.set_inline_tasks_checkbox(page_id, task_id, status)
 
+Consistent return values
+------------------------
+
+For Server and Data Center, ``get_tables_from_page`` always returns a
+dictionary with ``page_id``, ``number_of_tables_in_page``, and
+``tables_content``. Pages without tables use a count of zero and an empty
+list. ``download_attachments_from_page`` likewise returns an empty dictionary
+in memory mode, or ``{"attachments_downloaded": 0, "path": ...}`` on disk
+when no attachments match.
+
+``attach_content`` and ``update_page`` raise ``ApiNotFoundError`` when the
+target page cannot be resolved instead of returning ``None``. Title lookups
+remain search-result responses; an empty ``results`` collection means that no
+matching page exists.
+
 Scoped Cloud API tokens
 -----------------------
 

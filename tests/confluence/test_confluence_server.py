@@ -9,7 +9,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from atlassian.confluence import ConfluenceServer
-from atlassian.errors import ApiError, ApiNotAcceptable
+from atlassian.errors import ApiError, ApiNotAcceptable, ApiNotFoundError
 
 
 @pytest.fixture
@@ -39,6 +39,42 @@ class TestConfluenceServer:
         )
         assert confluence.api_version == "2.0"
         assert confluence.api_root == "custom/api/root"
+
+    @patch.object(ConfluenceServer, "get_page_by_id")
+    def test_get_tables_from_page_returns_consistent_empty_summary(self, mock_get_page, confluence_server):
+        mock_get_page.return_value = {"body": {"storage": {"value": "<p>No tables</p>"}}}
+
+        result = confluence_server.get_tables_from_page("123")
+
+        assert result == {"page_id": "123", "number_of_tables_in_page": 0, "tables_content": []}
+
+    @patch.object(ConfluenceServer, "get_page_by_id")
+    def test_get_tables_from_page_returns_consistent_table_summary(self, mock_get_page, confluence_server):
+        mock_get_page.return_value = {
+            "body": {"storage": {"value": "<table><tr><th>Name</th><td>Value</td></tr></table>"}}
+        }
+
+        result = confluence_server.get_tables_from_page("123")
+
+        assert result == {
+            "page_id": "123",
+            "number_of_tables_in_page": 1,
+            "tables_content": [[["Name", "Value"]]],
+        }
+
+    @patch.object(ConfluenceServer, "get_page_id")
+    def test_attach_content_raises_when_target_page_cannot_be_resolved(self, mock_get_page_id, confluence_server):
+        mock_get_page_id.return_value = None
+
+        with pytest.raises(ApiNotFoundError):
+            confluence_server.attach_content(b"content", "attachment.txt", title="Missing", space="SPACE")
+
+    @patch.object(ConfluenceServer, "history")
+    def test_update_page_raises_when_target_page_cannot_be_resolved(self, mock_history, confluence_server):
+        mock_history.return_value = None
+
+        with pytest.raises(ApiNotFoundError):
+            confluence_server.update_page("123", "Missing page")
 
     @patch.object(ConfluenceServer, "get")
     def test_get_page_id_by_url_resolves_short_url(self, mock_get, confluence_server):
@@ -665,6 +701,16 @@ class TestConfluenceServer:
             "rest/api/content/123/child/attachment/att123/download", not_json_response=True
         )
         assert result["report.pdf"].read() == b"attachment_content"
+
+    @patch.object(ConfluenceServer, "get_attachments_from_content")
+    def test_download_attachments_returns_empty_result_when_no_attachments(self, mock_get_attachments, confluence_server):
+        mock_get_attachments.return_value = {"results": []}
+
+        assert confluence_server.download_attachments_from_page("123", to_memory=True) == {}
+        assert confluence_server.download_attachments_from_page("123", path="/tmp") == {
+            "attachments_downloaded": 0,
+            "path": "/tmp",
+        }
 
     @patch.object(ConfluenceServer, "get")
     @patch.object(ConfluenceServer, "get_attachments_from_content")

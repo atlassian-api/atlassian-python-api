@@ -343,45 +343,34 @@ class Server(ConfluenceServerBase):
         return response
 
     def get_tables_from_page(self, page_id):
-        """
-        Fetches html  tables added to  confluence page
-        :param page_id: integer confluence page_id
-        :return: json object with page_id, number_of_tables_in_page
-                 and list of list tables_content representing scraped tables
+        """Return a consistent table summary for a page.
+
+        The returned dictionary always contains ``page_id``,
+        ``number_of_tables_in_page``, and ``tables_content``. Empty pages and
+        pages without tables return a count of zero and an empty list.
         """
         try:
             page_content = self.get_page_by_id(page_id, expand="body.storage")["body"]["storage"]["value"]
-
-            if page_content:
-                tables_raw = [
-                    [[cell.text for cell in row("th") + row("td")] for row in table("tr")]
-                    for table in BeautifulSoup(page_content, features="lxml")("table")
-                ]
-                if len(tables_raw) > 0:
-                    return json.dumps(
-                        {
-                            "page_id": page_id,
-                            "number_of_tables_in_page": len(tables_raw),
-                            "tables_content": tables_raw,
-                        }
-                    )
-                else:
-                    return {
-                        "No tables found for page: ": page_id,
-                    }
-            else:
-                return {"Page content is empty"}
         except HTTPError as e:
             if e.response.status_code == 404:
-                # Raise ApiError as the documented reason is ambiguous
-                log.error("Couldn't retrieve tables  from page", page_id)
                 raise ApiError(
                     "There is no content with the given pageid, pageid params is not an integer "
                     "or the calling user does not have permission to view the page",
                     reason=e,
                 )
-        except Exception as e:
-            log.error("Error occured", e)
+            raise
+
+        tables_raw = []
+        if page_content:
+            tables_raw = [
+                [[cell.text for cell in row("th") + row("td")] for row in table("tr")]
+                for table in BeautifulSoup(page_content, features="lxml")("table")
+            ]
+        return {
+            "page_id": page_id,
+            "number_of_tables_in_page": len(tables_raw),
+            "tables_content": tables_raw,
+        }
 
     def scrap_regex_from_page(self, page_id, regex):
         """
@@ -990,6 +979,9 @@ class Server(ConfluenceServerBase):
         :type  content_type: ``str``
         :param comment: A comment describing this upload/file
         :type  comment: ``str``
+        :return: The attachment response.
+        :raises ApiNotFoundError: If no page ID is supplied and the title cannot
+            be resolved in the requested space.
         """
         page_id = self.get_page_id(space=space, title=title) if page_id is None else page_id
         type = "attachment"
@@ -1040,8 +1032,7 @@ class Server(ConfluenceServerBase):
 
             return response
         else:
-            log.warning("No 'page_id' found, not uploading attachments")
-            return None
+            raise ApiNotFoundError("No page ID was supplied and the target page could not be found")
 
     def attach_file(
         self,
@@ -1129,7 +1120,7 @@ class Server(ConfluenceServerBase):
                 # Fetch specific file by filename
                 attachments = self.get_attachments_from_content(page_id=page_id, filename=filename)["results"]
                 if not attachments:
-                    return f"No attachment with filename '{filename}' found on the page."
+                    return {} if to_memory else {"attachments_downloaded": 0, "path": path}
             else:
                 # Fetch all attachment pages. Confluence defaults to 50 results,
                 # so a single request silently omits attachments on larger pages.
@@ -1149,7 +1140,7 @@ class Server(ConfluenceServerBase):
                         break
                     current_start += len(page_results)
                 if not attachments:
-                    return "No attachments found on the page."
+                    return {} if to_memory else {"attachments_downloaded": 0, "path": path}
 
             # Prepare to handle downloads
             downloaded_files = {}
@@ -1552,7 +1543,9 @@ class Server(ConfluenceServerBase):
         :param version_comment: Version comment
         :param always_update: Whether always to update (suppress content check)
         :param full_width: OPTIONAL: Default False
-        :return:
+        :return: The updated page response.
+        :raises ApiNotFoundError: If the page cannot be found while retrieving
+            its current version.
         """
         # update current page
         params = {"status": "current"}
@@ -1567,9 +1560,7 @@ class Server(ConfluenceServerBase):
             else:
                 version = self.history(page_id)["lastUpdated"]["number"] + 1
         except (IndexError, TypeError) as e:
-            log.error("Can't find '%s' %s!", title, type)
-            log.debug(e)
-            return None
+            raise ApiNotFoundError(f"Can't find '{title}' {type}!") from e
 
         data = {
             "id": page_id,
