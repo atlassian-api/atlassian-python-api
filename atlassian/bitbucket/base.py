@@ -1,14 +1,10 @@
 # coding=utf-8
 
 import copy
-import re
-import sys
 from datetime import datetime
 from pprint import PrettyPrinter
 
 from ..rest_client import AtlassianRestAPI
-
-RE_TIMEZONE = re.compile(r"(\d{2}):(\d{2})$")
 
 
 class BitbucketBase(AtlassianRestAPI):
@@ -160,17 +156,11 @@ class BitbucketBase(AtlassianRestAPI):
             return value_str
 
         if isinstance(value_str, str):
-            # The format contains a : in the timezone which is supported from 3.7 on.
-            if sys.version_info <= (3, 7):
-                value_str = RE_TIMEZONE.sub(r"\1\2", value_str)
-            try:
-                value_str = value_str[:26] + "Z"
-                value = datetime.strptime(value_str, self.CONF_TIMEFORMAT)
-            except ValueError:
-                value = datetime.strptime(
-                    value_str,
-                    "%Y-%m-%dT%H:%M:%S.%fZ",
-                )
+            # Bitbucket Cloud returns ISO 8601 timestamps with optional
+            # fractional seconds and either an offset or a trailing ``Z``.
+            # Do not trim or otherwise alter the timestamp: doing so turns
+            # ``+00:00`` into the invalid ``+00:00Z`` form.
+            value = datetime.fromisoformat(value_str.replace("Z", "+00:00"))
         else:
             value = value_str
 

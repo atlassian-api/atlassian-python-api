@@ -1,6 +1,6 @@
 # coding: utf8
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pytest
 
@@ -8,6 +8,7 @@ from atlassian import Bitbucket
 from atlassian.bitbucket import Cloud
 from atlassian.bitbucket.cloud.common.users import User
 from atlassian.bitbucket.cloud.repositories import WorkspaceRepositories
+from atlassian.bitbucket.cloud.repositories.commits import Commit as RepositoryCommit
 from atlassian.bitbucket.cloud.repositories.pullRequests import (
     Build,
     Comment,
@@ -35,6 +36,22 @@ def _datetimetostr(dtime):
 
 @pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3.4")
 class TestBasic:
+    @pytest.mark.parametrize(
+        "timestamp, expected",
+        [
+            ("2025-09-18T21:26:38+00:00", datetime(2025, 9, 18, 21, 26, 38, tzinfo=timezone.utc)),
+            (
+                "2025-09-18T21:26:38.123456+00:00",
+                datetime(2025, 9, 18, 21, 26, 38, 123456, tzinfo=timezone.utc),
+            ),
+            ("2025-09-18T21:26:38Z", datetime(2025, 9, 18, 21, 26, 38, tzinfo=timezone.utc)),
+        ],
+    )
+    def test_commit_date_parses_iso8601_timestamps(self, timestamp, expected):
+        commit = RepositoryCommit({"type": "commit", "date": timestamp}, **CLOUD._new_session_args)
+
+        assert commit.date == expected
+
     def test_each_workspace_uses_user_workspaces_endpoint(self, monkeypatch):
         workspaces = CLOUD.workspaces
         workspace = object()
