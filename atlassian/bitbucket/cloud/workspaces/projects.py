@@ -1,8 +1,8 @@
 # coding=utf-8
 
 from requests import HTTPError
-from ..base import BitbucketCloudBase
 
+from ..base import BitbucketCloudBase
 from ..repositories import ProjectRepositories
 
 

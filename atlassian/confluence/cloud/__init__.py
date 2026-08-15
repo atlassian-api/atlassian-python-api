@@ -6,6 +6,7 @@ from requests import HTTPError
 from atlassian.errors import (
     ApiError,
 )
+from .cloud import ConfluenceCloud
 
 log = logging.getLogger(__name__)
 

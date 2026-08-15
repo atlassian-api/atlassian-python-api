@@ -7,18 +7,28 @@ This package provides both Cloud and Server implementations of the Confluence AP
 
 from urllib.parse import urlparse
 
-from .cloud import Cloud as ConfluenceCloud
+from ..confluence_base import ConfluenceBase
+from .cloud import Cloud as LegacyConfluenceCloud
+from .cloud.cloud import ConfluenceCloud
 from .server import Server as ConfluenceServer
-
-# Legacy import for backward compatibility
-from .base import ConfluenceBase
+from .base import ConfluenceBase as LegacyConfluenceBase
 
 
 # Legacy Confluence class for backward compatibility
-class Confluence(ConfluenceBase):
+class Confluence(LegacyConfluenceBase):
     """Legacy Confluence class for backward compatibility."""
 
+    def __new__(cls, url, *args, **kwargs):
+        api_version = kwargs.get("api_version")
+        if api_version in {1, 2}:
+            versioned_kwargs = dict(kwargs)
+            versioned_kwargs.pop("api_version")
+            return ConfluenceBase(url, *args, api_version=api_version, **versioned_kwargs)
+        return super().__new__(cls)
+
     def __init__(self, url, *args, **kwargs):
+        if type(self) is not Confluence:
+            return
         # Detect which implementation to use
         # Priority: explicit cloud= kwarg > URL-based heuristic
         is_cloud = kwargs.get("cloud")
@@ -33,7 +43,7 @@ class Confluence(ConfluenceBase):
                 or hostname.endswith(".api.atlassian.com")
             )
         if is_cloud:
-            impl = ConfluenceCloud(url, *args, **kwargs)
+            impl = LegacyConfluenceCloud(url, *args, **kwargs)
         else:
             impl = ConfluenceServer(url, *args, **kwargs)
         self._impl = impl

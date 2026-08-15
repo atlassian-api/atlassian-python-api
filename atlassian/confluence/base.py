@@ -14,6 +14,13 @@ class ConfluenceBase(AtlassianRestAPI):
     Base class for Confluence API operations.
     """
 
+    @staticmethod
+    def _is_cloud_url(url):
+        """Compatibility proxy for the version-aware Confluence base class."""
+        from ..confluence_base import ConfluenceBase as VersionedConfluenceBase
+
+        return VersionedConfluenceBase._is_cloud_url(url)
+
     def __init__(self, url, *args, **kwargs):
         """
         Init the rest api wrapper

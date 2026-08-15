@@ -25,6 +25,7 @@ from atlassian.errors import (
     JsonRPCError,
     JsonRPCRestrictionsError,
 )
+from .confluence_server import ConfluenceServer
 
 log = logging.getLogger(__name__)
 

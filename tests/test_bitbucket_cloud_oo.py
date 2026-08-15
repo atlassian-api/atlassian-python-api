@@ -1,13 +1,21 @@
 # coding: utf8
-from atlassian.bitbucket.cloud.repositories import WorkspaceRepositories
-import pytest
 import sys
 from datetime import datetime
+
+import pytest
 
 from atlassian import Bitbucket
 from atlassian.bitbucket import Cloud
 from atlassian.bitbucket.cloud.common.users import User
-from atlassian.bitbucket.cloud.repositories.pullRequests import Comment, Commit, Participant, PullRequest, Build, Task
+from atlassian.bitbucket.cloud.repositories import WorkspaceRepositories
+from atlassian.bitbucket.cloud.repositories.pullRequests import (
+    Build,
+    Comment,
+    Commit,
+    Participant,
+    PullRequest,
+    Task,
+)
 
 BITBUCKET = None
 try:

@@ -2,8 +2,7 @@
 import logging
 import time
 
-from atlassian import Jira
-from atlassian import Stash
+from atlassian import Jira, Stash
 
 """
 Clean branches for closed issues

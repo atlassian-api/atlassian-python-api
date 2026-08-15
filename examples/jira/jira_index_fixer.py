@@ -1,6 +1,7 @@
 # coding=utf-8
-from atlassian import Jira
 from pprint import pprint
+
+from atlassian import Jira
 
 JIRA_NODE_URL = "JIRA_NODES_1"
 JIRA_LOGIN = "admin"

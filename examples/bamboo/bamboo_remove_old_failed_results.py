@@ -1,6 +1,5 @@
 import logging
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from atlassian import Bamboo
 

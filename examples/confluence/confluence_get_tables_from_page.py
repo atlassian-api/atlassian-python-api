@@ -1,5 +1,6 @@
-from atlassian import Confluence
 import logging
+
+from atlassian import Confluence
 
 confluence = Confluence(
     url="<instance_url>",

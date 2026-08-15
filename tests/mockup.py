@@ -1,10 +1,9 @@
 # coding: utf8
 import json
 import os
-
 from unittest.mock import Mock
 
-from requests import Session, Response
+from requests import Response, Session
 
 SERVER = "https://my.test.server.com"
 RESPONSE_ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "responses")

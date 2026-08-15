@@ -1,0 +1,41 @@
+"""
+Legacy module for backward compatibility.
+New code should use the confluence package directly.
+"""
+
+import warnings
+from typing import Optional, Union
+
+from .confluence.cloud import ConfluenceCloud
+from .confluence.server import ConfluenceServer
+
+
+def Confluence(url: str, *args, cloud: Optional[bool] = None, api_version: Union[str, int] = 1, **kwargs):
+    """
+    Factory function to create appropriate Confluence instance.
+
+    Args:
+        url: The Confluence instance URL
+        cloud: Whether this is a cloud instance. If None, will be auto-detected
+        api_version: API version to use (1 or 2, only applicable for cloud)
+        *args: Arguments to pass to the constructor
+        **kwargs: Keyword arguments to pass to the constructor
+
+    Returns:
+        ConfluenceCloud or ConfluenceServer instance
+    """
+    warnings.warn(
+        "Direct Confluence class instantiation is deprecated. "
+        "Use ConfluenceCloud or ConfluenceServer classes from atlassian.confluence package.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+
+    # Auto-detect cloud if not specified
+    if cloud is None:
+        cloud = any(domain in url.lower() for domain in [".atlassian.net", ".jira.com"])
+
+    if cloud:
+        return ConfluenceCloud(url, *args, api_version=api_version, **kwargs)
+    else:
+        return ConfluenceServer(url, *args, **kwargs)
