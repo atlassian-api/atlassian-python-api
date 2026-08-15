@@ -979,6 +979,17 @@ class TestConfluenceServer:
         mock_get.assert_called_once_with("template/template1", **{})
         assert result == {"id": "template1", "name": "Test Template"}
 
+    @patch.object(ConfluenceServer, "put")
+    def test_update_template_sends_a_json_object_not_a_json_string(self, mock_put, confluence_server):
+        body = {"storage": {"value": "<p>Template</p>", "representation": "storage"}}
+
+        confluence_server.create_or_update_template("Template", body, template_id="template-1")
+
+        mock_put.assert_called_once_with(
+            "rest/api/template",
+            data={"name": "Template", "templateType": "page", "body": body, "templateId": "template-1"},
+        )
+
     @patch.object(ConfluenceServer, "create_page")
     @patch.object(ConfluenceServer, "get_content_template")
     def test_create_page_from_template_preserves_storage_macros(

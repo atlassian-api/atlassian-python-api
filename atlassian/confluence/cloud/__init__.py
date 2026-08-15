@@ -39,6 +39,43 @@ class Cloud(ConfluenceCloudBase):
             base_url += "/wiki"
         return self.url_joiner(base_url, path)
 
+    def create_or_update_template(
+        self,
+        name,
+        body,
+        template_type="page",
+        template_id=None,
+        description=None,
+        labels=None,
+        space=None,
+    ):
+        """Create or update a legacy Confluence Cloud content template.
+
+        The template API remains a V1 endpoint in Confluence Cloud.  It is
+        therefore addressed explicitly rather than through this client's V2
+        root.  ``body`` must be the body object returned by
+        :meth:`get_content_template`, or a storage body such as
+        ``{"storage": {"value": "...", "representation": "storage"}}``.
+        """
+        data = {"name": name, "templateType": template_type, "body": body}
+        if description:
+            data["description"] = description
+        if labels:
+            data["labels"] = labels
+        if space:
+            data["space"] = {"key": space}
+
+        endpoint = self._cloud_wiki_url("rest/api/template")
+        if template_id:
+            data["templateId"] = template_id
+            return self.put(endpoint, data=data, absolute=True)
+        return self.post(endpoint, json=data, absolute=True)
+
+    def get_content_template(self, template_id):
+        """Return a legacy Confluence Cloud content template by ID."""
+        endpoint = self._cloud_wiki_url(f"rest/api/template/{template_id}")
+        return self.get(endpoint, absolute=True)
+
     def get_pdf_download_url_for_confluence_cloud(self, url):
         """Start a Cloud PDF export and return its signed download URL.
 

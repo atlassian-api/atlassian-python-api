@@ -292,7 +292,9 @@ Template actions
     # Updating a content template
     template_id = "<string>"
     name = "<string>"
-    body = {"value": "<string>", "representation": "view"}
+    # Use the complete storage body returned by get_content_template(), or
+    # construct it in the same shape.
+    body = {"storage": {"value": "<string>", "representation": "storage"}}
     template_type = "page"
     description = "<string>"
     labels = [{"prefix": "<string>", "name": "<string>", "id": "<string>", "label": "<string>"}]
@@ -302,7 +304,7 @@ Template actions
 
     # Creating a new content template
     name = "<string>"
-    body = {"value": "<string>", "representation": "view"}
+    body = {"storage": {"value": "<string>", "representation": "storage"}}
     template_type = "page"
     description = "<string>"
     labels = [{"prefix": "<string>", "name": "<string>", "id": "<string>", "label": "<string>"}]

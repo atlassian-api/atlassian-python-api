@@ -2603,7 +2603,10 @@ class Server(ConfluenceServerBase):
 
         if template_id:
             data["templateId"] = template_id
-            return self.put("rest/api/template", data=json.dumps(data))
+            # ``AtlassianRestAPI.put`` serializes ``data`` to JSON.  Passing a
+            # pre-serialized value here turns the complete template into a JSON
+            # string, which Confluence rejects with JsonMappingException.
+            return self.put("rest/api/template", data=data)
 
         return self.post("rest/api/template", json=data)
 

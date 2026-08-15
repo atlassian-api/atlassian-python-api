@@ -49,6 +49,24 @@ class TestConfluenceCloud:
         assert confluence_cloud.cql_all("type=page") == [{"id": "1"}, {"id": "2"}]
         mock_iter_cql.assert_called_once_with("type=page")
 
+    @patch.object(ConfluenceCloud, "put")
+    def test_update_template_uses_v1_endpoint_and_object_payload(self, mock_put, confluence_cloud):
+        body = {"storage": {"value": "<p>Template</p>", "representation": "storage"}}
+
+        confluence_cloud.create_or_update_template("Template", body, template_id="template-1")
+
+        mock_put.assert_called_once_with(
+            "https://test.atlassian.net/wiki/rest/api/template",
+            data={"name": "Template", "templateType": "page", "body": body, "templateId": "template-1"},
+            absolute=True,
+        )
+
+    @patch.object(ConfluenceCloud, "get")
+    def test_get_content_template_uses_cloud_v1_endpoint(self, mock_get, confluence_cloud):
+        confluence_cloud.get_content_template("template-1")
+
+        mock_get.assert_called_once_with("https://test.atlassian.net/wiki/rest/api/template/template-1", absolute=True)
+
     @patch("atlassian.confluence.cloud.requests.get")
     @patch.object(ConfluenceCloud, "get")
     def test_export_page_uses_v2_pdf_export_task_endpoint(self, mock_get, mock_requests_get, confluence_cloud):
