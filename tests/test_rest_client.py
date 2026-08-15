@@ -78,6 +78,39 @@ class TestAtlassianRestAPI:
         assert prepared_request.headers["Authorization"] == "Bearer expected-token"
         assert api.session.trust_env is True
 
+    def test_log_curl_debug_does_not_double_encode_serialized_json(self, monkeypatch):
+        messages = []
+        monkeypatch.setattr("atlassian.rest_client.log.log", lambda **kwargs: messages.append(kwargs["msg"]))
+
+        self.api.log_curl_debug(
+            method="POST",
+            url="https://example.test/rest/api/content",
+            headers={"Content-Type": "application/json"},
+            data='{"body": {"storage": {"value": "example"}}}',
+        )
+
+        assert "curl --show-error -X POST" in messages[0]
+        assert "--data '{\"body\": {\"storage\": {\"value\": \"example\"}}}'" in messages[0]
+        assert '\\"body\\"' not in messages[0]
+
+    def test_request_logs_json_payload_once(self, monkeypatch):
+        captured = {}
+
+        def capture_curl_debug(**kwargs):
+            captured.update(kwargs)
+
+        monkeypatch.setattr(self.api, "log_curl_debug", capture_curl_debug)
+        monkeypatch.setattr(
+            self.api._session,
+            "request",
+            lambda **_kwargs: SimpleNamespace(status_code=200, reason="OK", text="", encoding=None),
+        )
+        monkeypatch.setattr(self.api, "raise_for_status", lambda _response: None)
+
+        self.api.request("POST", "content", json={"title": "Page"}, advanced_mode=True)
+
+        assert captured["data"] == '{"title": "Page"}'
+
     def test_init_with_cert(self):
         """Test initialization with certificate"""
         api = AtlassianRestAPI(url=f"{mockup_server()}/test", cert=("/path/to/cert.pem", "/path/to/key.pem"))

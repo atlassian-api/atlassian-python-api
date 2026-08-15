@@ -49,6 +49,11 @@ T_resp_get = Union[Response, T_resp_json, str, bytes]
 log = get_default_logger(__name__)
 
 
+def _curl_quote(value: str) -> str:
+    """Quote a value for a POSIX shell cURL command."""
+    return "'" + value.replace("'", "'\"'\"'") + "'"
+
+
 class _ExplicitTokenAuth(AuthBase):
     """Prevent Requests from replacing an explicit token with ``.netrc`` auth."""
 
@@ -417,11 +422,12 @@ class AtlassianRestAPI(object):
         :return:
         """
         headers = headers or self.default_headers
-        message = "curl --silent -X {method} -H {headers} {data} '{url}'".format(
+        payload = None if data is None else (data if isinstance(data, str) else dumps(data))
+        message = "curl --show-error -X {method} -H {headers} {data} {url}".format(
             method=method,
-            headers=" -H ".join([f"'{key}: {value}'" for key, value in list(headers.items())]),
-            data="" if not data else f"--data '{dumps(data)}'",
-            url=url,
+            headers=" -H ".join(_curl_quote(f"{key}: {value}") for key, value in headers.items()),
+            data="" if payload is None else f"--data {_curl_quote(payload)}",
+            url=_curl_quote(url),
         )
         log.log(level=level, msg=message)
 
@@ -488,7 +494,7 @@ class AtlassianRestAPI(object):
         json_dump = None
         if files is None:
             data = None if data is None else dumps(data)
-            json_dump = None if not json else dumps(json)
+            json_dump = None if json is None else dumps(json)
 
         headers = headers or self.default_headers
 
@@ -513,7 +519,7 @@ class AtlassianRestAPI(object):
                 method=method,
                 url=url,
                 headers=headers,
-                data=data or json_dump,
+                data=data if data is not None else json_dump,
             )
             response = self._session.request(
                 method=method,
