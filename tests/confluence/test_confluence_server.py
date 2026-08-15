@@ -436,6 +436,25 @@ class TestConfluenceServer:
         assert mock_get.call_count == 2
 
     @patch.object(ConfluenceServer, "get")
+    def test_child_page_pagination_resolves_relative_next_link_without_leading_slash(
+        self, mock_get, confluence_server
+    ):
+        mock_get.side_effect = [
+            {
+                "results": [{"id": "1", "title": "Child 1"}],
+                "_links": {"next": "rest/api/content/123/child/page?limit=25&start=25"},
+            },
+            {"results": [{"id": "2", "title": "Child 2"}]},
+        ]
+
+        result = list(confluence_server.get_page_child_by_type("123"))
+
+        assert result == [{"id": "1", "title": "Child 1"}, {"id": "2", "title": "Child 2"}]
+        second_call = mock_get.call_args_list[1]
+        assert second_call.args[0] == "https://test.confluence.com/rest/api/content/123/child/page?limit=25&start=25"
+        assert second_call.kwargs["absolute"] is True
+
+    @patch.object(ConfluenceServer, "get")
     def test_pagination_stops_when_next_link_is_none(self, mock_get, confluence_server):
         """Test pagination stops when _links.next is explicitly None."""
         mock_get.return_value = {

@@ -2,7 +2,7 @@
 
 import copy
 import re
-from urllib.parse import urlparse
+from urllib.parse import urljoin, urlparse
 import logging
 from requests import HTTPError
 from ..rest_client import AtlassianRestAPI
@@ -190,10 +190,16 @@ class ConfluenceBase(AtlassianRestAPI):
             if url is None:
                 break
 
-            if url.startswith("/"):
-                # Relative URL from Confluence Server: prepend scheme+host from self.url
+            if not urlparse(url).scheme:
+                # Confluence returns both ``/rest/api/...`` and
+                # ``rest/api/...`` forms for next links.  Neither is an
+                # absolute URL, despite the latter lacking a leading slash.
                 parsed = urlparse(self.url)
-                url = f"{parsed.scheme}://{parsed.netloc}{url}"
+                site_url = f"{parsed.scheme}://{parsed.netloc}"
+                if url.startswith("/") or url.startswith(("rest/", "wiki/")):
+                    url = f"{site_url}/{url.lstrip('/')}"
+                else:
+                    url = urljoin(f"{self.url.rstrip('/')}/", url)
 
             # From now on we have absolute URLs with parameters
             absolute = True
