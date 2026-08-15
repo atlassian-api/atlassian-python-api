@@ -577,10 +577,24 @@ Attachments actions
     # Add attachment (IO Object) to issue
     jira.add_attachment_object(issue_key, attachment)
 
-    # Download attachments from the issue
-    jira.download_attachments_from_issue(issue, path=None, cloud=True):
+    # Gets the binary raw data of single attachment in bytes.
+    jira.get_attachment_content(attachment_id)
 
-    # Get list of attachments ids from issue
+    # Download attachments from the issue
+    # For both methods, if path is None, current working directory is used.
+    # zip file name is in following format: "<issue id>_attachments.zip"
+
+    # This method downloads zip file compressed from Jira server side.
+    # Best when total attachment size is less than 1 GB.
+    # Returns a message indicating the result of the download operation.
+    jira.download_issue_attachments(issue_key, path=None, overwrite=False)
+
+    # This method downloads individual files and compresses zip file locally.
+    # Best when total attachment size is greater than 1 GB.
+    # Returns the file path of created zip file.
+    jira.get_all_attachment_contents(issue_key, path=None, overwrite=False)
+
+    # Get list of attachment names and ids from issue
     jira.get_attachments_ids_from_issue(issue_key)
 
 Manage components
