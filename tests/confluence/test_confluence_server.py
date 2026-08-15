@@ -269,6 +269,16 @@ class TestConfluenceServer:
         with pytest.raises(ApiValueError, match="space is required"):
             confluence_server.update_or_create(title="Top level", body="<p>Body</p>")
 
+    @patch.object(ConfluenceServer, "update_page")
+    def test_update_existing_page_preserves_confluence_image_storage_markup(self, mock_update_page, confluence_server):
+        body = '<table><tr><td><ac:image><ri:attachment ri:filename="chart.png" /></ac:image></td></tr></table>'
+        mock_update_page.return_value = {"id": "123"}
+
+        result = confluence_server.update_existing_page("123", "Report", body)
+
+        assert result == {"id": "123"}
+        assert mock_update_page.call_args.kwargs["body"] == body
+
     @patch.object(ConfluenceServer, "_get_paged")
     def test_get_page_properties_follows_every_result_page(self, mock_get_paged, confluence_server):
         mock_get_paged.return_value = iter([{"key": "one"}, {"key": "two"}])

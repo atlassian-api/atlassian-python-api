@@ -195,6 +195,12 @@ Page actions
     confluence.update_or_create(parent_id, title, body, representation='storage', full_width=False)
     confluence.update_or_create(title=title, body=body, space='SPACEKEY')
 
+    # Preserve Confluence storage macros when updating tables. Do not round-trip
+    # a page containing images through pandas.read_html(...).to_html(), because
+    # pandas represents embedded image cells as missing values and serializes
+    # them as ``NaN``. Fetch body.storage, update only the intended markup, and
+    # pass the resulting storage XHTML to update_page/update_existing_page.
+
     # Archived pages must be restored/unarchived before update_or_create() can update them.
 
     # Append body to page if already exist

@@ -1544,7 +1544,13 @@ class Server(ConfluenceServerBase):
         version_comment=None,
         full_width=False,
     ):
-        """Duplicate update_page. Left for the people who used it before. Use update_page instead"""
+        """Backward-compatible alias for :meth:`update_page`.
+
+        ``body`` is sent unchanged.  In particular, callers updating a table
+        that contains Confluence image macros must retain the original storage
+        markup.  ``pandas.read_html`` cannot preserve those macros and its
+        subsequent ``to_html`` output may replace image cells with ``NaN``.
+        """
         return self.update_page(
             page_id=page_id,
             title=title,
