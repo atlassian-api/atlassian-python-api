@@ -97,19 +97,16 @@ level directory.
 
    pip install . --upgrade
 
-The following command builds a package and uploads it to PIP repository.
+Build and validate distributions before uploading them to PyPI.  Twine 6 or
+newer is required because current setuptools releases generate Core Metadata
+2.4, which older Twine versions cannot validate.
 
 ::
 
-   python setup.py sdist upload
-
-Alternative way
-
-::
-
-   python -m pip install build twine
+   python -m pip install --upgrade build "twine>=6.0.0"
    python -m build
-   twine upload dist/*
+   python -m twine check dist/*
+   python -m twine upload dist/*
 
 An alternative way you can use next command
 

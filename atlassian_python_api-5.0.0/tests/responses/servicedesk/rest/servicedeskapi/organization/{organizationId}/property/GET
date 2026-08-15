@@ -1,3 +1,0 @@
-responses[None] = {
-    "keys": [{"self": "/rest/servicedeskapi/organization/1/property/propertyKey", "key": "organization.attributes"}]
-}

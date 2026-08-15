@@ -1,1 +1,0 @@
-"""Bitbucket Server common package"""

@@ -1,1 +1,0 @@
-"""Bitbucket Cloud common package"""
