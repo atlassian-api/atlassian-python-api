@@ -755,6 +755,30 @@ class TestConfluenceServer:
         mock_get.assert_called_once_with("template/template1", **{})
         assert result == {"id": "template1", "name": "Test Template"}
 
+    @patch.object(ConfluenceServer, "create_page")
+    @patch.object(ConfluenceServer, "get_content_template")
+    def test_create_page_from_template_preserves_storage_macros(
+        self, mock_get_content_template, mock_create_page, confluence_server
+    ):
+        mock_get_content_template.return_value = {
+            "body": {"storage": {"value": "<ac:structured-macro>[[TITLE]]</ac:structured-macro>"}}
+        }
+        mock_create_page.return_value = {"id": "123"}
+
+        result = confluence_server.create_page_from_template(
+            "DOCS", "Report", "template-1", parent_id="42", replacements={"[[TITLE]]": "August"}, editor="v2"
+        )
+
+        assert result == {"id": "123"}
+        mock_create_page.assert_called_once_with(
+            "DOCS",
+            "Report",
+            "<ac:structured-macro>August</ac:structured-macro>",
+            parent_id="42",
+            representation="storage",
+            editor="v2",
+        )
+
     # Draft Management Tests
     @patch.object(ConfluenceServer, "get")
     def test_get_draft_content(self, mock_get, confluence_server):

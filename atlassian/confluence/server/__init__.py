@@ -2600,6 +2600,25 @@ class Server(ConfluenceServerBase):
 
         return response
 
+    def create_page_from_template(self, space, title, template_id, parent_id=None, replacements=None, **kwargs):
+        """Create a page from a Server/Data Center content template.
+
+        Template bodies are read from the ``storage`` representation so that
+        Confluence macros are retained. ``replacements`` maps literal template
+        placeholders (for example ``{"{{REPORT_DATE}}": "2026-08-15"}``) to
+        their replacement values.
+        """
+        template = self.get_content_template(template_id)
+        try:
+            body = template["body"]["storage"]["value"]
+        except (KeyError, TypeError) as error:
+            raise ApiValueError("The template does not contain a storage body", reason=error)
+
+        for placeholder, value in (replacements or {}).items():
+            body = body.replace(str(placeholder), str(value))
+
+        return self.create_page(space, title, body, parent_id=parent_id, representation="storage", **kwargs)
+
     @deprecated(version="3.7.0", reason="Use get_blueprint_templates()")
     def get_all_blueprints_from_space(self, space, start=0, limit=None, expand=None):
         """

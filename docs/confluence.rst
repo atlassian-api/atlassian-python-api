@@ -148,6 +148,11 @@ Page actions
     # Create page from scratch
     confluence.create_page(space, title, body, parent_id=None, type='page', representation='storage', editor='v2', full_width=False)
 
+    # Server/Data Center: retain template macros and replace explicit placeholders.
+    confluence.create_page_from_template(
+        space, title, template_id, replacements={"{{REPORT_MONTH}}": "August"}
+    )
+
     # This method removes a page, if it has recursive flag, method removes including child pages
     confluence.remove_page(page_id, status=None, recursive=False)
 
