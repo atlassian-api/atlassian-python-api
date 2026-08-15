@@ -63,6 +63,9 @@ class ConfluenceEndpoints:
         # Folder endpoints
         "folder": "api/v2/folders",
         "folder_by_id": "api/v2/folders/{id}",
+        # Task endpoints
+        "tasks": "api/v2/tasks",
+        "task_by_id": "api/v2/tasks/{id}",
         # Database endpoints
         "database": "api/v2/databases",
         "database_by_id": "api/v2/databases/{id}",

@@ -111,6 +111,20 @@ class TestAtlassianRestAPI:
 
         assert captured["data"] == '{"title": "Page"}'
 
+    def test_request_encodes_sequence_query_parameters_as_repeated_values(self, monkeypatch):
+        captured = {}
+
+        def request(**kwargs):
+            captured.update(kwargs)
+            return SimpleNamespace(status_code=200, reason="OK", text="", encoding=None)
+
+        monkeypatch.setattr(self.api._session, "request", request)
+        monkeypatch.setattr(self.api, "raise_for_status", lambda _response: None)
+
+        self.api.request("GET", "tasks", params={"task-id": [1, 2]}, advanced_mode=True)
+
+        assert captured["url"].endswith("tasks?task-id=1&task-id=2")
+
     def test_init_with_cert(self):
         """Test initialization with certificate"""
         api = AtlassianRestAPI(url=f"{mockup_server()}/test", cert=("/path/to/cert.pem", "/path/to/key.pem"))

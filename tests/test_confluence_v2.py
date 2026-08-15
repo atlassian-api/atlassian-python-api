@@ -1372,6 +1372,54 @@ class TestConfluenceV2(unittest.TestCase):
         mock_delete.assert_called_with("api/v2/comments/12345")
         self.assertTrue(result)
 
+    @patch("atlassian.confluence.cloud.ConfluenceCloud._get_paged")
+    def test_get_tasks_follows_all_pages_and_passes_filters(self, mock_get_paged):
+        mock_get_paged.return_value = [{"id": "1"}, {"id": "2"}]
+
+        result = self.confluence_v2.get_tasks(
+            status="incomplete",
+            page_ids=[10, 11],
+            assigned_to=["account-1"],
+            due_at_from=1_700_000_000_000,
+            limit=50,
+        )
+
+        self.assertEqual(result, [{"id": "1"}, {"id": "2"}])
+        mock_get_paged.assert_called_once_with(
+            "api/v2/tasks",
+            params={
+                "status": "incomplete",
+                "page-id": [10, 11],
+                "assigned-to": ["account-1"],
+                "due-at-from": 1_700_000_000_000,
+                "limit": 50,
+            },
+        )
+
+    @patch("atlassian.confluence.cloud.ConfluenceCloud.get")
+    def test_get_task(self, mock_get):
+        mock_get.return_value = {"id": "10", "status": "incomplete"}
+
+        result = self.confluence_v2.get_task(10, body_format="storage")
+
+        self.assertEqual(result["id"], "10")
+        mock_get.assert_called_once_with("api/v2/tasks/10", params={"body-format": "storage"})
+
+    @patch("atlassian.confluence.cloud.ConfluenceCloud.put")
+    def test_update_task_updates_status_only(self, mock_put):
+        mock_put.return_value = {"id": "10", "status": "complete"}
+
+        result = self.confluence_v2.update_task(10, "complete")
+
+        self.assertEqual(result["status"], "complete")
+        mock_put.assert_called_once_with("api/v2/tasks/10", data={"status": "complete"}, params=None)
+
+    def test_task_validation(self):
+        with self.assertRaises(ValueError):
+            self.confluence_v2.get_tasks(limit=251)
+        with self.assertRaises(ValueError):
+            self.confluence_v2.update_task(10, "open")
+
 
 if __name__ == "__main__":
     unittest.main()

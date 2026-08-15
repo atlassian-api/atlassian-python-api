@@ -13,11 +13,12 @@ from typing import Any, Dict, List, Optional
 
 from .databases import DatabaseOperations
 from .folders import FolderOperations
+from .tasks import TaskOperations
 
 log = logging.getLogger(__name__)
 
 
-class ConfluenceCloud(FolderOperations, DatabaseOperations):
+class ConfluenceCloud(TaskOperations, FolderOperations, DatabaseOperations):
     """
     Confluence Cloud API implementation class
     """

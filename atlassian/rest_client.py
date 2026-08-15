@@ -488,7 +488,7 @@ class AtlassianRestAPI(object):
             else:
                 url += "?"
         if params:
-            url += urlencode((params or {}), safe=",")
+            url += urlencode((params or {}), safe=",", doseq=True)
         if flags:
             url += ("&" if params or params_already_in_url else "") + "&".join(flags or [])
         json_dump = None

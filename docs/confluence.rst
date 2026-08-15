@@ -283,6 +283,24 @@ Confluence Whiteboards
     # Get whiteboard by id  - cloud only!
     confluence.get_whiteboard(whiteboard_id)
 
+Confluence Cloud tasks
+----------------------
+
+.. code-block:: python
+
+    from atlassian import ConfluenceV2
+
+    confluence = ConfluenceV2(url, username=email, password=api_token)
+
+    # Retrieves every result page.  Filters accept account IDs, content IDs,
+    # and Unix epoch milliseconds for the date-range arguments.
+    tasks = confluence.get_tasks(status="incomplete", page_ids=[page_id])
+
+    task = confluence.get_task(task_id, body_format="storage")
+    confluence.update_task(task_id, "complete")
+
+    # Scoped tokens require read:task:confluence or write:task:confluence.
+
 
 Template actions
 ----------------
