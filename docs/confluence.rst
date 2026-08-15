@@ -188,6 +188,8 @@ Page actions
     # Update page or create page if it is not exists
     confluence.update_or_create(parent_id, title, body, representation='storage', full_width=False)
 
+    # Archived pages must be restored/unarchived before update_or_create() can update them.
+
     # Append body to page if already exist
     confluence.append_page(page_id, title, append_body, parent_id=None, type='page', representation='storage', minor_edit=False)
 

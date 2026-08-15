@@ -1791,6 +1791,10 @@ class Server(ConfluenceServerBase):
         :param editor: OPTIONAL: v2 to be created in the new editor
         :param full_width: OPTIONAL: Default is False
         :return:
+
+        Note:
+            Confluence does not update archived pages through this workflow.
+            Restore the page to the current state before calling this method.
         """
         space = self.get_page_space(parent_id)
 
