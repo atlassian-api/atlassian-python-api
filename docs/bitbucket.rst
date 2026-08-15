@@ -1,6 +1,26 @@
 BitBucket module
 ================
 
+Server/Data Center pagination
+-----------------------------
+
+Several Server/Data Center methods return Python generators, including
+``project_list()``, ``repo_list()``, ``repo_all_list()``, and
+``get_pull_requests()``. Iterate them to process every page lazily, or wrap
+them in ``list`` only when the entire result is small enough to hold in memory.
+Generators do not have a ``.json()`` method because each yielded value is
+already a Python dictionary.
+
+.. code-block:: python
+
+    for repository in bitbucket.repo_all_list("PROJ"):
+        for pull_request in bitbucket.get_pull_requests("PROJ", repository["slug"], state="OPEN"):
+            print(pull_request["title"])
+
+``advanced_mode=True`` is for callers that need raw ``requests.Response``
+objects from individual requests. Do not enable it for the high-level paginated
+methods above; use their yielded dictionaries instead.
+
 Manage projects
 ---------------
 

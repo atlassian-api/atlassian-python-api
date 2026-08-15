@@ -9,6 +9,11 @@ For Bitbucket Cloud's object-oriented client, see
 `bitbucket/bitbucket_cloud_read_source.py` for reading a repository file and
 browsing a directory without using the legacy Bitbucket Server API.
 
+For Bitbucket Server/Data Center pagination, see
+`bitbucket/bitbucket_server_project_open_pull_requests.py`. Methods that list
+projects, repositories, or pull requests return generators: use them directly
+in a `for` loop, or call `list(...)` only for small result sets.
+
 There are simple rules each example should follow:
 
 * **Do not store** any credentials in VCS
