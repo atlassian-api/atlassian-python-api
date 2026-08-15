@@ -3,6 +3,7 @@
 import logging
 import re
 import time
+from urllib.parse import quote
 from .base import ConfluenceCloudBase
 import requests
 from requests import HTTPError
@@ -275,17 +276,54 @@ class Cloud(ConfluenceCloudBase):
         return self.get("user/current", **kwargs)
 
     # Group Management
-    def get_groups(self, **kwargs):
-        """Get all groups."""
-        return self.get("group", **kwargs)
+    def get_groups(self, start=0, limit=1000, **kwargs):
+        """Get a page of Cloud groups from the supported V1 group API."""
+        params = {"start": start, "limit": limit, **kwargs}
+        return self.get(self._cloud_wiki_url("rest/api/group"), params=params, absolute=True)
 
     def get_group(self, group_id, **kwargs):
-        """Get group by ID."""
-        return self.get(f"group/{group_id}", **kwargs)
+        """Get a Cloud group by its ID."""
+        return self.get(
+            self._cloud_wiki_url("rest/api/group/by-id"),
+            params={"id": group_id, **kwargs},
+            absolute=True,
+        )
 
-    def get_group_members(self, group_id, **kwargs):
-        """Get group members."""
-        return self.get(f"group/{group_id}/member", **kwargs)
+    def get_all_groups(self, start=0, limit=1000):
+        """Return the groups from a Cloud group result page.
+
+        This retains the legacy return shape while using the supported Cloud
+        endpoint.  Use each group's ``id`` with :meth:`get_group_members`.
+        """
+        return self.get_groups(start=start, limit=limit).get("results", [])
+
+    def get_group_members(self, group_id, start=None, limit=None, expand=None, **kwargs):
+        """Get a paginated collection of members for a Cloud group ID."""
+        params = dict(kwargs)
+        if start is not None:
+            params["start"] = start
+        if limit is not None:
+            params["limit"] = limit
+        if expand is not None:
+            params["expand"] = expand
+        return self.get(
+            self._cloud_wiki_url(f"rest/api/group/{quote(str(group_id), safe='')}/membersByGroupId"),
+            params=params,
+            absolute=True,
+        )
+
+    def get_all_members(self, group_id, expand=None):
+        """Return all members of a Cloud group identified by its ID."""
+        members = []
+        start = 0
+        limit = 1000
+        while True:
+            response = self.get_group_members(group_id, start=start, limit=limit, expand=expand)
+            values = response.get("results", [])
+            members.extend(values)
+            if not values or len(values) < limit:
+                return members
+            start += len(values)
 
     # Label Management
     def get_labels(self, **kwargs):

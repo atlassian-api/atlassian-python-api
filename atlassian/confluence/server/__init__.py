@@ -3979,6 +3979,8 @@ class Server(ConfluenceServerBase):
         """
         Returns the license detailed information
         """
+        if self.cloud:
+            raise ApiNotAcceptable("Confluence Cloud does not provide license details through this API")
         url = "rest/license/1.0/license/details"
         return self.get(url)
 
@@ -3986,6 +3988,8 @@ class Server(ConfluenceServerBase):
         """
         Returns the total used seats in the license
         """
+        if self.cloud:
+            raise ApiNotAcceptable("Confluence Cloud does not provide license details through this API")
         url = "rest/license/1.0/license/userCount"
         return self.get(url)
 
@@ -3993,6 +3997,8 @@ class Server(ConfluenceServerBase):
         """
         Returns the available license seats remaining
         """
+        if self.cloud:
+            raise ApiNotAcceptable("Confluence Cloud does not provide license details through this API")
         url = "rest/license/1.0/license/remainingSeats"
         return self.get(url)
 
@@ -4000,5 +4006,7 @@ class Server(ConfluenceServerBase):
         """
         Returns the license max users
         """
+        if self.cloud:
+            raise ApiNotAcceptable("Confluence Cloud does not provide license details through this API")
         url = "rest/license/1.0/license/maxUsers"
         return self.get(url)

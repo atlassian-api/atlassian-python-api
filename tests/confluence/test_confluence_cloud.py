@@ -268,7 +268,9 @@ class TestConfluenceCloud:
         """Test get_groups method."""
         mock_get.return_value = {"results": [{"id": "group1", "name": "Test Group"}]}
         result = confluence_cloud.get_groups()
-        mock_get.assert_called_once_with("group", **{})
+        mock_get.assert_called_once_with(
+            "https://test.atlassian.net/wiki/rest/api/group", params={"start": 0, "limit": 1000}, absolute=True
+        )
         assert result == {"results": [{"id": "group1", "name": "Test Group"}]}
 
     @patch.object(ConfluenceCloud, "get")
@@ -276,7 +278,9 @@ class TestConfluenceCloud:
         """Test get_group method."""
         mock_get.return_value = {"id": "group1", "name": "Test Group"}
         result = confluence_cloud.get_group("group1")
-        mock_get.assert_called_once_with("group/group1", **{})
+        mock_get.assert_called_once_with(
+            "https://test.atlassian.net/wiki/rest/api/group/by-id", params={"id": "group1"}, absolute=True
+        )
         assert result == {"id": "group1", "name": "Test Group"}
 
     @patch.object(ConfluenceCloud, "get")
@@ -284,8 +288,20 @@ class TestConfluenceCloud:
         """Test get_group_members method."""
         mock_get.return_value = {"results": [{"id": "user1", "name": "Test User"}]}
         result = confluence_cloud.get_group_members("group1")
-        mock_get.assert_called_once_with("group/group1/member", **{})
+        mock_get.assert_called_once_with(
+            "https://test.atlassian.net/wiki/rest/api/group/group1/membersByGroupId", params={}, absolute=True
+        )
         assert result == {"results": [{"id": "user1", "name": "Test User"}]}
+
+    @patch.object(ConfluenceCloud, "get_group_members")
+    def test_get_all_members(self, mock_get_group_members, confluence_cloud):
+        mock_get_group_members.side_effect = [
+            {"results": [{"id": "user1"}, {"id": "user2"}]},
+            {"results": []},
+        ]
+
+        assert confluence_cloud.get_all_members("group1") == [{"id": "user1"}, {"id": "user2"}]
+        assert mock_get_group_members.call_args_list[0].args == ("group1",)
 
     # Label Management Tests
     @patch.object(ConfluenceCloud, "get")

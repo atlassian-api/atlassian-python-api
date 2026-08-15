@@ -7,6 +7,7 @@ import pytest
 from unittest.mock import patch
 
 from atlassian.confluence import ConfluenceServer
+from atlassian.errors import ApiNotAcceptable
 
 
 @pytest.fixture
@@ -36,6 +37,14 @@ class TestConfluenceServer:
         )
         assert confluence.api_version == "2.0"
         assert confluence.api_root == "custom/api/root"
+
+    def test_license_endpoints_explain_they_are_not_available_in_cloud(self):
+        confluence = ConfluenceServer(
+            url="https://test.atlassian.net", username="test", password="test", cloud=True
+        )
+
+        with pytest.raises(ApiNotAcceptable, match="Cloud does not provide license details"):
+            confluence.get_license_details()
 
     @patch.object(ConfluenceServer, "remove_page_history")
     @patch.object(ConfluenceServer, "get_page_by_id")

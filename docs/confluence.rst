@@ -497,3 +497,23 @@ v2 Cloud client automatically and does not append ``/wiki``.
     )
 
     page = confluence.get_page_by_id("<page-id>")
+
+Cloud group members
+-------------------
+
+Confluence Cloud group membership uses the group **ID**, not its display name.
+The API returns group IDs from ``get_all_groups``.  The legacy Server/Data
+Center methods continue to use group names.
+
+.. code-block:: python
+
+    for group in confluence.get_all_groups(start=0, limit=1000):
+        members = confluence.get_all_members(group["id"])
+
+License endpoints
+-----------------
+
+``get_license_details`` and the related license-seat methods are available for
+Confluence Server and Data Center only. Confluence Cloud does not expose an
+equivalent license REST API; Cloud clients receive ``ApiNotAcceptable`` instead
+of an HTTP 404.
