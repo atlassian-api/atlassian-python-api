@@ -163,7 +163,19 @@ Page actions
 .. code-block:: python
 
     # Create page from scratch
+    # Server/Data Center: ``space`` is the space KEY, not its display name.
+    # Personal-space keys commonly look like ``~<account-id>``.
     confluence.create_page(space, title, body, parent_id=None, type='page', representation='storage', editor='v2', full_width=False)
+
+    # Check that the supplied credentials are accepted. This does not by itself
+    # grant create permission in a particular space.
+    confluence.get_current_user()
+
+    # Cloud V2 uses a space ID rather than a key. Resolve it first, then create.
+    from atlassian import ConfluenceV2
+    cloud = ConfluenceV2(url, username=email, password=api_token)
+    space_id = cloud.get_space_by_key('SPACEKEY')['id']
+    cloud.create_page(space_id=space_id, title=title, body=body)
 
     # Server/Data Center: retain template macros and replace explicit placeholders.
     confluence.create_page_from_template(

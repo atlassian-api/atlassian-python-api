@@ -898,11 +898,12 @@ class Server(ConfluenceServerBase):
     ):
         """
         Create page from scratch
-        :param space:
-        :param title:
-        :param body:
-        :param parent_id:
-        :param type:
+        :param space: **space key**, not the display name. Personal-space keys
+            commonly look like ``~<account-id>``.
+        :param title: page title
+        :param body: page body in the selected representation
+        :param parent_id: optional parent page ID
+        :param type: content type; normally ``"page"``
         :param representation: OPTIONAL: either Confluence 'storage' or 'wiki' markup format
         :param editor: OPTIONAL: v2 to be created in the new editor
         :param full_width: DEFAULT: False
@@ -933,6 +934,13 @@ class Server(ConfluenceServerBase):
         try:
             response = self.post(url, data=data)
         except HTTPError as e:
+            if e.response.status_code == 403:
+                raise ApiPermissionError(
+                    f"Cannot create a page in space '{space}'. Use the space key "
+                    "(not its display name), then verify the API user has "
+                    "permission to create pages in that space.",
+                    reason=e,
+                )
             if e.response.status_code == 404:
                 raise ApiPermissionError(
                     "The calling user does not have permission to view the content",

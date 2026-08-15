@@ -9,7 +9,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from atlassian.confluence import ConfluenceServer
-from atlassian.errors import ApiError, ApiNotAcceptable, ApiNotFoundError, ApiValueError
+from atlassian.errors import ApiError, ApiNotAcceptable, ApiNotFoundError, ApiPermissionError, ApiValueError
 
 
 @pytest.fixture
@@ -102,6 +102,15 @@ class TestConfluenceServer:
 
         with pytest.raises(ApiValueError, match="valid storage XHTML"):
             confluence_server.update_page("123", "Updated", body="<p>Invalid & text</p>", always_update=True)
+
+    @patch.object(ConfluenceServer, "post")
+    def test_create_page_403_explains_that_space_key_is_required(self, mock_post, confluence_server):
+        response = Response()
+        response.status_code = 403
+        mock_post.side_effect = HTTPError(response=response)
+
+        with pytest.raises(ApiPermissionError, match="space key"):
+            confluence_server.create_page("Space display name", "Title", "<p>Body</p>")
 
     @patch.object(ConfluenceServer, "get")
     def test_get_page_by_id_uses_configured_api_root_without_duplicate_rest_api_prefix(
@@ -436,9 +445,7 @@ class TestConfluenceServer:
         assert mock_get.call_count == 2
 
     @patch.object(ConfluenceServer, "get")
-    def test_child_page_pagination_resolves_relative_next_link_without_leading_slash(
-        self, mock_get, confluence_server
-    ):
+    def test_child_page_pagination_resolves_relative_next_link_without_leading_slash(self, mock_get, confluence_server):
         mock_get.side_effect = [
             {
                 "results": [{"id": "1", "title": "Child 1"}],
