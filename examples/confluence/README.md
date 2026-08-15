@@ -96,6 +96,14 @@ Both implementations support:
 - Page properties
 - Export capabilities
 
+### Appending a Table to a Page
+
+[`confluence_append_table.py`](confluence_append_table.py) shows the storage-format
+workflow shared by the compatibility clients: fetch the current body with
+`expand="body.storage"`, append escaped table markup, then call `update_page`.
+The update method creates the next page version. Set `CONFLUENCE_CLOUD=true` for
+Cloud; leave it unset for Server/Data Center.
+
 ### Server-Specific Features
 
 The Server implementation includes additional features:
