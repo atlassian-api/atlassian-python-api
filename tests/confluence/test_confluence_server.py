@@ -567,6 +567,33 @@ class TestConfluenceServer:
         mock_get.assert_called_once_with("content/att1/download", **{})
         assert result == b"attachment_content"
 
+    @patch.object(ConfluenceServer, "get")
+    @patch.object(ConfluenceServer, "get_attachments_from_content")
+    def test_download_cloud_attachment_uses_content_attachment_endpoint(
+        self, mock_get_attachments, mock_get, confluence_server
+    ):
+        """Cloud downloads must not use the deprecated ``_links.download`` URL."""
+        confluence_server.cloud = True
+        mock_get_attachments.return_value = {
+            "results": [
+                {
+                    "id": "att123",
+                    "title": "report.pdf",
+                    "_links": {"download": "/download/attachments/123/att123"},
+                }
+            ]
+        }
+        mock_get.return_value = b"attachment_content"
+
+        result = confluence_server.download_attachments_from_page(
+            "123", filename="report.pdf", to_memory=True
+        )
+
+        mock_get.assert_called_once_with(
+            "rest/api/content/123/child/attachment/att123/download", not_json_response=True
+        )
+        assert result["report.pdf"].read() == b"attachment_content"
+
     # Comment Management Tests
     @patch.object(ConfluenceServer, "get")
     def test_get_comments(self, mock_get, confluence_server):

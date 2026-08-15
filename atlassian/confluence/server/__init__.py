@@ -1135,7 +1135,13 @@ class Server(ConfluenceServerBase):
             downloaded_files = {}
             for attachment in attachments:
                 file_name = attachment["title"] or attachment["id"]  # Use attachment ID if title is unavailable
-                download_link = attachment["_links"]["download"]
+                if self.cloud:
+                    # ``_links.download`` points to the deprecated Cloud
+                    # attachment download route.  Use the supported REST
+                    # content-attachment endpoint instead.
+                    download_link = f"rest/api/content/{page_id}/child/attachment/{attachment['id']}/download"
+                else:
+                    download_link = attachment["_links"]["download"]
                 # Fetch the file content
                 response = self.get(str(download_link), not_json_response=True)
 
