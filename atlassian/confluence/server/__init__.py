@@ -2976,7 +2976,14 @@ class Server(ConfluenceServerBase):
         """
         headers = self.form_token_headers
         url = f"spaces/flyingpdf/pdfpageexport.action?pageId={page_id}"
-        return self.get(url, headers=headers, not_json_response=True)
+        response = self.get(url, headers=headers, advanced_mode=True)
+        content = response.content
+        if not content.startswith(b"%PDF-"):
+            raise ApiError(
+                "Confluence returned non-PDF content while exporting the page. "
+                "Check the page permissions and authentication configuration."
+            )
+        return content
 
     def get_page_as_word(self, page_id):
         """

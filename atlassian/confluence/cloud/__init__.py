@@ -81,7 +81,14 @@ class Cloud(ConfluenceCloudBase):
         download_url = self.get_pdf_download_url_for_confluence_cloud(export_url)
         if not download_url:
             raise ApiNotFoundError("Failed to export page as PDF", reason="Failed to get download PDF URL")
-        return requests.get(download_url, timeout=75).content
+        response = requests.get(download_url, timeout=75)
+        response.raise_for_status()
+        if not response.content.startswith(b"%PDF-"):
+            raise ApiError(
+                "Confluence returned non-PDF content while exporting the page. "
+                "Check the page permissions and authentication configuration."
+            )
+        return response.content
 
     def export_page(self, page_id):
         """Alias for :meth:`get_page_as_pdf`."""

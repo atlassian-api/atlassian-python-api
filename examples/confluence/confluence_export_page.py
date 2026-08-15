@@ -4,10 +4,10 @@ from atlassian import Confluence
 """This example shows how to export pages"""
 
 confluence = Confluence(
-    url="https://test.atlassian.net/wiki",
+    url="https://test.atlassian.net",
     username="admin",
     password="api-key",
-    api_version="cloud",
+    cloud=True,
 )
 
 if __name__ == "__main__":

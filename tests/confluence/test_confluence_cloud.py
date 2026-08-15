@@ -7,6 +7,7 @@ import pytest
 from unittest.mock import patch
 
 from atlassian.confluence import ConfluenceCloud
+from atlassian.errors import ApiError
 
 
 @pytest.fixture
@@ -52,6 +53,15 @@ class TestConfluenceCloud:
         )
         assert mock_get.call_args_list[1].kwargs["absolute"] is True
         mock_requests_get.assert_called_once_with("https://downloads.example.test/page.pdf", timeout=75)
+
+    @patch("atlassian.confluence.cloud.requests.get")
+    @patch.object(ConfluenceCloud, "get_pdf_download_url_for_confluence_cloud")
+    def test_export_page_rejects_html_response(self, mock_download_url, mock_requests_get, confluence_cloud):
+        mock_download_url.return_value = "https://downloads.example.test/page.pdf"
+        mock_requests_get.return_value.content = b"<!doctype html><html>Sign in</html>"
+
+        with pytest.raises(ApiError, match="non-PDF content"):
+            confluence_cloud.export_page("456")
 
     # Content Management Tests
     @patch.object(ConfluenceCloud, "get")

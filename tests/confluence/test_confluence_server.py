@@ -7,7 +7,7 @@ import pytest
 from unittest.mock import patch
 
 from atlassian.confluence import ConfluenceServer
-from atlassian.errors import ApiNotAcceptable
+from atlassian.errors import ApiError, ApiNotAcceptable
 
 
 @pytest.fixture
@@ -863,6 +863,19 @@ class TestConfluenceServer:
         result = confluence_server.get_health()
         mock_get.assert_called_once_with("health", **{})
         assert result == {"status": "healthy"}
+
+    @patch.object(ConfluenceServer, "get")
+    def test_get_page_as_pdf_rejects_html_response(self, mock_get, confluence_server):
+        mock_get.return_value.content = b"<html>Sign in</html>"
+
+        with pytest.raises(ApiError, match="non-PDF content"):
+            confluence_server.get_page_as_pdf("123")
+
+        mock_get.assert_called_once_with(
+            "spaces/flyingpdf/pdfpageexport.action?pageId=123",
+            headers=confluence_server.form_token_headers,
+            advanced_mode=True,
+        )
 
     @patch.object(ConfluenceServer, "post")
     def test_reindex(self, mock_post, confluence_server):
