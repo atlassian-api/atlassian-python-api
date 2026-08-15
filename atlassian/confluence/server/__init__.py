@@ -2375,6 +2375,14 @@ class Server(ConfluenceServerBase):
 
             raise
 
+        returned_limit = response.get("limit") if isinstance(response, dict) else None
+        if limit is not None and isinstance(returned_limit, int) and returned_limit < limit:
+            warnings.warn(
+                f"Confluence capped get_group_members limit from {limit} to {returned_limit}; "
+                "use get_all_members to retrieve every member.",
+                UserWarning,
+            )
+
         return response
 
     # Label Management
@@ -2943,24 +2951,23 @@ class Server(ConfluenceServerBase):
         :return:
         """
         limit = 50
-        flag = True
-        step = 0
         members = []
-        while flag:
-            values = self.get_group_members(
+        while True:
+            response = self.get_group_members(
                 group_name=group_name,
                 start=len(members),
                 limit=limit,
                 expand=expand,
             )
-            step += 1
-            if len(values) == 0:
-                flag = False
-            else:
-                members.extend(values)
-        if not members:
-            print(f"Did not get members from {group_name} group, please check permissions or connectivity")
-        return members
+            values = response.get("results", []) if isinstance(response, dict) else response or []
+            members.extend(values)
+
+            total_count = response.get("totalSize", response.get("totalCount")) if isinstance(response, dict) else None
+            returned_limit = response.get("limit", limit) if isinstance(response, dict) else limit
+            if not values or (total_count is not None and len(members) >= total_count):
+                return members
+            if total_count is None and len(values) < returned_limit:
+                return members
 
     # Generic
     def cql(

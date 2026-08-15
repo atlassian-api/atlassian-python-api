@@ -82,6 +82,9 @@ Get page info
     # Resolve direct, display, and shared short page URLs to a page ID.
     page_id = confluence.get_page_id_by_url("https://confluence.example.com/x/-_Z3")
 
+    # For Server/Data Center, use this paginated helper for all group members.
+    members = confluence.get_all_members("confluence-users")
+
     # Returns only space names and follows the space-directory pagination.
     space_names = confluence.get_space_names()
 

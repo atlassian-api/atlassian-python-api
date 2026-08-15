@@ -486,6 +486,27 @@ class TestConfluenceServer:
         mock_get.assert_called_once_with("group/group1/member", **{})
         assert result == {"results": [{"username": "user1", "displayName": "Test User"}]}
 
+    @patch.object(ConfluenceServer, "get")
+    def test_get_group_members_warns_when_confluence_caps_limit(self, mock_get, confluence_server):
+        mock_get.return_value = {"results": [], "limit": 200}
+
+        with pytest.warns(UserWarning, match="capped get_group_members limit from 1000 to 200"):
+            confluence_server.get_group_members("group1", limit=1000)
+
+    @patch.object(ConfluenceServer, "get_group_members")
+    def test_get_all_members_uses_returned_page_size_and_total_count(self, mock_get_group_members, confluence_server):
+        mock_get_group_members.side_effect = [
+            {"results": [{"username": "one"}, {"username": "two"}], "limit": 2, "totalCount": 3},
+            {"results": [{"username": "three"}], "limit": 2, "totalCount": 3},
+        ]
+
+        assert confluence_server.get_all_members("group1") == [
+            {"username": "one"},
+            {"username": "two"},
+            {"username": "three"},
+        ]
+        assert mock_get_group_members.call_args_list[1].kwargs["start"] == 2
+
     @patch.object(ConfluenceServer, "post")
     def test_add_user_to_group(self, mock_post, confluence_server):
         """Test add_user_to_group method."""
