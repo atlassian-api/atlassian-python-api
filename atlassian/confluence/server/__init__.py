@@ -1787,32 +1787,39 @@ class Server(ConfluenceServerBase):
 
     def update_or_create(
         self,
-        parent_id,
-        title,
-        body,
+        parent_id=None,
+        title=None,
+        body=None,
         representation="storage",
         minor_edit=False,
         version_comment=None,
         editor=None,
         full_width=False,
+        space=None,
     ):
         """
         Update page or create a page if it is not exists
-        :param parent_id:
-        :param title:
-        :param body:
+        :param parent_id: optional parent page ID.  Omit for a top-level page.
+        :param title: page title
+        :param body: page body
         :param representation: OPTIONAL: either Confluence 'storage' or 'wiki' markup format
         :param minor_edit: Update page without notification
         :param version_comment: Version comment
         :param editor: OPTIONAL: v2 to be created in the new editor
         :param full_width: OPTIONAL: Default is False
+        :param space: space key. Required when ``parent_id`` is omitted.
         :return:
 
         Note:
             Confluence does not update archived pages through this workflow.
             Restore the page to the current state before calling this method.
         """
-        space = self.get_page_space(parent_id)
+        if title is None or body is None:
+            raise ApiValueError("title and body are required")
+        if space is None:
+            if parent_id is None:
+                raise ApiValueError("space is required when parent_id is omitted")
+            space = self.get_page_space(parent_id)
 
         if self.page_exists(space, title):
             page_id = self.get_page_id(space, title)

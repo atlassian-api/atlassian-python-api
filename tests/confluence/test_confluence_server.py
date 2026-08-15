@@ -9,7 +9,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from atlassian.confluence import ConfluenceServer
-from atlassian.errors import ApiError, ApiNotAcceptable, ApiNotFoundError
+from atlassian.errors import ApiError, ApiNotAcceptable, ApiNotFoundError, ApiValueError
 
 
 @pytest.fixture
@@ -243,6 +243,31 @@ class TestConfluenceServer:
 
         assert confluence_server.cql_all("type=page") == [{"id": "1"}, {"id": "2"}]
         mock_iter_cql.assert_called_once_with("type=page")
+
+    @patch.object(ConfluenceServer, "create_page")
+    @patch.object(ConfluenceServer, "page_exists", return_value=False)
+    def test_update_or_create_creates_top_level_page_with_explicit_space(
+        self, mock_page_exists, mock_create_page, confluence_server
+    ):
+        mock_create_page.return_value = {"id": "123", "_links": {"tinyui": "/x/abc"}}
+
+        result = confluence_server.update_or_create(title="Top level", body="<p>Body</p>", space="TEAM")
+
+        assert result["id"] == "123"
+        mock_page_exists.assert_called_once_with("TEAM", "Top level")
+        mock_create_page.assert_called_once_with(
+            space="TEAM",
+            parent_id=None,
+            title="Top level",
+            body="<p>Body</p>",
+            representation="storage",
+            editor=None,
+            full_width=False,
+        )
+
+    def test_update_or_create_requires_space_for_a_top_level_page(self, confluence_server):
+        with pytest.raises(ApiValueError, match="space is required"):
+            confluence_server.update_or_create(title="Top level", body="<p>Body</p>")
 
     @patch.object(ConfluenceServer, "_get_paged")
     def test_get_page_properties_follows_every_result_page(self, mock_get_paged, confluence_server):
