@@ -207,13 +207,28 @@ class TestConfluenceServer:
         mock_get.return_value = {"number": 2}
 
         assert confluence_server.get_content_history_by_version_number("123", 2) == {"number": 2}
-        mock_get.assert_called_once_with("rest/api/content/123/version/2")
+        mock_get.assert_called_once_with("content/123/version/2", params={})
 
     @patch.object(ConfluenceServer, "delete")
     def test_remove_content_history_uses_supported_server_data_center_endpoint(self, mock_delete, confluence_server):
         confluence_server.remove_content_history("123", 2)
 
-        mock_delete.assert_called_once_with("rest/api/content/123/version/2")
+        mock_delete.assert_called_once_with("content/123/version/2")
+
+    @patch.object(ConfluenceServer, "get_content_history_by_version_number")
+    def test_get_page_version_contributors_returns_collaborative_authors(self, mock_get_version, confluence_server):
+        collaborators = [{"accountId": "first"}, {"accountId": "second"}]
+        mock_get_version.return_value = {"collaborators": {"users": collaborators}}
+
+        assert confluence_server.get_page_version_contributors("123", 2) == collaborators
+        mock_get_version.assert_called_once_with("123", 2, expand="collaborators")
+
+    @patch.object(ConfluenceServer, "get_content_history_by_version_number")
+    def test_get_page_version_contributors_falls_back_to_saving_author(self, mock_get_version, confluence_server):
+        author = {"username": "editor"}
+        mock_get_version.return_value = {"by": author}
+
+        assert confluence_server.get_page_version_contributors("123", 2) == [author]
 
     @patch.object(ConfluenceServer, "_get_paged")
     def test_iter_cql_follows_all_result_pages(self, mock_get_paged, confluence_server):

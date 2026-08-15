@@ -1386,7 +1386,7 @@ class Server(ConfluenceServerBase):
     def get_content_history(self, content_id):
         return self.history(content_id)
 
-    def get_content_history_by_version_number(self, content_id, version_number):
+    def get_content_history_by_version_number(self, content_id, version_number, expand=None):
         """
         Get content history by version number
         :param content_id:
@@ -1396,8 +1396,25 @@ class Server(ConfluenceServerBase):
         # The experimental endpoint was retired by recent Server/Data Center
         # releases. Cloud and Server/Data Center now expose this operation at
         # the same REST API path.
-        url = f"rest/api/content/{content_id}/version/{version_number}"
-        return self.get(url)
+        params = {"expand": expand} if expand is not None else {}
+        return self.get(f"content/{content_id}/version/{version_number}", params=params)
+
+    def get_page_version_contributors(self, page_id, version_number):
+        """Return every known contributor to a page revision.
+
+        Collaborative-editing revisions expose a ``collaborators`` collection.
+        Older Confluence releases expose only ``by``; in that case the saving
+        author is returned as a one-item list.
+        """
+        version = self.get_content_history_by_version_number(page_id, version_number, expand="collaborators")
+        collaborators = version.get("collaborators") or version.get("version", {}).get("collaborators")
+        if isinstance(collaborators, dict):
+            collaborators = collaborators.get("users") or collaborators.get("results") or []
+        if isinstance(collaborators, list):
+            return collaborators
+
+        author = version.get("by") or version.get("version", {}).get("by")
+        return [author] if author else []
 
     def remove_content_history(self, page_id, version_number):
         """
@@ -1406,8 +1423,7 @@ class Server(ConfluenceServerBase):
         :param version_number: version number
         :return:
         """
-        url = f"rest/api/content/{page_id}/version/{version_number}"
-        return self.delete(url)
+        return self.delete(f"content/{page_id}/version/{version_number}")
 
     def remove_page_history(self, page_id, version_number):
         """
