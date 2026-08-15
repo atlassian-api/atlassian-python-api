@@ -395,6 +395,27 @@ class TestAtlassianRestAPI:
         assert handler(response) is True
         assert captured["delay"] == 5
 
+    def test_retry_handler_clamps_non_finite_retry_after(self, monkeypatch):
+        """Ensure non-finite Retry-After headers are clamped to max_backoff_seconds."""
+        captured = {}
+
+        def fake_sleep(delay):
+            captured["delay"] = delay
+
+        monkeypatch.setattr("atlassian.rest_client.time.sleep", fake_sleep)
+
+        api = AtlassianRestAPI(
+            url=f"{mockup_server()}/test",
+            retry_with_header=True,
+            max_backoff_seconds=7,
+        )
+
+        handler = api._retry_handler()
+        response = SimpleNamespace(headers={"Retry-After": "1e309"}, status_code=429)
+
+        assert handler(response) is True
+        assert captured["delay"] == 7
+
     def test_retry_handler_parses_http_date(self, monkeypatch):
         """Ensure HTTP-date Retry-After headers are converted to delta seconds."""
         captured = {}
