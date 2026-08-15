@@ -163,22 +163,32 @@ class Cloud(ConfluenceCloudBase):
         queries require a space ID, so resolve the key first and request only
         one matching page.
         """
-        spaces = self.get("spaces", params={"keys": [space_key], "limit": 1})
+        try:
+            spaces = self.get("spaces", params={"keys": [space_key], "limit": 1})
+        except HTTPError as error:
+            if error.response is not None and error.response.status_code == 404:
+                return False
+            raise
         space_results = spaces.get("results", [])
         if not space_results:
             return False
 
-        result = self.get(
-            "pages",
-            params={
-                "space-id": space_results[0]["id"],
-                "title": title,
-                "status": "current",
-                "body-format": "none",
-                "limit": 1,
-                **kwargs,
-            },
-        )
+        try:
+            result = self.get(
+                "pages",
+                params={
+                    "space-id": space_results[0]["id"],
+                    "title": title,
+                    "status": "current",
+                    "body-format": "none",
+                    "limit": 1,
+                    **kwargs,
+                },
+            )
+        except HTTPError as error:
+            if error.response is not None and error.response.status_code == 404:
+                return False
+            raise
         return bool(result.get("results", []))
 
     def get_page_child_by_type(self, page_id, type="page", start=None, limit=None, expand=None):

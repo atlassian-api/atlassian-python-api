@@ -140,7 +140,12 @@ class Server(ConfluenceServerBase):
 
     def page_exists(self, space_key, title, **kwargs):
         """Check if page exists."""
-        result = self.get_page_by_title(space_key, title, **kwargs)
+        try:
+            result = self.get_page_by_title(space_key, title, **kwargs)
+        except HTTPError as error:
+            if error.response is not None and error.response.status_code == 404:
+                return False
+            raise
         return len(result.get("results", [])) > 0
 
     def blog_post_exists(self, space_key, title, **kwargs):

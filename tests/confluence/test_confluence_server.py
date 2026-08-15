@@ -4,6 +4,7 @@ Test cases for Confluence Server API client.
 """
 
 import pytest
+from requests import HTTPError, Response
 from types import SimpleNamespace
 from unittest.mock import patch
 
@@ -68,6 +69,14 @@ class TestConfluenceServer:
             == "40734334"
         )
         mock_get.assert_not_called()
+
+    @patch.object(ConfluenceServer, "get_page_by_title")
+    def test_page_exists_returns_false_for_not_found_response(self, mock_get_page_by_title, confluence_server):
+        response = Response()
+        response.status_code = 404
+        mock_get_page_by_title.side_effect = HTTPError(response=response)
+
+        assert confluence_server.page_exists("TEST", "Missing") is False
 
     def test_license_endpoints_explain_they_are_not_available_in_cloud(self):
         confluence = ConfluenceServer(
