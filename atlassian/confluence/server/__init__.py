@@ -8,6 +8,7 @@ import sys
 import time
 import warnings
 from typing import cast
+from urllib.parse import urljoin
 
 import requests
 from bs4 import BeautifulSoup
@@ -3346,19 +3347,24 @@ class Server(ConfluenceServerBase):
         :return: The URL to download the exported file.
         """
 
+        # Space export is a browser workflow, not a REST resource. ``self.url``
+        # normally ends in ``/rest/api/<version>``, so derive the Confluence UI
+        # context before requesting its action endpoints.
+        ui_base_url = self.url.split("/rest/api/", 1)[0]
+
+        def ui_url(path: str) -> str:
+            return self.url_joiner(ui_base_url, path)
+
         def get_atl_request(link: str):
             # Nested function  used to get atl_token used for XSRF protection.
             # This is only applicable to html/csv/xml space exports
             try:
-                response = self.get(link, advanced_mode=True)
+                response = self.get(ui_url(link), absolute=True, advanced_mode=True)
                 parsed_html = BeautifulSoup(response.text, "html.parser")
                 atl_token = parsed_html.find("input", {"name": "atl_token"}).get("value")  # type: ignore[union-attr]
                 return atl_token
             except Exception as e:
                 raise ApiError("Problems with getting the atl_token for get_space_export method :", reason=e)
-
-        # Checks if space_ke parameter is valid and if api_token has relevant permissions to space
-        self.get_space(space_key=space_key, expand="permissions")
 
         try:
             log.info(
@@ -3397,10 +3403,18 @@ class Server(ConfluenceServerBase):
                 raise ValueError("PDF space export is not supported yet for Server/Data Center")
             else:
                 raise ValueError("Invalid export_type parameter value. Valid values are: 'html/csv/xml/pdf'")
-            url = self.url_joiner(url=self.url, path=f"spaces/doexportspace.action?key={space_key}")
+            url = ui_url(f"spaces/doexportspace.action?key={space_key}")
 
             # Sending a POST request that triggers the space export.
-            response = self.session.post(url, headers=self.form_token_headers, data=form_data)
+            response = self.session.post(
+                url,
+                headers=self.form_token_headers,
+                data=form_data,
+                timeout=self.timeout,
+                verify=self.verify_ssl,
+                proxies=self.proxies,
+            )
+            response.raise_for_status()
             parsed_html = BeautifulSoup(response.text, "html.parser")
             # Getting the poll URL to get the export progress status
             try:
@@ -3412,21 +3426,15 @@ class Server(ConfluenceServerBase):
             running_task = True
             while running_task:
                 try:
-                    progress_response = self.get(poll_url) or {}
+                    progress_url = urljoin(ui_base_url + "/", poll_url)
+                    progress_response = self.get(progress_url, absolute=True) or {}
                     log.info(f"Space {space_key} export status: {progress_response.get('message', 'None')}")
                     if progress_response is not {} and progress_response.get("complete"):
                         parsed_html = BeautifulSoup(progress_response.get("message"), "html.parser")
                         download_url = cast(
                             "str", parsed_html.find("a", {"class": "space-export-download-path"}).get("href")
                         )  # type: ignore
-                        if self.url in download_url:
-                            return download_url
-                        else:
-                            combined_url = self.url + download_url
-                            # Ensure only one /wiki is included in the path
-                            if combined_url.count("/wiki") > 1:
-                                combined_url = combined_url.replace("/wiki/wiki", "/wiki")
-                            return combined_url
+                        return urljoin(ui_base_url + "/", download_url)
                     time.sleep(30)
                 except Exception as e:
                     raise ApiError(

@@ -759,8 +759,9 @@ Get spaces info
     # Get Space permissions set based on json-rpc call
     confluence.get_space_permissions(space_key)
 
-    # Get Space export download url
-    confluence.get_space_export(space_key, export_type)
+    # Experimental Cloud UI export: returns a temporary download URL for
+    # HTML, CSV, or XML. This is not a supported REST API and can change.
+    download_url = confluence.get_space_export(space_key, export_type='html')
 
 Space
 -----
