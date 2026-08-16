@@ -25,8 +25,7 @@ class Cloud(ConfluenceCloudBase):
     def __init__(self, url="https://api.atlassian.com/", *args, **kwargs):
         if kwargs.get("api_version") == "cloud":
             warnings.warn(
-                "api_version='cloud' is deprecated; ConfluenceCloud already "
-                "selects Cloud endpoints.",
+                "api_version='cloud' is deprecated; ConfluenceCloud already " "selects Cloud endpoints.",
                 DeprecationWarning,
                 stacklevel=2,
             )

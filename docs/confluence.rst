@@ -285,6 +285,21 @@ Page actions
     # Uploading the same attachment name creates a new attachment revision.
     confluence.attach_file("images/diagram.png", page_id=page_id)
 
+    # Attachments are files, not executable page markup. Link an HTML report
+    # from the page; replacing the attachment keeps this link current.
+    confluence.attach_file("reports/status.html", page_id=page_id)
+    html_attachment_link = """
+        <ac:link>
+          <ri:attachment ri:filename="status.html" />
+          <ac:plain-text-link-body><![CDATA[Open the HTML status report]]></ac:plain-text-link-body>
+        </ac:link>
+    """
+    confluence.append_page(page_id, title, html_attachment_link)
+
+    # Confluence Cloud does not render attached HTML inline. Server/Data Center
+    # HTML/HTML Include macros are administrator-controlled and disabled by
+    # default because embedding arbitrary HTML can introduce XSS vulnerabilities.
+
     # Fetch every historic revision without querying version numbers one by one.
     # Use iter_page_versions(...) instead when processing a large history.
     versions = confluence.get_all_page_versions(page_id, limit=200)

@@ -34,8 +34,7 @@ class Confluence(LegacyConfluenceBase):
             return
         if kwargs.get("api_version") == "cloud":
             warnings.warn(
-                "api_version='cloud' is deprecated; use cloud=True, or "
-                "ConfluenceV2 for the Cloud V2 API.",
+                "api_version='cloud' is deprecated; use cloud=True, or " "ConfluenceV2 for the Cloud V2 API.",
                 DeprecationWarning,
                 stacklevel=2,
             )
