@@ -3,6 +3,8 @@
 
 from unittest.mock import patch
 
+import pytest
+
 from atlassian.confluence import Confluence, ConfluenceCloud, ConfluenceServer
 from atlassian.confluence.cloud.cloud import ConfluenceCloud as V2ConfluenceCloud
 
@@ -65,3 +67,11 @@ class TestConfluenceRouting:
         Confluence("https://mysite.atlassian.net", cloud=False)
         mock_server.assert_called_once()
         mock_cloud.assert_not_called()
+
+    def test_legacy_cloud_api_version_is_normalized_to_cloud_flag(self):
+        """The historical api_version='cloud' spelling remains compatible."""
+        with pytest.warns(DeprecationWarning):
+            client = Confluence("https://confluence.example.test", api_version="cloud")
+
+        assert client._impl.cloud is True
+        assert client._impl.api_version == "2"

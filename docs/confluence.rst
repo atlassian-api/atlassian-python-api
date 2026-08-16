@@ -341,8 +341,8 @@ Page actions
     confluence.has_unknown_attachment_error(page_id)
 
     # Export page as PDF
-    # api_version needs to be set to 'cloud' when exporting from Confluence Cloud
-    .
+    # Use ConfluenceCloud (or Confluence(..., cloud=True)) for Cloud exports.
+    # ``api_version='cloud'`` is deprecated; use ConfluenceV2 for Cloud V2 APIs.
     confluence.export_page(page_id)
 
     # Server/Data Center only: legacy Word exporter. The returned bytes are a

@@ -35,6 +35,12 @@ class TestConfluenceCloud:
         assert confluence.api_version == "1"
         assert confluence.api_root == "custom/api/root"
 
+    def test_legacy_cloud_api_version_is_normalized(self):
+        with pytest.warns(DeprecationWarning):
+            confluence = ConfluenceCloud(url="https://test.atlassian.net", api_version="cloud")
+
+        assert confluence.api_version == "2"
+
     @patch.object(ConfluenceCloud, "_get_paged")
     def test_iter_cql_follows_all_result_pages(self, mock_get_paged, confluence_cloud):
         mock_get_paged.return_value = iter([{"id": "1"}, {"id": "2"}])

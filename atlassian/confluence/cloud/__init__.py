@@ -3,6 +3,7 @@
 import logging
 import re
 import time
+import warnings
 from urllib.parse import quote
 from .base import ConfluenceCloudBase
 import requests
@@ -22,6 +23,14 @@ class Cloud(ConfluenceCloudBase):
     """
 
     def __init__(self, url="https://api.atlassian.com/", *args, **kwargs):
+        if kwargs.get("api_version") == "cloud":
+            warnings.warn(
+                "api_version='cloud' is deprecated; ConfluenceCloud already "
+                "selects Cloud endpoints.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            kwargs.pop("api_version")
         # Set default values only if not provided
         if "cloud" not in kwargs:
             kwargs["cloud"] = True

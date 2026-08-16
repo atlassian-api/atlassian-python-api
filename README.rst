@@ -121,6 +121,20 @@ not base64-encode them yourself.
     page = confluence_v2.get_page_by_id("123456789", body_format="storage")
     storage_xhtml = page["body"]["storage"]["value"]
 
+    # Alternative Confluence Cloud V2 page read. Use the site URL without a trailing /wiki;
+    # the client adds the required API context.
+    from atlassian import Confluence
+
+    confluence_v2 = Confluence(
+        "https://your-domain.atlassian.net",
+        username="you@example.com",
+        password="cloud-api-token",
+        api_version=2,  # Specify API version 2
+        cloud=True
+    )
+    page = confluence_v2.get_page_by_id("123456789", body_format="storage")
+    storage_xhtml = page["body"]["storage"]["value"]
+
 See the detailed `authentication documentation`_ for Cloud gateway/scoped-token
 notes and other authentication methods.
 
@@ -169,15 +183,13 @@ The library now supports Confluence's v2 API for Cloud instances. The v2 API pro
 
 .. code-block:: python
 
-    from atlassian import Confluence
+    from atlassian import ConfluenceV2
 
-    # Initialize with v2 API
-    confluence = Confluence(
-        url='https://your-instance.atlassian.net/wiki',
+    # ConfluenceV2 is an explicit Cloud V2 client; no cloud=True flag is needed.
+    confluence = ConfluenceV2(
+        url='https://your-instance.atlassian.net',
         username='your-email@example.com',
         password='your-api-token',
-        api_version=2,  # Specify API version 2
-        cloud=True      # v2 API is only available for cloud instances
     )
 
     # Get pages from a space

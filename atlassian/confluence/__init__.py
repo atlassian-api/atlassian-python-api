@@ -6,6 +6,7 @@ This package provides both Cloud and Server implementations of the Confluence AP
 """
 
 from urllib.parse import urlparse
+import warnings
 
 from ..confluence_base import ConfluenceBase
 from .cloud import Cloud as LegacyConfluenceCloud
@@ -31,6 +32,15 @@ class Confluence(LegacyConfluenceBase):
     def __init__(self, url, *args, **kwargs):
         if type(self) is not Confluence:
             return
+        if kwargs.get("api_version") == "cloud":
+            warnings.warn(
+                "api_version='cloud' is deprecated; use cloud=True, or "
+                "ConfluenceV2 for the Cloud V2 API.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            kwargs.pop("api_version")
+            kwargs["cloud"] = True
         # Detect which implementation to use
         # Priority: explicit cloud= kwarg > URL-based heuristic
         is_cloud = kwargs.get("cloud")
