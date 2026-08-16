@@ -1766,23 +1766,27 @@ class Server(ConfluenceServerBase):
         minor_edit=False,
     ):
         """
-        Append body to page if already exist
-        :param parent_id:
-        :param page_id:
-        :param title:
-        :param append_body:
-        :param type:
-        :param representation: OPTIONAL: either Confluence 'storage' or 'wiki' markup format
-        :param minor_edit: Indicates whether to notify watchers about changes.
-            If False then notifications will be sent.
-        :return:
+        Append content to an existing page.
+
+        ``append_body`` is normally a string of Confluence storage XHTML. A
+        ``list`` or ``dict`` is supported with ``representation="storage"``
+        and is appended as pretty-printed JSON in a Confluence code block.
+
+        :param parent_id: optional parent page ID
+        :param page_id: page ID
+        :param title: page title
+        :param append_body: storage XHTML, or a list/dict to render as JSON
+        :param type: content type; normally ``"page"``
+        :param representation: ``"storage"`` or legacy ``"wiki"`` markup
+        :param minor_edit: whether to suppress watcher notifications
+        :return: the updated page response
         """
         log.info('Updating %s "%s"', type, title)
 
         return self._insert_to_existing_page(
             page_id,
             title,
-            append_body,
+            self._coerce_structured_storage_body(append_body, representation),
             parent_id=parent_id,
             type=type,
             representation=representation,
@@ -1817,12 +1821,34 @@ class Server(ConfluenceServerBase):
         return self._insert_to_existing_page(
             page_id,
             title,
-            prepend_body,
+            self._coerce_structured_storage_body(prepend_body, representation),
             parent_id=parent_id,
             type=type,
             representation=representation,
             minor_edit=minor_edit,
             top_of_page=True,
+        )
+
+    @staticmethod
+    def _coerce_structured_storage_body(body, representation):
+        """Render structured input as a safe JSON code block for storage pages."""
+        if isinstance(body, str):
+            return body
+        if not isinstance(body, (list, dict)):
+            raise ApiValueError("Page content must be a string, list, or dictionary")
+        if representation != "storage":
+            raise ApiValueError("Lists and dictionaries require representation='storage'")
+
+        # Split a CDATA terminator so arbitrary JSON cannot close the storage
+        # macro's plain-text body.
+        cdata_end = "]]" + ">"
+        cdata_escape = "]]" + "]]><![CDATA[>"
+        json_body = json.dumps(body, ensure_ascii=False, indent=2).replace(cdata_end, cdata_escape)
+        return (
+            '<ac:structured-macro ac:name="code">'
+            '<ac:parameter ac:name="language">json</ac:parameter>'
+            f"<ac:plain-text-body><![CDATA[{json_body}]]></ac:plain-text-body>"
+            "</ac:structured-macro>"
         )
 
     def update_or_create(

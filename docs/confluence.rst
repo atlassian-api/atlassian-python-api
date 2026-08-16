@@ -17,16 +17,19 @@ with dedicated Cloud and Server classes:
     # For Confluence Cloud
     confluence_cloud = ConfluenceCloud(
         url="https://your-domain.atlassian.net",
-        token="your-api-token"
+        username="you@example.com",
+        password="your-cloud-api-token",
     )
 
-    # ``token=`` accepts a token read from a text file. The client strips a
-    # trailing newline, but stripping when reading makes that intent explicit.
+    # Cloud API tokens use HTTP Basic auth. Do not pass them as ``token=``:
+    # that creates a Bearer header for Server/Data Center personal access tokens.
+    # The client constructs the Basic header; do not base64-encode credentials.
     with open("CONFLUENCE_TOKEN", encoding="utf-8") as token_file:
         api_token = token_file.read().strip()
     confluence_cloud = ConfluenceCloud(
         url="https://your-domain.atlassian.net",
-        token=api_token,
+        username="you@example.com",
+        password=api_token,
     )
 
     # For Confluence Server
@@ -271,6 +274,9 @@ Page actions
 
     # Append body to page if already exist
     confluence.append_page(page_id, title, append_body, parent_id=None, type='page', representation='storage', minor_edit=False)
+
+    # A list or dictionary is rendered as formatted JSON in a storage code block.
+    confluence.append_page(page_id, title, {"users": ["Ada", "Linus"]})
 
     # Set the page (content) property e.g. add hash parameters
     confluence.set_page_property(page_id, data)

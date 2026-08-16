@@ -55,6 +55,20 @@ class TestConfluenceServer:
         assert "Content of 123 is exactly the same" in caplog.text
         assert not [record for record in caplog.records if record.levelno == logging.WARNING]
 
+    @patch.object(ConfluenceServer, "_insert_to_existing_page")
+    def test_append_page_renders_structured_input_as_json_code_block(self, mock_insert, confluence_server):
+        confluence_server.append_page("123", "Status", {"users": ["Ada"]})
+
+        body = mock_insert.call_args.args[2]
+        assert '<ac:structured-macro ac:name="code">' in body
+        assert '<ac:parameter ac:name="language">json</ac:parameter>' in body
+        assert '"users": [' in body
+        assert '"Ada"' in body
+
+    def test_append_page_rejects_structured_input_for_wiki_representation(self, confluence_server):
+        with pytest.raises(ApiValueError, match="representation='storage'"):
+            confluence_server.append_page("123", "Status", ["Ada"], representation="wiki")
+
     @patch.object(ConfluenceServer, "get_page_by_id")
     def test_get_tables_from_page_returns_consistent_empty_summary(self, mock_get_page, confluence_server):
         mock_get_page.return_value = {"body": {"storage": {"value": "<p>No tables</p>"}}}
