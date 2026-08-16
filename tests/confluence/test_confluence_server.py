@@ -661,6 +661,15 @@ class TestConfluenceServer:
         mock_delete.assert_called_once_with("space/TEST", **{})
         assert result == {"success": True}
 
+    @patch.object(ConfluenceServer, "delete")
+    def test_delete_missing_space_raises_api_not_found_error(self, mock_delete, confluence_server):
+        response = Response()
+        response.status_code = 404
+        mock_delete.side_effect = HTTPError(response=response)
+
+        with pytest.raises(ApiNotFoundError, match="There is no space with the given key"):
+            confluence_server.delete_space("MISSING")
+
     @patch.object(ConfluenceServer, "get")
     def test_get_space_content(self, mock_get, confluence_server):
         """Test get_space_content method."""

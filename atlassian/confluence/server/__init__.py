@@ -2225,10 +2225,11 @@ class Server(ConfluenceServerBase):
         return self.put(f"space/{space_key}", data=data, **kwargs)
 
     def delete_space(self, space_key, **kwargs):
-        """
-        Delete space
-        :param space_key:
-        :return:
+        """Delete a space by key.
+
+        Raises:
+            ApiNotFoundError: If Confluence responds with HTTP 404. Confluence
+                may use this status to avoid revealing an inaccessible space.
         """
         url = f"space/{space_key}"
 
@@ -2236,7 +2237,7 @@ class Server(ConfluenceServerBase):
             response = self.delete(url, **kwargs)
         except HTTPError as e:
             if e.response.status_code == 404:
-                raise ApiError(
+                raise ApiNotFoundError(
                     "There is no space with the given key, "
                     "or the calling user does not have permission to delete it",
                     reason=e,
