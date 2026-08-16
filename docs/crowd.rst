@@ -1,6 +1,13 @@
 Crowd module
 ============
 
+API reference
+-------------
+
+.. autoclass:: atlassian.crowd.Crowd
+   :members:
+   :undoc-members:
+
 Manage users
 ------------
 

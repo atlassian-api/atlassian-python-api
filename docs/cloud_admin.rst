@@ -1,6 +1,21 @@
 Cloud Admin module
 ==================
 
+API reference
+-------------
+
+.. autoclass:: atlassian.cloud_admin.CloudAdmin
+   :members:
+   :undoc-members:
+
+.. autoclass:: atlassian.cloud_admin.CloudAdminOrgs
+   :members:
+   :undoc-members:
+
+.. autoclass:: atlassian.cloud_admin.CloudAdminUsers
+   :members:
+   :undoc-members:
+
 CloudAdmin
 ----------
 

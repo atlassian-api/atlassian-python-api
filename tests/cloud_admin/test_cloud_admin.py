@@ -3,7 +3,7 @@
 Unit tests for atlassian.cloud_admin module
 """
 
-from .mockup import mockup_server
+from tests.mockup import mockup_server
 from atlassian.cloud_admin import CloudAdmin, CloudAdminOrgs, CloudAdminUsers
 
 

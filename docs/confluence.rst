@@ -1,6 +1,25 @@
 Confluence module
 =================
 
+Complete API reference
+----------------------
+
+The task-oriented sections below explain the most common workflows. These
+source-backed references list every public method and current signature for
+Server/Data Center, legacy Cloud, and the explicit Cloud V2 client.
+
+.. autoclass:: atlassian.confluence.server.Server
+   :members:
+   :undoc-members:
+
+.. autoclass:: atlassian.confluence.cloud.Cloud
+   :members:
+   :undoc-members:
+
+.. autoclass:: atlassian.confluence.cloud.cloud.ConfluenceCloud
+   :members:
+   :undoc-members:
+
 The Confluence module now provides both Cloud and Server implementations
 with dedicated APIs for each platform.
 

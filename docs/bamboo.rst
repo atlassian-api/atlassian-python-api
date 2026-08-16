@@ -1,6 +1,13 @@
 Bamboo module
 =============
 
+API reference
+-------------
+
+.. autoclass:: atlassian.bamboo.Bamboo
+   :members:
+   :undoc-members:
+
 Projects & Plans
 ----------------
 

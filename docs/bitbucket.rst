@@ -1,6 +1,25 @@
 BitBucket module
 ================
 
+Complete API reference
+----------------------
+
+The workflow sections below cover common operations. The source-backed
+references list every public method and current signature for the compatible,
+Cloud OO, and Server/Data Center clients.
+
+.. autoclass:: atlassian.bitbucket.Bitbucket
+   :members:
+   :undoc-members:
+
+.. autoclass:: atlassian.bitbucket.cloud.Cloud
+   :members:
+   :undoc-members:
+
+.. autoclass:: atlassian.bitbucket.server.Server
+   :members:
+   :undoc-members:
+
 Server/Data Center pagination
 -----------------------------
 

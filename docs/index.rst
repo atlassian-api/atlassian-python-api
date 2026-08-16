@@ -277,6 +277,7 @@ Add a connection:
    service_desk
    xray
    cloud_admin
+   rest_client
 
 .. |Build Status| image:: https://github.com/atlassian-api/atlassian-python-api/workflows/Test/badge.svg?branch=master
    :target: https://pypi.python.org/pypi/atlassian-python-api
