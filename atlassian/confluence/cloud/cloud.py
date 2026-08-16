@@ -275,6 +275,33 @@ class ConfluenceCloud(
             params["cursor"] = cursor
         return self.get(self.get_endpoint("page_versions", id=page_id), params=params)
 
+    def iter_page_versions(
+        self,
+        page_id: str,
+        body_format: Optional[str] = None,
+        limit: int = 25,
+        sort: Optional[str] = None,
+    ):
+        """Yield every version of a Confluence Cloud page lazily."""
+        if body_format is not None and body_format not in ("storage", "atlas_doc_format", "view"):
+            raise ValueError("body_format must be 'storage', 'atlas_doc_format', or 'view'")
+        params: Dict[str, Any] = {"limit": limit}
+        if body_format is not None:
+            params["body-format"] = body_format
+        if sort is not None:
+            params["sort"] = sort
+        return self._get_paged(self.get_endpoint("page_versions", id=page_id), params=params)
+
+    def get_all_page_versions(
+        self,
+        page_id: str,
+        body_format: Optional[str] = None,
+        limit: int = 25,
+        sort: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
+        """Return every version of a Confluence Cloud page as a list."""
+        return list(self.iter_page_versions(page_id, body_format=body_format, limit=limit, sort=sort))
+
     def get_page_version(self, page_id: str, version_number: int) -> Dict[str, Any]:
         """Return details for one Confluence Cloud page version."""
         return self.get(self.get_endpoint("page_version", id=page_id, version_number=version_number), params={})

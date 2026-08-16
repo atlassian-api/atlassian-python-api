@@ -279,6 +279,10 @@ Page actions
     # A list or dictionary is rendered as formatted JSON in a storage code block.
     confluence.append_page(page_id, title, {"users": ["Ada", "Linus"]})
 
+    # Fetch every historic revision without querying version numbers one by one.
+    # Use iter_page_versions(...) instead when processing a large history.
+    versions = confluence.get_all_page_versions(page_id, limit=200)
+
     # Invalid storage XHTML raises HTTPError with Confluence's ``message``,
     # ``detail``, and field-level validation errors when the server supplies them.
 

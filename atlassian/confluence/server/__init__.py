@@ -1411,6 +1411,21 @@ class Server(ConfluenceServerBase):
     def get_content_history(self, content_id):
         return self.history(content_id)
 
+    def iter_page_versions(self, page_id, limit=200, expand=None):
+        """Yield every version of a Server/Data Center page.
+
+        The dedicated ``content/{id}/version`` endpoint is paginated. This
+        method follows its links lazily, avoiding one request per version.
+        """
+        params = {"limit": int(limit)}
+        if expand is not None:
+            params["expand"] = expand
+        return self._get_paged(f"content/{page_id}/version", params=params)
+
+    def get_all_page_versions(self, page_id, limit=200, expand=None):
+        """Return every version of a Server/Data Center page as a list."""
+        return list(self.iter_page_versions(page_id, limit=limit, expand=expand))
+
     def get_content_history_by_version_number(self, content_id, version_number, expand=None):
         """
         Get content history by version number

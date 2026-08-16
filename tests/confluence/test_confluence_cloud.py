@@ -57,6 +57,19 @@ class TestConfluenceCloud:
         assert confluence_cloud.cql_all("type=page") == [{"id": "1"}, {"id": "2"}]
         mock_iter_cql.assert_called_once_with("type=page")
 
+    @patch.object(ConfluenceCloud, "_get_paged")
+    def test_get_all_page_versions_follows_paginated_history(self, mock_get_paged, confluence_cloud):
+        mock_get_paged.return_value = iter([{"number": 2}, {"number": 1}])
+
+        assert confluence_cloud.get_all_page_versions("123", expand="storage", limit=50) == [
+            {"number": 2},
+            {"number": 1},
+        ]
+        mock_get_paged.assert_called_once_with(
+            "rest/api/content/123/version",
+            params={"limit": 50, "expand": "storage"},
+        )
+
     @patch.object(ConfluenceCloud, "put")
     def test_update_template_uses_v1_endpoint_and_object_payload(self, mock_put, confluence_cloud):
         body = {"storage": {"value": "<p>Template</p>", "representation": "storage"}}

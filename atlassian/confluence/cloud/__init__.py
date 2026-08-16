@@ -136,6 +136,17 @@ class Cloud(ConfluenceCloudBase):
         """Get content by ID."""
         return self.get(f"content/{content_id}", **kwargs)
 
+    def iter_page_versions(self, page_id, limit=200, expand=None):
+        """Yield every version of a legacy Confluence Cloud page lazily."""
+        params = {"limit": int(limit)}
+        if expand is not None:
+            params["expand"] = expand
+        return self._get_paged(f"rest/api/content/{page_id}/version", params=params)
+
+    def get_all_page_versions(self, page_id, limit=200, expand=None):
+        """Return every version of a legacy Confluence Cloud page as a list."""
+        return list(self.iter_page_versions(page_id, limit=limit, expand=expand))
+
     def get_content_by_type(self, content_type, **kwargs):
         """Get content by type (page, blogpost, etc.)."""
         return self.get("content", params={"type": content_type, **kwargs})

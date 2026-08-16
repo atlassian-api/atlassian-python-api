@@ -67,6 +67,16 @@ class TestConfluenceServer:
         with pytest.raises(HTTPError, match="Malformed XHTML near the table macro"):
             confluence_server.raise_for_status(response)
 
+    @patch.object(ConfluenceServer, "_get_paged")
+    def test_get_all_page_versions_follows_paginated_history(self, mock_get_paged, confluence_server):
+        mock_get_paged.return_value = iter([{"number": 2}, {"number": 1}])
+
+        assert confluence_server.get_all_page_versions("123", limit=50, expand="collaborators") == [
+            {"number": 2},
+            {"number": 1},
+        ]
+        mock_get_paged.assert_called_once_with("content/123/version", params={"limit": 50, "expand": "collaborators"})
+
     @patch.object(ConfluenceServer, "get_page_by_id")
     def test_identical_page_content_is_logged_as_info_not_warning(self, mock_get_page, confluence_server, caplog):
         mock_get_page.side_effect = [
