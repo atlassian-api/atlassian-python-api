@@ -3,6 +3,8 @@
 Test cases for Confluence Server API client.
 """
 
+import logging
+
 import pytest
 from requests import HTTPError, Response
 from types import SimpleNamespace
@@ -39,6 +41,19 @@ class TestConfluenceServer:
         )
         assert confluence.api_version == "2.0"
         assert confluence.api_root == "custom/api/root"
+
+    @patch.object(ConfluenceServer, "get_page_by_id")
+    def test_identical_page_content_is_logged_as_info_not_warning(self, mock_get_page, confluence_server, caplog):
+        mock_get_page.side_effect = [
+            {"title": "Status"},
+            {"body": {"storage": {"value": "<p>unchanged</p>"}}},
+        ]
+
+        with caplog.at_level(logging.INFO, logger="atlassian.confluence.server"):
+            assert confluence_server.is_page_content_is_already_updated("123", "<p>unchanged</p>", "Status")
+
+        assert "Content of 123 is exactly the same" in caplog.text
+        assert not [record for record in caplog.records if record.levelno == logging.WARNING]
 
     @patch.object(ConfluenceServer, "get_page_by_id")
     def test_get_tables_from_page_returns_consistent_empty_summary(self, mock_get_page, confluence_server):

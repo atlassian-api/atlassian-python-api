@@ -1,6 +1,6 @@
 """Confluence Cloud V2 data-classification operations."""
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, cast
 
 from ...confluence_base import ConfluenceBase
 
@@ -33,7 +33,9 @@ class ClassificationLevelOperations(ConfluenceBase):
 
     def get_classification_levels(self) -> Optional[List[Dict[str, Any]]]:
         """Return the classification levels configured for the Confluence site."""
-        return self.get("api/v2/classification-levels")
+        # The V2 schema defines this endpoint's JSON response as an array,
+        # while the base client's historical ``get`` annotation is a mapping.
+        return cast(Optional[List[Dict[str, Any]]], self.get("api/v2/classification-levels"))
 
     def get_content_classification_level(
         self, content_type: str, content_id: str, status: Optional[str] = None
@@ -68,9 +70,7 @@ class ClassificationLevelOperations(ConfluenceBase):
         self, space_id: str, classification_level_id: str
     ) -> Optional[Dict[str, Any]]:
         """Set a space's default classification level."""
-        return self.put(
-            f"api/v2/spaces/{space_id}/classification-level/default", data={"id": classification_level_id}
-        )
+        return self.put(f"api/v2/spaces/{space_id}/classification-level/default", data={"id": classification_level_id})
 
     def delete_space_default_classification_level(self, space_id: str) -> Optional[Dict[str, Any]]:
         """Remove a space's configured default classification level."""
