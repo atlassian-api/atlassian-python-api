@@ -20,6 +20,20 @@ class TestJira(TestCase):
         resp = self.jira.issue("FOO-123")
         self.assertEqual(resp["key"], "FOO-123")
 
+    @patch.object(jira.Jira, "get")
+    def test_get_all_application_roles(self, mock_get):
+        """Lists ApplicationRoles from the Server v2 resource."""
+        self.jira.get_all_application_roles()
+
+        mock_get.assert_called_once_with("rest/api/2/applicationrole")
+
+    @patch.object(jira.Jira, "get")
+    def test_get_application_role(self, mock_get):
+        """Gets one ApplicationRole from the Server v2 resource."""
+        self.jira.get_application_role("jira-software")
+
+        mock_get.assert_called_once_with("rest/api/2/applicationrole/jira-software")
+
     @patch.object(jira.Jira, "put")
     def test_update_application_roles_uses_etag_when_provided(self, mock_put):
         roles = [{"key": "jira-software", "groups": ["jira-software-users"]}]
