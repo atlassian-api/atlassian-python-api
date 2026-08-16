@@ -680,33 +680,45 @@ Confluence Cloud tasks
 Template actions
 ----------------
 
+The methods below use Confluence's supported template endpoints. They apply to
+Server/Data Center and to the legacy Cloud V1 template API; they are not part
+of ``ConfluenceV2``.
+
+Migration from experimental template methods
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The older experimental methods remain available for compatibility but emit a
+``DeprecationWarning``. Use their supported replacements in new code:
+
+* ``get_template_by_id(template_id)`` -> ``get_content_template(template_id)``
+* ``get_all_templates_from_space(space)`` -> ``get_content_templates(space)``
+* ``get_all_blueprints_from_space(space)`` ->
+  ``get_blueprint_templates(space)``
+
 .. code-block:: python
 
-    # Updating a content template
-    template_id = "<string>"
-    name = "<string>"
-    # Use the complete storage body returned by get_content_template(), or
-    # construct it in the same shape.
-    body = {"storage": {"value": "<string>", "representation": "storage"}}
-    template_type = "page"
-    description = "<string>"
-    labels = [{"prefix": "<string>", "name": "<string>", "id": "<string>", "label": "<string>"}]
-    space = "<key_string>"
+    # Read a content template. Requesting this supported method rather than
+    # get_template_by_id() avoids the experimental endpoint.
+    template = confluence.get_content_template(template_id)
+    storage_body = template['body']['storage']
 
-    confluence.create_or_update_template(name, body, template_type, template_id, description, labels, space)
+    # Create a space template. Omit space to create a global template.
+    created = confluence.create_or_update_template(
+        name='Monthly report',
+        body={'storage': {'value': '<p>{{SUMMARY}}</p>', 'representation': 'storage'}},
+        description='Starting point for monthly reports',
+        labels=[{'prefix': 'global', 'name': 'report'}],
+        space='TEAM',
+    )
 
-    # Creating a new content template
-    name = "<string>"
-    body = {"storage": {"value": "<string>", "representation": "storage"}}
-    template_type = "page"
-    description = "<string>"
-    labels = [{"prefix": "<string>", "name": "<string>", "id": "<string>", "label": "<string>"}]
-    space = "<key_string>"
-
-    confluence.create_or_update_template(name, body, template_type, description=description, labels=labels, space=space)
-
-    # Get a template by its ID
-    confluence.get_content_template(template_id)
+    # Update an existing template. Use keyword arguments so template_id is
+    # never confused with template_type or description.
+    updated = confluence.create_or_update_template(
+        name=template['name'],
+        body={'storage': storage_body},
+        template_id=template_id,
+        description=template.get('description'),
+    )
 
     # Get all global content templates
     confluence.get_content_templates()
@@ -722,6 +734,11 @@ Template actions
 
     # Removing a template
     confluence.remove_template(template_id)
+
+``create_or_update_template`` supports content templates only. Confluence does
+not allow blueprint templates to be created or updated through this REST API.
+Use ``get_blueprint_templates`` to inspect blueprint templates; removing a
+modified blueprint resets it to its inherited/default version.
 
 Get spaces info
 ---------------
