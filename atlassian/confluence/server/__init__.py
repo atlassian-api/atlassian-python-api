@@ -1046,13 +1046,13 @@ class Server(ConfluenceServerBase):
                 "Accept": "application/json",
             }
             path = f"rest/api/content/{page_id}/child/attachment"
-            # Check if there is already a file with the same name
-            attachments = self.get(path=path, headers=headers, params={"filename": name})
-            if attachments.get("size"):
-                path = path + "/" + attachments["results"][0]["id"] + "/data"
 
             try:
-                response = self.post(
+                # Confluence's multipart PUT endpoint atomically creates an
+                # attachment or adds a revision when the filename already
+                # exists. A GET followed by POST is racy and Cloud may reject
+                # the attachment-data endpoint for a same-name upload.
+                response = self.put(
                     path=path,
                     data=data,
                     headers=headers,

@@ -3,6 +3,7 @@
 Test cases for Confluence Server API client.
 """
 
+import io
 import logging
 
 import pytest
@@ -74,6 +75,22 @@ class TestConfluenceServer:
         confluence_server.create_page("TEAM", "Report", "<p>Body</p>", version_comment="Initial import")
 
         assert mock_post.call_args.kwargs["data"]["version"] == {"message": "Initial import"}
+
+    @patch.object(ConfluenceServer, "get")
+    @patch.object(ConfluenceServer, "put")
+    def test_attach_content_uses_atomic_create_or_update_endpoint(self, mock_put, mock_get, confluence_server):
+        content = io.BytesIO(b"new image")
+        mock_put.return_value = {"results": [{"id": "attachment-1"}]}
+
+        confluence_server.attach_content(content, "diagram.png", "image/png", page_id="123")
+
+        mock_get.assert_not_called()
+        assert mock_put.call_args.kwargs["path"] == "rest/api/content/123/child/attachment"
+        assert mock_put.call_args.kwargs["headers"] == {
+            "X-Atlassian-Token": "no-check",
+            "Accept": "application/json",
+        }
+        assert mock_put.call_args.kwargs["files"] == {"file": ("diagram.png", content, "image/png")}
 
     @patch.object(ConfluenceServer, "_get_paged")
     def test_get_all_page_versions_follows_paginated_history(self, mock_get_paged, confluence_server):

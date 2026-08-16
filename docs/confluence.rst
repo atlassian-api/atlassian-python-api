@@ -282,6 +282,9 @@ Page actions
     # A list or dictionary is rendered as formatted JSON in a storage code block.
     confluence.append_page(page_id, title, {"users": ["Ada", "Linus"]})
 
+    # Uploading the same attachment name creates a new attachment revision.
+    confluence.attach_file("images/diagram.png", page_id=page_id)
+
     # Fetch every historic revision without querying version numbers one by one.
     # Use iter_page_versions(...) instead when processing a large history.
     versions = confluence.get_all_page_versions(page_id, limit=200)
