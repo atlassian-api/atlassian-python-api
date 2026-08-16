@@ -1001,11 +1001,13 @@ matching page exists.
 Content history
 ---------------
 
-``get_content_history_by_version_number`` and the history-removal methods use
-the supported Server/Data Center ``/rest/api/content/{id}/version/{number}``
-endpoint. ``remove_page_history_keep_version`` also tolerates historical gaps,
-so rerunning it after a partial cleanup does not fail on an already-deleted
-version.
+``get_content_history_by_version_number`` and the Server/Data Center
+history-removal methods use the supported
+``/rest/api/content/{id}/version/{number}`` endpoint. Cloud history removal
+uses the equivalent V1 content endpoint under ``/wiki``; the retired
+``/rest/experimental`` route is not used. ``remove_page_history_keep_version``
+also tolerates historical gaps, so rerunning it after a partial cleanup does
+not fail on an already-deleted version.
 
 For Confluence Cloud V2, use ``get_page_versions`` or ``get_page_version`` to
 read page history. The published V2 API does not provide a delete-version

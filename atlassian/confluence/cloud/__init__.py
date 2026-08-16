@@ -155,6 +155,23 @@ class Cloud(ConfluenceCloudBase):
         """Return every version of a legacy Confluence Cloud page as a list."""
         return list(self.iter_page_versions(page_id, limit=limit, expand=expand))
 
+    def remove_content_history(self, page_id, version_number):
+        """Remove one historical page version from Confluence Cloud.
+
+        The old implementation used the retired ``rest/experimental`` route.
+        Cloud exposes the operation through the versioned v1 content endpoint.
+        """
+        endpoint = self._cloud_wiki_url(f"rest/api/content/{page_id}/version/{version_number}")
+        return self.delete(endpoint, absolute=True)
+
+    def remove_page_history(self, page_id, version_number):
+        """Alias for :meth:`remove_content_history`."""
+        return self.remove_content_history(page_id, version_number)
+
+    def remove_content_history_in_cloud(self, page_id, version_id):
+        """Backward-compatible alias for removing a Cloud page version."""
+        return self.remove_content_history(page_id, version_id)
+
     def get_content_by_type(self, content_type, **kwargs):
         """Get content by type (page, blogpost, etc.)."""
         return self.get("content", params={"type": content_type, **kwargs})

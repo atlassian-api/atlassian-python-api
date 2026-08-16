@@ -76,6 +76,14 @@ class TestConfluenceCloud:
             params={"limit": 50, "expand": "storage"},
         )
 
+    @patch.object(ConfluenceCloud, "delete")
+    def test_remove_content_history_uses_cloud_v1_content_endpoint(self, mock_delete, confluence_cloud):
+        confluence_cloud.remove_content_history("123", 1)
+
+        mock_delete.assert_called_once_with(
+            "https://test.atlassian.net/wiki/rest/api/content/123/version/1", absolute=True
+        )
+
     @patch.object(ConfluenceCloud, "put")
     def test_update_template_uses_v1_endpoint_and_object_payload(self, mock_put, confluence_cloud):
         body = {"storage": {"value": "<p>Template</p>", "representation": "storage"}}
