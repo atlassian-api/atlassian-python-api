@@ -9,6 +9,7 @@ from unittest.mock import MagicMock, Mock, patch
 
 from atlassian import ConfluenceV2
 from atlassian.confluence_base import ConfluenceBase
+from atlassian.confluence.cloud.graphql import GraphQLOperations
 from atlassian.confluence.cloud.whiteboards import WhiteboardOperations
 
 
@@ -30,6 +31,10 @@ class TestConfluenceV2BasicStructure(unittest.TestCase):
     def test_whiteboard_operations_component(self):
         """Whiteboard V2 operations are provided by their dedicated component."""
         self.assertIsInstance(self.confluence, WhiteboardOperations)
+
+    def test_graphql_operations_component(self):
+        """GraphQL Gateway operations are provided by their dedicated component."""
+        self.assertIsInstance(self.confluence, GraphQLOperations)
 
     def test_api_version(self):
         """Test that the API version is set to 2."""

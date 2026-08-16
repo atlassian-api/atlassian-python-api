@@ -415,6 +415,36 @@ Whiteboards are available through Confluence Cloud REST API V2 only. Use
 ``get_whiteboard()``. Whiteboards are not supported by Confluence Server or
 Data Center.
 
+Confluence Cloud GraphQL search
+-------------------------------
+
+``ConfluenceV2`` also supports the Atlassian GraphQL Gateway for Cloud-only
+use cases such as advanced search. GraphQL has a continuously evolving schema,
+so REST/CQL ``search()`` remains unchanged and GraphQL responses are returned
+without translation. Use a tenanted ``*.atlassian.net`` URL with an API token;
+the GraphQL gateway is not available on Confluence Server or Data Center.
+
+.. code-block:: python
+
+    from atlassian import ConfluenceV2
+
+    confluence = ConfluenceV2(url, username=email, password=api_token)
+
+    # Find this once from https://your-site.atlassian.net/_edge/tenant_info.
+    cloud_id = "your-confluence-cloud-id"
+    response = confluence.search_graphql("deployment guide", cloud_id)
+
+    # GraphQL may return HTTP 200 with an errors field, so inspect it first.
+    if response.get("errors"):
+        raise RuntimeError(response["errors"])
+    search = response["data"]["search"]["search"]
+    for edge in search["edges"]:
+        print(edge["node"]["title"], edge["node"]["url"])
+
+For custom queries or mutations, call ``confluence.graphql(query, variables)``.
+The GraphQL Gateway has its own query-cost rate limit, separate from REST API
+limits.
+
 Confluence Cloud tasks
 ----------------------
 
