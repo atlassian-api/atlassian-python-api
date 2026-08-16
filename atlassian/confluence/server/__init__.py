@@ -861,11 +861,13 @@ class Server(ConfluenceServerBase):
 
     def remove_page(self, page_id, status=None, recursive=False):
         """
-        This method removes a page, if it has recursive flag, method removes including child pages
-        :param page_id:
-        :param status: OPTIONAL: type of page
-        :param recursive: OPTIONAL: if True - will recursively delete all children pages too
-        :return:
+        Remove a page and optionally its child pages.
+
+        :param page_id: page ID
+        :param status: optional content status (for example ``"trashed"``)
+        :param recursive: if True, remove child pages before this page
+        :return: the successful HTTP status code (normally ``204``). When the
+            client has ``advanced_mode=True``, return the raw response instead.
         """
         url = f"rest/api/content/{page_id}"
         if recursive:
@@ -877,7 +879,7 @@ class Server(ConfluenceServerBase):
             params["status"] = status
 
         try:
-            response = self.delete(url, params=params)
+            response = self.delete(url, params=params, advanced_mode=True)
         except HTTPError as e:
             if e.response.status_code == 403:
                 raise ApiPermissionError(
@@ -899,7 +901,9 @@ class Server(ConfluenceServerBase):
 
             raise
 
-        return response
+        if self.advanced_mode:
+            return response
+        return response.status_code
 
     def create_page(
         self,

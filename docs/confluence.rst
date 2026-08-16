@@ -246,7 +246,7 @@ Page actions
     confluence.remove_content(content_id):
 
     # Remove page from trash
-    confluence.remove_page_from_trash(page_id)
+    delete_status = confluence.remove_page_from_trash(page_id)  # normally 204
 
     # Remove page as draft
     confluence.remove_page_as_draft(page_id)

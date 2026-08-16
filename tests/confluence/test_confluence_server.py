@@ -186,6 +186,24 @@ class TestConfluenceServer:
         with pytest.raises(ApiPermissionError, match="does not have permission to trash or purge"):
             getattr(confluence_server, method)(*args)
 
+    @patch.object(ConfluenceServer, "delete")
+    def test_remove_page_returns_successful_delete_status(self, mock_delete, confluence_server):
+        response = Response()
+        response.status_code = 204
+        mock_delete.return_value = response
+
+        assert confluence_server.remove_page("123") == 204
+        mock_delete.assert_called_once_with("rest/api/content/123", params={}, advanced_mode=True)
+
+    @patch.object(ConfluenceServer, "delete")
+    def test_remove_page_preserves_advanced_mode_response(self, mock_delete, confluence_server):
+        response = Response()
+        response.status_code = 204
+        mock_delete.return_value = response
+        confluence_server.advanced_mode = True
+
+        assert confluence_server.remove_page("123") is response
+
     @patch.object(ConfluenceServer, "put")
     @patch.object(ConfluenceServer, "history")
     def test_update_page_uses_configured_api_root_without_duplicate_rest_api_prefix(
