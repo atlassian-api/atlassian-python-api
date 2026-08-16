@@ -435,6 +435,32 @@ Page actions
     # Get regex matches from Confluence page
     confluence.scrap_regex_from_page(page_id, regex)
 
+Reading large page bodies
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``get_page_by_id(..., expand='body.storage')`` returns the complete body sent
+by Confluence; the client does not paginate or truncate an individual page
+body. IDE debuggers and interactive-variable viewers may abbreviate large
+strings, which can look like a partial API result. Check the string length or
+write it to a file before concluding that content is missing.
+
+.. code-block:: python
+
+    page = confluence.get_page_by_id(page_id, expand='body.storage')
+    storage = page['body']['storage']['value']
+
+    print(f'Received {len(storage)} characters')
+    with open('page-storage.xhtml', 'w', encoding='utf-8') as output:
+        output.write(storage)
+
+If the request itself times out, set a larger ``timeout`` when creating the
+client. This controls the HTTP request duration; it does not change the amount
+of content returned by Confluence.
+
+.. code-block:: python
+
+    confluence = Confluence(url=url, username=username, password=password, timeout=150)
+
 Storage-format updates
 ~~~~~~~~~~~~~~~~~~~~~~
 
