@@ -67,7 +67,50 @@ Here's a short example of how to create a Confluence page:
 
     print(status)
 
-Please, note Confluence Cloud need to be used via token parameter.
+Authentication: Server/Data Center PAT vs Cloud API token
+_________________________________________________________
+
+Use ``token=`` for a Jira or Confluence **Server/Data Center personal access
+token**. It is sent as a Bearer token:
+
+.. code-block:: python
+
+    from atlassian import Confluence, Jira
+
+    confluence = Confluence("https://confluence.company.example", token="server-or-dc-pat")
+    jira = Jira("https://jira.company.example", token="server-or-dc-pat")
+
+Atlassian **Cloud API tokens** use HTTP Basic authentication: pass the account
+email as ``username`` and the API token as ``password``. Do not pass a Cloud
+API token to ``token=``.
+
+.. code-block:: python
+
+    from atlassian import Confluence, Jira
+
+    confluence = Confluence(
+        "https://your-domain.atlassian.net",
+        username="you@example.com",
+        password="cloud-api-token",
+        cloud=True,
+        timeout=120,  # Optional; useful on slow/VPN connections.
+    )
+    spaces = confluence.get_all_spaces()
+
+    jira = Jira(
+        "https://your-domain.atlassian.net",
+        username="you@example.com",
+        password="cloud-api-token",
+        cloud=True,
+        timeout=120,
+    )
+    epic = jira.enhanced_jql('project = DEMO AND issuetype = Epic', limit=50)
+
+See the detailed `authentication documentation`_ for Cloud gateway/scoped-token
+notes and other authentication methods.
+
+.. _authentication documentation: https://atlassian-python-api.readthedocs.io/en/latest/index.html#other-authentication-methods
+
 And here's another example of how to get issues from Jira using JQL Query:
 
 .. code-block:: python
@@ -124,14 +167,14 @@ The library now supports Confluence's v2 API for Cloud instances. The v2 API pro
 
     # Get pages from a space
     pages = confluence.get_pages(space_key='DEMO', limit=10)
-    
+
     # Create a new page
     new_page = confluence.create_page(
         space_id='DEMO',
         title='New Page with v2 API',
         body='<p>This page was created using the v2 API</p>'
     )
-    
+
     # Use v2-only features like whiteboards
     whiteboard = confluence.create_whiteboard(
         space_id='DEMO',
