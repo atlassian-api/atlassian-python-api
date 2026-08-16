@@ -936,6 +936,42 @@ class TestConfluenceV2(unittest.TestCase):
         mock_delete.assert_called_with("api/v2/spaces/12345/labels/test-label")
         self.assertTrue(result)
 
+    # Tests for GraphQL Gateway methods
+
+    @patch("atlassian.confluence.cloud.ConfluenceCloud.post")
+    def test_graphql_uses_tenanted_gateway(self, mock_post):
+        mock_post.return_value = {"data": {"me": {"user": {"accountId": "account-1"}}}}
+
+        result = self.confluence_v2.graphql("query CurrentUser { me { user { accountId } } }")
+
+        self.assertEqual(result["data"]["me"]["user"]["accountId"], "account-1")
+        mock_post.assert_called_once_with(
+            "https://example.atlassian.net/gateway/api/graphql",
+            json={"query": "query CurrentUser { me { user { accountId } } }", "variables": {}},
+            absolute=True,
+        )
+
+    @patch("atlassian.confluence.cloud.ConfluenceCloud.post")
+    def test_search_graphql_uses_confluence_cloud_location(self, mock_post):
+        mock_post.return_value = {
+            "data": {"search": {"search": {"edges": [{"node": {"id": "1", "title": "Result"}}], "totalCount": 1}}}
+        }
+
+        result = self.confluence_v2.search_graphql("deployment guide", cloud_id="cloud-123")
+
+        self.assertEqual(result["data"]["search"]["search"]["totalCount"], 1)
+        request = mock_post.call_args.kwargs["json"]
+        self.assertEqual(request["variables"]["query"], "deployment guide")
+        self.assertEqual(
+            request["variables"]["filters"]["locations"], ["ari:cloud:confluence::site/cloud-123"]
+        )
+
+    def test_search_graphql_rejects_invalid_arguments(self):
+        with self.assertRaisesRegex(ValueError, "must not be empty"):
+            self.confluence_v2.search_graphql("", cloud_id="cloud-123")
+        with self.assertRaisesRegex(ValueError, "between 1 and 100"):
+            self.confluence_v2.search_graphql("query", cloud_id="cloud-123", first=101)
+
     # Tests for Whiteboard methods
 
     @patch("atlassian.confluence.cloud.ConfluenceCloud.post")
