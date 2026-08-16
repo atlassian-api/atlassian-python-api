@@ -346,8 +346,9 @@ Page actions
     # Invalid storage XHTML raises HTTPError with Confluence's ``message``,
     # ``detail``, and field-level validation errors when the server supplies them.
 
-    # Set the page (content) property e.g. add hash parameters
-    confluence.set_page_property(page_id, data)
+    # Set a page property. Pass a dictionary; JSON strings are accepted for
+    # backwards compatibility and are converted before the request is sent.
+    confluence.set_page_property(page_id, {"key": "myprop", "value": {"hash": "1111"}})
 
     # Delete the page (content) property e.g. delete key of hash
     confluence.delete_page_property(page_id, page_property)

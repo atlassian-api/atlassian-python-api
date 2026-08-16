@@ -259,6 +259,16 @@ class TestConfluenceServer:
 
         assert confluence_server.remove_page("123") is response
 
+    @patch.object(ConfluenceServer, "post")
+    def test_set_page_property_deserializes_json_string_payload(self, mock_post, confluence_server):
+        property_data = '{"key": "myprop", "value": {"hash": "1111"}}'
+
+        confluence_server.set_page_property("123", property_data)
+
+        mock_post.assert_called_once_with(
+            path="content/123/property", data={"key": "myprop", "value": {"hash": "1111"}}
+        )
+
     @patch.object(ConfluenceServer, "delete")
     @patch.object(ConfluenceServer, "get_page_child_by_type")
     def test_remove_page_recursively_lists_all_children_before_deleting(

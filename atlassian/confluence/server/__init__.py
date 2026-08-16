@@ -2017,14 +2017,20 @@ class Server(ConfluenceServerBase):
         """
         Set the page (content) property e.g. add hash parameters
         :param page_id: content_id format
-        :param data: data should be as json data
+        :param data: property dictionary, or a JSON string representing one
         :return:
         """
         url = f"content/{page_id}/property"
-        json_data = data
+        if isinstance(data, str):
+            try:
+                data = json.loads(data)
+            except json.JSONDecodeError as error:
+                raise ApiValueError("Page property data must be valid JSON", reason=error)
+        if not isinstance(data, dict):
+            raise ApiValueError("Page property data must be a dictionary")
 
         try:
-            response = self.post(path=url, data=json_data)
+            response = self.post(path=url, data=data)
         except HTTPError as e:
             if e.response.status_code == 400:
                 raise ApiValueError(
@@ -2049,11 +2055,19 @@ class Server(ConfluenceServerBase):
         """
         Update the page (content) property.
         Use json data or independent keys
-        :param data:
+        :param data: property dictionary, or a JSON string representing one
         :param page_id: content_id format
         :data: property data in json format
         :return:
         """
+        if isinstance(data, str):
+            try:
+                data = json.loads(data)
+            except json.JSONDecodeError as error:
+                raise ApiValueError("Page property data must be valid JSON", reason=error)
+        if not isinstance(data, dict):
+            raise ApiValueError("Page property data must be a dictionary")
+
         url = f"content/{page_id}/property/{data.get('key')}"
         try:
             response = self.put(path=url, data=data)
