@@ -434,6 +434,16 @@ class AtlassianRestAPI(object):
     def resource_url(
         self, resource: str, api_root: Optional[str] = None, api_version: Union[str, int, None] = None
     ) -> str:
+        """Build a relative REST resource URL from the configured API settings.
+
+        Args:
+            resource: Endpoint path below the API root and version.
+            api_root: Optional API root overriding the client default.
+            api_version: Optional API version overriding the client default.
+
+        Returns:
+            Normalized relative REST resource URL.
+        """
         if api_root is None:
             api_root = self.api_root
         if api_version is None:
@@ -442,12 +452,23 @@ class AtlassianRestAPI(object):
 
     @staticmethod
     def url_joiner(url: Optional[str], path: str, trailing: Optional[bool] = None) -> str:
+        """Join URL components without duplicate slashes.
+
+        Args:
+            url: Base URL or relative path.
+            path: Path to append.
+            trailing: Whether to add a trailing slash.
+
+        Returns:
+            Normalized joined URL.
+        """
         url_link = "/".join(str(s).strip("/") for s in [url, path] if s is not None)
         if trailing:
             url_link += "/"
         return url_link
 
     def close(self) -> None:
+        """Close the underlying HTTP session and release its connections."""
         return self._session.close()
 
     def request(

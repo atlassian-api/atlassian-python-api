@@ -20,6 +20,35 @@ class TestJira(TestCase):
         resp = self.jira.issue("FOO-123")
         self.assertEqual(resp["key"], "FOO-123")
 
+    @patch.object(jira.Jira, "get")
+    def test_get_all_application_roles(self, mock_get):
+        """Lists ApplicationRoles from the Server v2 resource."""
+        self.jira.get_all_application_roles()
+
+        mock_get.assert_called_once_with("rest/api/2/applicationrole")
+
+    @patch.object(jira.Jira, "get")
+    def test_get_application_role(self, mock_get):
+        """Gets one ApplicationRole from the Server v2 resource."""
+        self.jira.get_application_role("jira-software")
+
+        mock_get.assert_called_once_with("rest/api/2/applicationrole/jira-software")
+
+    @patch.object(jira.Jira, "put")
+    def test_update_application_roles_uses_etag_when_provided(self, mock_put):
+        roles = [{"key": "jira-software", "groups": ["jira-software-users"]}]
+
+        self.jira.update_application_roles(roles, if_match='"role-version"')
+
+        self.assertEqual(mock_put.call_args.args[0], "rest/api/2/applicationrole")
+        self.assertEqual(
+            mock_put.call_args.kwargs["data"], '[{"key": "jira-software", "groups": ["jira-software-users"]}]'
+        )
+        self.assertEqual(
+            mock_put.call_args.kwargs["headers"],
+            {"Content-Type": "application/json", "Accept": "application/json", "If-Match": '"role-version"'},
+        )
+
     def test_get_issue_not_found(self):
         """Receive HTTP Error when Issue does not exist"""
         with self.assertRaises(HTTPError):

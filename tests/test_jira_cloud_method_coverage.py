@@ -4,6 +4,7 @@ import inspect
 from unittest import TestCase
 
 from atlassian.jira.core_methods import JiraCloudCoreMethods
+from atlassian.jira.jira_server import Jira as JiraServer
 from atlassian.jira.service_management_methods import JiraServiceManagementMethods
 from atlassian.jira.software_methods import JiraSoftwareMethods
 
@@ -60,3 +61,17 @@ class TestJiraCloudMethodCoverage(TestCase):
                 self.assertTrue(client.calls[0][1].startswith(prefix))
                 self.assertNotIn("{", client.calls[0][1])
                 self.assertEqual(client.calls[0][2]["data"], None)
+
+    def test_every_cloud_method_has_a_complete_docstring(self):
+        for method_group, _, _ in self.METHOD_GROUPS:
+            for _, method in inspect.getmembers(method_group, inspect.isfunction):
+                docstring = inspect.getdoc(method)
+                self.assertIsNotNone(docstring)
+                self.assertIn("Args:", docstring)
+                self.assertIn("Returns:", docstring)
+
+    def test_every_public_jira_server_method_has_a_docstring(self):
+        methods = inspect.getmembers(JiraServer, inspect.isfunction)
+        undocumented = [name for name, method in methods if not name.startswith("_") and not inspect.getdoc(method)]
+
+        self.assertEqual(undocumented, [])

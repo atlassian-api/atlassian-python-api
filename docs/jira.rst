@@ -72,6 +72,24 @@ Application properties
     # Returns the properties that are displayed on the "General Configuration > Advanced Settings" page.
     jira.get_advanced_settings()
 
+Application roles
+-----------------
+
+.. code-block:: python
+
+    # List every application role. Jira Server returns an ETag header that can
+    # be supplied to the update call as ``if_match``.
+    roles = jira.get_all_application_roles()
+
+    # Retrieve an individual role.
+    jira.get_application_role("jira-software")
+
+    # Update only groups/defaultGroups. The role key/name cannot be changed.
+    jira.update_application_roles(
+        [{"key": "jira-software", "groups": ["jira-software-users"]}],
+        if_match='"application-role-etag"',
+    )
+
 Manage users
 ------------
 
