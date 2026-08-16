@@ -227,6 +227,25 @@ class Bamboo(AtlassianRestAPI):
         resource = f"rest/api/latest/plan/{plan_key}"
         return self.get(resource, params=params)
 
+    def get_plan_specs(self, plan_key, package=None, format="YAML"):
+        """Export a plan as Bamboo Specs source code.
+
+        Bamboo does not provide a repositories-only REST endpoint. The
+        response's ``spec.code`` field contains the plan definition, including
+        its ``repositories`` section. ``YAML`` is the most convenient format
+        for repository audits; Bamboo also supports ``JAVA`` on compatible
+        releases.
+
+        :param plan_key: Full plan key, for example ``PROJECT-PLAN``.
+        :param package: Optional Java package name when exporting Java Specs.
+        :param format: Export format, normally ``YAML`` or ``JAVA``.
+        :return: The ``RestPlanSpec`` response containing ``spec.code``.
+        """
+        params = {"format": format}
+        if package is not None:
+            params["package"] = package
+        return self.get(self.resource_url(f"plan/{plan_key}/specs"), params=params)
+
     def search_plans(self, search_term, fuzzy=True, start_index=0, max_results=25):
         """
         Search plans by name
@@ -653,6 +672,23 @@ class Bamboo(AtlassianRestAPI):
                 params[f"bamboo.variable.{key}"] = value
 
         return self.post(self.resource_url(resource), params=params)
+
+    def queue_build(self, plan_key, params=None):
+        """Add a plan to the Bamboo build queue.
+
+        ``params`` maps directly to Bamboo's queue request parameters. For
+        example, pass ``{"bamboo.variable.release": "1.2.3"}`` to set a
+        custom plan variable. Builds execute all stages by default; provide an
+        explicit ``executeAllStages`` or ``stage`` value to override that
+        behavior. The supplied mapping is never modified.
+
+        :param plan_key: Full plan key, for example ``PROJECT-PLAN``.
+        :param params: Optional queue parameters and custom variables.
+        :return: The queued build response.
+        """
+        queue_params = dict(params or {})
+        queue_params.setdefault("executeAllStages", "true")
+        return self.post(self.resource_url(f"queue/{plan_key}"), params=queue_params)
 
     def stop_build(self, plan_key):
         """

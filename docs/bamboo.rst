@@ -35,6 +35,13 @@ Projects & Plans
     # Get plan information
     get_plan(plan_key)
 
+    # Add a plan to the build queue, including optional custom variables
+    bamboo.queue_build("PROJECT-PLAN", {"bamboo.variable.release": "1.2.3"})
+
+    # Export the plan's Bamboo Specs source, including its repositories section
+    spec = bamboo.get_plan_specs(plan_key, format="YAML")
+    print(spec["spec"]["code"])
+
     # Search for a plan by name
     search_plans(name, name, fuzzy=True, start_index=0, max_results=25)
 
