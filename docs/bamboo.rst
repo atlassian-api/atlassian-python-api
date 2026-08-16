@@ -124,6 +124,10 @@ Build results
     plan_results(project_key, plan_key, expand=None, favourite=False, clover_enabled=False, label=None,
                  issue_key=None, start_index=0, max_results=25, include_all_states=False)
 
+    # Bamboo has no server-side result sort; order the retrieved history locally.
+    newest_success = bamboo.latest_successful_plan_result("PROJECT", "PLAN", max_results=1000)
+    oldest_failed = bamboo.oldest_failed_plan_result("PROJECT", "PLAN", max_results=1000)
+
     # Get a single build result
     build_result(build_key, expand=None, include_all_states=False)
 

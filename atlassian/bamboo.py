@@ -453,6 +453,7 @@ class Bamboo(AtlassianRestAPI):
         start_index=0,
         max_results=25,
         include_all_states=False,
+        build_state=None,
     ):
         """
         Get results as generic method
@@ -468,6 +469,8 @@ class Bamboo(AtlassianRestAPI):
         :param start_index:
         :param max_results:
         :param include_all_states:
+        :param build_state: Optional Bamboo result state, such as
+            ``Successful`` or ``Failed``.
         :return:
         """
         resource = "result"
@@ -485,6 +488,8 @@ class Bamboo(AtlassianRestAPI):
             params["issueKey"] = issue_key
         if include_all_states:
             params["includeAllStates"] = include_all_states
+        if build_state is not None:
+            params["buildstate"] = build_state
         return self.base_list_call(
             resource,
             expand=expand,
@@ -581,6 +586,7 @@ class Bamboo(AtlassianRestAPI):
         start_index=0,
         max_results=25,
         include_all_states=False,
+        build_state=None,
     ):
         """
         Get Plan results
@@ -594,6 +600,8 @@ class Bamboo(AtlassianRestAPI):
         :param start_index:
         :param max_results:
         :param include_all_states:
+        :param build_state: Optional Bamboo result state, such as
+            ``Successful`` or ``Failed``.
         :return:
         """
         return self.results(
@@ -607,7 +615,70 @@ class Bamboo(AtlassianRestAPI):
             start_index=start_index,
             max_results=max_results,
             include_all_states=include_all_states,
+            build_state=build_state,
         )
+
+    def ordered_plan_results(
+        self,
+        project_key,
+        plan_key,
+        order="descending",
+        build_state=None,
+        max_results=25,
+        **kwargs,
+    ):
+        """Return retrieved plan results ordered by completion time.
+
+        Bamboo's result API does not expose a server-side sort parameter. This
+        helper orders the result page client-side by ``buildCompletedTime``.
+        Set ``max_results`` high enough to include the history being compared;
+        this method returns a list rather than the lazy generator returned by
+        :meth:`plan_results`.
+
+        :param order: ``"ascending"`` for oldest first or ``"descending"``
+            for newest first.
+        :param build_state: Optional ``Successful`` or ``Failed`` filter.
+        :param max_results: Number of results Bamboo should return to sort.
+        :return: A list of build results ordered by completion time.
+        """
+        if order not in {"ascending", "descending"}:
+            raise ValueError("order must be 'ascending' or 'descending'")
+
+        results = self.plan_results(
+            project_key,
+            plan_key,
+            build_state=build_state,
+            max_results=max_results,
+            **kwargs,
+        )
+        return sorted(
+            results,
+            key=lambda result: result.get("buildCompletedTime") or "",
+            reverse=order == "descending",
+        )
+
+    def latest_successful_plan_result(self, project_key, plan_key, max_results=25, **kwargs):
+        """Return the newest successful plan result, or ``None`` when absent."""
+        results = self.ordered_plan_results(
+            project_key,
+            plan_key,
+            build_state="Successful",
+            max_results=max_results,
+            **kwargs,
+        )
+        return results[0] if results else None
+
+    def oldest_failed_plan_result(self, project_key, plan_key, max_results=25, **kwargs):
+        """Return the oldest failed plan result, or ``None`` when absent."""
+        results = self.ordered_plan_results(
+            project_key,
+            plan_key,
+            order="ascending",
+            build_state="Failed",
+            max_results=max_results,
+            **kwargs,
+        )
+        return results[0] if results else None
 
     def build_result(
         self,

@@ -126,3 +126,39 @@ def test_project_linked_repository_methods(mock_get, mock_post, mock_delete):
     assert mock_get.call_args_list[1].args[0] == "rest/api/latest/project/PROJ/repository"
     mock_post.assert_called_once_with("rest/api/latest/project/PROJ/repository", data={"id": 42})
     mock_delete.assert_called_once_with("rest/api/latest/project/PROJ/repository/42")
+
+
+def test_ordered_plan_results_and_convenience_filters(monkeypatch):
+    bamboo = Bamboo("https://bamboo.example.test", token="token")
+    calls = []
+    results = [
+        {"buildCompletedTime": "2024-01-02T00:00:00.000Z", "state": "Failed"},
+        {"buildCompletedTime": "2024-01-03T00:00:00.000Z", "state": "Successful"},
+        {"buildCompletedTime": "2024-01-01T00:00:00.000Z", "state": "Failed"},
+    ]
+
+    def plan_results(project_key, plan_key, **kwargs):
+        calls.append((project_key, plan_key, kwargs))
+        return (result for result in results)
+
+    monkeypatch.setattr(bamboo, "plan_results", plan_results)
+
+    assert [result["buildCompletedTime"] for result in bamboo.ordered_plan_results("PROJ", "PLAN")] == [
+        "2024-01-03T00:00:00.000Z",
+        "2024-01-02T00:00:00.000Z",
+        "2024-01-01T00:00:00.000Z",
+    ]
+    assert bamboo.latest_successful_plan_result("PROJ", "PLAN")["state"] == "Successful"
+    assert bamboo.oldest_failed_plan_result("PROJ", "PLAN")["buildCompletedTime"] == "2024-01-01T00:00:00.000Z"
+    assert calls[1][2]["build_state"] == "Successful"
+    assert calls[2][2]["build_state"] == "Failed"
+
+
+@patch.object(Bamboo, "get")
+def test_plan_results_forwards_supported_build_state_filter(mock_get):
+    bamboo = Bamboo("https://bamboo.example.test", token="token")
+    mock_get.return_value = {"results": {"size": 0, "result": []}}
+
+    assert list(bamboo.plan_results("PROJ", "PLAN", build_state="Successful")) == []
+
+    assert mock_get.call_args.args[3]["buildstate"] == "Successful"
