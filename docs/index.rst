@@ -184,6 +184,12 @@ Then, just provide the token to the constructor:
 
 To authenticate to the Atlassian Cloud APIs Jira, Confluence, ServiceDesk:
 
+Use the account email as ``username`` and the Cloud API token as ``password``.
+Do not use ``token=``: that parameter emits a Bearer token intended for
+Server/Data Center PATs and Cloud may respond with ``403 Failed to parse
+Connect Session Auth Token``. The client generates the required Basic header;
+do not encode ``email:api_token`` manually.
+
 .. code-block:: python
 
     # Obtain an API token from: https://id.atlassian.com/manage-profile/security/api-tokens

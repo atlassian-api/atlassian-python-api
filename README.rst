@@ -82,7 +82,10 @@ token**. It is sent as a Bearer token:
 
 Atlassian **Cloud API tokens** use HTTP Basic authentication: pass the account
 email as ``username`` and the API token as ``password``. Do not pass a Cloud
-API token to ``token=``.
+API token to ``token=``. The latter creates a Bearer header and Cloud commonly
+responds with ``403 Failed to parse Connect Session Auth Token``. ``requests``
+encodes the required ``email:api_token`` Basic credentials automatically; do
+not base64-encode them yourself.
 
 .. code-block:: python
 
