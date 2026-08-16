@@ -231,6 +231,10 @@ Manage projects
     # Use 'expand' to get details (default is None)
     jira.get_project_permission_scheme(project_id_or_key, expand='permissions,user,group,projectRole,field,all')
 
+    # Assign a permission scheme. On Jira Cloud this uses the v3 JSON endpoint;
+    # the caller needs the Administer Jira global permission.
+    jira.assign_project_permission_scheme(project_id_or_key, permission_scheme_id)
+
     # Get the issue security scheme for project.
     # Returned if the user has the administrator permission or if the scheme is used in a project in which the
     # user has the administrative permission.

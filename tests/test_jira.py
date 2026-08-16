@@ -2,7 +2,7 @@
 """Tests for Jira Modules"""
 
 from unittest import TestCase
-from unittest.mock import patch
+from unittest.mock import patch, sentinel
 
 from requests import HTTPError
 
@@ -85,6 +85,18 @@ class TestJira(TestCase):
                 "nextPageToken": "next-token",
                 "expand": "names",
             },
+        )
+
+    @patch.object(jira.Jira, "request")
+    def test_assign_project_permission_scheme_uses_v3_json_endpoint_in_cloud(self, mock_request):
+        self.jira.advanced_mode = True
+        mock_request.return_value = sentinel.response
+
+        result = self.jira.assign_project_permission_scheme("DEMO", 10000)
+
+        self.assertIs(result, sentinel.response)
+        mock_request.assert_called_once_with(
+            "PUT", path="rest/api/3/project/DEMO/permissionscheme", json={"id": 10000}
         )
 
     def test_get_epic_issues(self):

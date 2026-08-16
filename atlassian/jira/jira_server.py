@@ -3537,14 +3537,25 @@ class Jira(AtlassianRestAPI):
 
     def assign_project_permission_scheme(self, project_id_or_key: str, permission_scheme_id: T_id):
         """
-        Assigns a permission scheme with a project.
-        :param project_id_or_key:
-        :param permission_scheme_id:
-        :return:
+        Assign a permission scheme to a project.
+
+        Jira Cloud requires the v3 endpoint and a JSON request body. Server and
+        Data Center continue to use their established v2-compatible endpoint.
+
+        :param project_id_or_key: Project key or numeric project ID.
+        :param permission_scheme_id: Numeric permission scheme ID.
+        :return: Updated project permission scheme.
         """
+        data = {"id": permission_scheme_id}
+        if self.cloud:
+            url = self.resource_url("project/{}/permissionscheme".format(project_id_or_key), api_version="3")
+            response = self.request("PUT", path=url, json=data)
+            if self.advanced_mode:
+                return response
+            return self._response_handler(response)
+
         base_url = self.resource_url("project")
         url = f"{base_url}/{project_id_or_key}/permissionscheme"
-        data = {"id": permission_scheme_id}
         return self.put(url, data=data)
 
     def get_project_permission_scheme(self, project_id_or_key: str, expand: Optional[str] = None):
