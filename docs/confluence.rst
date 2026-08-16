@@ -287,6 +287,21 @@ Page actions
     # Add comment into page
     confluence.add_comment(page_id, text)
 
+    # Comments are a separate paginated resource; they are not included by
+    # get_page_by_id(). Expand the rendered body and creator/editor metadata.
+    comment_page = confluence.get_page_comments(
+        page_id, expand='body.view,history,version', start=0, limit=100
+    )
+    for comment in comment_page['results']:
+        body = comment['body']['view']['value']
+        author = comment.get('history', {}).get('createdBy')
+        latest_editor = comment.get('version', {}).get('by')
+
+    # Cloud V2 has separate methods for footer and inline comments. Their
+    # result items include authorId; request body_format for comment bodies.
+    footer_comments = cloud.get_page_footer_comments(page_id, body_format='view')
+    inline_comments = cloud.get_page_inline_comments(page_id, body_format='view')
+
      # Fetch tables from Confluence page
     confluence.get_tables_from_page(page_id)
 

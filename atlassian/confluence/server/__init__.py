@@ -462,16 +462,23 @@ class Server(ConfluenceServerBase):
         location=None,
         depth=None,
     ):
-        """
+        """Return a page's comments through the separate comments endpoint.
 
-        :param content_id:
-        :param expand: extensions.inlineProperties,extensions.resolution
-        :param parent_version:
-        :param start:
-        :param limit:
-        :param location: inline or not
-        :param depth:
-        :return:
+        Comments are not included in :meth:`get_page_by_id`. To retrieve a
+        rendered comment body and author metadata, use
+        ``expand='body.view,history,version'``. The initial author is available
+        in ``history.createdBy`` and the latest editor in ``version.by``.
+
+        :param content_id: Page/content ID
+        :param expand: Content expansions, for example
+            ``body.view,history,version``. Inline-comment metadata can use
+            ``extensions.inlineProperties,extensions.resolution``.
+        :param parent_version: Filter comments for a parent version
+        :param start: Page offset
+        :param limit: Number of comments per response page
+        :param location: ``inline`` to request inline comments
+        :param depth: Nested comment depth
+        :return: Paginated Confluence comment response
         """
         params = {"id": content_id, "start": start, "limit": limit}
         if expand:

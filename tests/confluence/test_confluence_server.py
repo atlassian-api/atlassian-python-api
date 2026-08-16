@@ -933,6 +933,26 @@ class TestConfluenceServer:
 
     # Comment Management Tests
     @patch.object(ConfluenceServer, "get")
+    def test_get_page_comments_expands_body_and_author_metadata(self, mock_get, confluence_server):
+        mock_get.return_value = {
+            "results": [
+                {
+                    "body": {"view": {"value": "<p>Comment</p>"}},
+                    "history": {"createdBy": {"username": "author"}},
+                    "version": {"by": {"username": "editor"}},
+                }
+            ]
+        }
+
+        result = confluence_server.get_page_comments("123", expand="body.view,history,version", limit=100)
+
+        assert result["results"][0]["history"]["createdBy"]["username"] == "author"
+        mock_get.assert_called_once_with(
+            "rest/api/content/123/child/comment",
+            params={"id": "123", "start": 0, "limit": 100, "expand": "body.view,history,version"},
+        )
+
+    @patch.object(ConfluenceServer, "get")
     def test_get_comments(self, mock_get, confluence_server):
         """Test get_comments method."""
         mock_get.return_value = {"results": [{"id": "comment1", "text": "Test Comment"}]}
