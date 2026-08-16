@@ -538,9 +538,16 @@ class AssetsCloud(AtlassianRestAPI):
             order_by_required (bool, optional): Order by required fields, defaults to None (Use API default)
         """
 
-        kwargs = list(locals().items())
-        params = dict()
-        params.update({k: v for k, v in kwargs if v is not None and k not in ["self", "type_id"]})
+        params = {
+            "onlyValueEditable": only_value_editable,
+            "orderByName": order_by_name,
+            "query": query,
+            "includeValuesExist": include_values_exist,
+            "excludeParentAttributes": exclude_parent_attributes,
+            "includeChildren": include_children,
+            "orderByRequired": order_by_required,
+        }
+        params = {k: v for k, v in params.items() if v is not None}
 
         return self.get(
             f"{self.api_root}/objecttype/{type_id}/attributes",
