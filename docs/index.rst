@@ -201,6 +201,17 @@ To authenticate to the Atlassian Cloud APIs Jira, Confluence, ServiceDesk:
         password=atlassian_api_token,
         cloud=True)
 
+    # New Cloud V2 endpoints, including page retrieval, are exposed through
+    # the explicit versioned client. Do not base64-encode credentials yourself.
+    from atlassian import ConfluenceV2
+
+    confluence_v2 = ConfluenceV2(
+        'https://your-domain.atlassian.net',
+        username=atlassian_username,
+        password=atlassian_api_token,
+    )
+    page = confluence_v2.get_page_by_id('123456789', body_format='storage')
+
     service_desk = ServiceDesk(
         url='https://your-domain.atlassian.net',
         username=atlassian_username,

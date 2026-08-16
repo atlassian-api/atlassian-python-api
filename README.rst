@@ -106,6 +106,18 @@ API token to ``token=``.
     )
     epic = jira.enhanced_jql('project = DEMO AND issuetype = Epic', limit=50)
 
+    # Confluence Cloud V2 page read. Use the site URL without a trailing /wiki;
+    # the client adds the required API context.
+    from atlassian import ConfluenceV2
+
+    confluence_v2 = ConfluenceV2(
+        "https://your-domain.atlassian.net",
+        username="you@example.com",
+        password="cloud-api-token",
+    )
+    page = confluence_v2.get_page_by_id("123456789", body_format="storage")
+    storage_xhtml = page["body"]["storage"]["value"]
+
 See the detailed `authentication documentation`_ for Cloud gateway/scoped-token
 notes and other authentication methods.
 

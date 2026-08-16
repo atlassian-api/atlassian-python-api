@@ -4,6 +4,7 @@ Unit tests for atlassian.rest_client module
 """
 
 import io
+from base64 import b64decode
 from datetime import datetime, timedelta
 from types import SimpleNamespace
 
@@ -84,6 +85,17 @@ class TestAtlassianRestAPI:
         prepared_request = api.session.prepare_request(requests.Request("GET", "https://confluence.example.test"))
 
         assert prepared_request.headers["Authorization"] == "Bearer expected-token"
+
+    def test_cloud_api_token_uses_basic_authentication(self):
+        api = AtlassianRestAPI(
+            url="https://confluence.example.test", username="you@example.test", password="cloud-api-token", cloud=True
+        )
+
+        prepared_request = api.session.prepare_request(requests.Request("GET", "https://confluence.example.test"))
+
+        scheme, encoded_credentials = prepared_request.headers["Authorization"].split(" ", 1)
+        assert scheme == "Basic"
+        assert b64decode(encoded_credentials).decode() == "you@example.test:cloud-api-token"
 
     def test_log_curl_debug_does_not_double_encode_serialized_json(self, monkeypatch):
         messages = []
