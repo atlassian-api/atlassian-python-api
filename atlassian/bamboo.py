@@ -249,6 +249,40 @@ class Bamboo(AtlassianRestAPI):
             params["package"] = package
         return self.get(self.resource_url(f"plan/{plan_key}/specs"), params=params)
 
+    def search_linked_repositories(self, search_term=None):
+        """Search globally configured Bamboo linked repositories.
+
+        The public Bamboo REST API can search existing linked repositories but
+        does not create or update their connection configuration. Create those
+        connections in Bamboo administration, then use the returned repository
+        ID with :meth:`link_repository_to_project`.
+
+        :param search_term: Optional repository-name fragment.
+        :return: Bamboo's paged linked-repository response.
+        """
+        params = {}
+        if search_term is not None:
+            params["searchTerm"] = search_term
+        return self.get(self.resource_url("repository"), params=params)
+
+    def get_project_linked_repositories(self, project_key):
+        """Return linked repositories authorized for Bamboo Specs in a project."""
+        return self.get(self.resource_url(f"project/{project_key}/repository"))
+
+    def link_repository_to_project(self, project_key, repository_id):
+        """Authorize an existing linked repository for Bamboo Specs in a project.
+
+        This grants a repository-stored Bamboo Specs repository permission to
+        create or edit plans in ``project_key``. It does not change the
+        repositories checked out by an existing plan; update and apply that
+        plan's Bamboo Specs for plan-level repository changes.
+        """
+        return self.post(self.resource_url(f"project/{project_key}/repository"), data={"id": repository_id})
+
+    def unlink_repository_from_project(self, project_key, repository_id):
+        """Remove a project-level Bamboo Specs repository authorization."""
+        return self.delete(self.resource_url(f"project/{project_key}/repository/{repository_id}"))
+
     def search_plans(self, search_term, fuzzy=True, start_index=0, max_results=25):
         """
         Search plans by name

@@ -60,6 +60,26 @@ Projects & Plans
     # Delete project
     delete_project(project_key)
 
+Linked repositories and Bamboo Specs
+------------------------------------
+
+Bamboo's public REST API can search existing global linked repositories and
+authorize one for a project’s Repository-Stored Bamboo Specs. It does not
+create a connection on the **Linked repositories** administration page, nor
+does it directly change the repositories checked out by an existing plan.
+Create the global connection in Bamboo administration; change plan repositories
+through that plan's Bamboo Specs and apply the Specs.
+
+.. code-block:: python
+
+    candidates = bamboo.search_linked_repositories("build-specs")
+    repository_id = candidates["searchResults"][0]["id"]
+
+    bamboo.link_repository_to_project("PROJECT", repository_id)
+    allowed = bamboo.get_project_linked_repositories("PROJECT")
+    # Revoke the project-level Repository-Stored Specs authorization:
+    bamboo.unlink_repository_from_project("PROJECT", repository_id)
+
 Branches
 -------------
 

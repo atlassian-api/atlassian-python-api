@@ -107,3 +107,22 @@ def test_plan_results_supports_multiple_labels(mock_get):
     assert list(bamboo.plan_results("PROJ", "PLAN", label=["release", "production"])) == []
 
     assert mock_get.call_args.args[3]["label"] == ["release", "production"]
+
+
+@patch.object(Bamboo, "delete")
+@patch.object(Bamboo, "post")
+@patch.object(Bamboo, "get")
+def test_project_linked_repository_methods(mock_get, mock_post, mock_delete):
+    bamboo = Bamboo("https://bamboo.example.test", token="token")
+    mock_get.side_effect = [{"searchResults": []}, [{"id": 42, "name": "Specs repository"}]]
+
+    bamboo.search_linked_repositories("specs")
+    bamboo.get_project_linked_repositories("PROJ")
+    bamboo.link_repository_to_project("PROJ", 42)
+    bamboo.unlink_repository_from_project("PROJ", 42)
+
+    assert mock_get.call_args_list[0].args[0] == "rest/api/latest/repository"
+    assert mock_get.call_args_list[0].kwargs["params"] == {"searchTerm": "specs"}
+    assert mock_get.call_args_list[1].args[0] == "rest/api/latest/project/PROJ/repository"
+    mock_post.assert_called_once_with("rest/api/latest/project/PROJ/repository", data={"id": 42})
+    mock_delete.assert_called_once_with("rest/api/latest/project/PROJ/repository/42")
