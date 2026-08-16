@@ -234,8 +234,23 @@ Manage projects
     # Results can be filtered by the following fields: query, status.
     jira.get_project_versions_paginated(key, start=None, limit=None, order_by=None, expand=None, query=None, status=None)
 
-    # Add missing version to project
-    jira.add_version(key, project_id, version, is_archived=False, is_released=False)
+    # Add a version to a Jira Server/Data Center project
+    jira.add_version(
+        project_key=key,
+        project_id=project_id,
+        version={
+            "name": "TestVersion",
+            "description": "Just a test description",
+            "released": False,
+            "archived": False,
+        },
+    )
+
+    # Jira Cloud requires the numeric project ID and uses REST v3
+    jira.add_version(
+        project_id=10000,
+        version={"name": "TestVersion", "description": "Just a test description"},
+    )
 
     # Update an existing version
     jira.update_version(version, name=None, description=None, is_archived=None, is_released=None, start_date=None, release_date=None)

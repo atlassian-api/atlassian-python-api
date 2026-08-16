@@ -3288,29 +3288,57 @@ class Jira(AtlassianRestAPI):
 
     def add_version(
         self,
-        project_key: str,
-        project_id: T_id,
-        version: str,
+        project_key: Optional[str] = None,
+        project_id: Optional[T_id] = None,
+        version: Optional[Union[str, dict]] = None,
         is_archived: bool = False,
         is_released: bool = False,
     ):
         """
-        Add missing version to project
-        :param project_key: the project key
-        :param project_id: the project id
-        :param version: the new project version to add
+        Add a version to a project on Jira Cloud or Server/Data Center.
+
+        ``version`` may be a name (the legacy form) or a complete version
+        payload.  Passing a payload is useful when setting description and
+        release dates. Cloud uses REST v3 and requires ``projectId``; Server
+        and Data Center use REST v2 and accept the project key and/or ID.
+
+        :param project_key: Project key, used by Server/Data Center.
+        :param project_id: Numeric project ID, required by Cloud.
+        :param version: Version name or a version payload dictionary.
         :param is_archived:
         :param is_released:
         :return:
         """
-        payload = {
-            "name": version,
-            "archived": is_archived,
-            "released": is_released,
-            "project": project_key,
-            "projectId": project_id,
-        }
-        url = self.resource_url("version")
+        if version is None:
+            raise ValueError("version must be a version name or payload dictionary")
+        if isinstance(version, dict):
+            payload = dict(version)
+        else:
+            payload = {"name": version, "archived": is_archived, "released": is_released}
+
+        if self.cloud:
+            if "projectId" not in payload:
+                if project_id is None:
+                    raise ValueError("project_id is required when creating a Jira Cloud version")
+                try:
+                    payload["projectId"] = int(project_id)
+                except (TypeError, ValueError) as error:
+                    raise ValueError("project_id must be a numeric Jira Cloud project ID") from error
+        else:
+            if project_key is not None and "project" not in payload:
+                payload["project"] = project_key
+            if project_id is not None and "projectId" not in payload:
+                try:
+                    payload["projectId"] = int(project_id)
+                except (TypeError, ValueError):
+                    # Server accepts a project key in ``project``.  Older
+                    # callers often passed that same key as both arguments;
+                    # do not send it as the numeric projectId field.
+                    if project_key is None:
+                        raise ValueError("project_id must be numeric when project_key is not provided")
+
+        api_version = 3 if self.cloud else self.api_version
+        url = self.resource_url("version", api_version=api_version)
         return self.post(url, data=payload)
 
     def delete_version(self, version: str, moved_fixed: Optional[str] = None, move_affected: Optional[str] = None):
