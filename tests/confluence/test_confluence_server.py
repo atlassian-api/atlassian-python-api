@@ -353,6 +353,51 @@ class TestConfluenceServer:
         with pytest.raises(ApiValueError, match="space is required"):
             confluence_server.update_or_create(title="Top level", body="<p>Body</p>")
 
+    @patch.object(ConfluenceServer, "create_page")
+    @patch.object(ConfluenceServer, "page_exists")
+    @patch.object(ConfluenceServer, "get_descendant_page_id", return_value="")
+    def test_update_or_create_creates_when_same_title_is_under_another_parent(
+        self, mock_descendant_id, mock_page_exists, mock_create_page, confluence_server
+    ):
+        mock_create_page.return_value = {"id": "new", "_links": {"tinyui": "/x/new"}}
+
+        confluence_server.update_or_create("parent-a", "Report", "<p>Body</p>", space="TEAM")
+
+        mock_descendant_id.assert_called_once_with("TEAM", "parent-a", "Report")
+        mock_page_exists.assert_not_called()
+        mock_create_page.assert_called_once_with(
+            space="TEAM",
+            parent_id="parent-a",
+            title="Report",
+            body="<p>Body</p>",
+            representation="storage",
+            editor=None,
+            full_width=False,
+        )
+
+    @patch.object(ConfluenceServer, "update_page")
+    @patch.object(ConfluenceServer, "page_exists")
+    @patch.object(ConfluenceServer, "get_descendant_page_id", return_value="child-a")
+    def test_update_or_create_updates_only_the_matching_child(
+        self, mock_descendant_id, mock_page_exists, mock_update_page, confluence_server
+    ):
+        mock_update_page.return_value = {"id": "child-a", "_links": {"tinyui": "/x/child"}}
+
+        confluence_server.update_or_create("parent-a", "Report", "<p>Body</p>", space="TEAM")
+
+        mock_descendant_id.assert_called_once_with("TEAM", "parent-a", "Report")
+        mock_page_exists.assert_not_called()
+        mock_update_page.assert_called_once_with(
+            parent_id="parent-a",
+            page_id="child-a",
+            title="Report",
+            body="<p>Body</p>",
+            representation="storage",
+            minor_edit=False,
+            version_comment=None,
+            full_width=False,
+        )
+
     @patch.object(ConfluenceServer, "update_page")
     def test_update_existing_page_preserves_confluence_image_storage_markup(self, mock_update_page, confluence_server):
         body = '<table><tr><td><ac:image><ri:attachment ri:filename="chart.png" /></ac:image></td></tr></table>'

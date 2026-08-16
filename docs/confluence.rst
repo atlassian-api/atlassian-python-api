@@ -259,7 +259,8 @@ Page actions
     # Get every contributor for a collaboratively edited page revision.
     contributors = confluence.get_page_version_contributors(page_id, version_number)
 
-    # Update page or create page if it is not exists. parent_id is optional;
+    # Update the page only when the title exists under parent_id; a same-titled
+    # page elsewhere in the space is left untouched. parent_id is optional;
     # use a space key to create or update a top-level page.
     confluence.update_or_create(parent_id, title, body, representation='storage', full_width=False)
     confluence.update_or_create(title=title, body=body, space='SPACEKEY')

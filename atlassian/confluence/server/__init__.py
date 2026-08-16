@@ -1887,8 +1887,15 @@ class Server(ConfluenceServerBase):
                 raise ApiValueError("space is required when parent_id is omitted")
             space = self.get_page_space(parent_id)
 
-        if self.page_exists(space, title):
-            page_id = self.get_page_id(space, title)
+        # A title is only unique among siblings.  Searching the whole space
+        # when a parent is supplied could update and move a same-titled page
+        # from another branch (#956).
+        if parent_id is not None:
+            page_id = self.get_descendant_page_id(space, parent_id, title) or None
+        else:
+            page_id = self.get_page_id(space, title) if self.page_exists(space, title) else None
+
+        if page_id is not None:
             parent_id = parent_id if parent_id is not None else self.get_parent_content_id(page_id)
             result = self.update_page(
                 parent_id=parent_id,
