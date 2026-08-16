@@ -26,6 +26,7 @@ Add a connection:
     from atlassian import ServiceDesk
     from atlassian import Xray
     from atlassian import AssetsCloud
+    from atlassian import Compass
 
     jira = Jira(
         url='http://localhost:8080',
