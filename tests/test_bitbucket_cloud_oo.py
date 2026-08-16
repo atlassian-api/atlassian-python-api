@@ -90,6 +90,19 @@ class TestBasic:
         assert list(workspaces.each()) == [workspace]
         assert calls == [(f"{workspaces.url.rsplit('/', 1)[0]}/user/workspaces", {}, True)]
 
+    def test_each_workspace_supports_administrator_filter(self, monkeypatch):
+        workspaces = CLOUD.workspaces
+        calls = []
+
+        def get_paged(url, params=None, absolute=False):
+            calls.append((url, params, absolute))
+            return iter([])
+
+        monkeypatch.setattr(workspaces, "_get_paged", get_paged)
+
+        assert list(workspaces.each(administrator=True)) == []
+        assert calls == [(f"{workspaces.url.rsplit('/', 1)[0]}/user/workspaces", {"administrator": True}, True)]
+
     def test_exists_workspace(self):
         assert CLOUD.workspaces.exists("TestWorkspace1"), "Exists workspace"
 

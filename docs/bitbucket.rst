@@ -496,34 +496,67 @@ Conditions-Reviewers management
 Bitbucket Cloud
 ---------------
 
+Bitbucket Cloud and Bitbucket Server/Data Center have different REST API
+models. Use :class:`atlassian.bitbucket.cloud.Cloud` for Cloud: it starts from
+``workspaces`` and then navigates to repositories. Use ``Bitbucket`` or
+:class:`atlassian.bitbucket.server.Server` for Server/Data Center project
+endpoints. Do not pass a Cloud URL to the legacy Server/Data Center methods.
+
+Use an Atlassian account email and a scoped Bitbucket API token with the
+required repository and workspace permissions. The client uses HTTP Basic
+authentication automatically. App passwords were retired by Bitbucket Cloud in
+July 2026, so new integrations must use API tokens.
+
 .. code-block:: python
 
-    # Get a list of workplaces:
+    import os
+
+    from atlassian.bitbucket import Cloud
+
+    cloud = Cloud(
+        username=os.environ["ATLASSIAN_EMAIL"],
+        password=os.environ["BITBUCKET_API_TOKEN"],
+    )
+
+    # /2.0/user/workspaces is the supported listing route. ``each()`` resolves
+    # each entry and yields full workspace objects.
+    for workspace in cloud.workspaces.each():
+        print(workspace.slug)
+
+    # Restrict the list to workspaces administered by the authenticated user.
+    admin_workspaces = list(cloud.workspaces.each(administrator=True))
+
+    repository = cloud.workspaces.get("workspace-slug").repositories.get("repository-slug")
+    print(repository.name)
+
+.. code-block:: python
+
+    # Get a list of workspaces.
     cloud.workspaces.each()
 
-    # Get a single workplace by workplace slug
-    workplace = cloud.workspaces.get(workspace_slug)
+    # Get a single workspace by workspace slug.
+    workspace = cloud.workspaces.get(workspace_slug)
 
     # Get a list of permissions in a workspace (this may not work depending on the size of your workspace)
-    workplace.permissions.each():
+    workspace.permissions.each()
 
     # Get a list of repository permissions in a workspace (this may not work depending on the size of your workspace)
-    workplace.permissions.repositories():
+    workspace.permissions.repositories()
 
     # Get a single repository permissions in a workspace
-    workplace.permissions.repositories(repo_slug):
+    workspace.permissions.repositories(repo_slug)
 
     # Get a list of projects in a workspace
-    workplace.projects.each():
+    workspace.projects.each()
 
-    # Get a single project from a workplace by project key
-    project = workplace.projects.get(project_key)
+    # Get a single project from a workspace by project key
+    project = workspace.projects.get(project_key)
 
     # Get a list of repos from a project
-    project.repositories.each():
+    project.repositories.each()
 
     # Get a repository
-    repository = workplace.repositories.get(repository_slug)
+    repository = workspace.repositories.get(repository_slug)
 
     # Read raw bytes from a file at a branch, tag, or commit SHA
     readme = repository.get_source_file("main", "README.md")
@@ -532,13 +565,13 @@ Bitbucket Cloud
     source_entries = repository.get_source_directory("main", "src")["values"]
 
     # Get a list of deployment environments from a repository
-    repository.deployment_environments.each():
+    repository.deployment_environments.each()
 
     # Get a single deployment environment from a repository by deployment environment key
     deployment_environment = repository.deployment_environments.get(deployment_environment_key)
 
     # Get a list of deployment environment variables from a deployment environment
-    deployment_environment_variables = deployment_environment.deployment_environment_variables.each():
+    deployment_environment_variables = deployment_environment.deployment_environment_variables.each()
 
     # Create a new deployment environment variable with a name of 'KEY', value of 'VALUE' and is not secured.
     new_deployment_environment_variable = deployment_environment.deployment_environment_variables.create("KEY", "VALUE", False)
@@ -553,13 +586,13 @@ Bitbucket Cloud
     updated_deployment_environment_variable.delete()
 
     # Get a list of group permissions from a repository
-    repository.group_permissions.each():
+    repository.group_permissions.each()
 
     # Get a single group permission from a repository by group slug
     repository.group_permissions.get(group_slug)
 
     # Get a list of repository variables from a repository
-    repository.repository_variables.each():
+    repository.repository_variables.each()
 
     # Get a single repository variable from a repository by repository variable key
     repository_variable = repository.repository_variables.get(repository_variable_key)
@@ -577,7 +610,7 @@ Bitbucket Cloud
     repository_variable.delete()
 
     # Get a list of hooks from a repository
-    repository.hooks.each():
+    repository.hooks.each()
 
     # Create a hook for a repository
     hook  = repo.hooks.create(url="endpoint-url", description="description", active=True, events=["a-repository-event"])
@@ -592,11 +625,11 @@ Bitbucket Cloud
     hook.delete()
 
     # Get a list of workspace members
-    workplace.members.each()
+    workspace.members.each()
 
     # Get a specific workspace member
-    workplace.members.get("a-user-account-id")
-    workplace.members.get("{a-user-uuid}")
+    workspace.members.get("a-user-account-id")
+    workspace.members.get("{a-user-uuid}")
 
 Pipelines management
 --------------------

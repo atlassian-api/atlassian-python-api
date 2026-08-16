@@ -16,7 +16,7 @@ class Workspaces(BitbucketCloudBase):
     def __get_object(self, data):
         return Workspace(data, **self._new_session_args)
 
-    def each(self, role=None, q=None, sort=None):
+    def each(self, role=None, q=None, sort=None, administrator=None):
         """
         Get all workspaces matching the criteria.
 
@@ -33,6 +33,9 @@ class Workspaces(BitbucketCloudBase):
         :param sort: string (default is None):
                         Name of a response property to sort results.
                         See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
+        :param administrator: bool (default is None):
+                              Filter workspaces by whether the authenticated user
+                              is a workspace administrator.
 
         :return: A generator for the Workspace objects
 
@@ -48,6 +51,8 @@ class Workspaces(BitbucketCloudBase):
         # would produce an invalid request.
         if sort is not None:
             params["sort"] = sort
+        if administrator is not None:
+            params["administrator"] = administrator
         user_workspaces_url = f"{self.url.rsplit('/', 1)[0]}/user/workspaces"
         for workspace_access in self._get_paged(user_workspaces_url, params=params, absolute=True):
             workspace_data = workspace_access.get("workspace", workspace_access)
