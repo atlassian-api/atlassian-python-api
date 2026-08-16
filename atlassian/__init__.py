@@ -12,7 +12,7 @@ from .crowd import Crowd
 from .insight import Insight
 from .insight import Insight as Assets  # used for Insight on-premise
 from .assets import AssetsCloud  # used for Insight Cloud
-from .jira import Jira
+from .jira import Jira, JiraCloud, JiraServer, JiraServiceManagement, JiraSoftware, create_jira_cloud
 from .marketplace import MarketPlace
 from .portfolio import Portfolio
 from .service_desk import ServiceDesk
@@ -36,6 +36,11 @@ __all__ = [
     "ConfluenceV2",
     "create_confluence",
     "Jira",
+    "JiraServer",
+    "JiraCloud",
+    "JiraSoftware",
+    "JiraServiceManagement",
+    "create_jira_cloud",
     "Bitbucket",
     "CloudAdminOrgs",
     "CloudAdminUsers",

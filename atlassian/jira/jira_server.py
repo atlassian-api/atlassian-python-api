@@ -1,4 +1,5 @@
 # coding=utf-8
+# Jira Server/Data Center compatibility implementation.
 import logging
 import os
 import re
@@ -14,9 +15,9 @@ if sys.version_info >= (3, 8):
     from typing import Literal  # Python 3.8+
 else:
     from typing_extensions import Literal  # Python <=3.7
-from .errors import ApiNotFoundError, ApiPermissionError
-from .rest_client import AtlassianRestAPI
-from .typehints import T_id, T_resp_json, copy_type
+from ..errors import ApiNotFoundError, ApiPermissionError
+from ..rest_client import AtlassianRestAPI
+from ..typehints import T_id, T_resp_json, copy_type
 
 log = logging.getLogger(__name__)
 
