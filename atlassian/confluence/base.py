@@ -224,16 +224,38 @@ class ConfluenceBase(AtlassianRestAPI):
         if 400 <= response.status_code < 600:
             try:
                 j = response.json()
-                if "message" in j:
-                    error_msg = j["message"]
-                    if "detail" in j:
-                        error_msg = f"{error_msg}\n{str(j['detail'])}"
+            except (TypeError, ValueError):
+                j = None
+
+            messages = []
+            if isinstance(j, dict):
+                for key in ("message", "detail", "reason"):
+                    value = j.get(key)
+                    if value:
+                        messages.append(str(value))
+                errors = j.get("errors")
+                if isinstance(errors, dict):
+                    messages.extend(str(value) for value in errors.values() if value)
+                elif isinstance(errors, list):
+                    messages.extend(
+                        str(item.get("message", item)) if isinstance(item, dict) else str(item)
+                        for item in errors
+                        if item
+                    )
+                error_messages = j.get("errorMessages")
+                if isinstance(error_messages, list):
+                    messages.extend(str(value) for value in error_messages if value)
+
+            if not messages:
+                # Some Confluence proxy and HTML-validation failures are not
+                # JSON. Include only a bounded, whitespace-normalized server
+                # response; never include the submitted page body.
+                response_text = " ".join((getattr(response, "text", "") or "").split())
+                if response_text:
+                    messages.append(response_text[:1000])
                 else:
-                    error_msg = f"HTTP {response.status_code}: {response.reason}"
-            except Exception as e:
-                log.error(e)
-                response.raise_for_status()
-            else:
-                raise HTTPError(error_msg, response=response)
+                    messages.append(f"HTTP {response.status_code}: {response.reason}")
+
+            raise HTTPError("\n".join(dict.fromkeys(messages)), response=response)
         else:
             response.raise_for_status()

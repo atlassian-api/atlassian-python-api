@@ -42,6 +42,31 @@ class TestConfluenceServer:
         assert confluence.api_version == "2.0"
         assert confluence.api_root == "custom/api/root"
 
+    def test_bad_request_includes_confluence_validation_details(self, confluence_server):
+        response = Response()
+        response.status_code = 400
+        response.reason = "Bad Request"
+        response._content = (
+            b'{"message":"Invalid storage format",'
+            b'"detail":"The ac:link element is not closed",'
+            b'"errors":{"body":"Invalid XHTML at line 17"}}'
+        )
+
+        with pytest.raises(HTTPError) as error:
+            confluence_server.raise_for_status(response)
+        assert "Invalid storage format" in str(error.value)
+        assert "ac:link element is not closed" in str(error.value)
+        assert "Invalid XHTML at line 17" in str(error.value)
+
+    def test_bad_request_includes_a_bounded_non_json_response(self, confluence_server):
+        response = Response()
+        response.status_code = 400
+        response.reason = "Bad Request"
+        response._content = b"<html><body>Malformed XHTML near the table macro</body></html>"
+
+        with pytest.raises(HTTPError, match="Malformed XHTML near the table macro"):
+            confluence_server.raise_for_status(response)
+
     @patch.object(ConfluenceServer, "get_page_by_id")
     def test_identical_page_content_is_logged_as_info_not_warning(self, mock_get_page, confluence_server, caplog):
         mock_get_page.side_effect = [

@@ -278,6 +278,9 @@ Page actions
     # A list or dictionary is rendered as formatted JSON in a storage code block.
     confluence.append_page(page_id, title, {"users": ["Ada", "Linus"]})
 
+    # Invalid storage XHTML raises HTTPError with Confluence's ``message``,
+    # ``detail``, and field-level validation errors when the server supplies them.
+
     # Set the page (content) property e.g. add hash parameters
     confluence.set_page_property(page_id, data)
 
