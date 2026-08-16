@@ -148,6 +148,16 @@ class TestConfluenceServer:
             ("second", b"%PDF-second"),
         ]
 
+    @patch.object(ConfluenceServer, "update_space")
+    def test_set_space_homepage_uses_space_update_payload(self, mock_update_space, confluence_server):
+        mock_update_space.return_value = {"key": "TEAM", "homepage": {"id": "123"}}
+
+        assert confluence_server.set_space_homepage("TEAM", "123") == {
+            "key": "TEAM",
+            "homepage": {"id": "123"},
+        }
+        mock_update_space.assert_called_once_with("TEAM", {"homepage": {"id": "123"}})
+
     @patch.object(ConfluenceServer, "_get_paged")
     def test_get_all_page_versions_follows_paginated_history(self, mock_get_paged, confluence_server):
         mock_get_paged.return_value = iter([{"number": 2}, {"number": 1}])

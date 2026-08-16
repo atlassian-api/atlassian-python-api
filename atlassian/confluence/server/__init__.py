@@ -2320,8 +2320,16 @@ class Server(ConfluenceServerBase):
         return self.post("space", data=data, **kwargs)
 
     def update_space(self, space_key, data, **kwargs):
-        """Update existing space."""
+        """Update an existing Server/Data Center space with a REST payload."""
         return self.put(f"space/{space_key}", data=data, **kwargs)
+
+    def set_space_homepage(self, space_key, homepage_id):
+        """Set a Server/Data Center space's homepage to an existing page.
+
+        ``homepage_id`` must identify a page in the target space. The caller
+        needs permission to administer the space and view the chosen page.
+        """
+        return self.update_space(space_key, {"homepage": {"id": homepage_id}})
 
     def delete_space(self, space_key, **kwargs):
         """Delete a space by key.

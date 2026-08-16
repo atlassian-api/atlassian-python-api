@@ -94,6 +94,19 @@ repeated V2 query parameters. ``ConfluenceCloud.get_spaces()`` returns one V2
 response page and ``get_all_spaces()`` lazily follows its cursor pages;
 ``ConfluenceV2.get_spaces()`` returns the fully paginated list.
 
+Set a space homepage (Server/Data Center)
+-----------------------------------------
+
+Set an existing page as a space homepage with ``set_space_homepage``. The
+calling user needs space-administration permission and access to the page.
+
+.. code-block:: python
+
+    confluence.set_space_homepage("TEAM", "123456789")
+
+For other space metadata, use ``update_space(space_key, data)`` with the
+corresponding Confluence REST space payload.
+
 Common Operations
 -----------------
 
