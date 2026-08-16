@@ -838,6 +838,16 @@ class Bitbucket(BitbucketBase):
         return self._get_paged(url, params=params)
 
     def _url_repos(self, project_key, api_root=None, api_version=None):
+        """Return the repository collection URL for a project or personal owner.
+
+        Bitbucket Server/Data Center addresses personal repositories through a
+        user-centric route. Pass the owner's user slug with a leading ``~``
+        (for example, ``~alice``) wherever a ``project_key`` is accepted by a
+        repository method. Project repositories continue to use the existing
+        ``projects/{projectKey}/repos`` route.
+        """
+        if not self.cloud and str(project_key).startswith("~"):
+            return self.resource_url(f"users/{project_key}/repos", api_root, api_version)
         return f"{self._url_project(project_key, api_root, api_version)}/repos"
 
     def repo_list(self, project_key, start=0, limit=25):

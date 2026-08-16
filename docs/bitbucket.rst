@@ -40,6 +40,32 @@ already a Python dictionary.
 objects from individual requests. Do not enable it for the high-level paginated
 methods above; use their yielded dictionaries instead.
 
+Personal repositories (Server/Data Center)
+------------------------------------------
+
+Repository methods accept a personal-project user slug in place of a project
+key. Prefix the Bitbucket username with ``~`` and the legacy client uses the
+user-centric ``/users/{userSlug}/repos/{repositorySlug}`` endpoint. This works
+for pull-request settings and every other repository method that accepts
+``project_key`` and ``repository_slug``.
+
+.. code-block:: python
+
+    owner = "~alice"
+    settings = bitbucket.get_pull_request_settings(owner, "personal-repository")
+    bitbucket.set_pull_request_settings(owner, "personal-repository", settings)
+
+For the object-oriented Server/Data Center client, use
+``personal_repositories()``. It accepts either ``"alice"`` or ``"~alice"``.
+
+.. code-block:: python
+
+    from atlassian.bitbucket.server import Server
+
+    bitbucket = Server("https://bitbucket.example.com", username="admin", password="token")
+    repository = bitbucket.personal_repositories("alice").get("personal-repository")
+    print(repository.name)
+
 Hook scripts (Data Center 8+)
 -----------------------------
 
