@@ -10,9 +10,11 @@ coverage
 codecov
 # used for example confluence attach file
 python-magic
+python-dotenv
 pylint
 mypy>=0.812
 doc8
+twine>=6.0.0
 types-Deprecated
 types-requests
 types-beautifulsoup4
@@ -22,4 +24,3 @@ types-oauthlib
 # On October 4, 2022 importlib-metadata released importlib-metadata 5.0.0 and in version 5.0.0
 # They have Deprecated EntryPoints and that's why you are facing this error.
 importlib-metadata<=4.13.0
-

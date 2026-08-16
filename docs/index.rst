@@ -160,8 +160,12 @@ Or reuse cookie file:
         url='http://localhost:8080',
         cookies=cookie_dict)
 
-Or using Personal Access Token
-Note: this method is valid for Jira and Confluence (<7.9) Data center / server editions only! For Jira cloud, see below.
+Or using a Personal Access Token
+---------------------------------
+
+Use ``token=`` only for Jira or Confluence Server/Data Center personal access
+tokens. It creates a Bearer Authorization header; it is not the authentication
+method for Atlassian Cloud API tokens.
 
 First, create your access token (check https://confluence.atlassian.com/enterprise/using-personal-access-tokens-1026032365.html for details)
 Then, just provide the token to the constructor:
@@ -180,6 +184,12 @@ Then, just provide the token to the constructor:
 
 To authenticate to the Atlassian Cloud APIs Jira, Confluence, ServiceDesk:
 
+Use the account email as ``username`` and the Cloud API token as ``password``.
+Do not use ``token=``: that parameter emits a Bearer token intended for
+Server/Data Center PATs and Cloud may respond with ``403 Failed to parse
+Connect Session Auth Token``. The client generates the required Basic header;
+do not encode ``email:api_token`` manually.
+
 .. code-block:: python
 
     # Obtain an API token from: https://id.atlassian.com/manage-profile/security/api-tokens
@@ -197,11 +207,27 @@ To authenticate to the Atlassian Cloud APIs Jira, Confluence, ServiceDesk:
         password=atlassian_api_token,
         cloud=True)
 
+    # New Cloud V2 endpoints, including page retrieval, are exposed through
+    # the explicit versioned client. Do not base64-encode credentials yourself.
+    from atlassian import ConfluenceV2
+
+    confluence_v2 = ConfluenceV2(
+        'https://your-domain.atlassian.net',
+        username=atlassian_username,
+        password=atlassian_api_token,
+    )
+    page = confluence_v2.get_page_by_id('123456789', body_format='storage')
+
     service_desk = ServiceDesk(
         url='https://your-domain.atlassian.net',
         username=atlassian_username,
         password=atlassian_api_token,
         cloud=True)
+
+``timeout`` is expressed in seconds and can be increased for slow corporate
+networks or VPNs, for example ``Jira(..., timeout=120)``. A connection timeout
+means the host was unreachable in time; it is distinct from an HTTP 401/403
+authentication or authorization response.
 
 And to Bitbucket Cloud:
 
@@ -251,6 +277,7 @@ Add a connection:
    service_desk
    xray
    cloud_admin
+   rest_client
 
 .. |Build Status| image:: https://github.com/atlassian-api/atlassian-python-api/workflows/Test/badge.svg?branch=master
    :target: https://pypi.python.org/pypi/atlassian-python-api

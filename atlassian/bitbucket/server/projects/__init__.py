@@ -1,9 +1,10 @@
 # coding=utf-8
 
 from requests import HTTPError
-from .repos import Repositories
+
 from ..base import BitbucketServerBase
 from ..common.permissions import Groups, Users
+from .repos import Repositories
 
 
 class Projects(BitbucketServerBase):

@@ -1,9 +1,12 @@
 # coding=utf-8
 
 import copy
+import re
+from urllib.parse import urljoin, urlparse
 import logging
-
+from requests import HTTPError
 from ..rest_client import AtlassianRestAPI
+from ..errors import ApiValueError
 
 log = logging.getLogger(__name__)
 
@@ -12,6 +15,13 @@ class ConfluenceBase(AtlassianRestAPI):
     """
     Base class for Confluence API operations.
     """
+
+    @staticmethod
+    def _is_cloud_url(url):
+        """Compatibility proxy for the version-aware Confluence base class."""
+        from ..confluence_base import ConfluenceBase as VersionedConfluenceBase
+
+        return VersionedConfluenceBase._is_cloud_url(url)
 
     def __init__(self, url, *args, **kwargs):
         """
@@ -38,6 +48,42 @@ class ConfluenceBase(AtlassianRestAPI):
         :return: The absolute url
         """
         return self.url_joiner(self.url, url)
+
+    def get_page_id_by_url(self, page_url):
+        """Resolve a Confluence page URL to its page ID.
+
+        ``viewpage.action?pageId=...`` URLs are resolved without a request.
+        Display and short ``/x/...`` URLs are requested through the configured
+        authenticated session, which follows the Confluence redirect and reads
+        the page ID from the resulting URL or HTML metadata.
+        """
+        parsed_url = urlparse(page_url)
+        page_id_match = re.search(r"(?:[?&]pageId=)([^&#]+)", page_url, re.IGNORECASE)
+        if page_id_match:
+            return page_id_match.group(1)
+
+        client_host = urlparse(self.url).hostname
+        if not parsed_url.scheme or not parsed_url.hostname:
+            raise ApiValueError("page_url must be an absolute Confluence page URL")
+        if client_host and parsed_url.hostname != client_host:
+            raise ApiValueError("page_url must belong to the configured Confluence instance")
+
+        response = self.get(page_url, absolute=True, advanced_mode=True)
+        resolved_url = response.url
+        page_id_match = re.search(r"(?:[?&]pageId=)([^&#]+)", resolved_url, re.IGNORECASE)
+        if page_id_match:
+            return page_id_match.group(1)
+
+        content = response.content.decode("utf-8", errors="ignore")
+        page_id_match = re.search(
+            r'<meta[^>]+name=["\']ajs-page-id["\'][^>]+content=["\']([^"\']+)["\']',
+            content,
+            re.IGNORECASE,
+        )
+        if page_id_match:
+            return page_id_match.group(1)
+
+        raise ApiValueError("Could not determine a page ID from page_url")
 
     @property
     def _new_session_args(self):
@@ -134,26 +180,82 @@ class ConfluenceBase(AtlassianRestAPI):
 
             yield from response.get("results", [])
 
-            if self.cloud:
-                url = response.get("_links", {}).get("next", {}).get("href")
-                if url is None:
-                    break
-                # From now on we have absolute URLs with parameters
-                absolute = True
-                # Params are now provided by the url
-                params = {}
-                # Trailing should not be added as it is already part of the url
-                trailing = False
+            next_link = response.get("_links", {}).get("next")
+            if next_link is None:
+                break
+            if isinstance(next_link, str):
+                url = next_link
             else:
-                if response.get("_links", {}).get("next") is None:
-                    break
-                # For server, we need to extract the next page URL from the _links.next.href
-                next_url = response.get("_links", {}).get("next", {}).get("href")
-                if next_url is None:
-                    break
-                url = next_url
-                absolute = True
-                params = {}
-                trailing = False
+                url = next_link.get("href")
+            if url is None:
+                break
+
+            if not urlparse(url).scheme:
+                # Confluence returns both ``/rest/api/...`` and
+                # ``rest/api/...`` forms for next links.  Neither is an
+                # absolute URL, despite the latter lacking a leading slash.
+                parsed = urlparse(self.url)
+                site_url = f"{parsed.scheme}://{parsed.netloc}"
+                if url.startswith("/") or url.startswith(("rest/", "wiki/")):
+                    url = f"{site_url}/{url.lstrip('/')}"
+                else:
+                    url = urljoin(f"{self.url.rstrip('/')}/", url)
+
+            # From now on we have absolute URLs with parameters
+            absolute = True
+            # Params are now provided by the url
+            params = {}
+            # Trailing should not be added as it is already part of the url
+            trailing = False
 
         return
+
+    def raise_for_status(self, response):
+        """
+        Checks the response for errors and throws an exception if return code >= 400
+
+        Implementation for Confluence Server according to
+            https://developer.atlassian.com/server/confluence/rest/v1002/intro/#about
+        Implementation for Confluence Cloud according to
+            https://developer.atlassian.com/cloud/confluence/rest/v2/intro/#about
+        :param response:
+        :return:
+        """
+        if 400 <= response.status_code < 600:
+            try:
+                j = response.json()
+            except (TypeError, ValueError):
+                j = None
+
+            messages = []
+            if isinstance(j, dict):
+                for key in ("message", "detail", "reason"):
+                    value = j.get(key)
+                    if value:
+                        messages.append(str(value))
+                errors = j.get("errors")
+                if isinstance(errors, dict):
+                    messages.extend(str(value) for value in errors.values() if value)
+                elif isinstance(errors, list):
+                    messages.extend(
+                        str(item.get("message", item)) if isinstance(item, dict) else str(item)
+                        for item in errors
+                        if item
+                    )
+                error_messages = j.get("errorMessages")
+                if isinstance(error_messages, list):
+                    messages.extend(str(value) for value in error_messages if value)
+
+            if not messages:
+                # Some Confluence proxy and HTML-validation failures are not
+                # JSON. Include only a bounded, whitespace-normalized server
+                # response; never include the submitted page body.
+                response_text = " ".join((getattr(response, "text", "") or "").split())
+                if response_text:
+                    messages.append(response_text[:1000])
+                else:
+                    messages.append(f"HTTP {response.status_code}: {response.reason}")
+
+            raise HTTPError("\n".join(dict.fromkeys(messages)), response=response)
+        else:
+            response.raise_for_status()

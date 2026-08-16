@@ -42,7 +42,9 @@ class TestConfluenceAttach(unittest.TestCase):
         space = "SAN"
         title = "atlassian-python-rest-api-wrapper"
 
-        # TODO: check if page are exists
+        # check if page exists, create if not
+        if not confluence.page_exists(space, title):
+            confluence.create_page(space, title, "Initial content for testing")
 
         fd, filename = tempfile.mkstemp("w")
         os.write(fd, b"Hello World - Version 1")
@@ -87,7 +89,9 @@ class TestConfluenceAttach(unittest.TestCase):
         space = "SAN"
         title = "atlassian-python-rest-api-wrapper"
 
-        # TODO: check if page are exists
+        # check if page exists, create if not
+        if not confluence.page_exists(space, title):
+            confluence.create_page(space, title, "Initial content for testing")
 
         fd, filename = tempfile.mkstemp("w")
         os.write(fd, b"Hello World - Version 1")

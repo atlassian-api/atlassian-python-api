@@ -1,13 +1,22 @@
 # coding: utf8
-from atlassian.bitbucket.cloud.repositories import WorkspaceRepositories
-import pytest
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
+
+import pytest
 
 from atlassian import Bitbucket
 from atlassian.bitbucket import Cloud
 from atlassian.bitbucket.cloud.common.users import User
-from atlassian.bitbucket.cloud.repositories.pullRequests import Comment, Commit, Participant, PullRequest, Build, Task
+from atlassian.bitbucket.cloud.repositories import WorkspaceRepositories
+from atlassian.bitbucket.cloud.repositories.commits import Commit as RepositoryCommit
+from atlassian.bitbucket.cloud.repositories.pullRequests import (
+    Build,
+    Comment,
+    Commit,
+    Participant,
+    PullRequest,
+    Task,
+)
 
 BITBUCKET = None
 try:
@@ -27,6 +36,37 @@ def _datetimetostr(dtime):
 
 @pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3.4")
 class TestBasic:
+    @pytest.mark.parametrize(
+        "timestamp, expected",
+        [
+            ("2025-09-18T21:26:38+00:00", datetime(2025, 9, 18, 21, 26, 38, tzinfo=timezone.utc)),
+            (
+                "2025-09-18T21:26:38.123456+00:00",
+                datetime(2025, 9, 18, 21, 26, 38, 123456, tzinfo=timezone.utc),
+            ),
+            ("2025-09-18T21:26:38Z", datetime(2025, 9, 18, 21, 26, 38, tzinfo=timezone.utc)),
+        ],
+    )
+    def test_commit_date_parses_iso8601_timestamps(self, timestamp, expected):
+        commit = RepositoryCommit({"type": "commit", "date": timestamp}, **CLOUD._new_session_args)
+
+        assert commit.date == expected
+
+    def test_each_workspace_uses_user_workspaces_endpoint(self, monkeypatch):
+        workspaces = CLOUD.workspaces
+        workspace = object()
+        calls = []
+
+        def get_paged(url, params=None, absolute=False):
+            calls.append((url, params, absolute))
+            return iter([{"workspace": {"slug": "TestWorkspace1"}}])
+
+        monkeypatch.setattr(workspaces, "_get_paged", get_paged)
+        monkeypatch.setattr(workspaces, "get", lambda slug: workspace)
+
+        assert list(workspaces.each()) == [workspace]
+        assert calls == [(f"{workspaces.url.rsplit('/', 1)[0]}/user/workspaces", {}, True)]
+
     def test_exists_workspace(self):
         assert CLOUD.workspaces.exists("TestWorkspace1"), "Exists workspace"
 
@@ -38,6 +78,28 @@ class TestBasic:
 
     def test_exists_repository(self):
         assert CLOUD.workspaces.get("TestWorkspace1").repositories.exists("testrepository1"), "Exists repository"
+
+    def test_repository_commits_each_uses_paged_commit_data(self, monkeypatch):
+        repository = CLOUD.workspaces.get("TestWorkspace1").repositories.get("testrepository1")
+        commits = repository.commits
+        commit_data = {
+            "type": "commit",
+            "hash": "1fbd047cd99a",
+            "message": "src created online with Bitbucket",
+        }
+
+        monkeypatch.setattr(commits, "_get_paged", lambda *args, **kwargs: iter([commit_data]))
+
+        def fail_get(*args, **kwargs):
+            raise AssertionError("repository commits should not be fetched again by hash")
+
+        monkeypatch.setattr("atlassian.bitbucket.base.BitbucketBase.get", fail_get)
+
+        commit = list(commits.each())[0]
+
+        assert isinstance(commit, Commit)
+        assert commit.hash == "1fbd047cd99a"
+        assert commit.message == "src created online with Bitbucket"
 
     def test_not_exists_repository(self):
         assert not CLOUD.workspaces.get("TestWorkspace1").repositories.exists(

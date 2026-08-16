@@ -3,8 +3,125 @@
 Unit tests for atlassian.cloud_admin module
 """
 
-from .mockup import mockup_server
-from atlassian.cloud_admin import CloudAdminOrgs, CloudAdminUsers
+from tests.mockup import mockup_server
+from atlassian.cloud_admin import CloudAdmin, CloudAdminOrgs, CloudAdminUsers
+
+
+class TestCloudAdmin:
+    def test_v2_directory_and_user_endpoints(self, monkeypatch):
+        admin = CloudAdmin(admin_api_key="test_api_key")
+        calls = []
+
+        monkeypatch.setattr(admin, "get", lambda path, **kwargs: calls.append((path, kwargs)) or {})
+        monkeypatch.setattr(admin, "post", lambda path, **kwargs: calls.append((path, kwargs)) or {})
+
+        admin.get_directories("org", search_term="engineering", limit=20)
+        admin.search_directory_users("org", "directory", {"searchTerm": "ada", "limit": 50})
+
+        assert calls == [
+            ("admin/v2/orgs/org/directories", {"params": {"searchTerm": "engineering", "limit": 20}}),
+            ("admin/v2/orgs/org/directories/directory/users/search", {"data": {"searchTerm": "ada", "limit": 50}}),
+        ]
+
+    def test_user_management_uses_users_api_surface(self, monkeypatch):
+        admin = CloudAdmin(admin_api_key="test_api_key")
+        calls = []
+        monkeypatch.setattr(admin, "put", lambda path, **kwargs: calls.append((path, kwargs)) or {})
+        monkeypatch.setattr(admin, "post", lambda path, **kwargs: calls.append((path, kwargs)) or {})
+
+        admin.set_user_email("account", "ada@example.com")
+        admin.deactivate_user("account", message="Offboarding")
+
+        assert calls == [
+            (
+                "https://api.atlassian.com/users/account/manage/email",
+                {"data": {"email": "ada@example.com"}, "absolute": True},
+            ),
+            (
+                "https://api.atlassian.com/users/account/manage/lifecycle/disable",
+                {"data": {"message": "Offboarding"}, "absolute": True},
+            ),
+        ]
+
+    def test_scim_provisioning_uses_directory_api_surface(self, monkeypatch):
+        admin = CloudAdmin(admin_api_key="test_api_key")
+        calls = []
+        monkeypatch.setattr(admin, "get", lambda path, **kwargs: calls.append(("get", path, kwargs)) or {})
+        monkeypatch.setattr(admin, "patch", lambda path, **kwargs: calls.append(("patch", path, kwargs)) or {})
+
+        admin.get_scim_users("directory", filter='userName eq "ada@example.com"', count=10)
+        admin.patch_scim_group("directory", "group", [{"op": "add", "path": "members", "value": []}])
+
+        assert calls == [
+            (
+                "get",
+                "https://api.atlassian.com/scim/directory/directory/Users",
+                {"absolute": True, "params": {"filter": 'userName eq "ada@example.com"', "count": 10}},
+            ),
+            (
+                "patch",
+                "https://api.atlassian.com/scim/directory/directory/Groups/group",
+                {"data": {"Operations": [{"op": "add", "path": "members", "value": []}]}, "absolute": True},
+            ),
+        ]
+
+    def test_dlp_uses_classification_levels_api_surface(self, monkeypatch):
+        admin = CloudAdmin(admin_api_key="test_api_key")
+        calls = []
+        monkeypatch.setattr(admin, "post", lambda path, **kwargs: calls.append((path, kwargs)) or {})
+
+        admin.publish_classification_levels("org", ["internal", "restricted"])
+        admin.archive_classification_level("org", "restricted")
+
+        assert calls == [
+            (
+                "https://api.atlassian.com/admin/dlp/v1/orgs/org/classification-levels/publish",
+                {"data": {"levelIds": ["internal", "restricted"]}, "absolute": True},
+            ),
+            (
+                "https://api.atlassian.com/admin/dlp/v1/orgs/org/classification-levels/archive",
+                {"data": {"levelId": "restricted"}, "absolute": True},
+            ),
+        ]
+
+    def test_control_uses_versioned_policy_api_surface(self, monkeypatch):
+        admin = CloudAdmin(admin_api_key="test_api_key")
+        calls = []
+        monkeypatch.setattr(admin, "post", lambda path, **kwargs: calls.append((path, kwargs)) or {})
+
+        admin.create_control_policy("org", {"name": "MFA"})
+        admin.add_users_to_auth_policy("org", "policy", {"accountIds": ["account"]})
+
+        assert calls == [
+            (
+                "https://api.atlassian.com/admin/control/v2/orgs/org/policies",
+                {"data": {"name": "MFA"}, "absolute": True},
+            ),
+            (
+                "https://api.atlassian.com/admin/control/v1/orgs/org/auth-policy/policy/add-users",
+                {"data": {"accountIds": ["account"]}, "absolute": True},
+            ),
+        ]
+
+    def test_api_access_uses_dedicated_api_surface(self, monkeypatch):
+        admin = CloudAdmin(admin_api_key="test_api_key")
+        calls = []
+        monkeypatch.setattr(admin, "get", lambda path, **kwargs: calls.append((path, kwargs)) or {})
+        monkeypatch.setattr(admin, "patch", lambda path, **kwargs: calls.append((path, kwargs)) or {})
+
+        admin.get_org_api_tokens("org", limit=100)
+        admin.revoke_org_api_key("org", "key")
+
+        assert calls == [
+            (
+                "https://api.atlassian.com/admin/api-access/v1/orgs/org/api-tokens",
+                {"absolute": True, "params": {"limit": 100}},
+            ),
+            (
+                "https://api.atlassian.com/admin/api-access/v1/orgs/org/api-keys/revoke/key",
+                {"data": {}, "absolute": True},
+            ),
+        ]
 
 
 class TestCloudAdminOrgs:

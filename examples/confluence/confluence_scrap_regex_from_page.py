@@ -1,6 +1,5 @@
 from atlassian import Confluence
 
-
 confluence = Confluence(
     url="<instance_url>",
     username="<user_enamil>",

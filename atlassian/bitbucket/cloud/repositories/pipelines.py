@@ -1,9 +1,9 @@
 # coding=utf-8
 
-from .pullRequests import PullRequest
 from requests import HTTPError
 
 from ..base import BitbucketCloudBase
+from .pullRequests import PullRequest
 
 
 class Pipelines(BitbucketCloudBase):

@@ -2,6 +2,7 @@
 import logging
 import os
 import re
+import zipfile
 from typing import Any, BinaryIO, Dict, List, Optional, Union, cast
 from warnings import warn
 
@@ -15,7 +16,7 @@ else:
     from typing_extensions import Literal  # Python <=3.7
 from .errors import ApiNotFoundError, ApiPermissionError
 from .rest_client import AtlassianRestAPI
-from .typehints import T_id, T_resp_json
+from .typehints import T_id, T_resp_json, copy_type
 
 log = logging.getLogger(__name__)
 
@@ -26,6 +27,7 @@ class Jira(AtlassianRestAPI):
     Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2
     """
 
+    @copy_type(AtlassianRestAPI.__init__)
     def __init__(self, url: str, *args: Any, **kwargs: Any):
         if "api_version" not in kwargs:
             kwargs["api_version"] = "2"
@@ -239,7 +241,7 @@ class Jira(AtlassianRestAPI):
         :param issue: str : jira issue key
         :return: list of integers attachment IDs
         """
-        issue_id = self.get_issue(issue)["fields"]["attachment"]
+        issue_id = self.get_issue(issue, fields="attachment")["fields"]["attachment"]
         list_attachments_id = []
         for attachment in issue_id:
             list_attachments_id.append({"filename": attachment["filename"], "attachment_id": attachment["id"]})
@@ -255,14 +257,70 @@ class Jira(AtlassianRestAPI):
         url = f"{base_url}/{attachment_id}"
         return self.get(url)
 
-    def download_issue_attachments(self, issue: T_id, path: Optional[str] = None) -> Optional[str]:
+    def download_issue_attachments(
+        self,
+        issue: T_id,
+        path: Optional[str] = None,
+        overwrite: bool = False,
+        stream: bool = False,
+        block_size: Optional[int] = 16384,
+        timeout: Optional[int] = None,
+    ) -> Optional[str]:
         """
         Downloads all attachments from a Jira issue.
+        This method downloads zip file compressed from Jira server side, and may fail if total attachment size is too large.
+        Use `get_all_attachment_contents()` to download individual attachments and zip from client side.
         :param issue: The issue-key of the Jira issue
         :param path: Path to directory where attachments will be saved. If None, current working directory will be used.
+        :param overwrite: If True, always download and create new zip file.
+                          If False (default), download will be skipped when zip file already exists in path.
+        :param stream: If True, request stream mode will be used to download and write files.
+                       If False (default), whole attachment content will be downloaded into memory first, then will be written to disk afterwards.
+        :param block_size: Block size of each stream content chunks. This option is only applicable when stream=True is set.
+                           Default size of 16 KiB is used to balance speed and memory usage.
+                           Smaller value will decrease memory usage, but may also decrease download speed if too small.
+        :param timeout: Request timeout parameter in seconds. None (default) will never cause timeout.
         :return: A message indicating the result of the download operation.
         """
-        return self.download_attachments_from_issue(issue=issue, path=path, cloud=self.cloud)
+        try:
+            if path is None:
+                path = os.getcwd()
+            issue_id = self.issue(issue, fields="id")["id"]
+            attachment_name = f"{issue_id}_attachments.zip"
+            file_path = os.path.join(path, attachment_name)
+            if not overwrite and os.path.isfile(file_path):
+                return "File already exists"
+
+            if self.cloud:
+                url = self.url + f"/secure/issueAttachments/{issue_id}.zip"
+            else:
+                url = self.url + f"/secure/attachmentzip/{issue_id}.zip"
+            response = self._session.get(url, stream=stream, timeout=timeout)
+            response.raise_for_status()
+
+            # if Jira issue doesn't have any attachments _session.get
+            # request response will return 22 bytes of PKzip format
+            file_size = int(response.headers.get("Content-Length", 0))
+            if file_size == 22:
+                return "No attachments found on the Jira issue"
+
+            with open(file_path, "wb") as file:
+                if not stream:
+                    file.write(response.content)
+                else:
+                    for data in response.iter_content(block_size):
+                        file.write(data)
+
+            return "Attachments downloaded successfully"
+
+        except FileNotFoundError:
+            raise FileNotFoundError("Verify if directory path is correct and/or if directory exists")
+        except PermissionError:
+            raise PermissionError(
+                "Directory found, but there is a problem with saving file to this directory. Check directory permissions"
+            )
+        except Exception as e:
+            raise e
 
     @deprecated(version="3.41.20", reason="Use download_issue_attachments instead")
     def download_attachments_from_issue(
@@ -312,9 +370,72 @@ class Jira(AtlassianRestAPI):
         :param attachment_id: int
         :return: content as bytes
         """
-        base_url = self.resource_url("attachment")
-        url = f"{base_url}/content/{attachment_id}"
-        return self.get(url, not_json_response=True)
+        attachment_info = self.get_attachment(attachment_id)
+        # Type check for mypy. If attachment is not found, or unavailable, it would raise HTTPError anyways.
+        if attachment_info is None:
+            return b""
+        url = attachment_info["content"]
+        return self.get(
+            url,
+            not_json_response=True,
+            absolute=True,
+            headers={"Accept": "*/*"},
+        )
+
+    def get_all_attachment_contents(
+        self,
+        issue: T_id,
+        path: Optional[str] = None,
+        overwrite: bool = False,
+        compression: int = zipfile.ZIP_STORED,
+    ) -> Optional[str]:
+        """
+        Downloads all attachments from a Jira issue by downloading individual files and creating zip file.
+        This method is useful when total attachment size is too large for Jira server to compress as single file.
+        If total attachment size is small enough, using `download_issue_attachments()` may be more efficient.
+        :param issue: The issue-key of the Jira issue
+        :param path: Path to directory where attachments will be saved. If None, current working directory will be used.
+        :param overwrite: If True, always download and create new zip file.
+                          If False (default), download will be skipped when zip file already exists in path.
+        :param compression: Compression method for zipfile. Should be one of the constants listed in documentation page.
+                            https://docs.python.org/3/library/zipfile.html#zipfile.ZipFile
+        :return: File path of the zip file if file is existing or download is successful. None if attachment does not exist.
+        """
+        try:
+            if path is None:
+                path = os.getcwd()
+            issue_data = self.issue(issue, fields="id,attachment")
+            issue_id = issue_data["id"]
+            attachment_name = f"{issue_id}_attachments.zip"
+            file_path = os.path.join(path, attachment_name)
+            if not overwrite and os.path.isfile(file_path):
+                return file_path
+
+            attachments_metadata = issue_data["fields"]["attachment"]
+            if not attachments_metadata:
+                return None
+
+            with zipfile.ZipFile(file_path, "w", compression=compression) as file:
+                for meta in attachments_metadata:
+                    # stream download should not be used, as writestr expects full content with filename.
+                    content = self.get(
+                        meta["content"],
+                        not_json_response=True,
+                        absolute=True,
+                        headers={"Accept": "*/*"},
+                    )
+                    file.writestr(meta["filename"], content)
+
+            return file_path
+
+        except FileNotFoundError:
+            raise FileNotFoundError("Verify if directory path is correct and/or if directory exists")
+        except PermissionError:
+            raise PermissionError(
+                "Directory found, but there is a problem with saving file to this directory. Check directory permissions"
+            )
+        except Exception as e:
+            raise e
 
     def remove_attachment(self, attachment_id: T_id) -> T_resp_json:
         """
@@ -713,11 +834,66 @@ class Jira(AtlassianRestAPI):
         url = f"{base_url}/{option_id}"
         return self.get(url)
 
+    def get_custom_field_options(
+        self,
+        field_id: T_id,
+        project_id: T_id,
+        issue_type_id: Union[T_id, list[str], None] = None,
+        query: Optional[str] = None,
+        page: Optional[int] = None,
+        limit: Optional[int] = None,
+        sort: Optional[bool] = None,
+        use_all_contexts: Optional[bool] = None,
+    ) -> T_resp_json:
+        """
+        Get list of all options available for a custom field in a specified project.
+        Numeric field ID and numeric project ID must be used.
+
+        This is Experimental API available to Jira data Center.
+        At the time of testing, providing multiple project IDs results in 404 response.
+
+        Reference: https://developer.atlassian.com/server/jira/platform/rest/v11003/api-group-customfields/#api-api-2-customfields-customfieldid-options-get
+
+        :param field_id: str - The ID of the custom field.
+        :param project_id: str - The project ID in a context.
+        :param issue_type_id: str, Optional - A list of issue type IDs in a context.
+        :param query: str, Optional - A string used to filter options.
+        :param page: int, Optional - The page of options to return, starting from 1.
+        :param limit: int, Optional - The maximum number of results to return. If empty, return all results.
+        :param sort: bool, Optional - Flag to sort options by their names.
+        :param use_all_contexts: bool, Optional - Flag to fetch all options regardless of context, project IDs, or issue type IDs.
+        """
+        url = self.resource_url(
+            f"customFields/{field_id}/options",
+            api_version=2,
+        )
+        params: dict = {}
+        if project_id:
+            if isinstance(project_id, (list, tuple, set)):
+                project_id = ",".join(project_id)
+            params["projectIds"] = project_id
+        if issue_type_id:
+            if isinstance(issue_type_id, (list, tuple, set)):
+                issue_type_id = ",".join(issue_type_id)
+            params["issueTypeIds"] = issue_type_id
+        if query:
+            params["query"] = query
+        if page is not None:
+            params["page"] = page
+        if limit is not None:
+            params["maxResults"] = limit
+        if sort is not None:
+            params["sortByOptionName"] = sort
+        if use_all_contexts is not None:
+            params["useAllContexts"] = use_all_contexts
+        return self.get(url, params=params)
+
     def get_custom_fields(self, search: Optional[str] = None, start: int = 1, limit: int = 50) -> T_resp_json:
         """
         Get custom fields. Evaluated on 7.12
         Get fields paginated in cloud
-        :param search: str
+        :param search: str. For Jira Cloud this is sent as the API's ``query``
+            parameter; Jira Server/Data Center continues to use ``search``.
         :param start: long Default: 1
         :param limit: int Default: 50
         :return:
@@ -728,7 +904,7 @@ class Jira(AtlassianRestAPI):
             url = self.resource_url("customFields")
         params: dict = {}
         if search:
-            params["search"] = search
+            params["query" if self.cloud else "search"] = search
         if start:
             params["startAt"] = start
         if limit:
@@ -1341,6 +1517,40 @@ class Jira(AtlassianRestAPI):
             url = f"{base_url}/{issue_key}?expand=changelog"
             return self._get_response_content(url, fields=[("changelog", params)])
 
+    def get_changelogs_bulk(
+        self,
+        issue_ids_or_keys: List[str],
+        fields_by: Optional[str] = None,
+        next_page_token: Optional[str] = None,
+        max_results: Optional[int] = None,
+    ) -> T_resp_json:
+        """
+        Returns changelogs for multiple issues in bulk.
+        Only Jira Cloud platform.
+
+        Reference: https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-changelog-bulkfetch-post
+
+        :param issue_ids_or_keys: List of issue IDs or keys to fetch changelogs for. Required.
+        :param fields_by: OPTIONAL: Whether to filter changelog entries by field ID or field name.
+                          Valid values: "id", "name".
+        :param next_page_token: OPTIONAL: Token for the next page of results (pagination).
+        :param max_results: OPTIONAL: Maximum number of results to return.
+        :return: Paginated list of changelogs for the given issues.
+        """
+        if not self.cloud:
+            raise ValueError("``get_changelogs_bulk`` method is only available for Jira Cloud platform")
+        url = self.resource_url("changelog/bulkfetch", api_version=3)
+        data: dict = {"issueIdsOrKeys": issue_ids_or_keys}
+        if fields_by is not None:
+            if fields_by not in ("id", "name"):
+                raise ValueError("``fields_by`` must be either 'id' or 'name'")
+            data["fieldsByKeys"] = fields_by == "name"
+        if next_page_token is not None:
+            data["nextPageToken"] = next_page_token
+        if max_results is not None:
+            data["maxResults"] = int(max_results)
+        return self.post(url, data=data)
+
     def issue_add_json_worklog(self, key: str, worklog: Union[dict, str]):
         """
 
@@ -1821,6 +2031,28 @@ class Jira(AtlassianRestAPI):
         params: dict = {"notifyUsers": "true" if notify_users else "false"}
         return self.put(url, data=data, params=params)
 
+    def issue_pin_comment(self, issue_key: str, comment_id: T_id) -> T_resp_json:
+        """
+        Pin a comment on a Jira issue
+        :param issue_key: str
+        :param comment_id: int or str
+        :return:
+        """
+        base_url = self.resource_url("issue")
+        url = f"{base_url}/{issue_key}/comment/{comment_id}/pin"
+        return self.put(url, data=True)
+
+    def issue_unpin_comment(self, issue_key: str, comment_id: T_id) -> T_resp_json:
+        """
+        Unpin a comment on a Jira issue
+        :param issue_key: str
+        :param comment_id: int or str
+        :return:
+        """
+        base_url = self.resource_url("issue")
+        url = f"{base_url}/{issue_key}/comment/{comment_id}/pin"
+        return self.put(url, data=False)
+
     def scrap_regex_from_issue(self, issue: str, regex: str):
         """
         This function scrapes the output of the given regex matches from the issue's description and comments.
@@ -1833,7 +2065,7 @@ class Jira(AtlassianRestAPI):
         list: A list of matches.
         """
         regex_output = []
-        issue_output = self.get_issue(issue)
+        issue_output = self.get_issue(issue, fields="description,comment")
         description = issue_output["fields"]["description"]
         comments = issue_output["fields"]["comment"]["comments"]
 
@@ -1903,7 +2135,7 @@ class Jira(AtlassianRestAPI):
         # Check the recursion depth. In case of any bugs that would result in infinite recursion, this will prevent the function from crashing your app. Python default for REcursionError  is 1000
         if depth > 150:
             raise Exception("Recursion depth exceeded")
-        issue = self.get_issue(issue_key)
+        issue = self.get_issue(issue_key, fields="issuelinks,subtasks")
         issue_links = issue["fields"]["issuelinks"]
         subtasks = issue["fields"]["subtasks"]
         for issue_link in issue_links:
@@ -2056,7 +2288,7 @@ class Jira(AtlassianRestAPI):
 
     def get_issue_status_changelog(self, issue_id: T_id):
         # Get the issue details with changelog
-        response_get_issue = self.get_issue(issue_id, expand="changelog")
+        response_get_issue = self.get_issue(issue_id, fields="id", expand="changelog")
         status_change_history = []
         for history in response_get_issue["changelog"]["histories"]:
             for item in history["items"]:
@@ -3202,7 +3434,7 @@ class Jira(AtlassianRestAPI):
         response = self.jql(jql, fields="*none")
         if self.advanced_mode:
             return cast("Response", response)
-        return cast("dict", response)["total"]
+        return len(cast("dict", response)["issues"])
 
     def get_all_project_issues(
         self, project: str, fields: Union[str, List[str]] = "*all", start: int = 0, limit: Optional[int] = None
@@ -3910,6 +4142,60 @@ class Jira(AtlassianRestAPI):
         url = f"{base_url}/{priority_id}"
         return self.get(url)
 
+    def get_autocomplete_data(self) -> T_resp_json:
+        """
+        Returns full information about visible fields that can be autocompleted in JQL.
+
+        Available in Jira Data Center, Jira Cloud v2, Jira Cloud v3.
+
+        Reference: https://developer.atlassian.com/server/jira/platform/rest/v11003/api-group-jql/#api-api-2-jql-autocompletedata-get
+                   https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-jql/#api-rest-api-2-jql-autocompletedata-get
+        :return:
+        """
+        url = self.resource_url("jql/autocompletedata")
+        return self.get(url)
+
+    def get_autocomplete_suggestion(
+        self,
+        field_name: Optional[str] = None,
+        field_value: Optional[str] = None,
+        predicate_name: Optional[str] = None,
+        predicate_value: Optional[str] = None,
+    ) -> T_resp_json:
+        """
+        Returns auto complete suggestions for JQL search.
+
+        Suggestions can be obtained by providing:
+
+            `fieldName` to get a list of all values for the field.
+            `fieldName` and `fieldValue` to get a list of values containing the text in `fieldValue`.
+            `fieldName` and `predicateName` to get a list of all predicate values for the field.
+            `fieldName`, `predicateName`, and `predicateValue` to get a list of predicate values containing the text in `predicateValue`.
+
+        Although auto complete suggestion can be used to retrieve possible option for a field,
+        it may be more appropriate to use `get_custom_field_options()` method to get project-specific options for a field.
+
+        Reference: https://developer.atlassian.com/server/jira/platform/rest/v11003/api-group-jql/#api-api-2-jql-autocompletedata-suggestions-get
+                   https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-jql/#api-rest-api-2-jql-autocompletedata-suggestions-get
+
+        :param field_name: str, Optional - The field name for which the suggestions are generated.
+        :param field_value: str, Optional - The portion of the field value that has already been provided by the user.
+        :param predicate_name: str, Optional - The predicate for which the suggestions are generated. Suggestions are generated only for: "by", "from" and "to".
+        :param predicate_value: str, Optional - The portion of the predicate value that has already been provided by the user.
+        :return:
+        """
+        url = self.resource_url("jql/autocompletedata/suggestions")
+        params: dict = {}
+        if field_name:
+            params["fieldName"] = field_name
+        if field_value:
+            params["fieldValue"] = field_value
+        if predicate_name:
+            params["predicateName"] = predicate_name
+        if predicate_value:
+            params["predicateValue"] = predicate_value
+        return self.get(url, params=params)
+
     """
     Workflow
     Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/workflow
@@ -4444,7 +4730,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
             params["indexChangeHistory"] = change_history
         if not worklogs:
             params["indexWorklogs"] = worklogs
-        if not indexing_type:
+        if indexing_type:
             params["type"] = indexing_type
         url = self.resource_url("reindex")
         return self.post(url, params=params)
@@ -4472,7 +4758,8 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         :return:
         """
         url = self.resource_url("reindex")
-        return self.get(url)
+        response = self.request("GET", path=url, allow_redirects=False)
+        return response.json()
 
     def reindex_project(self, project_key: str) -> T_resp_json:
         return self.post(
@@ -4481,8 +4768,15 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
             headers=self.form_token_headers,
         )
 
-    def reindex_issue(self, list_of_: list) -> None:
-        pass
+    def reindex_issue(self, issue_ids: list) -> T_resp_json:
+        """
+        Reindex specific issues by their IDs.
+        :param issue_ids: list of issue IDs (numeric) to reindex
+        :return:
+        """
+        url = self.resource_url("reindex/issue")
+        params = {"issueId": ",".join(str(i) for i in issue_ids)}
+        return self.post(url, params=params)
 
     def index_checker(self, max_results: int = 100) -> T_resp_json:
         """

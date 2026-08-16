@@ -1,5 +1,6 @@
-from atlassian import Confluence
 import os
+
+from atlassian import Confluence
 
 confluence_datacenter = Confluence(url="confl_server_url", token="<api_token>")
 

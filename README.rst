@@ -67,7 +67,79 @@ Here's a short example of how to create a Confluence page:
 
     print(status)
 
-Please, note Confluence Cloud need to be used via token parameter.
+Authentication: Server/Data Center PAT vs Cloud API token
+_________________________________________________________
+
+Use ``token=`` for a Jira or Confluence **Server/Data Center personal access
+token**. It is sent as a Bearer token:
+
+.. code-block:: python
+
+    from atlassian import Confluence, Jira
+
+    confluence = Confluence("https://confluence.company.example", token="server-or-dc-pat")
+    jira = Jira("https://jira.company.example", token="server-or-dc-pat")
+
+Atlassian **Cloud API tokens** use HTTP Basic authentication: pass the account
+email as ``username`` and the API token as ``password``. Do not pass a Cloud
+API token to ``token=``. The latter creates a Bearer header and Cloud commonly
+responds with ``403 Failed to parse Connect Session Auth Token``. ``requests``
+encodes the required ``email:api_token`` Basic credentials automatically; do
+not base64-encode them yourself.
+
+.. code-block:: python
+
+    from atlassian import Confluence, Jira
+
+    confluence = Confluence(
+        "https://your-domain.atlassian.net",
+        username="you@example.com",
+        password="cloud-api-token",
+        cloud=True,
+        timeout=120,  # Optional; useful on slow/VPN connections.
+    )
+    spaces = confluence.get_all_spaces()
+
+    jira = Jira(
+        "https://your-domain.atlassian.net",
+        username="you@example.com",
+        password="cloud-api-token",
+        cloud=True,
+        timeout=120,
+    )
+    epic = jira.enhanced_jql('project = DEMO AND issuetype = Epic', limit=50)
+
+    # Confluence Cloud V2 page read. Use the site URL without a trailing /wiki;
+    # the client adds the required API context.
+    from atlassian import ConfluenceV2
+
+    confluence_v2 = ConfluenceV2(
+        "https://your-domain.atlassian.net",
+        username="you@example.com",
+        password="cloud-api-token",
+    )
+    page = confluence_v2.get_page_by_id("123456789", body_format="storage")
+    storage_xhtml = page["body"]["storage"]["value"]
+
+    # Alternative Confluence Cloud V2 page read. Use the site URL without a trailing /wiki;
+    # the client adds the required API context.
+    from atlassian import Confluence
+
+    confluence_v2 = Confluence(
+        "https://your-domain.atlassian.net",
+        username="you@example.com",
+        password="cloud-api-token",
+        api_version=2,  # Specify API version 2
+        cloud=True
+    )
+    page = confluence_v2.get_page_by_id("123456789", body_format="storage")
+    storage_xhtml = page["body"]["storage"]["value"]
+
+See the detailed `authentication documentation`_ for Cloud gateway/scoped-token
+notes and other authentication methods.
+
+.. _authentication documentation: https://atlassian-python-api.readthedocs.io/en/latest/index.html#other-authentication-methods
+
 And here's another example of how to get issues from Jira using JQL Query:
 
 .. code-block:: python
@@ -103,6 +175,41 @@ The traditional jql method is deprecated for Jira Cloud users, as Atlassian has 
     # Fetch issues using the new enhanced_jql method
     data = jira.enhanced_jql(JQL)
     print(data)
+
+Using Confluence v2 API
+_______________________
+
+The library now supports Confluence's v2 API for Cloud instances. The v2 API provides improved performance, new content types, and more consistent endpoint patterns.
+
+.. code-block:: python
+
+    from atlassian import ConfluenceV2
+
+    # ConfluenceV2 is an explicit Cloud V2 client; no cloud=True flag is needed.
+    confluence = ConfluenceV2(
+        url='https://your-instance.atlassian.net',
+        username='your-email@example.com',
+        password='your-api-token',
+    )
+
+    # Get pages from a space
+    pages = confluence.get_pages(space_key='DEMO', limit=10)
+
+    # Create a new page
+    new_page = confluence.create_page(
+        space_id='DEMO',
+        title='New Page with v2 API',
+        body='<p>This page was created using the v2 API</p>'
+    )
+
+    # Use v2-only features like whiteboards
+    whiteboard = confluence.create_whiteboard(
+        space_id='DEMO',
+        title='My Whiteboard',
+        content='{"version":1,"type":"doc","content":[]}'
+    )
+
+The library includes a compatibility layer to ease migration from v1 to v2 API. See the migration guide in the documentation for details.
 
 Also, you can use the Bitbucket module e.g. for getting project list
 
@@ -233,11 +340,12 @@ In addition to all the contributors we would like to thank these vendors:
 * Atlassian_ for developing such a powerful ecosystem.
 * JetBrains_ for providing us with free licenses of PyCharm_
 * Microsoft_ for providing us with free licenses of VSCode_
-* GitHub_ for hosting our repository and continuous integration
+* Cursor.com_ for AI assistance in development
+* John B Batzel (batzel@upenn.edu) for implementing the Confluence Cloud v2 API support
 
 .. _Atlassian: https://www.atlassian.com/
 .. _JetBrains: http://www.jetbrains.com
 .. _PyCharm: http://www.jetbrains.com/pycharm/
-.. _GitHub: https://github.com/
-.. _Microsoft: https://github.com/Microsoft/vscode/
-.. _VSCode: https://code.visualstudio.com/
+.. _Microsoft: https://www.microsoft.com
+.. _VSCode: https://code.visualstudio.com
+.. _Cursor.com: https://cursor.com

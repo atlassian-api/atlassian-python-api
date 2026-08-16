@@ -1,6 +1,99 @@
 BitBucket module
 ================
 
+Complete API reference
+----------------------
+
+The workflow sections below cover common operations. The source-backed
+references list every public method and current signature for the compatible,
+Cloud OO, and Server/Data Center clients.
+
+.. autoclass:: atlassian.bitbucket.Bitbucket
+   :members:
+   :undoc-members:
+
+.. autoclass:: atlassian.bitbucket.cloud.Cloud
+   :members:
+   :undoc-members:
+
+.. autoclass:: atlassian.bitbucket.server.Server
+   :members:
+   :undoc-members:
+
+Server/Data Center pagination
+-----------------------------
+
+Several Server/Data Center methods return Python generators, including
+``project_list()``, ``repo_list()``, ``repo_all_list()``, and
+``get_pull_requests()``. Iterate them to process every page lazily, or wrap
+them in ``list`` only when the entire result is small enough to hold in memory.
+Generators do not have a ``.json()`` method because each yielded value is
+already a Python dictionary.
+
+.. code-block:: python
+
+    for repository in bitbucket.repo_all_list("PROJ"):
+        for pull_request in bitbucket.get_pull_requests("PROJ", repository["slug"], state="OPEN"):
+            print(pull_request["title"])
+
+``advanced_mode=True`` is for callers that need raw ``requests.Response``
+objects from individual requests. Do not enable it for the high-level paginated
+methods above; use their yielded dictionaries instead.
+
+Hook scripts (Data Center 8+)
+-----------------------------
+
+Hook scripts are a Bitbucket Data Center feature, not Bitbucket Cloud. A system
+administrator first registers the global script, then a project or repository
+administrator configures the script for its target scope. Bitbucket Data Center
+8.18 and newer disable this feature by default; enable
+``feature.hook.scripts=true`` in ``bitbucket.properties`` and restart the
+cluster before use.
+
+.. code-block:: python
+
+    with open("hooks/audit-pushes.sh", "rb") as script_file:
+        hook_script = bitbucket.create_hook_script(
+            script_file.read(),
+            name="Audit pushes",
+            hook_type="POST",  # or "PRE"
+            description="Records every push",
+        )
+
+    bitbucket.configure_project_hook_script(
+        "PROJ", hook_script["id"], trigger_ids=["repo:refs_changed"]
+    )
+    bitbucket.configure_repo_hook_script(
+        "PROJ", "repository", hook_script["id"], trigger_ids=["repo:refs_changed"]
+    )
+
+``get_project_hook_scripts()`` and ``get_repo_hook_scripts()`` yield all
+configured scripts. ``delete_project_hook_script()`` and
+``delete_repo_hook_script()`` remove only a scope configuration; they do not
+delete the global registered script.
+
+Release report from two refs (Server/Data Center)
+-------------------------------------------------
+
+To report merged pull requests between two release tags or commit hashes, first
+iterate ``get_changelog()`` and then resolve the pull requests associated with
+each returned commit. A pull request can be associated with multiple commits,
+so retain the results by pull request ID to avoid duplicates.
+
+.. code-block:: python
+
+    merged_pull_requests = {}
+    for commit in bitbucket.get_changelog("PROJ", "repository", "refs/tags/v1.0", "refs/tags/v1.1"):
+        for pull_request in bitbucket.get_pull_requests_contain_commit("PROJ", "repository", commit["id"]):
+            if pull_request["state"] == "MERGED":
+                merged_pull_requests[pull_request["id"]] = pull_request
+
+    for pull_request in merged_pull_requests.values():
+        print(pull_request["title"])
+
+See ``examples/bitbucket/bitbucket_server_release_report.py`` for a complete
+environment-variable-based script.
+
 Manage projects
 ---------------
 
@@ -380,6 +473,12 @@ Bitbucket Cloud
     # Get a repository
     repository = workplace.repositories.get(repository_slug)
 
+    # Read raw bytes from a file at a branch, tag, or commit SHA
+    readme = repository.get_source_file("main", "README.md")
+
+    # List directory entries at a branch, tag, or commit SHA
+    source_entries = repository.get_source_directory("main", "src")["values"]
+
     # Get a list of deployment environments from a repository
     repository.deployment_environments.each():
 
@@ -459,8 +558,8 @@ Pipelines management
         # Get first ten Pipelines results for repository
         r.pipelines.each()
 
-        # Get twenty last Pipelines results for repository
-        r.pipelines.each(sort="-created_on", pagelen=20)
+        # Get Pipelines results for repository, newest first
+        r.pipelines.each(sort="-created_on")
 
         # Trigger default Pipeline on the latest revision of the master branch
         r.pipelines.trigger()
@@ -469,13 +568,13 @@ Pipelines management
         r.pipelines.trigger(branch="develop")
 
         # Trigger default Pipeline on a specific revision of the develop branch
-        r.pipelines.trigger(branch="develop", revision="<40-char hash>")
+        r.pipelines.trigger(branch="develop", commit="<40-char hash>")
 
         # Trigger specific Pipeline on a specific revision of the master branch
-        r.pipelines.trigger(revision="<40-char hash>", name="style-check")
+        r.pipelines.trigger(commit="<40-char hash>", pattern="style-check")
 
         # Trigger specific Pipeline of the master branch with specific variables
-        r.pipelines.trigger(name="style-check", variables=[{ "key": "var-name", "value": "var-value" }])
+        r.pipelines.trigger(pattern="style-check", variables=[{ "key": "var-name", "value": "var-value" }])
 
         # Get specific Pipeline by UUID
         pl = r.pipelines.get("{7d6c327d-6336-4721-bfeb-c24caf25045c}")

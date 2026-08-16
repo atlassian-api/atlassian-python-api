@@ -1,12 +1,12 @@
 # coding=utf-8
 
 from requests import HTTPError
-from ..base import BitbucketCloudBase
 
+from ..base import BitbucketCloudBase
+from ..repositories import WorkspaceRepositories
 from .members import WorkspaceMembers
 from .permissions import Permissions
 from .projects import Projects
-from ..repositories import WorkspaceRepositories
 
 
 class Workspaces(BitbucketCloudBase):
@@ -36,17 +36,25 @@ class Workspaces(BitbucketCloudBase):
 
         :return: A generator for the Workspace objects
 
-        API docs: https://developer.atlassian.com/bitbucket/api/2/reference/resource/workspaces#get.
+        The former ``/workspaces`` listing endpoint is deprecated. This method
+        uses ``/user/workspaces`` and resolves each returned workspace to keep
+        yielding :class:`Workspace` objects as before.
+
+        API docs: https://developer.atlassian.com/cloud/bitbucket/rest/api-group-workspaces/#api-user-workspaces-get.
         """
         params = {}
-        if role is not None:
-            params["role"] = role
-        if q is not None:
-            params["q"] = q
+        # The replacement endpoint does not support the legacy ``role`` and
+        # ``q`` filters. They are intentionally not forwarded because doing so
+        # would produce an invalid request.
         if sort is not None:
             params["sort"] = sort
-        for workspace in self._get_paged(None, params):
-            yield self.__get_object(workspace)
+        user_workspaces_url = f"{self.url.rsplit('/', 1)[0]}/user/workspaces"
+        for workspace_access in self._get_paged(user_workspaces_url, params=params, absolute=True):
+            workspace_data = workspace_access.get("workspace", workspace_access)
+            workspace_id = workspace_data.get("slug") or workspace_data.get("uuid")
+            if workspace_id is None:
+                raise ValueError("Bitbucket returned a workspace without a slug or UUID")
+            yield self.get(workspace_id)
 
         return
 

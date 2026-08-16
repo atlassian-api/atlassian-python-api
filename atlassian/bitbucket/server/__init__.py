@@ -1,8 +1,8 @@
 # coding=utf-8
 
 from .base import BitbucketServerBase
-from .projects import Projects
 from .globalPermissions import Groups, Users
+from .projects import Projects
 
 
 class Server(BitbucketServerBase):

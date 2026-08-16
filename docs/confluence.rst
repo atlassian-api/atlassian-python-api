@@ -1,6 +1,25 @@
 Confluence module
 =================
 
+Complete API reference
+----------------------
+
+The task-oriented sections below explain the most common workflows. These
+source-backed references list every public method and current signature for
+Server/Data Center, legacy Cloud, and the explicit Cloud V2 client.
+
+.. autoclass:: atlassian.confluence.server.Server
+   :members:
+   :undoc-members:
+
+.. autoclass:: atlassian.confluence.cloud.Cloud
+   :members:
+   :undoc-members:
+
+.. autoclass:: atlassian.confluence.cloud.cloud.ConfluenceCloud
+   :members:
+   :undoc-members:
+
 The Confluence module now provides both Cloud and Server implementations
 with dedicated APIs for each platform.
 
@@ -17,7 +36,19 @@ with dedicated Cloud and Server classes:
     # For Confluence Cloud
     confluence_cloud = ConfluenceCloud(
         url="https://your-domain.atlassian.net",
-        token="your-api-token"
+        username="you@example.com",
+        password="your-cloud-api-token",
+    )
+
+    # Cloud API tokens use HTTP Basic auth. Do not pass them as ``token=``:
+    # that creates a Bearer header for Server/Data Center personal access tokens.
+    # The client constructs the Basic header; do not base64-encode credentials.
+    with open("CONFLUENCE_TOKEN", encoding="utf-8") as token_file:
+        api_token = token_file.read().strip()
+    confluence_cloud = ConfluenceCloud(
+        url="https://your-domain.atlassian.net",
+        username="you@example.com",
+        password=api_token,
     )
 
     # For Confluence Server
@@ -36,6 +67,64 @@ Cloud vs Server Differences
 | API Root | `wiki/api/v2` | `rest/api/1.0` |
 | Content IDs | UUID strings | Numeric IDs |
 | Space IDs | UUID strings | Space keys |
+
+Choosing a Cloud client
+-----------------------
+
+``ConfluenceCloud`` is the established Cloud client and keeps compatibility
+methods for older Cloud REST endpoints. Use ``ConfluenceV2`` for the versioned
+Cloud V2 interface and new V2-only resources such as whiteboards, folders,
+databases, data classification, and V2 content properties. Both use the Cloud
+``/wiki/api/v2`` root for V2 operations; legacy operations retain their
+documented ``/wiki/rest/api`` paths.
+
+.. code-block:: python
+
+    from atlassian import ConfluenceV2
+
+    confluence = ConfluenceV2(
+        "https://your-domain.atlassian.net",
+        username="you@example.com",
+        password="your-api-token",
+    )
+
+For scoped Cloud API tokens through ``https://api.atlassian.com/ex/confluence/<cloud-id>``,
+use ``ConfluenceV2``. This preserves the gateway URL and targets the V2
+endpoints supported by scoped tokens.
+
+Space endpoint versions
+-----------------------
+
+The endpoint is selected by API version, not by the method name:
+
+- Server/Data Center REST V1 uses ``/rest/api/space`` (or
+  ``/wiki/rest/api/space`` when the instance uses the ``/wiki`` context).
+- Cloud REST V2 uses ``/wiki/api/v2/spaces``.
+
+For Server/Data Center (and legacy Cloud V1 installations), filter by one
+space category label with ``get_all_spaces(label="service")``. Cloud V2 uses
+the plural list filter: ``get_spaces(labels=["service"])``.
+
+The Cloud V1 Postman collection does not define a public **Get spaces**
+operation; use Cloud V2 for space enumeration. ``ConfluenceV2`` and
+``ConfluenceCloud`` use the V2 plural endpoint. Their
+``get_spaces(ids=[...], keys=[...], labels=[...])`` filters are encoded as
+repeated V2 query parameters. ``ConfluenceCloud.get_spaces()`` returns one V2
+response page and ``get_all_spaces()`` lazily follows its cursor pages;
+``ConfluenceV2.get_spaces()`` returns the fully paginated list.
+
+Set a space homepage (Server/Data Center)
+-----------------------------------------
+
+Set an existing page as a space homepage with ``set_space_homepage``. The
+calling user needs space-administration permission and access to the page.
+
+.. code-block:: python
+
+    confluence.set_space_homepage("TEAM", "123456789")
+
+For other space metadata, use ``update_space(space_key, data)`` with the
+corresponding Confluence REST space payload.
 
 Common Operations
 -----------------
@@ -76,10 +165,31 @@ Get page info
 
     # Check page exists
     # type of the page, 'page' or 'blogpost'. Defaults to 'page'
+    # Cloud uses V2 space/page lookups; Server/Data Center keeps its REST API.
     confluence.page_exists(space, title, type=None)
+
+    # Resolve direct, display, and shared short page URLs to a page ID.
+    page_id = confluence.get_page_id_by_url("https://confluence.example.com/x/-_Z3")
+
+    # For Server/Data Center, use this paginated helper for all group members.
+    members = confluence.get_all_members("confluence-users")
+
+    # Returns only space names and follows the space-directory pagination.
+    space_names = confluence.get_space_names()
 
     # Provide content by type (page, blog, comment)
     confluence.get_page_child_by_type(page_id, type='page', start=None, limit=None, expand=None)
+
+    # Get child information without listing or paginating every child.
+    child_count = confluence.get_page_child_count(page_id)
+    has_children = confluence.page_has_children(page_id)
+
+    # Stream all CQL matches without accumulating them in memory.
+    for result in confluence.iter_cql('type=page', limit=250):
+        process(result)
+
+    # Use this only when a complete in-memory list is required.
+    all_results = confluence.cql_all('type=page', limit=250)
 
     # Provide content id from search result by title and space
     confluence.get_page_id(space, title)
@@ -142,16 +252,34 @@ Page actions
 .. code-block:: python
 
     # Create page from scratch
+    # Server/Data Center: ``space`` is the space KEY, not its display name.
+    # Personal-space keys commonly look like ``~<account-id>``.
     confluence.create_page(space, title, body, parent_id=None, type='page', representation='storage', editor='v2', full_width=False)
 
-    # This method removes a page, if it has recursive flag, method removes including child pages
+    # Check that the supplied credentials are accepted. This does not by itself
+    # grant create permission in a particular space.
+    confluence.get_current_user()
+
+    # Cloud V2 uses a space ID rather than a key. Resolve it first, then create.
+    from atlassian import ConfluenceV2
+    cloud = ConfluenceV2(url, username=email, password=api_token)
+    space_id = cloud.get_space_by_key('SPACEKEY')['id']
+    cloud.create_page(space_id=space_id, title=title, body=body)
+
+    # Server/Data Center: retain template macros and replace explicit placeholders.
+    confluence.create_page_from_template(
+        space, title, template_id, replacements={"{{REPORT_MONTH}}": "August"}
+    )
+
+    # With recursive=True, all descendants are listed before deletion so
+    # server-side pagination cannot leave later child pages behind.
     confluence.remove_page(page_id, status=None, recursive=False)
 
     # Remove any content
     confluence.remove_content(content_id):
 
     # Remove page from trash
-    confluence.remove_page_from_trash(page_id)
+    delete_status = confluence.remove_page_from_trash(page_id)  # normally 204
 
     # Remove page as draft
     confluence.remove_page_as_draft(page_id)
@@ -159,14 +287,87 @@ Page actions
     # Update page if already exist
     confluence.update_page(page_id, title, body, parent_id=None, type='page', representation='storage', minor_edit=False, full_width=False)
 
-    # Update page or create page if it is not exists
+    # Server/Data Center updates use the configured REST API root and send a JSON body.
+
+    # Get every contributor for a collaboratively edited page revision.
+    contributors = confluence.get_page_version_contributors(page_id, version_number)
+
+    # Update the page only when the title exists under parent_id; a same-titled
+    # page elsewhere in the space is left untouched. parent_id is optional;
+    # use a space key to create or update a top-level page.
     confluence.update_or_create(parent_id, title, body, representation='storage', full_width=False)
+    confluence.update_or_create(title=title, body=body, space='SPACEKEY')
+
+    # Server/Data Center: annotate the first page revision on creation.
+    confluence.create_page('SPACEKEY', title, body, version_comment='Initial import')
+
+    # Preserve Confluence storage macros when updating tables. Do not round-trip
+    # a page containing images through pandas.read_html(...).to_html(), because
+    # pandas represents embedded image cells as missing values and serializes
+    # them as ``NaN``. Fetch body.storage, update only the intended markup, and
+    # pass the resulting storage XHTML to update_page/update_existing_page.
+
+    # Archived pages must be restored/unarchived before update_or_create() can update them.
 
     # Append body to page if already exist
     confluence.append_page(page_id, title, append_body, parent_id=None, type='page', representation='storage', minor_edit=False)
 
-    # Set the page (content) property e.g. add hash parameters
-    confluence.set_page_property(page_id, data)
+    # A list or dictionary is rendered as formatted JSON in a storage code block.
+    confluence.append_page(page_id, title, {"users": ["Ada", "Linus"]})
+
+    # Uploading the same attachment name creates a new attachment revision.
+    confluence.attach_file("images/diagram.png", page_id=page_id)
+
+    # Attachment names are filenames, not paths. Path-like values are reduced
+    # to their basename (for example, ``reports/diagram.png`` becomes
+    # ``diagram.png``).
+
+    # Attachments are files, not executable page markup. Link an HTML report
+    # from the page; replacing the attachment keeps this link current.
+    confluence.attach_file("reports/status.html", page_id=page_id)
+    html_attachment_link = """
+        <ac:link>
+          <ri:attachment ri:filename="status.html" />
+          <ac:plain-text-link-body><![CDATA[Open the HTML status report]]></ac:plain-text-link-body>
+        </ac:link>
+    """
+    confluence.append_page(page_id, title, html_attachment_link)
+
+    # ``download_path=...`` remains an alias for historical examples; use
+    # ``path=...`` for new code.
+    confluence.download_attachments_from_page(page_id, path="/tmp/downloads")
+
+    # Attachments belong to the page that uploaded them. Including ``source_page``
+    # in another page does not copy its attachments, so query the source directly.
+    source_attachments = confluence.get_attachments_from_content(source_page_id)
+
+    # Server/Data Center: set all read restrictions listed below. This replaces
+    # the existing read restriction set, so include every allowed user/group.
+    confluence.set_restrictions_for_content(page_id, [{
+        "operation": "read",
+        "restrictions": {"user": [{"type": "known", "username": "alice"}]},
+    }])
+
+    # Confluence Cloud does not render attached HTML inline. Server/Data Center
+    # HTML/HTML Include macros are administrator-controlled and disabled by
+    # default because embedding arbitrary HTML can introduce XSS vulnerabilities.
+
+    # Fetch every historic revision without querying version numbers one by one.
+    # Use iter_page_versions(...) instead when processing a large history.
+    versions = confluence.get_all_page_versions(page_id, limit=200)
+
+    # Server/Data Center: export each page in a hierarchy. Confluence has no
+    # supported REST endpoint for one merged arbitrary-subtree PDF.
+    page_pdfs = confluence.export_page_tree_as_pdf(page_id)
+    for exported_page_id, pdf_bytes in confluence.iter_page_tree_as_pdf(page_id):
+        save_pdf(exported_page_id, pdf_bytes)
+
+    # Invalid storage XHTML raises HTTPError with Confluence's ``message``,
+    # ``detail``, and field-level validation errors when the server supplies them.
+
+    # Set a page property. Pass a dictionary; JSON strings are accepted for
+    # backwards compatibility and are converted before the request is sent.
+    confluence.set_page_property(page_id, {"key": "myprop", "value": {"hash": "1111"}})
 
     # Delete the page (content) property e.g. delete key of hash
     confluence.delete_page_property(page_id, page_property)
@@ -177,7 +378,8 @@ Page actions
     # Get the page (content) property e.g. get key of hash
     confluence.get_page_property(page_id, page_property_key)
 
-    # Get the page (content) properties
+    # Get every page (content) property. Pagination is handled automatically;
+    # limit controls the size of each request, not the final result size.
     confluence.get_page_properties(page_id)
 
     # Get page ancestors
@@ -194,6 +396,7 @@ Page actions
     confluence.attach_content(content, name=None, content_type=None, page_id=None, title=None, space=None, comment=None)
 
     # Download attachments from a page to local system. If path is None, current working directory will be used.
+    # Downloads every attachment, following Confluence pagination automatically.
     confluence.download_attachments_from_page(page_id, path=None)
 
     # Remove completely a file if version is None or delete version
@@ -215,9 +418,13 @@ Page actions
     confluence.has_unknown_attachment_error(page_id)
 
     # Export page as PDF
-    # api_version needs to be set to 'cloud' when exporting from Confluence Cloud
-    .
+    # Use ConfluenceCloud (or Confluence(..., cloud=True)) for Cloud exports.
+    # ``api_version='cloud'`` is deprecated; use ConfluenceV2 for Cloud V2 APIs.
     confluence.export_page(page_id)
+
+    # Server/Data Center only: legacy Word exporter. The returned bytes are a
+    # Word-readable multipart HTML export, not a .docx document.
+    word_export = confluence.get_page_as_word(page_id)
 
     # Set a label on the page
     confluence.set_page_label(page_id, label)
@@ -228,55 +435,310 @@ Page actions
     # Add comment into page
     confluence.add_comment(page_id, text)
 
+    # Comments are a separate paginated resource; they are not included by
+    # get_page_by_id(). Expand the rendered body and creator/editor metadata.
+    comment_page = confluence.get_page_comments(
+        page_id, expand='body.view,history,version', start=0, limit=100
+    )
+    for comment in comment_page['results']:
+        body = comment['body']['view']['value']
+        author = comment.get('history', {}).get('createdBy')
+        latest_editor = comment.get('version', {}).get('by')
+
+    # Cloud V2 has separate methods for footer and inline comments. Their
+    # result items include authorId; request body_format for comment bodies.
+    footer_comments = cloud.get_page_footer_comments(page_id, body_format='view')
+    inline_comments = cloud.get_page_inline_comments(page_id, body_format='view')
+
      # Fetch tables from Confluence page
     confluence.get_tables_from_page(page_id)
 
     # Get regex matches from Confluence page
     confluence.scrap_regex_from_page(page_id, regex)
 
+Reading large page bodies
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``get_page_by_id(..., expand='body.storage')`` returns the complete body sent
+by Confluence; the client does not paginate or truncate an individual page
+body. IDE debuggers and interactive-variable viewers may abbreviate large
+strings, which can look like a partial API result. Check the string length or
+write it to a file before concluding that content is missing.
+
+.. code-block:: python
+
+    page = confluence.get_page_by_id(page_id, expand='body.storage')
+    storage = page['body']['storage']['value']
+
+    print(f'Received {len(storage)} characters')
+    with open('page-storage.xhtml', 'w', encoding='utf-8') as output:
+        output.write(storage)
+
+If the request itself times out, set a larger ``timeout`` when creating the
+client. This controls the HTTP request duration; it does not change the amount
+of content returned by Confluence.
+
+.. code-block:: python
+
+    confluence = Confluence(url=url, username=username, password=password, timeout=150)
+
+Storage-format updates
+~~~~~~~~~~~~~~~~~~~~~~
+
+``representation='storage'`` expects Confluence storage XHTML, including
+``ac:`` and ``ri:`` macros already present in the page. It is not generic
+browser HTML. Fetch ``body.storage``, preserve macros, and replace only the
+dynamic values you own.
+
+.. code-block:: python
+
+    from xml.sax.saxutils import escape
+
+    page = confluence.get_page_by_id(page_id, expand='body.storage')
+    storage = page['body']['storage']['value']
+
+    # Escape dynamic text only. Do not escape the complete document: that
+    # would turn <ac:...> macros into literal text.
+    storage = storage.replace('{{SUMMARY}}', escape('Revenue & growth'))
+    confluence.update_page(page_id, page['title'], storage, representation='storage')
+
+A literal ``&`` must be ``&amp;``. Existing entities such as ``&quot;`` are
+already valid storage XML and must not be escaped a second time. Parentheses do
+not require XML escaping. ``representation='wiki'`` is legacy wiki markup;
+prefer storage XHTML for pages users will edit in the browser.
+
+JSON in a code-block macro
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Confluence code blocks are storage-format macros. Serialize structured output
+with the standard library, place it in an ``ac:plain-text-body`` CDATA section,
+and set the code language to ``json``. This preserves indentation and enables
+JSON syntax highlighting in the Confluence editor.
+
+.. code-block:: python
+
+    import json
+
+    def confluence_json_code_block(server_output):
+        json_text = json.dumps(server_output, indent=2, sort_keys=True, ensure_ascii=False)
+
+        # CDATA cannot contain ``]]>``. Split that sequence so arbitrary JSON
+        # string values remain valid Confluence storage XML.
+        json_text = json_text.replace("]]>", "]]]]><![CDATA[>")
+
+        return (
+            '<ac:structured-macro ac:name="code" ac:schema-version="1">'
+            '<ac:parameter ac:name="language">json</ac:parameter>'
+            f'<ac:plain-text-body><![CDATA[{json_text}]]></ac:plain-text-body>'
+            '</ac:structured-macro>'
+        )
+
+    page = confluence.get_page_by_id(page_id, expand='body.storage')
+    body = page['body']['storage']['value']
+    body = body.replace('{{SERVER_OUTPUT}}', confluence_json_code_block(server_output))
+    confluence.update_page(page_id, page['title'], body, representation='storage')
+
+The placeholder must be part of an existing storage-format page template. Do
+not use ``html.escape`` on the returned macro: doing so would display the macro
+as literal text instead of rendering a code block.
+
+Word document imports
+~~~~~~~~~~~~~~~~~~~~~
+
+Confluence Server/Data Center's **Import Word document** action is provided by
+the Office Connector user interface. It is not exposed as a supported REST API,
+and Confluence Cloud's REST APIs likewise do not accept a ``.doc`` or ``.docx``
+file as a page body. Consequently, this package intentionally has no
+``import_word_document()`` method: using an internal browser endpoint would be
+fragile and could lose document content.
+
+For a faithful, one-off import (including the UI options to replace a page or
+split a document by headings), use the Confluence web interface. For automated
+workflows, convert the document with a tool chosen and controlled by your
+application, validate the resulting storage XHTML, and then use the normal page
+methods. Conversion of Word styles, images, tables, and macros is outside the
+scope of the REST API and must be validated for the documents you support.
+
+.. code-block:: python
+
+    # ``storage_xhtml`` is produced and validated by your own DOCX conversion
+    # step. It is Confluence storage XHTML, not the original DOCX bytes.
+    page = confluence.create_page(space_key, title, storage_xhtml,
+                                  representation='storage')
+
+    # Optionally retain the original source document as an attachment. This
+    # uploads the file; it does not convert it into page content.
+    confluence.attach_file('report.docx', page_id=page['id'])
+
 Confluence Whiteboards
+----------------------
+
+Whiteboards are available through Confluence Cloud REST API V2 only. Use
+``ConfluenceV2`` (or ``ConfluenceCloud``) and a token with the relevant
+``read:whiteboard:confluence``, ``write:whiteboard:confluence``, and
+``delete:whiteboard:confluence`` scopes.
+
+.. code-block:: python
+
+    from atlassian import ConfluenceV2
+
+    confluence = ConfluenceV2(url, username=email, password=api_token)
+
+    # Create a whiteboard in a space. ``private`` is an optional API query
+    # parameter; parent_id, template_key, and locale are optional body fields.
+    whiteboard = confluence.create_whiteboard(
+        space_id, title='Planning', parent_id=page_id, private=True
+    )
+
+    # Fetch it, optionally expanding related information.
+    whiteboard = confluence.get_whiteboard(
+        whiteboard['id'], include_collaborators=True,
+        include_direct_children=True, include_operations=True,
+        include_properties=True,
+    )
+
+    # Deletion moves the whiteboard to trash, where Confluence can restore it.
+    confluence.delete_whiteboard(whiteboard['id'])
+
+``get_whiteboard_by_id()`` remains as a compatible alias for
+``get_whiteboard()``. Whiteboards are not supported by Confluence Server or
+Data Center.
+
+Confluence Cloud GraphQL search
+-------------------------------
+
+``ConfluenceV2`` also supports the Atlassian GraphQL Gateway for Cloud-only
+use cases such as advanced search. GraphQL has a continuously evolving schema,
+so REST/CQL ``search()`` remains unchanged and GraphQL responses are returned
+without translation. Use a tenanted ``*.atlassian.net`` URL with an API token;
+the GraphQL gateway is not available on Confluence Server or Data Center.
+
+.. code-block:: python
+
+    from atlassian import ConfluenceV2
+
+    confluence = ConfluenceV2(url, username=email, password=api_token)
+
+    # Find this once from https://your-site.atlassian.net/_edge/tenant_info.
+    cloud_id = "your-confluence-cloud-id"
+    response = confluence.search_graphql("deployment guide", cloud_id)
+
+    # GraphQL may return HTTP 200 with an errors field, so inspect it first.
+    if response.get("errors"):
+        raise RuntimeError(response["errors"])
+    search = response["data"]["search"]["search"]
+    for edge in search["edges"]:
+        print(edge["node"]["title"], edge["node"]["url"])
+
+For custom queries or mutations, call ``confluence.graphql(query, variables)``.
+The GraphQL Gateway has its own query-cost rate limit, separate from REST API
+limits.
+
+Confluence Cloud V2 content properties
+---------------------------------------
+
+Cloud V2 property endpoints share the same lifecycle across pages, blog posts,
+attachments, comments, custom content, folders, whiteboards, databases, and
+embeds. ``content_type`` selects the documented V2 resource name; pagination is
+handled automatically when listing properties.
+
+.. code-block:: python
+
+    properties = confluence.get_v2_content_properties("page", page_id)
+    created = confluence.create_v2_content_property(
+        "page", page_id, {"key": "report", "value": {"published": True}}
+    )
+    property_data = confluence.get_v2_content_property("page", page_id, created["id"])
+    confluence.update_v2_content_property("page", page_id, created["id"], property_data)
+    confluence.delete_v2_content_property("page", page_id, created["id"])
+
+The ``*_v2`` names distinguish these helpers from the legacy V1 key-based
+content-property API. Supported content types are ``attachment``, ``blogpost``,
+``comment``, ``custom_content``, ``database``, ``embed``, ``folder``, ``page``,
+and ``whiteboard``.
+
+Confluence Cloud V2 data classification
+----------------------------------------
+
+Data classification is available only to eligible Confluence Cloud sites. The
+site administrator defines the available levels; the caller needs the relevant
+content or space permissions.
+
+.. code-block:: python
+
+    levels = confluence.get_classification_levels()
+    confluence.update_content_classification_level("page", page_id, levels[0]["id"])
+    current_level = confluence.get_content_classification_level("page", page_id)
+
+    # Make a level the default for a space, or reset a page to that default.
+    confluence.update_space_default_classification_level(space_id, levels[0]["id"])
+    confluence.reset_content_classification_level("page", page_id)
+
+Supported content types are ``page``, ``blogpost``, ``whiteboard``, and
+``database``. Content-level updates accept only the ``current`` and ``draft``
+statuses required by the V2 API.
+
+Confluence Cloud tasks
 ----------------------
 
 .. code-block:: python
 
-    # Create  new whiteboard  - cloud only
-    confluence.create_whiteboard(spaceId, title=None, parentId=None)
+    from atlassian import ConfluenceV2
 
-    # Delete existing whiteboard - cloud only
-    confluence.delete_whiteboard(whiteboard_id)
+    confluence = ConfluenceV2(url, username=email, password=api_token)
 
-    # Get whiteboard by id  - cloud only!
-    confluence.get_whiteboard(whiteboard_id)
+    # Retrieves every result page.  Filters accept account IDs, content IDs,
+    # and Unix epoch milliseconds for the date-range arguments.
+    tasks = confluence.get_tasks(status="incomplete", page_ids=[page_id])
+
+    task = confluence.get_task(task_id, body_format="storage")
+    confluence.update_task(task_id, "complete")
+
+    # Scoped tokens require read:task:confluence or write:task:confluence.
 
 
 Template actions
 ----------------
 
+The methods below use Confluence's supported template endpoints. They apply to
+Server/Data Center and to the legacy Cloud V1 template API; they are not part
+of ``ConfluenceV2``.
+
+Migration from experimental template methods
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The older experimental methods remain available for compatibility but emit a
+``DeprecationWarning``. Use their supported replacements in new code:
+
+* ``get_template_by_id(template_id)`` -> ``get_content_template(template_id)``
+* ``get_all_templates_from_space(space)`` -> ``get_content_templates(space)``
+* ``get_all_blueprints_from_space(space)`` ->
+  ``get_blueprint_templates(space)``
+
 .. code-block:: python
 
-    # Updating a content template
-    template_id = "<string>"
-    name = "<string>"
-    body = {"value": "<string>", "representation": "view"}
-    template_type = "page"
-    description = "<string>"
-    labels = [{"prefix": "<string>", "name": "<string>", "id": "<string>", "label": "<string>"}]
-    space = "<key_string>"
+    # Read a content template. Requesting this supported method rather than
+    # get_template_by_id() avoids the experimental endpoint.
+    template = confluence.get_content_template(template_id)
+    storage_body = template['body']['storage']
 
-    confluence.create_or_update_template(name, body, template_type, template_id, description, labels, space)
+    # Create a space template. Omit space to create a global template.
+    created = confluence.create_or_update_template(
+        name='Monthly report',
+        body={'storage': {'value': '<p>{{SUMMARY}}</p>', 'representation': 'storage'}},
+        description='Starting point for monthly reports',
+        labels=[{'prefix': 'global', 'name': 'report'}],
+        space='TEAM',
+    )
 
-    # Creating a new content template
-    name = "<string>"
-    body = {"value": "<string>", "representation": "view"}
-    template_type = "page"
-    description = "<string>"
-    labels = [{"prefix": "<string>", "name": "<string>", "id": "<string>", "label": "<string>"}]
-    space = "<key_string>"
-
-    confluence.create_or_update_template(name, body, template_type, description=description, labels=labels, space=space)
-
-    # Get a template by its ID
-    confluence.get_content_template(template_id)
+    # Update an existing template. Use keyword arguments so template_id is
+    # never confused with template_type or description.
+    updated = confluence.create_or_update_template(
+        name=template['name'],
+        body={'storage': storage_body},
+        template_id=template_id,
+        description=template.get('description'),
+    )
 
     # Get all global content templates
     confluence.get_content_templates()
@@ -292,6 +754,11 @@ Template actions
 
     # Removing a template
     confluence.remove_template(template_id)
+
+``create_or_update_template`` supports content templates only. Confluence does
+not allow blueprint templates to be created or updated through this REST API.
+Use ``get_blueprint_templates`` to inspect blueprint templates; removing a
+modified blueprint resets it to its inherited/default version.
 
 Get spaces info
 ---------------
@@ -311,8 +778,9 @@ Get spaces info
     # Get Space permissions set based on json-rpc call
     confluence.get_space_permissions(space_key)
 
-    # Get Space export download url
-    confluence.get_space_export(space_key, export_type)
+    # Experimental Cloud UI export: returns a temporary download URL for
+    # HTML, CSV, or XML. This is not a supported REST API and can change.
+    download_url = confluence.get_space_export(space_key, export_type='html')
 
 Space
 -----
@@ -422,9 +890,6 @@ Users and Groups
     # Get all groups from Confluence User management
     confluence.get_all_groups(start=0, limit=1000)
 
-    # Get a paginated collection of users in the given group
-    confluence.get_group_members(group_name='confluence-users', start=0, limit=1000)
-
     # Get information about a user through username
     confluence.get_user_details_by_username(username, expand=None)
 
@@ -448,8 +913,29 @@ CQL
 
 .. code-block:: python
 
-    # Get results from cql search result with all related fields
-    confluence.cql(cql, start=0, limit=None, expand=None, include_archived_spaces=None, excerpt=None)
+    # ``cql()`` returns one result page. CQL search results wrap a page in
+    # ``result["content"]``, so expand the nested path, not ``body.storage``.
+    response = confluence.cql(
+        'space = "TEAM" and type = page',
+        limit=25,
+        expand="content.body.storage",
+    )
+    for result in response.get("results", []):
+        storage = result["content"]["body"]["storage"]["value"]
+
+    # Cloud pagination is cursor-based. This iterator follows ``_links.next``
+    # for every page; do not increment ``start`` yourself.
+    for result in confluence.iter_cql(
+        'space = "TEAM" and type = page', limit=25, expand="content.body.storage"
+    ):
+        storage = result["content"]["body"]["storage"]["value"]
+
+    # Materialize every matching result only when an in-memory list is needed.
+    all_results = confluence.cql_all('space = "TEAM" and type = page', limit=25)
+
+``iter_cql()`` and ``cql_all()`` work for Cloud and Server/Data Center. Cloud
+follows its cursor link, while Server/Data Center retains its offset-based
+pagination semantics.
 
 Other actions
 -------------
@@ -483,3 +969,119 @@ Other actions
     # Add inline task setting checkbox method
     confluence.set_inline_tasks_checkbox(page_id, task_id, status)
 
+Consistent return values
+------------------------
+
+For Server and Data Center, ``get_tables_from_page`` always returns a
+dictionary with ``page_id``, ``number_of_tables_in_page``, and
+``tables_content``. Pages without tables use a count of zero and an empty
+list. ``download_attachments_from_page`` likewise returns an empty dictionary
+in memory mode, or ``{"attachments_downloaded": 0, "path": ...}`` on disk
+when no attachments match.
+
+``attach_content`` and ``update_page`` raise ``ApiNotFoundError`` when the
+target page cannot be resolved instead of returning ``None``. Title lookups
+remain search-result responses; an empty ``results`` collection means that no
+matching page exists.
+
+Content history
+---------------
+
+``get_content_history_by_version_number`` and the history-removal methods use
+the supported Server/Data Center ``/rest/api/content/{id}/version/{number}``
+endpoint. ``remove_page_history_keep_version`` also tolerates historical gaps,
+so rerunning it after a partial cleanup does not fail on an already-deleted
+version.
+
+For Confluence Cloud V2, use ``get_page_versions`` or ``get_page_version`` to
+read page history. The published V2 API does not provide a delete-version
+operation, so deletion requires the compatible V1 endpoint and appropriate
+permission.
+
+Scoped Cloud API tokens
+-----------------------
+
+Scoped Confluence Cloud API tokens use the Atlassian API gateway and the v2
+API. Pass the gateway URL containing the cloud ID; ``Confluence`` selects the
+v2 Cloud client automatically and does not append ``/wiki``.
+
+.. code-block:: python
+
+    confluence = Confluence(
+        url="https://api.atlassian.com/ex/confluence/<cloud-id>",
+        username="user@example.com",
+        password="scoped-api-token",
+        cloud=True,
+    )
+
+    page = confluence.get_page_by_id("<page-id>")
+
+Confluence Cloud databases
+--------------------------
+
+Confluence Cloud v2 supports database lifecycle metadata: create, retrieve by
+ID, and move to trash. Use ``ConfluenceV2`` (or a gateway URL as above) for
+these endpoints. The public API does not currently expose database records,
+fields, views, or queries.
+
+.. code-block:: python
+
+    from atlassian import ConfluenceV2
+
+    confluence = ConfluenceV2(
+        url="https://your-domain.atlassian.net/wiki",
+        username="user@example.com",
+        password="api-token",
+    )
+
+    database = confluence.create_database(
+        space_id="<space-id>",
+        title="Release tracker",
+        parent_id="<parent-page-or-folder-id>",
+        private=False,
+    )
+    details = confluence.get_database(database["id"], include_properties=True)
+    confluence.delete_database(database["id"])
+
+Scoped tokens require the corresponding ``write:database:confluence``,
+``read:database:confluence``, or ``delete:database:confluence`` scope.
+
+Confluence Cloud folders
+------------------------
+
+Confluence Cloud v2 supports creating, retrieving, and moving folders to
+trash. A folder may have a page or another folder as its parent. Use
+``ConfluenceV2`` (or a gateway URL as above).
+
+.. code-block:: python
+
+    folder = confluence.create_folder(
+        space_id="<space-id>",
+        title="Release assets",
+        parent_id="<parent-page-or-folder-id>",
+    )
+    details = confluence.get_folder(folder["id"], include_direct_children=True)
+    confluence.delete_folder(folder["id"])
+
+Scoped tokens require the corresponding ``write:folder:confluence``,
+``read:folder:confluence``, or ``delete:folder:confluence`` scope.
+
+Cloud group members
+-------------------
+
+Confluence Cloud group membership uses the group **ID**, not its display name.
+The API returns group IDs from ``get_all_groups``.  The legacy Server/Data
+Center methods continue to use group names.
+
+.. code-block:: python
+
+    for group in confluence.get_all_groups(start=0, limit=1000):
+        members = confluence.get_all_members(group["id"])
+
+License endpoints
+-----------------
+
+``get_license_details`` and the related license-seat methods are available for
+Confluence Server and Data Center only. Confluence Cloud does not expose an
+equivalent license REST API; Cloud clients receive ``ApiNotAcceptable`` instead
+of an HTTP 404.

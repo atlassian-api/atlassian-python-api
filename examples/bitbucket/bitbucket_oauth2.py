@@ -4,6 +4,7 @@
 # token and the available workspaces are returned.
 
 from requests_oauthlib import OAuth2Session
+
 from atlassian.bitbucket import Cloud
 
 try:

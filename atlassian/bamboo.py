@@ -71,8 +71,8 @@ class Bamboo(AtlassianRestAPI):
         max_results,
         label=None,
         start_index=0,
-        **kwargs
-    ):  # fmt: skip
+        **kwargs,
+    ):
         flags = []
         params = {"max-results": max_results}
         if expand:
@@ -628,8 +628,8 @@ class Bamboo(AtlassianRestAPI):
         stage=None,
         execute_all_stages=True,
         custom_revision=None,
-        **bamboo_variables
-    ):  # fmt: skip
+        **bamboo_variables,
+    ):
         """
         Fire build execution for specified plan.
         !IMPORTANT! NOTE: for some reason, this method always execute all stages
@@ -1203,8 +1203,57 @@ class Bamboo(AtlassianRestAPI):
             params={"includeShared": include_shared},
         )
 
-    def activity(self):
-        return self.get("build/admin/ajax/getDashboardSummary.action")
+    def add_agent_capability(self, agent_id, data):
+        """Add a capability to an agent using Bamboo's capability payload."""
+        return self.post(self.resource_url(f"agent/{agent_id}/capability"), data=data)
+
+    def delete_agent_capability(self, agent_id, capability_key):
+        """Delete one agent capability by its Bamboo capability key."""
+        return self.delete(self.resource_url(f"agent/{agent_id}/capability/{capability_key}"))
+
+    def delete_all_agent_capabilities(self, agent_id):
+        """Delete every capability assigned directly to an agent."""
+        return self.delete(self.resource_url(f"agent/{agent_id}/capability"))
+
+    def get_plan_variables(self, plan_key):
+        """Return variables configured for a plan."""
+        return self.get(self.resource_url(f"plan/{plan_key}/variable"))
+
+    def get_plan_variable(self, plan_key, variable_name):
+        """Return one plan variable by name."""
+        return self.get(self.resource_url(f"plan/{plan_key}/variable/{variable_name}"))
+
+    def create_plan_variable(self, plan_key, data):
+        """Create a plan variable from Bamboo's variable request body."""
+        return self.post(self.resource_url(f"plan/{plan_key}/variable"), data=data)
+
+    def update_plan_variable(self, plan_key, variable_name, data):
+        """Update a plan variable."""
+        return self.put(self.resource_url(f"plan/{plan_key}/variable/{variable_name}"), data=data)
+
+    def delete_plan_variable(self, plan_key, variable_name):
+        """Delete a plan variable."""
+        return self.delete(self.resource_url(f"plan/{plan_key}/variable/{variable_name}"))
+
+    def activity(self, busy=None):
+        """Return active online agents and their current build activity.
+
+        The former dashboard AJAX endpoint was an internal Bamboo UI endpoint
+        and is not present in current Bamboo releases.  The supported agent
+        REST resource exposes ``active`` and ``busy`` for each online agent.
+
+        :param busy: Optional filter for busy (``True``) or idle (``False``)
+                     agents. By default, return all active online agents.
+        :return: List of active agent dictionaries, including ``busy``.
+        """
+        agents = self.agent_status(online=True)
+        if not isinstance(agents, list):
+            return agents
+
+        active_agents = [agent for agent in agents if agent.get("active", agent.get("online", False))]
+        if busy is None:
+            return active_agents
+        return [agent for agent in active_agents if agent.get("busy") is busy]
 
     def get_custom_expiry(self, limit=25):
         """

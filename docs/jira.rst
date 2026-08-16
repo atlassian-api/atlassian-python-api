@@ -10,6 +10,18 @@ Get issues from jql search result with all related fields
     issues = jira.jql(jql_request)
     print(issues)
 
+    # Or if dealing with pagination
+    issues = []
+    isLast = False
+    nextPageToken = None
+
+    while not isLast:
+        response = jira.enhanced_jql(jql_request, fields="id,summary" nextPageToken=nextPageToken, expand='names')
+        issues.extend(response.get('issues'))
+        isLast = response.get('isLast')
+        if not isLast:
+            nextPageToken = response.get('nextPageToken')
+
     # Check issues against JQL
     # Checks whether one or more issues would be returned by one or more JQL queries.
     jira.match_jql(issue_ids, jqls)
@@ -217,6 +229,18 @@ Manage projects
     # Using " " string (space) for username gives All the active users who have browse permission for a project
     jira.get_users_with_browse_permission_to_a_project(username, issue_key=None, project_key=None, start=0, limit=100)
 
+    # Get existing custom fields or find by filter
+    jira.get_custom_fields(search=None, start=1, limit=50):
+
+    # Returns a full representation of a Custom Field Option that has the given id.
+    option_id = 10001
+    jira.get_custom_field_option(option_id)
+
+    # Returns full list of Custom Field Options in a specified project.
+    field_id = 10000
+    project_id = 1234
+    jira.get_custom_field_options(field_id, project_id, issue_type_id=None)
+
 Manage issues
 -------------
 
@@ -239,9 +263,6 @@ Manage issues
     field = "customfield_10000"
     value = {"name": "username"}
     jira.issue_field_value_append(issue_id_or_key, field, value, notify_users=True)
-
-    # Get existing custom fields or find by filter
-    jira.get_custom_fields(search=None, start=1, limit=50):
 
     # Check issue exists
     jira.issue_exists(issue_key)
@@ -427,6 +448,13 @@ Manage issues
     # :return: list of dictionaries containing the tree structure. Dictionary element contains a key (parent issue) and value (child issue).
     jira.get_issue_tree_recursive(issue_key, tree=[], depth=0)
 
+    # Returns full information about visible fields that can be autocompleted in JQL.
+    jira.get_autocomplete_data()
+
+    # Returns auto complete suggestions for JQL search.
+    field_name = "Custom Field"
+    jira.get_autocomplete_suggestion(field_name, field_value=None, predicate_name=None, predicate_value=None)
+
 Epic Issues
 -------------
 
@@ -549,10 +577,24 @@ Attachments actions
     # Add attachment (IO Object) to issue
     jira.add_attachment_object(issue_key, attachment)
 
-    # Download attachments from the issue
-    jira.download_attachments_from_issue(issue, path=None, cloud=True):
+    # Gets the binary raw data of single attachment in bytes.
+    jira.get_attachment_content(attachment_id)
 
-    # Get list of attachments ids from issue
+    # Download attachments from the issue
+    # For both methods, if path is None, current working directory is used.
+    # zip file name is in following format: "<issue id>_attachments.zip"
+
+    # This method downloads zip file compressed from Jira server side.
+    # Best when total attachment size is less than 1 GB.
+    # Returns a message indicating the result of the download operation.
+    jira.download_issue_attachments(issue_key, path=None, overwrite=False)
+
+    # This method downloads individual files and compresses zip file locally.
+    # Best when total attachment size is greater than 1 GB.
+    # Returns the file path of created zip file.
+    jira.get_all_attachment_contents(issue_key, path=None, overwrite=False)
+
+    # Get list of attachment names and ids from issue
     jira.get_attachments_ids_from_issue(issue_key)
 
 Manage components

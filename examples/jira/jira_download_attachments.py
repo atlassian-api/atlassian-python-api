@@ -1,5 +1,6 @@
-from atlassian import Jira
 import os
+
+from atlassian import Jira
 
 """ Download the attachments from tickets """
 

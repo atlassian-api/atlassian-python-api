@@ -1,9 +1,14 @@
 # coding: utf8
 """Tests for Jira Modules"""
+
 from unittest import TestCase
-from atlassian import jira
-from .mockup import mockup_server
+from unittest.mock import patch
+
 from requests import HTTPError
+
+from atlassian import jira
+
+from .mockup import mockup_server
 
 
 class TestJira(TestCase):
@@ -19,6 +24,14 @@ class TestJira(TestCase):
         """Receive HTTP Error when Issue does not exist"""
         with self.assertRaises(HTTPError):
             self.jira.issue("FOO-321")
+
+    @patch.object(jira.Jira, "get")
+    def test_get_custom_fields_uses_query_parameter_in_cloud(self, mock_get):
+        self.jira.get_custom_fields(search="Customer tier")
+
+        self.assertEqual(
+            mock_get.call_args.kwargs["params"], {"query": "Customer tier", "startAt": 1, "maxResults": 50}
+        )
 
     def test_get_epic_issues(self):
         resp = self.jira.epic_issues("BAR-22")
@@ -44,6 +57,14 @@ class TestJira(TestCase):
         """Get comment on issue by id, but not found"""
         with self.assertRaises(HTTPError):
             self.jira.epic_issues("BAR-11")
+
+    def test_pin_issue_comment(self):
+        """Can pin a comment on an issue"""
+        self.jira.issue_pin_comment("FOO-123", 10000)
+
+    def test_unpin_issue_comment(self):
+        """Can unpin a comment on an issue"""
+        self.jira.issue_unpin_comment("FOO-123", 10000)
 
     def test_post_issue_with_invalid_request(self):
         """Post an issue but receive a 400 error response"""

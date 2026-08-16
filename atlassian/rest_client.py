@@ -1,8 +1,11 @@
 # coding=utf-8
 
 import logging
+import math
 import random
 import time
+from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 from http.cookiejar import CookieJar
 from json import dumps
 from typing import (
@@ -32,6 +35,7 @@ except ImportError:
     from oauthlib.oauth1 import SIGNATURE_RSA
 
 from requests import HTTPError, Response, Session
+from requests.auth import AuthBase
 from requests_oauthlib import OAuth1, OAuth2
 from typing_extensions import Self
 from urllib3.util import Retry
@@ -43,6 +47,18 @@ T_resp_get = Union[Response, T_resp_json, str, bytes]
 
 
 log = get_default_logger(__name__)
+
+
+def _curl_quote(value: str) -> str:
+    """Quote a value for a POSIX shell cURL command."""
+    return "'" + value.replace("'", "'\"'\"'") + "'"
+
+
+class _ExplicitTokenAuth(AuthBase):
+    """Prevent Requests from replacing an explicit token with ``.netrc`` auth."""
+
+    def __call__(self, request):
+        return request
 
 
 class AtlassianRestAPI(object):
@@ -153,7 +169,12 @@ class AtlassianRestAPI(object):
         self.username = username
         self.password = password
         self.timeout = int(timeout)
-        self.verify_ssl = verify_ssl
+        if session:
+            # don't override verify if session is passed
+            self.verify_ssl = session.verify
+        else:
+            # otherwise use the passed value or default to True
+            self.verify_ssl = verify_ssl
         self.api_root = api_root
         self.api_version = api_version
         self.cookies = cookies
@@ -217,6 +238,11 @@ class AtlassianRestAPI(object):
 
     def _create_token_session(self, token: str) -> None:
         self._update_header("Authorization", f"Bearer {token.strip()}")
+        # Requests consults ``.netrc`` when no auth handler is set, even when
+        # an Authorization header is present. A no-op handler preserves the
+        # explicit Bearer token without disabling proxy and CA environment
+        # settings through ``Session.trust_env``.
+        self._session.auth = _ExplicitTokenAuth()
 
     def _create_header_session(self, header: dict) -> None:
         self._session.headers.update(header)
@@ -290,6 +316,48 @@ class AtlassianRestAPI(object):
             backoff_value += random.uniform(0, self.backoff_jitter)  # nosec B311
         return float(max(0, min(self.max_backoff_seconds, backoff_value)))
 
+    def _parse_retry_after_header(self, header_value: Optional[str]) -> Optional[float]:
+        """
+        Parse the Retry-After header and return a safe delay (seconds).
+        The Retry-After header may contain either an integer (delta-seconds)
+        or an HTTP-date. Values are clamped to ``self.max_backoff_seconds`` to
+        avoid ``time.sleep`` overflow on some platforms.
+        """
+        if not header_value:
+            return None
+
+        delay_seconds: Optional[float]
+        try:
+            delay_seconds = float(header_value)
+        except (TypeError, ValueError):
+            try:
+                retry_after_dt = parsedate_to_datetime(header_value)
+            except (TypeError, ValueError):
+                log.warning("Unable to parse Retry-After header value '%s'", header_value)
+                return None
+
+            if retry_after_dt.tzinfo is None:
+                retry_after_dt = retry_after_dt.replace(tzinfo=timezone.utc)
+            delay_seconds = float(math.ceil((retry_after_dt - datetime.now(timezone.utc)).total_seconds()))
+
+        if delay_seconds is None:
+            return None
+
+        if not math.isfinite(delay_seconds):
+            log.debug("Retry-After value is not finite; clamping to max_backoff_seconds")
+            delay_seconds = float(self.max_backoff_seconds)
+
+        delay_seconds = max(0.0, delay_seconds)
+        if delay_seconds > self.max_backoff_seconds:
+            log.debug(
+                "Retry-After value %.2f exceeds max_backoff_seconds (%s); clamping",
+                delay_seconds,
+                self.max_backoff_seconds,
+            )
+            delay_seconds = float(self.max_backoff_seconds)
+
+        return delay_seconds
+
     def _retry_handler(self):
         """
         Creates and returns a retry handler function for managing HTTP request retries.
@@ -301,13 +369,27 @@ class AtlassianRestAPI(object):
         returns `True` if the request should be retried, or `False` otherwise.
         """
         retries = 0
+        retry_with_header_count = 0
+        max_retry_with_header_attempts = 1  # Only retry once for Retry-After header
 
         def _handle(response):
-            nonlocal retries
+            nonlocal retries, retry_with_header_count
 
-            if self.retry_with_header and "Retry-After" in response.headers and response.status_code == 429:
-                time.sleep(int(response.headers["Retry-After"]))
-                return True
+            if self.retry_with_header and response.status_code == 429:
+                if retry_with_header_count >= max_retry_with_header_attempts:
+                    log.debug("Max retry attempts for Retry-After header reached, not retrying")
+                    return False
+                delay = self._parse_retry_after_header(response.headers.get("Retry-After"))
+                if delay is not None:
+                    retry_with_header_count += 1
+                    log.debug(
+                        "Retrying after %s seconds (attempt %d/%d)",
+                        delay,
+                        retry_with_header_count,
+                        max_retry_with_header_attempts,
+                    )
+                    time.sleep(delay)
+                    return True
 
             if not self.backoff_and_retry or self.use_urllib3_retry:
                 return False
@@ -326,7 +408,7 @@ class AtlassianRestAPI(object):
         self,
         method: str,
         url: str,
-        data: Union[dict, str, None] = None,
+        data: Union[dict, str, bool, None] = None,
         headers: Optional[dict] = None,
         level: int = logging.DEBUG,
     ) -> None:
@@ -340,11 +422,12 @@ class AtlassianRestAPI(object):
         :return:
         """
         headers = headers or self.default_headers
-        message = "curl --silent -X {method} -H {headers} {data} '{url}'".format(
+        payload = None if data is None else (data if isinstance(data, str) else dumps(data))
+        message = "curl --show-error -X {method} -H {headers} {data} {url}".format(
             method=method,
-            headers=" -H ".join([f"'{key}: {value}'" for key, value in list(headers.items())]),
-            data="" if not data else f"--data '{dumps(data)}'",
-            url=url,
+            headers=" -H ".join(_curl_quote(f"{key}: {value}") for key, value in headers.items()),
+            data="" if payload is None else f"--data {_curl_quote(payload)}",
+            url=_curl_quote(url),
         )
         log.log(level=level, msg=message)
 
@@ -371,7 +454,7 @@ class AtlassianRestAPI(object):
         self,
         method: str = "GET",
         path: str = "/",
-        data: Union[dict, str, None] = None,
+        data: Union[dict, str, bool, None] = None,
         json: Union[dict, str, None] = None,
         flags: Optional[list] = None,
         params: Optional[dict] = None,
@@ -380,6 +463,7 @@ class AtlassianRestAPI(object):
         trailing: Optional[bool] = None,
         absolute: bool = False,
         advanced_mode: bool = False,
+        allow_redirects: bool = True,
     ) -> Response:
         """
 
@@ -404,23 +488,38 @@ class AtlassianRestAPI(object):
             else:
                 url += "?"
         if params:
-            url += urlencode((params or {}), safe=",")
+            url += urlencode((params or {}), safe=",", doseq=True)
         if flags:
             url += ("&" if params or params_already_in_url else "") + "&".join(flags or [])
         json_dump = None
         if files is None:
-            data = None if not data else dumps(data)
-            json_dump = None if not json else dumps(json)
+            data = None if data is None else dumps(data)
+            json_dump = None if json is None else dumps(json)
 
         headers = headers or self.default_headers
 
+        # ``requests`` reads file-like multipart values when preparing a
+        # request. Reset them before every attempt so a retry cannot upload an
+        # already-consumed, zero-byte file.
+        file_positions = []
+        if files:
+            for upload in files.values():
+                stream = upload[1] if isinstance(upload, (tuple, list)) and len(upload) > 1 else upload
+                if hasattr(stream, "seek") and hasattr(stream, "tell"):
+                    try:
+                        file_positions.append((stream, stream.tell()))
+                    except (OSError, ValueError):
+                        pass
+
         retry_handler = self._retry_handler()
         while True:
+            for stream, position in file_positions:
+                stream.seek(position)
             self.log_curl_debug(
                 method=method,
                 url=url,
                 headers=headers,
-                data=data or json_dump,
+                data=data if data is not None else json_dump,
             )
             response = self._session.request(
                 method=method,
@@ -433,6 +532,7 @@ class AtlassianRestAPI(object):
                 files=files,
                 proxies=self.proxies,
                 cert=self.cert,
+                allow_redirects=allow_redirects,
             )
             continue_retries = retry_handler(response)
             if continue_retries:
@@ -736,7 +836,7 @@ class AtlassianRestAPI(object):
     def put(
         self,
         path: str,
-        data: Union[dict, str, None] = ...,
+        data: Union[dict, str, bool, None] = ...,
         headers: Optional[dict] = ...,
         files: Optional[dict] = ...,
         trailing: Optional[bool] = ...,
@@ -751,7 +851,7 @@ class AtlassianRestAPI(object):
     def put(
         self,
         path: str,
-        data: Union[dict, str, None] = ...,
+        data: Union[dict, str, bool, None] = ...,
         headers: Optional[dict] = ...,
         files: Optional[dict] = ...,
         trailing: Optional[bool] = ...,
@@ -766,7 +866,7 @@ class AtlassianRestAPI(object):
     def put(
         self,
         path: str,
-        data: Union[dict, str, None] = ...,
+        data: Union[dict, str, bool, None] = ...,
         headers: Optional[dict] = ...,
         files: Optional[dict] = ...,
         trailing: Optional[bool] = ...,
@@ -782,7 +882,7 @@ class AtlassianRestAPI(object):
     def put(
         self,
         path: str,
-        data: Union[dict, str, None] = ...,
+        data: Union[dict, str, bool, None] = ...,
         headers: Optional[dict] = ...,
         files: Optional[dict] = ...,
         trailing: Optional[bool] = ...,
@@ -795,7 +895,7 @@ class AtlassianRestAPI(object):
     def put(
         self,
         path: str,
-        data: Union[dict, str, None] = None,
+        data: Union[dict, str, bool, None] = None,
         headers: Optional[dict] = None,
         files: Optional[dict] = None,
         trailing: Optional[bool] = None,
@@ -991,7 +1091,7 @@ class AtlassianRestAPI(object):
                         error_msg_list.append(errors.get("message", ""))
                     elif isinstance(errors, list):
                         error_msg_list.extend([v.get("message", "") if isinstance(v, dict) else v for v in errors])
-                    error_msg = "\n".join(error_msg_list)
+                    error_msg = "\n".join(error_msg_list) if error_msg_list else "Unknown error"
             except Exception as e:
                 log.error(e)
                 response.raise_for_status()
