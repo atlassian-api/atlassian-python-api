@@ -778,9 +778,23 @@ Get spaces info
     # Get Space permissions set based on json-rpc call
     confluence.get_space_permissions(space_key)
 
-    # Experimental Cloud UI export: returns a temporary download URL for
-    # HTML, CSV, or XML. This is not a supported REST API and can change.
+    # Experimental UI export: returns a temporary download URL for HTML, CSV,
+    # or XML. This is not a supported REST API and can change.
     download_url = confluence.get_space_export(space_key, export_type='html')
+
+    # Export several spaces sequentially. Do not parallelize UI exports: the
+    # Confluence export service limits concurrent jobs.
+    for space_key, download_url in confluence.iter_space_exports(
+        ["ENG", "HR", "SUPPORT"], export_type="html"
+    ):
+        print(space_key, download_url)
+
+``get_space_export`` and ``iter_space_exports`` use Confluence's browser
+export workflow because there is no supported REST endpoint for this task.
+Confluence can reject concurrent export jobs, so process spaces sequentially
+and download each returned temporary URL before it expires. For Data Center
+PDF exports, an administrator can tune the server-side concurrency limit; the
+client cannot safely override it.
 
 Space
 -----

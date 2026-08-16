@@ -3445,6 +3445,22 @@ class Server(ConfluenceServerBase):
         except Exception as e:
             raise ApiError("Encountered error during space export from space " + space_key, reason=e)
 
+    def iter_space_exports(self, space_keys, export_type: str):
+        """Yield exported-space download URLs one space at a time.
+
+        The underlying Confluence export is an asynchronous browser workflow.
+        Confluence limits concurrent exports, so this iterator intentionally
+        waits for each export to finish before starting the next one. It is a
+        safer alternative to invoking :meth:`get_space_export` concurrently
+        from multiple threads.
+
+        :param space_keys: Iterable of Confluence space keys.
+        :param export_type: Export type accepted by :meth:`get_space_export`.
+        :return: Iterator of ``(space_key, download_url)`` tuples.
+        """
+        for space_key in space_keys:
+            yield space_key, self.get_space_export(space_key, export_type)
+
     def export_page(self, page_id):
         """
         Alias method for export page as pdf

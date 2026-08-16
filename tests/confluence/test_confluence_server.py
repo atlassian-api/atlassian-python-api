@@ -9,7 +9,7 @@ import logging
 import pytest
 from requests import HTTPError, Response
 from types import SimpleNamespace
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 from atlassian.confluence import ConfluenceServer
 from atlassian.errors import ApiError, ApiNotAcceptable, ApiNotFoundError, ApiPermissionError, ApiValueError
@@ -1505,6 +1505,15 @@ class TestConfluenceServer:
         result = confluence_server.export_space("TEST")
         mock_get.assert_called_once_with("space/TEST/export", **{})
         assert result == {"exportData": "base64_encoded_space"}
+
+    @patch.object(
+        ConfluenceServer, "get_space_export", side_effect=["https://example.test/eng", "https://example.test/hr"]
+    )
+    def test_iter_space_exports_is_sequential(self, mock_get_space_export, confluence_server):
+        result = list(confluence_server.iter_space_exports(["ENG", "HR"], "html"))
+
+        assert result == [("ENG", "https://example.test/eng"), ("HR", "https://example.test/hr")]
+        assert mock_get_space_export.call_args_list == [call("ENG", "html"), call("HR", "html")]
 
     # Utility Methods Tests
     @patch.object(ConfluenceServer, "get")
