@@ -4,6 +4,7 @@ import logging
 import os
 import re
 import zipfile
+from json import dumps
 from typing import Any, BinaryIO, Dict, List, Optional, Union, cast
 from warnings import warn
 
@@ -230,6 +231,30 @@ class Jira(AtlassianRestAPI):
         base_url = self.resource_url("applicationrole")
         url = f"{base_url}/{role_key}"
         return self.get(url) or {}
+
+    def update_application_roles(
+        self, application_roles: List[Dict[str, Any]], if_match: Optional[str] = None
+    ) -> T_resp_json:
+        """Update groups and default groups for Jira Server application roles.
+
+        Jira updates only the ``groups`` and ``defaultGroups`` properties. Use
+        the optional ETag returned by :meth:`get_all_application_roles` through
+        ``if_match`` to avoid overwriting a newer role configuration.
+
+        Args:
+            application_roles: Roles to update, each including its ``key`` and
+                permitted mutable properties.
+            if_match: Optional ApplicationRole collection ETag for optimistic
+                concurrency control.
+
+        Returns:
+            Updated ApplicationRole collection.
+        """
+        url = self.resource_url("applicationrole")
+        headers = dict(self.default_headers)
+        if if_match is not None:
+            headers["If-Match"] = if_match
+        return self.put(url, data=dumps(application_roles), headers=headers)
 
     """
     Attachments
