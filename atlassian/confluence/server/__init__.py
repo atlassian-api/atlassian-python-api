@@ -893,7 +893,11 @@ class Server(ConfluenceServerBase):
         """
         url = f"rest/api/content/{page_id}"
         if recursive:
-            children_pages = self.get_page_child_by_type(page_id)
+            # Fetch every child before deleting any of them. Confluence uses
+            # offset pagination for this resource; deleting a child while
+            # consuming the generator changes the collection and can make a
+            # subsequent offset skip pages shifted earlier in the collection.
+            children_pages = list(self.get_page_child_by_type(page_id))
             for children_page in children_pages:
                 self.remove_page(children_page.get("id"), status, recursive)
         params = {}

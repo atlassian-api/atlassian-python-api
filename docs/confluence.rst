@@ -252,7 +252,8 @@ Page actions
         space, title, template_id, replacements={"{{REPORT_MONTH}}": "August"}
     )
 
-    # This method removes a page, if it has recursive flag, method removes including child pages
+    # With recursive=True, all descendants are listed before deletion so
+    # server-side pagination cannot leave later child pages behind.
     confluence.remove_page(page_id, status=None, recursive=False)
 
     # Remove any content

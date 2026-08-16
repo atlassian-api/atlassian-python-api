@@ -259,6 +259,36 @@ class TestConfluenceServer:
 
         assert confluence_server.remove_page("123") is response
 
+    @patch.object(ConfluenceServer, "delete")
+    @patch.object(ConfluenceServer, "get_page_child_by_type")
+    def test_remove_page_recursively_lists_all_children_before_deleting(
+        self, mock_get_children, mock_delete, confluence_server
+    ):
+        children_fully_listed = False
+
+        def children():
+            nonlocal children_fully_listed
+            yield {"id": "first"}
+            yield {"id": "second"}
+            children_fully_listed = True
+
+        mock_get_children.side_effect = [children(), iter(()), iter(())]
+
+        def delete_after_children_are_listed(*args, **kwargs):
+            assert children_fully_listed
+            return Response()
+
+        mock_delete.side_effect = delete_after_children_are_listed
+
+        confluence_server.remove_page("root", recursive=True)
+
+        assert children_fully_listed
+        assert [call.args[0] for call in mock_delete.call_args_list] == [
+            "rest/api/content/first",
+            "rest/api/content/second",
+            "rest/api/content/root",
+        ]
+
     @patch.object(ConfluenceServer, "put")
     @patch.object(ConfluenceServer, "history")
     def test_update_page_uses_configured_api_root_without_duplicate_rest_api_prefix(
