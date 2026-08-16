@@ -3264,6 +3264,29 @@ class Server(ConfluenceServerBase):
             )
         return content
 
+    def iter_page_tree_as_pdf(self, page_id):
+        """Yield ``(page_id, pdf_bytes)`` for a page and all descendant pages.
+
+        Confluence exposes single-page PDF export but does not provide a
+        supported REST operation for one merged arbitrary subtree PDF. Results
+        are yielded in depth-first page-tree order so callers can stream files
+        to disk or merge them with their preferred PDF library.
+        """
+        pending_page_ids = [page_id]
+        while pending_page_ids:
+            current_page_id = pending_page_ids.pop()
+            yield current_page_id, self.get_page_as_pdf(current_page_id)
+            children = list(self.get_page_child_by_type(current_page_id, type="page"))
+            pending_page_ids.extend(child["id"] for child in reversed(children))
+
+    def export_page_tree_as_pdf(self, page_id):
+        """Return individual PDFs for a page subtree keyed by page ID.
+
+        Prefer :meth:`iter_page_tree_as_pdf` for large hierarchies to avoid
+        keeping every PDF in memory.
+        """
+        return dict(self.iter_page_tree_as_pdf(page_id))
+
     def get_page_as_word(self, page_id):
         """Export a page through Confluence's legacy Word exporter.
 

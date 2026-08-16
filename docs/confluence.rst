@@ -319,6 +319,12 @@ Page actions
     # Use iter_page_versions(...) instead when processing a large history.
     versions = confluence.get_all_page_versions(page_id, limit=200)
 
+    # Server/Data Center: export each page in a hierarchy. Confluence has no
+    # supported REST endpoint for one merged arbitrary-subtree PDF.
+    page_pdfs = confluence.export_page_tree_as_pdf(page_id)
+    for exported_page_id, pdf_bytes in confluence.iter_page_tree_as_pdf(page_id):
+        save_pdf(exported_page_id, pdf_bytes)
+
     # Invalid storage XHTML raises HTTPError with Confluence's ``message``,
     # ``detail``, and field-level validation errors when the server supplies them.
 

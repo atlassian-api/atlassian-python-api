@@ -115,6 +115,26 @@ class TestConfluenceServer:
         with pytest.raises(ApiValueError, match="must be a list"):
             confluence_server.set_restrictions_for_content("123", {"operation": "read"})
 
+    @patch.object(ConfluenceServer, "get_page_child_by_type")
+    @patch.object(ConfluenceServer, "get_page_as_pdf")
+    def test_iter_page_tree_as_pdf_exports_every_descendant_in_tree_order(
+        self, mock_get_pdf, mock_get_children, confluence_server
+    ):
+        mock_get_pdf.side_effect = [b"%PDF-root", b"%PDF-first", b"%PDF-grandchild", b"%PDF-second"]
+        mock_get_children.side_effect = [
+            iter([{"id": "first"}, {"id": "second"}]),
+            iter([{"id": "grandchild"}]),
+            iter([]),
+            iter([]),
+        ]
+
+        assert list(confluence_server.iter_page_tree_as_pdf("root")) == [
+            ("root", b"%PDF-root"),
+            ("first", b"%PDF-first"),
+            ("grandchild", b"%PDF-grandchild"),
+            ("second", b"%PDF-second"),
+        ]
+
     @patch.object(ConfluenceServer, "_get_paged")
     def test_get_all_page_versions_follows_paginated_history(self, mock_get_paged, confluence_server):
         mock_get_paged.return_value = iter([{"number": 2}, {"number": 1}])
