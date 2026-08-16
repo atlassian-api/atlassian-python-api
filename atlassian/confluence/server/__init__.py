@@ -3149,10 +3149,15 @@ class Server(ConfluenceServerBase):
         return content
 
     def get_page_as_word(self, page_id):
-        """
-        Export page as standard word exporter.
+        """Export a page through Confluence's legacy Word exporter.
+
+        Returns the response bytes exactly as provided by Confluence. The
+        exporter does not produce a DOCX file (nor necessarily a binary DOC
+        file); its output is a Word-readable multipart HTML document. There is
+        no supported Confluence REST endpoint for DOCX export.
+
         :param page_id: Page ID
-        :return: Word File
+        :return: Legacy Word-export bytes
         """
         headers = self.form_token_headers
         url = f"exportword?pageId={page_id}"

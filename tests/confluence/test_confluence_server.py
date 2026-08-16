@@ -1218,6 +1218,19 @@ class TestConfluenceServer:
             advanced_mode=True,
         )
 
+    @patch.object(ConfluenceServer, "get")
+    def test_get_page_as_word_returns_legacy_export_bytes(self, mock_get, confluence_server):
+        """The Word endpoint is binary data, not a DOCX conversion endpoint."""
+        export = b"MIME-Version: 1.0\r\nContent-Type: multipart/related\r\n"
+        mock_get.return_value = export
+
+        result = confluence_server.get_page_as_word("123")
+
+        assert result == export
+        mock_get.assert_called_once_with(
+            "exportword?pageId=123", headers=confluence_server.form_token_headers, not_json_response=True
+        )
+
     @patch.object(ConfluenceServer, "post")
     def test_reindex(self, mock_post, confluence_server):
         """Test reindex method."""

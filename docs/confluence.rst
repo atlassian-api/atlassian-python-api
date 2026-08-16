@@ -274,6 +274,10 @@ Page actions
     .
     confluence.export_page(page_id)
 
+    # Server/Data Center only: legacy Word exporter. The returned bytes are a
+    # Word-readable multipart HTML export, not a .docx document.
+    word_export = confluence.get_page_as_word(page_id)
+
     # Set a label on the page
     confluence.set_page_label(page_id, label)
 
