@@ -113,3 +113,16 @@ class TestJiraCloudClients(TestCase):
         with patch.object(service_management, "get", return_value={}) as get:
             service_management.get_customer_request_by_id_or_key("ABC-1")
         get.assert_called_once_with("rest/servicedeskapi/request/ABC-1", params=None, data=None)
+
+    def test_legacy_service_desk_lists_pages_of_service_desks(self):
+        service_desk = ServiceDesk("https://example.atlassian.net")
+
+        with patch.object(service_desk, "get", return_value={"values": []}) as get:
+            result = service_desk.get_service_desks(start=50, limit=25)
+
+        self.assertEqual(result, [])
+        get.assert_called_once_with(
+            "rest/servicedeskapi/servicedesk",
+            headers=service_desk.experimental_headers,
+            params={"start": 50, "limit": 25},
+        )

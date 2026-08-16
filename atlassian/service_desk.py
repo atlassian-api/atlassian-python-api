@@ -19,16 +19,23 @@ class ServiceDesk(AtlassianRestAPI):
 
         return self.get("rest/servicedeskapi/info", headers=self.experimental_headers)
 
-    def get_service_desks(self):
+    def get_service_desks(self, start=0, limit=50):
         """
-        Returns all service desks in the Jira Service Desk application
-        with the option to include archived service desks
+        Return a page of service desks available to the authenticated user.
 
         :return: Service Desks
+        :param start: Index of the first service desk to return.
+        :param limit: Maximum number of service desks to return.
         """
+        params = {}
+        if start is not None:
+            params["start"] = int(start)
+        if limit is not None:
+            params["limit"] = int(limit)
         service_desks_list = self.get(
             "rest/servicedeskapi/servicedesk",
             headers=self.experimental_headers,
+            params=params,
         )
         if self.advanced_mode:
             return service_desks_list

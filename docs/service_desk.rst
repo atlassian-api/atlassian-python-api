@@ -1,6 +1,33 @@
 Jira Service Desk module
 ========================
 
+Jira Service Management Cloud authentication and access
+-------------------------------------------------------
+
+For Jira Service Management Cloud, authenticate with an Atlassian account
+email and an API token. ``password`` below is the API token, not the account
+password; the client sends the required HTTP Basic authentication header.
+
+.. code-block:: python
+
+    from atlassian import ServiceDesk
+
+    sd = ServiceDesk(
+        url="https://your-domain.atlassian.net",
+        username="agent@example.com",
+        password="your_atlassian_api_token",
+        cloud=True,
+    )
+
+    service_desks = sd.get_service_desks(start=0, limit=50)
+    customers = sd.get_customers(service_desk_id="1", query="Ada", start=0, limit=50)
+
+Use an account that can access the relevant service desk. A portal-only
+customer can work with its own customer requests, such as through
+``get_my_customer_requests()``, but cannot enumerate a service desk's
+customers. A ``401`` indicates invalid or absent authentication; a ``403``
+indicates that valid credentials lack permission for the requested resource.
+
 Get info about Service Desk
 ---------------------------
 
@@ -9,8 +36,8 @@ Get info about Service Desk
     # Get info about Service Desk app
     sd.get_info()
 
-    # Get all service desks in the JIRA Service Desk application with the option to include archived service desks
-    sd.get_service_desks()
+    # Get the service desks accessible to the authenticated user
+    sd.get_service_desks(start=0, limit=50)
 
     # Get the service desk for a given service desk ID
     sd.get_service_desk_by_id(service_desk_id)
