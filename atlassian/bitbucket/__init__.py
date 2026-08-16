@@ -124,6 +124,17 @@ class Bitbucket(BitbucketBase):
         url = self.resource_url("status", api_root="rest/indexing", api_version="latest")
         return self.get(url)
 
+    def get_cluster_info(self):
+        """Get system information for the Bitbucket Data Center cluster.
+
+        This administrative endpoint is available on Bitbucket Server/Data
+        Center only and requires the appropriate administrator permission.
+        """
+        if self.cloud:
+            raise NotImplementedError("Cluster information is only available on Bitbucket Server/Data Center")
+        url = self.resource_url("admin/cluster", api_version="latest")
+        return self.get(url)
+
     def get_users(self, user_filter=None, limit=25, start=0):
         """
         Get list of bitbucket users.

@@ -508,6 +508,20 @@ Conditions-Reviewers management
     # Delete a project condition for specific repository in project
     bitbucket.delete_repo_condition(project_key, repo_key, id_condition)
 
+For Bitbucket Server/Data Center, administrators can inspect cluster node
+information with the legacy client:
+
+.. code-block:: python
+
+    from atlassian import Bitbucket
+
+    bitbucket = Bitbucket(
+        url="https://bitbucket.example.com",
+        username="admin",
+        password="password",
+    )
+    cluster = bitbucket.get_cluster_info()
+
 Bitbucket Cloud
 ---------------
 
@@ -587,6 +601,8 @@ filtering by author or date. Filter those fields in the returned commits, or
 use ``include``, ``exclude`` and ``path`` when those server-side filters fit
 the use case.
 
+.. code-block:: python
+
     # Read raw bytes from a file at a branch, tag, or commit SHA
     readme = repository.get_source_file("main", "README.md")
 
@@ -657,7 +673,11 @@ the use case.
     repository_variable = repository.repository_variables.get_by_key("qww")
     if repository_variable is not None:
         print(repository_variable.uuid)
-        repository.repository_variables.update_by_key("qww", "new-value", secured=True)
+        repository.repository_variables.update_by_key(
+            "qww",
+            "new-value",
+            secured=True,
+        )
 
     # Get a list of hooks from a repository
     repository.hooks.each()
