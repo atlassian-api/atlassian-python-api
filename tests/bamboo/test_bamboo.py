@@ -97,3 +97,13 @@ def test_queue_build_preserves_explicit_queue_parameters(mock_post):
         "rest/api/latest/queue/PROJ-PLAN",
         params={"stage": "Deploy", "executeAllStages": "false"},
     )
+
+
+@patch.object(Bamboo, "get")
+def test_plan_results_supports_multiple_labels(mock_get):
+    bamboo = Bamboo("https://bamboo.example.test", token="token")
+    mock_get.return_value = {"results": {"size": 0, "result": []}}
+
+    assert list(bamboo.plan_results("PROJ", "PLAN", label=["release", "production"])) == []
+
+    assert mock_get.call_args.args[3]["label"] == ["release", "production"]

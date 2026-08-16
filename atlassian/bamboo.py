@@ -82,7 +82,10 @@ class Bamboo(AtlassianRestAPI):
         if clover_enabled:
             flags.append("cloverEnabled")
         if label:
-            params["label"] = label
+            # Requests serializes a sequence value as repeated query
+            # parameters (``label=one&label=two``), which is the Bamboo REST
+            # API representation for filtering by multiple labels.
+            params["label"] = label if isinstance(label, str) else list(label)
         params.update(kwargs)
         if "elements_key" in kwargs and "element_key" in kwargs:
             return self._get_generator(
@@ -427,7 +430,7 @@ class Bamboo(AtlassianRestAPI):
         :param favourite:
         :param clover_enabled:
         :param issue_key:
-        :param label:
+        :param label: A label string or an iterable of labels.
         :param start_index:
         :param max_results:
         :param include_all_states:

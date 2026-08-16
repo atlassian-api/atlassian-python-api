@@ -89,6 +89,9 @@ Build results
     results(project_key=None, plan_key=None, job_key=None, build_number=None, expand=None, favourite=False,
             clover_enabled=False, issue_key=None, label=None, start_index=0, max_results=25, include_all_states=False)
 
+    # ``label`` accepts one label or multiple labels (sent as repeated query parameters)
+    plan_results("PROJECT", "PLAN", label=["release", "production"])
+
     # Get latest build results
     latest_results(expand=None, favourite=False, clover_enabled=False, label=None, issue_key=None,
                    start_index=0, max_results=25, include_all_states=False)
