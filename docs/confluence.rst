@@ -771,8 +771,29 @@ CQL
 
 .. code-block:: python
 
-    # Get results from cql search result with all related fields
-    confluence.cql(cql, start=0, limit=None, expand=None, include_archived_spaces=None, excerpt=None)
+    # ``cql()`` returns one result page. CQL search results wrap a page in
+    # ``result["content"]``, so expand the nested path, not ``body.storage``.
+    response = confluence.cql(
+        'space = "TEAM" and type = page',
+        limit=25,
+        expand="content.body.storage",
+    )
+    for result in response.get("results", []):
+        storage = result["content"]["body"]["storage"]["value"]
+
+    # Cloud pagination is cursor-based. This iterator follows ``_links.next``
+    # for every page; do not increment ``start`` yourself.
+    for result in confluence.iter_cql(
+        'space = "TEAM" and type = page', limit=25, expand="content.body.storage"
+    ):
+        storage = result["content"]["body"]["storage"]["value"]
+
+    # Materialize every matching result only when an in-memory list is needed.
+    all_results = confluence.cql_all('space = "TEAM" and type = page', limit=25)
+
+``iter_cql()`` and ``cql_all()`` work for Cloud and Server/Data Center. Cloud
+follows its cursor link, while Server/Data Center retains its offset-based
+pagination semantics.
 
 Other actions
 -------------
