@@ -11,6 +11,7 @@ import re
 import warnings
 from typing import Any, Dict, List, Optional
 
+from .content_properties import ContentPropertyOperations
 from .databases import DatabaseOperations
 from .folders import FolderOperations
 from .graphql import GraphQLOperations
@@ -20,7 +21,14 @@ from .whiteboards import WhiteboardOperations
 log = logging.getLogger(__name__)
 
 
-class ConfluenceCloud(GraphQLOperations, WhiteboardOperations, TaskOperations, FolderOperations, DatabaseOperations):
+class ConfluenceCloud(
+    ContentPropertyOperations,
+    GraphQLOperations,
+    WhiteboardOperations,
+    TaskOperations,
+    FolderOperations,
+    DatabaseOperations,
+):
     """
     Confluence Cloud API implementation class
     """

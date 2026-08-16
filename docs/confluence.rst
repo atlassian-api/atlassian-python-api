@@ -42,14 +42,17 @@ Space endpoint versions
 
 The endpoint is selected by API version, not by the method name:
 
-- Cloud REST V1 and Server/Data Center use ``/wiki/rest/api/space`` (the
-  ``/wiki`` context is omitted when a Server/Data Center instance has none).
+- Server/Data Center REST V1 uses ``/rest/api/space`` (or
+  ``/wiki/rest/api/space`` when the instance uses the ``/wiki`` context).
 - Cloud REST V2 uses ``/wiki/api/v2/spaces``.
 
-``ConfluenceV2`` and ``ConfluenceCloud`` use the V2 plural endpoint. Their
+The Cloud V1 Postman collection does not define a public **Get spaces**
+operation; use Cloud V2 for space enumeration. ``ConfluenceV2`` and
+``ConfluenceCloud`` use the V2 plural endpoint. Their
 ``get_spaces(ids=[...], keys=[...], labels=[...])`` filters are encoded as
-repeated V2 query parameters. Use an explicit ``api_version=1`` only when a
-legacy V1 endpoint is required.
+repeated V2 query parameters. ``ConfluenceCloud.get_spaces()`` returns one V2
+response page and ``get_all_spaces()`` lazily follows its cursor pages;
+``ConfluenceV2.get_spaces()`` returns the fully paginated list.
 
 Common Operations
 -----------------
@@ -473,6 +476,29 @@ the GraphQL gateway is not available on Confluence Server or Data Center.
 For custom queries or mutations, call ``confluence.graphql(query, variables)``.
 The GraphQL Gateway has its own query-cost rate limit, separate from REST API
 limits.
+
+Confluence Cloud V2 content properties
+---------------------------------------
+
+Cloud V2 property endpoints share the same lifecycle across pages, blog posts,
+attachments, comments, custom content, folders, whiteboards, databases, and
+embeds. ``content_type`` selects the documented V2 resource name; pagination is
+handled automatically when listing properties.
+
+.. code-block:: python
+
+    properties = confluence.get_v2_content_properties("page", page_id)
+    created = confluence.create_v2_content_property(
+        "page", page_id, {"key": "report", "value": {"published": True}}
+    )
+    property_data = confluence.get_v2_content_property("page", page_id, created["id"])
+    confluence.update_v2_content_property("page", page_id, created["id"], property_data)
+    confluence.delete_v2_content_property("page", page_id, created["id"])
+
+The ``*_v2`` names distinguish these helpers from the legacy V1 key-based
+content-property API. Supported content types are ``attachment``, ``blogpost``,
+``comment``, ``custom_content``, ``database``, ``embed``, ``folder``, ``page``,
+and ``whiteboard``.
 
 Confluence Cloud tasks
 ----------------------

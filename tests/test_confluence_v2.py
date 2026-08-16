@@ -962,15 +962,47 @@ class TestConfluenceV2(unittest.TestCase):
         self.assertEqual(result["data"]["search"]["search"]["totalCount"], 1)
         request = mock_post.call_args.kwargs["json"]
         self.assertEqual(request["variables"]["query"], "deployment guide")
-        self.assertEqual(
-            request["variables"]["filters"]["locations"], ["ari:cloud:confluence::site/cloud-123"]
-        )
+        self.assertEqual(request["variables"]["filters"]["locations"], ["ari:cloud:confluence::site/cloud-123"])
 
     def test_search_graphql_rejects_invalid_arguments(self):
         with self.assertRaisesRegex(ValueError, "must not be empty"):
             self.confluence_v2.search_graphql("", cloud_id="cloud-123")
         with self.assertRaisesRegex(ValueError, "between 1 and 100"):
             self.confluence_v2.search_graphql("query", cloud_id="cloud-123", first=101)
+
+    # Tests for generic V2 content-property methods
+
+    @patch("atlassian.confluence.cloud.ConfluenceCloud._get_paged")
+    def test_get_content_properties_uses_resource_specific_endpoint(self, mock_get_paged):
+        mock_get_paged.return_value = [{"id": "property-1", "key": "report"}]
+
+        result = self.confluence_v2.get_v2_content_properties("whiteboard", "123", cursor="next", limit=50)
+
+        self.assertEqual(result, [{"id": "property-1", "key": "report"}])
+        mock_get_paged.assert_called_once_with(
+            "api/v2/whiteboards/123/properties", params={"limit": 50, "cursor": "next"}
+        )
+
+    @patch("atlassian.confluence.cloud.ConfluenceCloud.delete")
+    @patch("atlassian.confluence.cloud.ConfluenceCloud.put")
+    @patch("atlassian.confluence.cloud.ConfluenceCloud.get")
+    @patch("atlassian.confluence.cloud.ConfluenceCloud.post")
+    def test_content_property_lifecycle(self, mock_post, mock_get, mock_put, mock_delete):
+        data = {"key": "report", "value": {"enabled": True}}
+        self.confluence_v2.create_v2_content_property("page", "123", data)
+        self.confluence_v2.get_v2_content_property("page", "123", "property-1")
+        self.confluence_v2.update_v2_content_property("page", "123", "property-1", data)
+        self.confluence_v2.delete_v2_content_property("page", "123", "property-1")
+
+        url = "api/v2/pages/123/properties/property-1"
+        mock_post.assert_called_once_with("api/v2/pages/123/properties", data=data)
+        mock_get.assert_called_once_with(url)
+        mock_put.assert_called_once_with(url, data=data)
+        mock_delete.assert_called_once_with(url)
+
+    def test_content_properties_reject_unknown_content_type(self):
+        with self.assertRaisesRegex(ValueError, "content_type"):
+            self.confluence_v2.get_v2_content_properties("unknown", "123")
 
     # Tests for Whiteboard methods
 
