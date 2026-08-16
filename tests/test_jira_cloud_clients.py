@@ -57,6 +57,24 @@ class TestJiraCloudClients(TestCase):
             jira.get_issue("ABC-1", fields="summary")
         get.assert_called_once_with("rest/api/3/issue/ABC-1", params={"fields": "summary"}, data=None)
 
+    def test_software_rank_issues_supports_multiple_issue_keys(self):
+        jira = JiraSoftware("https://example.atlassian.net")
+        payload = {"issues": ["EXAMPLE-1", "EXAMPLE-2"], "rankAfterIssue": "EXAMPLE-10"}
+
+        with patch.object(jira, "put", return_value=None) as put:
+            jira.rank_issues(payload)
+
+        put.assert_called_once_with("rest/agile/1.0/issue/rank", params=None, data=payload)
+
+    def test_software_rank_epics_uses_epic_endpoint(self):
+        jira = JiraSoftware("https://example.atlassian.net")
+        payload = {"epic": "EXAMPLE-1", "rankBeforeEpic": "EXAMPLE-2"}
+
+        with patch.object(jira, "put", return_value=None) as put:
+            jira.rank_epics("EXAMPLE-1", payload)
+
+        put.assert_called_once_with("rest/agile/1.0/epic/EXAMPLE-1/rank", params=None, data=payload)
+
     def test_core_methods_honor_the_selected_v2_route(self):
         jira = JiraCloud("https://example.atlassian.net", api_version=2)
 

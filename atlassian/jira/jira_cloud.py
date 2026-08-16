@@ -209,6 +209,34 @@ class JiraServiceManagement(JiraServiceManagementMethods, AtlassianRestAPI):
         """Return a JSM public REST endpoint path without issuing a request."""
         return self.url_joiner("rest/servicedeskapi", resource)
 
+    def get_sla_metrics(self, service_desk_id, start=None, limit=None):
+        """Return SLA metric configuration from Jira's agent endpoint.
+
+        This is an internal endpoint used by the JSM settings UI and may not
+        be available on every Cloud or Data Center release.
+        """
+        params = {key: value for key, value in {"start": start, "limit": limit}.items() if value is not None}
+        return self.get(
+            f"rest/servicedesk/1/servicedesk/agent/{service_desk_id}/sla/metrics",
+            params=params or None,
+        )
+
+    def update_sla_metric(self, service_desk_id, sla_id, data):
+        """Update an SLA metric configuration for a service desk.
+
+        Jira exposes this through an internal agent endpoint used by the JSM
+        settings UI. The payload is passed through unchanged to support the
+        metric schema used by the target Jira release.
+        """
+        return self.put(
+            f"rest/servicedesk/1/servicedesk/agent/{service_desk_id}/sla/metrics/{sla_id}",
+            data=data,
+        )
+
+    def set_sla_metric(self, service_desk_id, sla_id, data):
+        """Backward-compatible alias for :meth:`update_sla_metric`."""
+        return self.update_sla_metric(service_desk_id, sla_id, data)
+
 
 def create_jira_cloud(url: str, *args: Any, api_version: Union[str, int] = 3, **kwargs: Any) -> JiraCloud:
     """Create a versioned Jira Cloud Core client (v3 by default)."""

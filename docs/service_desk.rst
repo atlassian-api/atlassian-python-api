@@ -196,6 +196,14 @@ SLA actions
     # IMPORTANT: The calling user must be an agent
     sd.get_sla_by_id(issue_id_or_key, sla_id)
 
+    # Get SLA metric configuration for a service desk/project.
+    # This uses an internal agent endpoint and may vary by Jira release.
+    sd.get_sla_metrics(service_desk_id)
+
+    # Update one SLA metric. Pass the metric definition/goals payload required
+    # by your Jira release; this is an internal agent endpoint.
+    sd.update_sla_metric(service_desk_id, sla_id, metric_payload)
+
 Approvals
 ---------
 

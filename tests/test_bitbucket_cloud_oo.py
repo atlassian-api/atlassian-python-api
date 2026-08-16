@@ -137,6 +137,28 @@ class TestBasic:
         assert commit.hash == "1fbd047cd99a"
         assert commit.message == "src created online with Bitbucket"
 
+    def test_repository_commits_each_forwards_supported_filters(self, monkeypatch):
+        repository = CLOUD.workspaces.get("TestWorkspace1").repositories.get("testrepository1")
+        calls = []
+
+        def get_paged(*args, **kwargs):
+            calls.append((args, kwargs))
+            return iter([])
+
+        monkeypatch.setattr(repository.commits, "_get_paged", get_paged)
+
+        list(repository.commits.each(include="main", exclude="release", path="src/app.py"))
+
+        assert calls == [
+            (
+                (None,),
+                {
+                    "trailing": True,
+                    "params": {"include": "main", "exclude": "release", "path": "src/app.py"},
+                },
+            )
+        ]
+
     def test_not_exists_repository(self):
         assert not CLOUD.workspaces.get("TestWorkspace1").repositories.exists(
             "testrepository1xxx"

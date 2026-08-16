@@ -59,6 +59,22 @@ documented root/version. Supported API names are ``agile``, ``software``,
 ``security``, ``operations``, and ``devopscomponents``.  The separate roots
 avoid incorrectly treating Jira Software as Core v1.
 
+Issue ranking
+-------------
+
+Jira Software exposes ranking through the Agile API. ``rank_issues`` accepts
+multiple issue keys or IDs and placement fields supported by Jira:
+
+.. code-block:: python
+
+    software.rank_issues({
+        "issues": ["EXAMPLE-1", "EXAMPLE-2"],
+        "rankAfterIssue": "EXAMPLE-10",
+    })
+
+Use ``rank_epics`` for ranking epics. These methods are available on Cloud and
+on Jira Software Server/Data Center installations exposing the Agile REST API.
+
 Generated OpenAPI operations
 ----------------------------
 

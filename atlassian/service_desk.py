@@ -689,6 +689,42 @@ class ServiceDesk(AtlassianRestAPI):
 
         return self.get(url, headers=self.experimental_headers)
 
+    def get_sla_metrics(self, service_desk_id, start=None, limit=None):
+        """Return SLA metric configuration for a service desk.
+
+        Jira Service Management exposes this configuration through an internal
+        agent endpoint used by the service-desk settings UI. It is not part of
+        the public ``rest/servicedeskapi`` contract and may require an agent
+        or Jira administrator permission.
+
+        :param service_desk_id: Service desk/project identifier used by Jira.
+        :param start: Optional result offset, when supported by the instance.
+        :param limit: Optional result limit, when supported by the instance.
+        :return: SLA metric configuration response.
+        """
+        params = {key: value for key, value in {"start": start, "limit": limit}.items() if value is not None}
+        url = f"rest/servicedesk/1/servicedesk/agent/{service_desk_id}/sla/metrics"
+        return self.get(url, params=params or None, headers=self.experimental_headers)
+
+    def update_sla_metric(self, service_desk_id, sla_id, data):
+        """Update an SLA metric configuration for a service desk.
+
+        This uses Jira Service Management's internal agent endpoint. The
+        payload is passed through unchanged because its schema varies between
+        Jira releases and contains the metric definition, goals and calendars.
+
+        :param service_desk_id: Service desk/project identifier used by Jira.
+        :param sla_id: SLA metric identifier.
+        :param data: Metric configuration payload accepted by Jira.
+        :return: Updated SLA metric response.
+        """
+        url = f"rest/servicedesk/1/servicedesk/agent/{service_desk_id}/sla/metrics/{sla_id}"
+        return self.put(url, data=data, headers=self.experimental_headers)
+
+    def set_sla_metric(self, service_desk_id, sla_id, data):
+        """Backward-compatible alias for :meth:`update_sla_metric`."""
+        return self.update_sla_metric(service_desk_id, sla_id, data)
+
     def sla_rebuild(self, tickets=None):
         """
         Fix corrupted or missing sla
