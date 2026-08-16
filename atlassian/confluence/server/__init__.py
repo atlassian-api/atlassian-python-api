@@ -1129,7 +1129,9 @@ class Server(ConfluenceServerBase):
                 comment=comment,
             )
 
-    def download_attachments_from_page(self, page_id, path=None, start=0, limit=50, filename=None, to_memory=False):
+    def download_attachments_from_page(
+        self, page_id, path=None, start=0, limit=50, filename=None, to_memory=False, download_path=None
+    ):
         """
         Downloads attachments from a Confluence page. Supports downloading all files or a specific file.
         Files can either be saved to disk or returned as BytesIO objects for in-memory handling.
@@ -1139,6 +1141,9 @@ class Server(ConfluenceServerBase):
         :param path: str, optional
             Directory where attachments will be saved. If None, defaults to the current working directory.
             Ignored if `to_memory` is True.
+        :param download_path: str, optional
+            Deprecated alias for ``path`` retained for callers of older
+            documentation. Do not pass both names with different values.
         :param start: int, optional
             The start point for paginated attachment fetching. Default is 0. Ignored if `filename` is specified.
         :param limit: int, optional
@@ -1157,6 +1162,11 @@ class Server(ConfluenceServerBase):
             - requests.HTTPError: If the HTTP request to fetch an attachment fails.
             - Exception: For any unexpected errors.
         """
+        if download_path is not None:
+            if path is not None and path != download_path:
+                raise ApiValueError("Specify only one of path or download_path")
+            path = download_path
+
         # Default path to current working directory if not provided
         if not to_memory and path is None:
             path = os.getcwd()

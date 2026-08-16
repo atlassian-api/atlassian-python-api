@@ -296,6 +296,10 @@ Page actions
     """
     confluence.append_page(page_id, title, html_attachment_link)
 
+    # ``download_path=...`` remains an alias for historical examples; use
+    # ``path=...`` for new code.
+    confluence.download_attachments_from_page(page_id, path="/tmp/downloads")
+
     # Confluence Cloud does not render attached HTML inline. Server/Data Center
     # HTML/HTML Include macros are administrator-controlled and disabled by
     # default because embedding arbitrary HTML can introduce XSS vulnerabilities.

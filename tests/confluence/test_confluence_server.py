@@ -92,6 +92,17 @@ class TestConfluenceServer:
         }
         assert mock_put.call_args.kwargs["files"] == {"file": ("diagram.png", content, "image/png")}
 
+    def test_download_attachments_accepts_historical_download_path_alias(self, confluence_server):
+        with patch.object(confluence_server, "get_attachments_from_content", return_value={"results": []}):
+            assert confluence_server.download_attachments_from_page("123", download_path="/tmp") == {
+                "attachments_downloaded": 0,
+                "path": "/tmp",
+            }
+
+    def test_download_attachments_rejects_conflicting_path_arguments(self, confluence_server):
+        with pytest.raises(ApiValueError, match="only one"):
+            confluence_server.download_attachments_from_page("123", path="/tmp/a", download_path="/tmp/b")
+
     @patch.object(ConfluenceServer, "_get_paged")
     def test_get_all_page_versions_follows_paginated_history(self, mock_get_paged, confluence_server):
         mock_get_paged.return_value = iter([{"number": 2}, {"number": 1}])
