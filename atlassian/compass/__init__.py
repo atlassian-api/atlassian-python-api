@@ -61,9 +61,7 @@ class Compass(AtlassianRestAPI):
 
     def delete_package_dependencies(self, component_id, source_id):
         """Delete package dependencies for a component and source."""
-        path = self.url_joiner(
-            self.api_root, f"compass/v1/package_dependencies/lock_file/{component_id}/{source_id}"
-        )
+        path = self.url_joiner(self.api_root, f"compass/v1/package_dependencies/lock_file/{component_id}/{source_id}")
         return self.delete(path)
 
     def get_forge_app_attachment(self, component_id, forge_app_id, key, not_json_response=True):

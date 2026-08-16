@@ -157,11 +157,7 @@ class ConfluenceCloud(
         if expand:
             params["expand"] = ",".join(expand)
 
-        try:
-            return self.get(endpoint, params=params)
-        except Exception as e:
-            log.error(f"Failed to retrieve page with ID {page_id}: {e}")
-            raise
+        return self.get(endpoint, params=params)
 
     def get_pages(
         self,
@@ -444,11 +440,7 @@ class ConfluenceCloud(
         if parent_id:
             data["parentId"] = parent_id
 
-        try:
-            return self.post(endpoint, data=data)
-        except Exception as e:
-            log.error(f"Failed to create page: {e}")
-            raise
+        return self.post(endpoint, data=data)
 
     def update_page(
         self,
@@ -503,12 +495,8 @@ class ConfluenceCloud(
 
         # First, get the current page to get its version
         if version is None:
-            try:
-                current_page = self.get_page_by_id(page_id, get_body=False)
-                version = current_page.get("version", {}).get("number", 1)
-            except Exception as e:
-                log.error(f"Failed to retrieve page for update: {e}")
-                raise
+            current_page = self.get_page_by_id(page_id, get_body=False)
+            version = current_page.get("version", {}).get("number", 1)
 
         # Prepare update data
         data = {
@@ -528,11 +516,7 @@ class ConfluenceCloud(
             if representation:
                 data["body"][body_format]["representation"] = representation
 
-        try:
-            return self.put(endpoint, data=data)
-        except Exception as e:
-            log.error(f"Failed to update page: {e}")
-            raise
+        return self.put(endpoint, data=data)
 
     def delete_page(self, page_id: str) -> bool:
         """
