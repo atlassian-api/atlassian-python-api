@@ -1,6 +1,7 @@
 # coding=utf-8
 
 import copy
+import re
 from datetime import datetime
 from pprint import PrettyPrinter
 
@@ -158,8 +159,14 @@ class BitbucketBase(AtlassianRestAPI):
         if isinstance(value_str, str):
             # Bitbucket Cloud returns ISO 8601 timestamps with optional
             # fractional seconds and either an offset or a trailing ``Z``.
-            # Do not trim or otherwise alter the timestamp: doing so turns
-            # ``+00:00`` into the invalid ``+00:00Z`` form.
+            # Python 3.10 and older only accept 0, 3, or 6 fractional digits,
+            # while Bitbucket may return another precision. Clamp the fraction
+            # to microsecond precision without touching the UTC offset.
+            value_str = re.sub(
+                r"\.(\d+)(?=(?:Z|[+-]\d{2}:?\d{2})?$)",
+                lambda match: "." + match.group(1)[:6].ljust(6, "0"),
+                value_str,
+            )
             value = datetime.fromisoformat(value_str.replace("Z", "+00:00"))
         else:
             value = value_str

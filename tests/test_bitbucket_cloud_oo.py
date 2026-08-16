@@ -1,6 +1,6 @@
 # coding: utf8
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
@@ -9,6 +9,7 @@ from atlassian.bitbucket import Cloud
 from atlassian.bitbucket.cloud.common.users import User
 from atlassian.bitbucket.cloud.repositories import WorkspaceRepositories
 from atlassian.bitbucket.cloud.repositories.commits import Commit as RepositoryCommit
+from atlassian.bitbucket.cloud.repositories.pipelines import Pipeline
 from atlassian.bitbucket.cloud.repositories.pullRequests import (
     Build,
     Comment,
@@ -51,6 +52,28 @@ class TestBasic:
         commit = RepositoryCommit({"type": "commit", "date": timestamp}, **CLOUD._new_session_args)
 
         assert commit.date == expected
+
+    @pytest.mark.parametrize(
+        "timestamp, expected",
+        [
+            (
+                "2026-08-15T23:19:42.71295178+00:00",
+                datetime(2026, 8, 15, 23, 19, 42, 712951, tzinfo=timezone.utc),
+            ),
+            (
+                "2026-08-15T23:19:42.7+05:30",
+                datetime(2026, 8, 15, 23, 19, 42, 700000, tzinfo=timezone(timedelta(hours=5, minutes=30))),
+            ),
+        ],
+    )
+    def test_pipeline_time_normalizes_variable_fractional_seconds(self, timestamp, expected):
+        pipeline = Pipeline(
+            "https://api.bitbucket.org/2.0/repositories/workspace/repository/pipelines/{pipeline}",
+            {"type": "pipeline", "completed_on": timestamp},
+            **CLOUD._new_session_args,
+        )
+
+        assert pipeline.completed_on == expected
 
     def test_each_workspace_uses_user_workspaces_endpoint(self, monkeypatch):
         workspaces = CLOUD.workspaces
