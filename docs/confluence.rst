@@ -318,6 +318,41 @@ already valid storage XML and must not be escaped a second time. Parentheses do
 not require XML escaping. ``representation='wiki'`` is legacy wiki markup;
 prefer storage XHTML for pages users will edit in the browser.
 
+JSON in a code-block macro
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Confluence code blocks are storage-format macros. Serialize structured output
+with the standard library, place it in an ``ac:plain-text-body`` CDATA section,
+and set the code language to ``json``. This preserves indentation and enables
+JSON syntax highlighting in the Confluence editor.
+
+.. code-block:: python
+
+    import json
+
+    def confluence_json_code_block(server_output):
+        json_text = json.dumps(server_output, indent=2, sort_keys=True, ensure_ascii=False)
+
+        # CDATA cannot contain ``]]>``. Split that sequence so arbitrary JSON
+        # string values remain valid Confluence storage XML.
+        json_text = json_text.replace("]]>", "]]]]><![CDATA[>")
+
+        return (
+            '<ac:structured-macro ac:name="code" ac:schema-version="1">'
+            '<ac:parameter ac:name="language">json</ac:parameter>'
+            f'<ac:plain-text-body><![CDATA[{json_text}]]></ac:plain-text-body>'
+            '</ac:structured-macro>'
+        )
+
+    page = confluence.get_page_by_id(page_id, expand='body.storage')
+    body = page['body']['storage']['value']
+    body = body.replace('{{SERVER_OUTPUT}}', confluence_json_code_block(server_output))
+    confluence.update_page(page_id, page['title'], body, representation='storage')
+
+The placeholder must be part of an existing storage-format page template. Do
+not use ``html.escape`` on the returned macro: doing so would display the macro
+as literal text instead of rendering a code block.
+
 Word document imports
 ~~~~~~~~~~~~~~~~~~~~~
 
