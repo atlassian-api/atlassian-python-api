@@ -19,7 +19,11 @@ password; the client sends the required HTTP Basic authentication header.
         cloud=True,
     )
 
+    # Fetch all accessible service desks (following every API page).
     service_desks = sd.get_service_desks(start=0, limit=50)
+
+    # Fetch one bounded page only when controlling pagination manually.
+    first_page = sd.get_service_desks(start=0, limit=50, fetch_all=False)
     customers = sd.get_customers(service_desk_id="1", query="Ada", start=0, limit=50)
 
 Use an account that can access the relevant service desk. A portal-only
@@ -36,7 +40,7 @@ Get info about Service Desk
     # Get info about Service Desk app
     sd.get_info()
 
-    # Get the service desks accessible to the authenticated user
+    # Get every service desk accessible to the authenticated user
     sd.get_service_desks(start=0, limit=50)
 
     # Get the service desk for a given service desk ID

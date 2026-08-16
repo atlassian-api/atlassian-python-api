@@ -19,13 +19,17 @@ class ServiceDesk(AtlassianRestAPI):
 
         return self.get("rest/servicedeskapi/info", headers=self.experimental_headers)
 
-    def get_service_desks(self, start=0, limit=50):
+    def get_service_desks(self, start=0, limit=50, fetch_all=True):
         """
-        Return a page of service desks available to the authenticated user.
+        Return service desks available to the authenticated user.
+
+        By default every API page is retrieved. Set ``fetch_all=False`` to
+        retrieve only one page when a bounded request is required.
 
         :return: Service Desks
         :param start: Index of the first service desk to return.
         :param limit: Maximum number of service desks to return.
+        :param fetch_all: Whether to retrieve subsequent API pages.
         """
         params = {}
         if start is not None:
@@ -39,8 +43,29 @@ class ServiceDesk(AtlassianRestAPI):
         )
         if self.advanced_mode:
             return service_desks_list
-        else:
-            return (service_desks_list or {}).get("values")
+
+        service_desks = (service_desks_list or {}).get("values", [])
+        if not fetch_all:
+            return service_desks
+
+        current_start = int(start or 0)
+        while service_desks_list and not service_desks_list.get("isLastPage", True):
+            next_start = service_desks_list.get("nextPageStart")
+            if next_start is None:
+                next_start = current_start + len((service_desks_list or {}).get("values", []))
+            if next_start == current_start:
+                break
+
+            current_start = int(next_start)
+            page_params = dict(params, start=current_start)
+            service_desks_list = self.get(
+                "rest/servicedeskapi/servicedesk",
+                headers=self.experimental_headers,
+                params=page_params,
+            )
+            service_desks.extend((service_desks_list or {}).get("values", []))
+
+        return service_desks
 
     def get_service_desk_by_id(self, service_desk_id):
         """

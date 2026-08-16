@@ -1,5 +1,5 @@
 from unittest import TestCase
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 from atlassian import Jira, JiraCloud, JiraServer, JiraServiceManagement, JiraSoftware, ServiceDesk, create_jira_cloud
 from atlassian.jira import Jira as PackageJira
@@ -125,4 +125,29 @@ class TestJiraCloudClients(TestCase):
             "rest/servicedeskapi/servicedesk",
             headers=service_desk.experimental_headers,
             params={"start": 50, "limit": 25},
+        )
+
+    def test_legacy_service_desk_follows_all_service_desk_pages(self):
+        service_desk = ServiceDesk("https://example.atlassian.net")
+        first_page = {"values": [{"id": "1"}], "isLastPage": False, "nextPageStart": 50}
+        last_page = {"values": [{"id": "2"}], "isLastPage": True}
+
+        with patch.object(service_desk, "get", side_effect=[first_page, last_page]) as get:
+            result = service_desk.get_service_desks(limit=50)
+
+        self.assertEqual(result, [{"id": "1"}, {"id": "2"}])
+        self.assertEqual(
+            get.call_args_list,
+            [
+                call(
+                    "rest/servicedeskapi/servicedesk",
+                    headers=service_desk.experimental_headers,
+                    params={"start": 0, "limit": 50},
+                ),
+                call(
+                    "rest/servicedeskapi/servicedesk",
+                    headers=service_desk.experimental_headers,
+                    params={"start": 50, "limit": 50},
+                ),
+            ],
         )
