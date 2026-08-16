@@ -767,6 +767,14 @@ class Jira(AtlassianRestAPI):
     """
 
     def component(self, component_id: T_id) -> T_resp_json:
+        """Perform the Jira component operation.
+
+        Args:
+            See the method signature for API request parameters.
+
+        Returns:
+            Decoded Jira REST response.
+        """
         base_url = self.resource_url("component")
         return self.get(f"{base_url}/{component_id}")
 
@@ -781,22 +789,54 @@ class Jira(AtlassianRestAPI):
         return self.get(url)
 
     def create_component(self, component: dict) -> T_resp_json:
+        """Perform the Jira create component operation.
+
+        Args:
+            See the method signature for API request parameters.
+
+        Returns:
+            Decoded Jira REST response.
+        """
         log.info('Creating component "%s"', component["name"])
         base_url = self.resource_url("component")
         url = f"{base_url}/"
         return self.post(url, data=component)
 
     def update_component(self, component: dict, component_id: T_id) -> T_resp_json:
+        """Perform the Jira update component operation.
+
+        Args:
+            See the method signature for API request parameters.
+
+        Returns:
+            Decoded Jira REST response.
+        """
         base_url = self.resource_url("component")
         url = f"{base_url}/{component_id}"
         return self.put(url, data=component)
 
     def delete_component(self, component_id: T_id) -> T_resp_json:
+        """Perform the Jira delete component operation.
+
+        Args:
+            See the method signature for API request parameters.
+
+        Returns:
+            Decoded Jira REST response.
+        """
         log.info('Deleting component "%s"', component_id)
         base_url = self.resource_url("component")
         return self.delete(f"{base_url}/{component_id}")
 
     def update_component_lead(self, component_id: T_id, lead: str) -> T_resp_json:
+        """Perform the Jira update component lead operation.
+
+        Args:
+            See the method signature for API request parameters.
+
+        Returns:
+            Decoded Jira REST response.
+        """
         data = {"id": component_id, "leadUserName": lead}
         base_url = self.resource_url("component")
         return self.put(
@@ -1350,6 +1390,14 @@ class Jira(AtlassianRestAPI):
     """
 
     def issue(self, key: T_id, fields: Union[str, dict] = "*all", expand: Optional[str] = None):
+        """Perform the Jira issue operation.
+
+        Args:
+            See the method signature for API request parameters.
+
+        Returns:
+            Decoded Jira REST response.
+        """
         base_url = self.resource_url("issue")
         url = f"{base_url}/{key}?fields={fields}"
         params: dict = {}
@@ -1492,6 +1540,14 @@ class Jira(AtlassianRestAPI):
         return self.get(url, params=params)
 
     def issue_editmeta(self, key: str):
+        """Perform the Jira issue editmeta operation.
+
+        Args:
+            See the method signature for API request parameters.
+
+        Returns:
+            Decoded Jira REST response.
+        """
         base_url = self.resource_url("issue")
         url = f"{base_url}/{key}/editmeta"
         return self.get(url)
@@ -1614,12 +1670,28 @@ class Jira(AtlassianRestAPI):
         return self.put(url)
 
     def issue_field_value(self, key: str, field: str):
+        """Perform the Jira issue field value operation.
+
+        Args:
+            See the method signature for API request parameters.
+
+        Returns:
+            Decoded Jira REST response.
+        """
         base_url = self.resource_url("issue")
         issue = self.get(f"{base_url}/{key}?fields={field}")
         if issue:
             return issue["fields"][field]
 
     def issue_fields(self, key: str):
+        """Perform the Jira issue fields operation.
+
+        Args:
+            See the method signature for API request parameters.
+
+        Returns:
+            Decoded Jira REST response.
+        """
         base_url = self.resource_url("issue")
         issue = self.get(f"{base_url}/{key}")
         if issue:
@@ -1753,6 +1825,14 @@ class Jira(AtlassianRestAPI):
         return self.post(url, headers=self.no_check_headers, files=files)
 
     def issue_exists(self, issue_key: str) -> Optional[bool]:
+        """Perform the Jira issue exists operation.
+
+        Args:
+            See the method signature for API request parameters.
+
+        Returns:
+            Decoded Jira REST response.
+        """
         original_value = self.advanced_mode
         self.advanced_mode = True
         try:
@@ -1767,6 +1847,14 @@ class Jira(AtlassianRestAPI):
             self.advanced_mode = original_value
 
     def issue_deleted(self, issue_key: str) -> bool:
+        """Perform the Jira issue deleted operation.
+
+        Args:
+            See the method signature for API request parameters.
+
+        Returns:
+            Decoded Jira REST response.
+        """
         exists = self.issue_exists(issue_key)
         if exists:
             log.info('Issue "%s" is not deleted', issue_key)
@@ -1972,11 +2060,27 @@ class Jira(AtlassianRestAPI):
 
     # @todo refactor and merge with create_issue method
     def issue_create(self, fields: dict):
+        """Perform the Jira issue create operation.
+
+        Args:
+            See the method signature for API request parameters.
+
+        Returns:
+            Decoded Jira REST response.
+        """
         log.info('Creating issue "%s"', fields["summary"])
         url = self.resource_url("issue")
         return self.post(url, data={"fields": fields})
 
     def issue_create_or_update(self, fields: dict):
+        """Perform the Jira issue create or update operation.
+
+        Args:
+            See the method signature for API request parameters.
+
+        Returns:
+            Decoded Jira REST response.
+        """
         issue_key = fields.get("issuekey", None)
 
         if not issue_key or not self.issue_exists(issue_key):
@@ -2200,6 +2304,14 @@ class Jira(AtlassianRestAPI):
         return self.post(url, data=data)
 
     def get_issue_remote_link_by_id(self, issue_key: str, link_id: T_id):
+        """Perform the Jira get issue remote link by id operation.
+
+        Args:
+            See the method signature for API request parameters.
+
+        Returns:
+            Decoded Jira REST response.
+        """
         base_url = self.resource_url("issue")
         url = f"{base_url}/{issue_key}/remotelink/{link_id}"
         return self.get(url)
@@ -2243,6 +2355,14 @@ class Jira(AtlassianRestAPI):
         return self.delete(url)
 
     def get_issue_transitions(self, issue_key: str) -> List[dict]:
+        """Perform the Jira get issue transitions operation.
+
+        Args:
+            See the method signature for API request parameters.
+
+        Returns:
+            Decoded Jira REST response.
+        """
         if self.advanced_mode:
             resp = cast("Response", self.get_issue_transitions_full(issue_key))
             d: Dict[str, list] = resp.json() or {}
@@ -2259,6 +2379,14 @@ class Jira(AtlassianRestAPI):
         ]
 
     def issue_transition(self, issue_key: str, status: str) -> T_resp_json:
+        """Perform the Jira issue transition operation.
+
+        Args:
+            See the method signature for API request parameters.
+
+        Returns:
+            Decoded Jira REST response.
+        """
         return self.set_issue_status(issue_key, status)
 
     def set_issue_status(
@@ -2289,6 +2417,14 @@ class Jira(AtlassianRestAPI):
 
     def get_issue_status_changelog(self, issue_id: T_id):
         # Get the issue details with changelog
+        """Perform the Jira get issue status changelog operation.
+
+        Args:
+            See the method signature for API request parameters.
+
+        Returns:
+            Decoded Jira REST response.
+        """
         response_get_issue = self.get_issue(issue_id, fields="id", expand="changelog")
         status_change_history = []
         for history in response_get_issue["changelog"]["histories"]:
@@ -2322,12 +2458,28 @@ class Jira(AtlassianRestAPI):
         return self.post(url, data={"transition": {"name": transition_name}})
 
     def get_issue_status(self, issue_key: str):
+        """Perform the Jira get issue status operation.
+
+        Args:
+            See the method signature for API request parameters.
+
+        Returns:
+            Decoded Jira REST response.
+        """
         base_url = self.resource_url("issue")
         url = f"{base_url}/{issue_key}?fields=status"
         fields = [("fields",), ("status",), ("name",)]
         return self._get_response_content(url, fields=fields) or {}
 
     def get_issue_status_id(self, issue_key: str) -> str:
+        """Perform the Jira get issue status id operation.
+
+        Args:
+            See the method signature for API request parameters.
+
+        Returns:
+            Decoded Jira REST response.
+        """
         base_url = self.resource_url("issue")
         url = f"{base_url}/{issue_key}?fields=status"
         fields = [("fields",), ("status",), ("id",)]
@@ -2368,16 +2520,40 @@ class Jira(AtlassianRestAPI):
         return self.get(url)
 
     def set_issue_property(self, issue_key: str, property_key: str, data: dict):
+        """Perform the Jira set issue property operation.
+
+        Args:
+            See the method signature for API request parameters.
+
+        Returns:
+            Decoded Jira REST response.
+        """
         base_url = self.resource_url("issue")
         url = f"{base_url}/{issue_key}/properties/{property_key}"
         return self.put(url, data=data)
 
     def get_issue_property(self, issue_key: str, property_key: str):
+        """Perform the Jira get issue property operation.
+
+        Args:
+            See the method signature for API request parameters.
+
+        Returns:
+            Decoded Jira REST response.
+        """
         base_url = self.resource_url("issue")
         url = f"{base_url}/{issue_key}/properties/{property_key}"
         return self.get(url)
 
     def delete_issue_property(self, issue_key: str, property_key: str):
+        """Perform the Jira delete issue property operation.
+
+        Args:
+            See the method signature for API request parameters.
+
+        Returns:
+            Decoded Jira REST response.
+        """
         base_url = self.resource_url("issue")
         url = f"{base_url}/{issue_key}/properties/{property_key}"
         return self.delete(url)
@@ -2834,6 +3010,14 @@ class Jira(AtlassianRestAPI):
         return self.get(url, params=params)
 
     def get_all_projects(self, included_archived: Optional[bool] = None, expand: Optional[str] = None):
+        """Perform the Jira get all projects operation.
+
+        Args:
+            See the method signature for API request parameters.
+
+        Returns:
+            Decoded Jira REST response.
+        """
         return self.projects(included_archived, expand)
 
     def projects(self, included_archived: Optional[bool] = None, expand: Optional[str] = None):
@@ -3401,6 +3585,14 @@ class Jira(AtlassianRestAPI):
         return custom_fields
 
     def project_leaders(self):
+        """Perform the Jira project leaders operation.
+
+        Args:
+            See the method signature for API request parameters.
+
+        Returns:
+            Decoded Jira REST response.
+        """
         for project in self.projects():
             key = project["key"]
             project_data = self.project(key)
@@ -3414,6 +3606,14 @@ class Jira(AtlassianRestAPI):
             }
 
     def get_project_issuekey_last(self, project: str):
+        """Perform the Jira get project issuekey last operation.
+
+        Args:
+            See the method signature for API request parameters.
+
+        Returns:
+            Decoded Jira REST response.
+        """
         jql = f'project = "{project}" ORDER BY issuekey DESC'
         response = self.jql(jql)
         if self.advanced_mode:
@@ -3424,6 +3624,14 @@ class Jira(AtlassianRestAPI):
     def get_project_issuekey_all(
         self, project: str, start: int = 0, limit: Optional[int] = None, expand: Optional[str] = None
     ):
+        """Perform the Jira get project issuekey all operation.
+
+        Args:
+            See the method signature for API request parameters.
+
+        Returns:
+            Decoded Jira REST response.
+        """
         jql = f'project = "{project}" ORDER BY issuekey ASC'
         response = self.jql(jql, start=start, limit=limit, expand=expand)
         if self.advanced_mode:
@@ -3431,6 +3639,14 @@ class Jira(AtlassianRestAPI):
         return [issue["key"] for issue in cast("dict", response)["issues"]]
 
     def get_project_issues_count(self, project: str):
+        """Perform the Jira get project issues count operation.
+
+        Args:
+            See the method signature for API request parameters.
+
+        Returns:
+            Decoded Jira REST response.
+        """
         jql = f'project = "{project}" '
         response = self.jql(jql, fields="*none")
         if self.advanced_mode:
@@ -3486,11 +3702,27 @@ class Jira(AtlassianRestAPI):
         return self.get(url)
 
     def get_status_id_from_name(self, status_name: str):
+        """Perform the Jira get status id from name operation.
+
+        Args:
+            See the method signature for API request parameters.
+
+        Returns:
+            Decoded Jira REST response.
+        """
         base_url = self.resource_url("status")
         url = f"{base_url}/{status_name}"
         return int(self._get_response_content(url, fields=[("id",)]))
 
     def get_status_for_project(self, project_key: str) -> T_resp_json:
+        """Perform the Jira get status for project operation.
+
+        Args:
+            See the method signature for API request parameters.
+
+        Returns:
+            Decoded Jira REST response.
+        """
         base_url = self.resource_url("project")
         url = f"{base_url}/{project_key}/statuses"
         return self.get(url)
@@ -3520,6 +3752,14 @@ class Jira(AtlassianRestAPI):
         return self.get(url)
 
     def get_transition_id_to_status_name(self, issue_key: str, status_name: str) -> Optional[int]:
+        """Perform the Jira get transition id to status name operation.
+
+        Args:
+            See the method signature for API request parameters.
+
+        Returns:
+            Decoded Jira REST response.
+        """
         for transition in self.get_issue_transitions(issue_key):
             if status_name.lower() == transition["to"].lower():
                 return int(transition["id"])
@@ -4300,6 +4540,14 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         return self.delete(url)
 
     def check_plugin_manager_status(self) -> Response:
+        """Perform the Jira check plugin manager status operation.
+
+        Args:
+            See the method signature for API request parameters.
+
+        Returns:
+            Decoded Jira REST response.
+        """
         url = "rest/plugins/latest/safe-mode"
         return self.request(method="GET", path=url, headers=self.safe_mode_headers)
 
@@ -4763,6 +5011,14 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         return response.json()
 
     def reindex_project(self, project_key: str) -> T_resp_json:
+        """Perform the Jira reindex project operation.
+
+        Args:
+            See the method signature for API request parameters.
+
+        Returns:
+            Decoded Jira REST response.
+        """
         return self.post(
             "secure/admin/IndexProject.jspa",
             data=f"confirmed=true&key={project_key}",
@@ -5236,6 +5492,14 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         return self.get(url, params=params)
 
     def tempo_timesheets_approval_status(self, period_start_date: str, user_name: str) -> T_resp_json:
+        """Perform the Jira tempo timesheets approval status operation.
+
+        Args:
+            See the method signature for API request parameters.
+
+        Returns:
+            Decoded Jira REST response.
+        """
         url = "rest/tempo-timesheets/4/timesheet-approval/approval-statuses"
         params: dict = {}
         if user_name:
@@ -5263,6 +5527,14 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         return self.get(url)
 
     def tempo_teams_get_all_teams(self, expand: Optional[str] = None) -> T_resp_json:
+        """Perform the Jira tempo teams get all teams operation.
+
+        Args:
+            See the method signature for API request parameters.
+
+        Returns:
+            Decoded Jira REST response.
+        """
         url = "rest/tempo-teams/2/team"
         params: dict = {}
         if expand:
@@ -5344,12 +5616,36 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         return self.put(url, data=data)
 
     def tempo_timesheets_get_period_configuration(self) -> T_resp_json:
+        """Perform the Jira tempo timesheets get period configuration operation.
+
+        Args:
+            See the method signature for API request parameters.
+
+        Returns:
+            Decoded Jira REST response.
+        """
         return self.get("rest/tempo-timesheets/3/period-configuration")
 
     def tempo_timesheets_get_private_configuration(self) -> T_resp_json:
+        """Perform the Jira tempo timesheets get private configuration operation.
+
+        Args:
+            See the method signature for API request parameters.
+
+        Returns:
+            Decoded Jira REST response.
+        """
         return self.get("rest/tempo-timesheets/3/private/config")
 
     def tempo_teams_get_memberships_for_member(self, username: str) -> T_resp_json:
+        """Perform the Jira tempo teams get memberships for member operation.
+
+        Args:
+            See the method signature for API request parameters.
+
+        Returns:
+            Decoded Jira REST response.
+        """
         return self.get(f"rest/tempo-teams/2/user/{username}/memberships")
 
     #######################################################################
