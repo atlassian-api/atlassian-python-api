@@ -159,6 +159,26 @@ class TestBasic:
             )
         ]
 
+    def test_repository_variable_get_by_key_returns_uuid_object(self, monkeypatch):
+        repository = CLOUD.workspaces.get("TestWorkspace1").repositories.get("testrepository1")
+        variable = repository.repository_variables
+        item = type("Variable", (), {"key": "qww", "uuid": "{variable-uuid}"})()
+
+        monkeypatch.setattr(variable, "each", lambda **kwargs: iter([item]))
+
+        result = variable.get_by_key("qww")
+
+        assert result.uuid == "{variable-uuid}"
+
+    def test_repository_variable_update_by_key_uses_lookup_uuid(self, monkeypatch):
+        repository = CLOUD.workspaces.get("TestWorkspace1").repositories.get("testrepository1")
+        variable = repository.repository_variables
+        item = type("Variable", (), {})()
+        monkeypatch.setattr(variable, "get_by_key", lambda key: item)
+        monkeypatch.setattr(item, "update", lambda **kwargs: kwargs, raising=False)
+
+        assert variable.update_by_key("qww", "new", secured=True) == {"value": "new", "secured": True}
+
     def test_not_exists_repository(self):
         assert not CLOUD.workspaces.get("TestWorkspace1").repositories.exists(
             "testrepository1xxx"

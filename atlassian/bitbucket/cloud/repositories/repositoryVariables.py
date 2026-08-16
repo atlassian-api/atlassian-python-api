@@ -60,6 +60,29 @@ class RepositoryVariables(BitbucketCloudBase):
 
         return
 
+    def get_by_key(self, key):
+        """Return the repository variable with ``key``, or ``None``.
+
+        Bitbucket requires the variable UUID for the item endpoint. This
+        helper follows the paginated collection and returns the object with
+        its UUID, avoiding callers having to implement that lookup themselves.
+        """
+        for variable in self.each(q=f'key="{key}"'):
+            if variable.key == key:
+                return variable
+        return None
+
+    def update_by_key(self, key, value, secured=None):
+        """Update a repository variable by its key and return the object."""
+        variable = self.get_by_key(key)
+        if variable is None:
+            raise ValueError(f"Repository variable with key {key!r} was not found")
+
+        data = {"value": value}
+        if secured is not None:
+            data["secured"] = secured
+        return variable.update(**data)
+
     def get(self, uuid: str):  # type: ignore[override]
         """
         Returns the pipeline with the uuid in this repository.

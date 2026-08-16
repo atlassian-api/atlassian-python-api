@@ -652,6 +652,13 @@ the use case.
     # Delete repository_variable
     repository_variable.delete()
 
+    # Look up a repository pipeline variable by its name; the returned object
+    # exposes its UUID and can be updated without constructing a URL manually.
+    repository_variable = repository.repository_variables.get_by_key("qww")
+    if repository_variable is not None:
+        print(repository_variable.uuid)
+        repository.repository_variables.update_by_key("qww", "new-value", secured=True)
+
     # Get a list of hooks from a repository
     repository.hooks.each()
 
