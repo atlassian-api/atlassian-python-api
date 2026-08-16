@@ -33,7 +33,10 @@ class TestCloudAdmin:
         admin.deactivate_user("account", message="Offboarding")
 
         assert calls == [
-            ("https://api.atlassian.com/users/account/manage/email", {"data": {"email": "ada@example.com"}, "absolute": True}),
+            (
+                "https://api.atlassian.com/users/account/manage/email",
+                {"data": {"email": "ada@example.com"}, "absolute": True},
+            ),
             (
                 "https://api.atlassian.com/users/account/manage/lifecycle/disable",
                 {"data": {"message": "Offboarding"}, "absolute": True},
@@ -90,7 +93,10 @@ class TestCloudAdmin:
         admin.add_users_to_auth_policy("org", "policy", {"accountIds": ["account"]})
 
         assert calls == [
-            ("https://api.atlassian.com/admin/control/v2/orgs/org/policies", {"data": {"name": "MFA"}, "absolute": True}),
+            (
+                "https://api.atlassian.com/admin/control/v2/orgs/org/policies",
+                {"data": {"name": "MFA"}, "absolute": True},
+            ),
             (
                 "https://api.atlassian.com/admin/control/v1/orgs/org/auth-policy/policy/add-users",
                 {"data": {"accountIds": ["account"]}, "absolute": True},
@@ -107,8 +113,14 @@ class TestCloudAdmin:
         admin.revoke_org_api_key("org", "key")
 
         assert calls == [
-            ("https://api.atlassian.com/admin/api-access/v1/orgs/org/api-tokens", {"absolute": True, "params": {"limit": 100}}),
-            ("https://api.atlassian.com/admin/api-access/v1/orgs/org/api-keys/revoke/key", {"data": {}, "absolute": True}),
+            (
+                "https://api.atlassian.com/admin/api-access/v1/orgs/org/api-tokens",
+                {"absolute": True, "params": {"limit": 100}},
+            ),
+            (
+                "https://api.atlassian.com/admin/api-access/v1/orgs/org/api-keys/revoke/key",
+                {"data": {}, "absolute": True},
+            ),
         ]
 
 

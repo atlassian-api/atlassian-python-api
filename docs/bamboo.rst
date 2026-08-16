@@ -148,6 +148,24 @@ Deployments
     # Triggers a deployment for a release version on the given environment.
     trigger_deployment_for_version_on_environment(version_id, environment_id)
 
+Agents and plan variables
+-------------------------
+
+.. code-block:: python
+
+    # activity() filters active online agents using the supported REST agent
+    # resource rather than removed Bamboo dashboard endpoints.
+    busy_agents = bamboo.activity(busy=True)
+
+    capabilities = bamboo.agent_capabilities(agent_id, include_shared=True)
+    bamboo.add_agent_capability(agent_id, {"type": "system", "key": "jdk", "value": "17"})
+    bamboo.delete_agent_capability(agent_id, capability_key)
+
+    variables = bamboo.get_plan_variables("PROJ-PLAN")
+    bamboo.create_plan_variable("PROJ-PLAN", {"name": "release", "value": "1.0"})
+    bamboo.update_plan_variable("PROJ-PLAN", "release", {"value": "1.1"})
+    bamboo.delete_plan_variable("PROJ-PLAN", "release")
+
 Users & Groups
 --------------
 

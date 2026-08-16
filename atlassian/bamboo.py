@@ -1203,6 +1203,38 @@ class Bamboo(AtlassianRestAPI):
             params={"includeShared": include_shared},
         )
 
+    def add_agent_capability(self, agent_id, data):
+        """Add a capability to an agent using Bamboo's capability payload."""
+        return self.post(self.resource_url(f"agent/{agent_id}/capability"), data=data)
+
+    def delete_agent_capability(self, agent_id, capability_key):
+        """Delete one agent capability by its Bamboo capability key."""
+        return self.delete(self.resource_url(f"agent/{agent_id}/capability/{capability_key}"))
+
+    def delete_all_agent_capabilities(self, agent_id):
+        """Delete every capability assigned directly to an agent."""
+        return self.delete(self.resource_url(f"agent/{agent_id}/capability"))
+
+    def get_plan_variables(self, plan_key):
+        """Return variables configured for a plan."""
+        return self.get(self.resource_url(f"plan/{plan_key}/variable"))
+
+    def get_plan_variable(self, plan_key, variable_name):
+        """Return one plan variable by name."""
+        return self.get(self.resource_url(f"plan/{plan_key}/variable/{variable_name}"))
+
+    def create_plan_variable(self, plan_key, data):
+        """Create a plan variable from Bamboo's variable request body."""
+        return self.post(self.resource_url(f"plan/{plan_key}/variable"), data=data)
+
+    def update_plan_variable(self, plan_key, variable_name, data):
+        """Update a plan variable."""
+        return self.put(self.resource_url(f"plan/{plan_key}/variable/{variable_name}"), data=data)
+
+    def delete_plan_variable(self, plan_key, variable_name):
+        """Delete a plan variable."""
+        return self.delete(self.resource_url(f"plan/{plan_key}/variable/{variable_name}"))
+
     def activity(self, busy=None):
         """Return active online agents and their current build activity.
 

@@ -205,11 +205,17 @@ class CloudAdmin(AtlassianRestAPI):
 
     def get_scim_links(self, org_id, account_id):
         """Return SCIM links for an Atlassian account."""
-        return self.get(f"{ADMIN_URL}/admin/user-provisioning/v1/org/{org_id}/user/{account_id}/get-scim-links", absolute=True)
+        return self.get(
+            f"{ADMIN_URL}/admin/user-provisioning/v1/org/{org_id}/user/{account_id}/get-scim-links", absolute=True
+        )
 
     def get_scim_links_for_email(self, org_id, email):
         """Return SCIM links associated with an email address."""
-        return self.post(f"{ADMIN_URL}/admin/user-provisioning/v1/org/{org_id}/get-scim-links-for-email", data={"email": email}, absolute=True)
+        return self.post(
+            f"{ADMIN_URL}/admin/user-provisioning/v1/org/{org_id}/get-scim-links-for-email",
+            data={"email": email},
+            absolute=True,
+        )
 
     def unlink_scim_user(self, org_id, directory_id, user_id):
         """Unlink a SCIM user from an Atlassian account without deleting either resource."""
@@ -301,7 +307,9 @@ class CloudAdmin(AtlassianRestAPI):
 
     def add_control_policy_resource(self, org_id, policy_id, data, version="v2"):
         """Associate a resource with a policy."""
-        return self.post(self._control_url(org_id, f"/policies/{policy_id}/resources", version), data=data, absolute=True)
+        return self.post(
+            self._control_url(org_id, f"/policies/{policy_id}/resources", version), data=data, absolute=True
+        )
 
     def delete_control_policy_resources(self, org_id, policy_id, version="v2"):
         """Remove all resources associated with a policy."""
@@ -321,7 +329,9 @@ class CloudAdmin(AtlassianRestAPI):
 
     def add_users_to_auth_policy(self, org_id, policy_id, data):
         """Start a V1 task assigning users to an authentication policy."""
-        return self.post(self._control_url(org_id, f"/auth-policy/{policy_id}/add-users", "v1"), data=data, absolute=True)
+        return self.post(
+            self._control_url(org_id, f"/auth-policy/{policy_id}/add-users", "v1"), data=data, absolute=True
+        )
 
     def get_auth_policy_task(self, org_id, task_id):
         """Return status for an asynchronous authentication-policy task."""
@@ -375,7 +385,9 @@ class CloudAdmin(AtlassianRestAPI):
 
     def revoke_org_api_key(self, org_id, api_key_id, data=None):
         """Revoke an organization API key."""
-        return self.patch(self._api_access_url(org_id, f"/api-keys/revoke/{api_key_id}"), data=data or {}, absolute=True)
+        return self.patch(
+            self._api_access_url(org_id, f"/api-keys/revoke/{api_key_id}"), data=data or {}, absolute=True
+        )
 
     def get_oauth_clients(self, org_id, **params):
         """List organization OAuth clients."""
