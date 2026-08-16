@@ -3,6 +3,7 @@
 from .base import BitbucketServerBase
 from .globalPermissions import Groups, Users
 from .projects import Projects
+from .projects.repos import Repositories
 
 
 class Server(BitbucketServerBase):
@@ -44,3 +45,13 @@ class Server(BitbucketServerBase):
         Reference: https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp147
         """
         return self.__projects
+
+    def personal_repositories(self, username):
+        """Return repositories owned by a Bitbucket Server/Data Center user.
+
+        ``username`` may be supplied with or without the leading ``~``. The
+        returned collection has the same API as ``project.repos`` and uses
+        Bitbucket's user-centric ``/users/{userSlug}/repos`` endpoint.
+        """
+        user_slug = username if username.startswith("~") else f"~{username}"
+        return Repositories(self._sub_url(f"users/{user_slug}/repos"), **self._new_session_args)

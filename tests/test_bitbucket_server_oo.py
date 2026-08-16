@@ -18,6 +18,12 @@ except ImportError:
 
 @pytest.mark.skipif(sys.version_info < (3, 4), reason="requires python3.4")
 class TestBasic:
+    def test_personal_repositories_accepts_a_username_or_user_slug(self):
+        expected_url = f"{BITBUCKET.url}/users/~alice/repos"
+
+        assert BITBUCKET.personal_repositories("alice").url == expected_url
+        assert BITBUCKET.personal_repositories("~alice").url == expected_url
+
     def test_global_permissions(self):
         result = list(BITBUCKET.groups.each())
         assert [x.name for x in result] == ["group_a", "group_b", "group_c", "group_d"], "Each global group"
