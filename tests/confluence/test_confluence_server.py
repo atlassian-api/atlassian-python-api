@@ -1202,6 +1202,14 @@ class TestConfluenceServer:
         )
 
     @patch.object(ConfluenceServer, "get")
+    def test_get_all_spaces_accepts_category_label_filter(self, mock_get, confluence_server):
+        mock_get.return_value = {"results": []}
+
+        confluence_server.get_all_spaces(label="service", start=0, limit=500)
+
+        mock_get.assert_called_once_with("rest/api/space", params={"limit": 500, "label": "service"})
+
+    @patch.object(ConfluenceServer, "get")
     def test_get_all_blog_posts_from_space_trash(self, mock_get, confluence_server):
         """Test get_all_blog_posts_from_space_trash method."""
         mock_get.return_value = {"results": [{"id": "456", "title": "Trashed Blog Post"}]}

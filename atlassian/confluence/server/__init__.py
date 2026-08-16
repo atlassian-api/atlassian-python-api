@@ -2092,6 +2092,7 @@ class Server(ConfluenceServerBase):
         expand=None,
         space_type=None,
         space_status=None,
+        label=None,
     ):
         """
         Get all spaces with provided limit
@@ -2100,6 +2101,7 @@ class Server(ConfluenceServerBase):
                             fixed system limits. Default: 500
         :param space_type: OPTIONAL: Filter the list of spaces returned by type (global, personal)
         :param space_status: OPTIONAL: Filter the list of spaces returned by status (current, archived)
+        :param label: OPTIONAL: Filter the list of spaces by a category label.
         :param expand: OPTIONAL: additional info, e.g. metadata, icon, description, homepage
         """
         url = "rest/api/space"
@@ -2114,9 +2116,11 @@ class Server(ConfluenceServerBase):
             params["type"] = space_type
         if space_status:
             params["status"] = space_status
+        if label:
+            params["label"] = label
         return self.get(url, params=params)
 
-    def get_space_names(self, start=0, limit=50, space_type=None, space_status=None):
+    def get_space_names(self, start=0, limit=50, space_type=None, space_status=None, label=None):
         """Return every visible Server/Data Center space name.
 
         Only the space directory metadata endpoint is requested; no page or
@@ -2130,6 +2134,7 @@ class Server(ConfluenceServerBase):
                 limit=limit,
                 space_type=space_type,
                 space_status=space_status,
+                label=label,
             )
             spaces = response.get("results", [])
             names.extend(space["name"] for space in spaces if space.get("name"))

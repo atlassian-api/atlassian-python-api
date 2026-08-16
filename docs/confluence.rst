@@ -79,6 +79,10 @@ The endpoint is selected by API version, not by the method name:
   ``/wiki/rest/api/space`` when the instance uses the ``/wiki`` context).
 - Cloud REST V2 uses ``/wiki/api/v2/spaces``.
 
+For Server/Data Center (and legacy Cloud V1 installations), filter by one
+space category label with ``get_all_spaces(label="service")``. Cloud V2 uses
+the plural list filter: ``get_spaces(labels=["service"])``.
+
 The Cloud V1 Postman collection does not define a public **Get spaces**
 operation; use Cloud V2 for space enumeration. ``ConfluenceV2`` and
 ``ConfluenceCloud`` use the V2 plural endpoint. Their
