@@ -4,7 +4,7 @@ import re
 
 from requests import HTTPError
 
-from .rest_client import AtlassianRestAPI
+from ..rest_client import AtlassianRestAPI
 
 log = logging.getLogger(__name__)
 
@@ -44,6 +44,10 @@ class Xray(AtlassianRestAPI):
         if api_version is None:
             api_version = self.api_version
         return "/".join(s.strip("/") for s in [api_root, api_version, "api", resource] if s is not None)
+
+    def _is_v2(self):
+        """Return whether this client targets the Xray REST API v2 surface."""
+        return str(self.api_version).startswith("2")
 
     # Tests API
     def get_tests(self, test_keys):
@@ -189,19 +193,22 @@ class Xray(AtlassianRestAPI):
         :param test_step_id: ID of the test step.
         :return: Return the test step with the given id.
         """
-        url = self.resource_url(f"test/{test_key}/step/{test_step_id}")
+        path = "steps" if self._is_v2() else "step"
+        url = self.resource_url(f"test/{test_key}/{path}/{test_step_id}")
         return self.get(url)
 
-    def get_test_steps(self, test_key):
+    def get_test_steps(self, test_key, test_version=None):
         """
         Retrieve the test steps of a given test.
         :param test_key: Test key (eg. 'TEST-001').
         :return: Return the test steps of a given test.
         """
-        url = self.resource_url(f"test/{test_key}/step")
-        return self.get(url)
+        path = "steps" if self._is_v2() else "step"
+        url = self.resource_url(f"test/{test_key}/{path}")
+        params = {"testVersion": test_version} if self._is_v2() and test_version is not None else None
+        return self.get(url, params=params) if params else self.get(url)
 
-    def create_test_step(self, test_key, step, data, result):
+    def create_test_step(self, test_key, step, data, result, test_version=None):
         """
         Create a new test steps for a given test.
         NOTE: attachments are currently not supported!
@@ -212,7 +219,11 @@ class Xray(AtlassianRestAPI):
         :return:
         """
         create = {"step": step, "data": data, "result": result, "attachments": []}
-        url = self.resource_url(f"test/{test_key}/step")
+        path = "steps" if self._is_v2() else "step"
+        url = self.resource_url(f"test/{test_key}/{path}")
+        params = {"testVersion": test_version} if self._is_v2() and test_version is not None else None
+        if self._is_v2():
+            return self.post(url, data=create, params=params)
         return self.put(url, create)
 
     def update_test_step(self, test_key, test_step_id, step, data, result):
@@ -232,7 +243,10 @@ class Xray(AtlassianRestAPI):
             "result": result,
             "attachments": {"add": [], "remove": []},
         }
-        url = self.resource_url(f"test/{test_key}/step/{test_step_id}")
+        path = "steps" if self._is_v2() else "step"
+        url = self.resource_url(f"test/{test_key}/{path}/{test_step_id}")
+        if self._is_v2():
+            return self.put(url, data=update)
         return self.post(url, update)
 
     def delete_test_step(self, test_key, test_step_id):
@@ -242,7 +256,8 @@ class Xray(AtlassianRestAPI):
         :param test_step_id: ID of the test step.
         :return:
         """
-        url = self.resource_url(f"test/{test_key}/step/{test_step_id}")
+        path = "steps" if self._is_v2() else "step"
+        url = self.resource_url(f"test/{test_key}/{path}/{test_step_id}")
         return self.delete(url)
 
     # Pre-Conditions API
@@ -662,3 +677,115 @@ class Xray(AtlassianRestAPI):
         data = {"add": add, "remove": remove}
         url = self.resource_url(f"testrepository/{project_key}/folders/{folder_id}/tests")
         return self.put(url, data=data)
+
+    # Xray REST API v2 operations
+    def get_test_step_attachments(self, test_key, step_id):
+        """Return attachments associated with a test step (v2)."""
+        return self.get(self.resource_url(f"test/{test_key}/steps/{step_id}/attachments"))
+
+    def delete_test_step_attachment(self, test_key, step_id, attachment_id):
+        """Delete an attachment from a test step (v2)."""
+        return self.delete(self.resource_url(f"test/{test_key}/steps/{step_id}/attachment/{attachment_id}"))
+
+    def get_test_run_by_keys(self, test_exec_issue_key, test_issue_key):
+        """Retrieve a test run by its execution and test issue keys (v2)."""
+        params = {"testExecIssueKey": test_exec_issue_key, "testIssueKey": test_issue_key}
+        return self.get(self.resource_url("testrun"), params=params)
+
+    def update_test_run(self, test_run_id, data):
+        """Update a test run using the supplied v2 payload."""
+        return self.put(self.resource_url(f"testrun/{test_run_id}"), data=data)
+
+    def get_test_run_custom_field(self, test_run_id, custom_field_id):
+        return self.get(self.resource_url(f"testrun/{test_run_id}/customfield/{custom_field_id}"))
+
+    def update_test_run_custom_field(self, test_run_id, custom_field_id, data):
+        return self.put(self.resource_url(f"testrun/{test_run_id}/customfield/{custom_field_id}"), data=data)
+
+    def update_test_run_iteration(self, test_run_id, iteration_id, data):
+        return self.put(self.resource_url(f"testrun/{test_run_id}/iteration/{iteration_id}"), data=data)
+
+    def get_test_run_iteration_steps(self, test_run_id, iteration_id):
+        return self.get(self.resource_url(f"testrun/{test_run_id}/iteration/{iteration_id}/step"))
+
+    def get_test_run_iteration_step(self, test_run_id, iteration_id, step_result_id):
+        return self.get(self.resource_url(f"testrun/{test_run_id}/iteration/{iteration_id}/step/{step_result_id}"))
+
+    def update_test_run_iteration_step(self, test_run_id, iteration_id, step_result_id, data):
+        url = self.resource_url(f"testrun/{test_run_id}/iteration/{iteration_id}/step/{step_result_id}")
+        return self.put(url, data=data)
+
+    def get_test_run_iteration_step_status(self, test_run_id, iteration_id, step_result_id):
+        url = self.resource_url(f"testrun/{test_run_id}/iteration/{iteration_id}/step/{step_result_id}/status")
+        return self.get(url)
+
+    def update_test_run_iteration_step_status(self, test_run_id, iteration_id, step_result_id, status):
+        url = self.resource_url(f"testrun/{test_run_id}/iteration/{iteration_id}/step/{step_result_id}/status")
+        return self.put(url, params={"status": status})
+
+    def get_test_run_iteration_step_attachments(self, test_run_id, iteration_id, step_result_id):
+        url = self.resource_url(f"testrun/{test_run_id}/iteration/{iteration_id}/step/{step_result_id}/attachment")
+        return self.get(url)
+
+    def add_test_run_iteration_step_attachment(self, test_run_id, iteration_id, step_result_id, data):
+        url = self.resource_url(f"testrun/{test_run_id}/iteration/{iteration_id}/step/{step_result_id}/attachment")
+        return self.post(url, data=data)
+
+    def delete_test_run_iteration_step_attachments(self, test_run_id, iteration_id, step_result_id, filename):
+        url = self.resource_url(f"testrun/{test_run_id}/iteration/{iteration_id}/step/{step_result_id}/attachment")
+        return self.delete(url, params={"filename": filename})
+
+    def delete_test_run_iteration_step_attachment(self, test_run_id, iteration_id, step_result_id, attachment_id):
+        url = self.resource_url(
+            f"testrun/{test_run_id}/iteration/{iteration_id}/step/{step_result_id}/attachment/{attachment_id}"
+        )
+        return self.delete(url)
+
+    def reset_test_run_status(self, keys=None, filter=None, jql=None):
+        params = {k: v for k, v in {"keys": keys, "filter": filter, "jql": jql}.items() if v is not None}
+        return self.put(self.resource_url("testrunstatus/reset"), params=params or None)
+
+    def reset_requirement_status(self, keys=None, filter=None, jql=None):
+        params = {k: v for k, v in {"keys": keys, "filter": filter, "jql": jql}.items() if v is not None}
+        return self.put(self.resource_url("requirementstatus/reset"), params=params or None)
+
+    def get_project_test_run_custom_fields(self, project_id):
+        return self.get(self.resource_url(f"project/{project_id}/settings/customfields/testruns"))
+
+    def get_project_test_step_custom_fields(self, project_id):
+        return self.get(self.resource_url(f"project/{project_id}/settings/customfields/teststeps"))
+
+    def get_xray_license(self):
+        return self.get(self.resource_url("xraylicense"))
+
+    def import_test_execution(self, data):
+        """Import an Xray JSON test execution result."""
+        return self.post(self.resource_url("import/execution"), data=data)
+
+    def import_test_execution_multipart(self, files=None, data=None):
+        """Import an Xray test execution using multipart form data."""
+        return self.post(self.resource_url("import/execution/multipart"), data=data, files=files)
+
+    def export_dataset(self, **filters):
+        """Export a dataset as CSV using the supplied v2 filters."""
+        allowed = {"testIssueId", "testIssueKey", "testVersion", "contextIssueId", "contextIssueKey", "resolved"}
+        params = {key: value for key, value in filters.items() if key in allowed and value is not None}
+        return self.get(self.resource_url("dataset/export"), params=params or None, not_json_response=True)
+
+    def import_dataset(self, files=None, **filters):
+        """Import a dataset CSV using the supplied v2 context filters."""
+        allowed = {"testIssueId", "testIssueKey", "testVersion", "contextIssueId", "contextIssueKey"}
+        params = {key: value for key, value in filters.items() if key in allowed and value is not None}
+        return self.post(self.resource_url("dataset/import"), params=params or None, files=files)
+
+    def get_requirement_projects(self):
+        return self.get(self.resource_url("settings/requirementProjects"))
+
+    def update_requirement_projects(self, data):
+        return self.post(self.resource_url("settings/requirementProjects"), data=data)
+
+    def get_xray_issue_types(self):
+        return self.get(self.resource_url("settings/xrayIssueTypes"))
+
+    def install_xray_issue_type_screen_schemes(self, data):
+        return self.post(self.resource_url("settings/xrayIssueTypes/issueTypeScreenSchemes"), data=data)
