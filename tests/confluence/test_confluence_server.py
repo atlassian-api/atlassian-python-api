@@ -92,6 +92,19 @@ class TestConfluenceServer:
         }
         assert mock_put.call_args.kwargs["files"] == {"file": ("diagram.png", content, "image/png")}
 
+    @patch.object(ConfluenceServer, "put")
+    def test_attach_content_normalizes_path_like_attachment_names(self, mock_put, confluence_server):
+        content = io.BytesIO(b"new image")
+        mock_put.return_value = {"results": [{"id": "attachment-1"}]}
+
+        confluence_server.attach_content(content, r"reports\\daily/diagram.png", "image/png", page_id="123")
+
+        assert mock_put.call_args.kwargs["files"] == {"file": ("diagram.png", content, "image/png")}
+
+    def test_attach_content_rejects_empty_attachment_name(self, confluence_server):
+        with pytest.raises(ApiValueError, match="must contain a filename"):
+            confluence_server.attach_content(io.BytesIO(b"content"), "/", page_id="123")
+
     def test_download_attachments_accepts_historical_download_path_alias(self, confluence_server):
         with patch.object(confluence_server, "get_attachments_from_content", return_value={"results": []}):
             assert confluence_server.download_attachments_from_page("123", download_path="/tmp") == {

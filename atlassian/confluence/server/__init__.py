@@ -1056,6 +1056,12 @@ class Server(ConfluenceServerBase):
         :raises ApiNotFoundError: If no page ID is supplied and the title cannot
             be resolved in the requested space.
         """
+        # Confluence attachment names are filenames, not paths. Normalize both
+        # POSIX and Windows separators before Confluence can silently collapse
+        # them into an existing basename.
+        name = str(name).replace("\\", "/").rsplit("/", 1)[-1]
+        if not name:
+            raise ApiValueError("Attachment name must contain a filename")
         page_id = self.get_page_id(space=space, title=title) if page_id is None else page_id
         type = "attachment"
         if page_id is not None:

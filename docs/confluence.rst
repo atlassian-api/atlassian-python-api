@@ -285,6 +285,10 @@ Page actions
     # Uploading the same attachment name creates a new attachment revision.
     confluence.attach_file("images/diagram.png", page_id=page_id)
 
+    # Attachment names are filenames, not paths. Path-like values are reduced
+    # to their basename (for example, ``reports/diagram.png`` becomes
+    # ``diagram.png``).
+
     # Attachments are files, not executable page markup. Link an HTML report
     # from the page; replacing the attachment keeps this link current.
     confluence.attach_file("reports/status.html", page_id=page_id)
