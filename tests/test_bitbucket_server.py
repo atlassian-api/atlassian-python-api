@@ -118,6 +118,27 @@ class TestHookScripts(TestCase):
         with self.assertRaisesRegex(ValueError, "PRE.*POST"):
             self.bitbucket.create_hook_script(b"#!/bin/sh", "Invalid", "PRE_RECEIVE")
 
+
+class TestRepositoryForking(TestCase):
+    def setUp(self):
+        self.bitbucket = Bitbucket("https://bitbucket.example.com", username="admin", password="password")
+
+    @patch.object(Bitbucket, "get_repo", return_value={"forkable": True})
+    def test_get_repo_forkable(self, mock_get_repo):
+        assert self.bitbucket.get_repo_forkable("PRJ", "repo") is True
+        mock_get_repo.assert_called_once_with("PRJ", "repo")
+
+    @patch.object(Bitbucket, "update_repo", return_value={"forkable": False})
+    def test_set_repo_forkable_uses_repository_put_wrapper(self, mock_update_repo):
+        result = self.bitbucket.set_repo_forkable("PRJ", "repo", False)
+
+        assert result == {"forkable": False}
+        mock_update_repo.assert_called_once_with("PRJ", "repo", forkable=False)
+
+    def test_set_repo_forkable_requires_boolean(self):
+        with self.assertRaisesRegex(TypeError, "boolean"):
+            self.bitbucket.set_repo_forkable("PRJ", "repo", "false")
+
     @patch.object(Bitbucket, "put")
     def test_configure_project_hook_script(self, mock_put):
         self.bitbucket.configure_project_hook_script("PROJ", 12, ["repo:refs_changed"])

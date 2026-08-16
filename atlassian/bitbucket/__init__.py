@@ -1025,6 +1025,40 @@ class Bitbucket(BitbucketBase):
         url = self._url_repo(project_key, repository_slug)
         return self.put(url, data=params)
 
+    def get_repo_forkable(self, project_key, repository_slug):
+        """Return whether a Bitbucket Server/Data Center repository is forkable.
+
+        :param project_key: Project key, or a ``~user`` personal repository owner.
+        :param repository_slug: URL-compatible repository identifier.
+        :return: The repository's ``forkable`` flag, or ``None`` when omitted
+            by an older Bitbucket version.
+        """
+        return (self.get_repo(project_key, repository_slug) or {}).get("forkable")
+
+    def set_repo_forkable(self, project_key, repository_slug, forkable):
+        """Enable or disable forking for a Server/Data Center repository.
+
+        The caller requires repository administration permission. This uses the
+        repository ``PUT`` endpoint and preserves the behavior of
+        :meth:`update_repo` for all other repository fields.
+
+        :param project_key: Project key, or a ``~user`` personal repository owner.
+        :param repository_slug: URL-compatible repository identifier.
+        :param forkable: ``True`` to allow forks or ``False`` to prohibit them.
+        :return: Updated repository representation.
+        """
+        if not isinstance(forkable, bool):
+            raise TypeError("forkable must be a boolean")
+        return self.update_repo(project_key, repository_slug, forkable=forkable)
+
+    def enable_repo_forking(self, project_key, repository_slug):
+        """Enable forking for a Server/Data Center repository."""
+        return self.set_repo_forkable(project_key, repository_slug, True)
+
+    def disable_repo_forking(self, project_key, repository_slug):
+        """Disable forking for a Server/Data Center repository."""
+        return self.set_repo_forkable(project_key, repository_slug, False)
+
     def delete_repo(self, project_key, repository_slug):
         """
         Delete a specific repository from a project. This operates based on slug not name which may

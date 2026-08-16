@@ -324,6 +324,13 @@ Manage code
     # The authenticated user must have PROJECT_ADMIN permission for the context project to call this resource.
     bitbucket.create_repo(project_key, repository, forkable=False, is_private=True)
 
+    # Bitbucket Server/Data Center: inspect or change whether a repository
+    # accepts forks. These calls require repository administration permission.
+    is_forkable = bitbucket.get_repo_forkable(project_key, repository)
+    bitbucket.set_repo_forkable(project_key, repository, forkable=True)
+    bitbucket.enable_repo_forking(project_key, repository)
+    bitbucket.disable_repo_forking(project_key, repository)
+
     # Get branches from repo
     bitbucket.get_branches(project, repository, filter='', limit=99999, details=True, boost_matches=False)
 
