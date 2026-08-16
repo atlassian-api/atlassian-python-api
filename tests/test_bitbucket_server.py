@@ -133,3 +133,25 @@ class TestHookScripts(TestCase):
         mock_put.assert_called_once_with(
             "rest/api/latest/projects/PROJ/repos/repository/hook-scripts/12", data={"triggerIds": []}
         )
+
+
+class TestPersonalRepositories(TestCase):
+    def setUp(self):
+        self.bitbucket = Bitbucket("https://bitbucket.example.com", username="admin", password="password")
+
+    def test_personal_repository_urls_use_the_user_centric_route(self):
+        self.assertEqual(
+            self.bitbucket._url_repo("~alice", "example"),
+            "rest/api/1.0/users/~alice/repos/example",
+        )
+        self.assertEqual(self.bitbucket._url_repos("~alice"), "rest/api/1.0/users/~alice/repos")
+
+    @patch.object(Bitbucket, "post")
+    def test_pull_request_settings_support_personal_repositories(self, mock_post):
+        settings = {"requiredApprovals": 2}
+
+        self.bitbucket.set_pull_request_settings("~alice", "example", settings)
+
+        mock_post.assert_called_once_with(
+            "rest/api/1.0/users/~alice/repos/example/settings/pull-requests", data=settings
+        )
