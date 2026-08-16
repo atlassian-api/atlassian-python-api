@@ -48,6 +48,44 @@ class TestJiraCloudClients(TestCase):
             jira.get_issue("ABC-1")
         get.assert_called_once_with("rest/api/2/issue/ABC-1", params=None, data=None)
 
+    def test_core_client_supports_enhanced_jql_at_v3(self):
+        jira = JiraCloud("https://example.atlassian.net", api_version=2)
+
+        with patch.object(jira, "get", return_value={"issues": [], "isLast": True}) as get:
+            jira.enhanced_jql(
+                "project = EXAMPLE ORDER BY key DESC",
+                fields=["summary", "description"],
+                nextPageToken="next-token",
+                limit=100,
+                expand="names",
+            )
+
+        get.assert_called_once_with(
+            "rest/api/3/search/jql",
+            params={
+                "jql": "project = EXAMPLE ORDER BY key DESC",
+                "fields": "summary,description",
+                "nextPageToken": "next-token",
+                "maxResults": 100,
+                "expand": "names",
+            },
+        )
+
+    def test_core_client_enhanced_jql_collects_cursor_pages(self):
+        jira = JiraCloud("https://example.atlassian.net")
+
+        with patch.object(
+            jira,
+            "enhanced_jql",
+            side_effect=[
+                {"issues": [{"key": "EXAMPLE-1"}], "nextPageToken": "next", "isLast": False},
+                {"issues": [{"key": "EXAMPLE-2"}], "isLast": True},
+            ],
+        ):
+            issues = jira.enhanced_jql_get_list_of_tickets("project = EXAMPLE")
+
+        self.assertEqual([issue["key"] for issue in issues], ["EXAMPLE-1", "EXAMPLE-2"])
+
     def test_software_client_builds_each_documented_api_root(self):
         jira = JiraSoftware("https://example.atlassian.net", cloud=False)
 

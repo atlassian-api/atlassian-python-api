@@ -32,6 +32,24 @@ existing contract.  ``Jira`` still defaults to its historical string version
 ``"2"`` and does not automatically enable Cloud mode; this is intentional
 backward compatibility.
 
+Enhanced JQL search
+-------------------
+
+Both ``JiraCloud`` and the legacy ``Jira(..., cloud=True)`` client provide
+``enhanced_jql()``. The method always uses Jira Cloud's v3
+``/search/jql`` endpoint, regardless of the Core client's selected version.
+Pass the returned ``nextPageToken`` to fetch another page, or use
+``enhanced_jql_get_list_of_tickets()`` to collect cursor-paginated results.
+
+.. code-block:: python
+
+    issues = core.enhanced_jql_get_list_of_tickets(
+        'project = EXAMPLE ORDER BY updated DESC',
+        fields=["summary", "description"],
+        limit=100,
+        expand="names",
+    )
+
 Software API roots
 ------------------
 
