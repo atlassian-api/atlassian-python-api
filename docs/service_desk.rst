@@ -60,7 +60,8 @@ The Request actions
 
 .. code-block:: python
 
-    # Create customer request
+    # Create customer request. ``values_dict`` must contain the fields required
+    # by the request type (for example, summary and description).
     sd.create_customer_request(service_desk_id, request_type_id, values_dict, raise_on_behalf_of=None, request_participants=None)
 
     # Get customer request by ID

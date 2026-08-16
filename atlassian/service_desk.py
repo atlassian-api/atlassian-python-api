@@ -148,14 +148,13 @@ class ServiceDesk(AtlassianRestAPI):
         if request_participants:
             data["requestParticipants"] = request_participants
 
-        param_map = {"headers": self.experimental_headers}
+        if not isinstance(values_dict, (dict, str)):
+            raise TypeError("values_dict must be a dictionary or JSON string")
 
-        if isinstance(values_dict, dict):
-            param_map["json"] = data
-        elif isinstance(values_dict, str):
-            param_map["data"] = data
-
-        return self.post("rest/servicedeskapi/request", **param_map)
+        # The create-request endpoint is a stable JSON endpoint.  Passing the
+        # complete payload through ``json`` avoids form/data coercion and keeps
+        # nested request field values intact on both Cloud and Server.
+        return self.post("rest/servicedeskapi/request", json=data, headers=self.default_headers)
 
     def get_customer_request_status(self, issue_id_or_key):
         """
