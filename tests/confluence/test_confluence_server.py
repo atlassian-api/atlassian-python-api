@@ -91,6 +91,16 @@ class TestConfluenceServer:
         with pytest.raises(ApiNotFoundError):
             confluence_server.update_page("123", "Missing page")
 
+    @pytest.mark.parametrize("method, args", [("remove_content", ("123",)), ("remove_page", ("123",))])
+    @patch.object(ConfluenceServer, "delete")
+    def test_delete_content_403_raises_explicit_permission_error(self, mock_delete, confluence_server, method, args):
+        response = Response()
+        response.status_code = 403
+        mock_delete.side_effect = HTTPError(response=response)
+
+        with pytest.raises(ApiPermissionError, match="does not have permission to trash or purge"):
+            getattr(confluence_server, method)(*args)
+
     @patch.object(ConfluenceServer, "put")
     @patch.object(ConfluenceServer, "history")
     def test_update_page_uses_configured_api_root_without_duplicate_rest_api_prefix(

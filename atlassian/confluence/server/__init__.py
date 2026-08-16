@@ -837,6 +837,11 @@ class Server(ConfluenceServerBase):
         try:
             response = self.delete(f"rest/api/content/{content_id}")
         except HTTPError as e:
+            if e.response.status_code == 403:
+                raise ApiPermissionError(
+                    "The calling user does not have permission to trash or purge the content",
+                    reason=e,
+                )
             if e.response.status_code == 404:
                 # Raise ApiError as the documented reason is ambiguous
                 raise ApiError(
@@ -874,6 +879,11 @@ class Server(ConfluenceServerBase):
         try:
             response = self.delete(url, params=params)
         except HTTPError as e:
+            if e.response.status_code == 403:
+                raise ApiPermissionError(
+                    "The calling user does not have permission to trash or purge the content",
+                    reason=e,
+                )
             if e.response.status_code == 404:
                 # Raise ApiError as the documented reason is ambiguous
                 raise ApiError(
