@@ -277,7 +277,8 @@ Add a connection:
    bitbucket
    bamboo
    service_desk
-   xray
+    xray
+    yogi
    cloud_admin
    rest_client
 

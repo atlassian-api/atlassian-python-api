@@ -19,6 +19,7 @@ from .service_desk import ServiceDesk
 from .service_desk import ServiceDesk as ServiceManagement
 from .tempo import TempoCloud, TempoServer
 from .xray import Xray
+from .yogi import YogiConfluenceCloud, YogiConfluenceDC, YogiJiraCloud, YogiJiraDC
 
 
 # Confluence REST API v2 client.  The existing ``Confluence`` class remains
@@ -58,4 +59,8 @@ __all__ = [
     "AssetsCloud",
     "TempoCloud",
     "TempoServer",
+    "YogiJiraCloud",
+    "YogiJiraDC",
+    "YogiConfluenceCloud",
+    "YogiConfluenceDC",
 ]
