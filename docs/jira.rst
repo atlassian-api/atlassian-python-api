@@ -47,6 +47,27 @@ Reindex Jira
                             If it's not possible (due to an inconsistent index), do a foreground reindexing.
     """
 
+Workflow transition rule configurations (Server/Data Center)
+------------------------------------------------------------
+
+Jira Server 8.13 and compatible Data Center releases expose transition-rule
+configuration through the v2 REST route.  Use the explicit Server client; the
+Cloud client has a separate implementation and authorization model.
+
+.. code-block:: python
+
+    from atlassian.jira import JiraServer
+
+    jira = JiraServer("https://jira.example.com", token="personal-access-token")
+    rules = jira.get_workflow_transition_rule_configurations(
+        types=["postfunction", "validator"],
+        workflow_names="Release workflow",
+        draft=False,
+    )
+
+    for workflow in rules["values"]:
+        print(workflow)
+
 Manage Permissions
 ------------------
 

@@ -4491,6 +4491,47 @@ class Jira(AtlassianRestAPI):
         url = self.resource_url("workflow")
         return self.get(url)
 
+    def get_workflow_transition_rule_configurations(
+        self,
+        start_at: Optional[int] = None,
+        max_results: Optional[int] = None,
+        types: Optional[Union[str, List[str]]] = None,
+        keys: Optional[Union[str, List[str]]] = None,
+        workflow_names: Optional[Union[str, List[str]]] = None,
+        with_tags: Optional[bool] = None,
+        draft: Optional[bool] = None,
+        expand: Optional[str] = None,
+    ) -> T_resp_json:
+        """Return transition-rule configurations from Jira Server/Data Center.
+
+        Jira Server 8.13 and compatible Data Center releases expose this
+        resource at the v2 route.  The returned rules are limited to those
+        visible to the authenticated app or user.
+
+        :param start_at: Index of the first configuration to return.
+        :param max_results: Maximum configurations to return.
+        :param types: A rule type, or a list of rule types.
+        :param keys: A rule key, or a list of rule keys.
+        :param workflow_names: A workflow name, or a list of workflow names.
+        :param with_tags: Include rule tags when supported by the server.
+        :param draft: Whether to read rules from draft workflows.
+        :param expand: Additional fields to expand in the response.
+        :return: Jira's paginated transition-rule configuration response.
+        """
+        url = self.resource_url("workflow/rule/config")
+        params = {
+            "startAt": start_at,
+            "maxResults": max_results,
+            "types": types,
+            "keys": keys,
+            "workflowNames": workflow_names,
+            "withTags": with_tags,
+            "draft": draft,
+            "expand": expand,
+        }
+        params = {key: value for key, value in params.items() if value is not None}
+        return self.get(url, params=params or None)
+
     def get_workflows_paginated(
         self,
         start_at: Optional[int] = None,

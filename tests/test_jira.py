@@ -95,9 +95,7 @@ class TestJira(TestCase):
         result = self.jira.assign_project_permission_scheme("DEMO", 10000)
 
         self.assertIs(result, sentinel.response)
-        mock_request.assert_called_once_with(
-            "PUT", path="rest/api/3/project/DEMO/permissionscheme", json={"id": 10000}
-        )
+        mock_request.assert_called_once_with("PUT", path="rest/api/3/project/DEMO/permissionscheme", json={"id": 10000})
 
     def test_get_epic_issues(self):
         resp = self.jira.epic_issues("BAR-22")
