@@ -78,6 +78,13 @@ class TestAtlassianRestAPI:
         assert prepared_request.headers["Authorization"] == "Bearer expected-token"
         assert api.session.trust_env is True
 
+    def test_token_authentication_strips_file_line_endings(self):
+        api = AtlassianRestAPI(url="https://confluence.example.test", token="expected-token\r\n")
+
+        prepared_request = api.session.prepare_request(requests.Request("GET", "https://confluence.example.test"))
+
+        assert prepared_request.headers["Authorization"] == "Bearer expected-token"
+
     def test_log_curl_debug_does_not_double_encode_serialized_json(self, monkeypatch):
         messages = []
         monkeypatch.setattr("atlassian.rest_client.log.log", lambda **kwargs: messages.append(kwargs["msg"]))

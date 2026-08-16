@@ -20,6 +20,15 @@ with dedicated Cloud and Server classes:
         token="your-api-token"
     )
 
+    # ``token=`` accepts a token read from a text file. The client strips a
+    # trailing newline, but stripping when reading makes that intent explicit.
+    with open("CONFLUENCE_TOKEN", encoding="utf-8") as token_file:
+        api_token = token_file.read().strip()
+    confluence_cloud = ConfluenceCloud(
+        url="https://your-domain.atlassian.net",
+        token=api_token,
+    )
+
     # For Confluence Server
     confluence_server = ConfluenceServer(
         url="https://your-confluence-server.com",
