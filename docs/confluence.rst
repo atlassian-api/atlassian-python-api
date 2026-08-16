@@ -37,6 +37,30 @@ Cloud vs Server Differences
 | Content IDs | UUID strings | Numeric IDs |
 | Space IDs | UUID strings | Space keys |
 
+Choosing a Cloud client
+-----------------------
+
+``ConfluenceCloud`` is the established Cloud client and keeps compatibility
+methods for older Cloud REST endpoints. Use ``ConfluenceV2`` for the versioned
+Cloud V2 interface and new V2-only resources such as whiteboards, folders,
+databases, data classification, and V2 content properties. Both use the Cloud
+``/wiki/api/v2`` root for V2 operations; legacy operations retain their
+documented ``/wiki/rest/api`` paths.
+
+.. code-block:: python
+
+    from atlassian import ConfluenceV2
+
+    confluence = ConfluenceV2(
+        "https://your-domain.atlassian.net",
+        username="you@example.com",
+        password="your-api-token",
+    )
+
+For scoped Cloud API tokens through ``https://api.atlassian.com/ex/confluence/<cloud-id>``,
+use ``ConfluenceV2``. This preserves the gateway URL and targets the V2
+endpoints supported by scoped tokens.
+
 Space endpoint versions
 -----------------------
 
@@ -499,6 +523,27 @@ The ``*_v2`` names distinguish these helpers from the legacy V1 key-based
 content-property API. Supported content types are ``attachment``, ``blogpost``,
 ``comment``, ``custom_content``, ``database``, ``embed``, ``folder``, ``page``,
 and ``whiteboard``.
+
+Confluence Cloud V2 data classification
+----------------------------------------
+
+Data classification is available only to eligible Confluence Cloud sites. The
+site administrator defines the available levels; the caller needs the relevant
+content or space permissions.
+
+.. code-block:: python
+
+    levels = confluence.get_classification_levels()
+    confluence.update_content_classification_level("page", page_id, levels[0]["id"])
+    current_level = confluence.get_content_classification_level("page", page_id)
+
+    # Make a level the default for a space, or reset a page to that default.
+    confluence.update_space_default_classification_level(space_id, levels[0]["id"])
+    confluence.reset_content_classification_level("page", page_id)
+
+Supported content types are ``page``, ``blogpost``, ``whiteboard``, and
+``database``. Content-level updates accept only the ``current`` and ``draft``
+statuses required by the V2 API.
 
 Confluence Cloud tasks
 ----------------------

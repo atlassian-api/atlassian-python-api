@@ -1004,6 +1004,37 @@ class TestConfluenceV2(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "content_type"):
             self.confluence_v2.get_v2_content_properties("unknown", "123")
 
+    # Tests for V2 data-classification methods
+
+    @patch("atlassian.confluence.cloud.ConfluenceCloud.get")
+    def test_content_classification_level_uses_resource_specific_endpoint(self, mock_get):
+        mock_get.return_value = {"id": "level-1"}
+
+        result = self.confluence_v2.get_content_classification_level("whiteboard", "123", status="draft")
+
+        self.assertEqual({"id": "level-1"}, result)
+        mock_get.assert_called_once_with("api/v2/whiteboards/123/classification-level", params={"status": "draft"})
+
+    @patch("atlassian.confluence.cloud.ConfluenceCloud.delete")
+    @patch("atlassian.confluence.cloud.ConfluenceCloud.put")
+    @patch("atlassian.confluence.cloud.ConfluenceCloud.post")
+    def test_content_classification_level_lifecycle(self, mock_post, mock_put, mock_delete):
+        self.confluence_v2.update_content_classification_level("page", "123", "level-1")
+        self.confluence_v2.reset_content_classification_level("page", "123", status="draft")
+        self.confluence_v2.delete_space_default_classification_level("456")
+
+        mock_put.assert_called_once_with(
+            "api/v2/pages/123/classification-level", data={"id": "level-1", "status": "current"}
+        )
+        mock_post.assert_called_once_with("api/v2/pages/123/classification-level/reset", data={"status": "draft"})
+        mock_delete.assert_called_once_with("api/v2/spaces/456/classification-level/default")
+
+    def test_content_classification_level_rejects_invalid_values(self):
+        with self.assertRaisesRegex(ValueError, "content_type"):
+            self.confluence_v2.get_content_classification_level("folder", "123")
+        with self.assertRaisesRegex(ValueError, "status must be"):
+            self.confluence_v2.update_content_classification_level("page", "123", "level-1", status="archived")
+
     # Tests for Whiteboard methods
 
     @patch("atlassian.confluence.cloud.ConfluenceCloud.post")

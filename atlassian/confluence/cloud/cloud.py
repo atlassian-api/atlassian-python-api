@@ -11,6 +11,7 @@ import re
 import warnings
 from typing import Any, Dict, List, Optional
 
+from .classification_levels import ClassificationLevelOperations
 from .content_properties import ContentPropertyOperations
 from .databases import DatabaseOperations
 from .folders import FolderOperations
@@ -22,6 +23,7 @@ log = logging.getLogger(__name__)
 
 
 class ConfluenceCloud(
+    ClassificationLevelOperations,
     ContentPropertyOperations,
     GraphQLOperations,
     WhiteboardOperations,
