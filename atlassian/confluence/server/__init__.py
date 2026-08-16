@@ -912,6 +912,7 @@ class Server(ConfluenceServerBase):
         editor=None,
         full_width=False,
         status="current",
+        version_comment=None,
     ):
         """
         Create page from scratch
@@ -925,6 +926,7 @@ class Server(ConfluenceServerBase):
         :param editor: OPTIONAL: v2 to be created in the new editor
         :param full_width: DEFAULT: False
         :param status: either 'current' or 'draft'
+        :param version_comment: optional message recorded with the first page version
         :return:
         """
         log.info('Creating %s "%s" -> "%s"', type, space, title)
@@ -939,6 +941,8 @@ class Server(ConfluenceServerBase):
         }
         if parent_id:
             data["ancestors"] = [{"type": type, "id": parent_id}]
+        if version_comment is not None:
+            data["version"] = {"message": version_comment}
         if editor is not None and editor in ["v1", "v2"]:
             data["metadata"]["properties"]["editor"] = {"value": editor}
         if full_width is True:
@@ -1923,14 +1927,19 @@ class Server(ConfluenceServerBase):
                 full_width=full_width,
             )
         else:
+            create_kwargs = {
+                "space": space,
+                "parent_id": parent_id,
+                "title": title,
+                "body": body,
+                "representation": representation,
+                "editor": editor,
+                "full_width": full_width,
+            }
+            if version_comment is not None:
+                create_kwargs["version_comment"] = version_comment
             result = self.create_page(
-                space=space,
-                parent_id=parent_id,
-                title=title,
-                body=body,
-                representation=representation,
-                editor=editor,
-                full_width=full_width,
+                **create_kwargs,
             )
 
         log.info(

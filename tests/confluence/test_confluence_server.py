@@ -67,6 +67,14 @@ class TestConfluenceServer:
         with pytest.raises(HTTPError, match="Malformed XHTML near the table macro"):
             confluence_server.raise_for_status(response)
 
+    @patch.object(ConfluenceServer, "post")
+    def test_create_page_includes_first_version_comment(self, mock_post, confluence_server):
+        mock_post.return_value = {"id": "123"}
+
+        confluence_server.create_page("TEAM", "Report", "<p>Body</p>", version_comment="Initial import")
+
+        assert mock_post.call_args.kwargs["data"]["version"] == {"message": "Initial import"}
+
     @patch.object(ConfluenceServer, "_get_paged")
     def test_get_all_page_versions_follows_paginated_history(self, mock_get_paged, confluence_server):
         mock_get_paged.return_value = iter([{"number": 2}, {"number": 1}])
@@ -358,6 +366,19 @@ class TestConfluenceServer:
             editor=None,
             full_width=False,
         )
+
+    @patch.object(ConfluenceServer, "create_page")
+    @patch.object(ConfluenceServer, "page_exists", return_value=False)
+    def test_update_or_create_passes_version_comment_when_creating(
+        self, mock_page_exists, mock_create_page, confluence_server
+    ):
+        mock_create_page.return_value = {"id": "123", "_links": {"tinyui": "/x/abc"}}
+
+        confluence_server.update_or_create(
+            title="Top level", body="<p>Body</p>", space="TEAM", version_comment="Initial import"
+        )
+
+        assert mock_create_page.call_args.kwargs["version_comment"] == "Initial import"
 
     def test_update_or_create_requires_space_for_a_top_level_page(self, confluence_server):
         with pytest.raises(ApiValueError, match="space is required"):

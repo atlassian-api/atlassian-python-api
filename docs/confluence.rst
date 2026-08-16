@@ -265,6 +265,9 @@ Page actions
     confluence.update_or_create(parent_id, title, body, representation='storage', full_width=False)
     confluence.update_or_create(title=title, body=body, space='SPACEKEY')
 
+    # Server/Data Center: annotate the first page revision on creation.
+    confluence.create_page('SPACEKEY', title, body, version_comment='Initial import')
+
     # Preserve Confluence storage macros when updating tables. Do not round-trip
     # a page containing images through pandas.read_html(...).to_html(), because
     # pandas represents embedded image cells as missing values and serializes
