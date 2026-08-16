@@ -51,12 +51,14 @@ class TestConfluenceBase(unittest.TestCase):
         client = Confluence("https://example.atlassian.net", api_version=1)
         endpoint = client.get_endpoint("content")
         self.assertEqual(endpoint, "rest/api/content")
+        self.assertEqual(client.get_endpoint("spaces"), "rest/api/space")
 
     def test_get_endpoint_v2(self):
         """Test retrieving v2 endpoint"""
         client = Confluence("https://example.atlassian.net", api_version=2)
         endpoint = client.get_endpoint("content")
         self.assertEqual(endpoint, "api/v2/pages")
+        self.assertEqual(client.get_endpoint("spaces"), "api/v2/spaces")
 
     def test_invalid_api_version(self):
         """Test raising error with invalid API version"""

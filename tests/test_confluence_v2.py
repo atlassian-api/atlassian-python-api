@@ -578,11 +578,11 @@ class TestConfluenceV2(unittest.TestCase):
         # Assertions
         expected_params = {
             "limit": 10,
-            "id": "123,456",
-            "key": "TEST,DEV",
+            "ids": ["123", "456"],
+            "keys": ["TEST", "DEV"],
             "type": "global",
             "status": "current",
-            "label": "important,documentation",
+            "labels": ["important", "documentation"],
             "sort": "name",
         }
         mock_get_paged.assert_called_once_with("api/v2/spaces", params=expected_params)

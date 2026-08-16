@@ -37,6 +37,20 @@ Cloud vs Server Differences
 | Content IDs | UUID strings | Numeric IDs |
 | Space IDs | UUID strings | Space keys |
 
+Space endpoint versions
+-----------------------
+
+The endpoint is selected by API version, not by the method name:
+
+- Cloud REST V1 and Server/Data Center use ``/wiki/rest/api/space`` (the
+  ``/wiki`` context is omitted when a Server/Data Center instance has none).
+- Cloud REST V2 uses ``/wiki/api/v2/spaces``.
+
+``ConfluenceV2`` and ``ConfluenceCloud`` use the V2 plural endpoint. Their
+``get_spaces(ids=[...], keys=[...], labels=[...])`` filters are encoded as
+repeated V2 query parameters. Use an explicit ``api_version=1`` only when a
+legacy V1 endpoint is required.
+
 Common Operations
 -----------------
 

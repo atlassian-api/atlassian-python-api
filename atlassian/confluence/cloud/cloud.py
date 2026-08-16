@@ -653,7 +653,7 @@ class ConfluenceCloud(GraphQLOperations, WhiteboardOperations, TaskOperations, F
         Args:
             ids: (optional) List of space IDs to filter by
             keys: (optional) List of space keys to filter by
-            _type: (optional) Type of spaces to filter by. Valid values: 'global', 'personal'
+            type: (optional) Type of spaces to filter by. Valid values: 'global', 'personal'
             status: (optional) Status of spaces to filter by. Valid values: 'current', 'archived'
             labels: (optional) List of labels to filter by (matches any)
             sort: (optional) Sort order. Format: [field] or [-field] for descending
@@ -673,10 +673,10 @@ class ConfluenceCloud(GraphQLOperations, WhiteboardOperations, TaskOperations, F
 
         # Add optional filters
         if ids:
-            params["id"] = ",".join(ids)
+            params["ids"] = ids
 
         if keys:
-            params["key"] = ",".join(keys)
+            params["keys"] = keys
 
         if type:
             if type not in ("global", "personal"):
@@ -689,7 +689,7 @@ class ConfluenceCloud(GraphQLOperations, WhiteboardOperations, TaskOperations, F
             params["status"] = status
 
         if labels:
-            params["label"] = ",".join(labels)
+            params["labels"] = labels
 
         if sort:
             valid_sort_fields = ["id", "-id", "key", "-key", "name", "-name", "type", "-type", "status", "-status"]
