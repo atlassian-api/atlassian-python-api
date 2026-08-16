@@ -144,6 +144,20 @@ class TestAtlassianRestAPI:
 
         assert captured["url"].endswith("tasks?task-id=1&task-id=2")
 
+    def test_request_serializes_boolean_data_for_requests(self, monkeypatch):
+        captured = {}
+
+        def request(**kwargs):
+            captured.update(kwargs)
+            return SimpleNamespace(status_code=200, reason="OK", text="", encoding=None)
+
+        monkeypatch.setattr(self.api._session, "request", request)
+        monkeypatch.setattr(self.api, "raise_for_status", lambda _response: None)
+
+        self.api.request("POST", "content", data=True, advanced_mode=True)
+
+        assert captured["data"] == "true"
+
     def test_init_with_cert(self):
         """Test initialization with certificate"""
         api = AtlassianRestAPI(url=f"{mockup_server()}/test", cert=("/path/to/cert.pem", "/path/to/key.pem"))

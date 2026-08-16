@@ -270,6 +270,8 @@ Add a connection:
    :maxdepth: 2
 
    jira
+   jira_cloud
+   jira_cloud_api
    confluence
    crowd
    bitbucket

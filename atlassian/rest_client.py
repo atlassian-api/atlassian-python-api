@@ -521,11 +521,15 @@ class AtlassianRestAPI(object):
                 headers=headers,
                 data=data if data is not None else json_dump,
             )
+            # ``requests`` does not accept booleans as request bodies. The
+            # public client has historically accepted them, so preserve that
+            # convenience while sending a valid textual representation.
+            request_data = str(data).lower() if isinstance(data, bool) else data
             response = self._session.request(
                 method=method,
                 url=url,
                 headers=headers,
-                data=data,
+                data=request_data,
                 json=json,
                 timeout=self.timeout,
                 verify=self.verify_ssl,
