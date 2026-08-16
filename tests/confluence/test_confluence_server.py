@@ -103,6 +103,18 @@ class TestConfluenceServer:
         with pytest.raises(ApiValueError, match="only one"):
             confluence_server.download_attachments_from_page("123", path="/tmp/a", download_path="/tmp/b")
 
+    @patch.object(ConfluenceServer, "put")
+    def test_set_restrictions_for_content_uses_rest_setter(self, mock_put, confluence_server):
+        restrictions = [{"operation": "read", "restrictions": {"user": [{"type": "known", "username": "ada"}]}}]
+        mock_put.return_value = {"restrictions": restrictions}
+
+        assert confluence_server.set_restrictions_for_content("123", restrictions) == {"restrictions": restrictions}
+        mock_put.assert_called_once_with("rest/api/content/123/restriction", data=restrictions)
+
+    def test_set_restrictions_for_content_requires_a_list(self, confluence_server):
+        with pytest.raises(ApiValueError, match="must be a list"):
+            confluence_server.set_restrictions_for_content("123", {"operation": "read"})
+
     @patch.object(ConfluenceServer, "_get_paged")
     def test_get_all_page_versions_follows_paginated_history(self, mock_get_paged, confluence_server):
         mock_get_paged.return_value = iter([{"number": 2}, {"number": 1}])

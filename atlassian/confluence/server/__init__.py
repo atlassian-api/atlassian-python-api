@@ -629,6 +629,28 @@ class Server(ConfluenceServerBase):
         url = f"rest/api/content/{content_id}/restriction/byOperation"
         return self.get(url)
 
+    def set_restrictions_for_content(self, content_id, restrictions):
+        """Set page or blog-post restrictions using the REST API.
+
+        ``restrictions`` is a list of ContentRestriction objects. Each
+        supplied operation replaces its existing restrictions; operations not
+        present in the list are unchanged. Supplying an empty ``user`` or
+        ``group`` list clears that subject type for the operation.
+
+        Example::
+
+            [{
+                "operation": "read",
+                "restrictions": {
+                    "user": [{"type": "known", "username": "alice"}],
+                    "group": [{"type": "group", "name": "engineering"}],
+                },
+            }]
+        """
+        if not isinstance(restrictions, list):
+            raise ApiValueError("restrictions must be a list of ContentRestriction objects")
+        return self.put(f"rest/api/content/{content_id}/restriction", data=restrictions)
+
     def get_all_restrictions_from_page_json_rpc(self, page_id):
         """
         The JSON-RPC APIs for Confluence are provided here to help you browse and discover APIs you have access to.

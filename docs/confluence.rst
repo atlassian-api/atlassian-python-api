@@ -304,6 +304,13 @@ Page actions
     # in another page does not copy its attachments, so query the source directly.
     source_attachments = confluence.get_attachments_from_content(source_page_id)
 
+    # Server/Data Center: set all read restrictions listed below. This replaces
+    # the existing read restriction set, so include every allowed user/group.
+    confluence.set_restrictions_for_content(page_id, [{
+        "operation": "read",
+        "restrictions": {"user": [{"type": "known", "username": "alice"}]},
+    }])
+
     # Confluence Cloud does not render attached HTML inline. Server/Data Center
     # HTML/HTML Include macros are administrator-controlled and disabled by
     # default because embedding arbitrary HTML can introduce XSS vulnerabilities.
