@@ -1,7 +1,7 @@
 # coding=utf-8
 import logging
 
-from .rest_client import AtlassianRestAPI
+from ..rest_client import AtlassianRestAPI
 
 # from deprecated import deprecated
 
@@ -71,6 +71,11 @@ class AssetsCloud(AtlassianRestAPI):
         :return: str
         """
         return next(iter(self._get_assets_workspace_ids()))
+
+    @staticmethod
+    def _params(**kwargs):
+        """Drop unset query parameters while preserving false/zero values."""
+        return {key: value for key, value in kwargs.items() if value is not None}
 
     # Attachments
     def get_attachments_of_objects(self, object_id):
@@ -215,6 +220,11 @@ class AssetsCloud(AtlassianRestAPI):
         url = self.url_joiner(self.api_root, "icon/global")
         return self.get(url)
 
+    def get_icon_image(self, icon_id, not_json_response=True):
+        """Return the binary image for an Assets icon."""
+        url = self.url_joiner(self.api_root, f"icon/{icon_id}/icon.png")
+        return self.get(url, not_json_response=not_json_response)
+
     # Import
     # Start configured imports. To see an ongoing import see the Progress resource
     def start_import_configuration(self, import_id):
@@ -229,6 +239,62 @@ class AssetsCloud(AtlassianRestAPI):
             f"import/start/{import_id}",
         )
         return self.post(url)
+
+    def get_import_source(self, import_source_id):
+        return self.get(self.url_joiner(self.api_root, f"importsource/{import_source_id}"))
+
+    def update_import_source_mapping(self, import_source_id, data, partial=False):
+        url = self.url_joiner(self.api_root, f"importsource/{import_source_id}/mapping")
+        if partial:
+            return self.patch(url, data=data)
+        return self.put(url, data=data)
+
+    def get_import_mapping_progress(self, import_source_id, resource_id):
+        url = self.url_joiner(self.api_root, f"importsource/{import_source_id}/mapping/progress/{resource_id}")
+        return self.get(url)
+
+    def get_import_config_status(self, import_source_id):
+        return self.get(self.url_joiner(self.api_root, f"importsource/{import_source_id}/configstatus"))
+
+    def get_import_schema_and_mapping(self, import_source_id):
+        return self.get(self.url_joiner(self.api_root, f"importsource/{import_source_id}/schema-and-mapping"))
+
+    def create_import_execution(self, import_source_id, data=None):
+        url = self.url_joiner(self.api_root, f"importsource/{import_source_id}/executions")
+        return self.post(url, data=data)
+
+    def delete_import_execution(self, import_source_id, import_execution_id):
+        url = self.url_joiner(self.api_root, f"importsource/{import_source_id}/executions/{import_execution_id}")
+        return self.delete(url)
+
+    def update_import_execution_progress(self, import_source_id, import_execution_id, data=None):
+        url = self.url_joiner(
+            self.api_root, f"importsource/{import_source_id}/executions/{import_execution_id}/progress"
+        )
+        return self.put(url, data=data)
+
+    def add_import_execution_data(self, import_source_id, import_execution_id, data=None):
+        url = self.url_joiner(self.api_root, f"importsource/{import_source_id}/executions/{import_execution_id}/data")
+        return self.post(url, data=data)
+
+    def get_import_execution_status(self, import_source_id, import_execution_id):
+        url = self.url_joiner(self.api_root, f"importsource/{import_source_id}/executions/{import_execution_id}/status")
+        return self.get(url)
+
+    def get_import_executions_status(self, import_source_id):
+        return self.get(self.url_joiner(self.api_root, f"importsource/{import_source_id}/executions/status"))
+
+    def add_failed_import_execution_history(self, import_source_id, execution_id, data=None):
+        url = self.url_joiner(
+            self.api_root, f"importsource/{import_source_id}/executions/{execution_id}/history/failed"
+        )
+        return self.post(url, data=data)
+
+    def create_import_token(self, import_source_id, data=None):
+        return self.post(self.url_joiner(self.api_root, f"importsource/{import_source_id}/token"), data=data)
+
+    def get_import_schedule(self, import_source_id):
+        return self.get(self.url_joiner(self.api_root, f"importsource/{import_source_id}/schedule"))
 
     # Index
     # Handle the indexing of Assets
@@ -274,6 +340,55 @@ class AssetsCloud(AtlassianRestAPI):
         data = {"qlQuery": query}
         url = self.url_joiner(self.api_root, "object/aql")
         return self.post(url, params=params, data=data)
+
+    def get_aql_objects(
+        self,
+        query=None,
+        page=None,
+        result_per_page=None,
+        include_attributes=None,
+        include_attributes_deep=None,
+        include_type_attributes=None,
+        include_extended_info=None,
+    ):
+        """Retrieve objects through the legacy AQL collection endpoint."""
+        params = self._params(
+            qlQuery=query,
+            page=page,
+            resultPerPage=result_per_page,
+            includeAttributes=include_attributes,
+            includeAttributesDeep=include_attributes_deep,
+            includeTypeAttributes=include_type_attributes,
+            includeExtendedInfo=include_extended_info,
+        )
+        return self.get(self.url_joiner(self.api_root, "aql/objects"), params=params or None)
+
+    def get_iql_objects(
+        self,
+        query=None,
+        page=None,
+        result_per_page=None,
+        include_attributes=None,
+        include_attributes_deep=None,
+        include_type_attributes=None,
+        include_extended_info=None,
+    ):
+        """Retrieve objects through the IQL collection endpoint."""
+        params = self._params(
+            iql=query,
+            page=page,
+            resultPerPage=result_per_page,
+            includeAttributes=include_attributes,
+            includeAttributesDeep=include_attributes_deep,
+            includeTypeAttributes=include_type_attributes,
+            includeExtendedInfo=include_extended_info,
+        )
+        return self.get(self.url_joiner(self.api_root, "iql/objects"), params=params or None)
+
+    def iql(self, query, start=0, max_results=25, include_attributes=True):
+        """Find Assets objects using the IQL-compatible Cloud endpoint."""
+        params = self._params(startAt=start, maxResults=max_results, includeAttributes=include_attributes)
+        return self.post(self.url_joiner(self.api_root, "object/aql"), params=params, data={"qlQuery": query})
 
     # Navlist AQL
     # Retrieve a list of objects based on an AQL query
@@ -410,6 +525,21 @@ class AssetsCloud(AtlassianRestAPI):
         url = self.url_joiner(self.api_root, f"object/{object_id}/referenceinfo")
         return self.get(url)
 
+    def search_objects_aql(self, query, start=0, max_results=25, include_attributes=True):
+        return self.aql(query, start=start, max_results=max_results, include_attributes=include_attributes)
+
+    def search_objects_iql(self, query, start=0, max_results=25, include_attributes=True):
+        return self.iql(query, start=start, max_results=max_results, include_attributes=include_attributes)
+
+    def search_objects_aql_navigation(self, data=None):
+        return self.post(self.url_joiner(self.api_root, "object/navlist/aql"), data=data)
+
+    def search_objects_iql_navigation(self, data=None):
+        return self.post(self.url_joiner(self.api_root, "object/navlist/iql"), data=data)
+
+    def get_object_aql_total_count(self, query):
+        return self.post(self.url_joiner(self.api_root, "object/aql/totalcount"), data={"qlQuery": query})
+
     def create_object(self, object_type_id, attributes, has_avatar=False, avatar_uuid=""):
         """
         Create a new object in Assets
@@ -467,7 +597,8 @@ class AssetsCloud(AtlassianRestAPI):
         return self.get(url)
 
     def create_object_schema(self, object_schema_key, description):
-        raise NotImplementedError
+        data = {"objectSchemaKey": object_schema_key, "description": description}
+        return self.post(self.url_joiner(self.api_root, "objectschema/create"), data=data)
 
     def get_object_schema(self, schema_id):
         """
@@ -477,23 +608,26 @@ class AssetsCloud(AtlassianRestAPI):
         url = self.url_joiner(self.api_root, f"objectschema/{schema_id}")
         return self.get(url)
 
-    def update_object_schema(self, schema_id):
+    def update_object_schema(self, schema_id, data=None):
         """
         Update an object schema
         """
-        raise NotImplementedError
+        return self.put(self.url_joiner(self.api_root, f"objectschema/{schema_id}"), data=data)
 
     def delete_object_schema(self, schema_id):
         """
         Delete a schema
         """
-        raise NotImplementedError
+        return self.delete(self.url_joiner(self.api_root, f"objectschema/{schema_id}"))
 
     def get_object_schema_attributes(self, schema_id):
         """
         Find all object type attributes for this object schema
         """
-        raise NotImplementedError
+        return self.get(self.url_joiner(self.api_root, f"objectschema/{schema_id}/attributes"))
+
+    def get_object_schema_object_types(self, schema_id):
+        return self.get(self.url_joiner(self.api_root, f"objectschema/{schema_id}/objecttypes"))
 
     def get_object_schema_object_types_flat(self, schema_id, query=None, exclude=None, includeObjectCounts=None):
         """
@@ -596,6 +730,10 @@ class AssetsCloud(AtlassianRestAPI):
         url = self.url_joiner(self.api_root, f"progress/category/imports/{import_id}")
         return self.get(url)
 
+    def get_import_progress(self, import_id):
+        """Return progress for a Cloud import."""
+        return self.get(self.url_joiner(self.api_root, f"progress/category/imports/{import_id}"))
+
     # Assets Config API
     # TODO: Get config statustype:
     #       https://developer.atlassian.com/cloud/assets/rest/api-group-config/#api-config-statustype-get
@@ -631,3 +769,85 @@ class AssetsCloud(AtlassianRestAPI):
         }
         data = {"fields": {field_id: [{"key": i} for i in assets_keys]}}
         return self.put(f"{base_url}/{key}", data=data)
+
+    # Object type and configuration resources
+    def get_object_type(self, object_type_id):
+        return self.get(self.url_joiner(self.api_root, f"objecttype/{object_type_id}"))
+
+    def update_object_type(self, object_type_id, data=None):
+        return self.put(self.url_joiner(self.api_root, f"objecttype/{object_type_id}"), data=data)
+
+    def delete_object_type(self, object_type_id):
+        return self.delete(self.url_joiner(self.api_root, f"objecttype/{object_type_id}"))
+
+    def create_object_type(self, data=None):
+        return self.post(self.url_joiner(self.api_root, "objecttype/create"), data=data)
+
+    def move_object_type(self, object_type_id, data=None):
+        return self.post(self.url_joiner(self.api_root, f"objecttype/{object_type_id}/position"), data=data)
+
+    def create_object_type_attribute(self, object_type_id, data=None):
+        return self.post(self.url_joiner(self.api_root, f"objecttypeattribute/{object_type_id}"), data=data)
+
+    def update_object_type_attribute(self, object_type_id, attribute_id, data=None):
+        url = self.url_joiner(self.api_root, f"objecttypeattribute/{object_type_id}/{attribute_id}")
+        return self.put(url, data=data)
+
+    def delete_object_type_attribute(self, attribute_id):
+        return self.delete(self.url_joiner(self.api_root, f"objecttypeattribute/{attribute_id}"))
+
+    def get_status_types(self):
+        return self.get(self.url_joiner(self.api_root, "config/statustype"))
+
+    def create_status_type(self, data=None):
+        return self.post(self.url_joiner(self.api_root, "config/statustype"), data=data)
+
+    def get_status_type(self, status_type_id):
+        return self.get(self.url_joiner(self.api_root, f"config/statustype/{status_type_id}"))
+
+    def update_status_type(self, status_type_id, data=None):
+        return self.put(self.url_joiner(self.api_root, f"config/statustype/{status_type_id}"), data=data)
+
+    def delete_status_type(self, status_type_id):
+        return self.delete(self.url_joiner(self.api_root, f"config/statustype/{status_type_id}"))
+
+    def get_reference_types(self):
+        return self.get(self.url_joiner(self.api_root, "config/referencetype"))
+
+    def create_reference_type(self, data=None):
+        return self.post(self.url_joiner(self.api_root, "config/referencetype"), data=data)
+
+    def set_object_schema_property(self, schema_id, data=None):
+        url = self.url_joiner(self.api_root, f"global/config/objectschema/{schema_id}/property")
+        return self.post(url, data=data)
+
+    def create_import_schedule(self, import_source_id, data=None):
+        url = self.url_joiner(self.api_root, f"importsource/{import_source_id}/importschedule")
+        return self.post(url, data=data)
+
+    def get_import_schedule_by_id(self, import_source_id, import_schedule_id):
+        url = self.url_joiner(self.api_root, f"importsource/{import_source_id}/importschedule/{import_schedule_id}")
+        return self.get(url)
+
+    def update_import_schedule(self, import_source_id, import_schedule_id, data=None):
+        url = self.url_joiner(self.api_root, f"importsource/{import_source_id}/importschedule/{import_schedule_id}")
+        return self.put(url, data=data)
+
+    def delete_import_schedule(self, import_source_id, import_schedule_id):
+        url = self.url_joiner(self.api_root, f"importsource/{import_source_id}/importschedule/{import_schedule_id}")
+        return self.delete(url)
+
+    def get_usage(self):
+        return self.get(self.url_joiner(self.api_root, "usage"))
+
+    def export_dataset(self, **filters):
+        """Export dataset information as CSV."""
+        allowed = {"testIssueId", "testIssueKey", "testVersion", "contextIssueId", "contextIssueKey", "resolved"}
+        params = self._params(**{key: value for key, value in filters.items() if key in allowed})
+        return self.get(self.url_joiner(self.api_root, "dataset/export"), params=params or None, not_json_response=True)
+
+    def import_dataset(self, files=None, **filters):
+        """Import a dataset CSV using optional entity context filters."""
+        allowed = {"testIssueId", "testIssueKey", "testVersion", "contextIssueId", "contextIssueKey"}
+        params = self._params(**{key: value for key, value in filters.items() if key in allowed})
+        return self.post(self.url_joiner(self.api_root, "dataset/import"), params=params or None, files=files)

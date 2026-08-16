@@ -11,7 +11,7 @@ from .confluence.cloud.cloud import ConfluenceCloud as ConfluenceV2
 from .crowd import Crowd
 from .insight import Insight
 from .insight import Insight as Assets  # used for Insight on-premise
-from .assets import AssetsCloud  # used for Insight Cloud
+from .assets import AssetsCloud, AssetsDataCenter, AssetsServer  # Assets Cloud and Data Center
 from .jira import Jira, JiraCloud, JiraServer, JiraServiceManagement, JiraSoftware, create_jira_cloud
 from .marketplace import MarketPlace
 from .portfolio import Portfolio
@@ -57,6 +57,8 @@ __all__ = [
     "Insight",
     "Assets",
     "AssetsCloud",
+    "AssetsDataCenter",
+    "AssetsServer",
     "TempoCloud",
     "TempoServer",
     "YogiJiraCloud",

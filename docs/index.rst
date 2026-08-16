@@ -25,6 +25,7 @@ Add a connection:
     from atlassian import Bitbucket
     from atlassian import ServiceDesk
     from atlassian import Xray
+    from atlassian import AssetsCloud
 
     jira = Jira(
         url='http://localhost:8080',
