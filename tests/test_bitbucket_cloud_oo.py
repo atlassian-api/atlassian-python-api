@@ -64,6 +64,10 @@ class TestBasic:
                 "2026-08-15T23:19:42.7+05:30",
                 datetime(2026, 8, 15, 23, 19, 42, 700000, tzinfo=timezone(timedelta(hours=5, minutes=30))),
             ),
+            (
+                "2024-04-10T20:16:48.914706353Z",
+                datetime(2024, 4, 10, 20, 16, 48, 914706, tzinfo=timezone.utc),
+            ),
         ],
     )
     def test_pipeline_time_normalizes_variable_fractional_seconds(self, timestamp, expected):
