@@ -1,7 +1,7 @@
 # coding=utf-8
 import logging
 from enum import Enum
-from typing import Optional
+from typing import Any, Dict, List, Optional
 
 from deprecated import deprecated
 from requests import HTTPError
@@ -289,6 +289,82 @@ class Bitbucket(BitbucketBase):
         url = f"rest/plugins/1.0/?token={upm_token}"
         files = {"plugin": open(plugin_path, "rb")}
         return self.post(url, files=files, headers=self.no_check_headers)
+
+    ################################################################################################
+    # Hook scripts (Bitbucket Data Center 8+)
+    ################################################################################################
+    def _url_hook_scripts(self):
+        return self.resource_url("hook-scripts", api_version="latest")
+
+    def create_hook_script(self, content: bytes, name: str, hook_type: str, description: Optional[str] = None):
+        """Register a global hook script on Bitbucket Data Center.
+
+        ``hook_type`` must be ``PRE`` or ``POST``. The caller must be a system
+        administrator, and Bitbucket Data Center 8.18+ requires hook scripts to
+        be explicitly enabled with ``feature.hook.scripts=true``.
+
+        The API expects a multipart form. ``content`` is the executable script
+        bytes; no temporary file is created by the client.
+        """
+        if hook_type not in ("PRE", "POST"):
+            raise ValueError("hook_type must be 'PRE' or 'POST'")
+
+        files: Dict[str, Any] = {
+            "content": ("hook-script", content, "application/octet-stream"),
+            "name": (None, name),
+            "type": (None, hook_type),
+        }
+        if description is not None:
+            files["description"] = (None, description)
+        return self.post(self._url_hook_scripts(), files=files, headers=self.no_check_headers)
+
+    def configure_project_hook_script(self, project_key: str, script_id: int, trigger_ids: Optional[List[str]] = None):
+        """Configure a registered hook script for every repository in a project.
+
+        Requires project administrator permission. ``trigger_ids`` controls the
+        hook triggers to which the script is bound.
+        """
+        url = f"{self._url_project(project_key, api_version='latest')}/hook-scripts/{script_id}"
+        return self.put(url, data={"triggerIds": trigger_ids or []})
+
+    def configure_repo_hook_script(
+        self, project_key: str, repository_slug: str, script_id: int, trigger_ids: Optional[List[str]] = None
+    ):
+        """Configure a registered hook script for a repository.
+
+        Requires repository administrator permission. ``trigger_ids`` controls
+        the hook triggers to which the script is bound.
+        """
+        url = f"{self._url_repo(project_key, repository_slug, api_version='latest')}/hook-scripts/{script_id}"
+        return self.put(url, data={"triggerIds": trigger_ids or []})
+
+    def get_project_hook_scripts(self, project_key: str, start: int = 0, limit: Optional[int] = None):
+        """Yield hook-script configurations for a project."""
+        params: Dict[str, int] = {"start": start}
+        if limit is not None:
+            params["limit"] = limit
+        url = f"{self._url_project(project_key, api_version='latest')}/hook-scripts"
+        return self._get_paged(url, params=params)
+
+    def get_repo_hook_scripts(
+        self, project_key: str, repository_slug: str, start: int = 0, limit: Optional[int] = None
+    ):
+        """Yield hook-script configurations for a repository."""
+        params: Dict[str, int] = {"start": start}
+        if limit is not None:
+            params["limit"] = limit
+        url = f"{self._url_repo(project_key, repository_slug, api_version='latest')}/hook-scripts"
+        return self._get_paged(url, params=params)
+
+    def delete_project_hook_script(self, project_key: str, script_id: int):
+        """Remove a hook-script configuration from a project."""
+        url = f"{self._url_project(project_key, api_version='latest')}/hook-scripts/{script_id}"
+        return self.delete(url)
+
+    def delete_repo_hook_script(self, project_key: str, repository_slug: str, script_id: int):
+        """Remove a hook-script configuration from a repository."""
+        url = f"{self._url_repo(project_key, repository_slug, api_version='latest')}/hook-scripts/{script_id}"
+        return self.delete(url)
 
     def get_categories(self, project_key, repository_slug=None):
         """

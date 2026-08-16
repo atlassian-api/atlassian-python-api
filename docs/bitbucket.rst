@@ -21,6 +21,38 @@ already a Python dictionary.
 objects from individual requests. Do not enable it for the high-level paginated
 methods above; use their yielded dictionaries instead.
 
+Hook scripts (Data Center 8+)
+-----------------------------
+
+Hook scripts are a Bitbucket Data Center feature, not Bitbucket Cloud. A system
+administrator first registers the global script, then a project or repository
+administrator configures the script for its target scope. Bitbucket Data Center
+8.18 and newer disable this feature by default; enable
+``feature.hook.scripts=true`` in ``bitbucket.properties`` and restart the
+cluster before use.
+
+.. code-block:: python
+
+    with open("hooks/audit-pushes.sh", "rb") as script_file:
+        hook_script = bitbucket.create_hook_script(
+            script_file.read(),
+            name="Audit pushes",
+            hook_type="POST",  # or "PRE"
+            description="Records every push",
+        )
+
+    bitbucket.configure_project_hook_script(
+        "PROJ", hook_script["id"], trigger_ids=["repo:refs_changed"]
+    )
+    bitbucket.configure_repo_hook_script(
+        "PROJ", "repository", hook_script["id"], trigger_ids=["repo:refs_changed"]
+    )
+
+``get_project_hook_scripts()`` and ``get_repo_hook_scripts()`` yield all
+configured scripts. ``delete_project_hook_script()`` and
+``delete_repo_hook_script()`` remove only a scope configuration; they do not
+delete the global registered script.
+
 Release report from two refs (Server/Data Center)
 -------------------------------------------------
 
