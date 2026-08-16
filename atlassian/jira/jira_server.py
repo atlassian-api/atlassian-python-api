@@ -1485,27 +1485,81 @@ class Jira(AtlassianRestAPI):
             params["expand"] = expand
         return self.get(url, params=params)
 
-    def bulk_issue(self, issue_list: list, fields: Union[str, list] = "*all"):
-        """
-        :param fields:
-        :param list issue_list:
-        :return:
+    def bulk_issue(
+        self,
+        issue_list: list,
+        fields: Union[str, list] = "*all",
+        start: int = 0,
+        limit: Optional[int] = None,
+        fetch_all: bool = True,
+    ):
+        """Return issues matching the supplied issue keys.
+
+        Jira applies a maximum page size to search results.  By default this
+        method follows every page and returns all matching issues in the
+        response's ``issues`` list.  Set ``fetch_all`` to ``False`` to retain
+        the single-page REST response.
+
+        :param issue_list: Issue keys to retrieve.
+        :param fields: Fields to return for each issue.
+        :param start: First Server/Data Center result offset.
+        :param limit: Requested page size; Jira may apply a lower system limit.
+        :param fetch_all: Whether to collect all available result pages.
+        :return: A tuple of the Jira search response and issue keys reported
+            as invalid by Jira.
         """
         jira_issue_regex = re.compile(r"\w+-\d+")
-        missing_issues = list()
-        matched_issue_keys = list()
+        missing_issues = []
+        matched_issue_keys = []
         for key in issue_list:
             if re.match(jira_issue_regex, key):
                 matched_issue_keys.append(key)
-        jql = f"key in ({', '.join(set(matched_issue_keys))})"
-        query_result = self.jql(jql, fields=fields)
+        jql = f"key in ({', '.join(dict.fromkeys(matched_issue_keys))})"
+        if self.cloud:
+            if start:
+                raise ValueError("Jira Cloud does not support offset pagination; use enhanced_jql instead.")
+            query_result = self.enhanced_jql(jql, fields=fields, limit=limit)
+        else:
+            query_result = self.jql(jql, fields=fields, start=start, limit=limit)
+
         if query_result and "errorMessages" in list(query_result.keys()):
             for message in query_result["errorMessages"]:
                 for key in issue_list:
                     if key in message:
                         missing_issues.append(key)
-                        issue_list.remove(key)
-            query_result, missing_issues = self.bulk_issue(issue_list, fields)
+            remaining_issues = [key for key in issue_list if key not in missing_issues]
+            if remaining_issues != issue_list:
+                query_result, nested_missing_issues = self.bulk_issue(
+                    remaining_issues, fields, start=start, limit=limit, fetch_all=fetch_all
+                )
+                missing_issues.extend(nested_missing_issues)
+            return query_result, missing_issues
+
+        if not fetch_all or not query_result:
+            return query_result, missing_issues
+
+        issues = list(query_result.get("issues", []))
+        if self.cloud:
+            next_page_token = query_result.get("nextPageToken")
+            while not query_result.get("isLast", True) and next_page_token:
+                query_result = self.enhanced_jql(jql, fields=fields, nextPageToken=next_page_token, limit=limit)
+                issues.extend(query_result.get("issues", []))
+                next_page_token = query_result.get("nextPageToken")
+        else:
+            next_start = start + len(issues)
+            total = query_result.get("total")
+            while issues and (total is None or next_start < total):
+                page = self.jql(jql, fields=fields, start=next_start, limit=limit)
+                if not page:
+                    break
+                page_issues = page.get("issues", [])
+                if not page_issues:
+                    break
+                issues.extend(page_issues)
+                next_start += len(page_issues)
+                total = page.get("total", total)
+
+        query_result["issues"] = issues
         return query_result, missing_issues
 
     def issue_createmeta(self, project: str, expand: str = "projects.issuetypes.fields") -> T_resp_json:

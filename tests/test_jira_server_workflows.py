@@ -28,3 +28,21 @@ class TestJiraServerWorkflows(TestCase):
                 "draft": False,
             },
         )
+
+    def test_bulk_issue_collects_server_pages(self):
+        jira = JiraServer("https://jira.example.com")
+        first_page = {"issues": [{"key": "DEMO-1"}], "startAt": 0, "maxResults": 1, "total": 2}
+        second_page = {"issues": [{"key": "DEMO-2"}], "startAt": 1, "maxResults": 1, "total": 2}
+
+        with patch.object(jira, "jql", side_effect=[first_page, second_page]) as jql:
+            result, missing_issues = jira.bulk_issue(["DEMO-1", "DEMO-2"], fields=["summary"], limit=1)
+
+        self.assertEqual([issue["key"] for issue in result["issues"]], ["DEMO-1", "DEMO-2"])
+        self.assertEqual(missing_issues, [])
+        self.assertEqual(
+            jql.call_args_list,
+            [
+                (("key in (DEMO-1, DEMO-2)",), {"fields": ["summary"], "start": 0, "limit": 1}),
+                (("key in (DEMO-1, DEMO-2)",), {"fields": ["summary"], "start": 1, "limit": 1}),
+            ],
+        )

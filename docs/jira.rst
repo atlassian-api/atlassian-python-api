@@ -68,6 +68,22 @@ Cloud client has a separate implementation and authorization model.
     for workflow in rules["values"]:
         print(workflow)
 
+Bulk issue retrieval
+--------------------
+
+``bulk_issue`` follows Jira search pages by default, so long issue-key lists
+are not silently limited by the server's configured page size.  Set
+``fetch_all=False`` to receive only the first REST response.
+
+.. code-block:: python
+
+    result, invalid_keys = jira.bulk_issue(
+        ["DEMO-1", "DEMO-2", "DEMO-3"],
+        fields=["summary", "status"],
+    )
+    for issue in result["issues"]:
+        print(issue["key"])
+
 Manage Permissions
 ------------------
 
