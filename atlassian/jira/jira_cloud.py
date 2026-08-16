@@ -94,6 +94,36 @@ class JiraCloud(JiraCloudCoreMethods, AtlassianRestAPI):
                 break
         return results
 
+    def get_project_workflow_scheme_associations(self, project_ids):
+        """Return workflow-scheme associations for one or more project IDs.
+
+        Team-managed and non-existent projects are omitted by Jira Cloud. The
+        caller requires the Administer Jira global permission.
+
+        :param project_ids: Project ID or iterable of project IDs.
+        :return: Jira's workflow-scheme association container.
+        """
+        if isinstance(project_ids, (str, int)):
+            project_ids = [project_ids]
+        else:
+            project_ids = list(project_ids)
+        if not project_ids:
+            raise ValueError("project_ids must contain at least one project ID")
+        return self.get(self.endpoint("workflowscheme/project", api_version=3), params={"projectId": project_ids})
+
+    def assign_project_workflow_scheme(self, project_id, workflow_scheme_id):
+        """Assign a workflow scheme to a classic Jira Cloud project.
+
+        Jira only permits this operation when the project has no issues. The
+        caller requires the Administer Jira global permission.
+
+        :param project_id: Numeric Jira project ID.
+        :param workflow_scheme_id: Workflow scheme ID.
+        :return: Jira response (normally ``None`` for HTTP 204).
+        """
+        data = {"projectId": str(project_id), "workflowSchemeId": str(workflow_scheme_id)}
+        return self.put(self.endpoint("workflowscheme/project", api_version=3), data=data)
+
 
 class JiraSoftware(JiraSoftwareMethods, AtlassianRestAPI):
     """Jira Software Cloud REST APIs.

@@ -105,3 +105,18 @@ Core generated operations use the selected ``JiraCloud(api_version=2|3)``
 version in their route.  Existing snake_case ``Jira`` and ``ServiceDesk``
 methods retain their endpoint selection and behavior; they are neither renamed
 nor overwritten by the generated Cloud surface.
+Workflow scheme project associations
+------------------------------------
+
+Use :class:`atlassian.jira.JiraCloud` to inspect or assign classic-project
+workflow schemes. Team-managed projects are not returned by Jira for this
+endpoint. Both operations require the Administer Jira global permission.
+
+.. code-block:: python
+
+    from atlassian.jira import JiraCloud
+
+    jira = JiraCloud("https://your-domain.atlassian.net", username=email, password=api_token)
+
+    associations = jira.get_project_workflow_scheme_associations(["10001", "10002"])
+    jira.assign_project_workflow_scheme(project_id="10001", workflow_scheme_id="10032")

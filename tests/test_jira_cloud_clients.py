@@ -16,6 +16,22 @@ class TestJiraCloudClients(TestCase):
         self.assertIs(Jira, JiraServer)
         self.assertIs(PackageJira, JiraServer)
 
+    def test_jira_cloud_workflow_scheme_association_helpers_use_v3(self):
+        jira = JiraCloud("https://example.atlassian.net")
+
+        with patch.object(jira, "get", return_value={"values": []}) as get:
+            result = jira.get_project_workflow_scheme_associations(["10001", 10002])
+
+        self.assertEqual(result, {"values": []})
+        get.assert_called_once_with("rest/api/3/workflowscheme/project", params={"projectId": ["10001", 10002]})
+
+        with patch.object(jira, "put", return_value=None) as put:
+            jira.assign_project_workflow_scheme("10001", 10032)
+
+        put.assert_called_once_with(
+            "rest/api/3/workflowscheme/project", data={"projectId": "10001", "workflowSchemeId": "10032"}
+        )
+
     def test_core_client_defaults_to_v3_and_forces_cloud_mode(self):
         jira = JiraCloud("https://example.atlassian.net", cloud=False)
 
