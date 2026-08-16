@@ -366,6 +366,50 @@ class Bitbucket(BitbucketBase):
         url = f"{self._url_repo(project_key, repository_slug, api_version='latest')}/hook-scripts/{script_id}"
         return self.delete(url)
 
+    def get_hook_script(self, script_id: int):
+        """Return the registered global hook script with ``script_id``.
+
+        The result only contains the script metadata; use
+        ``get_hook_script_content()`` to fetch the script body.
+        """
+        return self.get(f"{self._url_hook_scripts()}/{script_id}")
+
+    def get_hook_script_content(self, script_id: int):
+        """Return the raw body of the registered global hook script.
+
+        ``not_json_response`` is used because the endpoint returns the
+        executable script as plain text rather than a JSON payload.
+        """
+        return self.get(
+            f"{self._url_hook_scripts()}/{script_id}/content",
+            not_json_response=True,
+        )
+
+    def update_hook_script(
+        self, script_id: int, content: bytes, name: str, hook_type: str, description: Optional[str] = None
+    ):
+        """Update a registered global hook script on Bitbucket Data Center.
+
+        ``hook_type`` must be ``PRE`` or ``POST``. Like ``create_hook_script``,
+        the API expects a multipart form; ``content`` is the executable script
+        bytes.
+        """
+        if hook_type not in ("PRE", "POST"):
+            raise ValueError("hook_type must be 'PRE' or 'POST'")
+
+        files: Dict[str, Any] = {
+            "content": ("hook-script", content, "application/octet-stream"),
+            "name": (None, name),
+            "type": (None, hook_type),
+        }
+        if description is not None:
+            files["description"] = (None, description)
+        return self.put(f"{self._url_hook_scripts()}/{script_id}", files=files, headers=self.no_check_headers)
+
+    def delete_hook_script(self, script_id: int):
+        """Delete the registered global hook script with ``script_id``."""
+        return self.delete(f"{self._url_hook_scripts()}/{script_id}")
+
     def get_categories(self, project_key, repository_slug=None):
         """
         Get a list of categories assigned to a project or repository.

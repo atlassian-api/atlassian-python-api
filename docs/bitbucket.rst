@@ -98,6 +98,25 @@ configured scripts. ``delete_project_hook_script()`` and
 ``delete_repo_hook_script()`` remove only a scope configuration; they do not
 delete the global registered script.
 
+The global registered script itself is managed with the server-level methods.
+``get_hook_script()`` returns a script's metadata, ``get_hook_script_content()``
+returns its raw body, ``update_hook_script()`` replaces its body or metadata,
+and ``delete_hook_script()`` removes it entirely:
+
+.. code-block:: python
+
+    metadata = bitbucket.get_hook_script(hook_script["id"])
+    script = bitbucket.get_hook_script_content(hook_script["id"])
+
+    bitbucket.update_hook_script(
+        hook_script["id"],
+        content=script.replace(b"old", b"new"),
+        name="Audit pushes (v2)",
+        hook_type="POST",
+        description="Records every push",
+    )
+    bitbucket.delete_hook_script(hook_script["id"])
+
 Release report from two refs (Server/Data Center)
 -------------------------------------------------
 
