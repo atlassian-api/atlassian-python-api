@@ -300,6 +300,10 @@ Page actions
     # ``path=...`` for new code.
     confluence.download_attachments_from_page(page_id, path="/tmp/downloads")
 
+    # Attachments belong to the page that uploaded them. Including ``source_page``
+    # in another page does not copy its attachments, so query the source directly.
+    source_attachments = confluence.get_attachments_from_content(source_page_id)
+
     # Confluence Cloud does not render attached HTML inline. Server/Data Center
     # HTML/HTML Include macros are administrator-controlled and disabled by
     # default because embedding arbitrary HTML can introduce XSS vulnerabilities.
