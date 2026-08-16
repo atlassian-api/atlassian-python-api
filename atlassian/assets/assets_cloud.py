@@ -502,6 +502,44 @@ class AssetsCloud(AtlassianRestAPI):
         url = self.url_joiner(self.api_root, f"object/{object_id}/attributes")
         return self.get(url)
 
+    def get_object_attribute_value(self, object_id, attribute_id, default=None):
+        """Return the first value for an object type attribute.
+
+        Assets exposes object attributes as a collection rather than a
+        dedicated value endpoint.  This helper fetches that collection and
+        selects the entry whose ``objectTypeAttributeId`` matches
+        ``attribute_id``.  ``None`` (or ``default``) is returned when the
+        attribute is absent or has no values.
+
+        :param object_id: Assets object ID
+        :param attribute_id: object type attribute ID
+        :param default: value returned when no matching value exists
+        """
+        attributes = self.get_object_attributes(object_id)
+        if isinstance(attributes, dict):
+            attributes = attributes.get("objectAttributeBeans", attributes.get("values", []))
+        if not isinstance(attributes, list):
+            return default
+
+        for attribute in attributes:
+            if not isinstance(attribute, dict):
+                continue
+            object_type_attribute = attribute.get("objectTypeAttribute") or {}
+            current_id = attribute.get("objectTypeAttributeId", object_type_attribute.get("id"))
+            if str(current_id) != str(attribute_id):
+                continue
+
+            values = attribute.get("objectAttributeValues")
+            if values is None:
+                values = attribute.get("values")
+            if values:
+                value = values[0]
+                return value.get("value") if isinstance(value, dict) else value
+            if "value" in attribute:
+                return attribute["value"]
+            return default
+        return default
+
     def get_object_history(self, object_id, asc=False, abbreviate=True):
         """
         Retrieve the history entries for this object

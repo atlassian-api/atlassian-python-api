@@ -19,6 +19,7 @@ discovers the Assets workspace and routes requests through the workspace API:
     objects_page = assets.get_aql_objects("objectType = Server", page=1, result_per_page=50)
     iql_objects_page = assets.get_iql_objects("objectType = Server", page=1, result_per_page=50)
     server = assets.get_object("10001")
+    owner = assets.get_object_attribute_value("10001", attribute_id="12345")
     schemas = assets.list_object_schema()
 
 The Cloud client also supports import sources, object schemas and types,
