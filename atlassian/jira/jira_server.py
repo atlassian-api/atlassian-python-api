@@ -982,7 +982,9 @@ class Jira(AtlassianRestAPI):
         Returns a list of all fields, both System and Custom
         :return: application/jsonContains a full representation of all visible fields in JSON.
         """
-        url = self.resource_url("field")
+        # Jira Cloud's v3 field resource is the current endpoint and includes
+        # custom fields visible to the caller. Keep Server/Data Center on v2.
+        url = self.resource_url("field", api_version=3 if self.cloud else None)
         return self.get(url)
 
     def create_custom_field(
@@ -4114,7 +4116,10 @@ class Jira(AtlassianRestAPI):
             params["jql"] = jql
         if expand is not None:
             params["expand"] = expand
-        url = self.resource_url("search/jql")
+        # Enhanced JQL is only available at Jira Cloud REST API v3. The
+        # legacy-compatible Jira client defaults to v2, so it must not use its
+        # configured API version here.
+        url = self.resource_url("search/jql", api_version=3)
         return self.get(url, params=params)
 
     def approximate_issue_count(
@@ -4272,7 +4277,7 @@ class Jira(AtlassianRestAPI):
         if expand is not None:
             params["expand"] = expand
 
-        url = self.resource_url("search/jql")
+        url = self.resource_url("search/jql", api_version=3)
         results = []
         next_page_token = None
 

@@ -62,6 +62,31 @@ class TestJira(TestCase):
             mock_get.call_args.kwargs["params"], {"query": "Customer tier", "startAt": 1, "maxResults": 50}
         )
 
+    @patch.object(jira.Jira, "get")
+    def test_get_all_fields_uses_v3_for_cloud(self, mock_get):
+        self.jira.get_all_fields()
+
+        mock_get.assert_called_once_with("rest/api/3/field")
+
+    @patch.object(jira.Jira, "get")
+    def test_enhanced_jql_uses_the_cloud_v3_endpoint(self, mock_get):
+        self.jira.enhanced_jql(
+            "created >= -30d ORDER BY created DESC",
+            fields="summary,description",
+            nextPageToken="next-token",
+            expand="names",
+        )
+
+        mock_get.assert_called_once_with(
+            "rest/api/3/search/jql",
+            params={
+                "jql": "created >= -30d ORDER BY created DESC",
+                "fields": "summary,description",
+                "nextPageToken": "next-token",
+                "expand": "names",
+            },
+        )
+
     def test_get_epic_issues(self):
         resp = self.jira.epic_issues("BAR-22")
         self.assertIsInstance(resp["issues"], list)
