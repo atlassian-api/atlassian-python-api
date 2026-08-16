@@ -27,6 +27,12 @@ Manage users
     # Check whether the user is a member of the group
     crowd.is_user_in_group(username, group, kind='direct')
 
+    crowd.user_update(username, {"name": username, "email": "ada@example.com", "active": True})
+    crowd.user_update_password(username, "new-password")
+    crowd.user_store_attributes(username, {"attributes": []})
+    crowd.nested_user_groups(username)
+    crowd.group_remove_user(username, groupname)
+
 Manage groups
 -------------
 
@@ -40,6 +46,12 @@ Manage groups
 
     # Create new group method
     crowd.group_create(groupname, description, active=True)
+
+    crowd.group(groupname)
+    crowd.group_update(groupname, {"name": groupname, "active": True})
+    crowd.group_store_attributes(groupname, {"attributes": []})
+    crowd.nested_group_members(groupname)
+    crowd.group_delete(groupname)
 
 Get memberships
 ----------------

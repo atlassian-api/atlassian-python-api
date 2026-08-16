@@ -180,6 +180,84 @@ class Crowd(AtlassianRestAPI):
             json=data,
         )
 
+    def group_remove_user(self, username, groupname):
+        """Remove a direct user-to-group membership."""
+        return self.delete(
+            self._crowd_api_url("usermanagement", "user/group/direct"),
+            params={"username": username, "groupname": groupname},
+        )
+
+    def user_update(self, username, data):
+        """Update a user with a Crowd user representation."""
+        return self.put(self._crowd_api_url("usermanagement", "user"), params={"username": username}, data=data)
+
+    def user_update_password(self, username, password):
+        """Update a user's password."""
+        return self.put(
+            self._crowd_api_url("usermanagement", "user/password"),
+            params={"username": username},
+            data={"value": password},
+        )
+
+    def user_attributes(self, username):
+        """Return all attributes for a user."""
+        return self.get(self._crowd_api_url("usermanagement", "user/attribute"), params={"username": username})
+
+    def user_store_attributes(self, username, attributes):
+        """Store user attributes using Crowd's attribute request body."""
+        return self.put(
+            self._crowd_api_url("usermanagement", "user/attribute"), params={"username": username}, data=attributes
+        )
+
+    def user_remove_attribute(self, username, attribute_name):
+        """Delete one user attribute."""
+        return self.delete(
+            self._crowd_api_url("usermanagement", "user/attribute"),
+            params={"username": username, "attributename": attribute_name},
+        )
+
+    def group(self, groupname):
+        """Return a group by name."""
+        return self.get(self._crowd_api_url("usermanagement", "group"), params={"groupname": groupname})
+
+    def group_update(self, groupname, data):
+        """Update a group with a Crowd group representation."""
+        return self.put(self._crowd_api_url("usermanagement", "group"), params={"groupname": groupname}, data=data)
+
+    def group_delete(self, groupname):
+        """Delete a group by name."""
+        return self.delete(self._crowd_api_url("usermanagement", "group"), params={"groupname": groupname})
+
+    def group_attributes(self, groupname):
+        """Return all attributes for a group."""
+        return self.get(self._crowd_api_url("usermanagement", "group/attribute"), params={"groupname": groupname})
+
+    def group_store_attributes(self, groupname, attributes):
+        """Store group attributes using Crowd's attribute request body."""
+        return self.put(
+            self._crowd_api_url("usermanagement", "group/attribute"), params={"groupname": groupname}, data=attributes
+        )
+
+    def group_remove_attribute(self, groupname, attribute_name):
+        """Delete one group attribute."""
+        return self.delete(
+            self._crowd_api_url("usermanagement", "group/attribute"),
+            params={"groupname": groupname, "attributename": attribute_name},
+        )
+
+    def nested_group_members(self, groupname, max_results=99999):
+        """Return users who are direct or nested members of a group."""
+        response = self.get(
+            self._crowd_api_url("usermanagement", "group/user/nested"),
+            params={"groupname": groupname, "max-results": max_results},
+        )
+        return search("users[*].name", response)
+
+    def nested_user_groups(self, username):
+        """Return direct and nested groups for a user."""
+        response = self.get(self._crowd_api_url("usermanagement", "user/group/nested"), params={"username": username})
+        return search("groups[*].name", response)
+
     def health_check(self):
         """
         Get health status
