@@ -20,6 +20,11 @@ class TestJira(TestCase):
         resp = self.jira.issue("FOO-123")
         self.assertEqual(resp["key"], "FOO-123")
 
+    def test_get_issue_remote_links_supports_json_list_responses(self):
+        links = self.jira.get_issue_remote_links("FOO-123")
+        self.assertEqual(links[0]["id"], 10001)
+        self.assertEqual(links[0]["object"]["title"], "Example")
+
     @patch.object(jira.Jira, "get")
     def test_get_all_application_roles(self, mock_get):
         """Lists ApplicationRoles from the Server v2 resource."""
