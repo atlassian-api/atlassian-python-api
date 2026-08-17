@@ -25,11 +25,15 @@ Manage users
     # Delete user
     crowd.user_delete(username)
 
-    # Get user
+    # Get user by name or by key
     crowd.user(username)
+    crowd.user(key="557057:927441f1-cc92-4030-b633-8a2bbdf7136e")
+
+    # Get user by the v2 OpenID URL
+    crowd.user_by_openid("https://crowd.example.test/openidserver/users/ada")
 
     # Get user's all group info
-    crowd.user_groups(username, kind='direct')
+    crowd.user_groups(username, kind='direct', groupname=None, start_index=0, max_results=99999)
 
     # Check whether the user is a member of the group
     crowd.is_user_in_group(username, group, kind='direct')
@@ -37,6 +41,7 @@ Manage users
     crowd.user_update(username, {"name": username, "email": "ada@example.com", "active": True})
     crowd.user_update_password(username, "new-password")
     crowd.user_delete_password(username)
+    crowd.user_attributes(username)
     crowd.user_store_attributes(username, {"attributes": []})
     crowd.user_remove_attribute(username, "attribute-name")
     crowd.nested_user_groups(username)
@@ -58,13 +63,14 @@ Manage groups
     crowd.group_add_user(username, groupname)
 
     # Get group's members
-    crowd.group_members(group, kind='direct', max_results=99999)
+    crowd.group_members(group, kind='direct', username=None, start_index=0, max_results=99999)
 
     # Create new group method
     crowd.group_create(groupname, description, active=True)
 
     crowd.group(groupname)
     crowd.group_update(groupname, {"name": groupname, "active": True})
+    crowd.group_attributes(groupname)
     crowd.group_store_attributes(groupname, {"attributes": []})
     crowd.group_remove_attribute(groupname, "attribute-name")
     crowd.nested_group_members(groupname)
@@ -189,6 +195,10 @@ Administration
     crowd.update_directory_mapping("application-id", "directory-id", {"directoryId": "dir1"})
     crowd.delete_directory_mapping("application-id", "directory-id")
     crowd.move_directory_mapping("application-id", "directory-id", {"position": 1})
+    crowd.get_access_based_synchronization("application-id")
+    crowd.update_access_based_synchronization("application-id", {"filterType": "USER_ONLY_FILTERING"})
+    crowd.get_email_scan_result("application-id")
+    crowd.trigger_email_scan("application-id")
 
     # Directories
     crowd.get_detailed_directories(active=True)
@@ -258,6 +268,7 @@ Administration
     crowd.get_saml_application_config("application-id")
     crowd.update_saml_application_config("application-id", {"enabled": True})
     crowd.parse_saml_metadata("<xml>...</xml>")
+    crowd.parse_saml_metadata_file("/path/to/metadata.xml")
     crowd.reset_saml_certificates()
     crowd.get_saml_idp_metadata()
     crowd.find_saml_directory_mapping_mismatch("application-id")
@@ -267,6 +278,15 @@ Administration
     crowd.test_mail_configuration({"host": "smtp.example.com"})
     crowd.validate_mail_configuration({"host": "smtp.example.com"})
     crowd.get_dynamic_ldap_pool_statistics()
+
+    # Database encryption
+    crowd.get_encryption_settings()
+    crowd.set_default_encryptor({"key": "AES"})
+    crowd.change_encryption_key()
+    crowd.disable_encryption()
+
+    # Console messages
+    crowd.dismiss_message("message-key")
 
 Healthcheck
 -------------

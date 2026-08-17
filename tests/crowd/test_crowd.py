@@ -13,11 +13,9 @@ def test_crowd_user_group_and_attribute_helpers(mock_put, mock_get, mock_delete)
     assert crowd.nested_group_members("engineering") == ["ada"]
     crowd.group_remove_user("ada", "engineering")
     crowd.user_update_password("ada", "new-secret")
-    crowd.group_store_attributes("engineering", {"attributes": []})
 
     assert mock_delete.call_args_list[0].kwargs["params"] == {"username": "ada", "groupname": "engineering"}
     assert mock_put.call_args_list[0].kwargs["data"] == {"value": "new-secret"}
-    assert mock_put.call_args_list[1].kwargs["params"] == {"groupname": "engineering"}
 
 
 @patch.object(Crowd, "post")
@@ -412,4 +410,99 @@ def test_admin_saml_and_ldap_methods(mock_post, mock_get):
     assert mock_post.call_args.kwargs["headers"] == {"Content-Type": "application/octet-stream"}
 
     crowd.get_dynamic_ldap_pool_statistics()
-    assert mock_get.call_args.args[0].endswith("admin/1.0/dynamic-ldap-pool-statistics")
+    assert mock_get.call_args.args[0].endswith("admin/1.0/spring-ldap-pool-statistics")
+
+
+@patch.object(Crowd, "get")
+def test_user_lookup_by_key_and_openid(mock_get):
+    crowd = Crowd("https://crowd.example.test", "application", "password")
+
+    crowd.user("ada")
+    assert mock_get.call_args.kwargs["params"] == {"username": "ada"}
+
+    crowd.user(key="557057:927441f1")
+    assert mock_get.call_args.kwargs["params"] == {"key": "557057:927441f1"}
+
+    crowd.user_by_openid("https://crowd.example.test/openidserver/users/ada")
+    assert mock_get.call_args.args[0].endswith("usermanagement/latest/user/id")
+    assert mock_get.call_args.kwargs["params"] == {"openid": "https://crowd.example.test/openidserver/users/ada"}
+
+
+@patch.object(Crowd, "get")
+def test_membership_lookups_support_paging_and_single_entity_filters(mock_get):
+    crowd = Crowd("https://crowd.example.test", "application", "password")
+    mock_get.return_value = {"groups": [{"name": "engineering"}], "users": [{"name": "ada"}]}
+
+    assert crowd.user_groups("ada", groupname="engineering", start_index=10, max_results=20) == ["engineering"]
+    assert mock_get.call_args.kwargs["params"] == {
+        "username": "ada",
+        "groupname": "engineering",
+        "start-index": 10,
+        "max-results": 20,
+    }
+
+    assert crowd.group_members("engineering", username="ada", start_index=5) == ["ada"]
+    assert mock_get.call_args.kwargs["params"]["username"] == "ada"
+    assert mock_get.call_args.kwargs["params"]["start-index"] == 5
+
+    crowd.nested_group_members("engineering", username="ada")
+    assert mock_get.call_args.kwargs["params"]["username"] == "ada"
+
+    crowd.nested_user_groups("ada", groupname="engineering")
+    assert mock_get.call_args.args[0].endswith("usermanagement/latest/user/group/nested")
+    assert mock_get.call_args.kwargs["params"]["groupname"] == "engineering"
+
+
+@patch.object(Crowd, "post")
+def test_store_attributes_uses_post(mock_post):
+    crowd = Crowd("https://crowd.example.test", "application", "password")
+
+    crowd.user_store_attributes("ada", {"attributes": []})
+    assert mock_post.call_args.args[0].endswith("usermanagement/latest/user/attribute")
+    assert mock_post.call_args.kwargs["params"] == {"username": "ada"}
+
+    crowd.group_store_attributes("engineering", {"attributes": []})
+    assert mock_post.call_args.args[0].endswith("usermanagement/latest/group/attribute")
+    assert mock_post.call_args.kwargs["params"] == {"groupname": "engineering"}
+
+
+@patch.object(Crowd, "put")
+@patch.object(Crowd, "post")
+@patch.object(Crowd, "get")
+def test_admin_encryption_email_scan_and_dismiss_methods(mock_get, mock_post, mock_put):
+    crowd = Crowd("https://crowd.example.test", "application", "password")
+
+    crowd.get_email_scan_result("app1")
+    assert mock_get.call_args.args[0].endswith("admin/1.0/application/app1/emailscan")
+
+    crowd.trigger_email_scan("app1")
+    assert mock_post.call_args.args[0].endswith("admin/1.0/application/app1/emailscan")
+
+    crowd.dismiss_message("upgrade.message")
+    assert mock_post.call_args.args[0].endswith("admin/1.0/dismiss/upgrade.message")
+
+    crowd.get_encryption_settings()
+    assert mock_get.call_args.args[0].endswith("admin/1.0/encryption")
+
+    crowd.set_default_encryptor({"key": "AES"})
+    assert mock_put.call_args.args[0].endswith("admin/1.0/encryption/encryptor")
+    assert mock_put.call_args.kwargs["data"] == {"key": "AES"}
+
+    crowd.change_encryption_key()
+    assert mock_put.call_args.args[0].endswith("admin/1.0/encryption/changeKey")
+
+    crowd.disable_encryption()
+    assert mock_put.call_args.args[0].endswith("admin/1.0/encryption/disable")
+
+
+@patch.object(Crowd, "put")
+@patch.object(Crowd, "get")
+def test_admin_access_based_synchronization_methods(mock_get, mock_put):
+    crowd = Crowd("https://crowd.example.test", "application", "password")
+
+    crowd.get_access_based_synchronization("app1")
+    assert mock_get.call_args.args[0].endswith("admin/1.0/application/app1/access-based-synchronization")
+
+    crowd.update_access_based_synchronization("app1", {"filterType": "USER_ONLY_FILTERING"})
+    assert mock_put.call_args.args[0].endswith("admin/1.0/application/app1/access-based-synchronization")
+    assert mock_put.call_args.kwargs["data"] == {"filterType": "USER_ONLY_FILTERING"}

@@ -59,14 +59,23 @@ class Crowd(AtlassianRestAPI):
             data=user_object,
         )
 
-    def user(self, username):
+    def user(self, username=None, key=None):
         """
-        Get user information
-        :param username:
+        Get user information by name or by key
+        :param username: str - username, ignored when key is given
+        :param key: str - user key
         :return:
         """
-        params = {"username": username}
+        params = {"key": key} if key else {"username": username}
         return self.get(self._crowd_api_url("usermanagement", "user"), params=params)
+
+    def user_by_openid(self, openid):
+        """
+        Look up a user by the v2 OpenID URL.
+        :param openid: str - the v2 OpenID URL for the user
+        :return: user info
+        """
+        return self.get(self._crowd_api_url("usermanagement", "user/id"), params={"openid": openid})
 
     def user_activate(self, username):
         """
@@ -131,27 +140,37 @@ class Crowd(AtlassianRestAPI):
 
         return self.delete(self._crowd_api_url("usermanagement", "user"), params=params)
 
-    def user_groups(self, username, kind="direct"):
+    def user_groups(self, username, kind="direct", groupname=None, start_index=0, max_results=99999):
         """
         Get user's all group info
         :param username: str - username
         :param kind: str - group type
+        :param groupname: str - optional single group name to retrieve
+        :param start_index: int - start index for paging
+        :param max_results: int - maximum number of results
         :return: The specify user's group info
         """
         path = self._crowd_api_url("usermanagement", f"user/group/{kind}")
-        response = self.get(path, params={"username": username})
+        params = {"username": username, "start-index": start_index, "max-results": max_results}
+        if groupname:
+            params["groupname"] = groupname
+        response = self.get(path, params=params)
         return search("groups[*].name", response)
 
-    def group_members(self, group, kind="direct", max_results=99999):
+    def group_members(self, group, kind="direct", username=None, start_index=0, max_results=99999):
         """
         Get group's all direct members
         :param group: str - group name
         :param kind: str - group type
+        :param username: str - optional single username to retrieve
+        :param start_index: int - start index for paging
         :param max_results: int - maximum number of results
         :return: The specify group's direct members info
         """
         path = self._crowd_api_url("usermanagement", f"group/user/{kind}")
-        params = {"groupname": group, "max-results": max_results}
+        params = {"groupname": group, "start-index": start_index, "max-results": max_results}
+        if username:
+            params["username"] = username
         response = self.get(path, params=params)
         return search("users[*].name", response)
 
@@ -210,7 +229,7 @@ class Crowd(AtlassianRestAPI):
 
     def user_store_attributes(self, username, attributes):
         """Store user attributes using Crowd's attribute request body."""
-        return self.put(
+        return self.post(
             self._crowd_api_url("usermanagement", "user/attribute"), params={"username": username}, data=attributes
         )
 
@@ -239,7 +258,7 @@ class Crowd(AtlassianRestAPI):
 
     def group_store_attributes(self, groupname, attributes):
         """Store group attributes using Crowd's attribute request body."""
-        return self.put(
+        return self.post(
             self._crowd_api_url("usermanagement", "group/attribute"), params={"groupname": groupname}, data=attributes
         )
 
@@ -250,17 +269,34 @@ class Crowd(AtlassianRestAPI):
             params={"groupname": groupname, "attributename": attribute_name},
         )
 
-    def nested_group_members(self, groupname, max_results=99999):
-        """Return users who are direct or nested members of a group."""
-        response = self.get(
-            self._crowd_api_url("usermanagement", "group/user/nested"),
-            params={"groupname": groupname, "max-results": max_results},
-        )
+    def nested_group_members(self, groupname, username=None, start_index=0, max_results=99999):
+        """
+        Return users who are direct or nested members of a group.
+        :param groupname: str - group name
+        :param username: str - optional single username to retrieve
+        :param start_index: int - start index for paging
+        :param max_results: int - maximum number of results
+        :return: list of usernames
+        """
+        params = {"groupname": groupname, "start-index": start_index, "max-results": max_results}
+        if username:
+            params["username"] = username
+        response = self.get(self._crowd_api_url("usermanagement", "group/user/nested"), params=params)
         return search("users[*].name", response)
 
-    def nested_user_groups(self, username):
-        """Return direct and nested groups for a user."""
-        response = self.get(self._crowd_api_url("usermanagement", "user/group/nested"), params={"username": username})
+    def nested_user_groups(self, username, groupname=None, start_index=0, max_results=99999):
+        """
+        Return direct and nested groups for a user.
+        :param username: str - username
+        :param groupname: str - optional single group name to retrieve
+        :param start_index: int - start index for paging
+        :param max_results: int - maximum number of results
+        :return: list of group names
+        """
+        params = {"username": username, "start-index": start_index, "max-results": max_results}
+        if groupname:
+            params["groupname"] = groupname
+        response = self.get(self._crowd_api_url("usermanagement", "user/group/nested"), params=params)
         return search("groups[*].name", response)
 
     def group_child_groups(self, groupname, child_groupname=None, start_index=0, max_results=99999):
@@ -852,6 +888,50 @@ class Crowd(AtlassianRestAPI):
         """
         return self.put(self._admin_api_url(f"application/{application_id}/access-based-synchronization"), data=data)
 
+    def get_email_scan_result(self, application_id):
+        """
+        Get the latest duplicated email addresses scan result for an application.
+        :param application_id: str - application id
+        :return: scan result
+        """
+        return self.get(self._admin_api_url(f"application/{application_id}/emailscan"))
+
+    def trigger_email_scan(self, application_id):
+        """
+        Trigger a duplicated email addresses scan for an application.
+        :param application_id: str - application id
+        :return:
+        """
+        return self.post(self._admin_api_url(f"application/{application_id}/emailscan"))
+
+    def dismiss_message(self, message_key):
+        """
+        Dismiss an administration console message.
+        :param message_key: str - message key
+        :return:
+        """
+        return self.post(self._admin_api_url(f"dismiss/{message_key}"))
+
+    def get_encryption_settings(self):
+        """Get database encryption settings."""
+        return self.get(self._admin_api_url("encryption"))
+
+    def change_encryption_key(self):
+        """Change the key used by the current encryptor."""
+        return self.put(self._admin_api_url("encryption/changeKey"))
+
+    def disable_encryption(self):
+        """Disable database encryption."""
+        return self.put(self._admin_api_url("encryption/disable"))
+
+    def set_default_encryptor(self, data):
+        """
+        Set the default encryptor.
+        :param data: dict - encryptor representation, e.g. {"key": "AES"}
+        :return:
+        """
+        return self.put(self._admin_api_url("encryption/encryptor"), data=data)
+
     def get_directory_mappings(self, application_id, start=0, limit=99999):
         """
         Get directory mappings for an application.
@@ -1429,8 +1509,8 @@ class Crowd(AtlassianRestAPI):
         return self.get(self._admin_api_url(f"samlconfig/application/{application_id}/directory-mapping-mismatch"))
 
     def get_dynamic_ldap_pool_statistics(self):
-        """Get dynamic LDAP pool statistics."""
-        return self.get(self._admin_api_url("dynamic-ldap-pool-statistics"))
+        """Get dynamic LDAP connection pool statistics."""
+        return self.get(self._admin_api_url("spring-ldap-pool-statistics"))
 
     def save_mail_configuration(self, data):
         """
