@@ -30,6 +30,7 @@ class TestConfluenceServer:
         assert confluence.api_version == "1.0"
         assert confluence.api_root == "rest/api"
         assert confluence.cloud is False
+        assert confluence.url == "https://test.confluence.com"
 
     def test_init_custom_values(self):
         """Test ConfluenceServer client initialization with custom values."""
@@ -42,6 +43,73 @@ class TestConfluenceServer:
         )
         assert confluence.api_version == "2.0"
         assert confluence.api_root == "custom/api/root"
+
+    def test_default_server_requests_preserve_legacy_urls(self):
+        confluence = ConfluenceServer(url="https://test.confluence.com", token="test-token")
+        response = Response()
+        response.status_code = 200
+        response.reason = "OK"
+        response._content = b'{"id": "123"}'
+
+        with patch.object(confluence._session, "request", return_value=response) as mock_request:
+            assert confluence.get_page_by_id("123") == {"id": "123"}
+
+        assert mock_request.call_args.kwargs["url"] == "https://test.confluence.com/rest/api/content/123"
+
+    @pytest.mark.parametrize(
+        ("method", "path", "kwargs", "expected_path"),
+        [
+            ("post", "rest/api/content", {"data": {}}, "rest/api/content"),
+            ("put", "/rest/api/content/123", {"data": {}}, "rest/api/content/123"),
+            ("delete", "rest/api/content/123", {"params": {}}, "rest/api/content/123"),
+        ],
+    )
+    def test_legacy_rooted_request_paths_are_not_prefixed_twice(self, method, path, kwargs, expected_path):
+        confluence = ConfluenceServer(url="https://test.confluence.com", token="test-token")
+        response = Response()
+        response.status_code = 200
+        response.reason = "OK"
+
+        with patch.object(confluence._session, "request", return_value=response) as mock_request:
+            getattr(confluence, method)(path=path, advanced_mode=True, **kwargs)
+
+        assert mock_request.call_args.kwargs["url"] == f"https://test.confluence.com/{expected_path}"
+
+    def test_explicit_server_api_version_applies_to_unrooted_resources(self):
+        confluence = ConfluenceServer(
+            url="https://test.confluence.com",
+            token="test-token",
+            api_root="custom/api/root",
+            api_version="2.0",
+        )
+        response = Response()
+        response.status_code = 200
+        response.reason = "OK"
+        response._content = b'{"id": "123"}'
+
+        with patch.object(confluence._session, "request", return_value=response) as mock_request:
+            assert confluence.get_page_by_id("123") == {"id": "123"}
+
+        assert mock_request.call_args.kwargs["url"] == "https://test.confluence.com/custom/api/root/2.0/content/123"
+
+    def test_server_ui_exports_remain_site_relative(self):
+        confluence = ConfluenceServer(url="https://test.confluence.com", token="test-token")
+        response = Response()
+        response.status_code = 200
+        response.reason = "OK"
+        response._content = b"%PDF-1.4"
+
+        with patch.object(confluence._session, "request", return_value=response) as mock_request:
+            assert confluence.get_page_as_pdf("123") == b"%PDF-1.4"
+            pdf_url = mock_request.call_args.kwargs["url"]
+
+            mock_request.reset_mock()
+            response._content = b"word export"
+            assert confluence.get_page_as_word("123") == b"word export"
+            word_url = mock_request.call_args.kwargs["url"]
+
+        assert pdf_url == "https://test.confluence.com/spaces/flyingpdf/pdfpageexport.action?pageId=123"
+        assert word_url == "https://test.confluence.com/exportword?pageId=123"
 
     def test_bad_request_includes_confluence_validation_details(self, confluence_server):
         response = Response()

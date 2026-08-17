@@ -42,6 +42,25 @@ class Server(ConfluenceServerBase):
     Confluence Server REST API wrapper
     """
 
+    _api_resources = frozenset(
+        {
+            "accessmode",
+            "admin",
+            "audit",
+            "content",
+            "contentbody",
+            "group",
+            "health",
+            "longtask",
+            "metadata",
+            "reindex",
+            "search",
+            "space",
+            "template",
+            "user",
+        }
+    )
+
     content_types = {
         ".gif": "image/gif",
         ".png": "image/png",
@@ -54,6 +73,7 @@ class Server(ConfluenceServerBase):
     }
 
     def __init__(self, url, *args, **kwargs):
+        api_version_is_explicit = "api_version" in kwargs
         # Set default values only if not provided
         if "cloud" not in kwargs:
             kwargs["cloud"] = False
@@ -61,8 +81,56 @@ class Server(ConfluenceServerBase):
             kwargs["api_version"] = "1.0"
         if "api_root" not in kwargs:
             kwargs["api_root"] = "rest/api"
-        url = url.strip("/") + f"/{kwargs['api_root']}/{kwargs['api_version']}"
-        super(Server, self).__init__(url, *args, **kwargs)
+        super(Server, self).__init__(url.rstrip("/"), *args, **kwargs)
+        self._api_version_is_explicit = api_version_is_explicit
+
+    def _server_api_path(self, path):
+        """Prefix unrooted Server REST resources without changing legacy paths."""
+        if not isinstance(path, str):
+            return path
+
+        normalized_path = path.lstrip("/")
+        resource = normalized_path.split("/", 1)[0].split("?", 1)[0]
+        if resource not in self._api_resources:
+            return path
+
+        api_parts = [self.api_root]
+        if self._api_version_is_explicit:
+            api_parts.append(self.api_version)
+        api_parts.append(normalized_path)
+        return "/".join(str(part).strip("/") for part in api_parts if part is not None and str(part).strip("/"))
+
+    def request(
+        self,
+        method="GET",
+        path="/",
+        data=None,
+        json=None,
+        flags=None,
+        params=None,
+        headers=None,
+        files=None,
+        trailing=None,
+        absolute=False,
+        advanced_mode=False,
+        allow_redirects=True,
+    ):
+        if not absolute:
+            path = self._server_api_path(path)
+        return super(Server, self).request(
+            method=method,
+            path=path,
+            data=data,
+            json=json,
+            flags=flags,
+            params=params,
+            headers=headers,
+            files=files,
+            trailing=trailing,
+            absolute=absolute,
+            advanced_mode=advanced_mode,
+            allow_redirects=allow_redirects,
+        )
 
     @staticmethod
     def _create_body(body, representation):
