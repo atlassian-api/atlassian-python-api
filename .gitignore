@@ -39,6 +39,7 @@ docs/_builds
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 *.spec
+specs
 
 # Installer logs
 pip-log.txt
