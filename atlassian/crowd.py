@@ -589,7 +589,7 @@ class Crowd(AtlassianRestAPI):
         :param directory_id: int - optional directory id to test against
         :return: connection test result
         """
-        path = f"directorymanagement/1/directory/testazuread"
+        path = "directorymanagement/1/directory/testazuread"
         if directory_id:
             path = f"{path}/{directory_id}"
         return self.post(self.url_joiner(self.api_root, path), data=config)
@@ -601,7 +601,7 @@ class Crowd(AtlassianRestAPI):
         :param directory_id: int - optional directory id to test against
         :return: connection test result
         """
-        path = f"directorymanagement/1/directory/testcrowd"
+        path = "directorymanagement/1/directory/testcrowd"
         if directory_id:
             path = f"{path}/{directory_id}"
         return self.post(self.url_joiner(self.api_root, path), data=config)
@@ -613,7 +613,7 @@ class Crowd(AtlassianRestAPI):
         :param directory_id: int - optional directory id to test against
         :return: connection test result
         """
-        path = f"directorymanagement/1/directory/testldap"
+        path = "directorymanagement/1/directory/testldap"
         if directory_id:
             path = f"{path}/{directory_id}"
         return self.post(self.url_joiner(self.api_root, path), data=config)
@@ -625,7 +625,7 @@ class Crowd(AtlassianRestAPI):
         :param directory_id: int - optional directory id to test against
         :return: search test result
         """
-        path = f"directorymanagement/1/directory/testsearch"
+        path = "directorymanagement/1/directory/testsearch"
         if directory_id:
             path = f"{path}/{directory_id}"
         return self.post(self.url_joiner(self.api_root, path), data=config)

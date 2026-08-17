@@ -1,7 +1,7 @@
 ============================
 Atlassian Python API wrapper
 ============================
-|Build Status| |PyPI version| |PyPI - Downloads| |License| |Codacy Badge| |Docs| |Discord|
+|PyPI version| |PyPI - Downloads| |License| |Codacy Badge| |Docs| |Discord|
 
 What is it?
 ___________

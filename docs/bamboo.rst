@@ -343,6 +343,168 @@ Other actions
     # Upload plugin
     upload_plugin(plugin_path)
 
+Responsibility and triggers
+---------------------------
+
+.. code-block:: python
+
+    bamboo.get_broken_builds_by_user("ada")
+    bamboo.get_my_broken_builds()
+    bamboo.get_broken_build("PROJ-PLAN-42")
+    bamboo.take_responsibility("PROJ-PLAN-42", "ada")
+    bamboo.remove_responsibility("PROJ-PLAN-42", "ada")
+
+    bamboo.remote_trigger_change_detection()
+
+Access tokens
+-------------
+
+.. code-block:: python
+
+    bamboo.get_access_tokens()
+    bamboo.create_access_token()
+    bamboo.delete_access_token("token-id")
+
+Deployment management
+---------------------
+
+.. code-block:: python
+
+    bamboo.create_deployment_project({"name": "Deploy PROJ"})
+    bamboo.update_deployment_project("project-id", {"name": "New name"})
+    bamboo.create_deployment_environment("project-id", {"name": "Staging"})
+    bamboo.get_deployment_environment("environment-id")
+    bamboo.update_deployment_environment("environment-id", {"name": "Production"})
+    bamboo.delete_deployment_environment("environment-id")
+    bamboo.get_deployment_versions("project-id")
+    bamboo.create_deployment_version("project-id", {"name": "1.2.3"})
+    bamboo.get_deployment_version("version-id")
+    bamboo.delete_deployment_version("version-id")
+    bamboo.get_deployment_dashboard_paginate()
+    bamboo.get_deployment_dashboard_paginate("project-id")
+    bamboo.get_deployment_dashboard_status({"environmentIds": [1]})
+
+Admin configuration
+-------------------
+
+.. code-block:: python
+
+    # Artifact handlers
+    bamboo.get_artifact_handler_config("s3")
+    bamboo.update_artifact_handler_config("s3", {"bucketName": "artifacts"})
+
+    # General system configuration
+    bamboo.get_agent_config()
+    bamboo.get_offline_agent_removal_config()
+    bamboo.update_offline_agent_removal_config({"enabled": True})
+    bamboo.get_general_config()
+    bamboo.update_general_config({"baseUrl": "https://bamboo.example.test"})
+    bamboo.get_build_concurrency_config()
+    bamboo.update_build_concurrency_config({"numberOfConcurrentBuilds": 10})
+    bamboo.get_build_monitoring_config()
+    bamboo.update_build_monitoring_config({"enabled": True})
+    bamboo.get_mail_server_config()
+    bamboo.update_mail_server_config({"host": "smtp.example.test"})
+    bamboo.delete_mail_server_config()
+    bamboo.get_im_server_config()
+    bamboo.update_im_server_config({"host": "xmpp.example.test"})
+    bamboo.delete_im_server_config()
+    bamboo.get_remote_agent_support_config()
+    bamboo.update_remote_agent_support_config({"enabled": True})
+    bamboo.get_quarantine_config()
+    bamboo.update_quarantine_config({"enabled": True})
+    bamboo.get_audit_log_config()
+    bamboo.update_audit_log_config({"enabled": True})
+
+    # Dark features
+    bamboo.get_dark_features()
+    bamboo.get_dark_feature("feature-key")
+    bamboo.update_dark_feature("feature-key", True)
+    bamboo.get_dark_feature_user("feature-key", "ada")
+    bamboo.update_dark_feature_user("feature-key", "ada", True)
+
+    # Global variables and security
+    bamboo.get_global_variables()
+    bamboo.create_global_variable({"key": "KEY", "value": "value"})
+    bamboo.get_global_variable("variable-id")
+    bamboo.update_global_variable("variable-id", {"value": "new"})
+    bamboo.delete_global_variable("variable-id")
+    bamboo.verify_global_variables({"variables": []})
+    bamboo.get_security_settings()
+    bamboo.update_security_settings({"captchaEnabled": True})
+    bamboo.get_security_groups()
+    bamboo.create_security_group({"name": "admins"})
+    bamboo.get_trusted_keys()
+    bamboo.add_trusted_key({"key": "ssh-rsa ..."})
+    bamboo.delete_trusted_key("key-id")
+
+Resource permissions
+--------------------
+
+.. code-block:: python
+
+    # Available principals
+    bamboo.get_available_users_for_permission("deployment", "resource-id")
+    bamboo.get_available_groups_for_permission("deployment", "resource-id")
+    bamboo.get_roles_for_permission("deployment", "resource-id")
+
+    # Users
+    bamboo.get_permission_users("deployment", "resource-id")
+    bamboo.grant_user_permission("deployment", "resource-id", "ada", ["READ", "BUILD"])
+    bamboo.revoke_user_permission("deployment", "resource-id", "ada", ["READ", "BUILD"])
+
+    # Groups
+    bamboo.get_permission_groups("deployment", "resource-id")
+    bamboo.grant_group_permission("deployment", "resource-id", "bamboo-admins", ["ADMIN"])
+    bamboo.revoke_group_permission("deployment", "resource-id", "bamboo-admins", ["ADMIN"])
+
+    # Roles
+    bamboo.grant_role_permission("deployment", "resource-id", "ROLE_ADMIN", ["READ", "BUILD"])
+    bamboo.revoke_role_permission("deployment", "resource-id", "ROLE_ADMIN", ["READ", "BUILD"])
+
+Admin users
+-----------
+
+.. code-block:: python
+
+    bamboo.get_users()
+    bamboo.create_user({"name": "ada", "email": "ada@example.com"})
+    bamboo.delete_user("ada")
+    bamboo.update_user_credentials({"name": "ada", "password": "new-password"})
+    bamboo.rename_user({"oldName": "ada", "newName": "ada2"})
+    bamboo.get_user_access_tokens("ada")
+    bamboo.delete_user_access_token("ada", "token-id")
+    bamboo.get_user_alias("ada")
+    bamboo.set_user_alias("ada", {"alias": "alias-ada"})
+    bamboo.delete_user_alias("ada")
+
+Server, queue and quick filters
+-------------------------------
+
+.. code-block:: python
+
+    bamboo.get_server()
+    bamboo.get_server_nodes()
+    bamboo.pause_server()
+    bamboo.resume_server()
+    bamboo.prepare_for_restart()
+    bamboo.get_current_user()
+
+    bamboo.remove_build_from_queue("PROJ", "PLAN", 42)
+    bamboo.pause_build_in_queue("PROJ", "PLAN", 42)
+    bamboo.remove_deployment_from_queue("deployment-result-id")
+
+    bamboo.get_quick_filters()
+    bamboo.create_quick_filter({"name": "My builds"})
+    bamboo.get_active_quick_filters()
+    bamboo.get_visible_quick_filters()
+    bamboo.set_visible_quick_filters([1, 2])
+    bamboo.deactivate_quick_filters([1, 2])
+    bamboo.get_quick_filter("filter-id")
+    bamboo.update_quick_filter("filter-id", {"name": "Updated"})
+    bamboo.delete_quick_filter("filter-id")
+    bamboo.activate_quick_filter("filter-id")
+
 Elastic Bamboo
 --------------
 
