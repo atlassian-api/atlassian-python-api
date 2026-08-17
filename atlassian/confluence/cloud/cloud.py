@@ -18,6 +18,7 @@ from .folders import FolderOperations
 from .graphql import GraphQLOperations
 from .tasks import TaskOperations
 from .whiteboards import WhiteboardOperations
+from .admin_management import AdminManagementOperations
 
 log = logging.getLogger(__name__)
 
@@ -30,6 +31,7 @@ class ConfluenceCloud(
     TaskOperations,
     FolderOperations,
     DatabaseOperations,
+    AdminManagementOperations,
 ):
     """
     Confluence Cloud API implementation class

@@ -4,7 +4,7 @@ Confluence base module for shared functionality between API versions
 
 import logging
 from typing import Dict, List, Optional, Union
-from urllib.parse import urlparse
+from urllib.parse import parse_qsl, urlparse
 
 from atlassian.rest_client import AtlassianRestAPI
 
@@ -259,21 +259,32 @@ class ConfluenceBase(AtlassianRestAPI):
                 if not next_url:
                     break
 
-                # Use the next URL directly
-                # Check if the response has a base URL provided (common in Confluence v2 API)
-                base_url = response.get("_links", {}).get("base")
-                if base_url and next_url.startswith("/"):
-                    # Construct the full URL using the base URL from the response
-                    url = f"{base_url}{next_url}"
-                    absolute = True
-                else:
+                if isinstance(next_url, dict):
+                    next_url = next_url.get("href")
+                if not next_url:
+                    break
+
+                # Cursor links are commonly relative and include the endpoint
+                # path (for example ``/wiki/api/v2/spaces?cursor=...``).  The
+                # endpoint used for the first request is already resolved
+                # against the tenant or API-gateway context, so rebuilding it
+                # from ``_links.base`` can duplicate ``/wiki`` or drop an
+                # ``/ex/confluence/{cloud_id}`` prefix.  Keep the resolved
+                # endpoint and advance only its query parameters.
+                parsed_next = urlparse(next_url)
+                if parsed_next.scheme:
                     url = next_url
-                    # Check if the URL is absolute (has http:// or https://) or contains the server's domain
-                    if next_url.startswith(("http://", "https://")) or self.url.split("/")[2] in next_url:
-                        absolute = True
-                    else:
-                        absolute = False
-                params = {}
+                    absolute = True
+                    params = {}
+                elif parsed_next.query:
+                    params = dict(parse_qsl(parsed_next.query, keep_blank_values=True))
+                else:
+                    # A relative link without a query is unusual for cursor
+                    # pagination; retain the previous behavior as a safe
+                    # fallback for such responses.
+                    url = next_url
+                    absolute = False
+                    params = {}
                 trailing = False
 
         return
