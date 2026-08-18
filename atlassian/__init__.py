@@ -6,6 +6,7 @@ from .bamboo import Bamboo
 from .bitbucket import Bitbucket
 from .bitbucket import Bitbucket as Stash
 from .cloud_admin import CloudAdmin, CloudAdminOrgs, CloudAdminUsers
+from .company_calendar import CompanyCalendar
 from .compass import Compass
 from .confluence import Confluence, ConfluenceBase, ConfluenceCloud, ConfluenceServer
 from .confluence.cloud.cloud import ConfluenceCloud as ConfluenceV2
@@ -47,6 +48,7 @@ __all__ = [
     "CloudAdminOrgs",
     "CloudAdminUsers",
     "CloudAdmin",
+    "CompanyCalendar",
     "Compass",
     "Portfolio",
     "Bamboo",
