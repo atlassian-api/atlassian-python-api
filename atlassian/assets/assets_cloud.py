@@ -355,7 +355,7 @@ class AssetsCloud(AtlassianRestAPI):
         params = self._params(
             qlQuery=query,
             page=page,
-            resultPerPage=result_per_page,
+            resultsPerPage=result_per_page,
             includeAttributes=include_attributes,
             includeAttributesDeep=include_attributes_deep,
             includeTypeAttributes=include_type_attributes,
@@ -377,7 +377,7 @@ class AssetsCloud(AtlassianRestAPI):
         params = self._params(
             iql=query,
             page=page,
-            resultPerPage=result_per_page,
+            resultsPerPage=result_per_page,
             includeAttributes=include_attributes,
             includeAttributesDeep=include_attributes_deep,
             includeTypeAttributes=include_type_attributes,
@@ -431,7 +431,7 @@ class AssetsCloud(AtlassianRestAPI):
             "objectSchemaId": object_schema_id,
             "page": page,
             "orderAsc": order_asc,
-            "resultPerPage": result_per_page,
+            "resultsPerPage": result_per_page,
             "includeAttributes": include_attributes,
             "includeAttributesDeep": include_attributes_deep,
             "includeTypeAttributes": include_type_attributes,
