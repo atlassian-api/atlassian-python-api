@@ -2191,6 +2191,66 @@ class Bitbucket(BitbucketBase):
             body["parent"] = {"id": parent_id}
         return self.post(url, data=body)
 
+    def add_pull_request_inline_comment(
+        self,
+        project_key,
+        repository_slug,
+        pull_request_id,
+        text,
+        path,
+        from_hash,
+        to_hash,
+        src_path=None,
+        line=None,
+        line_type="CONTEXT",
+        diff_type="RANGE",
+        file_type=None,
+        parent_id=None,
+    ):
+        """
+        Add an inline comment on a specific line or file within a pull request.
+        Supported on Bitbucket Server / Data Center REST API.
+        See: https://developer.atlassian.com/server/bitbucket/rest/v900/api-group-pull-requests/
+
+        :param project_key: The project key (e.g. "PRJ")
+        :param repository_slug: The repository slug (e.g. "my-repo")
+        :param pull_request_id: The pull request ID (int)
+        :param text: The comment text
+        :param path: The file path relative to the repo root (e.g. "src/main.py")
+        :param from_hash: The source commit hash (the branch HEAD before the PR)
+        :param to_hash: The target commit hash (the branch HEAD after the PR)
+        :param src_path: The source file path (defaults to path if not provided)
+        :param line: The line number to comment on (required for diffType=COMMIT)
+        :param line_type: The line type for COMMIT diffs. One of: ADDED, REMOVED, CONTEXT
+        :param diff_type: "RANGE" for whole-file comment, "COMMIT" for line-level comment
+        :param file_type: "FROM" or "TO" — which side of the diff to comment on (COMMIT only)
+        :param parent_id: Optional parent comment ID for threaded replies
+        :return: The created comment object
+        """
+        url = self._url_pull_request_comments(project_key, repository_slug, pull_request_id)
+        body = {"text": text}
+
+        anchor = {
+            "diffType": diff_type,
+            "fromHash": from_hash,
+            "toHash": to_hash,
+            "path": path,
+            "srcPath": src_path or path,
+        }
+
+        if diff_type == "COMMIT" and line is not None:
+            anchor["line"] = line
+            anchor["lineType"] = line_type
+            if file_type:
+                anchor["fileType"] = file_type
+
+        body["anchor"] = anchor
+
+        if parent_id:
+            body["parent"] = {"id": parent_id}
+
+        return self.post(url, data=body)
+
     def _url_pull_request_comment(self, project_key, repository_slug, pull_request_id, comment_id):
         url = f"{self._url_pull_request_comments(project_key, repository_slug, pull_request_id)}/{comment_id}"
         return url

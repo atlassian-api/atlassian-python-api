@@ -200,6 +200,92 @@ class TestRepositoryForking(TestCase):
         mock_delete.assert_called_once_with("rest/api/latest/hook-scripts/12")
 
 
+class TestPullRequestInlineComments(TestCase):
+    def setUp(self):
+        self.bitbucket = Bitbucket(f"{mockup_server()}/bitbucket/server", username="username", password="password")
+        self.project_key = "PRJ"
+        self.repository_slug = "my-repo1-slug"
+        self.pull_request_id = 1
+
+    @patch.object(Bitbucket, "post")
+    def test_add_inline_comment_range(self, mock_post):
+        self.bitbucket.add_pull_request_inline_comment(
+            project_key=self.project_key,
+            repository_slug=self.repository_slug,
+            pull_request_id=self.pull_request_id,
+            text="This whole file looks great!",
+            path="src/main.py",
+            from_hash="abc123",
+            to_hash="def456",
+            diff_type="RANGE",
+        )
+        mock_post.assert_called_once()
+        call_args = mock_post.call_args
+        body = call_args[1]["data"]
+        self.assertEqual(body["text"], "This whole file looks great!")
+        self.assertIn("anchor", body)
+        self.assertEqual(body["anchor"]["diffType"], "RANGE")
+        self.assertEqual(body["anchor"]["path"], "src/main.py")
+        self.assertEqual(body["anchor"]["srcPath"], "src/main.py")
+        self.assertEqual(body["anchor"]["fromHash"], "abc123")
+        self.assertEqual(body["anchor"]["toHash"], "def456")
+
+    @patch.object(Bitbucket, "post")
+    def test_add_inline_comment_commit_line(self, mock_post):
+        self.bitbucket.add_pull_request_inline_comment(
+            project_key=self.project_key,
+            repository_slug=self.repository_slug,
+            pull_request_id=self.pull_request_id,
+            text="This line has a bug",
+            path="src/utils.py",
+            from_hash="aaa111",
+            to_hash="bbb222",
+            line=42,
+            line_type="ADDED",
+            diff_type="COMMIT",
+            file_type="TO",
+        )
+        mock_post.assert_called_once()
+        body = mock_post.call_args[1]["data"]
+        anchor = body["anchor"]
+        self.assertEqual(anchor["diffType"], "COMMIT")
+        self.assertEqual(anchor["line"], 42)
+        self.assertEqual(anchor["lineType"], "ADDED")
+        self.assertEqual(anchor["fileType"], "TO")
+
+    @patch.object(Bitbucket, "post")
+    def test_add_inline_comment_with_parent(self, mock_post):
+        self.bitbucket.add_pull_request_inline_comment(
+            project_key=self.project_key,
+            repository_slug=self.repository_slug,
+            pull_request_id=self.pull_request_id,
+            text="I agree with this comment",
+            path="README.md",
+            from_hash="ccc333",
+            to_hash="ddd444",
+            parent_id=99,
+        )
+        body = mock_post.call_args[1]["data"]
+        self.assertEqual(body["parent"]["id"], 99)
+        self.assertIn("anchor", body)
+
+    @patch.object(Bitbucket, "post")
+    def test_add_inline_comment_custom_src_path(self, mock_post):
+        self.bitbucket.add_pull_request_inline_comment(
+            project_key=self.project_key,
+            repository_slug=self.repository_slug,
+            pull_request_id=self.pull_request_id,
+            text="Renamed file comment",
+            path="src/new_name.py",
+            src_path="src/old_name.py",
+            from_hash="eee555",
+            to_hash="fff666",
+        )
+        body = mock_post.call_args[1]["data"]
+        self.assertEqual(body["anchor"]["path"], "src/new_name.py")
+        self.assertEqual(body["anchor"]["srcPath"], "src/old_name.py")
+
+
 class TestPersonalRepositories(TestCase):
     def setUp(self):
         self.bitbucket = Bitbucket("https://bitbucket.example.com", username="admin", password="password")
