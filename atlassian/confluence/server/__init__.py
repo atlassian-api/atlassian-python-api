@@ -238,7 +238,8 @@ class Server(ConfluenceServerBase):
 
     def get_page_space(self, page_id):
         """Get space key from page ID."""
-        page = self.get_content(page_id, expand="space")
+        params = {"expand": "space"}
+        page = self.get(f"content/{page_id}", params=params)
         return page.get("space", {}).get("key")
 
     def get_page_child_by_type(self, page_id, type="page", start=None, limit=None, expand=None):
