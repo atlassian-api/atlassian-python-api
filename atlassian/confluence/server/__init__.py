@@ -1085,16 +1085,38 @@ class Server(ConfluenceServerBase):
             path = f"rest/api/content/{page_id}/child/attachment"
 
             try:
-                # Confluence's multipart PUT endpoint atomically creates an
-                # attachment or adds a revision when the filename already
-                # exists. A GET followed by POST is racy and Cloud may reject
-                # the attachment-data endpoint for a same-name upload.
-                response = self.put(
-                    path=path,
-                    data=data,
-                    headers=headers,
-                    files={"file": (name, content, content_type)},
-                )
+                # Confluence Server doesn't support PUT on the child/attachment endpoint.
+                # We need to check if the attachment exists first, then create or update accordingly.
+                # GET existing attachment to check if it exists
+                existing_attachment = None
+                try:
+                    attachments = self.get(path=path, headers=headers)
+                    if "results" in attachments:
+                        for attachment in attachments["results"]:
+                            if attachment.get("title") == name:
+                                existing_attachment = attachment
+                                break
+                except HTTPError:
+                    pass
+
+                if existing_attachment:
+                    # Update existing attachment using PUT on the specific attachment ID
+                    attachment_id = existing_attachment["id"]
+                    update_path = f"rest/api/content/{attachment_id}"
+                    response = self.put(
+                        path=update_path,
+                        data=data,
+                        headers=headers,
+                        files={"file": (name, content, content_type)},
+                    )
+                else:
+                    # Create new attachment using POST
+                    response = self.post(
+                        path=path,
+                        data=data,
+                        headers=headers,
+                        files={"file": (name, content, content_type)},
+                    )
             except HTTPError as e:
                 if e.response.status_code == 403:
                     # Raise ApiError as the documented reason is ambiguous
