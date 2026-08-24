@@ -338,13 +338,16 @@ class Server(ConfluenceServerBase):
 
     def get_page_id(self, space, title, type="page"):
         """
-        Provide content id from search result by title and space.
+        Get page ID by searching for it by space key and title - returns the ID from the first result or None if not found.
         :param space: SPACE key
         :param title: title
         :param type: type of content: Page or Blogpost. Defaults to page
         :return:
         """
-        return (self.get_page_by_title(space, title, type=type) or {}).get("id")
+        json_response = self.get_page_by_title(space, title, type=type)
+        if json_response and "results" in json_response and len(json_response["results"]) > 0:
+            return json_response["results"][0]["id"]
+        return None
 
     def get_parent_content_id(self, page_id):
         """
