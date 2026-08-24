@@ -940,12 +940,29 @@ class TestConfluenceServer:
         with patch.object(confluence_server._session, "request", return_value=response) as mock_request:
             result = confluence_server.get_page_space("123")
 
+
         assert result == "TEST"
         url = mock_request.call_args.kwargs["url"]
         params = mock_request.call_args.kwargs.get("params") or {}
         assert url.startswith("https://test.confluence.com/rest/api/content/123")
         expand = params.get("expand") if isinstance(params, dict) else None
         assert expand == "space" or "expand=space" in url
+
+    @patch.object(ConfluenceServer, "get")
+    def test_get_page_space_no_space(self, mock_get, confluence_server):
+        """Test get_page_space returns None when page has no space."""
+        mock_get.return_value = {"title": "Orphan Page"}
+        result = confluence_server.get_page_space("456")
+        mock_get.assert_called_once_with("content/456", params={"expand": "space"})
+        assert result is None
+
+    @patch.object(ConfluenceServer, "get")
+    def test_get_page_space_empty_space(self, mock_get, confluence_server):
+        """Test get_page_space returns None when space key is empty."""
+        mock_get.return_value = {"space": {}}
+        result = confluence_server.get_page_space("789")
+        mock_get.assert_called_once_with("content/789", params={"expand": "space"})
+        assert result is None
 
     # Space Management Tests
     @patch.object(ConfluenceServer, "get")
