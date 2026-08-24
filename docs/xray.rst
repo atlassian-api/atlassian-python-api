@@ -2,8 +2,28 @@ Xray module
 ===========
 
 .. note::
-   The Xray module only support the Server + Data Center edition
-   of the Xray Jira plugin!
+   The Xray module supports the Server/Data Center Xray plugin. Set
+   ``api_version="2.0"`` to use the Xray REST API v2 operations documented
+   below; the historical default remains ``1.0`` for compatibility.
+
+Xray REST API v2
+----------------
+
+The v2 client exposes test-step, test-run, attachment, reset, import/export,
+license, project-settings, and issue-type-screen operations. Payloads are
+passed through unchanged so they can follow the schema of the installed Xray
+release.
+
+.. code-block:: python
+
+    xray = Xray(url, username=username, password=password, api_version="2.0")
+    steps = xray.get_test_steps("TEST-001", test_version="1")
+    xray.update_test_run_iteration_step_status(100, 1, 2, "PASS")
+    xray.import_test_execution({"testExecutionKey": "EXEC-001", "tests": []})
+    csv_bytes = xray.export_dataset(testIssueKey="TEST-001")
+
+See ``examples/xray/xray_v2.py`` for a runnable environment-variable-based
+example.
 
 Manage Test
 -----------

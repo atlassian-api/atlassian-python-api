@@ -6,12 +6,14 @@ from .bamboo import Bamboo
 from .bitbucket import Bitbucket
 from .bitbucket import Bitbucket as Stash
 from .cloud_admin import CloudAdmin, CloudAdminOrgs, CloudAdminUsers
+from .company_calendar import CompanyCalendar
+from .compass import Compass
 from .confluence import Confluence, ConfluenceBase, ConfluenceCloud, ConfluenceServer
 from .confluence.cloud.cloud import ConfluenceCloud as ConfluenceV2
 from .crowd import Crowd
 from .insight import Insight
 from .insight import Insight as Assets  # used for Insight on-premise
-from .assets import AssetsCloud  # used for Insight Cloud
+from .assets import AssetsCloud, AssetsDataCenter, AssetsServer  # Assets Cloud and Data Center
 from .jira import Jira, JiraCloud, JiraServer, JiraServiceManagement, JiraSoftware, create_jira_cloud
 from .marketplace import MarketPlace
 from .portfolio import Portfolio
@@ -46,6 +48,8 @@ __all__ = [
     "CloudAdminOrgs",
     "CloudAdminUsers",
     "CloudAdmin",
+    "CompanyCalendar",
+    "Compass",
     "Portfolio",
     "Bamboo",
     "Stash",
@@ -57,6 +61,8 @@ __all__ = [
     "Insight",
     "Assets",
     "AssetsCloud",
+    "AssetsDataCenter",
+    "AssetsServer",
     "TempoCloud",
     "TempoServer",
     "YogiJiraCloud",

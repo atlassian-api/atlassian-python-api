@@ -1,10 +1,14 @@
 # coding=utf-8
 
+import os
 from textwrap import indent
 
 from atlassian.bitbucket import Cloud
 
-cloud = Cloud(url="https://api.bitbucket.org/", username="admin", password="admin")
+cloud = Cloud(
+    username=os.environ["ATLASSIAN_EMAIL"],
+    password=os.environ["BITBUCKET_API_TOKEN"],
+)
 
 index = 0
 for w in cloud.workspaces.each():

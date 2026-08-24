@@ -124,6 +124,17 @@ class Bitbucket(BitbucketBase):
         url = self.resource_url("status", api_root="rest/indexing", api_version="latest")
         return self.get(url)
 
+    def get_cluster_info(self):
+        """Get system information for the Bitbucket Data Center cluster.
+
+        This administrative endpoint is available on Bitbucket Server/Data
+        Center only and requires the appropriate administrator permission.
+        """
+        if self.cloud:
+            raise NotImplementedError("Cluster information is only available on Bitbucket Server/Data Center")
+        url = self.resource_url("admin/cluster", api_version="latest")
+        return self.get(url)
+
     def get_users(self, user_filter=None, limit=25, start=0):
         """
         Get list of bitbucket users.
@@ -365,6 +376,50 @@ class Bitbucket(BitbucketBase):
         """Remove a hook-script configuration from a repository."""
         url = f"{self._url_repo(project_key, repository_slug, api_version='latest')}/hook-scripts/{script_id}"
         return self.delete(url)
+
+    def get_hook_script(self, script_id: int):
+        """Return the registered global hook script with ``script_id``.
+
+        The result only contains the script metadata; use
+        ``get_hook_script_content()`` to fetch the script body.
+        """
+        return self.get(f"{self._url_hook_scripts()}/{script_id}")
+
+    def get_hook_script_content(self, script_id: int):
+        """Return the raw body of the registered global hook script.
+
+        ``not_json_response`` is used because the endpoint returns the
+        executable script as plain text rather than a JSON payload.
+        """
+        return self.get(
+            f"{self._url_hook_scripts()}/{script_id}/content",
+            not_json_response=True,
+        )
+
+    def update_hook_script(
+        self, script_id: int, content: bytes, name: str, hook_type: str, description: Optional[str] = None
+    ):
+        """Update a registered global hook script on Bitbucket Data Center.
+
+        ``hook_type`` must be ``PRE`` or ``POST``. Like ``create_hook_script``,
+        the API expects a multipart form; ``content`` is the executable script
+        bytes.
+        """
+        if hook_type not in ("PRE", "POST"):
+            raise ValueError("hook_type must be 'PRE' or 'POST'")
+
+        files: Dict[str, Any] = {
+            "content": ("hook-script", content, "application/octet-stream"),
+            "name": (None, name),
+            "type": (None, hook_type),
+        }
+        if description is not None:
+            files["description"] = (None, description)
+        return self.put(f"{self._url_hook_scripts()}/{script_id}", files=files, headers=self.no_check_headers)
+
+    def delete_hook_script(self, script_id: int):
+        """Delete the registered global hook script with ``script_id``."""
+        return self.delete(f"{self._url_hook_scripts()}/{script_id}")
 
     def get_categories(self, project_key, repository_slug=None):
         """
@@ -980,6 +1035,40 @@ class Bitbucket(BitbucketBase):
         """
         url = self._url_repo(project_key, repository_slug)
         return self.put(url, data=params)
+
+    def get_repo_forkable(self, project_key, repository_slug):
+        """Return whether a Bitbucket Server/Data Center repository is forkable.
+
+        :param project_key: Project key, or a ``~user`` personal repository owner.
+        :param repository_slug: URL-compatible repository identifier.
+        :return: The repository's ``forkable`` flag, or ``None`` when omitted
+            by an older Bitbucket version.
+        """
+        return (self.get_repo(project_key, repository_slug) or {}).get("forkable")
+
+    def set_repo_forkable(self, project_key, repository_slug, forkable):
+        """Enable or disable forking for a Server/Data Center repository.
+
+        The caller requires repository administration permission. This uses the
+        repository ``PUT`` endpoint and preserves the behavior of
+        :meth:`update_repo` for all other repository fields.
+
+        :param project_key: Project key, or a ``~user`` personal repository owner.
+        :param repository_slug: URL-compatible repository identifier.
+        :param forkable: ``True`` to allow forks or ``False`` to prohibit them.
+        :return: Updated repository representation.
+        """
+        if not isinstance(forkable, bool):
+            raise TypeError("forkable must be a boolean")
+        return self.update_repo(project_key, repository_slug, forkable=forkable)
+
+    def enable_repo_forking(self, project_key, repository_slug):
+        """Enable forking for a Server/Data Center repository."""
+        return self.set_repo_forkable(project_key, repository_slug, True)
+
+    def disable_repo_forking(self, project_key, repository_slug):
+        """Disable forking for a Server/Data Center repository."""
+        return self.set_repo_forkable(project_key, repository_slug, False)
 
     def delete_repo(self, project_key, repository_slug):
         """
@@ -2100,6 +2189,66 @@ class Bitbucket(BitbucketBase):
         body = {"text": text}
         if parent_id:
             body["parent"] = {"id": parent_id}
+        return self.post(url, data=body)
+
+    def add_pull_request_inline_comment(
+        self,
+        project_key,
+        repository_slug,
+        pull_request_id,
+        text,
+        path,
+        from_hash,
+        to_hash,
+        src_path=None,
+        line=None,
+        line_type="CONTEXT",
+        diff_type="RANGE",
+        file_type=None,
+        parent_id=None,
+    ):
+        """
+        Add an inline comment on a specific line or file within a pull request.
+        Supported on Bitbucket Server / Data Center REST API.
+        See: https://developer.atlassian.com/server/bitbucket/rest/v900/api-group-pull-requests/
+
+        :param project_key: The project key (e.g. "PRJ")
+        :param repository_slug: The repository slug (e.g. "my-repo")
+        :param pull_request_id: The pull request ID (int)
+        :param text: The comment text
+        :param path: The file path relative to the repo root (e.g. "src/main.py")
+        :param from_hash: The source commit hash (the branch HEAD before the PR)
+        :param to_hash: The target commit hash (the branch HEAD after the PR)
+        :param src_path: The source file path (defaults to path if not provided)
+        :param line: The line number to comment on (required for diffType=COMMIT)
+        :param line_type: The line type for COMMIT diffs. One of: ADDED, REMOVED, CONTEXT
+        :param diff_type: "RANGE" for whole-file comment, "COMMIT" for line-level comment
+        :param file_type: "FROM" or "TO" — which side of the diff to comment on (COMMIT only)
+        :param parent_id: Optional parent comment ID for threaded replies
+        :return: The created comment object
+        """
+        url = self._url_pull_request_comments(project_key, repository_slug, pull_request_id)
+        body = {"text": text}
+
+        anchor = {
+            "diffType": diff_type,
+            "fromHash": from_hash,
+            "toHash": to_hash,
+            "path": path,
+            "srcPath": src_path or path,
+        }
+
+        if diff_type == "COMMIT" and line is not None:
+            anchor["line"] = line
+            anchor["lineType"] = line_type
+            if file_type:
+                anchor["fileType"] = file_type
+
+        body["anchor"] = anchor
+
+        if parent_id:
+            body["parent"] = {"id": parent_id}
+
         return self.post(url, data=body)
 
     def _url_pull_request_comment(self, project_key, repository_slug, pull_request_id, comment_id):

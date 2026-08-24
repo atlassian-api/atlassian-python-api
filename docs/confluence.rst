@@ -1001,11 +1001,13 @@ matching page exists.
 Content history
 ---------------
 
-``get_content_history_by_version_number`` and the history-removal methods use
-the supported Server/Data Center ``/rest/api/content/{id}/version/{number}``
-endpoint. ``remove_page_history_keep_version`` also tolerates historical gaps,
-so rerunning it after a partial cleanup does not fail on an already-deleted
-version.
+``get_content_history_by_version_number`` and the Server/Data Center
+history-removal methods use the supported
+``/rest/api/content/{id}/version/{number}`` endpoint. Cloud history removal
+uses the equivalent V1 content endpoint under ``/wiki``; the retired
+``/rest/experimental`` route is not used. ``remove_page_history_keep_version``
+also tolerates historical gaps, so rerunning it after a partial cleanup does
+not fail on an already-deleted version.
 
 For Confluence Cloud V2, use ``get_page_versions`` or ``get_page_version`` to
 read page history. The published V2 API does not provide a delete-version
@@ -1079,6 +1081,24 @@ trash. A folder may have a page or another folder as its parent. Use
 
 Scoped tokens require the corresponding ``write:folder:confluence``,
 ``read:folder:confluence``, or ``delete:folder:confluence`` scope.
+
+Additional Cloud v2 resources
+-----------------------------
+
+The Cloud v2 client also exposes administrative and workspace operations from
+the current OpenAPI contract:
+
+.. code-block:: python
+
+    admin_key = confluence.get_admin_key()
+    permissions = confluence.get_space_permissions(limit=25)
+    roles = confluence.get_space_roles(space_id="<space-id>", limit=25)
+    users = confluence.bulk_get_users({"accountIds": ["<account-id>"]})
+    policies = confluence.get_data_policy_spaces(ids=["<space-id>"])
+
+Global comments are available through ``get_global_footer_comments`` and
+``get_global_inline_comments``. Their child, likes, operations, and version
+resources are exposed by the corresponding ``*_v2`` helpers.
 
 Cloud group members
 -------------------

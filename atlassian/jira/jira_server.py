@@ -1485,27 +1485,81 @@ class Jira(AtlassianRestAPI):
             params["expand"] = expand
         return self.get(url, params=params)
 
-    def bulk_issue(self, issue_list: list, fields: Union[str, list] = "*all"):
-        """
-        :param fields:
-        :param list issue_list:
-        :return:
+    def bulk_issue(
+        self,
+        issue_list: list,
+        fields: Union[str, list] = "*all",
+        start: int = 0,
+        limit: Optional[int] = None,
+        fetch_all: bool = True,
+    ):
+        """Return issues matching the supplied issue keys.
+
+        Jira applies a maximum page size to search results.  By default this
+        method follows every page and returns all matching issues in the
+        response's ``issues`` list.  Set ``fetch_all`` to ``False`` to retain
+        the single-page REST response.
+
+        :param issue_list: Issue keys to retrieve.
+        :param fields: Fields to return for each issue.
+        :param start: First Server/Data Center result offset.
+        :param limit: Requested page size; Jira may apply a lower system limit.
+        :param fetch_all: Whether to collect all available result pages.
+        :return: A tuple of the Jira search response and issue keys reported
+            as invalid by Jira.
         """
         jira_issue_regex = re.compile(r"\w+-\d+")
-        missing_issues = list()
-        matched_issue_keys = list()
+        missing_issues = []
+        matched_issue_keys = []
         for key in issue_list:
             if re.match(jira_issue_regex, key):
                 matched_issue_keys.append(key)
-        jql = f"key in ({', '.join(set(matched_issue_keys))})"
-        query_result = self.jql(jql, fields=fields)
+        jql = f"key in ({', '.join(dict.fromkeys(matched_issue_keys))})"
+        if self.cloud:
+            if start:
+                raise ValueError("Jira Cloud does not support offset pagination; use enhanced_jql instead.")
+            query_result = self.enhanced_jql(jql, fields=fields, limit=limit)
+        else:
+            query_result = self.jql(jql, fields=fields, start=start, limit=limit)
+
         if query_result and "errorMessages" in list(query_result.keys()):
             for message in query_result["errorMessages"]:
                 for key in issue_list:
                     if key in message:
                         missing_issues.append(key)
-                        issue_list.remove(key)
-            query_result, missing_issues = self.bulk_issue(issue_list, fields)
+            remaining_issues = [key for key in issue_list if key not in missing_issues]
+            if remaining_issues != issue_list:
+                query_result, nested_missing_issues = self.bulk_issue(
+                    remaining_issues, fields, start=start, limit=limit, fetch_all=fetch_all
+                )
+                missing_issues.extend(nested_missing_issues)
+            return query_result, missing_issues
+
+        if not fetch_all or not query_result:
+            return query_result, missing_issues
+
+        issues = list(query_result.get("issues", []))
+        if self.cloud:
+            next_page_token = query_result.get("nextPageToken")
+            while not query_result.get("isLast", True) and next_page_token:
+                query_result = self.enhanced_jql(jql, fields=fields, nextPageToken=next_page_token, limit=limit)
+                issues.extend(query_result.get("issues", []))
+                next_page_token = query_result.get("nextPageToken")
+        else:
+            next_start = start + len(issues)
+            total = query_result.get("total")
+            while issues and (total is None or next_start < total):
+                page = self.jql(jql, fields=fields, start=next_start, limit=limit)
+                if not page:
+                    break
+                page_issues = page.get("issues", [])
+                if not page_issues:
+                    break
+                issues.extend(page_issues)
+                next_start += len(page_issues)
+                total = page.get("total", total)
+
+        query_result["issues"] = issues
         return query_result, missing_issues
 
     def issue_createmeta(self, project: str, expand: str = "projects.issuetypes.fields") -> T_resp_json:
@@ -3234,29 +3288,57 @@ class Jira(AtlassianRestAPI):
 
     def add_version(
         self,
-        project_key: str,
-        project_id: T_id,
-        version: str,
+        project_key: Optional[str] = None,
+        project_id: Optional[T_id] = None,
+        version: Optional[Union[str, dict]] = None,
         is_archived: bool = False,
         is_released: bool = False,
     ):
         """
-        Add missing version to project
-        :param project_key: the project key
-        :param project_id: the project id
-        :param version: the new project version to add
+        Add a version to a project on Jira Cloud or Server/Data Center.
+
+        ``version`` may be a name (the legacy form) or a complete version
+        payload.  Passing a payload is useful when setting description and
+        release dates. Cloud uses REST v3 and requires ``projectId``; Server
+        and Data Center use REST v2 and accept the project key and/or ID.
+
+        :param project_key: Project key, used by Server/Data Center.
+        :param project_id: Numeric project ID, required by Cloud.
+        :param version: Version name or a version payload dictionary.
         :param is_archived:
         :param is_released:
         :return:
         """
-        payload = {
-            "name": version,
-            "archived": is_archived,
-            "released": is_released,
-            "project": project_key,
-            "projectId": project_id,
-        }
-        url = self.resource_url("version")
+        if version is None:
+            raise ValueError("version must be a version name or payload dictionary")
+        if isinstance(version, dict):
+            payload = dict(version)
+        else:
+            payload = {"name": version, "archived": is_archived, "released": is_released}
+
+        if self.cloud:
+            if "projectId" not in payload:
+                if project_id is None:
+                    raise ValueError("project_id is required when creating a Jira Cloud version")
+                try:
+                    payload["projectId"] = int(project_id)
+                except (TypeError, ValueError) as error:
+                    raise ValueError("project_id must be a numeric Jira Cloud project ID") from error
+        else:
+            if project_key is not None and "project" not in payload:
+                payload["project"] = project_key
+            if project_id is not None and "projectId" not in payload:
+                try:
+                    payload["projectId"] = int(project_id)
+                except (TypeError, ValueError):
+                    # Server accepts a project key in ``project``.  Older
+                    # callers often passed that same key as both arguments;
+                    # do not send it as the numeric projectId field.
+                    if project_key is None:
+                        raise ValueError("project_id must be numeric when project_key is not provided")
+
+        api_version = 3 if self.cloud else self.api_version
+        url = self.resource_url("version", api_version=api_version)
         return self.post(url, data=payload)
 
     def delete_version(self, version: str, moved_fixed: Optional[str] = None, move_affected: Optional[str] = None):
@@ -3537,14 +3619,25 @@ class Jira(AtlassianRestAPI):
 
     def assign_project_permission_scheme(self, project_id_or_key: str, permission_scheme_id: T_id):
         """
-        Assigns a permission scheme with a project.
-        :param project_id_or_key:
-        :param permission_scheme_id:
-        :return:
+        Assign a permission scheme to a project.
+
+        Jira Cloud requires the v3 endpoint and a JSON request body. Server and
+        Data Center continue to use their established v2-compatible endpoint.
+
+        :param project_id_or_key: Project key or numeric project ID.
+        :param permission_scheme_id: Numeric permission scheme ID.
+        :return: Updated project permission scheme.
         """
+        data = {"id": permission_scheme_id}
+        if self.cloud:
+            url = self.resource_url("project/{}/permissionscheme".format(project_id_or_key), api_version="3")
+            response = self.request("PUT", path=url, json=data)
+            if self.advanced_mode:
+                return response
+            return self._response_handler(response)
+
         base_url = self.resource_url("project")
         url = f"{base_url}/{project_id_or_key}/permissionscheme"
-        data = {"id": permission_scheme_id}
         return self.put(url, data=data)
 
     def get_project_permission_scheme(self, project_id_or_key: str, expand: Optional[str] = None):
@@ -4479,6 +4572,47 @@ class Jira(AtlassianRestAPI):
         """
         url = self.resource_url("workflow")
         return self.get(url)
+
+    def get_workflow_transition_rule_configurations(
+        self,
+        start_at: Optional[int] = None,
+        max_results: Optional[int] = None,
+        types: Optional[Union[str, List[str]]] = None,
+        keys: Optional[Union[str, List[str]]] = None,
+        workflow_names: Optional[Union[str, List[str]]] = None,
+        with_tags: Optional[bool] = None,
+        draft: Optional[bool] = None,
+        expand: Optional[str] = None,
+    ) -> T_resp_json:
+        """Return transition-rule configurations from Jira Server/Data Center.
+
+        Jira Server 8.13 and compatible Data Center releases expose this
+        resource at the v2 route.  The returned rules are limited to those
+        visible to the authenticated app or user.
+
+        :param start_at: Index of the first configuration to return.
+        :param max_results: Maximum configurations to return.
+        :param types: A rule type, or a list of rule types.
+        :param keys: A rule key, or a list of rule keys.
+        :param workflow_names: A workflow name, or a list of workflow names.
+        :param with_tags: Include rule tags when supported by the server.
+        :param draft: Whether to read rules from draft workflows.
+        :param expand: Additional fields to expand in the response.
+        :return: Jira's paginated transition-rule configuration response.
+        """
+        url = self.resource_url("workflow/rule/config")
+        params = {
+            "startAt": start_at,
+            "maxResults": max_results,
+            "types": types,
+            "keys": keys,
+            "workflowNames": workflow_names,
+            "withTags": with_tags,
+            "draft": draft,
+            "expand": expand,
+        }
+        params = {key: value for key, value in params.items() if value is not None}
+        return self.get(url, params=params or None)
 
     def get_workflows_paginated(
         self,

@@ -2,7 +2,7 @@
 """Tests for Jira Modules"""
 
 from unittest import TestCase
-from unittest.mock import patch
+from unittest.mock import patch, sentinel
 
 from requests import HTTPError
 
@@ -19,6 +19,11 @@ class TestJira(TestCase):
         """Can retrieve an Issue by ID"""
         resp = self.jira.issue("FOO-123")
         self.assertEqual(resp["key"], "FOO-123")
+
+    def test_get_issue_remote_links_supports_json_list_responses(self):
+        links = self.jira.get_issue_remote_links("FOO-123")
+        self.assertEqual(links[0]["id"], 10001)
+        self.assertEqual(links[0]["object"]["title"], "Example")
 
     @patch.object(jira.Jira, "get")
     def test_get_all_application_roles(self, mock_get):
@@ -86,6 +91,16 @@ class TestJira(TestCase):
                 "expand": "names",
             },
         )
+
+    @patch.object(jira.Jira, "request")
+    def test_assign_project_permission_scheme_uses_v3_json_endpoint_in_cloud(self, mock_request):
+        self.jira.advanced_mode = True
+        mock_request.return_value = sentinel.response
+
+        result = self.jira.assign_project_permission_scheme("DEMO", 10000)
+
+        self.assertIs(result, sentinel.response)
+        mock_request.assert_called_once_with("PUT", path="rest/api/3/project/DEMO/permissionscheme", json={"id": 10000})
 
     def test_get_epic_issues(self):
         resp = self.jira.epic_issues("BAR-22")

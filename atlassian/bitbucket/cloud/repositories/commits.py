@@ -15,15 +15,19 @@ class Commits(BitbucketCloudBase):
     def __get_object(self, data):
         return Commit(data, **self._new_session_args)
 
-    def each(self, top=None, q=None, sort=None):
+    def each(self, top=None, q=None, sort=None, include=None, exclude=None, path=None):
         """
         Return the list of commits in this repository.
 
         :param top: string: Hash of commit to get the history for.
-        :param q: string: Query string to narrow down the response.
-                          See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
+        :param q: string: Legacy query expression. Bitbucket Cloud does not
+                          support arbitrary ``q`` filtering for commits; it is
+                          retained for compatibility and passed to the API.
         :param sort: string: Name of a response property to sort results.
                              See https://developer.atlassian.com/bitbucket/api/2/reference/meta/filtering for details.
+        :param include: string: Commit or ref to include in the history.
+        :param exclude: string: Commit or ref to exclude from the history.
+        :param path: string: File path used to filter commits.
 
         :return: A generator for the Commit objects
 
@@ -35,6 +39,12 @@ class Commits(BitbucketCloudBase):
             params["sort"] = sort
         if q is not None:
             params["q"] = q
+        if include is not None:
+            params["include"] = include
+        if exclude is not None:
+            params["exclude"] = exclude
+        if path is not None:
+            params["path"] = path
         trailing = True
         if top is not None:
             trailing = False

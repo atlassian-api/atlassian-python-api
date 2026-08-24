@@ -19,7 +19,11 @@ password; the client sends the required HTTP Basic authentication header.
         cloud=True,
     )
 
+    # Fetch all accessible service desks (following every API page).
     service_desks = sd.get_service_desks(start=0, limit=50)
+
+    # Fetch one bounded page only when controlling pagination manually.
+    first_page = sd.get_service_desks(start=0, limit=50, fetch_all=False)
     customers = sd.get_customers(service_desk_id="1", query="Ada", start=0, limit=50)
 
 Use an account that can access the relevant service desk. A portal-only
@@ -36,7 +40,7 @@ Get info about Service Desk
     # Get info about Service Desk app
     sd.get_info()
 
-    # Get the service desks accessible to the authenticated user
+    # Get every service desk accessible to the authenticated user
     sd.get_service_desks(start=0, limit=50)
 
     # Get the service desk for a given service desk ID
@@ -56,7 +60,8 @@ The Request actions
 
 .. code-block:: python
 
-    # Create customer request
+    # Create customer request. ``values_dict`` must contain the fields required
+    # by the request type (for example, summary and description).
     sd.create_customer_request(service_desk_id, request_type_id, values_dict, raise_on_behalf_of=None, request_participants=None)
 
     # Get customer request by ID
@@ -190,6 +195,14 @@ SLA actions
     # Get the SLA information for a customer request for a given request ID or key and SLA metric ID
     # IMPORTANT: The calling user must be an agent
     sd.get_sla_by_id(issue_id_or_key, sla_id)
+
+    # Get SLA metric configuration for a service desk/project.
+    # This uses an internal agent endpoint and may vary by Jira release.
+    sd.get_sla_metrics(service_desk_id)
+
+    # Update one SLA metric. Pass the metric definition/goals payload required
+    # by your Jira release; this is an internal agent endpoint.
+    sd.update_sla_metric(service_desk_id, sla_id, metric_payload)
 
 Approvals
 ---------

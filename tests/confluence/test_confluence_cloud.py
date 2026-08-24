@@ -4,9 +4,11 @@ Test cases for Confluence Cloud API client.
 """
 
 import pytest
+import logging
 from unittest.mock import patch
 
 from atlassian.confluence import ConfluenceCloud
+from atlassian.confluence.cloud.cloud import ConfluenceCloud as ConfluenceCloudV2
 from atlassian.errors import ApiError
 
 
@@ -25,6 +27,20 @@ class TestConfluenceCloud:
         assert confluence.api_version == "2"
         assert confluence.api_root == "wiki/api/v2"
         assert confluence.cloud is True
+
+    @patch.object(ConfluenceCloudV2, "get_page_by_id")
+    @patch.object(ConfluenceCloudV2, "put")
+    def test_update_page_does_not_log_and_swallow_api_errors(self, mock_put, mock_get_page, caplog):
+        confluence_cloud = ConfluenceCloudV2("https://test.atlassian.net", token="test-token")
+        mock_get_page.return_value = {"version": {"number": 3}}
+        error = RuntimeError("update failed")
+        mock_put.side_effect = error
+
+        with caplog.at_level(logging.ERROR, logger="atlassian.confluence.cloud.cloud"):
+            with pytest.raises(RuntimeError, match="update failed"):
+                confluence_cloud.update_page("123", title="Updated")
+
+        assert not caplog.records
 
     def test_init_custom_values(self):
         """Test ConfluenceCloud client initialization with custom values."""
@@ -74,6 +90,14 @@ class TestConfluenceCloud:
         mock_get_paged.assert_called_once_with(
             "rest/api/content/123/version",
             params={"limit": 50, "expand": "storage"},
+        )
+
+    @patch.object(ConfluenceCloud, "delete")
+    def test_remove_content_history_uses_cloud_v1_content_endpoint(self, mock_delete, confluence_cloud):
+        confluence_cloud.remove_content_history("123", 1)
+
+        mock_delete.assert_called_once_with(
+            "https://test.atlassian.net/wiki/rest/api/content/123/version/1", absolute=True
         )
 
     @patch.object(ConfluenceCloud, "put")

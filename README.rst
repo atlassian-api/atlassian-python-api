@@ -1,7 +1,7 @@
 ============================
 Atlassian Python API wrapper
 ============================
-|Build Status| |PyPI version| |PyPI - Downloads| |License| |Codacy Badge| |Docs| |Discord|
+|PyPI version| |PyPI - Downloads| |License| |Codacy Badge| |Docs| |Discord|
 
 What is it?
 ___________
@@ -311,9 +311,6 @@ Let's fork and provide your changes :)
 See the `Contribution Guidelines for this project`_ for details on how to make changes to this library.
 
 .. _Contribution Guidelines for this project: CONTRIBUTING.rst
-.. |Build Status| image:: https://github.com/atlassian-api/atlassian-python-api/workflows/Test/badge.svg?branch=master
-   :target: https://github.com/atlassian-api/atlassian-python-api/actions?query=workflow%3ATest+branch%3Amaster
-   :alt: Build status
 .. |PyPI version| image:: https://badge.fury.io/py/atlassian-python-api.svg
    :target: https://badge.fury.io/py/atlassian-python-api
    :alt: PyPI version

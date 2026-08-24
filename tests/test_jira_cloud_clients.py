@@ -1,5 +1,5 @@
 from unittest import TestCase
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 from atlassian import Jira, JiraCloud, JiraServer, JiraServiceManagement, JiraSoftware, ServiceDesk, create_jira_cloud
 from atlassian.jira import Jira as PackageJira
@@ -15,6 +15,22 @@ class TestJiraCloudClients(TestCase):
         self.assertFalse(service_desk.cloud)
         self.assertIs(Jira, JiraServer)
         self.assertIs(PackageJira, JiraServer)
+
+    def test_jira_cloud_workflow_scheme_association_helpers_use_v3(self):
+        jira = JiraCloud("https://example.atlassian.net")
+
+        with patch.object(jira, "get", return_value={"values": []}) as get:
+            result = jira.get_project_workflow_scheme_associations(["10001", 10002])
+
+        self.assertEqual(result, {"values": []})
+        get.assert_called_once_with("rest/api/3/workflowscheme/project", params={"projectId": ["10001", 10002]})
+
+        with patch.object(jira, "put", return_value=None) as put:
+            jira.assign_project_workflow_scheme("10001", 10032)
+
+        put.assert_called_once_with(
+            "rest/api/3/workflowscheme/project", data={"projectId": "10001", "workflowSchemeId": "10032"}
+        )
 
     def test_core_client_defaults_to_v3_and_forces_cloud_mode(self):
         jira = JiraCloud("https://example.atlassian.net", cloud=False)
@@ -40,6 +56,24 @@ class TestJiraCloudClients(TestCase):
         with patch.object(jira, "get", return_value={}) as get:
             jira.get_issue("ABC-1", fields="summary")
         get.assert_called_once_with("rest/api/3/issue/ABC-1", params={"fields": "summary"}, data=None)
+
+    def test_software_rank_issues_supports_multiple_issue_keys(self):
+        jira = JiraSoftware("https://example.atlassian.net")
+        payload = {"issues": ["EXAMPLE-1", "EXAMPLE-2"], "rankAfterIssue": "EXAMPLE-10"}
+
+        with patch.object(jira, "put", return_value=None) as put:
+            jira.rank_issues(payload)
+
+        put.assert_called_once_with("rest/agile/1.0/issue/rank", params=None, data=payload)
+
+    def test_software_rank_epics_uses_epic_endpoint(self):
+        jira = JiraSoftware("https://example.atlassian.net")
+        payload = {"epic": "EXAMPLE-1", "rankBeforeEpic": "EXAMPLE-2"}
+
+        with patch.object(jira, "put", return_value=None) as put:
+            jira.rank_epics("EXAMPLE-1", payload)
+
+        put.assert_called_once_with("rest/agile/1.0/epic/EXAMPLE-1/rank", params=None, data=payload)
 
     def test_core_methods_honor_the_selected_v2_route(self):
         jira = JiraCloud("https://example.atlassian.net", api_version=2)
@@ -125,4 +159,29 @@ class TestJiraCloudClients(TestCase):
             "rest/servicedeskapi/servicedesk",
             headers=service_desk.experimental_headers,
             params={"start": 50, "limit": 25},
+        )
+
+    def test_legacy_service_desk_follows_all_service_desk_pages(self):
+        service_desk = ServiceDesk("https://example.atlassian.net")
+        first_page = {"values": [{"id": "1"}], "isLastPage": False, "nextPageStart": 50}
+        last_page = {"values": [{"id": "2"}], "isLastPage": True}
+
+        with patch.object(service_desk, "get", side_effect=[first_page, last_page]) as get:
+            result = service_desk.get_service_desks(limit=50)
+
+        self.assertEqual(result, [{"id": "1"}, {"id": "2"}])
+        self.assertEqual(
+            get.call_args_list,
+            [
+                call(
+                    "rest/servicedeskapi/servicedesk",
+                    headers=service_desk.experimental_headers,
+                    params={"start": 0, "limit": 50},
+                ),
+                call(
+                    "rest/servicedeskapi/servicedesk",
+                    headers=service_desk.experimental_headers,
+                    params={"start": 50, "limit": 50},
+                ),
+            ],
         )

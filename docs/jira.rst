@@ -47,6 +47,43 @@ Reindex Jira
                             If it's not possible (due to an inconsistent index), do a foreground reindexing.
     """
 
+Workflow transition rule configurations (Server/Data Center)
+------------------------------------------------------------
+
+Jira Server 8.13 and compatible Data Center releases expose transition-rule
+configuration through the v2 REST route.  Use the explicit Server client; the
+Cloud client has a separate implementation and authorization model.
+
+.. code-block:: python
+
+    from atlassian.jira import JiraServer
+
+    jira = JiraServer("https://jira.example.com", token="personal-access-token")
+    rules = jira.get_workflow_transition_rule_configurations(
+        types=["postfunction", "validator"],
+        workflow_names="Release workflow",
+        draft=False,
+    )
+
+    for workflow in rules["values"]:
+        print(workflow)
+
+Bulk issue retrieval
+--------------------
+
+``bulk_issue`` follows Jira search pages by default, so long issue-key lists
+are not silently limited by the server's configured page size.  Set
+``fetch_all=False`` to receive only the first REST response.
+
+.. code-block:: python
+
+    result, invalid_keys = jira.bulk_issue(
+        ["DEMO-1", "DEMO-2", "DEMO-3"],
+        fields=["summary", "status"],
+    )
+    for issue in result["issues"]:
+        print(issue["key"])
+
 Manage Permissions
 ------------------
 
@@ -197,8 +234,23 @@ Manage projects
     # Results can be filtered by the following fields: query, status.
     jira.get_project_versions_paginated(key, start=None, limit=None, order_by=None, expand=None, query=None, status=None)
 
-    # Add missing version to project
-    jira.add_version(key, project_id, version, is_archived=False, is_released=False)
+    # Add a version to a Jira Server/Data Center project
+    jira.add_version(
+        project_key=key,
+        project_id=project_id,
+        version={
+            "name": "TestVersion",
+            "description": "Just a test description",
+            "released": False,
+            "archived": False,
+        },
+    )
+
+    # Jira Cloud requires the numeric project ID and uses REST v3
+    jira.add_version(
+        project_id=10000,
+        version={"name": "TestVersion", "description": "Just a test description"},
+    )
 
     # Update an existing version
     jira.update_version(version, name=None, description=None, is_archived=None, is_released=None, start_date=None, release_date=None)
@@ -230,6 +282,10 @@ Manage projects
     # Get project permission scheme
     # Use 'expand' to get details (default is None)
     jira.get_project_permission_scheme(project_id_or_key, expand='permissions,user,group,projectRole,field,all')
+
+    # Assign a permission scheme. On Jira Cloud this uses the v3 JSON endpoint;
+    # the caller needs the Administer Jira global permission.
+    jira.assign_project_permission_scheme(project_id_or_key, permission_scheme_id)
 
     # Get the issue security scheme for project.
     # Returned if the user has the administrator permission or if the scheme is used in a project in which the

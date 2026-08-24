@@ -94,6 +94,61 @@ class JiraCloud(JiraCloudCoreMethods, AtlassianRestAPI):
                 break
         return results
 
+    def get_project_workflow_scheme_associations(self, project_ids):
+        """Return workflow-scheme associations for one or more project IDs.
+
+        Team-managed and non-existent projects are omitted by Jira Cloud. The
+        caller requires the Administer Jira global permission.
+
+        :param project_ids: Project ID or iterable of project IDs.
+        :return: Jira's workflow-scheme association container.
+        """
+        if isinstance(project_ids, (str, int)):
+            project_ids = [project_ids]
+        else:
+            project_ids = list(project_ids)
+        if not project_ids:
+            raise ValueError("project_ids must contain at least one project ID")
+        return self.get(self.endpoint("workflowscheme/project", api_version=3), params={"projectId": project_ids})
+
+    def assign_project_workflow_scheme(self, project_id, workflow_scheme_id):
+        """Assign a workflow scheme to a classic Jira Cloud project.
+
+        Jira only permits this operation when the project has no issues. The
+        caller requires the Administer Jira global permission.
+
+        :param project_id: Numeric Jira project ID.
+        :param workflow_scheme_id: Workflow scheme ID.
+        :return: Jira response (normally ``None`` for HTTP 204).
+        """
+        data = {"projectId": str(project_id), "workflowSchemeId": str(workflow_scheme_id)}
+        return self.put(self.endpoint("workflowscheme/project", api_version=3), data=data)
+
+    def add_version(
+        self,
+        project_id,
+        version,
+        project_key: Optional[str] = None,
+        is_archived: bool = False,
+        is_released: bool = False,
+    ):
+        """Create a Jira Cloud project version through REST v3.
+
+        ``version`` can be a name or a complete payload dictionary. Cloud's
+        create-version API identifies the project with its numeric ID.
+        """
+        if isinstance(version, dict):
+            data = dict(version)
+        else:
+            data = {"name": version, "archived": is_archived, "released": is_released}
+        try:
+            data["projectId"] = int(data.get("projectId", project_id))
+        except (TypeError, ValueError) as error:
+            raise ValueError("project_id must be a numeric Jira Cloud project ID") from error
+        if project_key is not None:
+            data.setdefault("project", project_key)
+        return self.post(self.endpoint("version", api_version=3), data=data)
+
 
 class JiraSoftware(JiraSoftwareMethods, AtlassianRestAPI):
     """Jira Software Cloud REST APIs.
@@ -153,6 +208,34 @@ class JiraServiceManagement(JiraServiceManagementMethods, AtlassianRestAPI):
     def endpoint(self, resource: str = "") -> str:
         """Return a JSM public REST endpoint path without issuing a request."""
         return self.url_joiner("rest/servicedeskapi", resource)
+
+    def get_sla_metrics(self, service_desk_id, start=None, limit=None):
+        """Return SLA metric configuration from Jira's agent endpoint.
+
+        This is an internal endpoint used by the JSM settings UI and may not
+        be available on every Cloud or Data Center release.
+        """
+        params = {key: value for key, value in {"start": start, "limit": limit}.items() if value is not None}
+        return self.get(
+            f"rest/servicedesk/1/servicedesk/agent/{service_desk_id}/sla/metrics",
+            params=params or None,
+        )
+
+    def update_sla_metric(self, service_desk_id, sla_id, data):
+        """Update an SLA metric configuration for a service desk.
+
+        Jira exposes this through an internal agent endpoint used by the JSM
+        settings UI. The payload is passed through unchanged to support the
+        metric schema used by the target Jira release.
+        """
+        return self.put(
+            f"rest/servicedesk/1/servicedesk/agent/{service_desk_id}/sla/metrics/{sla_id}",
+            data=data,
+        )
+
+    def set_sla_metric(self, service_desk_id, sla_id, data):
+        """Backward-compatible alias for :meth:`update_sla_metric`."""
+        return self.update_sla_metric(service_desk_id, sla_id, data)
 
 
 def create_jira_cloud(url: str, *args: Any, api_version: Union[str, int] = 3, **kwargs: Any) -> JiraCloud:

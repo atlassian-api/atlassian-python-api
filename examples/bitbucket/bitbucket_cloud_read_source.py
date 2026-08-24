@@ -6,8 +6,8 @@ from atlassian.bitbucket import Cloud
 
 
 bitbucket = Cloud(
-    username=os.environ["BITBUCKET_USERNAME"],
-    password=os.environ["BITBUCKET_APP_PASSWORD"],
+    username=os.environ["ATLASSIAN_EMAIL"],
+    password=os.environ["BITBUCKET_API_TOKEN"],
 )
 repository = bitbucket.workspaces.get(os.environ["BITBUCKET_WORKSPACE"]).repositories.get(
     os.environ["BITBUCKET_REPOSITORY"]

@@ -2,7 +2,7 @@
 
 import copy
 import re
-from urllib.parse import urljoin, urlparse
+from urllib.parse import parse_qsl, urljoin, urlparse
 import logging
 from requests import HTTPError
 from ..rest_client import AtlassianRestAPI
@@ -167,6 +167,7 @@ class ConfluenceBase(AtlassianRestAPI):
             params = {}
 
         while True:
+            current_url = url
             response = self.get(
                 url,
                 trailing=trailing,
@@ -189,6 +190,16 @@ class ConfluenceBase(AtlassianRestAPI):
                 url = next_link.get("href")
             if url is None:
                 break
+
+            # Cloud V2 cursor links contain a relative endpoint and a cursor
+            # query.  Reusing the already-resolved endpoint preserves both
+            # ``/wiki`` and API-gateway tenant prefixes.
+            parsed_next = urlparse(url)
+            if getattr(self, "api_version", None) == 2 and parsed_next.query and not parsed_next.scheme:
+                url = current_url
+                params = dict(parse_qsl(parsed_next.query, keep_blank_values=True))
+                trailing = False
+                continue
 
             if not urlparse(url).scheme:
                 # Confluence returns both ``/rest/api/...`` and

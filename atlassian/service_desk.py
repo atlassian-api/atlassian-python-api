@@ -19,13 +19,17 @@ class ServiceDesk(AtlassianRestAPI):
 
         return self.get("rest/servicedeskapi/info", headers=self.experimental_headers)
 
-    def get_service_desks(self, start=0, limit=50):
+    def get_service_desks(self, start=0, limit=50, fetch_all=True):
         """
-        Return a page of service desks available to the authenticated user.
+        Return service desks available to the authenticated user.
+
+        By default every API page is retrieved. Set ``fetch_all=False`` to
+        retrieve only one page when a bounded request is required.
 
         :return: Service Desks
         :param start: Index of the first service desk to return.
         :param limit: Maximum number of service desks to return.
+        :param fetch_all: Whether to retrieve subsequent API pages.
         """
         params = {}
         if start is not None:
@@ -39,8 +43,29 @@ class ServiceDesk(AtlassianRestAPI):
         )
         if self.advanced_mode:
             return service_desks_list
-        else:
-            return (service_desks_list or {}).get("values")
+
+        service_desks = (service_desks_list or {}).get("values", [])
+        if not fetch_all:
+            return service_desks
+
+        current_start = int(start or 0)
+        while service_desks_list and not service_desks_list.get("isLastPage", True):
+            next_start = service_desks_list.get("nextPageStart")
+            if next_start is None:
+                next_start = current_start + len((service_desks_list or {}).get("values", []))
+            if next_start == current_start:
+                break
+
+            current_start = int(next_start)
+            page_params = dict(params, start=current_start)
+            service_desks_list = self.get(
+                "rest/servicedeskapi/servicedesk",
+                headers=self.experimental_headers,
+                params=page_params,
+            )
+            service_desks.extend((service_desks_list or {}).get("values", []))
+
+        return service_desks
 
     def get_service_desk_by_id(self, service_desk_id):
         """
@@ -123,14 +148,13 @@ class ServiceDesk(AtlassianRestAPI):
         if request_participants:
             data["requestParticipants"] = request_participants
 
-        param_map = {"headers": self.experimental_headers}
+        if not isinstance(values_dict, (dict, str)):
+            raise TypeError("values_dict must be a dictionary or JSON string")
 
-        if isinstance(values_dict, dict):
-            param_map["json"] = data
-        elif isinstance(values_dict, str):
-            param_map["data"] = data
-
-        return self.post("rest/servicedeskapi/request", **param_map)
+        # The create-request endpoint is a stable JSON endpoint.  Passing the
+        # complete payload through ``json`` avoids form/data coercion and keeps
+        # nested request field values intact on both Cloud and Server.
+        return self.post("rest/servicedeskapi/request", json=data, headers=self.default_headers)
 
     def get_customer_request_status(self, issue_id_or_key):
         """
@@ -664,6 +688,42 @@ class ServiceDesk(AtlassianRestAPI):
         url = f"rest/servicedeskapi/request/{issue_id_or_key}/sla/{sla_id}"
 
         return self.get(url, headers=self.experimental_headers)
+
+    def get_sla_metrics(self, service_desk_id, start=None, limit=None):
+        """Return SLA metric configuration for a service desk.
+
+        Jira Service Management exposes this configuration through an internal
+        agent endpoint used by the service-desk settings UI. It is not part of
+        the public ``rest/servicedeskapi`` contract and may require an agent
+        or Jira administrator permission.
+
+        :param service_desk_id: Service desk/project identifier used by Jira.
+        :param start: Optional result offset, when supported by the instance.
+        :param limit: Optional result limit, when supported by the instance.
+        :return: SLA metric configuration response.
+        """
+        params = {key: value for key, value in {"start": start, "limit": limit}.items() if value is not None}
+        url = f"rest/servicedesk/1/servicedesk/agent/{service_desk_id}/sla/metrics"
+        return self.get(url, params=params or None, headers=self.experimental_headers)
+
+    def update_sla_metric(self, service_desk_id, sla_id, data):
+        """Update an SLA metric configuration for a service desk.
+
+        This uses Jira Service Management's internal agent endpoint. The
+        payload is passed through unchanged because its schema varies between
+        Jira releases and contains the metric definition, goals and calendars.
+
+        :param service_desk_id: Service desk/project identifier used by Jira.
+        :param sla_id: SLA metric identifier.
+        :param data: Metric configuration payload accepted by Jira.
+        :return: Updated SLA metric response.
+        """
+        url = f"rest/servicedesk/1/servicedesk/agent/{service_desk_id}/sla/metrics/{sla_id}"
+        return self.put(url, data=data, headers=self.experimental_headers)
+
+    def set_sla_metric(self, service_desk_id, sla_id, data):
+        """Backward-compatible alias for :meth:`update_sla_metric`."""
+        return self.update_sla_metric(service_desk_id, sla_id, data)
 
     def sla_rebuild(self, tickets=None):
         """

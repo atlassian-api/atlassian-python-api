@@ -1,0 +1,7 @@
+responses[None] = [
+    {
+        "id": 10001,
+        "globalId": "system=http://example.com&id=10001",
+        "object": {"url": "https://example.com", "title": "Example"},
+    }
+]

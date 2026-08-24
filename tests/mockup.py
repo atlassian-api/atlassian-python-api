@@ -57,7 +57,14 @@ def request_mockup(*args, **kwargs):
                 response._content = bytes(json.dumps(data), response.encoding)
             else:
                 response.status_code = 200
-                response._content = data
+                response.encoding = "utf-8"
+                if isinstance(data, bytes):
+                    response._content = data
+                else:
+                    # REST endpoints may legitimately return a JSON list or
+                    # scalar, not only an object. Serialize every non-byte
+                    # fixture so requests.Response.text can decode it.
+                    response._content = json.dumps(data).encode(response.encoding)
     except FileNotFoundError:
         response.encoding = "utf-8"
         response._content = b"{}"

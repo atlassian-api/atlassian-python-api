@@ -64,6 +64,10 @@ class TestBasic:
                 "2026-08-15T23:19:42.7+05:30",
                 datetime(2026, 8, 15, 23, 19, 42, 700000, tzinfo=timezone(timedelta(hours=5, minutes=30))),
             ),
+            (
+                "2024-04-10T20:16:48.914706353Z",
+                datetime(2024, 4, 10, 20, 16, 48, 914706, tzinfo=timezone.utc),
+            ),
         ],
     )
     def test_pipeline_time_normalizes_variable_fractional_seconds(self, timestamp, expected):
@@ -89,6 +93,19 @@ class TestBasic:
 
         assert list(workspaces.each()) == [workspace]
         assert calls == [(f"{workspaces.url.rsplit('/', 1)[0]}/user/workspaces", {}, True)]
+
+    def test_each_workspace_supports_administrator_filter(self, monkeypatch):
+        workspaces = CLOUD.workspaces
+        calls = []
+
+        def get_paged(url, params=None, absolute=False):
+            calls.append((url, params, absolute))
+            return iter([])
+
+        monkeypatch.setattr(workspaces, "_get_paged", get_paged)
+
+        assert list(workspaces.each(administrator=True)) == []
+        assert calls == [(f"{workspaces.url.rsplit('/', 1)[0]}/user/workspaces", {"administrator": True}, True)]
 
     def test_exists_workspace(self):
         assert CLOUD.workspaces.exists("TestWorkspace1"), "Exists workspace"
@@ -123,6 +140,48 @@ class TestBasic:
         assert isinstance(commit, Commit)
         assert commit.hash == "1fbd047cd99a"
         assert commit.message == "src created online with Bitbucket"
+
+    def test_repository_commits_each_forwards_supported_filters(self, monkeypatch):
+        repository = CLOUD.workspaces.get("TestWorkspace1").repositories.get("testrepository1")
+        calls = []
+
+        def get_paged(*args, **kwargs):
+            calls.append((args, kwargs))
+            return iter([])
+
+        monkeypatch.setattr(repository.commits, "_get_paged", get_paged)
+
+        list(repository.commits.each(include="main", exclude="release", path="src/app.py"))
+
+        assert calls == [
+            (
+                (None,),
+                {
+                    "trailing": True,
+                    "params": {"include": "main", "exclude": "release", "path": "src/app.py"},
+                },
+            )
+        ]
+
+    def test_repository_variable_get_by_key_returns_uuid_object(self, monkeypatch):
+        repository = CLOUD.workspaces.get("TestWorkspace1").repositories.get("testrepository1")
+        variable = repository.repository_variables
+        item = type("Variable", (), {"key": "qww", "uuid": "{variable-uuid}"})()
+
+        monkeypatch.setattr(variable, "each", lambda **kwargs: iter([item]))
+
+        result = variable.get_by_key("qww")
+
+        assert result.uuid == "{variable-uuid}"
+
+    def test_repository_variable_update_by_key_uses_lookup_uuid(self, monkeypatch):
+        repository = CLOUD.workspaces.get("TestWorkspace1").repositories.get("testrepository1")
+        variable = repository.repository_variables
+        item = type("Variable", (), {})()
+        monkeypatch.setattr(variable, "get_by_key", lambda key: item)
+        monkeypatch.setattr(item, "update", lambda **kwargs: kwargs, raising=False)
+
+        assert variable.update_by_key("qww", "new", secured=True) == {"value": "new", "secured": True}
 
     def test_not_exists_repository(self):
         assert not CLOUD.workspaces.get("TestWorkspace1").repositories.exists(
