@@ -927,8 +927,25 @@ class TestConfluenceServer:
         """Test get_page_space method."""
         mock_get.return_value = {"space": {"key": "TEST"}}
         result = confluence_server.get_page_space("123")
-        mock_get.assert_called_once_with("content/123", expand="space")
+        mock_get.assert_called_once_with("content/123", params={"expand": "space"})
         assert result == "TEST"
+
+    def test_get_page_space_uses_expand_query_param(self, confluence_server):
+        """get_page_space must pass expand via params so AtlassianRestAPI.get() accepts the call."""
+        response = Response()
+        response.status_code = 200
+        response.reason = "OK"
+        response._content = b'{"space": {"key": "TEST"}}'
+
+        with patch.object(confluence_server._session, "request", return_value=response) as mock_request:
+            result = confluence_server.get_page_space("123")
+
+        assert result == "TEST"
+        url = mock_request.call_args.kwargs["url"]
+        params = mock_request.call_args.kwargs.get("params") or {}
+        assert url.startswith("https://test.confluence.com/rest/api/content/123")
+        expand = params.get("expand") if isinstance(params, dict) else None
+        assert expand == "space" or "expand=space" in url
 
     # Space Management Tests
     @patch.object(ConfluenceServer, "get")
