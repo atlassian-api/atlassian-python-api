@@ -1370,6 +1370,29 @@ class Server(ConfluenceServerBase):
             url = f"rest/experimental/content/{attachment_id}/version/{version}"
         return self.delete(url)
 
+    def move_or_update_attachment_json_rpc(self, originalContentId: str, originalName: str, newContentEntityId: str=None, newName: str=None):
+        """
+        Move attachment from source confluence page to destination confluence page optionally with new title
+        OR
+        Just update attachment from source confluence page with new title
+        via JSON-RPC.
+        :param str originalContentId: confluence source page id
+        :param str newContentEntityId: confluence destination page id
+        :param str originalName: source attachment title
+        :param str newName: new attachment title
+        """
+        if self.api_version == "cloud" or self.cloud:
+            return {}
+        url = "rpc/json-rpc/confluenceservice-v2"
+        data = {
+            "jsonrpc": "2.0",
+            "method": "moveAttachment",
+            "id": 9,
+            "params": [originalContentId, originalName, newContentEntityId, newName]
+        }
+
+        return self.post(url, data=data).get("result") or {}
+    
     def remove_page_attachment_keep_version(self, page_id, filename, keep_last_versions):
         """
         Keep last versions
