@@ -145,29 +145,35 @@ class TestConfluenceServer:
         assert mock_post.call_args.kwargs["data"]["version"] == {"message": "Initial import"}
 
     @patch.object(ConfluenceServer, "get")
-    @patch.object(ConfluenceServer, "put")
-    def test_attach_content_uses_atomic_create_or_update_endpoint(self, mock_put, mock_get, confluence_server):
+    @patch.object(ConfluenceServer, "post")
+    def test_attach_content_checks_existing_attachments_before_create(self, mock_post, mock_get, confluence_server):
         content = io.BytesIO(b"new image")
-        mock_put.return_value = {"results": [{"id": "attachment-1"}]}
+        mock_get.return_value = {"results": []}
+        mock_post.return_value = {"results": [{"id": "attachment-1"}]}
 
         confluence_server.attach_content(content, "diagram.png", "image/png", page_id="123")
 
-        mock_get.assert_not_called()
-        assert mock_put.call_args.kwargs["path"] == "rest/api/content/123/child/attachment"
-        assert mock_put.call_args.kwargs["headers"] == {
+        mock_get.assert_called_once_with(
+            path="rest/api/content/123/child/attachment",
+            headers={"X-Atlassian-Token": "no-check", "Accept": "application/json"},
+        )
+        assert mock_post.call_args.kwargs["path"] == "rest/api/content/123/child/attachment"
+        assert mock_post.call_args.kwargs["headers"] == {
             "X-Atlassian-Token": "no-check",
             "Accept": "application/json",
         }
-        assert mock_put.call_args.kwargs["files"] == {"file": ("diagram.png", content, "image/png")}
+        assert mock_post.call_args.kwargs["files"] == {"file": ("diagram.png", content, "image/png")}
 
-    @patch.object(ConfluenceServer, "put")
-    def test_attach_content_normalizes_path_like_attachment_names(self, mock_put, confluence_server):
+    @patch.object(ConfluenceServer, "get")
+    @patch.object(ConfluenceServer, "post")
+    def test_attach_content_normalizes_path_like_attachment_names(self, mock_post, mock_get, confluence_server):
         content = io.BytesIO(b"new image")
-        mock_put.return_value = {"results": [{"id": "attachment-1"}]}
+        mock_get.return_value = {"results": []}
+        mock_post.return_value = {"results": [{"id": "attachment-1"}]}
 
         confluence_server.attach_content(content, r"reports\\daily/diagram.png", "image/png", page_id="123")
 
-        assert mock_put.call_args.kwargs["files"] == {"file": ("diagram.png", content, "image/png")}
+        assert mock_post.call_args.kwargs["files"] == {"file": ("diagram.png", content, "image/png")}
 
     def test_attach_content_rejects_empty_attachment_name(self, confluence_server):
         with pytest.raises(ApiValueError, match="must contain a filename"):
@@ -939,7 +945,6 @@ class TestConfluenceServer:
 
         with patch.object(confluence_server._session, "request", return_value=response) as mock_request:
             result = confluence_server.get_page_space("123")
-
 
         assert result == "TEST"
         url = mock_request.call_args.kwargs["url"]

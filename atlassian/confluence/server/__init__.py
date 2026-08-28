@@ -7,7 +7,7 @@ import re
 import sys
 import time
 import warnings
-from typing import cast
+from typing import Optional, cast
 from urllib.parse import urljoin
 
 import requests
@@ -1392,7 +1392,13 @@ class Server(ConfluenceServerBase):
             url = f"rest/experimental/content/{attachment_id}/version/{version}"
         return self.delete(url)
 
-    def move_or_update_attachment_json_rpc(self, originalContentId: str, originalName: str, newContentEntityId: str=None, newName: str=None):
+    def move_or_update_attachment_json_rpc(
+        self,
+        originalContentId: str,
+        originalName: str,
+        newContentEntityId: Optional[str] = None,
+        newName: Optional[str] = None,
+    ):
         """
         Move attachment from source confluence page to destination confluence page optionally with new title
         OR
@@ -1410,11 +1416,12 @@ class Server(ConfluenceServerBase):
             "jsonrpc": "2.0",
             "method": "moveAttachment",
             "id": 9,
-            "params": [originalContentId, originalName, newContentEntityId, newName]
+            "params": [originalContentId, originalName, newContentEntityId, newName],
         }
 
-        return self.post(url, data=data).get("result") or {}
-    
+        response = self.post(url, data=data)
+        return (response or {}).get("result") or {}
+
     def remove_page_attachment_keep_version(self, page_id, filename, keep_last_versions):
         """
         Keep last versions
