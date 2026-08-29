@@ -3464,6 +3464,16 @@ class Jira(AtlassianRestAPI):
         """
         return self.add_project_actor_in_role(project_key, role_id, user_name, "atlassian-user-role-actor")
 
+    def add_group_into_project_role(self, project_key: str, role_id: T_id, group_name: str):
+        """
+
+        :param project_key:
+        :param role_id:
+        :param group_name:
+        :return:
+        """
+        return self.add_project_actor_in_role(project_key, role_id, group_name, "atlassian-group-role-actor")
+
     def add_project_actor_in_role(self, project_key: str, role_id: T_id, actor: str, actor_type: str):
         """
 
