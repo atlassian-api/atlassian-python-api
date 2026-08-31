@@ -78,7 +78,10 @@ class Server(ConfluenceServerBase):
         if "cloud" not in kwargs:
             kwargs["cloud"] = False
         if "api_version" not in kwargs:
-            kwargs["api_version"] = "1.0"
+            # Confluence Data Center no longer guarantees the legacy 1.0
+            # route.  An unversioned REST path is resolved by the server to
+            # its supported/latest API version.
+            kwargs["api_version"] = "latest"
         if "api_root" not in kwargs:
             kwargs["api_root"] = "rest/api"
         super(Server, self).__init__(url.rstrip("/"), *args, **kwargs)

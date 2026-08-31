@@ -27,7 +27,7 @@ class TestConfluenceServer:
     def test_init_defaults(self):
         """Test ConfluenceServer client initialization with default values."""
         confluence = ConfluenceServer(url="https://test.confluence.com", username="test", password="test")
-        assert confluence.api_version == "1.0"
+        assert confluence.api_version == "latest"
         assert confluence.api_root == "rest/api"
         assert confluence.cloud is False
         assert confluence.url == "https://test.confluence.com"
