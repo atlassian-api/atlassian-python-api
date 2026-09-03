@@ -163,7 +163,8 @@ class TestConfluenceV2(unittest.TestCase):
 
         # Assertions
         mock_get_paged.assert_called_once_with(
-            "api/v2/pages/PARENT123/children/page", params={"limit": 25, "status": "current", "body-format": "none"}
+            "api/v2/pages/PARENT123/direct-children",
+            params={"limit": 25, "status": "current"},
         )
         self.assertEqual(response, mock_pages)
 
@@ -192,7 +193,7 @@ class TestConfluenceV2(unittest.TestCase):
             "expand": "version",
             "sort": "child-position",
         }
-        mock_get_paged.assert_called_once_with("api/v2/pages/PARENT123/children/page", params=expected_params)
+        mock_get_paged.assert_called_once_with("api/v2/pages/PARENT123/direct-children", params=expected_params)
         self.assertEqual(response, mock_pages)
 
     def test_get_child_pages_invalid_status(self):
