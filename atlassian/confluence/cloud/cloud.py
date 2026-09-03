@@ -344,9 +344,7 @@ class ConfluenceCloud(
                 raise ValueError("Status must be one of 'current', 'archived', 'any'")
             params["status"] = status
 
-        if not get_body:
-            params["body-format"] = "none"
-        elif body_format:
+        if body_format:
             if body_format not in ("storage", "atlas_doc_format", "view"):
                 raise ValueError("body_format must be one of 'storage', 'atlas_doc_format', or 'view'")
             params["body-format"] = body_format
