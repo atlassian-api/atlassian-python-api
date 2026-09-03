@@ -68,12 +68,24 @@ Below are the most common method name changes between v1 and v2:
 |-----------|-----------|-------|
 | `get_page_by_id(page_id)` | `get_page_by_id(page_id)` | Same name, different response structure |
 | `get_all_pages_from_space(space)` | `get_pages(space_key=space)` | Parameter name changes |
-| `get_page_child_by_type(page_id, type="page")` | `get_child_pages(page_id)` | Simpler, focused on pages |
+| `get_page_child_by_type(page_id, type="page")` | `get_child_pages(page_id)` | Uses the Cloud V2 direct-children endpoint |
 | `create_page(space, title, body)` | `create_page(space_id, title, body)` | Parameter `space` renamed to `space_id` |
 | `update_page(page_id, title, body, version)` | `update_page(page_id, title, body, version)` | Same name, requires version number |
 | `update_or_create(page_id, title, body, ...)` | No direct equivalent | Use separate create/update methods |
 | `get_content_properties(page_id)` | `get_page_properties(page_id)` | More specific naming |
 | `get_content_property(page_id, key)` | `get_page_property_by_key(page_id, key)` | More specific naming |
+
+### Child Pages Endpoint
+
+Confluence Cloud has deprecated `GET /wiki/api/v2/pages/{id}/children`. The
+`get_child_pages()` method uses the replacement endpoint,
+`GET /wiki/api/v2/pages/{id}/direct-children`.
+
+The replacement endpoint uses the `read:hierarchical-content:confluence`
+scope and may return direct children of different content types, including
+pages, folders, databases, embeds, and whiteboards. The returned child objects
+contain minimal information; use the appropriate resource method to retrieve
+full details.
 
 ## Response Structure Changes
 
