@@ -210,6 +210,110 @@ class Server(ConfluenceServerBase):
         """Get blog post by title and space key."""
         return self.get("content", params={"spaceKey": space_key, "title": title, "type": "blogpost", **kwargs})
 
+    def get_plugins_info(self):
+        """
+        Provide plugins info
+        :return a json of installed plugins
+        """
+        url = "rest/plugins/1.0/"
+        return self.get(url, headers=self.no_check_headers, trailing=True)
+
+    def get_plugin_info(self, plugin_key: str):
+        """
+        Provide plugin info
+        :return a json of installed plugins
+        """
+        url = f"rest/plugins/1.0/{plugin_key}-key"
+        return self.get(url, headers=self.no_check_headers, trailing=True)
+
+    def get_plugin_license_info(self, plugin_key: str):
+        """
+        Provide plugin license info
+        :return a json specific License query
+        """
+        url = f"rest/plugins/1.0/{plugin_key}-key/license"
+        return self.get(url, headers=self.no_check_headers, trailing=True)
+
+    def upload_plugin(self, plugin_path: str):
+        """
+        Provide plugin path for upload into Confluence e.g. useful for auto deploy
+        :param plugin_path:
+        :return:
+        """
+        files = {"plugin": open(plugin_path, "rb")}
+        upm_token = self.request(
+            method="GET",
+            path="rest/plugins/1.0/",
+            headers=self.no_check_headers,
+            trailing=True,
+        ).headers["upm-token"]
+        url = f"rest/plugins/1.0/?token={upm_token}"
+        return self.post(url, files=files, headers=self.no_check_headers)
+
+    def delete_plugin(self, plugin_key: str):
+        """
+        Delete plugin
+        :param plugin_key:
+        :return:
+        """
+        url = f"rest/plugins/1.0/{plugin_key}-key"
+        return self.delete(url)
+
+    def check_plugin_manager_status(self):
+        """Perform the Confluence check plugin manager status operation.
+
+        Args:
+            See the method signature for API request parameters.
+
+        Returns:
+            Decoded Confluence REST response.
+        """
+        url = "rest/plugins/latest/safe-mode"
+        return self.request(method="GET", path=url, headers=self.safe_mode_headers)
+
+    def update_plugin_license(self, plugin_key: str, raw_license: str):
+        """
+        Update license for plugin
+        :param plugin_key:
+        :param raw_license:
+        :return:
+        """
+        app_headers = {
+            "X-Atlassian-Token": "no-check",
+            "Content-Type": "application/vnd.atl.plugins+json",
+        }
+        url = f"/plugins/1.0/{plugin_key}/license"
+        data = {"rawLicense": raw_license}
+        return self.put(url, data=data, headers=app_headers)
+
+    def disable_plugin(self, plugin_key: str):
+        """
+        Disable a plugin
+        :param plugin_key:
+        :return:
+        """
+        app_headers = {
+            "X-Atlassian-Token": "no-check",
+            "Content-Type": "application/vnd.atl.plugins+json",
+        }
+        url = f"rest/plugins/1.0/{plugin_key}-key"
+        data = {"status": "disabled"}
+        return self.put(url, data=data, headers=app_headers)
+
+    def enable_plugin(self, plugin_key: str):
+        """
+        Enable a plugin
+        :param plugin_key:
+        :return:
+        """
+        app_headers = {
+            "X-Atlassian-Token": "no-check",
+            "Content-Type": "application/vnd.atl.plugins+json",
+        }
+        url = f"rest/plugins/1.0/{plugin_key}-key"
+        data = {"status": "enabled"}
+        return self.put(url, data=data, headers=app_headers)
+    
     def page_exists(self, space_key, title, **kwargs):
         """Check if page exists."""
         try:
