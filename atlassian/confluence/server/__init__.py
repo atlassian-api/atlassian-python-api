@@ -1279,15 +1279,26 @@ class Server(ConfluenceServerBase):
                     pass
 
                 if existing_attachment:
-                    # Update existing attachment using PUT on the specific attachment ID
+                    # Update existing attachment on the specific attachment ID
                     attachment_id = existing_attachment["id"]
-                    update_path = f"rest/api/content/{attachment_id}"
-                    response = self.put(
-                        path=update_path,
-                        data=data,
-                        headers=headers,
-                        files={"file": (name, content, content_type)},
-                    )
+                    if self.api_version == "1.0":
+                        # older API versions use POST on data path below the child
+                        update_path = f"{path}/{attachment_id}/data"
+                        response = self.post(
+                            path=update_path,
+                            data=data,
+                            headers=headers,
+                            files={"file": (name, content, content_type)},
+                        )
+                    else:
+                        # newer API versions use PUT on a path derived from the attachment ID directly
+                        update_path = f"rest/api/content/{attachment_id}"
+                        response = self.put(
+                            path=update_path,
+                            data=data,
+                            headers=headers,
+                            files={"file": (name, content, content_type)},
+                        )
                 else:
                     # Create new attachment using POST
                     response = self.post(
