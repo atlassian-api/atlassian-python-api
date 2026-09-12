@@ -248,6 +248,46 @@ class ConfluenceCloud(
         except Exception as e:
             log.error(f"Failed to retrieve pages: {e}")
             raise
+    
+    def get_page_by_title(
+        self, space_key: str, title: str, body_format: str = "storage", **kwargs
+    ) -> Dict[str, Any]:
+        """
+        Get page by space key and title using the V2 API.
+        Resolves the space key to space_id and queries the V2 page endpoint.
+        Returns a dictionary with 'results' key containing matching pages
+        to maintain backward compatibility with V1 callers.
+        """
+        try:
+            space = self.get_space_by_key(space_key)
+        except Exception as e:
+            log.error(f"Failed to retrieve space with key '{space_key}': {e}")
+            return {"results": []}
+
+        if not space or "id" not in space:
+            return {"results": []}
+
+        pages = self.get_pages(
+            space_id=space["id"],
+            title=title,
+            status="current",
+            body_format=body_format,
+            limit=1,
+            **kwargs,
+        )
+        return {"results": pages if isinstance(pages, list) else []}
+
+
+    def get_page_id(self, space: str, title: str, type: str = "page") -> Optional[str]:
+        """
+        Get page ID by space key and title using the V2 API.
+        Returns the ID from the first result or None if not found.
+        """
+        res = self.get_page_by_title(space, title)
+        results = res.get("results", [])
+        if results:
+            return str(results[0]["id"])
+        return None
 
     def get_page_versions(
         self,
