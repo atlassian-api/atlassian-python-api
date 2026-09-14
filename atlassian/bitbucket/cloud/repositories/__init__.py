@@ -183,7 +183,7 @@ class WorkspaceRepositories(RepositoriesBase):
                 if r.name == repository:
                     return r
         else:
-            ValueError(f"Unknown value '{by}' for argument [by], expected 'key' or 'name'")
+            raise ValueError(f"Unknown value '{by}' for argument [by], expected 'key' or 'name'")
 
         raise Exception(f"Unknown repository {by} '{repository}'")
 
@@ -207,7 +207,7 @@ class WorkspaceRepositories(RepositoriesBase):
             if e.response.status_code in (401, 404):
                 pass
         except Exception as e:
-            if not str(e) == f"Unknown project {by} '{repository}'":
+            if not str(e) == f"Unknown repository {by} '{repository}'":
                 raise e
         return exists
 
@@ -247,7 +247,7 @@ class ProjectRepositories(RepositoriesBase):
         https://developer.atlassian.com/bitbucket/api/2/reference/resource/workspaces/%7Bworkspace%7D/projects/%7Bproject_key%7D#get
         """
         if by not in ("slug", "name"):
-            ValueError(f"Unknown value '{by}' for argument [by], expected 'slug' or 'name'")
+            raise ValueError(f"Unknown value '{by}' for argument [by], expected 'slug' or 'name'")
 
         for r in self.each():
             if ((by == "slug") and (r.slug == repository)) or ((by == "name") and (r.name == repository)):

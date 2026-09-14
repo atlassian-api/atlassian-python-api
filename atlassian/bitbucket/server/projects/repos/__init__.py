@@ -53,7 +53,7 @@ class Repositories(BitbucketServerBase):
                 if r.name == repository:
                     return r
         else:
-            ValueError(f"Unknown value '{by}' for argument [by], expected 'slug' or 'name'")
+            raise ValueError(f"Unknown value '{by}' for argument [by], expected 'slug' or 'name'")
 
         raise Exception(f"Unknown repository {by} '{repository}'")
 
@@ -74,7 +74,7 @@ class Repositories(BitbucketServerBase):
             if e.response.status_code in (401, 404):
                 pass
         except Exception as e:
-            if not str(e) == f"Unknown project {by} '{repository}'":
+            if not str(e) == f"Unknown repository {by} '{repository}'":
                 raise e
         return exists
 

@@ -49,13 +49,16 @@ class Bamboo(AtlassianRestAPI):
             except HTTPError as e:
                 logging.error(f"Broken response: {e}")
                 yield e
+                return
         try:
             results = response[elements_key]
             size = 0
             # Check if we still can get results
-            if size > max_results or results["size"] == 0:
+            if results["size"] == 0:
                 return
             for r in results[element_key]:
+                if max_results is not None and size >= max_results:
+                    return
                 size += 1
                 yield r
         except TypeError:
@@ -87,16 +90,18 @@ class Bamboo(AtlassianRestAPI):
             # API representation for filtering by multiple labels.
             params["label"] = label if isinstance(label, str) else list(label)
         params.update(kwargs)
-        if "elements_key" in kwargs and "element_key" in kwargs:
+        params["start-index"] = start_index
+        elements_key = params.pop("elements_key", None)
+        element_key = params.pop("element_key", None)
+        if elements_key and element_key:
             return self._get_generator(
                 self.resource_url(resource),
                 flags=flags,
                 params=params,
-                elements_key=kwargs["elements_key"],
-                element_key=kwargs["element_key"],
+                elements_key=elements_key,
+                element_key=element_key,
                 max_results=max_results,
             )
-        params["start-index"] = start_index
         return self.get(self.resource_url(resource), flags=flags, params=params)
 
     """ Projects & Plans """
@@ -347,9 +352,12 @@ class Bamboo(AtlassianRestAPI):
         while params["start-index"] < size:
             results = self.get(self.resource_url("search/branches"), params=params)
             size = results["size"]
+            page_size = results["max-result"]
+            if page_size <= 0:
+                break
             for r in results["searchResults"]:
                 yield r
-            params["start-index"] += results["max-result"]
+            params["start-index"] += page_size
 
     def plan_branches(
         self,
@@ -454,6 +462,7 @@ class Bamboo(AtlassianRestAPI):
         max_results=25,
         include_all_states=False,
         build_state=None,
+        **kwargs,
     ):
         """
         Get results as generic method
@@ -471,6 +480,8 @@ class Bamboo(AtlassianRestAPI):
         :param include_all_states:
         :param build_state: Optional Bamboo result state, such as
             ``Successful`` or ``Failed``.
+        :param kwargs: Additional query parameters forwarded to the Bamboo
+            REST API.
         :return:
         """
         resource = "result"
@@ -500,7 +511,8 @@ class Bamboo(AtlassianRestAPI):
             elements_key="results",
             element_key="result",
             label=label,
-            **params
+            **kwargs,
+            **params,
         )  # fmt: skip
 
     def latest_results(
@@ -587,6 +599,7 @@ class Bamboo(AtlassianRestAPI):
         max_results=25,
         include_all_states=False,
         build_state=None,
+        **kwargs,
     ):
         """
         Get Plan results
@@ -602,6 +615,8 @@ class Bamboo(AtlassianRestAPI):
         :param include_all_states:
         :param build_state: Optional Bamboo result state, such as
             ``Successful`` or ``Failed``.
+        :param kwargs: Additional query parameters passed to the Bamboo REST
+            API (for example ``issueStatus`` or ``jobKey`` filters).
         :return:
         """
         return self.results(
@@ -616,6 +631,7 @@ class Bamboo(AtlassianRestAPI):
             max_results=max_results,
             include_all_states=include_all_states,
             build_state=build_state,
+            **kwargs,
         )
 
     def ordered_plan_results(
@@ -960,9 +976,12 @@ class Bamboo(AtlassianRestAPI):
         while params["start-index"] < size:
             results = self.get(self.resource_url(resource), params=params)
             size = results["size"]
+            page_size = results["max-result"]
+            if page_size <= 0:
+                break
             for r in results["results"]:
                 yield r
-            params["start-index"] += results["max-result"]
+            params["start-index"] += page_size
 
     def deployment_dashboard(self, project_id=None):
         """
@@ -1110,7 +1129,7 @@ class Bamboo(AtlassianRestAPI):
         """
         params = {"limit": limit, "start": start}
         if filter_name:
-            params = {"name": filter_name}
+            params["name"] = filter_name
         resource = f"permissions/deployment/{deployment_id}/users"
         return self.get(self.resource_url(resource), params=params)
 
@@ -1149,7 +1168,7 @@ class Bamboo(AtlassianRestAPI):
         """
         params = {"limit": limit, "start": start}
         if filter_name:
-            params = {"name": filter_name}
+            params["name"] = filter_name
         resource = f"permissions/deployment/{deployment_id}/groups"
         return self.get(self.resource_url(resource), params=params)
 
@@ -1188,7 +1207,7 @@ class Bamboo(AtlassianRestAPI):
         """
         params = {"limit": limit, "start": start}
         if filter_name:
-            params = {"name": filter_name}
+            params["name"] = filter_name
         resource = f"permissions/environment/{environment_id}/users"
         return self.get(self.resource_url(resource), params=params)
 
@@ -1227,7 +1246,7 @@ class Bamboo(AtlassianRestAPI):
         """
         params = {"limit": limit, "start": start}
         if filter_name:
-            params = {"name": filter_name}
+            params["name"] = filter_name
         resource = f"permissions/environment/{environment_id}/groups"
         return self.get(self.resource_url(resource), params=params)
 

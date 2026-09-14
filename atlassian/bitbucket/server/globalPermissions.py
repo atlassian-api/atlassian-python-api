@@ -47,7 +47,7 @@ class GlobalPermissions(BitbucketServerBase):
         - For groups see https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp64
         - For users see https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp70
         """
-        self.put(name, permission)
+        self.put(None, params={"name": name, "permission": permission})
         return
 
     def each(self, filter=None):

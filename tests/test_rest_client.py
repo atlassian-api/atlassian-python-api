@@ -580,3 +580,94 @@ class TestAtlassianRestAPI:
 
         # Should return False so that other retry mechanisms can take over
         assert handler(response) is False
+
+
+class TestExtraKwargsBecomeQueryParams:
+    """Extra keyword arguments on the HTTP verb helpers become query parameters.
+
+    Regression tests for the 5.0.x regression where thin resource wrappers
+    forwarded ``**kwargs`` into verbs with fixed signatures, raising
+    ``TypeError: AtlassianRestAPI.get() got an unexpected keyword argument
+    'expand'`` (issue reported against 5.0.3 via ``update_or_create`` →
+    ``get_page_space`` → ``get_content(page_id, expand="space")``).
+    """
+
+    VERBS = ("get", "post", "put", "delete", "patch")
+
+    def setup_method(self):
+        self.api = AtlassianRestAPI(url=f"{mockup_server()}/test")
+
+    def _capture_request(self, monkeypatch):
+        captured = {}
+
+        def request(**kwargs):
+            captured.update(kwargs)
+            return SimpleNamespace(status_code=200, reason="OK", text="", encoding=None)
+
+        monkeypatch.setattr(self.api._session, "request", request)
+        monkeypatch.setattr(self.api, "raise_for_status", lambda _response: None)
+        return captured
+
+    @pytest.mark.parametrize("verb", VERBS)
+    def test_extra_kwargs_are_sent_as_query_parameters(self, monkeypatch, verb):
+        captured = self._capture_request(monkeypatch)
+
+        getattr(self.api, verb)("resource", expand="space", advanced_mode=True)
+
+        assert captured["url"].endswith("resource?expand=space")
+
+    @pytest.mark.parametrize("verb", VERBS)
+    def test_extra_kwargs_merge_with_existing_params(self, monkeypatch, verb):
+        captured = self._capture_request(monkeypatch)
+
+        getattr(self.api, verb)("resource", params={"status": "current"}, expand="space", advanced_mode=True)
+
+        assert captured["url"].endswith("resource?status=current&expand=space")
+
+    def test_get_content_accepts_expand_like_4_x(self, monkeypatch):
+        """ConfluenceServer.get_content(..., expand=...) must not raise TypeError."""
+        from atlassian.confluence import ConfluenceServer
+
+        confluence = ConfluenceServer(url="https://test.confluence.com", token="test-token")
+        seen = {}
+
+        def request_capture(**kwargs):
+            seen.update(kwargs)
+            return SimpleNamespace(
+                status_code=200,
+                reason="OK",
+                text='{"id": "123"}',
+                encoding=None,
+                raise_for_status=lambda: None,
+                json=lambda: {"id": "123"},
+            )
+
+        monkeypatch.setattr(confluence._session, "request", request_capture)
+
+        result = confluence.get_content("123", expand="space")
+
+        assert result == {"id": "123"}
+        assert seen["url"].endswith("/rest/api/content/123?expand=space")
+
+    def test_get_content_params_and_extra_kwargs_combined(self, monkeypatch):
+        from atlassian.confluence import ConfluenceServer
+
+        confluence = ConfluenceServer(url="https://test.confluence.com", token="test-token")
+        seen = {}
+
+        def request_capture(**kwargs):
+            seen.update(kwargs)
+            return SimpleNamespace(
+                status_code=200,
+                reason="OK",
+                text='{"id": "123"}',
+                encoding=None,
+                raise_for_status=lambda: None,
+                json=lambda: {"id": "123"},
+            )
+
+        monkeypatch.setattr(confluence._session, "request", request_capture)
+
+        confluence.get_content("123", params={"status": "draft"}, expand="body.storage")
+
+        assert seen["url"].endswith("/rest/api/content/123?status=draft&expand=body.storage")

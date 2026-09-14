@@ -82,7 +82,7 @@ class Projects(BitbucketServerBase):
                 if p.name == project:
                     return p
         else:
-            ValueError(f"Unknown value '{by}' for argument [by], expected 'key' or 'name'")
+            raise ValueError(f"Unknown value '{by}' for argument [by], expected 'key' or 'name'")
 
         raise Exception(f"Unknown project {by} '{project}'")
 

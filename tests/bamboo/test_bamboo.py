@@ -510,3 +510,30 @@ def test_get_users_not_in_group_keeps_paging_params_with_filter(mock_get):
     bamboo = Bamboo("https://bamboo.example.test", token="token")
     bamboo.get_users_not_in_group("bamboo-users", filter_users="ada", start=10, limit=5)
     assert mock_get.call_args.kwargs["params"] == {"limit": 5, "start": 10, "filter": "ada"}
+
+
+@patch.object(Bamboo, "get")
+def test_ordered_plan_results_accepts_extra_query_params(mock_get):
+    """Regression: ordered_plan_results(**kwargs) used to hit plan_results' fixed signature -> TypeError."""
+    bamboo = Bamboo("https://bamboo.example.test", token="token")
+    mock_get.return_value = {"results": {"size": 0, "result": []}}
+
+    assert list(bamboo.ordered_plan_results("PROJ", "PLAN", issueKey="BUG-1")) == []
+
+    call = mock_get.call_args
+    assert call.args[0].endswith("result/PROJ-PLAN")
+    params = call.args[3]
+    assert params["issueKey"] == "BUG-1"
+    assert params["max-results"] == 25
+
+
+@patch.object(Bamboo, "get")
+def test_plan_results_forwards_extra_kwargs_as_query_params(mock_get):
+    bamboo = Bamboo("https://bamboo.example.test", token="token")
+    mock_get.return_value = {"results": {"size": 0, "result": []}}
+
+    assert list(bamboo.plan_results("PROJ", "PLAN", build_state="Successful", issueStatus="all")) == []
+
+    params = mock_get.call_args.args[3]
+    assert params["buildstate"] == "Successful"
+    assert params["issueStatus"] == "all"

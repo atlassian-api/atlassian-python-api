@@ -4,6 +4,7 @@ Test cases for Confluence Server API client.
 """
 
 import io
+import json
 import logging
 
 import pytest
@@ -1789,3 +1790,75 @@ class TestConfluenceServer:
         result = confluence_server.get_reindex_progress()
         mock_get.assert_called_once_with("reindex", **{})
         assert result == {"progress": 50, "status": "running"}
+
+
+class TestUpdateOrCreateEndToEnd:
+    """End-to-end regression for the reported 5.0.3 failure:
+
+    ``update_or_create(parent_id, ...)`` crashed with
+    ``TypeError: AtlassianRestAPI.get() got an unexpected keyword argument
+    'expand'`` when ``get_content`` forwarded ``expand`` into ``get()``.
+    These tests drive the real call chain with only the HTTP session mocked.
+    """
+
+    @staticmethod
+    def _json_response(payload, status_code=200):
+        response = Response()
+        response.status_code = status_code
+        response.reason = "OK"
+        response._content = json.dumps(payload).encode("utf-8")
+        response.headers["Content-Type"] = "application/json"
+        return response
+
+    def _patched_session(self, confluence, responses):
+        """Mock the session, serving queued JSON responses per request."""
+        queue = list(responses)
+
+        def request(method, url=None, **kwargs):
+            return queue.pop(0)
+
+        return patch.object(confluence._session, "request", side_effect=request)
+
+    def test_get_content_accepts_expand_kwarg_without_typeerror(self):
+        confluence = ConfluenceServer(url="https://test.confluence.com", token="token")
+
+        with self._patched_session(confluence, [self._json_response({"id": "123", "space": {"key": "TEAM"}})]):
+            result = confluence.get_content("123", expand="space")
+
+        assert result["space"]["key"] == "TEAM"
+
+    def test_update_or_create_with_parent_id_full_flow(self):
+        """The user flow from the report: update_or_create(parent_id, title, body)."""
+        confluence = ConfluenceServer(url="https://test.confluence.com", token="token")
+        parent_page = {"id": "12615685", "space": {"key": "TEAM"}}
+        search_results = {"results": []}
+        created = {"id": "200", "title": "Report", "_links": {"tinyui": "/x/abc"}}
+
+        responses = [
+            self._json_response(parent_page),  # get_page_space -> get(f"content/{parent_id}", params=...)
+            self._json_response(search_results),  # get_descendant_page_id -> content/search
+            self._json_response(created),  # create_page
+        ]
+
+        with self._patched_session(confluence, responses):
+            result = confluence.update_or_create("12615685", "Report", "<p>Body</p>")
+
+        assert result["id"] == "200"
+
+    def test_update_or_create_with_parent_id_after_append_retry(self):
+        """Second call after the reporter's timestamp-retry still succeeds."""
+        confluence = ConfluenceServer(url="https://test.confluence.com", token="token")
+        parent_page = {"id": "12615685", "space": {"key": "TEAM"}}
+        search_results = {"results": []}
+        created = {"id": "201", "title": "Report 2026-09-11", "_links": {"tinyui": "/x/def"}}
+
+        responses = [
+            self._json_response(parent_page),
+            self._json_response(search_results),
+            self._json_response(created),
+        ]
+
+        with self._patched_session(confluence, responses):
+            result = confluence.update_or_create("12615685", "Report 2026-09-11", "<p>Body</p>")
+
+        assert result["id"] == "201"

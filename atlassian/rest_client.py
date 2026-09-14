@@ -54,6 +54,21 @@ def _curl_quote(value: str) -> str:
     return "'" + value.replace("'", "'\"'\"'") + "'"
 
 
+def _merge_extra_kwargs_into_params(kwargs: Optional[dict], params: Optional[dict]) -> Optional[dict]:
+    """Fold extra keyword arguments into query parameters.
+
+    The HTTP verb helpers have fixed signatures, but many resource wrappers
+    forward ``**kwargs`` straight into them.  Any additional keyword (e.g.
+    ``expand=..., status=...``) is therefore treated as a query parameter,
+    matching the ergonomics users relied on in earlier releases.
+    """
+    if not kwargs:
+        return params
+    merged = dict(params) if params else {}
+    merged.update(kwargs)
+    return merged
+
+
 class _ExplicitTokenAuth(AuthBase):
     """Prevent Requests from replacing an explicit token with ``.netrc`` auth."""
 
@@ -669,6 +684,7 @@ class AtlassianRestAPI(object):
         trailing: Optional[bool] = None,
         absolute: bool = False,
         advanced_mode: bool = False,
+        **kwargs,
     ) -> T_resp_get:
         """
         Get request based on the python-requests module. You can override headers, and also, get not json response
@@ -683,6 +699,8 @@ class AtlassianRestAPI(object):
         :param advanced_mode: bool, OPTIONAL: Return the raw response
         :return:
         """
+        params = _merge_extra_kwargs_into_params(kwargs, params)
+
         response = self.request(
             "GET",
             path=path,
@@ -827,6 +845,7 @@ class AtlassianRestAPI(object):
         trailing: Optional[bool] = None,
         absolute: bool = False,
         advanced_mode: bool = False,
+        **kwargs,
     ) -> Union[Response, dict, None]:
         """
         :param path:
@@ -840,6 +859,8 @@ class AtlassianRestAPI(object):
         :param advanced_mode: bool, OPTIONAL: Return the raw response
         :return: if advanced_mode is not set - returns dictionary. If it is set - returns raw response.
         """
+        params = _merge_extra_kwargs_into_params(kwargs, params)
+
         response = self.request(
             "POST",
             path=path,
@@ -927,6 +948,7 @@ class AtlassianRestAPI(object):
         params: Optional[dict] = None,
         absolute: bool = False,
         advanced_mode: bool = False,
+        **kwargs,
     ) -> Union[Response, dict, None]:
         """
         :param path: Path of request
@@ -939,6 +961,8 @@ class AtlassianRestAPI(object):
         :param advanced_mode: bool, OPTIONAL: Return the raw response
         :return: if advanced_mode is not set - returns dictionary. If it is set - returns raw response.
         """
+        params = _merge_extra_kwargs_into_params(kwargs, params)
+
         response = self.request(
             "PUT",
             path=path,
@@ -969,6 +993,7 @@ class AtlassianRestAPI(object):
         params: Optional[dict] = None,
         absolute: bool = False,
         advanced_mode: bool = False,
+        **kwargs,
     ) -> T_resp:
         """
         :param path: Path of request
@@ -981,6 +1006,8 @@ class AtlassianRestAPI(object):
         :param advanced_mode: bool, OPTIONAL: Return the raw response
         :return: if advanced_mode is not set - returns dictionary. If it is set - returns raw response.
         """
+        params = _merge_extra_kwargs_into_params(kwargs, params)
+
         response = self.request(
             "PATCH",
             path=path,
@@ -1062,6 +1089,7 @@ class AtlassianRestAPI(object):
         trailing: Optional[bool] = None,
         absolute: bool = False,
         advanced_mode: bool = False,
+        **kwargs,
     ) -> T_resp:
         """
         Deletes resources at given paths.
@@ -1077,6 +1105,8 @@ class AtlassianRestAPI(object):
         Some of Atlassian REST resources don't return any content.
         If advanced_mode is set - returns raw response.
         """
+        params = _merge_extra_kwargs_into_params(kwargs, params)
+
         response = self.request(
             "DELETE",
             path=path,
