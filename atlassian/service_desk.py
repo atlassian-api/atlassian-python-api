@@ -790,10 +790,11 @@ class ServiceDesk(AtlassianRestAPI):
         """
         Get queue settings on project
 
+        https://docs.atlassian.com/jira-servicedesk/REST/server/11.3/#servicedeskapi/admin/queues/{projectKey}-getQueueSettingsOnProject
         :param project_key: str
         :return:
         """
-        url = f"rest/servicedeskapi/queues/{project_key}"
+        url = f"rest/servicedeskapi/admin/queues/{project_key}"
 
         return self.get(url, headers=self.experimental_headers)
 
@@ -918,6 +919,147 @@ class ServiceDesk(AtlassianRestAPI):
 
         return self.get(url, headers=self.experimental_headers, params=params)
 
+    def get_queue(self, service_desk_id, queue_id, include_count=False):
+        """
+        Get a single queue inside a service desk.
+
+        The returned queue will include an issue count (issueCount field) if
+        ``include_count`` is True. The calling user must be an agent of the
+        service desk the queue belongs to.
+
+        :param service_desk_id: str
+        :param queue_id: str
+        :param include_count: bool, whether to include the issue count
+        :return: the queue
+        """
+        url = f"rest/servicedeskapi/servicedesk/{service_desk_id}/queue/{queue_id}"
+        params = {}
+        if include_count:
+            params["includeCount"] = "true"
+        return self.get(url, headers=self.experimental_headers, params=params)
+
+    def create_queue(self, service_desk_id, name, jql=None, fields=None):
+        """
+        Create a queue inside a service desk.
+
+        The calling user must be an admin of the service desk.
+
+        :param service_desk_id: str
+        :param name: str, the queue name
+        :param jql: str, the JQL query that defines the issues shown in the queue
+        :param fields: list, the issue fields shown for each issue in the queue
+        :return: the created queue
+        """
+        url = f"rest/servicedeskapi/servicedesk/{service_desk_id}/queue"
+        data = {"name": name}
+        if jql is not None:
+            data["jql"] = jql
+        if fields is not None:
+            data["fields"] = fields
+        return self.post(url, headers=self.experimental_headers, data=data)
+
+    def update_queue(self, service_desk_id, queue_id, name=None, jql=None, fields=None):
+        """
+        Update an existing queue inside a service desk.
+
+        Only the provided fields are updated. The calling user must be an admin
+        of the service desk.
+
+        :param service_desk_id: str
+        :param queue_id: str
+        :param name: str, the new queue name
+        :param jql: str, the new JQL query for the queue
+        :param fields: list, the issue fields shown for each issue in the queue
+        :return: the updated queue
+        """
+        url = f"rest/servicedeskapi/servicedesk/{service_desk_id}/queue/{queue_id}"
+        data = {}
+        if name is not None:
+            data["name"] = name
+        if jql is not None:
+            data["jql"] = jql
+        if fields is not None:
+            data["fields"] = fields
+        return self.post(url, headers=self.experimental_headers, data=data)
+
+    def delete_queue(self, service_desk_id, queue_id):
+        """
+        Delete a queue inside a service desk.
+
+        The calling user must be an admin of the service desk.
+
+        :param service_desk_id: str
+        :param queue_id: str
+        :return:
+        """
+        url = f"rest/servicedeskapi/servicedesk/{service_desk_id}/queue/{queue_id}"
+        return self.delete(url, headers=self.experimental_headers)
+
+    def reorder_queues(self, service_desk_id, queue_order):
+        """
+        Reorder the queues inside a service desk.
+
+        The API requires all queue IDs to be passed in the desired order. The
+        calling user must be an admin of the service project.
+
+        :param service_desk_id: str
+        :param queue_order: list or str, queue IDs in the desired order, e.g. [3, 1, 2]
+        :return:
+        """
+        url = f"rest/servicedeskapi/servicedesk/{service_desk_id}/queue/reorder"
+        data = queue_order if isinstance(queue_order, str) else ",".join(str(q) for q in queue_order)
+        return self.post(url, headers=self.experimental_headers, data=data)
+
+    def set_should_queues_use_count_cache_globally(self, value):
+        """
+        Set whether queues use the count cache, globally.
+
+        The calling user must be an instance admin.
+
+        :param value: bool, whether queues should use the count cache
+        :return:
+        """
+        url = "rest/servicedeskapi/admin/queues/cache-count"
+        return self.put(url, headers=self.experimental_headers, data=bool(value))
+
+    def set_should_queues_include_count_globally(self, value):
+        """
+        Set whether queues include an issue count, globally.
+
+        The calling user must be an instance admin.
+
+        :param value: bool, whether queues should include an issue count
+        :return:
+        """
+        url = "rest/servicedeskapi/admin/queues/include-count"
+        return self.put(url, headers=self.experimental_headers, data=bool(value))
+
+    def set_should_queues_use_count_cache_on_project(self, project_key, value):
+        """
+        Set whether queues use the count cache for a project.
+
+        The calling user must be an admin of the project.
+
+        :param project_key: str
+        :param value: bool, whether queues should use the count cache
+        :return:
+        """
+        url = f"rest/servicedeskapi/admin/queues/{project_key}/cache-count"
+        return self.put(url, headers=self.experimental_headers, data=bool(value))
+
+    def set_should_queues_include_count_on_project(self, project_key, value):
+        """
+        Set whether queues include an issue count for a project.
+
+        The calling user must be an admin of the project.
+
+        :param project_key: str
+        :param value: bool, whether queues should include an issue count
+        :return:
+        """
+        url = f"rest/servicedeskapi/admin/queues/{project_key}/include-count"
+        return self.put(url, headers=self.experimental_headers, data=bool(value))
+
     def get_plugins_info(self):
         """
         Provide plugins info
@@ -1012,6 +1154,188 @@ class ServiceDesk(AtlassianRestAPI):
 
         url = f"rest/servicedeskapi/servicedesk/{service_desk_id}/requesttype"
         return self.post(url, headers=self.experimental_headers, data=data)
+
+    def update_request_type(
+        self,
+        service_desk_id,
+        request_type_id,
+        request_name=None,
+        request_description=None,
+        request_help_text=None,
+    ):
+        """
+        Update an existing request type.
+
+        Only the provided fields are changed. The calling user must be an admin
+        of the service desk project.
+
+        :param service_desk_id: str
+        :param request_type_id: str
+        :param request_name: str, the new request type name
+        :param request_description: str, the new request type description
+        :param request_help_text: str, the new request type help text
+        :return: the updated request type
+        """
+        log.info("Updating request type")
+        data = {"requestTypeId": request_type_id}
+        if request_name is not None:
+            data["name"] = request_name
+        if request_description is not None:
+            data["description"] = request_description
+        if request_help_text is not None:
+            data["helpText"] = request_help_text
+
+        url = f"rest/servicedeskapi/servicedesk/{service_desk_id}/requesttype"
+        return self.put(url, headers=self.experimental_headers, data=data)
+
+    def delete_request_type(self, service_desk_id, request_type_id):
+        """
+        Delete a request type from a service desk.
+
+        The calling user must be an admin of the service desk project.
+
+        :param service_desk_id: str
+        :param request_type_id: str
+        :return:
+        """
+        log.info("Deleting request type")
+        url = f"rest/servicedeskapi/servicedesk/{service_desk_id}/requesttype/{request_type_id}"
+        return self.delete(url, headers=self.experimental_headers)
+
+    def get_request_type_permission(self, service_desk_id, request_type_id):
+        """
+        Get the permissions for a customer request type.
+
+        :param service_desk_id: str
+        :param request_type_id: str
+        :return: the request type permissions
+        """
+        url = f"rest/servicedeskapi/servicedesk/{service_desk_id}/requesttype/{request_type_id}/permission"
+        return self.get(url, headers=self.experimental_headers)
+
+    def upsert_request_type_permission(self, service_desk_id, request_type_id, allowlist):
+        """
+        Upsert the permissions for a customer request type.
+
+        This operation overwrites any existing permissions.
+
+        :param service_desk_id: str
+        :param request_type_id: str
+        :param allowlist: list, entries of {"entityType": "USER" | "GROUP" | "ORGANIZATION",
+            "entityId": str}; e.g. [{"entityType": "GROUP", "entityId": "jira-users"}]
+        :return:
+        """
+        url = f"rest/servicedeskapi/servicedesk/{service_desk_id}/requesttype/{request_type_id}/permission"
+        data = {"allowlist": allowlist}
+        return self.put(url, headers=self.experimental_headers, data=data)
+
+    def get_request_type_groups(self, service_desk_id, start=0, limit=50):
+        """
+        Get the request type groups of a service desk.
+
+        :param service_desk_id: str
+        :param start: int, index of the first request type group to return
+        :param limit: int, maximum number of request type groups to return
+        :return: a page of request type groups
+        """
+        url = f"rest/servicedeskapi/servicedesk/{service_desk_id}/requesttypegroup"
+        params = {}
+        if start is not None:
+            params["start"] = int(start)
+        if limit is not None:
+            params["limit"] = int(limit)
+        return self.get(url, headers=self.experimental_headers, params=params)
+
+    def get_approval_comment_config(self, issue_id_or_key, approval_id):
+        """
+        Get the comment configuration for an approval.
+
+        :param issue_id_or_key: str
+        :param approval_id: str
+        :return: the approval comment configuration
+        """
+        url = f"rest/servicedeskapi/request/{issue_id_or_key}/approval/{approval_id}/config"
+        return self.get(url, headers=self.experimental_headers)
+
+    def get_portals(self, start=0, limit=50):
+        """
+        Get the service desk portals visible to the authenticated user.
+
+        :param start: int, index of the first portal to return
+        :param limit: int, maximum number of portals to return
+        :return: a page of portals
+        """
+        url = "rest/servicedeskapi/portals"
+        params = {}
+        if start is not None:
+            params["start"] = int(start)
+        if limit is not None:
+            params["limit"] = int(limit)
+        return self.get(url, headers=self.experimental_headers, params=params)
+
+    def get_portal(self, portal_id):
+        """
+        Get a portal by ID.
+
+        :param portal_id: str
+        :return: the portal
+        """
+        url = f"rest/servicedeskapi/portals/{portal_id}"
+        return self.get(url, headers=self.experimental_headers)
+
+    def get_portal_by_project(self, project_key):
+        """
+        Get the portal configured for a project.
+
+        :param project_key: str
+        :return: the portal
+        """
+        url = f"rest/servicedeskapi/portals/project/{project_key}"
+        return self.get(url, headers=self.experimental_headers)
+
+    def preview_organization_cleanup(
+        self,
+        delete_detached_organizations=False,
+        delete_organizations_with_inactive_users=False,
+    ):
+        """
+        Preview the organizations that would be removed by an organization cleanup.
+
+        :param delete_detached_organizations: bool, whether detached organizations are in scope
+        :param delete_organizations_with_inactive_users: bool, whether organizations with
+            only inactive users are in scope
+        :return: the organizations that would be removed
+        """
+        url = "rest/servicedeskapi/organization/cleanup"
+        params = {}
+        if delete_detached_organizations:
+            params["deleteDetachedOrganizations"] = "true"
+        if delete_organizations_with_inactive_users:
+            params["deleteOrganizationsWithInactiveUsers"] = "true"
+        return self.get(url, headers=self.experimental_headers, params=params)
+
+    def cleanup_organizations(
+        self,
+        delete_detached_organizations=False,
+        delete_organizations_with_inactive_users=False,
+    ):
+        """
+        Remove service desk organizations that are no longer in use.
+
+        The calling user must be an instance admin.
+
+        :param delete_detached_organizations: bool, whether detached organizations are removed
+        :param delete_organizations_with_inactive_users: bool, whether organizations with
+            only inactive users are removed
+        :return:
+        """
+        url = "rest/servicedeskapi/organization/cleanup"
+        params = {}
+        if delete_detached_organizations:
+            params["deleteDetachedOrganizations"] = "true"
+        if delete_organizations_with_inactive_users:
+            params["deleteOrganizationsWithInactiveUsers"] = "true"
+        return self.delete(url, headers=self.experimental_headers, params=params)
 
     def raise_for_status(self, response):
         """

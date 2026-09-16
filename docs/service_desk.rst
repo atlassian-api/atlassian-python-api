@@ -104,14 +104,33 @@ Request types
 
 .. code-block:: python
 
-    # Get all request types in a serrvice desk project
+    # Get all request types in a service desk project
     sd.get_request_types(service_desk_id)
 
-    # Get single request type in a given serrvice desk project
+    # Get single request type in a given service desk project
     sd.get_request_type(service_desk_id, request_type_id)
 
     # Get field composition of a given request type
     sd.get_request_type_fields(service_desk_id, request_type_id)
+
+    # Create a request type
+    sd.create_request_type(service_desk_id, request_type_id, request_name, request_description, request_help_text)
+
+    # Update a request type. Only the provided fields are changed. The calling
+    # user must be an admin of the service desk project.
+    sd.update_request_type(service_desk_id, request_type_id, request_name=None, request_description=None, request_help_text=None)
+
+    # Delete a request type. The calling user must be an admin of the service desk project.
+    sd.delete_request_type(service_desk_id, request_type_id)
+
+    # Get the request type groups of a service desk
+    sd.get_request_type_groups(service_desk_id, start=0, limit=50)
+
+    # Get or upsert the customer-facing permission allowlist of a request type.
+    # The upsert overwrites existing permissions; entries use
+    # {"entityType": "USER" | "GROUP" | "ORGANIZATION", "entityId": str}.
+    sd.get_request_type_permission(service_desk_id, request_type_id)
+    sd.upsert_request_type_permission(service_desk_id, request_type_id, [{"entityType": "GROUP", "entityId": "jira-users"}])
 
 
 Transitions
@@ -157,6 +176,13 @@ Manage the Organizations
 
     # Delete organization
     sd.delete_organization(organization_id)
+
+    # Preview the organizations that would be removed by an organization cleanup
+    sd.preview_organization_cleanup(delete_detached_organizations=False, delete_organizations_with_inactive_users=False)
+
+    # Remove service desk organizations that are no longer in use.
+    # The calling user must be an instance admin.
+    sd.cleanup_organizations(delete_detached_organizations=False, delete_organizations_with_inactive_users=False)
 
     # Add users to organization
     sd.add_users_to_organization(organization_id, users_list=[], account_list=[])
@@ -218,6 +244,23 @@ Approvals
     # Answer a pending approval
     sd.answer_approval(issue_id_or_key, approval_id, decision)
 
+    # Get the comment configuration of an approval
+    sd.get_approval_comment_config(issue_id_or_key, approval_id)
+
+Portals
+-------
+
+.. code-block:: python
+
+    # Get the portals visible to the authenticated user
+    sd.get_portals(start=0, limit=50)
+
+    # Get a portal by ID
+    sd.get_portal(portal_id)
+
+    # Get the portal configured for a project
+    sd.get_portal_by_project(project_key)
+
 Queues
 ------
 
@@ -236,13 +279,34 @@ Queues
     # Permissions: The calling user must be an agent of the given service desk.
     sd.get_queues(service_desk_id, include_count=False, start=0, limit=50)
 
+    # Get a single queue inside a service desk. Optionally include its issue count.
+    # Permissions: The calling user must be an agent of the service desk.
+    sd.get_queue(service_desk_id, queue_id, include_count=False)
+
     # Returns a page of issues inside a queue for a given queue ID.
     # Only fields that the queue is configured to show are returned.
     # For example, if a queue is configured to show only Description and Due Date,
     # then only those two fields are returned for each issue in the queue.
-    # Permissions: The calling user must have permission to view the requested queue,
-    # i.e. they must be an agent of the service desk that the queue belongs to.
+    # Permissions: The calling user must be an agent of the service desk that the queue belongs to.
     sd.get_issues_in_queue(service_desk_id, queue_id, start=0, limit=50)
+
+    # Create, update, and delete queues. The calling user must be an admin of
+    # the service desk project.
+    sd.create_queue(service_desk_id, name, jql=None, fields=None)
+    sd.update_queue(service_desk_id, queue_id, name=None, jql=None, fields=None)
+    sd.delete_queue(service_desk_id, queue_id)
+
+    # Reorder the queues of a service desk. ``queue_order`` is every queue ID in
+    # the desired order, e.g. [3, 1, 2]. The calling user must be an admin of
+    # the service desk project.
+    sd.reorder_queues(service_desk_id, [3, 1, 2])
+
+    # Global and per-project queue display settings. The global settings require
+    # an instance admin; the per-project settings require a project admin.
+    sd.set_should_queues_use_count_cache_globally(True)
+    sd.set_should_queues_include_count_globally(False)
+    sd.set_should_queues_use_count_cache_on_project(project_key, True)
+    sd.set_should_queues_include_count_on_project(project_key, False)
 
 Add customers to given Service Desk
 -----------------------------------
