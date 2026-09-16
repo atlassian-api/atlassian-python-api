@@ -1416,6 +1416,46 @@ class Jira(AtlassianRestAPI):
     Reference: https://docs.atlassian.com/software/jira/docs/api/REST/8.5.0/#api/2/issue
     """
 
+    def get_user_with_permission_by_project(
+            self,
+            permission: str,
+            username: str=None,
+            issue_key: str=None,
+            project_key: str=None,
+            start: int=0,
+            limit: int=50
+    ):
+        """
+        Returns a list of active users that match the search string. This resource cannot be accessed anonymously
+        and requires the Browse Users global permission. Given an issue or project key this resource will provide a list of users
+        that match the search string and have the browse issue permission for the provided value.
+
+        The list of permissions: https://docs.atlassian.com/DAC/javadoc/jira/reference/com/atlassian/jira/security/Permissions.html
+
+        :param: permission:
+        :param: username:
+        :param: issueKey:
+        :param: projectKey:
+        :param: startAt: OPTIONAL
+        :param: limit: OPTIONAL
+        :return: List of active users who has an permission for the given project_key or issue_key
+        """
+        url = self.resource_url("user/permission/search")
+        params: dict = {}
+        params["permissions"] = permission
+        if username:
+            params["username"] = username
+        if issue_key:
+            params["issueKey"] = issue_key
+        if project_key:
+            params["projectKey"] = project_key
+        if start:
+            params["startAt"] = start
+        if limit:
+            params["maxResults"] = limit
+
+        return self.get(url, params=params)
+
     def issue(self, key: T_id, fields: Union[str, dict] = "*all", expand: Optional[str] = None):
         """Perform the Jira issue operation.
 
