@@ -185,3 +185,28 @@ class TestJiraCloudClients(TestCase):
                 ),
             ],
         )
+
+    def test_core_client_adds_custom_field_to_plan_via_json_patch(self):
+        jira = JiraCloud("https://example.atlassian.net")
+
+        with patch.object(jira, "put", return_value={"id": 42}) as put:
+            result = jira.add_custom_field_to_plan(42, "10071", filter=True)
+
+        self.assertEqual(result, {"id": 42})
+        put.assert_called_once_with(
+            "rest/api/3/plans/plan/42",
+            params=None,
+            data=[{"op": "add", "path": "/customFields", "value": {"customFieldId": 10071, "filter": True}}],
+        )
+
+    def test_core_client_adds_custom_field_to_plan_without_filter_flag(self):
+        jira = JiraCloud("https://example.atlassian.net")
+
+        with patch.object(jira, "put", return_value={"id": 42}) as put:
+            jira.add_custom_field_to_plan(42, 10071)
+
+        put.assert_called_once_with(
+            "rest/api/3/plans/plan/42",
+            params=None,
+            data=[{"op": "add", "path": "/customFields", "value": {"customFieldId": 10071}}],
+        )

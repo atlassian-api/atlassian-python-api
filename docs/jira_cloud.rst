@@ -75,10 +75,35 @@ multiple issue keys or IDs and placement fields supported by Jira:
 Use ``rank_epics`` for ranking epics. These methods are available on Cloud and
 on Jira Software Server/Data Center installations exposing the Agile REST API.
 
+Plans (Advanced Roadmaps)
+-------------------------
+
+The official Plans REST API (released December 2024) is available on
+``JiraCloud``: ``get_plans``, ``create_plan``, ``get_plan``, ``update_plan``,
+``duplicate_plan``, ``archive_plan``, and ``trash_plan``, plus the team
+operations listed in :doc:`jira_cloud_api`. Plans are identified by numeric ID
+and the caller needs the Plans admin permission.
+
+``update_plan`` takes a JSON Patch document, which the RFC notes appends
+``add`` operations rather than honouring array indexes. The
+``add_custom_field_to_plan`` helper wraps the common case:
+
+.. code-block:: python
+
+    plan = core.create_plan(data={
+        "name": "Q3 Delivery Plan",
+        "leadAccountId": "5b10a2844c20165700ede21g",
+        "issueSources": [{"sourceType": "BOARD", "id": "42"}],
+    })
+    core.add_custom_field_to_plan(plan["id"], custom_field_id=10071, filter=True)
+
+Plan *views* are not part of the official API yet; there is no supported
+endpoint to create, list, or delete them.
+
 Generated OpenAPI operations
 ----------------------------
 
-The supplied API descriptions provide 617 Core operations across 421 paths,
+The supplied API descriptions provide 619 Core operations across 423 paths,
 105 Software operations across 78 paths, and 75 Service Management operations
 across 50 paths.  Every operation is implemented as an ordinary snake_case
 Python method, grouped in ``core_methods.py``, ``software_methods.py``, or

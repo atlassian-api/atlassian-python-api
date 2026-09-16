@@ -173,7 +173,7 @@ Jira Core Cloud
 * ``add_share_permission``
 * ``delete_share_permission``
 * ``get_share_permission``
-* ``bulk_pin_unpin_projects_async``
+* ``get_bulk_pin_status``
 * ``remove_group``
 * ``get_group``
 * ``create_group``
@@ -563,7 +563,7 @@ Jira Core Cloud
 * ``get_project_usages_for_workflow``
 * ``get_workflow_scheme_usages_for_workflow``
 * ``read_workflows``
-* ``workflow_capabilities``
+* ``copy_workflow``
 * ``create_workflows``
 * ``validate_create_workflows``
 * ``get_default_editor``

@@ -3027,6 +3027,20 @@ class JiraCloudCoreMethods:
         params = None
         return self.post(url, params=params, data=data, **request_kwargs)
 
+    def get_bulk_pin_status(self, data=None, **request_kwargs):
+        """Get issue panel pin status for projects.
+
+        Args:
+            data: JSON request body.
+            **request_kwargs: Additional REST request options.
+
+        Returns:
+            Decoded Jira REST response.
+        """
+        url = self.resource_url("forge/panel/action/bulk/status", api_root="rest/api", api_version=self.api_version)
+        params = None
+        return self.post(url, params=params, data=data, **request_kwargs)
+
     def remove_group(
         self, groupname=None, group_id=None, swap_group=None, swap_group_id=None, data=None, **request_kwargs
     ):
@@ -8892,6 +8906,7 @@ class JiraCloudCoreMethods:
         fields_by_keys=None,
         fail_fast=None,
         reconcile_issues=None,
+        include_archived_projects=None,
         data=None,
         **request_kwargs,
     ):
@@ -8907,6 +8922,7 @@ class JiraCloudCoreMethods:
             fields_by_keys: API path or query parameter.
             fail_fast: API path or query parameter.
             reconcile_issues: API path or query parameter.
+            include_archived_projects: API path or query parameter.
             data: JSON request body.
             **request_kwargs: Additional REST request options.
 
@@ -8924,6 +8940,7 @@ class JiraCloudCoreMethods:
             "fieldsByKeys": fields_by_keys,
             "failFast": fail_fast,
             "reconcileIssues": reconcile_issues,
+            "includeArchivedProjects": include_archived_projects,
         }
         params = {key: value for key, value in params.items() if value is not None} or None
         return self.get(url, params=params, data=data, **request_kwargs)
@@ -10611,6 +10628,20 @@ class JiraCloudCoreMethods:
         params = {"workflowId": workflow_id, "projectId": project_id, "issueTypeId": issue_type_id}
         params = {key: value for key, value in params.items() if value is not None} or None
         return self.get(url, params=params, data=data, **request_kwargs)
+
+    def copy_workflow(self, data=None, **request_kwargs):
+        """Copy workflow.
+
+        Args:
+            data: JSON request body.
+            **request_kwargs: Additional REST request options.
+
+        Returns:
+            Decoded Jira REST response.
+        """
+        url = self.resource_url("workflows/copy", api_root="rest/api", api_version=self.api_version)
+        params = None
+        return self.post(url, params=params, data=data, **request_kwargs)
 
     def create_workflows(self, data=None, **request_kwargs):
         """Bulk create workflows.

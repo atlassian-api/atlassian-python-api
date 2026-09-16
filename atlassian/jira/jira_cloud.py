@@ -149,6 +149,27 @@ class JiraCloud(JiraCloudCoreMethods, AtlassianRestAPI):
             data.setdefault("project", project_key)
         return self.post(self.endpoint("version", api_version=3), data=data)
 
+    def add_custom_field_to_plan(self, plan_id, custom_field_id, filter: Optional[bool] = None):
+        """Add a custom field to a Jira Cloud plan (Advanced Roadmaps).
+
+        Uses the official Plans API's JSON Patch "Update plan" operation with an
+        ``add`` operation on ``/customFields``. The field is appended; existing
+        plan fields are preserved.
+
+        :param plan_id: Numeric Jira plan ID.
+        :param custom_field_id: Numeric custom field ID (e.g. the ``id`` from
+            ``get_all_fields`` minus the ``customfield_`` prefix).
+        :param filter: When ``True``, Jira additionally allows filtering plan
+            issues by values of this custom field. Defaults to not sending the
+            flag (Jira-side default is ``False``).
+        :return: Jira response for the updated plan.
+        """
+        value = {"customFieldId": int(custom_field_id)}
+        if filter is not None:
+            value["filter"] = filter
+        patch = [{"op": "add", "path": "/customFields", "value": value}]
+        return self.update_plan(plan_id, data=patch)
+
 
 class JiraSoftware(JiraSoftwareMethods, AtlassianRestAPI):
     """Jira Software Cloud REST APIs.

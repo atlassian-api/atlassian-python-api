@@ -33,7 +33,7 @@ class RecordingClient:
 
 class TestJiraCloudMethodCoverage(TestCase):
     METHOD_GROUPS = (
-        (JiraCloudCoreMethods, 617, "rest/api/3/"),
+        (JiraCloudCoreMethods, 619, "rest/api/3/"),
         (JiraSoftwareMethods, 105, "rest/"),
         (JiraServiceManagementMethods, 75, "rest/servicedeskapi/"),
     )
