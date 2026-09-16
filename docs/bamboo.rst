@@ -568,3 +568,617 @@ Plugins information
 
     # Update license for plugin (app)
     update_plugin_license(plugin_key, raw_license)
+
+Full spec coverage (missing operations from the bundled Bamboo REST spec)
+-------------------------------------------------------------------------
+
+Admin (root API)
+----------------
+
+.. code-block:: python
+
+    # Invalidate active sessions of the given user
+    invalidate_user_sessions(name, user)
+
+    # Retrieves ephemeral agents configuration.
+    get_configuration()
+
+    # Retrieves global build and deployment expiry configuration for this Bamboo instance.
+    get_configuration_1()
+
+    # Retrieves build and deployment expiry status.
+    get_status()
+
+    # Gets the collection of jobs currently scheduled to run.
+    get_jobs()
+
+    # Read system information.
+    get_system_info()
+
+    # Test connection to ephemeral agents provider.
+    test_connection(data)
+
+    # Trigger background job execution.
+    trigger_job(data)
+
+    # Renames specified user.
+    rename_user_post(data, external_rename=...)
+
+    # Modify ephemeral agents configuration.
+    save_configuration(data)
+
+    # Update global build and deployment expiry configuration for this Bamboo instance. Partial configuration is not allowed (it will fail validation).
+    set_configuration(data)
+
+    # Executes build and deployment expiry process. Will only start each process if it's not currently running.
+    run()
+
+    # Renames specified user.
+    rename_user_put(new_user_name, data, external_rename=...)
+
+
+Admin (users)
+-------------
+
+.. code-block:: python
+
+    # Delete custom plan expiry settings.
+    remove_plan_custom_expiry_settings(plan_key)
+
+    # Remove a user from multiple groups.  The authenticated user must have restricted administrative permission or higher to use this resource.
+    unassign_groups(name, data)
+
+    # Retrieves a list of groups to which the user belongs. The authenticated user must have restricted administrative permission or higher to use this resource.
+    find_assigned_groups(name, filter=..., limit=..., start=...)
+
+    # Retrieves a list of unlinked aliases to which the user does not belong. The authenticated user must have restricted administrative permission or higher to use this resource.
+    find_unassigned_user_repository_aliases(name, filter=..., limit=..., start=...)
+
+    # Retrieves a list of groups to which the user does not belong. The authenticated user must have restricted administrative permission or higher to use this resource.
+    find_unassigned_groups(name, filter=..., limit=..., start=...)
+
+    # Add a user to multiple groups. The authenticated user must have restricted administrative permission or higher to use this resource.
+    assign_groups(name, data)
+
+
+Agents & assignments
+--------------------
+
+.. code-block:: python
+
+    # Remove build agent.
+    delete_agent(agent_id)
+
+    # Remove agent's assignment.
+    remove_assignment(executor_type=..., executor_id=..., entity_id=..., assignment_type=...)
+
+    # Remove agent/image from list of dedicated executors for given job.
+    remove_agent_assignment_from_job(job_key, executor_key)
+
+    # Search for assignments in specified entity's agents
+    search_entity_for_agent(max_result=..., executor_type=..., search_term=..., executor_id=..., entity_type=..., start_index=..., assignment_type=...)
+
+    # Get a list of agents/images assigned to given job.
+    find_assigned_agents_by_job(job_key)
+
+    # Get a list of agents/images/templates which can be dedicated for given job.
+    find_possible_agents_for_job(job_key, max_result=..., search_term=..., start_index=...)
+
+    # Dedicate agent, elastic image or ephemeral template.
+    add_agent_assignment(executor_type=..., executor_id=..., entity_id=..., assignment_type=...)
+
+    # Add agent assignment for job. agentAssignmentKey is a map with one key-value: name - agentAssignmentKey. 
+    add_agent_assignment_for_job(job_key, data)
+
+    # Update existing agent capability. It's allowed to skip capability key at request payload.
+    update_agent_capability(agent_id, capability_key, data)
+
+
+Avatars
+-------
+
+.. code-block:: python
+
+    # Deletes the current avatar for the currently authenticated user.
+    delete_avatar()
+
+    # Returns either the avatar file for a specified user or the gravatar URL. The priority order: custom user avatar as a file, gravatar URL, default avatar as a file. The endpoint supports Last-Modified/If-Modified-Since headers and sets cache policy with expiration equal by default to 90 seconds.
+    retrieve_avatar(user_name, s=...)
+
+    # Updated the avatar for the currently authenticated user.
+    upload_avatar(data)
+
+
+Deployments
+-----------
+
+.. code-block:: python
+
+    # Remove agent/image from list of dedicated executors for given environment.
+    remove_agent_assignment_from_environment(environment_id, executor_key)
+
+    # Removes a requirement for an environment.
+    remove_requirement_from_environment(environment_id, requirement_id)
+
+    # Delete the environment variable.
+    delete_environment_variable(environment_id, variable_name)
+
+    # Remove approval to create plans in given deployment project by given repository.
+    delete_repository_mapping(deployment_project_id, repository_id)
+
+    # Get all deployment projects. This method fetch all deployment projects visible to user. It's not optimized for instances with large count of deployment projects and environments, use paged versions instead.
+    get_all_deployment_projects()
+
+    # Get deployment project environments with deployment status. It's not optimized for instances with large count of deployment projects and environments, use paged versions instead.
+    get_deployment_project(project_id)
+
+    # Get paginated deployment projects with environments list.
+    get_deployment_projects(filter=..., limit=..., start=...)
+
+    # Get deployment project environments.
+    get_paginate_deployment_project(project_id, filter=..., limit=..., start=...)
+
+    # Get a list of agents/images assigned to given environment.
+    find_assigned_agents_by_environment(environment_id)
+
+    # Get Docker configuration for given environment.
+    get_docker_pipelines_configuration(environment_id)
+
+    # Get a list of agents/images/templates which can be dedicated for given environment.
+    find_possible_agents_for_environment(environment_id, max_result=..., search_term=..., start_index=...)
+
+    # Gets all the requirements of an environment.
+    get_requirements_for_environment(environment_id)
+
+    # Gets the details of a requirement for a given environment.
+    get_requirement_for_environment(environment_id, requirement_id)
+
+    # Gets a detailed summary of the agents that are capable of running an environment, based of its requirements.
+    get_detailed_agent_matches_for_environment(environment_id)
+
+    # Gets a summary of the agents that are capable of running an environment, based of its requirements.
+    get_agent_matches_for_environment(environment_id)
+
+    # Get the environment variable by its name.
+    get_environment_variable(environment_id, variable_name)
+
+    # Get a list of environment variables.
+    get_all_environment_variables(environment_id)
+
+    # Get all deployment projects associated with Jira issue key
+    get_jira_issue_status_for_project(issue_key)
+
+    # Get deployment project environments and versions associated with Jira issue
+    get_jira_issue_status_for_project_1(issue_key, deployment_project_id)
+
+    # Get possible deployment results.
+    get_possible_results(plan_key, deployment_project_id=...)
+
+    # Get a preview of the deployment version.
+    get_version_preview_1(previous_version_id=..., deployment_project_id=..., plan_key=..., result_key=..., build_number=...)
+
+    # Get a preview of the deployment version.
+    get_version_preview(previous_version_id=..., version_id=..., deployment_project_id=..., version_name=...)
+
+    # Get version name.
+    get_version_name(deployment_project_id, result_key=...)
+
+    # List of repositories which granted to create/edit environment in given deployment project by Repository stored Bamboo Specs.
+    list_assigned_repositories(deployment_project_id)
+
+    # Search for linked repositories which can be granted to create/modify environment by Repository stored Bamboo Specs in given deployment project.
+    search_available_repositories(deployment_project_id, max_result=..., search_term=..., start_index=...)
+
+    # Export a deployment project to Bamboo Specs.
+    export_deployment_spec(deployment_project_id, package=..., format=...)
+
+    # Get list of deployment versions.
+    get_deployment_project_versions(deployment_project_id, branch_key=...)
+
+    # Get deployment version name preview.
+    get_deployment_naming_preview(deployment_project_id, next_version_name, incrementable_variables=..., increment_numbers=...)
+
+    # Get next deployment version name.
+    get_next_deployment_versions(deployment_project_id, result_key=...)
+
+    # Extract variables value from version name.
+    get_variables_from_name(deployment_project_id, next_version_name)
+
+    # Get variables associated with deployment project.
+    get_deployment_project_variables(deployment_project_id)
+
+    # Get result of version deployment to environment.
+    get_deployment_result(deployment_result_id, include_logs=...)
+
+    # Get associated build result of deployment version.
+    get_version_and_plan_result(deployment_version_id)
+
+    # Get the all users' latest statuses of deployment version.
+    get_latest_version_statuses(deployment_version_id)
+
+    # Add agent assignment for environment. agentAssignmentKey is a map with one key-value: name - agentAssignmentKey. 
+    add_agent_assignment_for_environment(environment_id, data)
+
+    # Change environment position within deployment project.
+    move_environment(environment_id, position, relative_environment_id)
+
+    # Adds a requirement for a given environment.
+    add_requirement_for_environment(environment_id, data)
+
+    # Create the environment variable.
+    create_environment_variable(environment_id, data)
+
+    # Grant permission to create/edit plan in given deployment project by Bamboo Specs from given repository.
+    add_assigned_repository(deployment_project_id, data)
+
+    # Update deployment version status.
+    update_version_status(deployment_version_id, new_status)
+
+    # Save Docker configuration for given environment.
+    save_docker_pipelines_configuration(environment_id, data)
+
+    # Updates the environment prerequisites.
+    update_environment_prerequisites(environment_id, data)
+
+    # Updates a requirement for a given environment.
+    update_requirement_for_environment(environment_id, requirement_id, data)
+
+    # Update the environment variable.
+    update_environment_variable(environment_id, variable_name, data)
+
+
+Ephemeral agents
+----------------
+
+.. code-block:: python
+
+    # Delete ephemeral template configuration.
+    delete_template_configuration(configuration_id)
+
+    # Remove ephemeral agent template capability.
+    delete_capability(configuration_id, name)
+
+    # Gets either pod or container related logs.
+    get_ephemeral_agent_pod_logs(pod, container_name=..., limit=..., after_timestamp=...)
+
+    # Gets either pod or container all logs in the raw, plain text form.
+    get_ephemeral_agent_pod_raw_logs(pod, container_name=...)
+
+    # Fetch page of ephemeral templates.
+    get_template_configurations_page(filter=..., limit=..., start=...)
+
+    # Gets ephemeral template configuration details.
+    get_template_configuration(configuration_id)
+
+    # Fetch page of ephemeral agent template capabilities.
+    get_capabilities(configuration_id, limit=..., start=...)
+
+    # Create ephemeral template configuration.
+    create_template_configuration(data)
+
+    # Add ephemeral agent template capability.
+    add_capability(configuration_id, data)
+
+    # Update ephemeral agent template.
+    update_template_configuration(configuration_id, data)
+
+    # Update ephemeral agent template capability.
+    update_capability(configuration_id, data)
+
+
+Global permissions
+------------------
+
+.. code-block:: python
+
+    # Revokes global permissions from a given group.
+    remove_permissions_for_group_2(name, data, ignore=...)
+
+    # Revokes global permissions from a given role.
+    remove_permissions_for_role_2(name, data, ignore=...)
+
+    # Revokes global permissions from a given user.
+    remove_permissions_for_user_2(name, data, ignore=...)
+
+    # Returns list of groups which weren't granted explicitly any permissions. Resource is paged, returns single page of resources.
+    get_available_groups_2(limit=..., start=..., name=..., ignore=...)
+
+    # Returns list of users which weren't granted explicitly any permissions. Resource is paged, returns single page of resources.
+    get_available_users_2(limit=..., start=..., name=..., ignore=...)
+
+    # Retrieve a list of groups with their global permissions. The list can be filtered by some attributes. This resource is paged returns a single page of results.
+    list_group_permissions_2(limit=..., start=..., name=..., ignore=...)
+
+    # Retrieve a list of roles with their global permissions. This resource is paged returns a single page of results, although only 2 roles are supported: LOGGED IN users, ANONYMOUS users
+    list_role_permissions_2(limit=..., start=..., ignore=...)
+
+    # Grants global permissions to a given group.
+    add_permissions_for_group_2(name, data, ignore=...)
+
+    # Grants global permissions to a given role.
+    add_permissions_for_role_2(name, data, ignore=...)
+
+    # Grants global permissions to a given user.
+    add_permissions_for_user_2(name, data, ignore=...)
+
+
+Plans
+-----
+
+.. code-block:: python
+
+    # Remove plan from favorites.
+    unmark_plan_favourite(project_key, build_key)
+
+    # Remove label from plan.
+    remove_plan_label(project_key, build_key, label_name)
+
+    # Fetch plan's shared artifact definitions.
+    get_plan_artifact_definition(project_key, build_key, max_result=..., start_index=...)
+
+    # Fetch linked Jira issue details.
+    get_issue_details(project_key, build_key, issue_key)
+
+    # List of labels for plan.
+    get_plan_labels(project_key, build_key)
+
+    # Enable specs scanning for all branches.
+    enable_specs_for_branches(project_key, build_key)
+
+    # Add plan to favourite.
+    mark_plan_favourite(project_key, build_key)
+
+    # Add new label to plan.
+    add_plan_label(project_key, build_key, data)
+
+    # Quarantine plan's test.
+    quarantine_test(project_key, build_key, test_id)
+
+    # Unleash plan's test from quarantine.
+    unleash_test(project_key, build_key, test_id)
+
+
+Projects & repositories
+-----------------------
+
+.. code-block:: python
+
+    # Deletes shared project credentials specified by id.
+    delete_project_shared_credentials(project_key, shared_credential_id)
+
+    # Delete the project variable.
+    delete_project_variable(project_key, variable_name)
+
+    # Retrieves paginated project repositories specified by the project key.
+    get_paginated_project_repositories(project_key, filter=..., limit=..., start=...)
+
+    # Search for linked repositories which can be granted to create plans by Repository stored Bamboo Specs in given project
+    search_available_repositories_1(project_key, search_term=...)
+
+    # Retrieves paginated shared credentials for the project specified by the project key.
+    get_paginated_project_shared_credentials(project_key, filter=..., limit=..., start=...)
+
+    # Export all of the plans for a project to Bamboo specs.
+    export_project_specs(project_key, package=..., format=...)
+
+    # Retrieve the project variable by given name.
+    get_project_variable(project_key, variable_name)
+
+    # Retrieve the list of all variables for a project.
+    get_project_variables(project_key)
+
+    # Create project.
+    create_project(data)
+
+    # Create or update project variable.
+    create_or_update_variable(project_key, data)
+
+    # Enables access (i.e. allowing usage) to all project's repositories by the Bamboo Specs code stored in this repository.
+    enable_all_repositories_access(project_key, repository_id, data)
+
+
+Repositories
+------------
+
+.. code-block:: python
+
+    # Revoke access of RSS code stored in repository defined by repositoryId from repository defined by targetRepositoryId. Use this method when need to prevent usage of target repository by RSS code stored in repository referenced by repositoryId.
+    revoke_permission_to_use_repository_by_rss_repo(target_repository_id, repository_id)
+
+    # Search for divergent branches names (i.e. vcs branches that have RSS execution results).
+    search_specs_branches(repository_id, search_term=...)
+
+    # Fetch list of RSS repositories which can use given repository by RSS code.
+    get_rss_repositories_allowed_to_access_repository(repository_id)
+
+    # Search for existing linked repositories which can be granted to use given repository by RSS.
+    search_available_repositories_2(repository_id, search_term=...)
+
+    # Resource providing status of RSS processing for a given repository and optional branch.
+    get_specs_detection_status(repository_id, max_result=..., branch=...)
+
+    # Search for usages of given repository.
+    find_usage(repository_id, max_plans=..., max_environments=...)
+
+    # Grant repository with RSS code to use target repository in build plans and deployments. If permission is not granted RSS import will fail when code tries to use target repository.
+    grant_rss_repository_access(repository_id, data)
+
+    # Resource for triggering Repository-stored Bamboo Specs in a 'forced' way. Successful requests to this resource will trigger Bamboo Specs execution even if standard processing would have been skipped (e.g. no new commits to process).
+    trigger_specs_scanning(repository_id, branch=...)
+
+    # Webhook resource for triggering Repository-stored Bamboo Specs. Either repository ID or name must be provided via query parameters to identify the linked repository in which Bamboo Specs are defined.
+    trigger_specs_scanning_1(name=..., repository_id=..., id=..., repository_name=...)
+
+    # Enables access (i.e. allowing modifications) for all Bamboo projects by the Bamboo Specs code stored in this repository. Changes in Bamboo Specs detected will trigger execution of Specs and thus an update of corresponding entities (such as build plans or deployments).
+    enable_all_projects_access(repository_id, data)
+
+    # Enables access (i.e. allowing usage in plans or deployment projects) for all Bamboo linked repositories by the Bamboo Specs code stored in this repository.
+    enable_all_repositories_access_1(repository_id, data)
+
+    # Enables or disables detection of Bamboo Specs stored in the repository. If enabled, code changes detected in Bamboo Specs in new commits will trigger execution of Bamboo Specs and thus an update of corresponding entities (such as build plans, deployments or permissions).
+    enable_ci(repository_id, data)
+
+    # Enables build and deployment project creation by the Bamboo Specs code stored in this repository.
+    enable_project_creation(repository_id, data)
+
+    # Tests connection to a repository if the repository type supports connection testing. Request payload should contain repository configuration.
+    test_connection_1(data)
+
+
+Build results
+-------------
+
+.. code-block:: python
+
+    # Removes a comment from a build result.
+    remove_build_comment(project_key, build_key, build_number, comment_id)
+
+    # Provide list of build results for specified plan's branch. Plan might be top level plan (projectKey-planKey) or job plan (projectKey-planKey-jobKey).
+    get_branch_history(project_key, build_key, branch_name, include_all_states=..., continuable=..., issue_key=..., max_results=..., start_index=..., label=..., buildstate=..., favourite=..., expand=..., life_cycle_state=...)
+
+
+Web sudo
+--------
+
+.. code-block:: python
+
+    # Remove web sudo from session.
+    remove_web_sudo_from_session()
+
+    # Get the web sudo expiry from session.
+    get_expiry()
+
+    # Refresh the web sudo expiry for the current session.
+    refresh_web_sudo_session()
+
+
+General
+-------
+
+.. code-block:: python
+
+    # Provides list of available REST resources in Bamboo
+    get_all_services()
+
+
+Build numbers & clone
+---------------------
+
+.. code-block:: python
+
+    # Retrieve the next build number for a given plan or plan branch.
+    get_next_build_number(project_key, build_key)
+
+    # Bump the next build number for a given plan or plan branch to the specified value.
+    bump_build_number(project_key, build_key, data)
+
+    # Clone an existing Plan into a new one, possibly into different project.
+    get_clone(project_key, build_key, to_project_key, to_build_key)
+
+
+Server capabilities
+-------------------
+
+.. code-block:: python
+
+    # Provides a list of capabilities for a select list in the UI.  Filterable and paginable.
+    get_all_capabilities_on_server(max_result=..., search_term=..., last_group=..., start_index=...)
+
+
+Plan summary charts
+-------------------
+
+.. code-block:: python
+
+    # Get plan summary.
+    get_plan_summary(build_keys=...)
+
+
+Plan dependencies
+-----------------
+
+.. code-block:: python
+
+    # Search for available plan child dependencies
+    search_for_available_plan_child_dependencies(project_key, build_key, search_term, max_result=..., start_index=...)
+
+    # Search for available plan parent dependencies
+    search_for_available_plan_parent_dependencies(project_key, build_key, search_term, max_result=..., start_index=...)
+
+
+Job configuration
+-----------------
+
+.. code-block:: python
+
+    # Retrieves Docker configuration for given job.
+    get_docker_pipeline_configuration(job_key)
+
+    # Updates Docker configuration for given job.
+    set_docker_pipeline_configuration(job_key, data)
+
+
+Global search
+-------------
+
+.. code-block:: python
+
+    # Performs a starts with search against projects, plans, plan branches, deployment projects
+    search(search_term=..., search_entity=...)
+
+    # A starts-with search of authors based on their author name.
+    search_authors(search_term, max_result=..., unlinked_only=..., start_index=...)
+
+    # Performs a contains search against deployment project name.
+    search_deployments(max_result=..., search_term=..., start_index=..., permission=...)
+
+    # Performs a "starts with" search against full job name and full job key.
+    search_jobs(plan_key, max_result=..., search_term=..., start_index=...)
+
+    # Performs a contains search against project name.
+    search_projects(max_result=..., search_term=..., start_index=..., permission=...)
+
+    # Performs a "starts with" search against full stage name.
+    search_stages(plan_key, max_result=..., search_term=..., start_index=..., stage_id=...)
+
+    # A starts-with search of users based on their username, full-name and if allowed email address.
+    search_users(search_term, max_result=..., start_index=...)
+
+    # Performs a contains search against a version name.
+    search_versions(deployment_project_id, max_result=..., branch_key=..., search_term=..., start_index=..., chronological_order=...)
+
+
+Server status
+-------------
+
+.. code-block:: python
+
+    # Returns the current status of the Bamboo node. This endpoint enables a basic status check on the status of a Bamboo node.
+    get_status_2()
+
+
+Utility
+-------
+
+.. code-block:: python
+
+    # Encrypts a given text based on the instance specific cipher. Encrypted data can be used i.a. in Repository-stored Specs. Feature can be enabled or disabled in Bamboo security configuration. Number of allowed requests per user is limited and can be modified in Bamboo security configuration.
+    encrypt(data)
+
+
+Elastic configuration
+---------------------
+
+.. code-block:: python
+
+    # Bulk update of all images AMI id.
+    update_all_image_ids(image_id, new_image_id)
+
+
+Quick filters
+-------------
+
+.. code-block:: python
+
+    # Deactivates a quick filter for currently logged in user.
+    deactivate_filter(id)

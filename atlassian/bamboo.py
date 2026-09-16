@@ -1380,23 +1380,23 @@ class Bamboo(AtlassianRestAPI):
 
     def get_plan_variables(self, plan_key):
         """Return variables configured for a plan."""
-        return self.get(self.resource_url(f"plan/{plan_key}/variable"))
+        return self.get(self.resource_url(f"plan/{plan_key}/variables"))
 
     def get_plan_variable(self, plan_key, variable_name):
         """Return one plan variable by name."""
-        return self.get(self.resource_url(f"plan/{plan_key}/variable/{variable_name}"))
+        return self.get(self.resource_url(f"plan/{plan_key}/variables/{variable_name}"))
 
     def create_plan_variable(self, plan_key, data):
         """Create a plan variable from Bamboo's variable request body."""
-        return self.post(self.resource_url(f"plan/{plan_key}/variable"), data=data)
+        return self.post(self.resource_url(f"plan/{plan_key}/variables"), data=data)
 
     def update_plan_variable(self, plan_key, variable_name, data):
         """Update a plan variable."""
-        return self.put(self.resource_url(f"plan/{plan_key}/variable/{variable_name}"), data=data)
+        return self.put(self.resource_url(f"plan/{plan_key}/variables/{variable_name}"), data=data)
 
     def delete_plan_variable(self, plan_key, variable_name):
         """Delete a plan variable."""
-        return self.delete(self.resource_url(f"plan/{plan_key}/variable/{variable_name}"))
+        return self.delete(self.resource_url(f"plan/{plan_key}/variables/{variable_name}"))
 
     def activity(self, busy=None):
         """Return active online agents and their current build activity.
@@ -1580,7 +1580,7 @@ class Bamboo(AtlassianRestAPI):
         :param data: dict - deployment project representation
         :return: created deployment project
         """
-        return self.post(self.resource_url("deploy/project"), data=data)
+        return self.put(self.resource_url("deploy/project"), data=data)
 
     def update_deployment_project(self, project_id, data):
         """
@@ -1589,7 +1589,7 @@ class Bamboo(AtlassianRestAPI):
         :param data: dict - deployment project representation
         :return:
         """
-        return self.put(self.resource_url(f"deploy/project/{project_id}"), data=data)
+        return self.post(self.resource_url(f"deploy/project/{project_id}"), data=data)
 
     def create_deployment_environment(self, project_id, data):
         """
@@ -2499,3 +2499,1880 @@ class Bamboo(AtlassianRestAPI):
         url = f"/plugins/1.0/{plugin_key}/license"
         data = {"rawLicense": raw_license}
         return self.put(url, data=data, headers=app_headers)
+
+
+    """Admin (root API)"""
+
+    def invalidate_user_sessions(self, name, user):
+        """Invalidate active sessions of the given user
+        :param name: name path parameter
+        :param user: user path parameter
+        :return:
+        """
+        return self.delete(self._admin_url(f"session/{name}"))
+
+    def get_configuration(self):
+        """Retrieves ephemeral agents configuration.
+        :return:
+        """
+        return self.get(self._admin_url("ephemeral/config"))
+
+    def get_configuration_1(self):
+        """Retrieves global build and deployment expiry configuration for this Bamboo instance.
+        :return:
+        """
+        return self.get(self._admin_url("expiry/configuration"))
+
+    def get_status(self):
+        """Retrieves build and deployment expiry status.
+        :return:
+        """
+        return self.get(self._admin_url("expiry/status"))
+
+    def get_jobs(self):
+        """Gets the collection of jobs currently scheduled to run.
+        :return:
+        """
+        return self.get(self._admin_url("scheduler/jobs"))
+
+    def get_system_info(self):
+        """Read system information.
+        :return:
+        """
+        return self.get(self._admin_url("systemInfo"))
+
+    def test_connection(self, data):
+        """Test connection to ephemeral agents provider.
+        :param data: request body (dict or list)
+        :return:
+        """
+        return self.post(self._admin_url("ephemeral/config/test-connection"), data=data)
+
+    def trigger_job(self, data):
+        """Trigger background job execution.
+        :param data: request body (dict or list)
+        :return:
+        """
+        return self.post(self._admin_url("scheduler/jobs/trigger"), data=data)
+
+    def rename_user_post(self, data, external_rename=None):
+        """Renames specified user.
+        :param external_rename: externalRename query parameter
+        :param data: request body (dict or list)
+        :return:
+        """
+        params = {}
+        if external_rename is not None:
+            params["externalRename"] = external_rename
+        return self.post(self._admin_url("user"), params=params, data=data)
+
+    def save_configuration(self, data):
+        """Modify ephemeral agents configuration.
+        :param data: request body (dict or list)
+        :return:
+        """
+        return self.put(self._admin_url("ephemeral/config"), data=data)
+
+    def set_configuration(self, data):
+        """Update global build and deployment expiry configuration for this Bamboo instance. Partial configuration is not allowed (it will fail validation).
+        :param data: request body (dict or list)
+        :return:
+        """
+        return self.put(self._admin_url("expiry/configuration"), data=data)
+
+    def run(self):
+        """Executes build and deployment expiry process. Will only start each process if it's not currently running.
+        :return:
+        """
+        return self.put(self._admin_url("expiry/run"))
+
+    def rename_user_put(self, new_user_name, data, external_rename=None):
+        """Renames specified user.
+        :param new_user_name: newUserName path parameter
+        :param external_rename: externalRename query parameter
+        :param data: request body (dict or list)
+        :return:
+        """
+        params = {}
+        if external_rename is not None:
+            params["externalRename"] = external_rename
+        return self.put(self._admin_url(f"user/{new_user_name}"), params=params, data=data)
+
+
+
+    """Admin (users)"""
+
+    def remove_plan_custom_expiry_settings(self, plan_key):
+        """Delete custom plan expiry settings.
+        :param plan_key: planKey path parameter
+        :return:
+        """
+        return self.delete(self.resource_url(f"admin/expiry/custom/plan/{plan_key}"))
+
+    def unassign_groups(self, name, data):
+        """Remove a user from multiple groups.  The authenticated user must have restricted administrative permission or higher to use this resource.
+        :param name: name path parameter
+        :param data: request body (dict or list)
+        :return:
+        """
+        return self.delete(self.resource_url(f"admin/users/{name}/groups"), data=data)
+
+    def find_assigned_groups(self, name, filter=None, limit=None, start=None):
+        """Retrieves a list of groups to which the user belongs. The authenticated user must have restricted administrative permission or higher to use this resource.
+        :param name: name path parameter
+        :param filter: filter query parameter
+        :param limit: limit query parameter
+        :param start: start query parameter
+        :return:
+        """
+        params = {}
+        if filter is not None:
+            params["filter"] = filter
+        if limit is not None:
+            params["limit"] = limit
+        if start is not None:
+            params["start"] = start
+        return self.get(self.resource_url(f"admin/users/{name}/assigned-groups"), params=params)
+
+    def find_unassigned_user_repository_aliases(self, name, filter=None, limit=None, start=None):
+        """Retrieves a list of unlinked aliases to which the user does not belong. The authenticated user must have restricted administrative permission or higher to use this resource.
+        :param name: name path parameter
+        :param filter: filter query parameter
+        :param limit: limit query parameter
+        :param start: start query parameter
+        :return:
+        """
+        params = {}
+        if filter is not None:
+            params["filter"] = filter
+        if limit is not None:
+            params["limit"] = limit
+        if start is not None:
+            params["start"] = start
+        return self.get(self.resource_url(f"admin/users/{name}/unassigned-aliases"), params=params)
+
+    def find_unassigned_groups(self, name, filter=None, limit=None, start=None):
+        """Retrieves a list of groups to which the user does not belong. The authenticated user must have restricted administrative permission or higher to use this resource.
+        :param name: name path parameter
+        :param filter: filter query parameter
+        :param limit: limit query parameter
+        :param start: start query parameter
+        :return:
+        """
+        params = {}
+        if filter is not None:
+            params["filter"] = filter
+        if limit is not None:
+            params["limit"] = limit
+        if start is not None:
+            params["start"] = start
+        return self.get(self.resource_url(f"admin/users/{name}/unassigned-groups"), params=params)
+
+    def assign_groups(self, name, data):
+        """Add a user to multiple groups. The authenticated user must have restricted administrative permission or higher to use this resource.
+        :param name: name path parameter
+        :param data: request body (dict or list)
+        :return:
+        """
+        return self.post(self.resource_url(f"admin/users/{name}/groups"), data=data)
+
+
+
+    """Agents & assignments"""
+
+    def delete_agent(self, agent_id):
+        """Remove build agent.
+        :param agent_id: agentId path parameter
+        :return:
+        """
+        return self.delete(self.resource_url(f"agent/{agent_id}"))
+
+    def remove_assignment(self, executor_type=None, executor_id=None, entity_id=None, assignment_type=None):
+        """Remove agent's assignment.
+        :param executor_type: executorType query parameter
+        :param executor_id: executorId query parameter
+        :param entity_id: entityId query parameter
+        :param assignment_type: assignmentType query parameter
+        :return:
+        """
+        params = {}
+        if executor_type is not None:
+            params["executorType"] = executor_type
+        if executor_id is not None:
+            params["executorId"] = executor_id
+        if entity_id is not None:
+            params["entityId"] = entity_id
+        if assignment_type is not None:
+            params["assignmentType"] = assignment_type
+        return self.delete(self.resource_url("agent/assignment"), params=params)
+
+    def remove_agent_assignment_from_job(self, job_key, executor_key):
+        """Remove agent/image from list of dedicated executors for given job.
+        :param job_key: jobKey path parameter
+        :param executor_key: executorKey path parameter
+        :return:
+        """
+        return self.delete(self.resource_url(f"config/job/{job_key}/agent-assignment/{executor_key}"))
+
+    def search_entity_for_agent(self, max_result=None, executor_type=None, search_term=None, executor_id=None, entity_type=None, start_index=None, assignment_type=None):
+        """Search for assignments in specified entity's agents
+        :param max_result: max-result query parameter
+        :param executor_type: executorType query parameter
+        :param search_term: searchTerm query parameter
+        :param executor_id: executorId query parameter
+        :param entity_type: entityType query parameter
+        :param start_index: start-index query parameter
+        :param assignment_type: assignmentType query parameter
+        :return:
+        """
+        params = {}
+        if max_result is not None:
+            params["max-result"] = max_result
+        if executor_type is not None:
+            params["executorType"] = executor_type
+        if search_term is not None:
+            params["searchTerm"] = search_term
+        if executor_id is not None:
+            params["executorId"] = executor_id
+        if entity_type is not None:
+            params["entityType"] = entity_type
+        if start_index is not None:
+            params["start-index"] = start_index
+        if assignment_type is not None:
+            params["assignmentType"] = assignment_type
+        return self.get(self.resource_url("agent/assignment/search"), params=params)
+
+    def find_assigned_agents_by_job(self, job_key):
+        """Get a list of agents/images assigned to given job.
+        :param job_key: jobKey path parameter
+        :return:
+        """
+        return self.get(self.resource_url(f"config/job/{job_key}/agent-assignment"))
+
+    def find_possible_agents_for_job(self, job_key, max_result=None, search_term=None, start_index=None):
+        """Get a list of agents/images/templates which can be dedicated for given job.
+        :param job_key: jobKey path parameter
+        :param max_result: max-result query parameter
+        :param search_term: searchTerm query parameter
+        :param start_index: start-index query parameter
+        :return:
+        """
+        params = {}
+        if max_result is not None:
+            params["max-result"] = max_result
+        if search_term is not None:
+            params["searchTerm"] = search_term
+        if start_index is not None:
+            params["start-index"] = start_index
+        return self.get(
+            self.resource_url(f"config/job/{job_key}/agent-assignment/possible-agent-assignment"),
+            params=params,
+        )
+
+    def add_agent_assignment(self, executor_type=None, executor_id=None, entity_id=None, assignment_type=None):
+        """Dedicate agent, elastic image or ephemeral template.
+        :param executor_type: executorType query parameter
+        :param executor_id: executorId query parameter
+        :param entity_id: entityId query parameter
+        :param assignment_type: assignmentType query parameter
+        :return:
+        """
+        params = {}
+        if executor_type is not None:
+            params["executorType"] = executor_type
+        if executor_id is not None:
+            params["executorId"] = executor_id
+        if entity_id is not None:
+            params["entityId"] = entity_id
+        if assignment_type is not None:
+            params["assignmentType"] = assignment_type
+        return self.post(self.resource_url("agent/assignment"), params=params)
+
+    def add_agent_assignment_for_job(self, job_key, data):
+        """Add agent assignment for job. agentAssignmentKey is a map with one key-value: name - agentAssignmentKey. 
+        :param job_key: jobKey path parameter
+        :param data: request body (dict or list)
+        :return:
+        """
+        return self.post(self.resource_url(f"config/job/{job_key}/agent-assignment"), data=data)
+
+    def update_agent_capability(self, agent_id, capability_key, data):
+        """Update existing agent capability. It's allowed to skip capability key at request payload.
+        :param agent_id: agentId path parameter
+        :param capability_key: capabilityKey path parameter
+        :param data: request body (dict or list)
+        :return:
+        """
+        return self.put(self.resource_url(f"agent/{agent_id}/capability/{capability_key}"), data=data)
+
+
+
+    """Avatars"""
+
+    def delete_avatar(self):
+        """Deletes the current avatar for the currently authenticated user.
+        :return:
+        """
+        return self.delete(self.resource_url("avatar/user/avatar.png"))
+
+    def retrieve_avatar(self, user_name, s=None):
+        """Returns either the avatar file for a specified user or the gravatar URL. The priority order: custom user avatar as a file, gravatar URL, default avatar as a file. The endpoint supports Last-Modified/If-Modified-Since headers and sets cache policy with expiration equal by default to 90 seconds.
+        :param user_name: userName path parameter
+        :param s: s query parameter
+        :return:
+        """
+        params = {}
+        if s is not None:
+            params["s"] = s
+        return self.get(self.resource_url(f"avatar/user/{user_name}/avatar.png"), params=params)
+
+    def upload_avatar(self, data):
+        """Updated the avatar for the currently authenticated user.
+        :param data: request body (dict or list)
+        :return:
+        """
+        return self.put(self.resource_url("avatar/user/avatar.png"), data=data)
+
+
+
+    """Deployments"""
+
+    def remove_agent_assignment_from_environment(self, environment_id, executor_key):
+        """Remove agent/image from list of dedicated executors for given environment.
+        :param environment_id: environmentId path parameter
+        :param executor_key: executorKey path parameter
+        :return:
+        """
+        return self.delete(
+            self.resource_url(f"deploy/environment/{environment_id}/agent-assignment/{executor_key}"),
+        )
+
+    def remove_requirement_from_environment(self, environment_id, requirement_id):
+        """Removes a requirement for an environment.
+        :param environment_id: environmentId path parameter
+        :param requirement_id: requirementId path parameter
+        :return:
+        """
+        return self.delete(
+            self.resource_url(f"deploy/environment/{environment_id}/requirement/{requirement_id}"),
+        )
+
+    def delete_environment_variable(self, environment_id, variable_name):
+        """Delete the environment variable.
+        :param environment_id: environmentId path parameter
+        :param variable_name: variableName path parameter
+        :return:
+        """
+        return self.delete(self.resource_url(f"deploy/environment/{environment_id}/variable/{variable_name}"))
+
+    def delete_repository_mapping(self, deployment_project_id, repository_id):
+        """Remove approval to create plans in given deployment project by given repository.
+        :param deployment_project_id: deploymentProjectId path parameter
+        :param repository_id: repositoryId path parameter
+        :return:
+        """
+        return self.delete(
+            self.resource_url(f"deploy/project/{deployment_project_id}/repository/{repository_id}"),
+        )
+
+    def get_all_deployment_projects(self):
+        """Get all deployment projects. This method fetch all deployment projects visible to user. It's not optimized for instances with large count of deployment projects and environments, use paged versions instead.
+        :return:
+        """
+        return self.get(self.resource_url("deploy/dashboard"))
+
+    def get_deployment_project(self, project_id):
+        """Get deployment project environments with deployment status. It's not optimized for instances with large count of deployment projects and environments, use paged versions instead.
+        :param project_id: projectId path parameter
+        :return:
+        """
+        return self.get(self.resource_url(f"deploy/dashboard/{project_id}"))
+
+    def get_deployment_projects(self, filter=None, limit=None, start=None):
+        """Get paginated deployment projects with environments list.
+        :param filter: filter query parameter
+        :param limit: limit query parameter
+        :param start: start query parameter
+        :return:
+        """
+        params = {}
+        if filter is not None:
+            params["filter"] = filter
+        if limit is not None:
+            params["limit"] = limit
+        if start is not None:
+            params["start"] = start
+        return self.get(self.resource_url("deploy/dashboard/paginate"), params=params)
+
+    def get_paginate_deployment_project(self, project_id, filter=None, limit=None, start=None):
+        """Get deployment project environments.
+        :param project_id: projectId path parameter
+        :param filter: filter query parameter
+        :param limit: limit query parameter
+        :param start: start query parameter
+        :return:
+        """
+        params = {}
+        if filter is not None:
+            params["filter"] = filter
+        if limit is not None:
+            params["limit"] = limit
+        if start is not None:
+            params["start"] = start
+        return self.get(self.resource_url(f"deploy/dashboard/paginate/{project_id}"), params=params)
+
+    def find_assigned_agents_by_environment(self, environment_id):
+        """Get a list of agents/images assigned to given environment.
+        :param environment_id: environmentId path parameter
+        :return:
+        """
+        return self.get(self.resource_url(f"deploy/environment/{environment_id}/agent-assignment"))
+
+    def get_docker_pipelines_configuration(self, environment_id):
+        """Get Docker configuration for given environment.
+        :param environment_id: environmentId path parameter
+        :return:
+        """
+        return self.get(self.resource_url(f"deploy/environment/{environment_id}/docker"))
+
+    def find_possible_agents_for_environment(self, environment_id, max_result=None, search_term=None, start_index=None):
+        """Get a list of agents/images/templates which can be dedicated for given environment.
+        :param environment_id: environmentId path parameter
+        :param max_result: max-result query parameter
+        :param search_term: searchTerm query parameter
+        :param start_index: start-index query parameter
+        :return:
+        """
+        params = {}
+        if max_result is not None:
+            params["max-result"] = max_result
+        if search_term is not None:
+            params["searchTerm"] = search_term
+        if start_index is not None:
+            params["start-index"] = start_index
+        return self.get(
+            self.resource_url(f"deploy/environment/{environment_id}/possible-agent-assignment"),
+            params=params,
+        )
+
+    def get_requirements_for_environment(self, environment_id):
+        """Gets all the requirements of an environment.
+        :param environment_id: environmentId path parameter
+        :return:
+        """
+        return self.get(self.resource_url(f"deploy/environment/{environment_id}/requirement"))
+
+    def get_requirement_for_environment(self, environment_id, requirement_id):
+        """Gets the details of a requirement for a given environment.
+        :param environment_id: environmentId path parameter
+        :param requirement_id: requirementId path parameter
+        :return:
+        """
+        return self.get(
+            self.resource_url(f"deploy/environment/{environment_id}/requirement/{requirement_id}"),
+        )
+
+    def get_detailed_agent_matches_for_environment(self, environment_id):
+        """Gets a detailed summary of the agents that are capable of running an environment, based of its requirements.
+        :param environment_id: environmentId path parameter
+        :return:
+        """
+        return self.get(self.resource_url(f"deploy/environment/{environment_id}/requirement/detailedSummary"))
+
+    def get_agent_matches_for_environment(self, environment_id):
+        """Gets a summary of the agents that are capable of running an environment, based of its requirements.
+        :param environment_id: environmentId path parameter
+        :return:
+        """
+        return self.get(self.resource_url(f"deploy/environment/{environment_id}/requirement/summary"))
+
+    def get_environment_variable(self, environment_id, variable_name):
+        """Get the environment variable by its name.
+        :param environment_id: environmentId path parameter
+        :param variable_name: variableName path parameter
+        :return:
+        """
+        return self.get(self.resource_url(f"deploy/environment/{environment_id}/variable/{variable_name}"))
+
+    def get_all_environment_variables(self, environment_id):
+        """Get a list of environment variables.
+        :param environment_id: environmentId path parameter
+        :return:
+        """
+        return self.get(self.resource_url(f"deploy/environment/{environment_id}/variables"))
+
+    def get_jira_issue_status_for_project(self, issue_key):
+        """Get all deployment projects associated with Jira issue key
+        :param issue_key: issueKey path parameter
+        :return:
+        """
+        return self.get(self.resource_url(f"deploy/issue-status/{issue_key}"))
+
+    def get_jira_issue_status_for_project_1(self, issue_key, deployment_project_id):
+        """Get deployment project environments and versions associated with Jira issue
+        :param issue_key: issueKey path parameter
+        :param deployment_project_id: deploymentProjectId path parameter
+        :return:
+        """
+        return self.get(self.resource_url(f"deploy/issue-status/{issue_key}/{deployment_project_id}"))
+
+    def get_possible_results(self, plan_key, deployment_project_id=None):
+        """Get possible deployment results.
+        :param deployment_project_id: deploymentProjectId query parameter
+        :param plan_key: planKey query parameter
+        :return:
+        """
+        params = {}
+        if deployment_project_id is not None:
+            params["deploymentProjectId"] = deployment_project_id
+        if plan_key is not None:
+            params["planKey"] = plan_key
+        return self.get(self.resource_url("deploy/preview/possibleResults"), params=params)
+
+    def get_version_preview_1(self, previous_version_id=None, deployment_project_id=None, plan_key=None, result_key=None, build_number=None):
+        """Get a preview of the deployment version.
+        :param previous_version_id: previousVersionId query parameter
+        :param deployment_project_id: deploymentProjectId query parameter
+        :param plan_key: planKey query parameter
+        :param result_key: resultKey query parameter
+        :param build_number: buildNumber query parameter
+        :return:
+        """
+        params = {}
+        if previous_version_id is not None:
+            params["previousVersionId"] = previous_version_id
+        if deployment_project_id is not None:
+            params["deploymentProjectId"] = deployment_project_id
+        if plan_key is not None:
+            params["planKey"] = plan_key
+        if result_key is not None:
+            params["resultKey"] = result_key
+        if build_number is not None:
+            params["buildNumber"] = build_number
+        return self.get(self.resource_url("deploy/preview/result"), params=params)
+
+    def get_version_preview(self, previous_version_id=None, version_id=None, deployment_project_id=None, version_name=None):
+        """Get a preview of the deployment version.
+        :param previous_version_id: previousVersionId query parameter
+        :param version_id: versionId query parameter
+        :param deployment_project_id: deploymentProjectId query parameter
+        :param version_name: versionName query parameter
+        :return:
+        """
+        params = {}
+        if previous_version_id is not None:
+            params["previousVersionId"] = previous_version_id
+        if version_id is not None:
+            params["versionId"] = version_id
+        if deployment_project_id is not None:
+            params["deploymentProjectId"] = deployment_project_id
+        if version_name is not None:
+            params["versionName"] = version_name
+        return self.get(self.resource_url("deploy/preview/version"), params=params)
+
+    def get_version_name(self, deployment_project_id, result_key=None):
+        """Get version name.
+        :param result_key: resultKey query parameter
+        :param deployment_project_id: deploymentProjectId query parameter
+        :return:
+        """
+        params = {}
+        if result_key is not None:
+            params["resultKey"] = result_key
+        if deployment_project_id is not None:
+            params["deploymentProjectId"] = deployment_project_id
+        return self.get(self.resource_url("deploy/preview/versionName"), params=params)
+
+    def list_assigned_repositories(self, deployment_project_id):
+        """List of repositories which granted to create/edit environment in given deployment project by Repository stored Bamboo Specs.
+        :param deployment_project_id: deploymentProjectId path parameter
+        :return:
+        """
+        return self.get(self.resource_url(f"deploy/project/{deployment_project_id}/repository"))
+
+    def search_available_repositories(self, deployment_project_id, max_result=None, search_term=None, start_index=None):
+        """Search for linked repositories which can be granted to create/modify environment by Repository stored Bamboo Specs in given deployment project.
+        :param deployment_project_id: deploymentProjectId path parameter
+        :param max_result: max-result query parameter
+        :param search_term: searchTerm query parameter
+        :param start_index: start-index query parameter
+        :return:
+        """
+        params = {}
+        if max_result is not None:
+            params["max-result"] = max_result
+        if search_term is not None:
+            params["searchTerm"] = search_term
+        if start_index is not None:
+            params["start-index"] = start_index
+        return self.get(
+            self.resource_url(f"deploy/project/{deployment_project_id}/repository/search"),
+            params=params,
+        )
+
+    def export_deployment_spec(self, deployment_project_id, package=None, format=None):
+        """Export a deployment project to Bamboo Specs.
+        :param deployment_project_id: deploymentProjectId path parameter
+        :param package: package query parameter
+        :param format: format query parameter
+        :return:
+        """
+        params = {}
+        if package is not None:
+            params["package"] = package
+        if format is not None:
+            params["format"] = format
+        return self.get(self.resource_url(f"deploy/project/{deployment_project_id}/specs"), params=params)
+
+    def get_deployment_project_versions(self, deployment_project_id, branch_key=None):
+        """Get list of deployment versions.
+        :param deployment_project_id: deploymentProjectId path parameter
+        :param branch_key: branchKey query parameter
+        :return:
+        """
+        params = {}
+        if branch_key is not None:
+            params["branchKey"] = branch_key
+        return self.get(self.resource_url(f"deploy/project/{deployment_project_id}/version"), params=params)
+
+    def get_deployment_naming_preview(self, deployment_project_id, next_version_name, incrementable_variables=None, increment_numbers=None):
+        """Get deployment version name preview.
+        :param deployment_project_id: deploymentProjectId path parameter
+        :param next_version_name: nextVersionName query parameter
+        :param incrementable_variables: incrementableVariables query parameter
+        :param increment_numbers: incrementNumbers query parameter
+        :return:
+        """
+        params = {}
+        if next_version_name is not None:
+            params["nextVersionName"] = next_version_name
+        if incrementable_variables is not None:
+            params["incrementableVariables"] = incrementable_variables
+        if increment_numbers is not None:
+            params["incrementNumbers"] = increment_numbers
+        return self.get(
+            self.resource_url(f"deploy/projectVersioning/{deployment_project_id}/namingPreview"),
+            params=params,
+        )
+
+    def get_next_deployment_versions(self, deployment_project_id, result_key=None):
+        """Get next deployment version name.
+        :param deployment_project_id: deploymentProjectId path parameter
+        :param result_key: resultKey query parameter
+        :return:
+        """
+        params = {}
+        if result_key is not None:
+            params["resultKey"] = result_key
+        return self.get(
+            self.resource_url(f"deploy/projectVersioning/{deployment_project_id}/nextVersion"),
+            params=params,
+        )
+
+    def get_variables_from_name(self, deployment_project_id, next_version_name):
+        """Extract variables value from version name.
+        :param deployment_project_id: deploymentProjectId path parameter
+        :param next_version_name: nextVersionName query parameter
+        :return:
+        """
+        params = {}
+        if next_version_name is not None:
+            params["nextVersionName"] = next_version_name
+        return self.get(
+            self.resource_url(f"deploy/projectVersioning/{deployment_project_id}/parseVariables"),
+            params=params,
+        )
+
+    def get_deployment_project_variables(self, deployment_project_id):
+        """Get variables associated with deployment project.
+        :param deployment_project_id: deploymentProjectId path parameter
+        :return:
+        """
+        return self.get(self.resource_url(f"deploy/projectVersioning/{deployment_project_id}/variables"))
+
+    def get_deployment_result(self, deployment_result_id, include_logs=None):
+        """Get result of version deployment to environment.
+        :param deployment_result_id: deploymentResultId path parameter
+        :param include_logs: includeLogs query parameter
+        :return:
+        """
+        params = {}
+        if include_logs is not None:
+            params["includeLogs"] = include_logs
+        return self.get(self.resource_url(f"deploy/result/{deployment_result_id}"), params=params)
+
+    def get_version_and_plan_result(self, deployment_version_id):
+        """Get associated build result of deployment version.
+        :param deployment_version_id: deploymentVersionId path parameter
+        :return:
+        """
+        return self.get(self.resource_url(f"deploy/version/{deployment_version_id}/build-result"))
+
+    def get_latest_version_statuses(self, deployment_version_id):
+        """Get the all users' latest statuses of deployment version.
+        :param deployment_version_id: deploymentVersionId path parameter
+        :return:
+        """
+        return self.get(self.resource_url(f"deploy/version/{deployment_version_id}/status"))
+
+    def add_agent_assignment_for_environment(self, environment_id, data):
+        """Add agent assignment for environment. agentAssignmentKey is a map with one key-value: name - agentAssignmentKey. 
+        :param environment_id: environmentId path parameter
+        :param data: request body (dict or list)
+        :return:
+        """
+        return self.post(
+            self.resource_url(f"deploy/environment/{environment_id}/agent-assignment"),
+            data=data,
+        )
+
+    def move_environment(self, environment_id, position, relative_environment_id):
+        """Change environment position within deployment project.
+        :param environment_id: environmentId path parameter
+        :param position: position path parameter
+        :param relative_environment_id: relativeEnvironmentId path parameter
+        :return:
+        """
+        return self.post(
+            self.resource_url(f"deploy/environment/{environment_id}/move/{position}/{relative_environment_id}"),
+        )
+
+    def add_requirement_for_environment(self, environment_id, data):
+        """Adds a requirement for a given environment.
+        :param environment_id: environmentId path parameter
+        :param data: request body (dict or list)
+        :return:
+        """
+        return self.post(self.resource_url(f"deploy/environment/{environment_id}/requirement"), data=data)
+
+    def create_environment_variable(self, environment_id, data):
+        """Create the environment variable.
+        :param environment_id: environmentId path parameter
+        :param data: request body (dict or list)
+        :return:
+        """
+        return self.post(self.resource_url(f"deploy/environment/{environment_id}/variable"), data=data)
+
+    def add_assigned_repository(self, deployment_project_id, data):
+        """Grant permission to create/edit plan in given deployment project by Bamboo Specs from given repository.
+        :param deployment_project_id: deploymentProjectId path parameter
+        :param data: request body (dict or list)
+        :return:
+        """
+        return self.post(self.resource_url(f"deploy/project/{deployment_project_id}/repository"), data=data)
+
+    def update_version_status(self, deployment_version_id, new_status):
+        """Update deployment version status.
+        :param deployment_version_id: deploymentVersionId path parameter
+        :param new_status: newStatus path parameter
+        :return:
+        """
+        return self.post(self.resource_url(f"deploy/version/{deployment_version_id}/status/{new_status}"))
+
+    def save_docker_pipelines_configuration(self, environment_id, data):
+        """Save Docker configuration for given environment.
+        :param environment_id: environmentId path parameter
+        :param data: request body (dict or list)
+        :return:
+        """
+        return self.put(self.resource_url(f"deploy/environment/{environment_id}/docker"), data=data)
+
+    def update_environment_prerequisites(self, environment_id, data):
+        """Updates the environment prerequisites.
+        :param environment_id: environmentId path parameter
+        :param data: request body (dict or list)
+        :return:
+        """
+        return self.put(self.resource_url(f"deploy/environment/{environment_id}/prerequisites"), data=data)
+
+    def update_requirement_for_environment(self, environment_id, requirement_id, data):
+        """Updates a requirement for a given environment.
+        :param environment_id: environmentId path parameter
+        :param requirement_id: requirementId path parameter
+        :param data: request body (dict or list)
+        :return:
+        """
+        return self.put(
+            self.resource_url(f"deploy/environment/{environment_id}/requirement/{requirement_id}"),
+            data=data,
+        )
+
+    def update_environment_variable(self, environment_id, variable_name, data):
+        """Update the environment variable.
+        :param environment_id: environmentId path parameter
+        :param variable_name: variableName path parameter
+        :param data: request body (dict or list)
+        :return:
+        """
+        return self.put(
+            self.resource_url(f"deploy/environment/{environment_id}/variable/{variable_name}"),
+            data=data,
+        )
+
+
+
+    """Ephemeral agents"""
+
+    def delete_template_configuration(self, configuration_id):
+        """Delete ephemeral template configuration.
+        :param configuration_id: configurationId path parameter
+        :return:
+        """
+        return self.delete(self.resource_url(f"ephemeral/templateConfiguration/{configuration_id}"))
+
+    def delete_capability(self, configuration_id, name):
+        """Remove ephemeral agent template capability.
+        :param configuration_id: configurationId path parameter
+        :param name: name path parameter
+        :return:
+        """
+        return self.delete(
+            self.resource_url(f"ephemeral/templateConfiguration/{configuration_id}/capability/{name}"),
+        )
+
+    def get_ephemeral_agent_pod_logs(self, pod, container_name=None, limit=None, after_timestamp=None):
+        """Gets either pod or container related logs.
+        :param pod: pod path parameter
+        :param container_name: containerName query parameter
+        :param limit: limit query parameter
+        :param after_timestamp: afterTimestamp query parameter
+        :return:
+        """
+        params = {}
+        if container_name is not None:
+            params["containerName"] = container_name
+        if limit is not None:
+            params["limit"] = limit
+        if after_timestamp is not None:
+            params["afterTimestamp"] = after_timestamp
+        return self.get(self.resource_url(f"ephemeral/pod/{pod}/logs"), params=params)
+
+    def get_ephemeral_agent_pod_raw_logs(self, pod, container_name=None):
+        """Gets either pod or container all logs in the raw, plain text form.
+        :param pod: pod path parameter
+        :param container_name: containerName query parameter
+        :return:
+        """
+        params = {}
+        if container_name is not None:
+            params["containerName"] = container_name
+        return self.get(self.resource_url(f"ephemeral/pod/{pod}/logs/raw"), params=params)
+
+    def get_template_configurations_page(self, filter=None, limit=None, start=None):
+        """Fetch page of ephemeral templates.
+        :param filter: filter query parameter
+        :param limit: limit query parameter
+        :param start: start query parameter
+        :return:
+        """
+        params = {}
+        if filter is not None:
+            params["filter"] = filter
+        if limit is not None:
+            params["limit"] = limit
+        if start is not None:
+            params["start"] = start
+        return self.get(self.resource_url("ephemeral/templateConfiguration"), params=params)
+
+    def get_template_configuration(self, configuration_id):
+        """Gets ephemeral template configuration details.
+        :param configuration_id: configurationId path parameter
+        :return:
+        """
+        return self.get(self.resource_url(f"ephemeral/templateConfiguration/{configuration_id}"))
+
+    def get_capabilities(self, configuration_id, limit=None, start=None):
+        """Fetch page of ephemeral agent template capabilities.
+        :param configuration_id: configurationId path parameter
+        :param limit: limit query parameter
+        :param start: start query parameter
+        :return:
+        """
+        params = {}
+        if limit is not None:
+            params["limit"] = limit
+        if start is not None:
+            params["start"] = start
+        return self.get(
+            self.resource_url(f"ephemeral/templateConfiguration/{configuration_id}/capability"),
+            params=params,
+        )
+
+    def create_template_configuration(self, data):
+        """Create ephemeral template configuration.
+        :param data: request body (dict or list)
+        :return:
+        """
+        return self.post(self.resource_url("ephemeral/templateConfiguration"), data=data)
+
+    def add_capability(self, configuration_id, data):
+        """Add ephemeral agent template capability.
+        :param configuration_id: configurationId path parameter
+        :param data: request body (dict or list)
+        :return:
+        """
+        return self.post(
+            self.resource_url(f"ephemeral/templateConfiguration/{configuration_id}/capability"),
+            data=data,
+        )
+
+    def update_template_configuration(self, configuration_id, data):
+        """Update ephemeral agent template.
+        :param configuration_id: configurationId path parameter
+        :param data: request body (dict or list)
+        :return:
+        """
+        return self.put(self.resource_url(f"ephemeral/templateConfiguration/{configuration_id}"), data=data)
+
+    def update_capability(self, configuration_id, data):
+        """Update ephemeral agent template capability.
+        :param configuration_id: configurationId path parameter
+        :param data: request body (dict or list)
+        :return:
+        """
+        return self.put(
+            self.resource_url(f"ephemeral/templateConfiguration/{configuration_id}/capability"),
+            data=data,
+        )
+
+
+
+    """Global permissions"""
+
+    def remove_permissions_for_group_2(self, name, data, ignore=None):
+        """Revokes global permissions from a given group.
+        :param name: name path parameter
+        :param ignore: ignore query parameter
+        :param data: request body (dict or list)
+        :return:
+        """
+        params = {}
+        if ignore is not None:
+            params["ignore"] = ignore
+        return self.delete(self.resource_url(f"permissions/global/groups/{name}"), params=params, data=data)
+
+    def remove_permissions_for_role_2(self, name, data, ignore=None):
+        """Revokes global permissions from a given role.
+        :param name: name path parameter
+        :param ignore: ignore query parameter
+        :param data: request body (dict or list)
+        :return:
+        """
+        params = {}
+        if ignore is not None:
+            params["ignore"] = ignore
+        return self.delete(self.resource_url(f"permissions/global/roles/{name}"), params=params, data=data)
+
+    def remove_permissions_for_user_2(self, name, data, ignore=None):
+        """Revokes global permissions from a given user.
+        :param name: name path parameter
+        :param ignore: ignore query parameter
+        :param data: request body (dict or list)
+        :return:
+        """
+        params = {}
+        if ignore is not None:
+            params["ignore"] = ignore
+        return self.delete(self.resource_url(f"permissions/global/users/{name}"), params=params, data=data)
+
+    def get_available_groups_2(self, limit=None, start=None, name=None, ignore=None):
+        """Returns list of groups which weren't granted explicitly any permissions. Resource is paged, returns single page of resources.
+        :param limit: limit query parameter
+        :param start: start query parameter
+        :param name: name query parameter
+        :param ignore: ignore query parameter
+        :return:
+        """
+        params = {}
+        if limit is not None:
+            params["limit"] = limit
+        if start is not None:
+            params["start"] = start
+        if name is not None:
+            params["name"] = name
+        if ignore is not None:
+            params["ignore"] = ignore
+        return self.get(self.resource_url("permissions/global/available-groups"), params=params)
+
+    def get_available_users_2(self, limit=None, start=None, name=None, ignore=None):
+        """Returns list of users which weren't granted explicitly any permissions. Resource is paged, returns single page of resources.
+        :param limit: limit query parameter
+        :param start: start query parameter
+        :param name: name query parameter
+        :param ignore: ignore query parameter
+        :return:
+        """
+        params = {}
+        if limit is not None:
+            params["limit"] = limit
+        if start is not None:
+            params["start"] = start
+        if name is not None:
+            params["name"] = name
+        if ignore is not None:
+            params["ignore"] = ignore
+        return self.get(self.resource_url("permissions/global/available-users"), params=params)
+
+    def list_group_permissions_2(self, limit=None, start=None, name=None, ignore=None):
+        """Retrieve a list of groups with their global permissions. The list can be filtered by some attributes. This resource is paged returns a single page of results.
+        :param limit: limit query parameter
+        :param start: start query parameter
+        :param name: name query parameter
+        :param ignore: ignore query parameter
+        :return:
+        """
+        params = {}
+        if limit is not None:
+            params["limit"] = limit
+        if start is not None:
+            params["start"] = start
+        if name is not None:
+            params["name"] = name
+        if ignore is not None:
+            params["ignore"] = ignore
+        return self.get(self.resource_url("permissions/global/groups"), params=params)
+
+    def list_role_permissions_2(self, limit=None, start=None, ignore=None):
+        """Retrieve a list of roles with their global permissions. This resource is paged returns a single page of results, although only 2 roles are supported: LOGGED IN users, ANONYMOUS users
+        :param limit: limit query parameter
+        :param start: start query parameter
+        :param ignore: ignore query parameter
+        :return:
+        """
+        params = {}
+        if limit is not None:
+            params["limit"] = limit
+        if start is not None:
+            params["start"] = start
+        if ignore is not None:
+            params["ignore"] = ignore
+        return self.get(self.resource_url("permissions/global/roles"), params=params)
+
+    def add_permissions_for_group_2(self, name, data, ignore=None):
+        """Grants global permissions to a given group.
+        :param name: name path parameter
+        :param ignore: ignore query parameter
+        :param data: request body (dict or list)
+        :return:
+        """
+        params = {}
+        if ignore is not None:
+            params["ignore"] = ignore
+        return self.put(self.resource_url(f"permissions/global/groups/{name}"), params=params, data=data)
+
+    def add_permissions_for_role_2(self, name, data, ignore=None):
+        """Grants global permissions to a given role.
+        :param name: name path parameter
+        :param ignore: ignore query parameter
+        :param data: request body (dict or list)
+        :return:
+        """
+        params = {}
+        if ignore is not None:
+            params["ignore"] = ignore
+        return self.put(self.resource_url(f"permissions/global/roles/{name}"), params=params, data=data)
+
+    def add_permissions_for_user_2(self, name, data, ignore=None):
+        """Grants global permissions to a given user.
+        :param name: name path parameter
+        :param ignore: ignore query parameter
+        :param data: request body (dict or list)
+        :return:
+        """
+        params = {}
+        if ignore is not None:
+            params["ignore"] = ignore
+        return self.put(self.resource_url(f"permissions/global/users/{name}"), params=params, data=data)
+
+
+
+    """Plans"""
+
+    def unmark_plan_favourite(self, project_key, build_key):
+        """Remove plan from favorites.
+        :param project_key: projectKey path parameter
+        :param build_key: buildKey path parameter
+        :return:
+        """
+        return self.delete(self.resource_url(f"plan/{project_key}-{build_key}/favourite"))
+
+    def remove_plan_label(self, project_key, build_key, label_name):
+        """Remove label from plan.
+        :param project_key: projectKey path parameter
+        :param build_key: buildKey path parameter
+        :param label_name: labelName path parameter
+        :return:
+        """
+        return self.delete(self.resource_url(f"plan/{project_key}-{build_key}/label/{label_name}"))
+
+    def get_plan_artifact_definition(self, project_key, build_key, max_result=None, start_index=None):
+        """Fetch plan's shared artifact definitions.
+        :param project_key: projectKey path parameter
+        :param build_key: buildKey path parameter
+        :param max_result: max-result query parameter
+        :param start_index: start-index query parameter
+        :return:
+        """
+        params = {}
+        if max_result is not None:
+            params["max-result"] = max_result
+        if start_index is not None:
+            params["start-index"] = start_index
+        return self.get(self.resource_url(f"plan/{project_key}-{build_key}/artifact"), params=params)
+
+    def get_issue_details(self, project_key, build_key, issue_key):
+        """Fetch linked Jira issue details.
+        :param project_key: projectKey path parameter
+        :param build_key: buildKey path parameter
+        :param issue_key: issueKey path parameter
+        :return:
+        """
+        return self.get(self.resource_url(f"plan/{project_key}-{build_key}/issue/{issue_key}"))
+
+    def get_plan_labels(self, project_key, build_key):
+        """List of labels for plan.
+        :param project_key: projectKey path parameter
+        :param build_key: buildKey path parameter
+        :return:
+        """
+        return self.get(self.resource_url(f"plan/{project_key}-{build_key}/label"))
+
+    def enable_specs_for_branches(self, project_key, build_key):
+        """Enable specs scanning for all branches.
+        :param project_key: projectKey path parameter
+        :param build_key: buildKey path parameter
+        :return:
+        """
+        return self.post(self.resource_url(f"plan/{project_key}-{build_key}/branch/enableSpecsForBranches"))
+
+    def mark_plan_favourite(self, project_key, build_key):
+        """Add plan to favourite.
+        :param project_key: projectKey path parameter
+        :param build_key: buildKey path parameter
+        :return:
+        """
+        return self.post(self.resource_url(f"plan/{project_key}-{build_key}/favourite"))
+
+    def add_plan_label(self, project_key, build_key, data):
+        """Add new label to plan.
+        :param project_key: projectKey path parameter
+        :param build_key: buildKey path parameter
+        :param data: request body (dict or list)
+        :return:
+        """
+        return self.post(self.resource_url(f"plan/{project_key}-{build_key}/label"), data=data)
+
+    def quarantine_test(self, project_key, build_key, test_id):
+        """Quarantine plan's test.
+        :param project_key: projectKey path parameter
+        :param build_key: buildKey path parameter
+        :param test_id: testId path parameter
+        :return:
+        """
+        return self.post(self.resource_url(f"plan/{project_key}-{build_key}/test/{test_id}/quarantine"))
+
+    def unleash_test(self, project_key, build_key, test_id):
+        """Unleash plan's test from quarantine.
+        :param project_key: projectKey path parameter
+        :param build_key: buildKey path parameter
+        :param test_id: testId path parameter
+        :return:
+        """
+        return self.post(self.resource_url(f"plan/{project_key}-{build_key}/test/{test_id}/unleash"))
+
+
+
+    """Projects & repositories"""
+
+    def delete_project_shared_credentials(self, project_key, shared_credential_id):
+        """Deletes shared project credentials specified by id.
+        :param project_key: projectKey path parameter
+        :param shared_credential_id: sharedCredentialId path parameter
+        :return:
+        """
+        return self.delete(
+            self.resource_url(f"project/{project_key}/sharedCredentials/{shared_credential_id}"),
+        )
+
+    def delete_project_variable(self, project_key, variable_name):
+        """Delete the project variable.
+        :param project_key: projectKey path parameter
+        :param variable_name: variableName path parameter
+        :return:
+        """
+        return self.delete(self.resource_url(f"project/{project_key}/variable/{variable_name}"))
+
+    def get_paginated_project_repositories(self, project_key, filter=None, limit=None, start=None):
+        """Retrieves paginated project repositories specified by the project key.
+        :param project_key: projectKey path parameter
+        :param filter: filter query parameter
+        :param limit: limit query parameter
+        :param start: start query parameter
+        :return:
+        """
+        params = {}
+        if filter is not None:
+            params["filter"] = filter
+        if limit is not None:
+            params["limit"] = limit
+        if start is not None:
+            params["start"] = start
+        return self.get(self.resource_url(f"project/{project_key}/repositories"), params=params)
+
+    def search_available_repositories_1(self, project_key, search_term=None):
+        """Search for linked repositories which can be granted to create plans by Repository stored Bamboo Specs in given project
+        :param project_key: projectKey path parameter
+        :param search_term: searchTerm query parameter
+        :return:
+        """
+        params = {}
+        if search_term is not None:
+            params["searchTerm"] = search_term
+        return self.get(self.resource_url(f"project/{project_key}/repository/search"), params=params)
+
+    def get_paginated_project_shared_credentials(self, project_key, filter=None, limit=None, start=None):
+        """Retrieves paginated shared credentials for the project specified by the project key.
+        :param project_key: projectKey path parameter
+        :param filter: filter query parameter
+        :param limit: limit query parameter
+        :param start: start query parameter
+        :return:
+        """
+        params = {}
+        if filter is not None:
+            params["filter"] = filter
+        if limit is not None:
+            params["limit"] = limit
+        if start is not None:
+            params["start"] = start
+        return self.get(self.resource_url(f"project/{project_key}/sharedCredentials"), params=params)
+
+    def export_project_specs(self, project_key, package=None, format=None):
+        """Export all of the plans for a project to Bamboo specs.
+        :param project_key: projectKey path parameter
+        :param package: package query parameter
+        :param format: format query parameter
+        :return:
+        """
+        params = {}
+        if package is not None:
+            params["package"] = package
+        if format is not None:
+            params["format"] = format
+        return self.get(self.resource_url(f"project/{project_key}/specs"), params=params)
+
+    def get_project_variable(self, project_key, variable_name):
+        """Retrieve the project variable by given name.
+        :param project_key: projectKey path parameter
+        :param variable_name: variableName path parameter
+        :return:
+        """
+        return self.get(self.resource_url(f"project/{project_key}/variable/{variable_name}"))
+
+    def get_project_variables(self, project_key):
+        """Retrieve the list of all variables for a project.
+        :param project_key: projectKey path parameter
+        :return:
+        """
+        return self.get(self.resource_url(f"project/{project_key}/variables"))
+
+    def create_project(self, data):
+        """Create project.
+        :param data: request body (dict or list)
+        :return:
+        """
+        return self.post(self.resource_url("project"), data=data)
+
+    def create_or_update_variable(self, project_key, data):
+        """Create or update project variable.
+        :param project_key: projectKey path parameter
+        :param data: request body (dict or list)
+        :return:
+        """
+        return self.post(self.resource_url(f"project/{project_key}/variable"), data=data)
+
+    def enable_all_repositories_access(self, project_key, repository_id, data):
+        """Enables access (i.e. allowing usage) to all project's repositories by the Bamboo Specs code stored in this repository.
+        :param project_key: projectKey path parameter
+        :param repository_id: repositoryId path parameter
+        :param data: request body (dict or list)
+        :return:
+        """
+        return self.put(
+            self.resource_url(f"project/{project_key}/repository/{repository_id}/enableAllRepositoriesAccess"),
+            data=data,
+        )
+
+
+
+    """Repositories"""
+
+    def revoke_permission_to_use_repository_by_rss_repo(self, target_repository_id, repository_id):
+        """Revoke access of RSS code stored in repository defined by repositoryId from repository defined by targetRepositoryId. Use this method when need to prevent usage of target repository by RSS code stored in repository referenced by repositoryId.
+        :param target_repository_id: targetRepositoryId path parameter
+        :param repository_id: repositoryId path parameter
+        :return:
+        """
+        return self.delete(
+            self.resource_url(f"repository/{target_repository_id}/rssrepository/{repository_id}"),
+        )
+
+    def search_specs_branches(self, repository_id, search_term=None):
+        """Search for divergent branches names (i.e. vcs branches that have RSS execution results).
+        :param repository_id: repositoryId path parameter
+        :param search_term: searchTerm query parameter
+        :return:
+        """
+        params = {}
+        if search_term is not None:
+            params["searchTerm"] = search_term
+        return self.get(self.resource_url(f"repository/{repository_id}/rssBranches"), params=params)
+
+    def get_rss_repositories_allowed_to_access_repository(self, repository_id):
+        """Fetch list of RSS repositories which can use given repository by RSS code.
+        :param repository_id: repositoryId path parameter
+        :return:
+        """
+        return self.get(self.resource_url(f"repository/{repository_id}/rssrepository"))
+
+    def search_available_repositories_2(self, repository_id, search_term=None):
+        """Search for existing linked repositories which can be granted to use given repository by RSS.
+        :param repository_id: repositoryId path parameter
+        :param search_term: searchTerm query parameter
+        :return:
+        """
+        params = {}
+        if search_term is not None:
+            params["searchTerm"] = search_term
+        return self.get(self.resource_url(f"repository/{repository_id}/rssrepository/search"), params=params)
+
+    def get_specs_detection_status(self, repository_id, max_result=None, branch=None):
+        """Resource providing status of RSS processing for a given repository and optional branch.
+        :param repository_id: repositoryId path parameter
+        :param max_result: max-result query parameter
+        :param branch: branch query parameter
+        :return:
+        """
+        params = {}
+        if max_result is not None:
+            params["max-result"] = max_result
+        if branch is not None:
+            params["branch"] = branch
+        return self.get(self.resource_url(f"repository/{repository_id}/scan/status"), params=params)
+
+    def find_usage(self, repository_id, max_plans=None, max_environments=None):
+        """Search for usages of given repository.
+        :param repository_id: repositoryId path parameter
+        :param max_plans: max-plans query parameter
+        :param max_environments: max-environments query parameter
+        :return:
+        """
+        params = {}
+        if max_plans is not None:
+            params["max-plans"] = max_plans
+        if max_environments is not None:
+            params["max-environments"] = max_environments
+        return self.get(self.resource_url(f"repository/{repository_id}/usage"), params=params)
+
+    def grant_rss_repository_access(self, repository_id, data):
+        """Grant repository with RSS code to use target repository in build plans and deployments. If permission is not granted RSS import will fail when code tries to use target repository.
+        :param repository_id: repositoryId path parameter
+        :param data: request body (dict or list)
+        :return:
+        """
+        return self.post(self.resource_url(f"repository/{repository_id}/rssrepository"), data=data)
+
+    def trigger_specs_scanning(self, repository_id, branch=None):
+        """Resource for triggering Repository-stored Bamboo Specs in a 'forced' way. Successful requests to this resource will trigger Bamboo Specs execution even if standard processing would have been skipped (e.g. no new commits to process).
+        :param repository_id: repositoryId path parameter
+        :param branch: branch query parameter
+        :return:
+        """
+        params = {}
+        if branch is not None:
+            params["branch"] = branch
+        return self.post(self.resource_url(f"repository/{repository_id}/scanNow"), params=params)
+
+    def trigger_specs_scanning_1(self, name=None, repository_id=None, id=None, repository_name=None):
+        """Webhook resource for triggering Repository-stored Bamboo Specs. Either repository ID or name must be provided via query parameters to identify the linked repository in which Bamboo Specs are defined.
+        :param name: name query parameter
+        :param repository_id: repositoryId query parameter
+        :param id: id query parameter
+        :param repository_name: repositoryName query parameter
+        :return:
+        """
+        params = {}
+        if name is not None:
+            params["name"] = name
+        if repository_id is not None:
+            params["repositoryId"] = repository_id
+        if id is not None:
+            params["id"] = id
+        if repository_name is not None:
+            params["repositoryName"] = repository_name
+        return self.post(self.resource_url("repository/scan"), params=params)
+
+    def enable_all_projects_access(self, repository_id, data):
+        """Enables access (i.e. allowing modifications) for all Bamboo projects by the Bamboo Specs code stored in this repository. Changes in Bamboo Specs detected will trigger execution of Specs and thus an update of corresponding entities (such as build plans or deployments).
+        :param repository_id: repositoryId path parameter
+        :param data: request body (dict or list)
+        :return:
+        """
+        return self.put(self.resource_url(f"repository/{repository_id}/enableAllProjectsAccess"), data=data)
+
+    def enable_all_repositories_access_1(self, repository_id, data):
+        """Enables access (i.e. allowing usage in plans or deployment projects) for all Bamboo linked repositories by the Bamboo Specs code stored in this repository.
+        :param repository_id: repositoryId path parameter
+        :param data: request body (dict or list)
+        :return:
+        """
+        return self.put(
+            self.resource_url(f"repository/{repository_id}/enableAllRepositoriesAccess"),
+            data=data,
+        )
+
+    def enable_ci(self, repository_id, data):
+        """Enables or disables detection of Bamboo Specs stored in the repository. If enabled, code changes detected in Bamboo Specs in new commits will trigger execution of Bamboo Specs and thus an update of corresponding entities (such as build plans, deployments or permissions).
+        :param repository_id: repositoryId path parameter
+        :param data: request body (dict or list)
+        :return:
+        """
+        return self.put(self.resource_url(f"repository/{repository_id}/enableCi"), data=data)
+
+    def enable_project_creation(self, repository_id, data):
+        """Enables build and deployment project creation by the Bamboo Specs code stored in this repository.
+        :param repository_id: repositoryId path parameter
+        :param data: request body (dict or list)
+        :return:
+        """
+        return self.put(self.resource_url(f"repository/{repository_id}/enableProjectCreation"), data=data)
+
+    def test_connection_1(self, data):
+        """Tests connection to a repository if the repository type supports connection testing. Request payload should contain repository configuration.
+        :param data: request body (dict or list)
+        :return:
+        """
+        return self.put(self.resource_url("repository/testConnection"), data=data)
+
+
+
+    """Build results"""
+
+    def remove_build_comment(self, project_key, build_key, build_number, comment_id):
+        """Removes a comment from a build result.
+        :param project_key: projectKey path parameter
+        :param build_key: buildKey path parameter
+        :param build_number: buildNumber path parameter
+        :param comment_id: commentId path parameter
+        :return:
+        """
+        return self.delete(
+            self.resource_url(f"result/{project_key}-{build_key}-{build_number}/comment/{comment_id}"),
+        )
+
+    def get_branch_history(self, project_key, build_key, branch_name, include_all_states=None, continuable=None, issue_key=None, max_results=None, start_index=None, label=None, buildstate=None, favourite=None, expand=None, life_cycle_state=None):
+        """Provide list of build results for specified plan's branch. Plan might be top level plan (projectKey-planKey) or job plan (projectKey-planKey-jobKey).
+        :param project_key: projectKey path parameter
+        :param build_key: buildKey path parameter
+        :param branch_name: branchName path parameter
+        :param include_all_states: includeAllStates query parameter
+        :param continuable: continuable query parameter
+        :param issue_key: issueKey query parameter
+        :param max_results: max-results query parameter
+        :param start_index: start-index query parameter
+        :param label: label query parameter
+        :param buildstate: buildstate query parameter
+        :param favourite: favourite query parameter
+        :param expand: expand query parameter
+        :param life_cycle_state: lifeCycleState query parameter
+        :return:
+        """
+        params = {}
+        if include_all_states is not None:
+            params["includeAllStates"] = include_all_states
+        if continuable is not None:
+            params["continuable"] = continuable
+        if issue_key is not None:
+            params["issueKey"] = issue_key
+        if max_results is not None:
+            params["max-results"] = max_results
+        if start_index is not None:
+            params["start-index"] = start_index
+        if label is not None:
+            params["label"] = label
+        if buildstate is not None:
+            params["buildstate"] = buildstate
+        if favourite is not None:
+            params["favourite"] = favourite
+        if expand is not None:
+            params["expand"] = expand
+        if life_cycle_state is not None:
+            params["lifeCycleState"] = life_cycle_state
+        return self.get(
+            self.resource_url(f"result/{project_key}-{build_key}/branch/{branch_name}"),
+            params=params,
+        )
+
+
+
+    """Web sudo"""
+
+    def remove_web_sudo_from_session(self):
+        """Remove web sudo from session.
+        :return:
+        """
+        return self.delete(self.resource_url("websudo-session"))
+
+    def get_expiry(self):
+        """Get the web sudo expiry from session.
+        :return:
+        """
+        return self.get(self.resource_url("websudo-session"))
+
+    def refresh_web_sudo_session(self):
+        """Refresh the web sudo expiry for the current session.
+        :return:
+        """
+        return self.put(self.resource_url("websudo-session"))
+
+
+
+    """General"""
+
+    def get_all_services(self):
+        """Provides list of available REST resources in Bamboo
+        :return:
+        """
+        return self.get(self.resource_url(""))
+
+
+
+    """Build numbers & clone"""
+
+    def get_next_build_number(self, project_key, build_key):
+        """Retrieve the next build number for a given plan or plan branch.
+        :param project_key: projectKey path parameter
+        :param build_key: buildKey path parameter
+        :return:
+        """
+        return self.get(self.resource_url(f"buildNumber/{project_key}-{build_key}"))
+
+    def bump_build_number(self, project_key, build_key, data):
+        """Bump the next build number for a given plan or plan branch to the specified value.
+        :param project_key: projectKey path parameter
+        :param build_key: buildKey path parameter
+        :param data: request body (dict or list)
+        :return:
+        """
+        return self.put(self.resource_url(f"buildNumber/{project_key}-{build_key}/bump"), data=data)
+
+    def get_clone(self, project_key, build_key, to_project_key, to_build_key):
+        """Clone an existing Plan into a new one, possibly into different project.
+        :param project_key: projectKey path parameter
+        :param build_key: buildKey path parameter
+        :param to_project_key: toProjectKey path parameter
+        :param to_build_key: toBuildKey path parameter
+        :return:
+        """
+        return self.put(self.resource_url(f"clone/{project_key}-{build_key}:{to_project_key}-{to_build_key}"))
+
+
+
+    """Server capabilities"""
+
+    def get_all_capabilities_on_server(self, max_result=None, search_term=None, last_group=None, start_index=None):
+        """Provides a list of capabilities for a select list in the UI.  Filterable and paginable.
+        :param max_result: max-result query parameter
+        :param search_term: searchTerm query parameter
+        :param last_group: lastGroup query parameter
+        :param start_index: start-index query parameter
+        :return:
+        """
+        params = {}
+        if max_result is not None:
+            params["max-result"] = max_result
+        if search_term is not None:
+            params["searchTerm"] = search_term
+        if last_group is not None:
+            params["lastGroup"] = last_group
+        if start_index is not None:
+            params["start-index"] = start_index
+        return self.get(self.resource_url("capability/groupedListing"), params=params)
+
+
+
+    """Plan summary charts"""
+
+    def get_plan_summary(self, build_keys=None):
+        """Get plan summary.
+        :param build_keys: buildKeys query parameter
+        :return:
+        """
+        params = {}
+        if build_keys is not None:
+            params["buildKeys"] = build_keys
+        return self.get(self.resource_url("chart/planSummary"), params=params)
+
+
+
+    """Plan dependencies"""
+
+    def search_for_available_plan_child_dependencies(self, project_key, build_key, search_term, max_result=None, start_index=None):
+        """Search for available plan child dependencies
+        :param project_key: projectKey path parameter
+        :param build_key: buildKey path parameter
+        :param max_result: max-result query parameter
+        :param search_term: searchTerm query parameter
+        :param start_index: start-index query parameter
+        :return:
+        """
+        params = {}
+        if max_result is not None:
+            params["max-result"] = max_result
+        if search_term is not None:
+            params["searchTerm"] = search_term
+        if start_index is not None:
+            params["start-index"] = start_index
+        return self.get(
+            self.resource_url(f"dependency/search/{project_key}-{build_key}/child"),
+            params=params,
+        )
+
+    def search_for_available_plan_parent_dependencies(self, project_key, build_key, search_term, max_result=None, start_index=None):
+        """Search for available plan parent dependencies
+        :param project_key: projectKey path parameter
+        :param build_key: buildKey path parameter
+        :param max_result: max-result query parameter
+        :param search_term: searchTerm query parameter
+        :param start_index: start-index query parameter
+        :return:
+        """
+        params = {}
+        if max_result is not None:
+            params["max-result"] = max_result
+        if search_term is not None:
+            params["searchTerm"] = search_term
+        if start_index is not None:
+            params["start-index"] = start_index
+        return self.get(
+            self.resource_url(f"dependency/search/{project_key}-{build_key}/parent"),
+            params=params,
+        )
+
+
+
+    """Job configuration"""
+
+    def get_docker_pipeline_configuration(self, job_key):
+        """Retrieves Docker configuration for given job.
+        :param job_key: jobKey path parameter
+        :return:
+        """
+        return self.get(self.resource_url(f"job/{job_key}/docker"))
+
+    def set_docker_pipeline_configuration(self, job_key, data):
+        """Updates Docker configuration for given job.
+        :param job_key: jobKey path parameter
+        :param data: request body (dict or list)
+        :return:
+        """
+        return self.put(self.resource_url(f"job/{job_key}/docker"), data=data)
+
+
+
+    """Global search"""
+
+    def search(self, search_term=None, search_entity=None):
+        """Performs a starts with search against projects, plans, plan branches, deployment projects
+        :param search_term: searchTerm query parameter
+        :param search_entity: searchEntity query parameter
+        :return:
+        """
+        params = {}
+        if search_term is not None:
+            params["searchTerm"] = search_term
+        if search_entity is not None:
+            params["searchEntity"] = search_entity
+        return self.get(self.resource_url("quicksearch"), params=params)
+
+    def search_authors(self, search_term, max_result=None, unlinked_only=None, start_index=None):
+        """A starts-with search of authors based on their author name.
+        :param max_result: max-result query parameter
+        :param unlinked_only: unlinkedOnly query parameter
+        :param search_term: searchTerm query parameter
+        :param start_index: start-index query parameter
+        :return:
+        """
+        params = {}
+        if max_result is not None:
+            params["max-result"] = max_result
+        if unlinked_only is not None:
+            params["unlinkedOnly"] = unlinked_only
+        if search_term is not None:
+            params["searchTerm"] = search_term
+        if start_index is not None:
+            params["start-index"] = start_index
+        return self.get(self.resource_url("search/authors"), params=params)
+
+    def search_deployments(self, max_result=None, search_term=None, start_index=None, permission=None):
+        """Performs a contains search against deployment project name.
+        :param max_result: max-result query parameter
+        :param search_term: searchTerm query parameter
+        :param start_index: start-index query parameter
+        :param permission: permission query parameter
+        :return:
+        """
+        params = {}
+        if max_result is not None:
+            params["max-result"] = max_result
+        if search_term is not None:
+            params["searchTerm"] = search_term
+        if start_index is not None:
+            params["start-index"] = start_index
+        if permission is not None:
+            params["permission"] = permission
+        return self.get(self.resource_url("search/deployments"), params=params)
+
+    def search_jobs(self, plan_key, max_result=None, search_term=None, start_index=None):
+        """Performs a "starts with" search against full job name and full job key.
+        :param plan_key: planKey path parameter
+        :param max_result: max-result query parameter
+        :param search_term: searchTerm query parameter
+        :param start_index: start-index query parameter
+        :return:
+        """
+        params = {}
+        if max_result is not None:
+            params["max-result"] = max_result
+        if search_term is not None:
+            params["searchTerm"] = search_term
+        if start_index is not None:
+            params["start-index"] = start_index
+        return self.get(self.resource_url(f"search/jobs/{plan_key}"), params=params)
+
+    def search_projects(self, max_result=None, search_term=None, start_index=None, permission=None):
+        """Performs a contains search against project name.
+        :param max_result: max-result query parameter
+        :param search_term: searchTerm query parameter
+        :param start_index: start-index query parameter
+        :param permission: permission query parameter
+        :return:
+        """
+        params = {}
+        if max_result is not None:
+            params["max-result"] = max_result
+        if search_term is not None:
+            params["searchTerm"] = search_term
+        if start_index is not None:
+            params["start-index"] = start_index
+        if permission is not None:
+            params["permission"] = permission
+        return self.get(self.resource_url("search/projects"), params=params)
+
+    def search_stages(self, plan_key, max_result=None, search_term=None, start_index=None, stage_id=None):
+        """Performs a "starts with" search against full stage name.
+        :param plan_key: planKey path parameter
+        :param max_result: max-result query parameter
+        :param search_term: searchTerm query parameter
+        :param start_index: start-index query parameter
+        :param stage_id: stageId query parameter
+        :return:
+        """
+        params = {}
+        if max_result is not None:
+            params["max-result"] = max_result
+        if search_term is not None:
+            params["searchTerm"] = search_term
+        if start_index is not None:
+            params["start-index"] = start_index
+        if stage_id is not None:
+            params["stageId"] = stage_id
+        return self.get(self.resource_url(f"search/stages/{plan_key}"), params=params)
+
+    def search_users(self, search_term, max_result=None, start_index=None):
+        """A starts-with search of users based on their username, full-name and if allowed email address.
+        :param max_result: max-result query parameter
+        :param search_term: searchTerm query parameter
+        :param start_index: start-index query parameter
+        :return:
+        """
+        params = {}
+        if max_result is not None:
+            params["max-result"] = max_result
+        if search_term is not None:
+            params["searchTerm"] = search_term
+        if start_index is not None:
+            params["start-index"] = start_index
+        return self.get(self.resource_url("search/users"), params=params)
+
+    def search_versions(self, deployment_project_id, max_result=None, branch_key=None, search_term=None, start_index=None, chronological_order=None):
+        """Performs a contains search against a version name.
+        :param max_result: max-result query parameter
+        :param branch_key: branchKey query parameter
+        :param search_term: searchTerm query parameter
+        :param start_index: start-index query parameter
+        :param deployment_project_id: deploymentProjectId query parameter
+        :param chronological_order: chronologicalOrder query parameter
+        :return:
+        """
+        params = {}
+        if max_result is not None:
+            params["max-result"] = max_result
+        if branch_key is not None:
+            params["branchKey"] = branch_key
+        if search_term is not None:
+            params["searchTerm"] = search_term
+        if start_index is not None:
+            params["start-index"] = start_index
+        if deployment_project_id is not None:
+            params["deploymentProjectId"] = deployment_project_id
+        if chronological_order is not None:
+            params["chronologicalOrder"] = chronological_order
+        return self.get(self.resource_url("search/versions"), params=params)
+
+
+
+    """Server status"""
+
+    def get_status_2(self):
+        """Returns the current status of the Bamboo node. This endpoint enables a basic status check on the status of a Bamboo node.
+        :return:
+        """
+        return self.get(self.resource_url("status"))
+
+
+
+    """Utility"""
+
+    def encrypt(self, data):
+        """Encrypts a given text based on the instance specific cipher. Encrypted data can be used i.a. in Repository-stored Specs. Feature can be enabled or disabled in Bamboo security configuration. Number of allowed requests per user is limited and can be modified in Bamboo security configuration.
+        :param data: request body (dict or list)
+        :return:
+        """
+        return self.post(self.resource_url("encrypt"), data=data)
+
+
+
+    """Elastic configuration"""
+
+    def update_all_image_ids(self, image_id, new_image_id):
+        """Bulk update of all images AMI id.
+        :param image_id: imageId path parameter
+        :param new_image_id: newImageId query parameter
+        :return:
+        """
+        params = {}
+        if new_image_id is not None:
+            params["newImageId"] = new_image_id
+        return self.put(self.resource_url(f"elasticConfiguration/image-id/{image_id}"), params=params)
+
+
+
+    """Quick filters"""
+
+    def deactivate_filter(self, id):
+        """Deactivates a quick filter for currently logged in user.
+        :param id: id path parameter
+        :return:
+        """
+        return self.put(self.resource_url(f"quickFilter/{id}/deactivate"))
