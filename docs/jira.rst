@@ -560,6 +560,36 @@ Epic Issues
     # By default, the returned issues are ordered by rank.
     jira.get_issues_for_epic(board_id, epic_id, jql="", validate_query="", fields="*all", expand="", start=0, limit=50, )
 
+    # Get epic by ID or key
+    jira.get_epic(epic_id_or_key)
+
+    # Partially update an epic (fields not present are not updated)
+    jira.update_partially_epic(epic_id_or_key, data={"name": "New name", "done": True})
+
+    # Get all issues that belong to an epic, for a given epic ID or key
+    jira.get_issues_in_epic(epic_id_or_key, jql="", validate_query="", fields="*all", expand="", start=0, limit=50)
+
+    # Move issues to an epic
+    jira.move_issues_to_epic(epic_id_or_key, issues_list)
+
+    # Update the rank of an epic
+    jira.rank_epics(epic_id_or_key, rank_before_epic=None, rank_after_epic=None, rank_custom_field_id=None)
+
+    # Get all issues that do not belong to any epic
+    jira.get_issues_not_in_epic(jql="", validate_query="", fields="*all", expand="", start=0, limit=50)
+
+    # Remove issues from any epic
+    jira.remove_issues_from_epic(issues_list)
+
+    # Get a single issue including Agile fields (sprint, closedSprints, flagged, epic)
+    jira.get_agile_issue(issue_id_or_key, fields="*all", expand=None, update_history=False)
+
+    # Get the estimation of an issue for a given board
+    jira.get_issue_estimation(issue_id_or_key, board_id)
+
+    # Set the estimation of an issue for a given board
+    jira.set_issue_estimation(issue_id_or_key, board_id, value)
+
 Manage Boards
 -------------
 
@@ -630,6 +660,33 @@ Manage Sprints
 
     # Add/Move Issues to sprint
     jira.add_issues_to_sprint(sprint_id, issues_list)
+
+    # Fully update a sprint
+    jira.update_sprint(sprint_id, data={"name": "Sprint 2"})
+
+    # Partially update a sprint
+    jira.update_partially_sprint(sprint_id, data={"name": "new name"})
+
+    # Swap two sprints that are scheduled on the same board
+    jira.swap_sprint(sprint_id, sprint_to_swap_with)
+
+    # Unmap sprints from boards (experimental)
+    jira.unmap_sprints(sprint_ids)
+
+    # Unmap all sprints from boards (experimental)
+    jira.unmap_all_sprints()
+
+    # Get the keys of all sprint properties
+    jira.get_sprint_properties(sprint_id)
+
+    # Get a sprint property value
+    jira.get_sprint_property(sprint_id, property_key)
+
+    # Set a sprint property value
+    jira.set_sprint_property(sprint_id, property_key, value)
+
+    # Delete a sprint property
+    jira.delete_sprint_property(sprint_id, property_key)
 
 
 Manage dashboards

@@ -6160,6 +6160,201 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
             params["maxResults"] = limit
         return self.get(url, params=params)
 
+    # rest/agile/1.0/epic/{epicIdOrKey}
+    def get_epic(self, epic_id_or_key: T_id) -> T_resp_json:
+        """
+        Returns the epic for a given epic ID or key.
+        The user needs to have permission to view the epic.
+
+        https://docs.atlassian.com/jira-software/REST/9.17.0/#agile/1.0/epic-getEpic
+        :param epic_id_or_key: int/str: The ID or key of the epic
+        :return: Dictionary of response received from the API
+        """
+        resource = f"epic/{epic_id_or_key}"
+        url = self.get_agile_resource_url(resource)
+        return self.get(url)
+
+    def update_partially_epic(self, epic_id_or_key: T_id, data: dict) -> T_resp_json:
+        """
+        Performs a partial update of an epic.
+        A partial update means that fields not present in the request JSON will not be updated.
+
+        https://docs.atlassian.com/jira-software/REST/9.17.0/#agile/1.0/epic-partiallyUpdateEpic
+        :param epic_id_or_key: int/str: The ID or key of the epic
+        :param data: dict: Fields to update, e.g. {"name": "New name", "done": true}
+        :return: Dictionary of response received from the API
+        """
+        resource = f"epic/{epic_id_or_key}"
+        url = self.get_agile_resource_url(resource)
+        return self.post(url, data=data)
+
+    def get_issues_in_epic(
+        self,
+        epic_id_or_key: T_id,
+        jql: str = "",
+        validate_query: str = "",
+        fields: str = "*all",
+        expand: str = "",
+        start: int = 0,
+        limit: int = 50,
+    ) -> T_resp_json:
+        """
+        Returns all issues that belong to an epic, for a given epic ID or key.
+        This only includes issues that the user has permission to view.
+        By default, the returned issues are ordered by rank.
+
+        https://docs.atlassian.com/jira-software/REST/9.17.0/#agile/1.0/epic-getIssuesForEpic
+        :param epic_id_or_key: int/str: The ID or key of the epic
+        :param jql: Filter results using a JQL query.
+        :param validate_query: Whether to validate the JQL query.
+        :param fields: list of fields, for example: ['priority', 'summary', 'customfield_10007']
+        :param expand: A comma-separated list of the parameters to expand.
+        :param start: The starting index of the returned issues. Base index: 0.
+        :param limit: The maximum number of issues to return per page. Default: 50.
+        :return: Dictionary of response received from the API
+        """
+        resource = f"epic/{epic_id_or_key}/issue"
+        url = self.get_agile_resource_url(resource)
+        params: dict = {}
+        if jql:
+            params["jql"] = jql
+        if validate_query:
+            params["validateQuery"] = validate_query
+        if fields:
+            params["fields"] = fields
+        if expand:
+            params["expand"] = expand
+        if start:
+            params["startAt"] = start
+        if limit:
+            params["maxResults"] = limit
+        return self.get(url, params=params)
+
+    def move_issues_to_epic(self, epic_id_or_key: T_id, issues: List[T_id]) -> T_resp_json:
+        """
+        Moves issues to an epic, for a given epic ID or key.
+        Issues can only be moved to epics that the user has permission to view.
+
+        https://docs.atlassian.com/jira-software/REST/9.17.0/#agile/1.0/epic-moveIssuesToEpic
+        :param epic_id_or_key: int/str: The ID or key of the epic
+        :param issues: list: List of issue keys or IDs, e.g. ['APA-1', 'APA-2']
+        :return: Dictionary of response received from the API
+        """
+        resource = f"epic/{epic_id_or_key}/issue"
+        url = self.get_agile_resource_url(resource)
+        data = dict(issues=issues)
+        return self.post(url, data=data)
+
+    def rank_epics(
+        self,
+        epic_id_or_key: T_id,
+        rank_before_epic: Optional[str] = None,
+        rank_after_epic: Optional[str] = None,
+        rank_custom_field_id: Optional[T_id] = None,
+    ) -> T_resp_json:
+        """
+        Updates the rank of an epic.
+
+        https://docs.atlassian.com/jira-software/REST/9.17.0/#agile/1.0/epic-rankEpics
+        :param epic_id_or_key: int/str: The ID or key of the epic
+        :param rank_before_epic: The epic the given epic should be placed before
+        :param rank_after_epic: The epic the given epic should be placed after
+        :param rank_custom_field_id: The number of the custom field Rank
+        :return: Dictionary of response received from the API
+        """
+        resource = f"epic/{epic_id_or_key}/rank"
+        url = self.get_agile_resource_url(resource)
+        data: dict = {}
+        if rank_before_epic:
+            data["rankBeforeEpic"] = rank_before_epic
+        if rank_after_epic:
+            data["rankAfterEpic"] = rank_after_epic
+        if rank_custom_field_id:
+            data["rankCustomFieldId"] = rank_custom_field_id
+        return self.put(url, data=data)
+
+    def get_issues_not_in_epic(
+        self,
+        jql: str = "",
+        validate_query: str = "",
+        fields: str = "*all",
+        expand: str = "",
+        start: int = 0,
+        limit: int = 50,
+    ) -> T_resp_json:
+        """
+        Returns all issues that do not belong to any epic.
+        This only includes issues that the user has permission to view.
+        By default, the returned issues are ordered by rank.
+
+        https://docs.atlassian.com/jira-software/REST/9.17.0/#agile/1.0/epic-getIssuesWithoutEpic
+        :param jql: Filter results using a JQL query.
+        :param validate_query: Whether to validate the JQL query.
+        :param fields: list of fields, for example: ['priority', 'summary', 'customfield_10007']
+        :param expand: A comma-separated list of the parameters to expand.
+        :param start: The starting index of the returned issues. Base index: 0.
+        :param limit: The maximum number of issues to return per page. Default: 50.
+        :return: Dictionary of response received from the API
+        """
+        resource = "epic/none/issue"
+        url = self.get_agile_resource_url(resource)
+        params: dict = {}
+        if jql:
+            params["jql"] = jql
+        if validate_query:
+            params["validateQuery"] = validate_query
+        if fields:
+            params["fields"] = fields
+        if expand:
+            params["expand"] = expand
+        if start:
+            params["startAt"] = start
+        if limit:
+            params["maxResults"] = limit
+        return self.get(url, params=params)
+
+    def remove_issues_from_epic(self, issues: List[T_id]) -> T_resp_json:
+        """
+        Removes issues from any epic.
+
+        https://docs.atlassian.com/jira-software/REST/9.17.0/#agile/1.0/epic-removeIssuesFromEpic
+        :param issues: list: List of issue keys or IDs, e.g. ['APA-1', 'APA-2']
+        :return: Dictionary of response received from the API
+        """
+        resource = "epic/none/issue"
+        url = self.get_agile_resource_url(resource)
+        data = dict(issues=issues)
+        return self.post(url, data=data)
+
+    # rest/agile/1.0/issue/{issueIdOrKey}/estimation
+    def get_issue_estimation(self, issue_id_or_key: T_id, board_id: T_id) -> T_resp_json:
+        """
+        Returns the estimation of the issue for a given board.
+
+        https://docs.atlassian.com/jira-software/REST/9.17.0/#agile/1.0/issue-getIssueEstimationForBoard
+        :param issue_id_or_key: int/str: The ID or key of the issue
+        :param board_id: int: The ID of the board
+        :return: Dictionary of conversion received from the API
+        """
+        resource = f"issue/{issue_id_or_key}/estimation"
+        url = self.get_agile_resource_url(resource)
+        params = {"boardId": board_id}
+        return self.get(url, params=params)
+
+    def set_issue_estimation(self, issue_id_or_key: T_id, board_id: T_id, value: str) -> T_resp_json:
+        """
+        Updates the estimation of the issue for a given board.
+
+        https://docs.atlassian.com/jira-software/REST/9.17.0/#agile/1.0/issue-estimateIssueForBoard
+        :param issue_id_or_key: int/str: The ID or key of the issue
+        :param board_id: int: The ID of the board
+        :param value: str: The value to set for the estimation
+        :return: Dictionary of response received from the API
+        """
+        resource = f"issue/{issue_id_or_key}/estimation"
+        url = self.get_agile_resource_url(resource)
+        return self.put(url, params={"boardId": board_id}, data={"value": value})
+
     # rest/agile/1.0/board/{boardId}/project
     def get_all_projects_associated_with_board(self, board_id: T_id, start: int = 0, limit: int = 50) -> T_resp_json:
         """
@@ -6503,6 +6698,139 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
         resource = f"sprint/{sprint_id}"
         url = self.get_agile_resource_url(resource)
         return self.post(url, data=data)
+
+    def update_sprint(self, sprint_id: T_id, data: dict) -> T_resp_json:
+        """
+        Performs a full update of a sprint.
+        A full update means that fields not present in the request JSON will be set to their default values.
+
+        Sprints that are in a closed state cannot be updated.
+        https://docs.atlassian.com/jira-software/REST/9.17.0/#agile/1.0/sprint-updateSprint
+        :param sprint_id: int/str: The ID of the sprint
+        :param data: dict: Sprint fields, e.g. {"name": "new name", "state": "active"}
+        :return: Dictionary of response received from the API
+        """
+        resource = f"sprint/{sprint_id}"
+        url = self.get_agile_resource_url(resource)
+        return self.put(url, data=data)
+
+    def swap_sprint(self, sprint_id: T_id, sprint_to_swap_with: T_id) -> T_resp_json:
+        """
+        Swaps the values of two sprints, for a given sprint ID.
+        The sprints must be originally scheduled on the same board.
+
+        https://docs.atlassian.com/jira-software/REST/9.17.0/#agile/1.0/sprint-swapSprint
+        :param sprint_id: int/str: The ID of the sprint
+        :param sprint_to_swap_with: int: The ID of the sprint to swap with
+        :return: Dictionary of response received from the API
+        """
+        resource = f"sprint/{sprint_id}/swap"
+        url = self.get_agile_resource_url(resource)
+        return self.post(url, data={"sprintToSwapWith": sprint_to_swap_with})
+
+    def unmap_sprints(self, sprint_ids: List[T_id]) -> T_resp_json:
+        """
+        Unmaps sprints from boards, for a list of sprint IDs (experimental).
+
+        https://docs.atlassian.com/jira-software/REST/9.17.0/#agile/1.0/sprint-unmapSprints
+        :param sprint_ids: list: List of sprint IDs, e.g. [37, 42]
+        :return: Dictionary of response received from the API
+        """
+        resource = "sprint/unmap"
+        url = self.get_agile_resource_url(resource)
+        return self.put(url, data={"sprintIds": sprint_ids})
+
+    def unmap_all_sprints(self) -> T_resp_json:
+        """
+        Unmaps all sprints from boards (experimental).
+
+        https://docs.atlassian.com/jira-software/REST/9.17.0/#agile/1.0/sprint-unmapAllSprints
+        :return: Dictionary of response received from the API
+        """
+        resource = "sprint/unmap-all"
+        url = self.get_agile_resource_url(resource)
+        return self.put(url)
+
+    # rest/agile/1.0/sprint/{sprintId}/properties
+    def get_sprint_properties(self, sprint_id: T_id) -> T_resp_json:
+        """
+        Returns the keys of all properties for the sprint.
+
+        https://docs.atlassian.com/jira-software/REST/9.17.0/#agile/1.0/sprint/{sprintId}/properties-getPropertiesKeys
+        :param sprint_id: int/str: The ID of the sprint
+        :return: Dictionary of response received from the API
+        """
+        resource = f"sprint/{sprint_id}/properties"
+        url = self.get_agile_resource_url(resource)
+        return self.get(url)
+
+    def get_sprint_property(self, sprint_id: T_id, property_key: str) -> T_resp_json:
+        """
+        Returns the value of the property for the sprint.
+
+        https://docs.atlassian.com/jira-software/REST/9.17.0/#agile/1.0/sprint/{sprintId}/properties-getProperty
+        :param sprint_id: int/str: The ID of the sprint
+        :param property_key: str: The key of the property
+        :return: Dictionary of response received from the API
+        """
+        resource = f"sprint/{sprint_id}/properties/{property_key}"
+        url = self.get_agile_resource_url(resource)
+        return self.get(url)
+
+    def set_sprint_property(self, sprint_id: T_id, property_key: str, value) -> T_resp_json:
+        """
+        Sets the value of the specified sprint's property.
+
+        https://docs.atlassian.com/jira-software/REST/9.17.0/#agile/1.0/sprint/{sprintId}/properties-setProperty
+        :param sprint_id: int/str: The ID of the sprint
+        :param property_key: str: The key of the property
+        :param value: The value to set
+        :return: Dictionary of response received from the API
+        """
+        resource = f"sprint/{sprint_id}/properties/{property_key}"
+        url = self.get_agile_resource_url(resource)
+        return self.put(url, data=value)
+
+    def delete_sprint_property(self, sprint_id: T_id, property_key: str) -> T_resp_json:
+        """
+        Removes the property from the sprint.
+
+        https://docs.atlassian.com/jira-software/REST/9.17.0/#agile/1.0/sprint/{sprintId}/properties-deleteProperty
+        :param sprint_id: int/str: The ID of the sprint
+        :param property_key: str: The key of the property
+        :return: Dictionary of response received from the API
+        """
+        resource = f"sprint/{sprint_id}/properties/{property_key}"
+        url = self.get_agile_resource_url(resource)
+        return self.delete(url)
+
+    # rest/agile/1.0/issue/{issueIdOrKey}
+    def get_agile_issue(
+        self,
+        issue_id_or_key: T_id,
+        fields: str = "*all",
+        expand: Optional[str] = None,
+        update_history: bool = False,
+    ) -> T_resp_json:
+        """
+        Returns a single issue from the Agile API, for a given issue ID or key.
+        The issue includes Agile fields like sprint, closedSprints, flagged, and epic.
+
+        https://docs.atlassian.com/jira-software/REST/9.17.0/#agile/1.0/issue-getIssue
+        :param issue_id_or_key: int/str: The ID or key of the issue
+        :param fields: Comma-separated list of issue fields
+        :param expand: A comma-separated list of the parameters to expand
+        :param update_history: Whether to update the user's issue history
+        :return: Dictionary of response received from the API
+        """
+        resource = f"issue/{issue_id_or_key}"
+        url = self.get_agile_resource_url(resource)
+        params: dict = {"fields": fields}
+        if expand:
+            params["expand"] = expand
+        if update_history:
+            params["updateHistory"] = update_history
+        return self.get(url, params=params)
 
     def get_sprint_issues(self, sprint_id: T_id, start: T_id, limit: T_id) -> T_resp_json:
         """

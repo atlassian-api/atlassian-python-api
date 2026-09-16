@@ -219,3 +219,127 @@ class TestJira(TestCase):
                 "name": "Confluence",
             },
         )
+
+
+class TestJiraAgileMethods(TestCase):
+    """Route and verb coverage for the Jira Software 9.17.0 agile/1.0 API."""
+
+    def setUp(self):
+        self.jira = jira.Jira("https://example.atlassian.net")
+
+    @patch.object(jira.Jira, "get")
+    def test_get_epic(self, mock_get):
+        self.jira.get_epic("BAR-1")
+        mock_get.assert_called_once_with("rest/agile/1.0/epic/BAR-1")
+
+    @patch.object(jira.Jira, "post")
+    def test_update_partially_epic(self, mock_post):
+        self.jira.update_partially_epic("BAR-1", {"name": "New name", "done": True})
+        mock_post.assert_called_once_with(
+            "rest/agile/1.0/epic/BAR-1", data={"name": "New name", "done": True}
+        )
+
+    @patch.object(jira.Jira, "get")
+    def test_get_issues_in_epic(self, mock_get):
+        self.jira.get_issues_in_epic("BAR-1", jql="order by rank", fields="summary", start=10)
+        mock_get.assert_called_once_with(
+            "rest/agile/1.0/epic/BAR-1/issue",
+            params={"jql": "order by rank", "fields": "summary", "startAt": 10, "maxResults": 50},
+        )
+
+    @patch.object(jira.Jira, "post")
+    def test_move_issues_to_epic(self, mock_post):
+        self.jira.move_issues_to_epic("BAR-1", ["FOO-1", "FOO-2"])
+        mock_post.assert_called_once_with(
+            "rest/agile/1.0/epic/BAR-1/issue", data={"issues": ["FOO-1", "FOO-2"]}
+        )
+
+    @patch.object(jira.Jira, "put")
+    def test_rank_epics(self, mock_put):
+        self.jira.rank_epics("BAR-1", rank_before_epic="BAR-2", rank_custom_field_id=10000)
+        mock_put.assert_called_once_with(
+            "rest/agile/1.0/epic/BAR-1/rank",
+            data={"rankBeforeEpic": "BAR-2", "rankCustomFieldId": 10000},
+        )
+
+    @patch.object(jira.Jira, "get")
+    def test_get_issues_not_in_epic(self, mock_get):
+        self.jira.get_issues_not_in_epic(jql="project = FOO")
+        mock_get.assert_called_once_with(
+            "rest/agile/1.0/epic/none/issue",
+            params={"jql": "project = FOO", "fields": "*all", "maxResults": 50},
+        )
+
+    @patch.object(jira.Jira, "post")
+    def test_remove_issues_from_epic(self, mock_post):
+        self.jira.remove_issues_from_epic(["FOO-1", "FOO-2"])
+        mock_post.assert_called_once_with(
+            "rest/agile/1.0/epic/none/issue", data={"issues": ["FOO-1", "FOO-2"]}
+        )
+
+    @patch.object(jira.Jira, "get")
+    def test_get_agile_issue(self, mock_get):
+        self.jira.get_agile_issue("FOO-1", fields="summary", update_history=True)
+        mock_get.assert_called_once_with(
+            "rest/agile/1.0/issue/FOO-1", params={"fields": "summary", "updateHistory": True}
+        )
+
+    @patch.object(jira.Jira, "get")
+    def test_get_issue_estimation(self, mock_get):
+        self.jira.get_issue_estimation("FOO-1", board_id=42)
+        mock_get.assert_called_once_with(
+            "rest/agile/1.0/issue/FOO-1/estimation", params={"boardId": 42}
+        )
+
+    @patch.object(jira.Jira, "put")
+    def test_set_issue_estimation(self, mock_put):
+        self.jira.set_issue_estimation("FOO-1", board_id=42, value="5.0")
+        mock_put.assert_called_once_with(
+            "rest/agile/1.0/issue/FOO-1/estimation", params={"boardId": 42}, data={"value": "5.0"}
+        )
+
+    @patch.object(jira.Jira, "put")
+    def test_update_sprint(self, mock_put):
+        self.jira.update_sprint(99, {"name": "Sprint 2", "state": "active"})
+        mock_put.assert_called_once_with(
+            "rest/agile/1.0/sprint/99", data={"name": "Sprint 2", "state": "active"}
+        )
+
+    @patch.object(jira.Jira, "post")
+    def test_swap_sprint(self, mock_post):
+        self.jira.swap_sprint(99, sprint_to_swap_with=100)
+        mock_post.assert_called_once_with(
+            "rest/agile/1.0/sprint/99/swap", data={"sprintToSwapWith": 100}
+        )
+
+    @patch.object(jira.Jira, "put")
+    def test_unmap_sprints(self, mock_put):
+        self.jira.unmap_sprints([37, 42])
+        mock_put.assert_called_once_with("rest/agile/1.0/sprint/unmap", data={"sprintIds": [37, 42]})
+
+    @patch.object(jira.Jira, "put")
+    def test_unmap_all_sprints(self, mock_put):
+        self.jira.unmap_all_sprints()
+        mock_put.assert_called_once_with("rest/agile/1.0/sprint/unmap-all")
+
+    @patch.object(jira.Jira, "get")
+    def test_get_sprint_properties(self, mock_get):
+        self.jira.get_sprint_properties(99)
+        mock_get.assert_called_once_with("rest/agile/1.0/sprint/99/properties")
+
+    @patch.object(jira.Jira, "get")
+    def test_get_sprint_property(self, mock_get):
+        self.jira.get_sprint_property(99, "propertyKey1")
+        mock_get.assert_called_once_with("rest/agile/1.0/sprint/99/properties/propertyKey1")
+
+    @patch.object(jira.Jira, "put")
+    def test_set_sprint_property(self, mock_put):
+        self.jira.set_sprint_property(99, "propertyKey1", {"value": 1})
+        mock_put.assert_called_once_with(
+            "rest/agile/1.0/sprint/99/properties/propertyKey1", data={"value": 1}
+        )
+
+    @patch.object(jira.Jira, "delete")
+    def test_delete_sprint_property(self, mock_delete):
+        self.jira.delete_sprint_property(99, "propertyKey1")
+        mock_delete.assert_called_once_with("rest/agile/1.0/sprint/99/properties/propertyKey1")
