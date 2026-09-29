@@ -1027,6 +1027,7 @@ class Bitbucket(BitbucketBase):
                 pass
             else:
                 raise
+        return exists
 
     def update_repo(self, project_key, repository_slug, **params):
         """

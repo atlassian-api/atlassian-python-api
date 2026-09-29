@@ -6,7 +6,6 @@ import time
 import warnings
 from urllib.parse import quote
 from .base import ConfluenceCloudBase
-import requests
 from requests import HTTPError
 from atlassian.errors import (
     ApiError,

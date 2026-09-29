@@ -125,9 +125,7 @@ class TestPortfolioFilters(unittest.TestCase):
         """Test get_filters method."""
         mock_get.return_value = [{"id": "1", "name": "Filter 1"}]
         result = self.portfolio.get_filters("test query")
-        mock_get.assert_called_once_with(
-            "rest/roadmap/1.0/system/filters.json", params={"queryString": "test query"}
-        )
+        mock_get.assert_called_once_with("rest/roadmap/1.0/system/filters.json", params={"queryString": "test query"})
         self.assertEqual(len(result), 1)
 
     @patch.object(Portfolio, "get")

@@ -1906,6 +1906,7 @@ class TestCrowdBackupAndAudit(unittest.TestCase):
             params={"start": 0, "limit": 99999},
             data={},
         )
+
     @patch.object(Crowd, "post")
     def test_get_audit_log_filter_values(self, mock_post):
         """Test get_audit_log_filter_values method."""

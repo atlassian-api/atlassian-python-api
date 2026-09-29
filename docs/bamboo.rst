@@ -667,7 +667,7 @@ Agents & assignments
     # Dedicate agent, elastic image or ephemeral template.
     add_agent_assignment(executor_type=..., executor_id=..., entity_id=..., assignment_type=...)
 
-    # Add agent assignment for job. agentAssignmentKey is a map with one key-value: name - agentAssignmentKey. 
+    # Add agent assignment for job. agentAssignmentKey is a map with one key-value: name - agentAssignmentKey.
     add_agent_assignment_for_job(job_key, data)
 
     # Update existing agent capability. It's allowed to skip capability key at request payload.
@@ -796,7 +796,7 @@ Deployments
     # Get the all users' latest statuses of deployment version.
     get_latest_version_statuses(deployment_version_id)
 
-    # Add agent assignment for environment. agentAssignmentKey is a map with one key-value: name - agentAssignmentKey. 
+    # Add agent assignment for environment. agentAssignmentKey is a map with one key-value: name - agentAssignmentKey.
     add_agent_assignment_for_environment(environment_id, data)
 
     # Change environment position within deployment project.

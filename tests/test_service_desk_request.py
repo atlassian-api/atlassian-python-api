@@ -247,9 +247,10 @@ def test_get_portal_and_portal_by_project():
 def test_organization_cleanup_preview_and_cleanup_send_flags():
     service_desk = ServiceDesk("https://example.atlassian.net")
 
-    with patch.object(service_desk, "get", return_value={"values": []}) as get, patch.object(
-        service_desk, "delete", return_value=None
-    ) as delete:
+    with (
+        patch.object(service_desk, "get", return_value={"values": []}) as get,
+        patch.object(service_desk, "delete", return_value=None) as delete,
+    ):
         service_desk.preview_organization_cleanup(delete_detached_organizations=True)
         service_desk.cleanup_organizations(delete_organizations_with_inactive_users=True)
 

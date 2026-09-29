@@ -1,6 +1,6 @@
 # coding=utf-8
 import logging
-from xml.etree import ElementTree
+from defusedxml import ElementTree
 
 from jmespath import search
 

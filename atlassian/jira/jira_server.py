@@ -1419,9 +1419,9 @@ class Jira(AtlassianRestAPI):
     def get_user_with_permission_by_project(
         self,
         permission: str,
-        username: str = None,
-        issue_key: str = None,
-        project_key: str = None,
+        username: Optional[str] = None,
+        issue_key: Optional[str] = None,
+        project_key: Optional[str] = None,
         start: int = 0,
         limit: int = 50,
     ):
@@ -1836,11 +1836,11 @@ class Jira(AtlassianRestAPI):
             params=params,
         )
 
-    def bulk_update_issue_field(self, key_list: list, fields: Union[str, dict] = "*all") -> bool:
+    def bulk_update_issue_field(self, key_list: list, fields: Union[str, dict] = "*all") -> List[Any]:
         """
         :param key_list: list of issues with common filed to be updated
         :param fields: common fields to be updated
-        return Boolean True/False
+        :return: Keys of issues that could not be updated.
         """
         base_url = self.resource_url("issue")
         failed_keys = []

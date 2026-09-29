@@ -235,9 +235,7 @@ class TestJiraAgileMethods(TestCase):
     @patch.object(jira.Jira, "post")
     def test_update_partially_epic(self, mock_post):
         self.jira.update_partially_epic("BAR-1", {"name": "New name", "done": True})
-        mock_post.assert_called_once_with(
-            "rest/agile/1.0/epic/BAR-1", data={"name": "New name", "done": True}
-        )
+        mock_post.assert_called_once_with("rest/agile/1.0/epic/BAR-1", data={"name": "New name", "done": True})
 
     @patch.object(jira.Jira, "get")
     def test_get_issues_in_epic(self, mock_get):
@@ -250,9 +248,7 @@ class TestJiraAgileMethods(TestCase):
     @patch.object(jira.Jira, "post")
     def test_move_issues_to_epic(self, mock_post):
         self.jira.move_issues_to_epic("BAR-1", ["FOO-1", "FOO-2"])
-        mock_post.assert_called_once_with(
-            "rest/agile/1.0/epic/BAR-1/issue", data={"issues": ["FOO-1", "FOO-2"]}
-        )
+        mock_post.assert_called_once_with("rest/agile/1.0/epic/BAR-1/issue", data={"issues": ["FOO-1", "FOO-2"]})
 
     @patch.object(jira.Jira, "put")
     def test_rank_epics(self, mock_put):
@@ -273,9 +269,7 @@ class TestJiraAgileMethods(TestCase):
     @patch.object(jira.Jira, "post")
     def test_remove_issues_from_epic(self, mock_post):
         self.jira.remove_issues_from_epic(["FOO-1", "FOO-2"])
-        mock_post.assert_called_once_with(
-            "rest/agile/1.0/epic/none/issue", data={"issues": ["FOO-1", "FOO-2"]}
-        )
+        mock_post.assert_called_once_with("rest/agile/1.0/epic/none/issue", data={"issues": ["FOO-1", "FOO-2"]})
 
     @patch.object(jira.Jira, "get")
     def test_get_agile_issue(self, mock_get):
@@ -287,9 +281,7 @@ class TestJiraAgileMethods(TestCase):
     @patch.object(jira.Jira, "get")
     def test_get_issue_estimation(self, mock_get):
         self.jira.get_issue_estimation("FOO-1", board_id=42)
-        mock_get.assert_called_once_with(
-            "rest/agile/1.0/issue/FOO-1/estimation", params={"boardId": 42}
-        )
+        mock_get.assert_called_once_with("rest/agile/1.0/issue/FOO-1/estimation", params={"boardId": 42})
 
     @patch.object(jira.Jira, "put")
     def test_set_issue_estimation(self, mock_put):
@@ -301,16 +293,12 @@ class TestJiraAgileMethods(TestCase):
     @patch.object(jira.Jira, "put")
     def test_update_sprint(self, mock_put):
         self.jira.update_sprint(99, {"name": "Sprint 2", "state": "active"})
-        mock_put.assert_called_once_with(
-            "rest/agile/1.0/sprint/99", data={"name": "Sprint 2", "state": "active"}
-        )
+        mock_put.assert_called_once_with("rest/agile/1.0/sprint/99", data={"name": "Sprint 2", "state": "active"})
 
     @patch.object(jira.Jira, "post")
     def test_swap_sprint(self, mock_post):
         self.jira.swap_sprint(99, sprint_to_swap_with=100)
-        mock_post.assert_called_once_with(
-            "rest/agile/1.0/sprint/99/swap", data={"sprintToSwapWith": 100}
-        )
+        mock_post.assert_called_once_with("rest/agile/1.0/sprint/99/swap", data={"sprintToSwapWith": 100})
 
     @patch.object(jira.Jira, "put")
     def test_unmap_sprints(self, mock_put):
@@ -335,9 +323,7 @@ class TestJiraAgileMethods(TestCase):
     @patch.object(jira.Jira, "put")
     def test_set_sprint_property(self, mock_put):
         self.jira.set_sprint_property(99, "propertyKey1", {"value": 1})
-        mock_put.assert_called_once_with(
-            "rest/agile/1.0/sprint/99/properties/propertyKey1", data={"value": 1}
-        )
+        mock_put.assert_called_once_with("rest/agile/1.0/sprint/99/properties/propertyKey1", data={"value": 1})
 
     @patch.object(jira.Jira, "delete")
     def test_delete_sprint_property(self, mock_delete):
