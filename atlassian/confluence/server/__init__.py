@@ -1706,9 +1706,7 @@ class Server(ConfluenceServerBase):
         :param keep_last_versions:
         :return:
         """
-        results = self.get_attachments_from_content(page_id=page_id, expand="version", filename=filename).get(
-            "results"
-        )
+        results = self.get_attachments_from_content(page_id=page_id, expand="version", filename=filename).get("results")
         if not results:
             raise ApiNotFoundError(f"No attachment named {filename} found on page {page_id}")
         attachment = results[0]

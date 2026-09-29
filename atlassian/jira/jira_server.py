@@ -1417,13 +1417,13 @@ class Jira(AtlassianRestAPI):
     """
 
     def get_user_with_permission_by_project(
-            self,
-            permission: str,
-            username: str=None,
-            issue_key: str=None,
-            project_key: str=None,
-            start: int=0,
-            limit: int=50
+        self,
+        permission: str,
+        username: str = None,
+        issue_key: str = None,
+        project_key: str = None,
+        start: int = 0,
+        limit: int = 50,
     ):
         """
         Returns a list of active users that match the search string. This resource cannot be accessed anonymously
