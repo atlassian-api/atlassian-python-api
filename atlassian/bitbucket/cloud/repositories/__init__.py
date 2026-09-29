@@ -204,8 +204,10 @@ class WorkspaceRepositories(RepositoriesBase):
             self.get(repository, by)
             exists = True
         except HTTPError as e:
-            if e.response.status_code in (401, 404):
+            if e.response.status_code == 404:
                 pass
+            else:
+                raise
         except Exception as e:
             if not str(e) == f"Unknown repository {by} '{repository}'":
                 raise e

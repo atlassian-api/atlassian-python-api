@@ -39,6 +39,17 @@ class Cloud(ConfluenceCloudBase):
             kwargs["api_root"] = "wiki/api/v2"
         url = url.strip("/")
         super(Cloud, self).__init__(url, *args, **kwargs)
+        # Tenant URLs (e.g. ``https://example.atlassian.net``) serve the REST
+        # API under the ``/wiki`` context path.  API-gateway URLs already
+        # carry their tenant prefix and must not be rewritten.
+        from ...confluence_base import ConfluenceBase as VersionedConfluenceBase
+
+        if (
+            VersionedConfluenceBase._is_cloud_url(self.url)
+            and not VersionedConfluenceBase._is_api_gateway_url(self.url)
+            and "/wiki" not in self.url
+        ):
+            self.url = self.url_joiner(self.url, "wiki")
 
     def _cloud_wiki_url(self, path):
         """Return an absolute Cloud URL under the site's ``/wiki`` context."""
@@ -126,7 +137,9 @@ class Cloud(ConfluenceCloudBase):
         download_url = self.get_pdf_download_url_for_confluence_cloud(export_url)
         if not download_url:
             raise ApiNotFoundError("Failed to export page as PDF", reason="Failed to get download PDF URL")
-        response = requests.get(download_url, timeout=75)
+        response = self.session.get(
+            download_url, timeout=self.timeout, verify=self.verify_ssl, proxies=self.proxies, cert=self.cert
+        )
         response.raise_for_status()
         if not response.content.startswith(b"%PDF-"):
             raise ApiError(
@@ -142,7 +155,7 @@ class Cloud(ConfluenceCloudBase):
     # Content Management
     def get_content(self, content_id, **kwargs):
         """Get content by ID."""
-        return self.get(f"content/{content_id}", **kwargs)
+        return self.get(f"rest/api/content/{content_id}", **kwargs)
 
     def iter_page_versions(self, page_id, limit=200, expand=None):
         """Yield every version of a legacy Confluence Cloud page lazily."""
@@ -174,55 +187,57 @@ class Cloud(ConfluenceCloudBase):
 
     def get_content_by_type(self, content_type, **kwargs):
         """Get content by type (page, blogpost, etc.)."""
-        return self.get("content", params={"type": content_type, **kwargs})
+        return self.get("rest/api/content", params={"type": content_type, **kwargs})
 
     def get_all_pages_from_space(self, space_key, **kwargs):
         """Get all pages from space."""
-        return self._get_paged("content", params={"spaceKey": space_key, "type": "page", **kwargs})
+        return self._get_paged("rest/api/content", params={"spaceKey": space_key, "type": "page", **kwargs})
 
     def get_all_blog_posts_from_space(self, space_key, **kwargs):
         """Get all blog posts from space."""
-        return self._get_paged("content", params={"spaceKey": space_key, "type": "blogpost", **kwargs})
+        return self._get_paged("rest/api/content", params={"spaceKey": space_key, "type": "blogpost", **kwargs})
 
     def create_content(self, data, **kwargs):
         """Create new content."""
-        return self.post("content", data=data, **kwargs)
+        return self.post("rest/api/content", data=data, **kwargs)
 
     def update_content(self, content_id, data, **kwargs):
         """Update existing content."""
-        return self.put(f"content/{content_id}", data=data, **kwargs)
+        return self.put(f"rest/api/content/{content_id}", data=data, **kwargs)
 
     def delete_content(self, content_id, **kwargs):
         """Delete content."""
-        return self.delete(f"content/{content_id}", **kwargs)
+        return self.delete(f"rest/api/content/{content_id}", **kwargs)
 
     def get_content_children(self, content_id, **kwargs):
         """Get child content."""
-        return self.get(f"content/{content_id}/children", **kwargs)
+        return self.get(f"rest/api/content/{content_id}/children", **kwargs)
 
     def get_content_descendants(self, content_id, **kwargs):
         """Get descendant content."""
-        return self.get(f"content/{content_id}/descendants", **kwargs)
+        return self.get(f"rest/api/content/{content_id}/descendants", **kwargs)
 
     def get_child_pages(self, content_id, **kwargs):
         """Get child pages of a content item."""
-        return self.get(f"content/{content_id}/child/page", **kwargs)
+        return self.get(f"rest/api/content/{content_id}/child/page", **kwargs)
 
     def get_descendant_pages(self, content_id, **kwargs):
         """Get all descendant pages of a content item."""
-        return self.get(f"content/{content_id}/descendant/page", **kwargs)
+        return self.get(f"rest/api/content/{content_id}/descendant/page", **kwargs)
 
     def get_content_ancestors(self, content_id, **kwargs):
         """Get ancestor content."""
-        return self.get(f"content/{content_id}/ancestors", **kwargs)
+        return self.get(f"rest/api/content/{content_id}/ancestors", **kwargs)
 
     def get_page_by_title(self, space_key, title, **kwargs):
         """Get page by title and space key."""
-        return self.get("content", params={"spaceKey": space_key, "title": title, "type": "page", **kwargs})
+        return self.get("rest/api/content", params={"spaceKey": space_key, "title": title, "type": "page", **kwargs})
 
     def get_blog_post_by_title(self, space_key, title, **kwargs):
         """Get blog post by title and space key."""
-        return self.get("content", params={"spaceKey": space_key, "title": title, "type": "blogpost", **kwargs})
+        return self.get(
+            "rest/api/content", params={"spaceKey": space_key, "title": title, "type": "blogpost", **kwargs}
+        )
 
     def blog_post_exists(self, space_key, title, **kwargs):
         """Check if blog post exists."""
@@ -237,7 +252,7 @@ class Cloud(ConfluenceCloudBase):
         one matching page.
         """
         try:
-            spaces = self.get("spaces", params={"keys": [space_key], "limit": 1})
+            spaces = self.get("api/v2/spaces", params={"keys": [space_key], "limit": 1})
         except HTTPError as error:
             if error.response is not None and error.response.status_code == 404:
                 return False
@@ -248,7 +263,7 @@ class Cloud(ConfluenceCloudBase):
 
         try:
             result = self.get(
-                "pages",
+                "api/v2/pages",
                 params={
                     "space-id": space_results[0]["id"],
                     "title": title,
@@ -304,6 +319,10 @@ class Cloud(ConfluenceCloudBase):
 
             raise
 
+    def get_page_by_id(self, page_id, **kwargs):
+        """Get a page (or other content) by ID from the Cloud V1 content API."""
+        return self.get(f"rest/api/content/{page_id}", **kwargs)
+
     def get_page_child_count(self, page_id, type="page"):
         """Return the number of direct children of ``type`` without listing them."""
         page = self.get_page_by_id(page_id, expand=f"children.{type}")
@@ -351,7 +370,7 @@ class Cloud(ConfluenceCloudBase):
         Calls the Confluence Cloud v2 endpoint ``/wiki/api/v2/spaces``.
         For paginated enumeration of every space, use :meth:`get_all_spaces`.
         """
-        return self.get("spaces", **kwargs)
+        return self.get("api/v2/spaces", **kwargs)
 
     def get_all_spaces(self, **kwargs):
         """
@@ -363,7 +382,7 @@ class Cloud(ConfluenceCloudBase):
         not available on the OAuth API gateway and returns
         ``GoneException: This deprecated endpoint has been removed``.
         """
-        return self._get_paged("spaces", params=kwargs)
+        return self._get_paged("api/v2/spaces", params=kwargs)
 
     def get_space_names(self, **kwargs):
         """Return the names of every space without fetching page content."""
@@ -371,36 +390,36 @@ class Cloud(ConfluenceCloudBase):
 
     def get_space(self, space_id, **kwargs):
         """Get space by ID."""
-        return self.get(f"spaces/{space_id}", **kwargs)
+        return self.get(f"api/v2/spaces/{space_id}", **kwargs)
 
     def create_space(self, data, **kwargs):
         """Create new space."""
-        return self.post("spaces", data=data, **kwargs)
+        return self.post("api/v2/spaces", data=data, **kwargs)
 
     def update_space(self, space_id, data, **kwargs):
         """Update existing space."""
-        return self.put(f"spaces/{space_id}", data=data, **kwargs)
+        return self.put(f"api/v2/spaces/{space_id}", data=data, **kwargs)
 
     def delete_space(self, space_id, **kwargs):
         """Delete space."""
-        return self.delete(f"spaces/{space_id}", **kwargs)
+        return self.delete(f"api/v2/spaces/{space_id}", **kwargs)
 
     def get_space_content(self, space_id, **kwargs):
         """Get space content."""
-        return self.get(f"spaces/{space_id}/content", **kwargs)
+        return self.get(f"api/v2/spaces/{space_id}/content", **kwargs)
 
     # User Management
     def get_users(self, **kwargs):
         """Get all users."""
-        return self.get("user", **kwargs)
+        return self.get("rest/api/user", **kwargs)
 
     def get_user(self, user_id, **kwargs):
         """Get user by ID."""
-        return self.get(f"user/{user_id}", **kwargs)
+        return self.get(f"rest/api/user/{user_id}", **kwargs)
 
     def get_current_user(self, **kwargs):
         """Get current user."""
-        return self.get("user/current", **kwargs)
+        return self.get("rest/api/user/current", **kwargs)
 
     # Group Management
     def get_groups(self, start=0, limit=1000, **kwargs):
@@ -455,66 +474,66 @@ class Cloud(ConfluenceCloudBase):
     # Label Management
     def get_labels(self, **kwargs):
         """Get all labels."""
-        return self.get("label", **kwargs)
+        return self.get("rest/api/label", **kwargs)
 
     def get_content_labels(self, content_id, **kwargs):
         """Get content labels."""
-        return self.get(f"content/{content_id}/label", **kwargs)
+        return self.get(f"rest/api/content/{content_id}/label", **kwargs)
 
     def add_content_labels(self, content_id, data, **kwargs):
         """Add labels to content."""
-        return self.post(f"content/{content_id}/label", data=data, **kwargs)
+        return self.post(f"rest/api/content/{content_id}/label", data=data, **kwargs)
 
     def remove_content_label(self, content_id, label_id, **kwargs):
         """Remove label from content."""
-        return self.delete(f"content/{content_id}/label/{label_id}", **kwargs)
+        return self.delete(f"rest/api/content/{content_id}/label/{label_id}", **kwargs)
 
     # Attachment Management
     def get_attachments(self, content_id, **kwargs):
         """Get content attachments."""
-        return self.get(f"content/{content_id}/child/attachment", **kwargs)
+        return self.get(f"rest/api/content/{content_id}/child/attachment", **kwargs)
 
     def get_attachment(self, attachment_id, **kwargs):
         """Get attachment by ID."""
-        return self.get(f"content/{attachment_id}", **kwargs)
+        return self.get(f"rest/api/content/{attachment_id}", **kwargs)
 
     def create_attachment(self, content_id, data, **kwargs):
         """Create new attachment."""
-        return self.post(f"content/{content_id}/child/attachment", data=data, **kwargs)
+        return self.post(f"rest/api/content/{content_id}/child/attachment", data=data, **kwargs)
 
     def update_attachment(self, attachment_id, data, **kwargs):
         """Update existing attachment."""
-        return self.put(f"content/{attachment_id}", data=data, **kwargs)
+        return self.put(f"rest/api/content/{attachment_id}", data=data, **kwargs)
 
     def delete_attachment(self, attachment_id, **kwargs):
         """Delete attachment."""
-        return self.delete(f"content/{attachment_id}", **kwargs)
+        return self.delete(f"rest/api/content/{attachment_id}", **kwargs)
 
     # Comment Management
     def get_comments(self, content_id, **kwargs):
         """Get content comments."""
-        return self.get(f"content/{content_id}/child/comment", **kwargs)
+        return self.get(f"rest/api/content/{content_id}/child/comment", **kwargs)
 
     def get_comment(self, comment_id, **kwargs):
         """Get comment by ID."""
-        return self.get(f"content/{comment_id}", **kwargs)
+        return self.get(f"rest/api/content/{comment_id}", **kwargs)
 
     def create_comment(self, content_id, data, **kwargs):
         """Create new comment."""
-        return self.post(f"content/{content_id}/child/comment", data=data, **kwargs)
+        return self.post(f"rest/api/content/{content_id}/child/comment", data=data, **kwargs)
 
     def update_comment(self, comment_id, data, **kwargs):
         """Update existing comment."""
-        return self.put(f"content/{comment_id}", data=data, **kwargs)
+        return self.put(f"rest/api/content/{comment_id}", data=data, **kwargs)
 
     def delete_comment(self, comment_id, **kwargs):
         """Delete comment."""
-        return self.delete(f"content/{comment_id}", **kwargs)
+        return self.delete(f"rest/api/content/{comment_id}", **kwargs)
 
     # Search
     def search_content(self, query, **kwargs):
         """Search content."""
-        return self.get("content/search", params={"cql": query, **kwargs})
+        return self.get("rest/api/content/search", params={"cql": query, **kwargs})
 
     def cql(self, cql, **kwargs):
         """Return one page of Cloud CQL search results."""
@@ -522,7 +541,7 @@ class Cloud(ConfluenceCloudBase):
 
     def iter_cql(self, cql, **kwargs):
         """Yield every Cloud CQL result, following pagination links."""
-        return self._get_paged("content/search", params={"cql": cql, **kwargs})
+        return self._get_paged("rest/api/content/search", params={"cql": cql, **kwargs})
 
     def cql_all(self, cql, **kwargs):
         """Return all paginated Cloud CQL results as a list.
@@ -533,61 +552,61 @@ class Cloud(ConfluenceCloudBase):
 
     def search_spaces(self, query, **kwargs):
         """Search spaces."""
-        return self.get("space/search", params={"query": query, **kwargs})
+        return self.get("rest/api/space/search", params={"query": query, **kwargs})
 
     # Page Properties
     def get_content_properties(self, content_id, **kwargs):
         """Get content properties."""
-        return self.get(f"content/{content_id}/property", **kwargs)
+        return self.get(f"rest/api/content/{content_id}/property", **kwargs)
 
     def get_content_property(self, content_id, property_key, **kwargs):
         """Get content property by key."""
-        return self.get(f"content/{content_id}/property/{property_key}", **kwargs)
+        return self.get(f"rest/api/content/{content_id}/property/{property_key}", **kwargs)
 
     def create_content_property(self, content_id, data, **kwargs):
         """Create new content property."""
-        return self.post(f"content/{content_id}/property", data=data, **kwargs)
+        return self.post(f"rest/api/content/{content_id}/property", data=data, **kwargs)
 
     def update_content_property(self, content_id, property_key, data, **kwargs):
         """Update existing content property."""
-        return self.put(f"content/{content_id}/property/{property_key}", data=data, **kwargs)
+        return self.put(f"rest/api/content/{content_id}/property/{property_key}", data=data, **kwargs)
 
     def delete_content_property(self, content_id, property_key, **kwargs):
         """Delete content property."""
-        return self.delete(f"content/{content_id}/property/{property_key}", **kwargs)
+        return self.delete(f"rest/api/content/{content_id}/property/{property_key}", **kwargs)
 
     # Templates
     def get_templates(self, **kwargs):
         """Get all templates."""
-        return self.get("template", **kwargs)
+        return self.get("rest/api/template", **kwargs)
 
     def get_template(self, template_id, **kwargs):
         """Get template by ID."""
-        return self.get(f"template/{template_id}", **kwargs)
+        return self.get(f"rest/api/template/{template_id}", **kwargs)
 
     # Analytics
     def get_content_analytics(self, content_id, **kwargs):
         """Get content analytics."""
-        return self.get(f"content/{content_id}/analytics", **kwargs)
+        return self.get(f"rest/api/content/{content_id}/analytics", **kwargs)
 
     def get_space_analytics(self, space_id, **kwargs):
         """Get space analytics."""
-        return self.get(f"space/{space_id}/analytics", **kwargs)
+        return self.get(f"rest/api/space/{space_id}/analytics", **kwargs)
 
     # Export
     def export_content(self, content_id, **kwargs):
         """Export content."""
-        return self.get(f"content/{content_id}/export", **kwargs)
+        return self.get(f"rest/api/content/{content_id}/export", **kwargs)
 
     def export_space(self, space_id, **kwargs):
         """Export space."""
-        return self.get(f"space/{space_id}/export", **kwargs)
+        return self.get(f"rest/api/space/{space_id}/export", **kwargs)
 
     # Utility Methods
     def get_metadata(self, **kwargs):
         """Get API metadata."""
-        return self.get("metadata", **kwargs)
+        return self.get("rest/api/metadata", **kwargs)
 
     def get_health(self, **kwargs):
         """Get API health status."""
-        return self.get("health", **kwargs)
+        return self.get("rest/api/health", **kwargs)

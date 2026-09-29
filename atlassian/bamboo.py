@@ -47,9 +47,8 @@ class Bamboo(AtlassianRestAPI):
                 response.raise_for_status()
                 response = response.json()
             except HTTPError as e:
-                logging.error(f"Broken response: {e}")
-                yield e
-                return
+                log.error(f"Broken response: {e}")
+                raise
         try:
             results = response[elements_key]
             size = 0
@@ -62,8 +61,8 @@ class Bamboo(AtlassianRestAPI):
                 size += 1
                 yield r
         except TypeError:
-            logging.error(f"Broken response: {response}")
-            yield response
+            log.error(f"Broken response: {response}")
+            raise
 
     def base_list_call(
         self,
@@ -759,9 +758,9 @@ class Bamboo(AtlassianRestAPI):
         :param build_key: Take full build key, example: PROJECT-PLAN-8
         """
         custom_resource = "/build/admin/deletePlanResults.action"
-        build_key = build_key.split("-")
-        plan_key = f"{build_key[0]}-{build_key[1]}"
-        build_number = build_key[2]
+        build_key_parts = build_key.split("-")
+        plan_key = "-".join(build_key_parts[:-1])
+        build_number = build_key_parts[-1]
         params = {"buildKey": plan_key, "buildNumber": build_number}
         return self.post(custom_resource, params=params, headers=self.form_token_headers)
 
@@ -906,7 +905,6 @@ class Bamboo(AtlassianRestAPI):
         resource = f"result/{project_key}-{plan_key}-{build_number}/label/{label}"
         return self.delete(self.resource_url(resource))
 
-    @property
     def get_projects(self, start=0, limit=25):
         """Method used to list all projects defined in Bamboo.
         Projects without any plan are not listed.
@@ -2430,7 +2428,6 @@ class Bamboo(AtlassianRestAPI):
         :param plugin_path:
         :return:
         """
-        files = {"plugin": open(plugin_path, "rb")}
         upm_token = self.request(
             method="GET",
             path="rest/plugins/1.0/",
@@ -2438,7 +2435,9 @@ class Bamboo(AtlassianRestAPI):
             trailing=True,
         ).headers["upm-token"]
         url = f"rest/plugins/1.0/?token={upm_token}"
-        return self.post(url, files=files, headers=self.no_check_headers)
+        with open(plugin_path, "rb") as plugin_file:
+            files = {"plugin": plugin_file}
+            return self.post(url, files=files, headers=self.no_check_headers)
 
     def disable_plugin(self, plugin_key):
         """

@@ -515,7 +515,7 @@ class CloudAdminOrgs(AtlassianRestAPI):
             params["emailUsernames"] = email_usernames
         if email_domains:
             params["emailDomains"] = email_domains
-        if is_suspended:
+        if is_suspended is not None:
             params["isSuspended"] = is_suspended
         if expand:
             params["expand"] = expand

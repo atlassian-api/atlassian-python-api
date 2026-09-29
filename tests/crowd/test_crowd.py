@@ -150,7 +150,7 @@ def test_user_password_and_reminder_methods(mock_get, mock_delete, mock_post):
     assert mock_post.call_args.kwargs["params"] == {"username": "ada"}
     assert mock_post.call_args.kwargs["data"] == {"newName": "ada2"}
 
-    crowd.user_expire_all_passwords()
+    crowd.user_expire_all_passwords(confirm=True)
     assert mock_post.call_args.args[0].endswith("usermanagement/latest/user/expire-all-passwords")
     assert mock_post.call_args.kwargs["params"] == {"confirm": "true"}
 

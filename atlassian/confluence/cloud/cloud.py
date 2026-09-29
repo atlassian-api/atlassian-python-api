@@ -11,6 +11,8 @@ import re
 import warnings
 from typing import Any, Dict, List, Optional
 
+from requests import HTTPError
+
 from .classification_levels import ClassificationLevelOperations
 from .content_properties import ContentPropertyOperations
 from .databases import DatabaseOperations
@@ -258,9 +260,10 @@ class ConfluenceCloud(
         """
         try:
             space = self.get_space_by_key(space_key)
-        except Exception as e:
-            log.error(f"Failed to retrieve space with key '{space_key}': {e}")
-            return {"results": []}
+        except HTTPError as e:
+            if e.response is not None and e.response.status_code == 404:
+                return {"results": []}
+            raise
 
         if not space or "id" not in space:
             return {"results": []}

@@ -484,7 +484,7 @@ class ServiceDesk(AtlassianRestAPI):
 
         return self.delete(url, headers=self.experimental_headers)
 
-    def add_users_to_organization(self, organization_id, users_list=[], account_list=[]):
+    def add_users_to_organization(self, organization_id, users_list=None, account_list=None):
         """
         Adds users to an organization
         users_list is a list of strings
@@ -497,11 +497,11 @@ class ServiceDesk(AtlassianRestAPI):
         """
         log.info("Adding users: %s ", str(users_list))
         url = f"rest/servicedeskapi/organization/{organization_id}/user"
-        data = {"usernames": users_list, "accountIds": account_list}
+        data = {"usernames": users_list or [], "accountIds": account_list or []}
 
         return self.post(url, headers=self.experimental_headers, data=data)
 
-    def remove_users_from_organization(self, organization_id, users_list=[], account_list=[]):
+    def remove_users_from_organization(self, organization_id, users_list=None, account_list=None):
         """
         Removes users from an organization
         users_list is a list of strings
@@ -514,7 +514,7 @@ class ServiceDesk(AtlassianRestAPI):
         """
         log.info("Removing users: %s", str(users_list))
         url = f"rest/servicedeskapi/organization/{organization_id}/user"
-        data = {"usernames": users_list, "accountIds": account_list}
+        data = {"usernames": users_list or [], "accountIds": account_list or []}
 
         return self.delete(url, headers=self.experimental_headers, data=data)
 
@@ -613,6 +613,8 @@ class ServiceDesk(AtlassianRestAPI):
                 result = self.post(path=url, headers=experimental_headers, files={"file": file}).get(
                     "temporaryAttachments"
                 )
+            if not result:
+                raise HTTPError(f"No temporary attachment was created for {filename}")
             temp_attachment_id = result[0].get("temporaryAttachmentId")
 
             return temp_attachment_id
@@ -629,8 +631,9 @@ class ServiceDesk(AtlassianRestAPI):
         data = {
             "temporaryAttachmentIds": temp_attachment_ids,
             "public": public,
-            "additionalComment": {"body": comment},
         }
+        if comment is not None:
+            data["additionalComment"] = {"body": comment}
         url = f"rest/servicedeskapi/request/{issue_id_or_key}/attachment"
 
         return self.post(url, headers=self.experimental_headers, data=data)
@@ -824,7 +827,7 @@ class ServiceDesk(AtlassianRestAPI):
 
         return self.get(url, headers=self.experimental_headers, params=params)
 
-    def add_customers(self, service_desk_id, list_of_usernames=[], list_of_accountids=[]):
+    def add_customers(self, service_desk_id, list_of_usernames=None, list_of_accountids=None):
         """
         Adds one or more existing customers to the given service desk.
         If you need to create a customer, see Create customer method.
@@ -839,14 +842,14 @@ class ServiceDesk(AtlassianRestAPI):
         """
         url = f"rest/servicedeskapi/servicedesk/{service_desk_id}/customer"
         data = {
-            "usernames": list_of_usernames,
-            "accountIds": list_of_accountids,
+            "usernames": list_of_usernames or [],
+            "accountIds": list_of_accountids or [],
         }
 
         log.info("Adding customers...")
         return self.post(url, headers=self.experimental_headers, data=data)
 
-    def remove_customers(self, service_desk_id, list_of_usernames=[], list_of_accountids=[]):
+    def remove_customers(self, service_desk_id, list_of_usernames=None, list_of_accountids=None):
         """
         Removes one or more customers from a service desk. The service
         desk must have closed access. If any of the passed customers are
@@ -860,8 +863,8 @@ class ServiceDesk(AtlassianRestAPI):
         """
         url = f"rest/servicedeskapi/servicedesk/{service_desk_id}/customer"
         data = {
-            "usernames": list_of_usernames,
-            "accountIds": list_of_accountids,
+            "usernames": list_of_usernames or [],
+            "accountIds": list_of_accountids or [],
         }
 
         log.info("Removing customers...")
@@ -1090,7 +1093,6 @@ class ServiceDesk(AtlassianRestAPI):
         :param plugin_path:
         :return:
         """
-        files = {"plugin": open(plugin_path, "rb")}
         upm_token = self.request(
             method="GET",
             path="rest/plugins/1.0/",
@@ -1098,7 +1100,9 @@ class ServiceDesk(AtlassianRestAPI):
             trailing=True,
         ).headers["upm-token"]
         url = f"rest/plugins/1.0/?token={upm_token}"
-        return self.post(url, files=files, headers=self.no_check_headers)
+        with open(plugin_path, "rb") as plugin_file:
+            files = {"plugin": plugin_file}
+            return self.post(url, files=files, headers=self.no_check_headers)
 
     def delete_plugin(self, plugin_key):
         """
@@ -1347,6 +1351,7 @@ class ServiceDesk(AtlassianRestAPI):
             raise HTTPError("Unauthorized (401)", response=response)
 
         if 400 <= response.status_code < 600:
+            error_msg = None
             try:
                 j = response.json()
                 if "errorMessage" in j:
@@ -1357,4 +1362,6 @@ class ServiceDesk(AtlassianRestAPI):
                 log.error(e)
                 response.raise_for_status()
             else:
+                if error_msg is None:
+                    response.raise_for_status()
                 raise HTTPError(error_msg, response=response)

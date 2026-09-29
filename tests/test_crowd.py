@@ -312,40 +312,41 @@ class TestCrowdUserManagement(unittest.TestCase):
     def test_user_expire_all_passwords(self, mock_post):
         """Test user_expire_all_passwords method."""
         mock_post.return_value = {}
-        self.crowd.user_expire_all_passwords()
+        self.crowd.user_expire_all_passwords(confirm=True)
         mock_post.assert_called_once_with(
             "/rest/usermanagement/latest/user/expire-all-passwords",
             params={"confirm": "true"},
         )
 
-    @patch.object(Crowd, "post")
-    def test_user_expire_all_passwords_false(self, mock_post):
-        """Test user_expire_all_passwords method with confirm=False."""
-        mock_post.return_value = {}
-        self.crowd.user_expire_all_passwords(confirm=False)
-        mock_post.assert_called_once_with(
-            "/rest/usermanagement/latest/user/expire-all-passwords",
-            params={"confirm": "false"},
-        )
+    def test_user_expire_all_passwords_requires_confirmation(self):
+        """Test user_expire_all_passwords refuses to run without explicit confirmation."""
+        with self.assertRaises(ValueError):
+            self.crowd.user_expire_all_passwords()
+        with self.assertRaises(ValueError):
+            self.crowd.user_expire_all_passwords(confirm=False)
 
     @patch.object(Crowd, "get")
     def test_user_avatar(self, mock_get):
-        """Test user_avatar method."""
+        """Test user_avatar method returns raw image bytes."""
         mock_get.return_value = b"avatar-data"
-        self.crowd.user_avatar("john")
+        result = self.crowd.user_avatar("john")
+        self.assertEqual(result, b"avatar-data")
         mock_get.assert_called_once_with(
             "/rest/usermanagement/latest/user/avatar",
             params={"username": "john"},
+            not_json_response=True,
         )
 
     @patch.object(Crowd, "get")
     def test_user_avatar_with_size(self, mock_get):
         """Test user_avatar method with size parameter."""
         mock_get.return_value = b"avatar-data"
-        self.crowd.user_avatar("john", size=64)
+        result = self.crowd.user_avatar("john", size=64)
+        self.assertEqual(result, b"avatar-data")
         mock_get.assert_called_once_with(
             "/rest/usermanagement/latest/user/avatar",
             params={"username": "john", "s": 64},
+            not_json_response=True,
         )
 
     @patch.object(Crowd, "get")
@@ -1905,7 +1906,6 @@ class TestCrowdBackupAndAudit(unittest.TestCase):
             params={"start": 0, "limit": 99999},
             data={},
         )
-
     @patch.object(Crowd, "post")
     def test_get_audit_log_filter_values(self, mock_post):
         """Test get_audit_log_filter_values method."""
@@ -1913,6 +1913,7 @@ class TestCrowdBackupAndAudit(unittest.TestCase):
         mock_post.assert_called_once_with(
             "/rest/admin/1.0/auditlog/query/filter",
             params={"start": 9, "limit": 90, "projection": "AUDITED_USERS", "search": "john"},
+            data={},
         )
 
     @patch.object(Crowd, "post")
@@ -1922,6 +1923,7 @@ class TestCrowdBackupAndAudit(unittest.TestCase):
         mock_post.assert_called_once_with(
             "/rest/admin/1.0/auditlog/query/filter",
             params={"start": 0, "limit": 99999},
+            data={},
         )
 
 
@@ -2168,7 +2170,7 @@ class TestCrowdHealthAndPlugins(unittest.TestCase):
         """Test update_plugin_license method."""
         self.crowd.update_plugin_license("plugin1", "raw-license-text")
         mock_put.assert_called_once_with(
-            "/plugins/1.0/plugin1/license",
+            "rest/plugins/1.0/plugin1/license",
             data={"rawLicense": "raw-license-text"},
             headers={
                 "X-Atlassian-Token": "no-check",

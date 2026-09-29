@@ -1565,7 +1565,7 @@ class Jira(AtlassianRestAPI):
         if query_result and "errorMessages" in list(query_result.keys()):
             for message in query_result["errorMessages"]:
                 for key in issue_list:
-                    if key in message:
+                    if re.search(rf"\b{re.escape(key)}\b", message):
                         missing_issues.append(key)
             remaining_issues = [key for key in issue_list if key not in missing_issues]
             if remaining_issues != issue_list:
@@ -1843,16 +1843,17 @@ class Jira(AtlassianRestAPI):
         return Boolean True/False
         """
         base_url = self.resource_url("issue")
-        try:
-            for key in key_list:
+        failed_keys = []
+        for key in key_list:
+            try:
                 self.put(
                     f"{base_url}/{key}",
                     data={"fields": fields},
                 )
-        except Exception as e:
-            log.error(e)
-            return False
-        return True
+            except Exception as e:
+                log.error("Failed to update issue %s: %s", key, e)
+                failed_keys.append(key)
+        return failed_keys
 
     def issue_field_value_append(self, issue_id_or_key: str, field: str, value: str, notify_users: bool = True):
         """
@@ -2028,7 +2029,7 @@ class Jira(AtlassianRestAPI):
         :param notify_users: Whether to notify users of the update. default: True
         :return: Response from the PUT request.
         """
-        log.info(f'Updating issue "{issue_key}" with "{fields}", "{update}", "{history_metadata}", and "{properties}"')
+        log.info("Updating issue %s", issue_key)
 
         base_url = self.resource_url("issue")
         url = f"{base_url}/{issue_key}"
@@ -2755,9 +2756,9 @@ class Jira(AtlassianRestAPI):
         elif not major_parameter_enabled and not username and key:
             params = {"key": key}
         elif not major_parameter_enabled and username and key:
-            return "You cannot specify both the username and the key parameters"
+            raise ValueError("You cannot specify both the username and the key parameters")
         elif not account_id and not key and not username:
-            return "You must specify at least one parameter: username or key or account_id"
+            raise ValueError("You must specify at least one parameter: username or key or account_id")
         if expand:
             params["expand"] = expand
 
@@ -2858,9 +2859,7 @@ class Jira(AtlassianRestAPI):
         else:
             data["notification"] = True
         if notification is not None:
-            data["notification"] = True
-        if notification is False:
-            data["notification"] = False
+            data["notification"] = bool(notification)
         url = self.resource_url("user")
         return self.post(url, data=data)
 
@@ -2872,12 +2871,14 @@ class Jira(AtlassianRestAPI):
         :return:
         """
         base_url = self.resource_url("user/properties")
-        url = ""
+        params: dict = {}
         if username or not self.cloud:
-            url = f"{base_url}?accountId={username}"
+            params = {"username": username}
         elif account_id or self.cloud:
-            url = f"{base_url}?accountId={account_id}"
-        return self.get(url)
+            params = {"accountId": account_id}
+        else:
+            raise ValueError("Either username or account_id must be provided")
+        return self.get(base_url, params=params)
 
     def user_property(
         self, username: Optional[str] = None, account_id: Optional[str] = None, key_property: Optional[str] = None
@@ -3818,10 +3819,15 @@ class Jira(AtlassianRestAPI):
             Decoded Jira REST response.
         """
         jql = f'project = "{project}" '
-        response = self.jql(jql, fields="*none")
+        if self.cloud:
+            response = self.approximate_issue_count(jql)
+            if self.advanced_mode:
+                return cast("Response", response)
+            return cast("dict", response).get("count", cast("dict", response))
+        response = self.jql(jql, fields="*none", limit=1)
         if self.advanced_mode:
             return cast("Response", response)
-        return len(cast("dict", response)["issues"])
+        return cast("dict", response)["total"]
 
     def get_all_project_issues(
         self, project: str, fields: Union[str, List[str]] = "*all", start: int = 0, limit: Optional[int] = None
@@ -4776,7 +4782,7 @@ api-group-workflows/#api-rest-api-2-workflow-search-get)
             "X-Atlassian-Token": "no-check",
             "Content-Type": "application/vnd.atl.plugins+json",
         }
-        url = f"/plugins/1.0/{plugin_key}/license"
+        url = f"rest/plugins/1.0/{plugin_key}/license"
         data = {"rawLicense": raw_license}
         return self.put(url, data=data, headers=app_headers)
 

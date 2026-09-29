@@ -8,6 +8,7 @@ import logging
 from unittest.mock import patch
 
 from atlassian.confluence import ConfluenceCloud
+from atlassian.confluence.cloud import Cloud
 from atlassian.confluence.cloud.cloud import ConfluenceCloud as ConfluenceCloudV2
 from atlassian.errors import ApiError
 
@@ -62,14 +63,15 @@ class TestConfluenceCloud:
         mock_get_paged.return_value = iter([{"id": "1"}, {"id": "2"}])
 
         assert list(confluence_cloud.iter_cql("type=page", limit=250)) == [{"id": "1"}, {"id": "2"}]
-        mock_get_paged.assert_called_once_with("content/search", params={"cql": "type=page", "limit": 250})
+        mock_get_paged.assert_called_once_with("rest/api/content/search", params={"cql": "type=page", "limit": 250})
 
     @patch.object(ConfluenceCloud, "get")
     def test_cql_passes_the_nested_content_storage_expansion(self, mock_get, confluence_cloud):
         confluence_cloud.cql("type=page", limit=25, expand="content.body.storage")
 
         mock_get.assert_called_once_with(
-            "content/search", params={"cql": "type=page", "limit": 25, "expand": "content.body.storage"}
+            "rest/api/content/search",
+            params={"cql": "type=page", "limit": 25, "expand": "content.body.storage"},
         )
 
     @patch.object(ConfluenceCloud, "iter_cql")
@@ -118,14 +120,14 @@ class TestConfluenceCloud:
 
         mock_get.assert_called_once_with("https://test.atlassian.net/wiki/rest/api/template/template-1", absolute=True)
 
-    @patch("atlassian.confluence.cloud.requests.get")
+    @patch.object(Cloud, "session")
     @patch.object(ConfluenceCloud, "get")
-    def test_export_page_uses_v2_pdf_export_task_endpoint(self, mock_get, mock_requests_get, confluence_cloud):
+    def test_export_page_uses_v2_pdf_export_task_endpoint(self, mock_get, mock_session, confluence_cloud):
         mock_get.side_effect = [
             b'<meta name="ajs-taskId" content="task-123">',
             {"state": "SUCCEEDED", "progress": 100, "result": "https://downloads.example.test/page.pdf"},
         ]
-        mock_requests_get.return_value.content = b"%PDF-1.7"
+        mock_session.get.return_value.content = b"%PDF-1.7"
 
         result = confluence_cloud.export_page("456")
 
@@ -135,13 +137,15 @@ class TestConfluenceCloud:
             == "https://test.atlassian.net/wiki/api/v2/pdfexporttask/progress/task-123"
         )
         assert mock_get.call_args_list[1].kwargs["absolute"] is True
-        mock_requests_get.assert_called_once_with("https://downloads.example.test/page.pdf", timeout=75)
+        mock_session.get.assert_called_once()
+        assert mock_session.get.call_args.args[0] == "https://downloads.example.test/page.pdf"
 
-    @patch("atlassian.confluence.cloud.requests.get")
+    @patch.object(Cloud, "session")
     @patch.object(ConfluenceCloud, "get_pdf_download_url_for_confluence_cloud")
-    def test_export_page_rejects_html_response(self, mock_download_url, mock_requests_get, confluence_cloud):
+    def test_export_page_rejects_html_response(self, mock_download_url, mock_session, confluence_cloud):
         mock_download_url.return_value = "https://downloads.example.test/page.pdf"
-        mock_requests_get.return_value.content = b"<!doctype html><html>Sign in</html>"
+        mock_session.get.return_value.content = b"<!doctype html><html>Sign in</html>"
+        mock_session.get.return_value.raise_for_status = lambda: None
 
         with pytest.raises(ApiError, match="non-PDF content"):
             confluence_cloud.export_page("456")
@@ -152,7 +156,7 @@ class TestConfluenceCloud:
         """Test get_content method."""
         mock_get.return_value = {"id": "123", "title": "Test Page", "type": "page"}
         result = confluence_cloud.get_content("123")
-        mock_get.assert_called_once_with("content/123", **{})
+        mock_get.assert_called_once_with("rest/api/content/123", **{})
         assert result == {"id": "123", "title": "Test Page", "type": "page"}
 
     @patch.object(ConfluenceCloud, "get")
@@ -160,7 +164,7 @@ class TestConfluenceCloud:
         """Test get_content_by_type method."""
         mock_get.return_value = {"results": [{"id": "123", "title": "Test Page"}]}
         result = confluence_cloud.get_content_by_type("page")
-        mock_get.assert_called_once_with("content", params={"type": "page", **{}})
+        mock_get.assert_called_once_with("rest/api/content", params={"type": "page", **{}})
         assert result == {"results": [{"id": "123", "title": "Test Page"}]}
 
     @patch.object(ConfluenceCloud, "get")
@@ -170,7 +174,7 @@ class TestConfluenceCloud:
         result = confluence_cloud.get_all_pages_from_space("TEST")
         assert list(result) == [{"id": "123", "title": "Page in Space"}]
         mock_get.assert_called_once_with(
-            "content",
+            "rest/api/content",
             params={"spaceKey": "TEST", "type": "page", **{}},
             trailing=None,
             data=None,
@@ -199,9 +203,9 @@ class TestConfluenceCloud:
         mock_get.side_effect = [{"results": [{"id": "42", "key": "TEST"}]}, {"results": [{"id": "123"}]}]
 
         assert confluence_cloud.page_exists("TEST", "Test Page") is True
-        assert mock_get.call_args_list[0].args == ("spaces",)
+        assert mock_get.call_args_list[0].args == ("api/v2/spaces",)
         assert mock_get.call_args_list[0].kwargs == {"params": {"keys": ["TEST"], "limit": 1}}
-        assert mock_get.call_args_list[1].args == ("pages",)
+        assert mock_get.call_args_list[1].args == ("api/v2/pages",)
         assert mock_get.call_args_list[1].kwargs == {
             "params": {
                 "space-id": "42",
@@ -217,7 +221,7 @@ class TestConfluenceCloud:
         mock_get.return_value = {"results": []}
 
         assert confluence_cloud.page_exists("MISSING", "Test Page") is False
-        mock_get.assert_called_once_with("spaces", params={"keys": ["MISSING"], "limit": 1})
+        mock_get.assert_called_once_with("api/v2/spaces", params={"keys": ["MISSING"], "limit": 1})
 
     @patch.object(ConfluenceCloud, "get")
     def test_get_all_blog_posts_from_space(self, mock_get, confluence_cloud):
@@ -226,7 +230,7 @@ class TestConfluenceCloud:
         result = confluence_cloud.get_all_blog_posts_from_space("TEST")
         assert list(result) == [{"id": "456", "title": "Blog Post"}]
         mock_get.assert_called_once_with(
-            "content",
+            "rest/api/content",
             params={"spaceKey": "TEST", "type": "blogpost", **{}},
             trailing=None,
             data=None,
@@ -240,7 +244,7 @@ class TestConfluenceCloud:
         content_data = {"title": "New Page", "type": "page", "spaceId": "TEST"}
         mock_post.return_value = {"id": "456", "title": "New Page", "type": "page"}
         result = confluence_cloud.create_content(content_data)
-        mock_post.assert_called_once_with("content", data=content_data, **{})
+        mock_post.assert_called_once_with("rest/api/content", data=content_data, **{})
         assert result == {"id": "456", "title": "New Page", "type": "page"}
 
     @patch.object(ConfluenceCloud, "put")
@@ -249,7 +253,7 @@ class TestConfluenceCloud:
         content_data = {"title": "Updated Page"}
         mock_put.return_value = {"id": "123", "title": "Updated Page"}
         result = confluence_cloud.update_content("123", content_data)
-        mock_put.assert_called_once_with("content/123", data=content_data, **{})
+        mock_put.assert_called_once_with("rest/api/content/123", data=content_data, **{})
         assert result == {"id": "123", "title": "Updated Page"}
 
     @patch.object(ConfluenceCloud, "delete")
@@ -257,7 +261,7 @@ class TestConfluenceCloud:
         """Test delete_content method."""
         mock_delete.return_value = {"success": True}
         result = confluence_cloud.delete_content("123")
-        mock_delete.assert_called_once_with("content/123", **{})
+        mock_delete.assert_called_once_with("rest/api/content/123", **{})
         assert result == {"success": True}
 
     @patch.object(ConfluenceCloud, "get")
@@ -265,7 +269,7 @@ class TestConfluenceCloud:
         """Test get_content_children method."""
         mock_get.return_value = {"results": [{"id": "789", "title": "Child Page"}]}
         result = confluence_cloud.get_content_children("123")
-        mock_get.assert_called_once_with("content/123/children", **{})
+        mock_get.assert_called_once_with("rest/api/content/123/children", **{})
         assert result == {"results": [{"id": "789", "title": "Child Page"}]}
 
     @patch.object(ConfluenceCloud, "get")
@@ -273,7 +277,7 @@ class TestConfluenceCloud:
         """Test get_content_descendants method."""
         mock_get.return_value = {"results": [{"id": "999", "title": "Descendant Page"}]}
         result = confluence_cloud.get_content_descendants("123")
-        mock_get.assert_called_once_with("content/123/descendants", **{})
+        mock_get.assert_called_once_with("rest/api/content/123/descendants", **{})
         assert result == {"results": [{"id": "999", "title": "Descendant Page"}]}
 
     @patch.object(ConfluenceCloud, "get")
@@ -281,7 +285,7 @@ class TestConfluenceCloud:
         """Test get_content_ancestors method."""
         mock_get.return_value = {"results": [{"id": "111", "title": "Ancestor Page"}]}
         result = confluence_cloud.get_content_ancestors("123")
-        mock_get.assert_called_once_with("content/123/ancestors", **{})
+        mock_get.assert_called_once_with("rest/api/content/123/ancestors", **{})
         assert result == {"results": [{"id": "111", "title": "Ancestor Page"}]}
 
     # Space Management Tests
@@ -290,7 +294,7 @@ class TestConfluenceCloud:
         """get_spaces calls the v2 plural endpoint /wiki/api/v2/spaces."""
         mock_get.return_value = {"results": [{"id": "TEST", "name": "Test Space"}]}
         result = confluence_cloud.get_spaces()
-        mock_get.assert_called_once_with("spaces", **{})
+        mock_get.assert_called_once_with("api/v2/spaces", **{})
         assert result == {"results": [{"id": "TEST", "name": "Test Space"}]}
 
     @patch.object(ConfluenceCloud, "get")
@@ -311,7 +315,7 @@ class TestConfluenceCloud:
         ]
         # Entry-point URL is the v2 plural path; pagination URL handling is
         # covered by existing _get_paged tests.
-        assert mock_get.call_args_list[0].args[0] == "spaces"
+        assert mock_get.call_args_list[0].args[0] == "api/v2/spaces"
 
     @patch.object(ConfluenceCloud, "get_all_spaces")
     def test_get_space_names(self, mock_get_all_spaces, confluence_cloud):
@@ -324,7 +328,7 @@ class TestConfluenceCloud:
         """get_space calls the v2 plural endpoint."""
         mock_get.return_value = {"id": "TEST", "name": "Test Space"}
         result = confluence_cloud.get_space("TEST")
-        mock_get.assert_called_once_with("spaces/TEST", **{})
+        mock_get.assert_called_once_with("api/v2/spaces/TEST", **{})
         assert result == {"id": "TEST", "name": "Test Space"}
 
     @patch.object(ConfluenceCloud, "post")
@@ -333,7 +337,7 @@ class TestConfluenceCloud:
         space_data = {"name": "New Space", "key": "NEW"}
         mock_post.return_value = {"id": "NEW", "name": "New Space", "key": "NEW"}
         result = confluence_cloud.create_space(space_data)
-        mock_post.assert_called_once_with("spaces", data=space_data, **{})
+        mock_post.assert_called_once_with("api/v2/spaces", data=space_data, **{})
         assert result == {"id": "NEW", "name": "New Space", "key": "NEW"}
 
     @patch.object(ConfluenceCloud, "put")
@@ -342,7 +346,7 @@ class TestConfluenceCloud:
         space_data = {"name": "Updated Space"}
         mock_put.return_value = {"id": "TEST", "name": "Updated Space"}
         result = confluence_cloud.update_space("TEST", space_data)
-        mock_put.assert_called_once_with("spaces/TEST", data=space_data, **{})
+        mock_put.assert_called_once_with("api/v2/spaces/TEST", data=space_data, **{})
         assert result == {"id": "TEST", "name": "Updated Space"}
 
     @patch.object(ConfluenceCloud, "delete")
@@ -350,7 +354,7 @@ class TestConfluenceCloud:
         """delete_space calls the v2 plural endpoint."""
         mock_delete.return_value = {"success": True}
         result = confluence_cloud.delete_space("TEST")
-        mock_delete.assert_called_once_with("spaces/TEST", **{})
+        mock_delete.assert_called_once_with("api/v2/spaces/TEST", **{})
         assert result == {"success": True}
 
     @patch.object(ConfluenceCloud, "get")
@@ -358,7 +362,7 @@ class TestConfluenceCloud:
         """get_space_content calls the v2 plural endpoint."""
         mock_get.return_value = {"results": [{"id": "123", "title": "Page in Space"}]}
         result = confluence_cloud.get_space_content("TEST")
-        mock_get.assert_called_once_with("spaces/TEST/content", **{})
+        mock_get.assert_called_once_with("api/v2/spaces/TEST/content", **{})
         assert result == {"results": [{"id": "123", "title": "Page in Space"}]}
 
     # User Management Tests
@@ -367,7 +371,7 @@ class TestConfluenceCloud:
         """Test get_users method."""
         mock_get.return_value = {"results": [{"id": "user1", "name": "Test User"}]}
         result = confluence_cloud.get_users()
-        mock_get.assert_called_once_with("user", **{})
+        mock_get.assert_called_once_with("rest/api/user", **{})
         assert result == {"results": [{"id": "user1", "name": "Test User"}]}
 
     @patch.object(ConfluenceCloud, "get")
@@ -375,7 +379,7 @@ class TestConfluenceCloud:
         """Test get_user method."""
         mock_get.return_value = {"id": "user1", "name": "Test User"}
         result = confluence_cloud.get_user("user1")
-        mock_get.assert_called_once_with("user/user1", **{})
+        mock_get.assert_called_once_with("rest/api/user/user1", **{})
         assert result == {"id": "user1", "name": "Test User"}
 
     @patch.object(ConfluenceCloud, "get")
@@ -383,7 +387,7 @@ class TestConfluenceCloud:
         """Test get_current_user method."""
         mock_get.return_value = {"id": "current", "name": "Current User"}
         result = confluence_cloud.get_current_user()
-        mock_get.assert_called_once_with("user/current", **{})
+        mock_get.assert_called_once_with("rest/api/user/current", **{})
         assert result == {"id": "current", "name": "Current User"}
 
     # Group Management Tests
@@ -433,7 +437,7 @@ class TestConfluenceCloud:
         """Test get_labels method."""
         mock_get.return_value = {"results": [{"id": "label1", "name": "Test Label"}]}
         result = confluence_cloud.get_labels()
-        mock_get.assert_called_once_with("label", **{})
+        mock_get.assert_called_once_with("rest/api/label", **{})
         assert result == {"results": [{"id": "label1", "name": "Test Label"}]}
 
     @patch.object(ConfluenceCloud, "get")
@@ -441,7 +445,7 @@ class TestConfluenceCloud:
         """Test get_content_labels method."""
         mock_get.return_value = {"results": [{"id": "label1", "name": "Test Label"}]}
         result = confluence_cloud.get_content_labels("123")
-        mock_get.assert_called_once_with("content/123/label", **{})
+        mock_get.assert_called_once_with("rest/api/content/123/label", **{})
         assert result == {"results": [{"id": "label1", "name": "Test Label"}]}
 
     @patch.object(ConfluenceCloud, "post")
@@ -450,7 +454,7 @@ class TestConfluenceCloud:
         label_data = {"name": "New Label"}
         mock_post.return_value = {"id": "label2", "name": "New Label"}
         result = confluence_cloud.add_content_labels("123", label_data)
-        mock_post.assert_called_once_with("content/123/label", data=label_data, **{})
+        mock_post.assert_called_once_with("rest/api/content/123/label", data=label_data, **{})
         assert result == {"id": "label2", "name": "New Label"}
 
     @patch.object(ConfluenceCloud, "delete")
@@ -458,7 +462,7 @@ class TestConfluenceCloud:
         """Test remove_content_label method."""
         mock_delete.return_value = {"success": True}
         result = confluence_cloud.remove_content_label("123", "label1")
-        mock_delete.assert_called_once_with("content/123/label/label1", **{})
+        mock_delete.assert_called_once_with("rest/api/content/123/label/label1", **{})
         assert result == {"success": True}
 
     # Attachment Management Tests
@@ -467,7 +471,7 @@ class TestConfluenceCloud:
         """Test get_attachments method."""
         mock_get.return_value = {"results": [{"id": "att1", "title": "Test Attachment"}]}
         result = confluence_cloud.get_attachments("123")
-        mock_get.assert_called_once_with("content/123/child/attachment", **{})
+        mock_get.assert_called_once_with("rest/api/content/123/child/attachment", **{})
         assert result == {"results": [{"id": "att1", "title": "Test Attachment"}]}
 
     @patch.object(ConfluenceCloud, "get")
@@ -475,7 +479,7 @@ class TestConfluenceCloud:
         """Test get_attachment method."""
         mock_get.return_value = {"id": "att1", "title": "Test Attachment"}
         result = confluence_cloud.get_attachment("att1")
-        mock_get.assert_called_once_with("content/att1", **{})
+        mock_get.assert_called_once_with("rest/api/content/att1", **{})
         assert result == {"id": "att1", "title": "Test Attachment"}
 
     @patch.object(ConfluenceCloud, "post")
@@ -484,7 +488,7 @@ class TestConfluenceCloud:
         attachment_data = {"title": "New Attachment"}
         mock_post.return_value = {"id": "att2", "title": "New Attachment"}
         result = confluence_cloud.create_attachment("123", attachment_data)
-        mock_post.assert_called_once_with("content/123/child/attachment", data=attachment_data, **{})
+        mock_post.assert_called_once_with("rest/api/content/123/child/attachment", data=attachment_data, **{})
         assert result == {"id": "att2", "title": "New Attachment"}
 
     @patch.object(ConfluenceCloud, "put")
@@ -493,7 +497,7 @@ class TestConfluenceCloud:
         attachment_data = {"title": "Updated Attachment"}
         mock_put.return_value = {"id": "att1", "title": "Updated Attachment"}
         result = confluence_cloud.update_attachment("att1", attachment_data)
-        mock_put.assert_called_once_with("content/att1", data=attachment_data, **{})
+        mock_put.assert_called_once_with("rest/api/content/att1", data=attachment_data, **{})
         assert result == {"id": "att1", "title": "Updated Attachment"}
 
     @patch.object(ConfluenceCloud, "delete")
@@ -501,7 +505,7 @@ class TestConfluenceCloud:
         """Test delete_attachment method."""
         mock_delete.return_value = {"success": True}
         result = confluence_cloud.delete_attachment("att1")
-        mock_delete.assert_called_once_with("content/att1", **{})
+        mock_delete.assert_called_once_with("rest/api/content/att1", **{})
         assert result == {"success": True}
 
     # Comment Management Tests
@@ -510,7 +514,7 @@ class TestConfluenceCloud:
         """Test get_comments method."""
         mock_get.return_value = {"results": [{"id": "comment1", "text": "Test Comment"}]}
         result = confluence_cloud.get_comments("123")
-        mock_get.assert_called_once_with("content/123/child/comment", **{})
+        mock_get.assert_called_once_with("rest/api/content/123/child/comment", **{})
         assert result == {"results": [{"id": "comment1", "text": "Test Comment"}]}
 
     @patch.object(ConfluenceCloud, "get")
@@ -518,7 +522,7 @@ class TestConfluenceCloud:
         """Test get_comment method."""
         mock_get.return_value = {"id": "comment1", "text": "Test Comment"}
         result = confluence_cloud.get_comment("comment1")
-        mock_get.assert_called_once_with("content/comment1", **{})
+        mock_get.assert_called_once_with("rest/api/content/comment1", **{})
         assert result == {"id": "comment1", "text": "Test Comment"}
 
     @patch.object(ConfluenceCloud, "post")
@@ -527,7 +531,7 @@ class TestConfluenceCloud:
         comment_data = {"text": "New Comment"}
         mock_post.return_value = {"id": "comment2", "text": "New Comment"}
         result = confluence_cloud.create_comment("123", comment_data)
-        mock_post.assert_called_once_with("content/123/child/comment", data=comment_data, **{})
+        mock_post.assert_called_once_with("rest/api/content/123/child/comment", data=comment_data, **{})
         assert result == {"id": "comment2", "text": "New Comment"}
 
     @patch.object(ConfluenceCloud, "put")
@@ -536,7 +540,7 @@ class TestConfluenceCloud:
         comment_data = {"text": "Updated Comment"}
         mock_put.return_value = {"id": "comment1", "text": "Updated Comment"}
         result = confluence_cloud.update_comment("comment1", comment_data)
-        mock_put.assert_called_once_with("content/comment1", data=comment_data, **{})
+        mock_put.assert_called_once_with("rest/api/content/comment1", data=comment_data, **{})
         assert result == {"id": "comment1", "text": "Updated Comment"}
 
     @patch.object(ConfluenceCloud, "delete")
@@ -544,7 +548,7 @@ class TestConfluenceCloud:
         """Test delete_comment method."""
         mock_delete.return_value = {"success": True}
         result = confluence_cloud.delete_comment("comment1")
-        mock_delete.assert_called_once_with("content/comment1", **{})
+        mock_delete.assert_called_once_with("rest/api/content/comment1", **{})
         assert result == {"success": True}
 
     # Search Tests
@@ -553,7 +557,7 @@ class TestConfluenceCloud:
         """Test search_content method."""
         mock_get.return_value = {"results": [{"id": "123", "title": "Search Result"}]}
         result = confluence_cloud.search_content("type=page")
-        mock_get.assert_called_once_with("content/search", params={"cql": "type=page", **{}})
+        mock_get.assert_called_once_with("rest/api/content/search", params={"cql": "type=page", **{}})
         assert result == {"results": [{"id": "123", "title": "Search Result"}]}
 
     @patch.object(ConfluenceCloud, "get")
@@ -561,7 +565,7 @@ class TestConfluenceCloud:
         """Test search_spaces method."""
         mock_get.return_value = {"results": [{"id": "TEST", "name": "Test Space"}]}
         result = confluence_cloud.search_spaces("test")
-        mock_get.assert_called_once_with("space/search", params={"query": "test", **{}})
+        mock_get.assert_called_once_with("rest/api/space/search", params={"query": "test", **{}})
         assert result == {"results": [{"id": "TEST", "name": "Test Space"}]}
 
     # Page Properties Tests
@@ -570,7 +574,7 @@ class TestConfluenceCloud:
         """Test get_content_properties method."""
         mock_get.return_value = {"results": [{"key": "prop1", "value": "value1"}]}
         result = confluence_cloud.get_content_properties("123")
-        mock_get.assert_called_once_with("content/123/property", **{})
+        mock_get.assert_called_once_with("rest/api/content/123/property", **{})
         assert result == {"results": [{"key": "prop1", "value": "value1"}]}
 
     @patch.object(ConfluenceCloud, "get")
@@ -578,7 +582,7 @@ class TestConfluenceCloud:
         """Test get_content_property method."""
         mock_get.return_value = {"key": "prop1", "value": "value1"}
         result = confluence_cloud.get_content_property("123", "prop1")
-        mock_get.assert_called_once_with("content/123/property/prop1", **{})
+        mock_get.assert_called_once_with("rest/api/content/123/property/prop1", **{})
         assert result == {"key": "prop1", "value": "value1"}
 
     @patch.object(ConfluenceCloud, "post")
@@ -587,7 +591,7 @@ class TestConfluenceCloud:
         property_data = {"key": "prop2", "value": "value2"}
         mock_post.return_value = {"key": "prop2", "value": "value2"}
         result = confluence_cloud.create_content_property("123", property_data)
-        mock_post.assert_called_once_with("content/123/property", data=property_data, **{})
+        mock_post.assert_called_once_with("rest/api/content/123/property", data=property_data, **{})
         assert result == {"key": "prop2", "value": "value2"}
 
     @patch.object(ConfluenceCloud, "put")
@@ -596,7 +600,7 @@ class TestConfluenceCloud:
         property_data = {"value": "updated_value"}
         mock_put.return_value = {"key": "prop1", "value": "updated_value"}
         result = confluence_cloud.update_content_property("123", "prop1", property_data)
-        mock_put.assert_called_once_with("content/123/property/prop1", data=property_data, **{})
+        mock_put.assert_called_once_with("rest/api/content/123/property/prop1", data=property_data, **{})
         assert result == {"key": "prop1", "value": "updated_value"}
 
     @patch.object(ConfluenceCloud, "delete")
@@ -604,7 +608,7 @@ class TestConfluenceCloud:
         """Test delete_content_property method."""
         mock_delete.return_value = {"success": True}
         result = confluence_cloud.delete_content_property("123", "prop1")
-        mock_delete.assert_called_once_with("content/123/property/prop1", **{})
+        mock_delete.assert_called_once_with("rest/api/content/123/property/prop1", **{})
         assert result == {"success": True}
 
     # Template Tests
@@ -613,7 +617,7 @@ class TestConfluenceCloud:
         """Test get_templates method."""
         mock_get.return_value = {"results": [{"id": "template1", "name": "Test Template"}]}
         result = confluence_cloud.get_templates()
-        mock_get.assert_called_once_with("template", **{})
+        mock_get.assert_called_once_with("rest/api/template", **{})
         assert result == {"results": [{"id": "template1", "name": "Test Template"}]}
 
     @patch.object(ConfluenceCloud, "get")
@@ -621,7 +625,7 @@ class TestConfluenceCloud:
         """Test get_template method."""
         mock_get.return_value = {"id": "template1", "name": "Test Template"}
         result = confluence_cloud.get_template("template1")
-        mock_get.assert_called_once_with("template/template1", **{})
+        mock_get.assert_called_once_with("rest/api/template/template1", **{})
         assert result == {"id": "template1", "name": "Test Template"}
 
     # Analytics Tests
@@ -630,7 +634,7 @@ class TestConfluenceCloud:
         """Test get_content_analytics method."""
         mock_get.return_value = {"views": 100, "likes": 10}
         result = confluence_cloud.get_content_analytics("123")
-        mock_get.assert_called_once_with("content/123/analytics", **{})
+        mock_get.assert_called_once_with("rest/api/content/123/analytics", **{})
         assert result == {"views": 100, "likes": 10}
 
     @patch.object(ConfluenceCloud, "get")
@@ -638,7 +642,7 @@ class TestConfluenceCloud:
         """Test get_space_analytics method."""
         mock_get.return_value = {"totalPages": 50, "totalUsers": 25}
         result = confluence_cloud.get_space_analytics("TEST")
-        mock_get.assert_called_once_with("space/TEST/analytics", **{})
+        mock_get.assert_called_once_with("rest/api/space/TEST/analytics", **{})
         assert result == {"totalPages": 50, "totalUsers": 25}
 
     # Export Tests
@@ -647,7 +651,7 @@ class TestConfluenceCloud:
         """Test export_content method."""
         mock_get.return_value = {"exportData": "base64_encoded_content"}
         result = confluence_cloud.export_content("123")
-        mock_get.assert_called_once_with("content/123/export", **{})
+        mock_get.assert_called_once_with("rest/api/content/123/export", **{})
         assert result == {"exportData": "base64_encoded_content"}
 
     @patch.object(ConfluenceCloud, "get")
@@ -655,7 +659,7 @@ class TestConfluenceCloud:
         """Test export_space method."""
         mock_get.return_value = {"exportData": "base64_encoded_space"}
         result = confluence_cloud.export_space("TEST")
-        mock_get.assert_called_once_with("space/TEST/export", **{})
+        mock_get.assert_called_once_with("rest/api/space/TEST/export", **{})
         assert result == {"exportData": "base64_encoded_space"}
 
     # Utility Methods Tests
@@ -664,7 +668,7 @@ class TestConfluenceCloud:
         """Test get_metadata method."""
         mock_get.return_value = {"version": "2.0", "buildNumber": "123"}
         result = confluence_cloud.get_metadata()
-        mock_get.assert_called_once_with("metadata", **{})
+        mock_get.assert_called_once_with("rest/api/metadata", **{})
         assert result == {"version": "2.0", "buildNumber": "123"}
 
     @patch.object(ConfluenceCloud, "get")
@@ -672,7 +676,7 @@ class TestConfluenceCloud:
         """Test get_health method."""
         mock_get.return_value = {"status": "healthy"}
         result = confluence_cloud.get_health()
-        mock_get.assert_called_once_with("health", **{})
+        mock_get.assert_called_once_with("rest/api/health", **{})
         assert result == {"status": "healthy"}
 
     # Pagination Tests for _get_paged (tested directly since Cloud has no paginated public methods yet)

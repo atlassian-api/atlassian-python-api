@@ -374,7 +374,7 @@ class Insight(AtlassianRestAPI):
     @deprecated(version="3.29.0", reason="Use get_object_reference_info()")
     def get_object_referenceinfo(self, object_id):
         """Let's use the get_object_reference_info()"""
-        self.get_object_reference_info(object_id)
+        return self.get_object_reference_info(object_id)
 
     def get_object_reference_info(self, object_id):
         """
@@ -498,9 +498,9 @@ class Insight(AtlassianRestAPI):
     def create_object_schema(self, object_schema_key, description):
         raise NotImplementedError
 
-    @deprecated(version="3.29.1", reason="Use get_objectschema()")
+    @deprecated(version="3.29.1", reason="Use get_object_schema()")
     def get_objectschema(self, schema_id):
-        return self.get_objectschema(schema_id=schema_id)
+        return self.get_object_schema(schema_id=schema_id)
 
     def get_object_schema(self, schema_id):
         """

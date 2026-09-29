@@ -38,7 +38,10 @@ class Portfolio(AtlassianRestAPI):
 
     def get_team_name(self, team_id):
         all_teams = self.get_teams()["collection"]
-        return [team["title"] for team in all_teams if team["id"] == str(team_id)][0]
+        titles = [team["title"] for team in all_teams if team["id"] == str(team_id)]
+        if not titles:
+            raise ValueError(f"No team found with id {team_id}")
+        return titles[0]
 
     def get_config(self):
         url = f"rest/roadmap/1.0/plans/{self.plan_id}/config.json"
@@ -68,8 +71,8 @@ class Portfolio(AtlassianRestAPI):
         return self.post(url, data={"limit": limit})
 
     def get_filters(self, query_string):
-        url = f"rest/roadmap/1.0/system/filters.json?queryString={query_string}"
-        return self.get(url)
+        url = "rest/roadmap/1.0/system/filters.json"
+        return self.get(url, params={"queryString": query_string})
 
     def get_dependencies(self, workitem_id, plan_version):
         url = f"rest/roadmap/1.0/workitems/{workitem_id}/dependencies.json?planVersion={plan_version}"
@@ -77,7 +80,10 @@ class Portfolio(AtlassianRestAPI):
 
     def get_stage_name(self, stage_id):
         all_stages = self.get_stages()["collection"]
-        return [stage["title"] for stage in all_stages if stage["id"] == str(stage_id)][0]
+        titles = [stage["title"] for stage in all_stages if stage["id"] == str(stage_id)]
+        if not titles:
+            raise ValueError(f"No stage found with id {stage_id}")
+        return titles[0]
 
     def get_estimates_dict(self, estimates):
         return {self.get_stage_name(stage["targetId"]): stage["value"] for stage in estimates["stages"]}
@@ -105,4 +111,8 @@ class Portfolio(AtlassianRestAPI):
             "estimationMethod": estimation_method,
             "loadStoryPoints": load_story_points,
         }
-        return self.post(url, data=data)["data"]["items"]
+        response = self.post(url, data=data)
+        try:
+            return response["data"]["items"]
+        except (KeyError, TypeError) as error:
+            raise ValueError(f"Unexpected response from Portfolio import endpoint: {response!r}") from error

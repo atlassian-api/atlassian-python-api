@@ -1,7 +1,7 @@
 # coding=utf-8
 import logging
+from xml.etree import ElementTree
 
-from bs4 import BeautifulSoup
 from jmespath import search
 
 from .rest_client import AtlassianRestAPI
@@ -166,7 +166,11 @@ class Crowd(AtlassianRestAPI):
         path = self._crowd_api_url("usermanagement", f"group/user/{kind}")
         params = {"username": username, "groupname": group}
         response = self.get(path, params=params, advanced_mode=True)
-        return response.status_code == 200
+        if response.status_code == 200:
+            return True
+        if response.status_code == 404:
+            return False
+        response.raise_for_status()
 
     def group_add_user(self, username, groupname):
         """
@@ -497,12 +501,14 @@ class Crowd(AtlassianRestAPI):
         data = {"newName": new_name}
         return self.post(self._crowd_api_url("usermanagement", "user/rename"), params=params, data=data)
 
-    def user_expire_all_passwords(self, confirm=True):
+    def user_expire_all_passwords(self, confirm=False):
         """
         Expire all user passwords.
-        :param confirm: bool - must be True to perform the action
+        :param confirm: bool - must be explicitly True to perform this destructive action
         :return:
         """
+        if confirm is not True:
+            raise ValueError("expire-all-passwords requires confirm=True")
         params = {"confirm": str(confirm).lower()}
         return self.post(self._crowd_api_url("usermanagement", "user/expire-all-passwords"), params=params)
 
@@ -516,7 +522,7 @@ class Crowd(AtlassianRestAPI):
         params = {"username": username}
         if size:
             params["s"] = size
-        return self.get(self._crowd_api_url("usermanagement", "user/avatar"), params=params)
+        return self.get(self._crowd_api_url("usermanagement", "user/avatar"), params=params, not_json_response=True)
 
     def get_cookie_config(self):
         """Get the Crowd cookie configuration."""
@@ -1322,9 +1328,10 @@ class Crowd(AtlassianRestAPI):
         params = {"start": start, "limit": limit}
         return self.post(self._admin_api_url("auditlog/query"), params=params, data=query or {})
 
-    def get_audit_log_filter_values(self, projection=None, search=None, start=0, limit=99999):
+    def get_audit_log_filter_values(self, query=None, projection=None, search=None, start=0, limit=99999):
         """
         Get audit log filter values.
+        :param query: dict - filter request body
         :param projection: str - item type requested
         :param search: str - optional search string
         :param start: int - start index for paging
@@ -1336,7 +1343,7 @@ class Crowd(AtlassianRestAPI):
             params["projection"] = projection
         if search:
             params["search"] = search
-        return self.post(self._admin_api_url("auditlog/query/filter"), params=params)
+        return self.post(self._admin_api_url("auditlog/query/filter"), params=params, data=query or {})
 
     def get_look_and_feel_config(self):
         """Get look and feel configuration."""
@@ -1499,7 +1506,6 @@ class Crowd(AtlassianRestAPI):
         :param plugin_path:
         :return:
         """
-        files = {"plugin": open(plugin_path, "rb")}
         upm_token = self.request(
             method="GET",
             path="rest/plugins/1.0/",
@@ -1507,7 +1513,9 @@ class Crowd(AtlassianRestAPI):
             trailing=True,
         ).headers["upm-token"]
         url = f"rest/plugins/1.0/?token={upm_token}"
-        return self.post(url, files=files, headers=self.no_check_headers)
+        with open(plugin_path, "rb") as plugin_file:
+            files = {"plugin": plugin_file}
+            return self.post(url, files=files, headers=self.no_check_headers)
 
     def delete_plugin(self, plugin_key):
         """
@@ -1533,7 +1541,7 @@ class Crowd(AtlassianRestAPI):
             "X-Atlassian-Token": "no-check",
             "Content-Type": "application/vnd.atl.plugins+json",
         }
-        url = f"/plugins/1.0/{plugin_key}/license"
+        url = f"rest/plugins/1.0/{plugin_key}/license"
         data = {"rawLicense": raw_license}
         return self.put(url, data=data, headers=app_headers)
 
@@ -1547,11 +1555,11 @@ class Crowd(AtlassianRestAPI):
         path = self._crowd_api_url("usermanagement", "group/membership")
         headers = {"Accept": "application/xml"}
         response = self.get(path, headers=headers)
-        soup = BeautifulSoup(response, "xml")
+        memberships_root = ElementTree.fromstring(response.encode("utf-8") if isinstance(response, str) else response)
         memberships = {}
-        for membership in soup.find_all("membership"):
-            group = membership["group"]
-            users = [user["name"] for user in membership.find_all("user")]
+        for membership in memberships_root.iter("membership"):
+            group = membership.attrib["group"]
+            users = [user.attrib["name"] for user in membership.iter("user")]
             memberships[group] = users
         return memberships
 

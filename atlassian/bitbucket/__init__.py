@@ -497,8 +497,10 @@ class Bitbucket(BitbucketBase):
             self.project(project_key)
             exists = True
         except HTTPError as e:
-            if e.response.status_code in (401, 404):
+            if e.response.status_code == 404:
                 pass
+            else:
+                raise
         return exists
 
     def update_project(self, key, **params):
@@ -1021,9 +1023,10 @@ class Bitbucket(BitbucketBase):
             self.get_repo(project_key, repository_slug)
             exists = True
         except HTTPError as e:
-            if e.response.status_code in (401, 404):
+            if e.response.status_code == 404:
                 pass
-        return exists
+            else:
+                raise
 
     def update_repo(self, project_key, repository_slug, **params):
         """
@@ -3213,12 +3216,7 @@ class Bitbucket(BitbucketBase):
         :return:
         """
         response = self.get_repo_conditions(project_key, repo_key)
-        count = 0
-        for condition in response:
-            if condition["scope"]["type"] == "REPOSITORY":
-                del response[count]
-            count += 1
-        return response
+        return [condition for condition in response if condition["scope"]["type"] == "PROJECT"]
 
     def get_repo_repo_conditions(self, project_key, repo_key):
         """
@@ -3232,12 +3230,7 @@ class Bitbucket(BitbucketBase):
         :return:
         """
         response = self.get_repo_conditions(project_key, repo_key)
-        count = 0
-        for condition in response:
-            if condition["scope"]["type"] == "PROJECT":
-                del response[count]
-            count += 1
-        return response
+        return [condition for condition in response if condition["scope"]["type"] == "REPOSITORY"]
 
     def _url_repo_condition(self, project_key, repo_key, id_condition=None):
         return "{}/condition/{}".format(

@@ -249,7 +249,6 @@ class Server(ConfluenceServerBase):
         :param plugin_path:
         :return:
         """
-        files = {"plugin": open(plugin_path, "rb")}
         upm_token = self.request(
             method="GET",
             path="rest/plugins/1.0/",
@@ -257,7 +256,9 @@ class Server(ConfluenceServerBase):
             trailing=True,
         ).headers["upm-token"]
         url = f"rest/plugins/1.0/?token={upm_token}"
-        return self.post(url, files=files, headers=self.no_check_headers)
+        with open(plugin_path, "rb") as plugin_file:
+            files = {"plugin": plugin_file}
+            return self.post(url, files=files, headers=self.no_check_headers)
 
     def delete_plugin(self, plugin_key: str):
         """
@@ -476,7 +477,7 @@ class Server(ConfluenceServerBase):
             parent_content_id = (self.get_page_by_id(page_id=page_id, expand="ancestors").get("ancestors") or {})[
                 -1
             ].get("id") or None
-        except Exception as e:
+        except (KeyError, IndexError, TypeError) as e:
             log.error(e)
         return parent_content_id
 
@@ -491,7 +492,7 @@ class Server(ConfluenceServerBase):
             parent_content_title = (self.get_page_by_id(page_id=page_id, expand="ancestors").get("ancestors") or {})[
                 -1
             ].get("title") or None
-        except Exception as e:
+        except (KeyError, IndexError, TypeError) as e:
             log.error(e)
         return parent_content_title
 
@@ -945,7 +946,7 @@ class Server(ConfluenceServerBase):
                         self.update_restrictions_for_page_json_rpc(
                             page_id=page_id, permission_type=restriction_type, content_permissions=users_content_edit
                         )
-                        print(
+                        log.info(
                             f'User "{user_name}" granted restrictions type of "{restriction_type}" on page "{page_name}"'
                         )
                     elif user_find_edit_bool:
@@ -956,45 +957,42 @@ class Server(ConfluenceServerBase):
             raise
         except Exception as e:
             log.error(e)
+            raise
 
-        def remove_user_from_restricted_page(self, user_name: str, page_id: str):
-            page_name = self.get_page_by_id(page_id=page_id).get("title")
-            user_find_bool = False
-            users_content_view: list = self.get_users_from_restricts_in_page_by_type(
-                page_id=page_id, restriction_type="View"
-            )
-            users_content_edit: list = self.get_users_from_restricts_in_page_by_type(
-                page_id=page_id, restriction_type="Edit"
-            )
-            current_user_content_view = self.create_restricts_from_from_user(
-                user_name=user_name, restriction_type="View"
-            )
-            current_user_content_edit = self.create_restricts_from_from_user(
-                user_name=user_name, restriction_type="Edit"
-            )
-            for user_index, user_value in enumerate(users_content_view):
-                if dict(user_value).get("userName") == current_user_content_view.get("userName"):
-                    user_find_bool = True
-                    users_content_view.pop(user_index)
-            for user_index, user_value in enumerate(users_content_edit):
-                if dict(user_value).get("userName") == current_user_content_edit.get("userName"):
-                    user_find_bool = True
-                    users_content_edit.pop(user_index)
-            try:
-                if user_find_bool:
-                    self.update_restrictions_for_page_json_rpc(
-                        page_id=page_id, permission_type="View", content_permissions=users_content_view
-                    )
-                    self.update_restrictions_for_page_json_rpc(
-                        page_id=page_id, permission_type="Edit", content_permissions=users_content_edit
-                    )
-                    print(f'User "{user_name}" has been deleted from restrictions on page "{page_name}"')
-                elif not user_find_bool:
-                    raise JsonRPCRestrictionsError(
-                        f'User "{user_name}" has not founded in restrictions on page "{page_name}"'
-                    )
-            except JsonRPCError:
-                raise
+    def remove_user_from_restricted_page(self, user_name: str, page_id: str):
+        page_name = self.get_page_by_id(page_id=page_id).get("title")
+        user_find_bool = False
+        users_content_view: list = self.get_users_from_restricts_in_page_by_type(
+            page_id=page_id, restriction_type="View"
+        )
+        users_content_edit: list = self.get_users_from_restricts_in_page_by_type(
+            page_id=page_id, restriction_type="Edit"
+        )
+        current_user_content_view = self.create_restricts_from_from_user(user_name=user_name, restriction_type="View")
+        current_user_content_edit = self.create_restricts_from_from_user(user_name=user_name, restriction_type="Edit")
+        for user_index, user_value in enumerate(users_content_view):
+            if dict(user_value).get("userName") == current_user_content_view.get("userName"):
+                user_find_bool = True
+                users_content_view.pop(user_index)
+        for user_index, user_value in enumerate(users_content_edit):
+            if dict(user_value).get("userName") == current_user_content_edit.get("userName"):
+                user_find_bool = True
+                users_content_edit.pop(user_index)
+        try:
+            if user_find_bool:
+                self.update_restrictions_for_page_json_rpc(
+                    page_id=page_id, permission_type="View", content_permissions=users_content_view
+                )
+                self.update_restrictions_for_page_json_rpc(
+                    page_id=page_id, permission_type="Edit", content_permissions=users_content_edit
+                )
+                log.info(f'User "{user_name}" has been deleted from restrictions on page "{page_name}"')
+            elif not user_find_bool:
+                raise JsonRPCRestrictionsError(
+                    f'User "{user_name}" has not founded in restrictions on page "{page_name}"'
+                )
+        except JsonRPCError:
+            raise
 
     def move_page(
         self,
@@ -1432,8 +1430,11 @@ class Server(ConfluenceServerBase):
                             if attachment.get("title") == name:
                                 existing_attachment = attachment
                                 break
-                except HTTPError:
-                    pass
+                except HTTPError as e:
+                    if e.response is not None and e.response.status_code == 404:
+                        pass
+                    else:
+                        raise
 
                 if existing_attachment:
                     # Update existing attachment on the specific attachment ID
@@ -1652,7 +1653,7 @@ class Server(ConfluenceServerBase):
                 request=http_err.request,
             )
         except Exception as err:
-            raise Exception(f"An unexpected error occurred: {err}")
+            raise Exception(f"An unexpected error occurred: {err}") from err
 
     def delete_attachment_by_id(self, attachment_id, version):
         """
@@ -1705,9 +1706,12 @@ class Server(ConfluenceServerBase):
         :param keep_last_versions:
         :return:
         """
-        attachment = self.get_attachments_from_content(page_id=page_id, expand="version", filename=filename).get(
+        results = self.get_attachments_from_content(page_id=page_id, expand="version", filename=filename).get(
             "results"
-        )[0]
+        )
+        if not results:
+            raise ApiNotFoundError(f"No attachment named {filename} found on page {page_id}")
+        attachment = results[0]
         attachment_versions = self.get_attachment_history(attachment.get("id"))
         while len(attachment_versions) > keep_last_versions:
             remove_version_attachment_number = attachment_versions[keep_last_versions].get("number")
@@ -2016,7 +2020,7 @@ class Server(ConfluenceServerBase):
         log.debug('Old Content: """%s"""', confluence_body_content)
         log.debug('New Content: """%s"""', body)
 
-        if confluence_body_content.strip().lower() == body.strip().lower():
+        if confluence_body_content is not None and confluence_body_content.strip().lower() == body.strip().lower():
             log.info("Content of %s is exactly the same", page_id)
             return True
         else:
@@ -3829,7 +3833,7 @@ class Server(ConfluenceServerBase):
                     progress_url = urljoin(ui_base_url + "/", poll_url)
                     progress_response = self.get(progress_url, absolute=True) or {}
                     log.info(f"Space {space_key} export status: {progress_response.get('message', 'None')}")
-                    if progress_response is not {} and progress_response.get("complete"):
+                    if progress_response and progress_response.get("complete"):
                         parsed_html = BeautifulSoup(progress_response.get("message"), "html.parser")
                         download_url = cast(
                             "str", parsed_html.find("a", {"class": "space-export-download-path"}).get("href")
@@ -3841,7 +3845,7 @@ class Server(ConfluenceServerBase):
                         "Encountered error during space export status check from space " + space_key, reason=e
                     )
 
-            return "None"  # Return None if the while loop does not return a value
+            raise ApiError(f"Space export for {space_key} did not complete")
         except Exception as e:
             raise ApiError("Encountered error during space export from space " + space_key, reason=e)
 
@@ -3879,10 +3883,11 @@ class Server(ConfluenceServerBase):
         """
         page_id = ""
 
-        url = f'rest/api/content/search?cql=parent={parent_id}%20AND%20space="{space}"'
+        url = "rest/api/content/search"
+        cql = f'parent={parent_id} AND space="{space}"'
 
         try:
-            response = self.get(url, {})
+            response = self.get(url, params={"cql": cql})
         except HTTPError as e:
             if e.response.status_code == 400:
                 raise ApiValueError("The CQL is invalid or missing", reason=e)

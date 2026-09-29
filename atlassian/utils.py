@@ -318,6 +318,8 @@ def parse_cookie_file(cookie_file):
     cookies = {}
     with open(cookie_file, "r") as fp:
         for line in fp:
+            if line.startswith("#HttpOnly_"):
+                line = line[len("#HttpOnly_") :]
             if not re.match(r"^(#|$)", line):
                 line_fields = line.strip().split("\t")
                 try:

@@ -5,7 +5,7 @@ Unit tests for atlassian.rest_client module
 
 import io
 from base64 import b64decode
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
 
 import pytest
@@ -555,7 +555,7 @@ class TestAtlassianRestAPI:
 
         handler = api._retry_handler()
         future_delay = 10
-        future_date = datetime.utcnow().replace(tzinfo=None) + timedelta(seconds=future_delay)
+        future_date = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(seconds=future_delay)
         retry_after_value = future_date.strftime("%a, %d %b %Y %H:%M:%S GMT")
         response = SimpleNamespace(headers={"Retry-After": retry_after_value}, status_code=429)
 

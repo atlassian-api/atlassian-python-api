@@ -125,7 +125,7 @@ class AtlassianRestAPI(object):
         token: Optional[str] = None,
         cert: Union[str, Tuple[str, str], None] = None,
         backoff_and_retry: bool = False,
-        retry_status_codes: List[int] = [413, 429, 503],
+        retry_status_codes: Optional[List[int]] = None,
         max_backoff_seconds: int = 1800,
         max_backoff_retries: int = 1000,
         backoff_factor=1.0,
@@ -199,7 +199,7 @@ class AtlassianRestAPI(object):
         self.cert = cert
         self.backoff_and_retry = backoff_and_retry
         self.max_backoff_retries = max_backoff_retries
-        self.retry_status_codes = retry_status_codes
+        self.retry_status_codes = retry_status_codes if retry_status_codes is not None else [413, 429, 503]
         self.max_backoff_seconds = max_backoff_seconds
         self.use_urllib3_retry = int(urllib3.__version__.split(".")[0]) >= 2
         self.backoff_factor = backoff_factor
@@ -529,7 +529,8 @@ class AtlassianRestAPI(object):
             url += ("&" if params or params_already_in_url else "") + "&".join(flags or [])
         json_dump = None
         if files is None:
-            data = None if data is None else dumps(data)
+            # Only JSON-encode structured payloads; a plain string body is sent as-is.
+            data = None if data is None else (data if isinstance(data, str) else dumps(data))
             json_dump = None if json is None else dumps(json)
 
         headers = headers or self.default_headers

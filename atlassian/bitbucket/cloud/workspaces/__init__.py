@@ -91,8 +91,10 @@ class Workspaces(BitbucketCloudBase):
             self.get(workspace)
             exists = True
         except HTTPError as e:
-            if e.response.status_code in (401, 404):
+            if e.response.status_code == 404:
                 pass
+            else:
+                raise
         return exists
 
 

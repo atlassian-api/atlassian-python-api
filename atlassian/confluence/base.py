@@ -195,7 +195,14 @@ class ConfluenceBase(AtlassianRestAPI):
             # query.  Reusing the already-resolved endpoint preserves both
             # ``/wiki`` and API-gateway tenant prefixes.
             parsed_next = urlparse(url)
-            if getattr(self, "api_version", None) == 2 and parsed_next.query and not parsed_next.scheme:
+            next_path = parsed_next.path.strip("/")
+            current_path = urlparse(current_url).path.strip("/")
+            if (
+                str(getattr(self, "api_version", "")) == "2"
+                and parsed_next.query
+                and not parsed_next.scheme
+                and (not next_path or next_path == current_path)
+            ):
                 url = current_url
                 params = dict(parse_qsl(parsed_next.query, keep_blank_values=True))
                 trailing = False
