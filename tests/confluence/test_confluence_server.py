@@ -831,6 +831,34 @@ class TestConfluenceServer:
         assert second_call.args[0] == "https://test.confluence.com/rest/api/content/123/child/page?limit=25&start=25"
         assert second_call.kwargs["absolute"] is True
 
+    @pytest.mark.parametrize(
+        "base_url", ["https://test.confluence.com/confluence", "https://test.confluence.com/confluence/"]
+    )
+    @pytest.mark.parametrize(
+        "next_link",
+        [
+            "/rest/api/content/123/child/page?limit=25&start=25",
+            "rest/api/content/123/child/page?limit=25&start=25",
+            "/confluence/rest/api/content/123/child/page?limit=25&start=25",
+        ],
+    )
+    def test_child_page_pagination_keeps_context_path(self, base_url, next_link):
+        confluence = ConfluenceServer(url=base_url, username="test", password="test", cloud=False)
+        responses = [
+            {"results": [{"id": "1", "title": "Child 1"}], "_links": {"next": next_link}},
+            {"results": [{"id": "2", "title": "Child 2"}]},
+        ]
+        with patch.object(ConfluenceServer, "get", side_effect=responses) as mock_get:
+            result = list(confluence.get_page_child_by_type("123"))
+
+        assert result == [{"id": "1", "title": "Child 1"}, {"id": "2", "title": "Child 2"}]
+        second_call = mock_get.call_args_list[1]
+        assert (
+            second_call.args[0]
+            == "https://test.confluence.com/confluence/rest/api/content/123/child/page?limit=25&start=25"
+        )
+        assert second_call.kwargs["absolute"] is True
+
     @patch.object(ConfluenceServer, "get")
     def test_pagination_stops_when_next_link_is_none(self, mock_get, confluence_server):
         """Test pagination stops when _links.next is explicitly None."""

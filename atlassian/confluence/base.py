@@ -215,7 +215,13 @@ class ConfluenceBase(AtlassianRestAPI):
                 parsed = urlparse(self.url)
                 site_url = f"{parsed.scheme}://{parsed.netloc}"
                 if url.startswith("/") or url.startswith(("rest/", "wiki/")):
-                    url = f"{site_url}/{url.lstrip('/')}"
+                    # On Server, next links are relative to the context path
+                    # (e.g. ``/confluence``) unless they already include it.
+                    path = f"/{url.lstrip('/')}"
+                    context = "" if self.cloud else parsed.path.rstrip("/")
+                    if context and path != context and not path.startswith(f"{context}/"):
+                        path = f"{context}{path}"
+                    url = f"{site_url}{path}"
                 else:
                     url = urljoin(f"{self.url.rstrip('/')}/", url)
 
