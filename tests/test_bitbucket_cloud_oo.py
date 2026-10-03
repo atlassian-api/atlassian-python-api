@@ -119,6 +119,14 @@ class TestBasic:
     def test_exists_repository(self):
         assert CLOUD.workspaces.get("TestWorkspace1").repositories.exists("testrepository1"), "Exists repository"
 
+    def test_exists_branch(self):
+        repository = CLOUD.workspaces.get("TestWorkspace1").repositories.get("testrepository1")
+        assert repository.branches.exists("master"), "Exists branch"
+
+    def test_not_exists_branch(self):
+        repository = CLOUD.workspaces.get("TestWorkspace1").repositories.get("testrepository1")
+        assert not repository.branches.exists("masterxxx"), "Not exists branch"
+
     def test_repository_commits_each_uses_paged_commit_data(self, monkeypatch):
         repository = CLOUD.workspaces.get("TestWorkspace1").repositories.get("testrepository1")
         commits = repository.commits

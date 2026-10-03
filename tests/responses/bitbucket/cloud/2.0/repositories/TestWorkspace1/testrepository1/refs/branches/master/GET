@@ -1,0 +1,8 @@
+responses[None] = {
+    "type": "branch",
+    "name": "master",
+    "target": {
+        "hash": "1fbd047cd99a",
+        "type": "commit",
+    },
+}

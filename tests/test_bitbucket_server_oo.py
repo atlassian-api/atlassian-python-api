@@ -234,6 +234,14 @@ class TestBasic:
 
         assert [x.id for x in repo.related()] == [2], "The related repositories"
 
+    def test_repository_branch_exists(self):
+        repo = BITBUCKET.projects.get("PRJ").repos.get("my-repo1-slug")
+
+        assert repo.branch_exists("main"), "Exists branch"
+        assert repo.branch_exists("maint/relx"), "Exists branch with slash in name"
+        assert not repo.branch_exists("deleted-branch"), "Not exists branch"
+        assert not repo.branch_exists("master"), "Prefix match is not an exact match"
+
     def test_repository_permissions(self):
         repo = BITBUCKET.projects.get("PRJ").repos.get("my-repo1-slug")
 

@@ -306,3 +306,58 @@ class TestPersonalRepositories(TestCase):
         mock_post.assert_called_once_with(
             "rest/api/1.0/users/~alice/repos/example/settings/pull-requests", data=settings
         )
+
+
+class TestBranchExists(TestCase):
+    def setUp(self):
+        self.bitbucket = Bitbucket("https://bitbucket.example.com", username="admin", password="password")
+
+    @patch.object(Bitbucket, "get_branches")
+    def test_branch_exists_exact_match(self, mock_get_branches):
+        mock_get_branches.return_value = iter([{"displayId": "release/1.0"}])
+
+        self.assertTrue(self.bitbucket.branch_exists("PRJ", "repo", "release/1.0"))
+        mock_get_branches.assert_called_once_with(
+            "PRJ",
+            "repo",
+            filter="release/1.0",
+            limit=1,
+            details=False,
+            order_by=None,
+            boost_matches=True,
+        )
+
+    @patch.object(Bitbucket, "get_branches")
+    def test_branch_exists_prefix_match_is_not_enough(self, mock_get_branches):
+        mock_get_branches.return_value = iter([{"displayId": "release/1.0-beta"}])
+
+        self.assertFalse(self.bitbucket.branch_exists("PRJ", "repo", "release/1.0"))
+
+    @patch.object(Bitbucket, "get_branches")
+    def test_branch_exists_no_match(self, mock_get_branches):
+        mock_get_branches.return_value = iter([])
+
+        self.assertFalse(self.bitbucket.branch_exists("PRJ", "repo", "deleted-branch"))
+
+    @patch.object(Bitbucket, "get")
+    def test_cloud_branch_exists_queries_single_branch_resource(self, mock_get):
+        bitbucket = Bitbucket("https://api.bitbucket.org/", username="admin", password="password", cloud=True)
+
+        self.assertTrue(bitbucket.branch_exists("WORKSPACE", "repo", "feature/x"))
+        mock_get.assert_called_once_with(
+            "/2.0/repositories/WORKSPACE/repo/refs/branches/feature%2Fx",
+        )
+
+    @patch.object(Bitbucket, "get")
+    def test_cloud_branch_missing_returns_false(self, mock_get):
+        bitbucket = Bitbucket("https://api.bitbucket.org/", username="admin", password="password", cloud=True)
+        import requests
+
+        error = requests.HTTPError("404")
+        error.response = type("R", (), {"status_code": 404})()
+        mock_get.side_effect = error
+
+        self.assertFalse(bitbucket.branch_exists("WORKSPACE", "repo", "missing"))
+        mock_get.assert_called_once_with(
+            "/2.0/repositories/WORKSPACE/repo/refs/branches/missing",
+        )

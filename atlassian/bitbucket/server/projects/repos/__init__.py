@@ -260,6 +260,31 @@ class Repository(BitbucketServerBase):
         for fork in self._get_paged("forks"):
             yield fork
 
+    def branch_exists(self, branch):
+        """
+        Check if the given branch exists in the repository.
+
+        The 1.0 API has no single-branch endpoint, so this filters the paged
+        branch list and relies on ``boostMatches`` to put the exact match first.
+
+        :param branch: string: The requested branch name
+
+        :return: True if the branch exists
+
+        API docs: https://docs.atlassian.com/bitbucket-server/rest/7.8.0/bitbucket-rest.html#idp211
+        """
+        for b in self._get_paged(
+            "branches",
+            params={
+                "filterText": branch,
+                "limit": 1,
+                "details": False,
+                "boostMatches": True,
+            },
+        ):
+            return b.get("displayId") == branch
+        return False
+
     def related(self):
         """
         Get all related repositories.

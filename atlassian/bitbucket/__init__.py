@@ -2,6 +2,7 @@
 import logging
 from enum import Enum
 from typing import Any, Dict, List, Optional
+from urllib.parse import quote
 
 from deprecated import deprecated
 from requests import HTTPError
@@ -1021,6 +1022,50 @@ class Bitbucket(BitbucketBase):
         exists = False
         try:
             self.get_repo(project_key, repository_slug)
+            exists = True
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                pass
+            else:
+                raise
+        return exists
+
+    def branch_exists(self, project_key, repository_slug, branch):
+        """
+        Check if the given branch exists in the repository.
+
+        On Bitbucket Server this queries the paged branch list with a
+        ``filterText`` prefix match, because the 1.0 API has no single-branch
+        endpoint. On Bitbucket Cloud this fetches the single branch resource.
+
+        :param project_key: Key of the project the repository belongs to.
+        :param repository_slug: url-compatible repository identifier to look for.
+        :param branch: name of the branch to look for.
+        :return: False if the branch does not exist or is not accessible to the requestor
+        """
+        if self.cloud:
+            return self._cloud_branch_exists(project_key, repository_slug, branch)
+        # The 1.0 API has no single-branch endpoint, so filter the paged list
+        # and rely on boostMatches to put the exact match first.
+        for b in self.get_branches(
+            project_key,
+            repository_slug,
+            filter=branch,
+            limit=1,
+            details=False,
+            order_by=None,
+            boost_matches=True,
+        ):
+            return b.get("displayId") == branch
+        return False
+
+    def _cloud_branch_exists(self, workspace, repository_slug, branch):
+        url = self.resource_url(
+            f"repositories/{workspace}/{repository_slug}/refs/branches/{quote(str(branch), safe='')}"
+        )
+        exists = False
+        try:
+            self.get(url)
             exists = True
         except HTTPError as e:
             if e.response.status_code == 404:
