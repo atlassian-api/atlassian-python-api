@@ -767,3 +767,69 @@ class TestConfluenceCloud:
         args, kwargs = mock_get.call_args_list[1]
         assert args[0] == "https://test.atlassian.net/rest/api/content?cursor=1"
         assert kwargs["absolute"] is True
+
+
+class TestConfluenceCloudV2CqlPagination:
+    """Paged CQL search on the Cloud V2 client (atlassian.ConfluenceV2)."""
+
+    @pytest.fixture
+    def confluence_v2(self):
+        return ConfluenceCloudV2("https://test.atlassian.net", token="test-token")
+
+    @patch.object(ConfluenceCloudV2, "_get_paged")
+    def test_iter_cql_follows_all_result_pages(self, mock_get_paged, confluence_v2):
+        mock_get_paged.return_value = iter([{"id": "1"}, {"id": "2"}])
+
+        assert list(confluence_v2.iter_cql('type = "page"', limit=25)) == [{"id": "1"}, {"id": "2"}]
+        mock_get_paged.assert_called_once_with("api/v2/search", params={"cql": 'type = "page"', "limit": 25})
+
+    @patch.object(ConfluenceCloudV2, "_get_paged")
+    def test_iter_cql_supports_text_query(self, mock_get_paged, confluence_v2):
+        mock_get_paged.return_value = iter([{"id": "1"}])
+
+        assert list(confluence_v2.iter_cql(query="meeting notes", limit=10)) == [{"id": "1"}]
+        mock_get_paged.assert_called_once_with("api/v2/search", params={"query": "meeting notes", "limit": 10})
+
+    @patch.object(ConfluenceCloudV2, "_get_paged")
+    def test_iter_cql_requires_query_or_cql(self, mock_get_paged, confluence_v2):
+        with pytest.raises(ValueError, match="Either 'query' or 'cql' must be provided"):
+            confluence_v2.iter_cql()
+
+        mock_get_paged.assert_not_called()
+
+    @patch.object(ConfluenceCloudV2, "iter_cql")
+    def test_cql_all_materializes_iter_cql_results(self, mock_iter_cql, confluence_v2):
+        mock_iter_cql.return_value = iter([{"id": "1"}, {"id": "2"}])
+
+        assert confluence_v2.cql_all('type = "page"') == [{"id": "1"}, {"id": "2"}]
+        mock_iter_cql.assert_called_once_with('type = "page"')
+
+    @patch.object(ConfluenceCloudV2, "_get_paged")
+    def test_search_content_follows_all_result_pages(self, mock_get_paged, confluence_v2):
+        mock_get_paged.return_value = iter([{"id": "1"}, {"id": "2"}, {"id": "3"}])
+
+        results = confluence_v2.search_content("project", type="page", space_id="42", limit=25)
+
+        assert results == [{"id": "1"}, {"id": "2"}, {"id": "3"}]
+        params = mock_get_paged.call_args.kwargs["params"]
+        assert params["cql"] == 'text ~ "project" AND type = "page" AND space.id = "42" AND status = "current"'
+        assert params["limit"] == 25
+
+    @patch.object(ConfluenceCloudV2, "_get_paged")
+    def test_get_space_content_follows_all_result_pages(self, mock_get_paged, confluence_v2):
+        mock_get_paged.return_value = iter([{"id": "1"}, {"id": "2"}])
+
+        results = confluence_v2.get_space_content("42", depth="root", limit=25)
+
+        assert results == [{"id": "1"}, {"id": "2"}]
+        params = mock_get_paged.call_args.kwargs["params"]
+        assert params["cql"] == 'space.id = "42" AND ancestor = root'
+
+    @patch.object(ConfluenceCloudV2, "_get_paged")
+    def test_get_space_content_sorts_by_cql_order(self, mock_get_paged, confluence_v2):
+        mock_get_paged.return_value = iter([])
+
+        confluence_v2.get_space_content("42", sort="-modified")
+
+        params = mock_get_paged.call_args.kwargs["params"]
+        assert params["cql"] == 'space.id = "42" order by lastmodified desc'

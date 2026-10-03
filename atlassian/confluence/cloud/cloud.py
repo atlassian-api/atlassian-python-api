@@ -609,34 +609,75 @@ class ConfluenceCloud(
             ValueError: If invalid parameters are provided
         """
         endpoint = self.get_endpoint("search")
-        params = {"limit": limit}
-
-        # We need at least a text query or CQL
-        if not query and not cql:
-            raise ValueError("Either 'query' or 'cql' must be provided")
-
-        if query:
-            params["query"] = query
-
-        if cql:
-            params["cql"] = cql
-
+        params = self._search_params(query=query, cql=cql, limit=limit, excerpt=excerpt, body_format=body_format)
         if cursor:
             params["cursor"] = cursor
-
-        if not excerpt:
-            params["excerpt"] = "false"
-
-        if body_format:
-            if body_format not in ("view", "storage", "atlas_doc_format"):
-                raise ValueError("body_format must be one of 'view', 'storage', or 'atlas_doc_format'")
-            params["body-format"] = body_format
 
         try:
             return self.get(endpoint, params=params)
         except Exception as e:
             log.error(f"Failed to perform search: {e}")
             raise
+
+    def iter_cql(
+        self,
+        cql: Optional[str] = None,
+        query: str = "",
+        limit: int = 25,
+        excerpt: bool = True,
+        body_format: Optional[str] = None,
+    ):
+        """Yield every Cloud V2 search result, following cursor pagination.
+
+        Args:
+            cql: (optional) Confluence Query Language (CQL) expression to filter by
+            query: (optional) Text to search for; either *cql* or *query* is required
+            limit: Maximum number of results per request. Default: 25
+            excerpt: Whether to include excerpts in the response. Default: True
+            body_format: (optional) The format for the excerpt if excerpts are included.
+                One of 'view', 'storage', or 'atlas_doc_format'
+
+        Yields:
+            Each search result element
+        """
+        params = self._search_params(query=query, cql=cql, limit=limit, excerpt=excerpt, body_format=body_format)
+        return self._get_paged(self.get_endpoint("search"), params=params)
+
+    def cql_all(self, *args, **kwargs) -> List[Dict[str, Any]]:
+        """Return all paginated Cloud V2 search results as a list.
+
+        Prefer :meth:`iter_cql` for large result sets.
+        """
+        return list(self.iter_cql(*args, **kwargs))
+
+    def _search_params(
+        self,
+        query: str = "",
+        cql: Optional[str] = None,
+        limit: int = 25,
+        excerpt: bool = True,
+        body_format: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Build query parameters for the V2 search endpoint.
+
+        Raises:
+            ValueError: If neither *query* nor *cql* is provided, or an
+                invalid *body_format* is given.
+        """
+        if not query and not cql:
+            raise ValueError("Either 'query' or 'cql' must be provided")
+        params: Dict[str, Any] = {"limit": limit}
+        if query:
+            params["query"] = query
+        if cql:
+            params["cql"] = cql
+        if not excerpt:
+            params["excerpt"] = "false"
+        if body_format:
+            if body_format not in ("view", "storage", "atlas_doc_format"):
+                raise ValueError("body_format must be one of 'view', 'storage', or 'atlas_doc_format'")
+            params["body-format"] = body_format
+        return params
 
     def search_content(
         self,
@@ -648,14 +689,15 @@ class ConfluenceCloud(
     ) -> List[Dict[str, Any]]:
         """
         Search for content with specific filters. This is a convenience method
-        that builds a CQL query and calls the search method.
+        that builds a CQL query and follows cursor pagination.
 
         Args:
             query: Text to search for
             _type: (optional) Content type to filter by. Valid values: 'page', 'blogpost', 'comment'
             space_id: (optional) Space ID to restrict search to
             status: (optional) Content status. Valid values: 'current', 'archived', 'draft', 'any'
-            limit: (optional) Maximum number of results to return per request. Default: 25
+            limit: (optional) Maximum number of results to fetch per request. All pages are
+                   fetched, so the result may be larger. Default: 25
 
         Returns:
             List of content items matching the search criteria
@@ -691,11 +733,8 @@ class ConfluenceCloud(
         # Combine all CQL parts
         cql = " AND ".join(cql_parts)
 
-        # Call the main search method
-        result = self.search(query="", cql=cql, limit=limit)
-
-        # Return just the results array
-        return result.get("results", [])
+        # Follow pagination so large result sets are not silently truncated
+        return list(self.iter_cql(cql=cql, limit=limit))
 
     def get_spaces(
         self,
@@ -822,15 +861,16 @@ class ConfluenceCloud(
         self, space_id: str, depth: Optional[str] = None, sort: Optional[str] = None, limit: int = 25
     ) -> List[Dict[str, Any]]:
         """
-        Returns the content of a space using the search method.
-        This is a convenience method that builds a CQL query.
+        Returns the content of a space using the search method, following
+        cursor pagination so large spaces are not truncated.
 
         Args:
             space_id: The ID of the space
             depth: (optional) Depth of the search. Valid values: 'root', 'all'
             sort: (optional) Sort order. Format: [field] or [-field] for descending
                   Valid fields: 'created', 'modified'
-            limit: (optional) Maximum number of items to return. Default: 25
+            limit: (optional) Maximum number of items to fetch per request. All pages
+                   are fetched, so the result may be larger. Default: 25
 
         Returns:
             List of content items in the space
@@ -848,8 +888,6 @@ class ConfluenceCloud(
         cql = " AND ".join(cql_parts)
 
         # Define sort for the search
-        search_params = {"cql": cql, "limit": limit}
-
         if sort:
             # Map sort fields to CQL sort fields
             sort_mappings = {
@@ -860,16 +898,13 @@ class ConfluenceCloud(
             }
 
             if sort in sort_mappings:
-                search_params["cql"] += f" order by {sort_mappings[sort]}"
+                cql += f" order by {sort_mappings[sort]}"
             else:
                 valid_sorts = list(sort_mappings.keys())
                 raise ValueError(f"Sort must be one of: {', '.join(valid_sorts)}")
 
-        # Call search method
-        result = self.search(query="", **search_params)
-
-        # Return just the results array
-        return result.get("results", [])
+        # Follow pagination so large spaces are not silently truncated
+        return list(self.iter_cql(cql=cql, limit=limit))
 
     def archive_space(self, space_key: str) -> Dict[str, Any]:
         """
