@@ -534,6 +534,11 @@ class AtlassianRestAPI(object):
             json_dump = None if json is None else dumps(json)
 
         headers = headers or self.default_headers
+        if files and any(key.lower() == "content-type" for key in headers):
+            # ``requests`` builds the multipart/form-data body and its
+            # Content-Type (with boundary) itself. Passing the JSON default
+            # here makes servers reject the upload with 415.
+            headers = {key: value for key, value in headers.items() if key.lower() != "content-type"}
 
         # ``requests`` reads file-like multipart values when preparing a
         # request. Reset them before every attempt so a retry cannot upload an
