@@ -1,0 +1,11 @@
+responses['{"permission": "admin"}'] = {
+    "type": "repository_user_permission",
+    "user": {
+        "type": "user",
+        "display_name": "Colin Cameron",
+        "uuid": "{d301aafa-d676-4ee0-88be-962be7417567}",
+        "account_id": "557058:ba8948b2-49da-43a9-9e8b-e7249b8e324a",
+        "nickname": "Colin Cameron",
+    },
+    "permission": "admin",
+}

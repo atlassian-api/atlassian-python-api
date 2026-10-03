@@ -1,0 +1,12 @@
+responses[None] = {
+    "pagelen": 10,
+    "values": [
+        {
+            "type": "repository_group_permission",
+            "group": {"owner": {"username": "TestWorkspace1"}, "slug": "developers", "name": "Developers"},
+            "permission": "read",
+        }
+    ],
+    "page": 1,
+    "size": 1,
+}

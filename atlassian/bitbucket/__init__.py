@@ -1213,12 +1213,20 @@ class Bitbucket(BitbucketBase):
     def repo_grant_user_permissions(self, project_key, repo_key, username, permission):
         """
         Grant the specified repository permission to a specific user
-        :param project_key: The project key
+        :param project_key: The project key (or workspace slug on Bitbucket Cloud)
         :param repo_key: The repository key (slug)
-        :param username: username to be granted
-        :param permission: the repository permissions available are 'REPO_ADMIN', 'REPO_WRITE' and 'REPO_READ'
+        :param username: On Bitbucket Server the username, on Bitbucket Cloud the
+                         account UUID (``{account UUID}``) or Atlassian Account ID
+        :param permission: On Bitbucket Server 'REPO_ADMIN', 'REPO_WRITE' or 'REPO_READ',
+                           on Bitbucket Cloud 'admin', 'write' or 'read'
         :return:
         """
+        if self.cloud:
+            url = self.resource_url(
+                f"repositories/{project_key}/{repo_key}/permissions-config/users/{quote(str(username), safe=':')}",
+                api_root="",
+            )
+            return self.put(url, data={"permission": permission})
         url = self._url_repo_users(project_key, repo_key)
         params = {"permission": permission, "name": username}
         return self.put(url, params=params)
@@ -1230,11 +1238,18 @@ class Bitbucket(BitbucketBase):
         or a higher project or global permission to call this resource.
         In addition, a user may not revoke their own repository permissions
         if they do not have a higher project or global permission.
-        :param project_key: The project key
+        :param project_key: The project key (or workspace slug on Bitbucket Cloud)
         :param repo_key: The repository key (slug)
-        :param username: username to be granted
+        :param username: On Bitbucket Server the username, on Bitbucket Cloud the
+                         account UUID (``{account UUID}``) or Atlassian Account ID
         :return:
         """
+        if self.cloud:
+            url = self.resource_url(
+                f"repositories/{project_key}/{repo_key}/permissions-config/users/{quote(str(username), safe=':')}",
+                api_root="",
+            )
+            return self.delete(url)
         url = self._url_repo_users(project_key, repo_key)
         params = {"name": username}
         return self.delete(url, params=params)
@@ -1317,12 +1332,19 @@ class Bitbucket(BitbucketBase):
         or global permission to call this resource.
         In addition, a user may not demote a group's permission level
         if their own permission level would be reduced as a result.
-        :param project_key: The project key
+        :param project_key: The project key (or workspace slug on Bitbucket Cloud)
         :param repo_key: The repository key (slug)
-        :param groupname: group to be granted
-        :param permission: the repository permissions available are 'REPO_ADMIN', 'REPO_WRITE' and 'REPO_READ'
+        :param groupname: group to be granted (group slug on Bitbucket Cloud)
+        :param permission: On Bitbucket Server 'REPO_ADMIN', 'REPO_WRITE' or 'REPO_READ',
+                           on Bitbucket Cloud 'admin', 'write' or 'read'
         :return:
         """
+        if self.cloud:
+            url = self.resource_url(
+                f"repositories/{project_key}/{repo_key}/permissions-config/groups/{quote(str(groupname), safe='')}",
+                api_root="",
+            )
+            return self.put(url, data={"permission": permission})
         url = self._url_repo_groups(project_key, repo_key)
         params = {"permission": permission, "name": groupname}
         return self.put(url, params=params)
@@ -1333,12 +1355,18 @@ class Bitbucket(BitbucketBase):
         The authenticated user must have REPO_ADMIN permission for the specified repository
         or a higher project or global permission to call this resource.
         In addition, a user may not revoke a group's permissions if it will reduce their own permission level.
-        :param project_key: The project key
+        :param project_key: The project key (or workspace slug on Bitbucket Cloud)
         :param repo_key: The repository key (slug)
-        :param groupname: group to be granted
+        :param groupname: group to be granted (group slug on Bitbucket Cloud)
         :param permission: the repository permissions available are 'REPO_ADMIN', 'REPO_WRITE' and 'REPO_READ'
         :return:
         """
+        if self.cloud:
+            url = self.resource_url(
+                f"repositories/{project_key}/{repo_key}/permissions-config/groups/{quote(str(groupname), safe='')}",
+                api_root="",
+            )
+            return self.delete(url)
         url = self._url_repo_groups(project_key, repo_key)
         params = {"name": groupname}
         if permission:

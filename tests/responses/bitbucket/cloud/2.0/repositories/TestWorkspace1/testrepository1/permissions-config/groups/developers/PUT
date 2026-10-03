@@ -1,0 +1,5 @@
+responses['{"permission": "write"}'] = {
+    "type": "repository_group_permission",
+    "group": {"owner": {"username": "TestWorkspace1"}, "slug": "developers", "name": "Developers"},
+    "permission": "write",
+}
