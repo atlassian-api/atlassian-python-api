@@ -306,3 +306,118 @@ class TestPersonalRepositories(TestCase):
         mock_post.assert_called_once_with(
             "rest/api/1.0/users/~alice/repos/example/settings/pull-requests", data=settings
         )
+
+
+class TestBranchExists(TestCase):
+    def setUp(self):
+        self.bitbucket = Bitbucket("https://bitbucket.example.com", username="admin", password="password")
+
+    @patch.object(Bitbucket, "get_branches")
+    def test_branch_exists_exact_match(self, mock_get_branches):
+        mock_get_branches.return_value = iter([{"displayId": "release/1.0"}])
+
+        self.assertTrue(self.bitbucket.branch_exists("PRJ", "repo", "release/1.0"))
+        mock_get_branches.assert_called_once_with(
+            "PRJ",
+            "repo",
+            filter="release/1.0",
+            limit=1,
+            details=False,
+            order_by=None,
+            boost_matches=True,
+        )
+
+    @patch.object(Bitbucket, "get_branches")
+    def test_branch_exists_prefix_match_is_not_enough(self, mock_get_branches):
+        mock_get_branches.return_value = iter([{"displayId": "release/1.0-beta"}])
+
+        self.assertFalse(self.bitbucket.branch_exists("PRJ", "repo", "release/1.0"))
+
+    @patch.object(Bitbucket, "get_branches")
+    def test_branch_exists_no_match(self, mock_get_branches):
+        mock_get_branches.return_value = iter([])
+
+        self.assertFalse(self.bitbucket.branch_exists("PRJ", "repo", "deleted-branch"))
+
+    @patch.object(Bitbucket, "get")
+    def test_cloud_branch_exists_queries_single_branch_resource(self, mock_get):
+        bitbucket = Bitbucket("https://api.bitbucket.org/", username="admin", password="password", cloud=True)
+
+        self.assertTrue(bitbucket.branch_exists("WORKSPACE", "repo", "feature/x"))
+        mock_get.assert_called_once_with(
+            "/2.0/repositories/WORKSPACE/repo/refs/branches/feature%2Fx",
+        )
+
+    @patch.object(Bitbucket, "get")
+    def test_cloud_branch_missing_returns_false(self, mock_get):
+        bitbucket = Bitbucket("https://api.bitbucket.org/", username="admin", password="password", cloud=True)
+        import requests
+
+        error = requests.HTTPError("404")
+        error.response = type("R", (), {"status_code": 404})()
+        mock_get.side_effect = error
+
+        self.assertFalse(bitbucket.branch_exists("WORKSPACE", "repo", "missing"))
+        mock_get.assert_called_once_with(
+            "/2.0/repositories/WORKSPACE/repo/refs/branches/missing",
+        )
+
+
+class TestRepoPermissions(TestCase):
+    def setUp(self):
+        self.server = Bitbucket("https://bitbucket.example.com", username="admin", password="password")
+        self.cloud = Bitbucket("https://api.bitbucket.org/", username="admin", password="password", cloud=True)
+
+    @patch.object(Bitbucket, "put")
+    def test_server_grant_user_permissions_uses_server_endpoint(self, mock_put):
+        self.server.repo_grant_user_permissions("PRJ", "repo", "user1", "REPO_WRITE")
+
+        mock_put.assert_called_once_with(
+            "rest/api/1.0/projects/PRJ/repos/repo/permissions/users",
+            params={"permission": "REPO_WRITE", "name": "user1"},
+        )
+
+    @patch.object(Bitbucket, "put")
+    def test_cloud_grant_user_permissions_uses_permissions_config(self, mock_put):
+        self.cloud.repo_grant_user_permissions(
+            "WORKSPACE", "repo", "557058:ba8948b2-49da-43a9-9e8b-e7249b8e324a", "write"
+        )
+
+        mock_put.assert_called_once_with(
+            "/2.0/repositories/WORKSPACE/repo/permissions-config/users/557058:ba8948b2-49da-43a9-9e8b-e7249b8e324a",
+            data={"permission": "write"},
+        )
+
+    @patch.object(Bitbucket, "delete")
+    def test_cloud_remove_user_permissions(self, mock_delete):
+        self.cloud.repo_remove_user_permissions("WORKSPACE", "repo", "557058:ba8948b2-49da-43a9-9e8b-e7249b8e324a")
+
+        mock_delete.assert_called_once_with(
+            "/2.0/repositories/WORKSPACE/repo/permissions-config/users/557058:ba8948b2-49da-43a9-9e8b-e7249b8e324a",
+        )
+
+    @patch.object(Bitbucket, "put")
+    def test_cloud_grant_group_permissions(self, mock_put):
+        self.cloud.repo_grant_group_permissions("WORKSPACE", "repo", "developers", "admin")
+
+        mock_put.assert_called_once_with(
+            "/2.0/repositories/WORKSPACE/repo/permissions-config/groups/developers",
+            data={"permission": "admin"},
+        )
+
+    @patch.object(Bitbucket, "delete")
+    def test_cloud_remove_group_permissions(self, mock_delete):
+        self.cloud.repo_remove_group_permissions("WORKSPACE", "repo", "developers", None)
+
+        mock_delete.assert_called_once_with(
+            "/2.0/repositories/WORKSPACE/repo/permissions-config/groups/developers",
+        )
+
+    @patch.object(Bitbucket, "put")
+    def test_cloud_grant_user_permissions_quotes_uuid(self, mock_put):
+        self.cloud.repo_grant_user_permissions("WORKSPACE", "repo", "{d301aafa-d676-4ee0-88be-962be7417567}", "read")
+
+        mock_put.assert_called_once_with(
+            "/2.0/repositories/WORKSPACE/repo/permissions-config/users/%7Bd301aafa-d676-4ee0-88be-962be7417567%7D",
+            data={"permission": "read"},
+        )

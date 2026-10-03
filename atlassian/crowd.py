@@ -1,7 +1,7 @@
 # coding=utf-8
 import logging
-from defusedxml import ElementTree
 
+from bs4 import BeautifulSoup
 from jmespath import search
 
 from .rest_client import AtlassianRestAPI
@@ -1555,11 +1555,11 @@ class Crowd(AtlassianRestAPI):
         path = self._crowd_api_url("usermanagement", "group/membership")
         headers = {"Accept": "application/xml"}
         response = self.get(path, headers=headers)
-        memberships_root = ElementTree.fromstring(response.encode("utf-8") if isinstance(response, str) else response)
+        memberships_root = BeautifulSoup(response, "html.parser")
         memberships = {}
-        for membership in memberships_root.iter("membership"):
-            group = membership.attrib["group"]
-            users = [user.attrib["name"] for user in membership.iter("user")]
+        for membership in memberships_root.find_all("membership"):
+            group = membership["group"]
+            users = [user["name"] for user in membership.find_all("user")]
             memberships[group] = users
         return memberships
 

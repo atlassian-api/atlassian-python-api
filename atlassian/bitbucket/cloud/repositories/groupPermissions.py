@@ -53,12 +53,71 @@ class GroupPermissions(BitbucketCloudBase):
         """
         return self.__get_object(super(GroupPermissions, self).get(group_slug))
 
+    def grant(self, group_slug, permission):
+        """
+        Grant (or update) an explicit permission for the given group on this repository.
+
+        Only users with admin permission for the repository may call this
+        resource, and only app password authentication is accepted.
+
+        :param group_slug: string: Slug of the group.
+        :param permission: string: One of 'read', 'write' or 'admin'.
+
+        :return: The updated GroupPermission object
+
+        API docs:
+        https://developer.atlassian.com/cloud/bitbucket/rest/api-group-repositories/#api-repositories-workspace-repo-slug-permissions-config-groups-group-slug-put
+        """
+        if permission not in ("read", "write", "admin"):
+            raise ValueError(f"Invalid permission '{permission}', expected 'read', 'write' or 'admin'")
+        return self.__get_object(self.put(group_slug, data={"permission": permission}))
+
+    def revoke(self, group_slug):
+        """
+        Remove the explicit group permission for the given group on this
+        repository, if one exists.
+
+        :param group_slug: string: Slug of the group.
+
+        :return: The response on success
+
+        API docs:
+        https://developer.atlassian.com/cloud/bitbucket/rest/api-group-repositories/#api-repositories-workspace-repo-slug-permissions-config-groups-group-slug-delete
+        """
+        return self.delete(group_slug)
+
 
 class GroupPermission(BitbucketCloudBase):
     def __init__(self, url, data, *args, **kwargs):
         super(GroupPermission, self).__init__(
             url, *args, data=data, expected_type="repository_group_permission", **kwargs
         )
+
+    def update(self, permission):
+        """
+        Update the permission level.
+
+        :param permission: string: One of 'read', 'write' or 'admin'.
+
+        :return: The updated GroupPermission object
+
+        API docs:
+        https://developer.atlassian.com/cloud/bitbucket/rest/api-group-repositories/#api-repositories-workspace-repo-slug-permissions-config-groups-group-slug-put
+        """
+        if permission not in ("read", "write", "admin"):
+            raise ValueError(f"Invalid permission '{permission}', expected 'read', 'write' or 'admin'")
+        return self._update_data(self.put(None, data={"permission": permission}))
+
+    def delete(self):
+        """
+        Remove the explicit group permission.
+
+        :return: The response on success
+
+        API docs:
+        https://developer.atlassian.com/cloud/bitbucket/rest/api-group-repositories/#api-repositories-workspace-repo-slug-permissions-config-groups-group-slug-delete
+        """
+        return super(GroupPermission, self).delete(None)
 
     @property
     def type(self):

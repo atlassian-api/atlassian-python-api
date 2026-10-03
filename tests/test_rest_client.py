@@ -306,6 +306,75 @@ class TestAtlassianRestAPI:
 
         assert session.payloads == [b"small report", b"small report"]
 
+    def test_request_with_files_omits_content_type_header(self):
+        """Multipart uploads must not carry a JSON Content-Type (issue #1426)."""
+        captured = {}
+
+        def request(**kwargs):
+            captured.update(kwargs)
+            return SimpleNamespace(status_code=200, reason="OK", text="", encoding=None)
+
+        monkeypatch = pytest.MonkeyPatch()
+        monkeypatch.setattr(self.api._session, "request", request)
+        monkeypatch.setattr(self.api, "raise_for_status", lambda _response: None)
+        try:
+            self.api.request(
+                "POST",
+                "rest/raven/1.0/api/import/execution/robot",
+                params={"projectKey": "TCHCSIPDEV"},
+                files={"file": ("report.xml", io.BytesIO(b"<xml/>"), "application/xml")},
+            )
+        finally:
+            monkeypatch.undo()
+
+        headers = captured["headers"]
+        assert "Content-Type" not in headers
+        assert headers["Accept"] == "application/json"
+        assert captured["files"]["file"][0] == "report.xml"
+
+    def test_request_with_files_strips_provided_content_type_case_insensitively(self):
+        """A Content-Type supplied by the caller is dropped too, whatever its case."""
+        captured = {}
+
+        def request(**kwargs):
+            captured.update(kwargs)
+            return SimpleNamespace(status_code=200, reason="OK", text="", encoding=None)
+
+        monkeypatch = pytest.MonkeyPatch()
+        monkeypatch.setattr(self.api._session, "request", request)
+        monkeypatch.setattr(self.api, "raise_for_status", lambda _response: None)
+        try:
+            self.api.request(
+                "POST",
+                "attachment",
+                headers={"X-Atlassian-Token": "no-check", "CONTENT-TYPE": "application/json"},
+                files={"file": ("a.txt", io.BytesIO(b"hello"), "text/plain")},
+            )
+        finally:
+            monkeypatch.undo()
+
+        headers = captured["headers"]
+        assert "CONTENT-TYPE" not in headers
+        assert headers["X-Atlassian-Token"] == "no-check"
+
+    def test_request_without_files_keeps_default_content_type(self):
+        """JSON bodies must still send the default Content-Type."""
+        captured = {}
+
+        def request(**kwargs):
+            captured.update(kwargs)
+            return SimpleNamespace(status_code=200, reason="OK", text="", encoding=None)
+
+        monkeypatch = pytest.MonkeyPatch()
+        monkeypatch.setattr(self.api._session, "request", request)
+        monkeypatch.setattr(self.api, "raise_for_status", lambda _response: None)
+        try:
+            self.api.request("POST", "content", json={"title": "Page"})
+        finally:
+            monkeypatch.undo()
+
+        assert captured["headers"]["Content-Type"] == "application/json"
+
     def test_kerberos_configuration(self):
         """Test kerberos configuration"""
         # Test that kerberos config is accepted without errors

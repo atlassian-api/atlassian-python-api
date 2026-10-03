@@ -28,7 +28,6 @@ setup(
     zip_safe=False,
     install_requires=[
         "beautifulsoup4",
-        "defusedxml",
         "deprecated",
         "jmespath",
         "oauthlib",

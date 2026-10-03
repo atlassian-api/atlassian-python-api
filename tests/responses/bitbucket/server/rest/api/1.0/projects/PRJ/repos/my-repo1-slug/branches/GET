@@ -1,0 +1,59 @@
+responses["filterText=main&limit=1&details=False&boostMatches=True"] = {
+    "size": 1,
+    "limit": 1,
+    "isLastPage": True,
+    "values": [
+        {
+            "id": "refs/heads/main",
+            "displayId": "main",
+            "type": "BRANCH",
+            "latestCommit": "8d51122def56328b6f52374e73a45a3938792a27",
+            "latestChangeset": "8d51122def56328b6f52374e73a45a3938792a27",
+            "isDefault": True,
+        }
+    ],
+    "start": 0,
+    "filterText": "main",
+}
+responses["filterText=maint%2Frelx&limit=1&details=False&boostMatches=True"] = {
+    "size": 1,
+    "limit": 1,
+    "isLastPage": True,
+    "values": [
+        {
+            "id": "refs/heads/maint/relx",
+            "displayId": "maint/relx",
+            "type": "BRANCH",
+            "latestCommit": "8d51122def56328b6f52374e73a45a3938792a27",
+            "latestChangeset": "8d51122def56328b6f52374e73a45a3938792a27",
+            "isDefault": False,
+        }
+    ],
+    "start": 0,
+    "filterText": "maint/relx",
+}
+responses["filterText=deleted-branch&limit=1&details=False&boostMatches=True"] = {
+    "size": 0,
+    "limit": 1,
+    "isLastPage": True,
+    "values": [],
+    "start": 0,
+    "filterText": "deleted-branch",
+}
+responses["filterText=master&limit=1&details=False&boostMatches=True"] = {
+    "size": 1,
+    "limit": 1,
+    "isLastPage": True,
+    "values": [
+        {
+            "id": "refs/heads/master-fix",
+            "displayId": "master-fix",
+            "type": "BRANCH",
+            "latestCommit": "8d51122def56328b6f52374e73a45a3938792a27",
+            "latestChangeset": "8d51122def56328b6f52374e73a45a3938792a27",
+            "isDefault": False,
+        }
+    ],
+    "start": 0,
+    "filterText": "master",
+}

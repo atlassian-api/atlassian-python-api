@@ -503,11 +503,11 @@ class TestConfluenceV2(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.confluence_v2.search("test", body_format="invalid")
 
-    @patch("atlassian.confluence.cloud.ConfluenceCloud.search")
-    def test_search_content(self, mock_search):
+    @patch("atlassian.confluence.cloud.ConfluenceCloud.iter_cql")
+    def test_search_content(self, mock_iter_cql):
         # Setup the mock
         mock_results = [{"content": {"id": "123"}}, {"content": {"id": "456"}}]
-        mock_search.return_value = {"results": mock_results}
+        mock_iter_cql.return_value = iter(mock_results)
 
         # Call the method
         response = self.confluence_v2.search_content(
@@ -515,22 +515,22 @@ class TestConfluenceV2(unittest.TestCase):
         )
 
         # Assertions
-        mock_search.assert_called_once_with(
-            query="", cql='text ~ "test" AND type = "page" AND space.id = "SPACE123" AND status = "current"', limit=10
+        mock_iter_cql.assert_called_once_with(
+            cql='text ~ "test" AND type = "page" AND space.id = "SPACE123" AND status = "current"', limit=10
         )
         self.assertEqual(response, mock_results)
 
-    @patch("atlassian.confluence.cloud.ConfluenceCloud.search")
-    def test_search_content_minimal(self, mock_search):
+    @patch("atlassian.confluence.cloud.ConfluenceCloud.iter_cql")
+    def test_search_content_minimal(self, mock_iter_cql):
         # Setup the mock
         mock_results = [{"content": {"id": "123"}}]
-        mock_search.return_value = {"results": mock_results}
+        mock_iter_cql.return_value = iter(mock_results)
 
         # Call the method with minimal parameters
         response = self.confluence_v2.search_content("test")
 
         # Assertions
-        mock_search.assert_called_once_with(query="", cql='text ~ "test" AND status = "current"', limit=25)
+        mock_iter_cql.assert_called_once_with(cql='text ~ "test" AND status = "current"', limit=25)
         self.assertEqual(response, mock_results)
 
     def test_search_content_invalid_type(self):
@@ -639,31 +639,31 @@ class TestConfluenceV2(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.confluence_v2.get_spaces(sort="invalid")
 
-    @patch("atlassian.confluence.cloud.ConfluenceCloud.search")
-    def test_get_space_content(self, mock_search):
+    @patch("atlassian.confluence.cloud.ConfluenceCloud.iter_cql")
+    def test_get_space_content(self, mock_iter_cql):
         # Setup the mock
         mock_results = [{"content": {"id": "123", "title": "Page 1"}}]
-        mock_search.return_value = {"results": mock_results}
+        mock_iter_cql.return_value = iter(mock_results)
 
         # Call the method
         response = self.confluence_v2.get_space_content("SPACE123")
 
         # Assertions
-        mock_search.assert_called_once_with(query="", cql='space.id = "SPACE123"', limit=25)
+        mock_iter_cql.assert_called_once_with(cql='space.id = "SPACE123"', limit=25)
         self.assertEqual(response, mock_results)
 
-    @patch("atlassian.confluence.cloud.ConfluenceCloud.search")
-    def test_get_space_content_with_filters(self, mock_search):
+    @patch("atlassian.confluence.cloud.ConfluenceCloud.iter_cql")
+    def test_get_space_content_with_filters(self, mock_iter_cql):
         # Setup the mock
         mock_results = [{"content": {"id": "123", "title": "Root Page"}}]
-        mock_search.return_value = {"results": mock_results}
+        mock_iter_cql.return_value = iter(mock_results)
 
         # Call the method with filters
         response = self.confluence_v2.get_space_content(space_id="SPACE123", depth="root", sort="created", limit=10)
 
         # Assertions
-        mock_search.assert_called_once_with(
-            query="", cql='space.id = "SPACE123" AND ancestor = root order by created asc', limit=10
+        mock_iter_cql.assert_called_once_with(
+            cql='space.id = "SPACE123" AND ancestor = root order by created asc', limit=10
         )
         self.assertEqual(response, mock_results)
 

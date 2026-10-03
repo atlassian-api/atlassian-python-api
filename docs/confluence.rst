@@ -964,7 +964,15 @@ CQL
 
 ``iter_cql()`` and ``cql_all()`` work for Cloud and Server/Data Center. Cloud
 follows its cursor link, while Server/Data Center retains its offset-based
-pagination semantics.
+pagination semantics. The Cloud V2 client (``ConfluenceV2``) exposes the same
+pair on the ``api/v2/search`` endpoint:
+
+.. code-block:: python
+
+    for result in confluence_v2.iter_cql('space.id = "123456" and type = page', limit=25):
+        process(result)
+
+    all_results = confluence_v2.cql_all('space.id = "123456" and type = page', limit=25)
 
 Other actions
 -------------

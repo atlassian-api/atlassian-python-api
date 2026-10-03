@@ -1,5 +1,7 @@
 # coding=utf-8
 
+from requests import HTTPError
+
 from ..base import BitbucketCloudBase
 from ..common.users import User, AppUser
 
@@ -66,6 +68,25 @@ class Refs(BitbucketCloudBase):
         :return: The requested Ref object
         """
         return self._get_object(super(Refs, self).get(name))
+
+    def exists(self, name):
+        """
+        Check if the ref with the requested name exists in the repository.
+
+        :param name: string: The requested name
+
+        :return: True if the ref exists
+
+        API docs:
+        https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Bworkspace%7D/%7Brepo_slug%7D/refs/%7Bname%7D#get
+        """
+        try:
+            self.get(name)
+            return True
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                return False
+            raise
 
 
 class Branches(Refs):

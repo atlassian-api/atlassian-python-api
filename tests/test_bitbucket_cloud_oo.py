@@ -119,6 +119,14 @@ class TestBasic:
     def test_exists_repository(self):
         assert CLOUD.workspaces.get("TestWorkspace1").repositories.exists("testrepository1"), "Exists repository"
 
+    def test_exists_branch(self):
+        repository = CLOUD.workspaces.get("TestWorkspace1").repositories.get("testrepository1")
+        assert repository.branches.exists("master"), "Exists branch"
+
+    def test_not_exists_branch(self):
+        repository = CLOUD.workspaces.get("TestWorkspace1").repositories.get("testrepository1")
+        assert not repository.branches.exists("masterxxx"), "Not exists branch"
+
     def test_repository_commits_each_uses_paged_commit_data(self, monkeypatch):
         repository = CLOUD.workspaces.get("TestWorkspace1").repositories.get("testrepository1")
         commits = repository.commits
@@ -287,6 +295,57 @@ class TestBasic:
     def test_delete_branch_restriction(self):
         result = BITBUCKET.delete_branch_restriction("TestWorkspace1", "testrepository1", 17203842)["pattern"]
         assert result == "deleted_branch", "Result of [update_branch_restrictions(...)]"
+
+    def test_each_user_permissions(self):
+        repository = CLOUD.workspaces.get("TestWorkspace1").repositories.get("testrepository1")
+        result = [(p.user.nickname, p.permission) for p in repository.user_permissions.each()]
+        assert result == [("Colin Cameron", "write")], "Result of [user_permissions.each()]"
+
+    def test_get_user_permission(self):
+        repository = CLOUD.workspaces.get("TestWorkspace1").repositories.get("testrepository1")
+        permission = repository.user_permissions.get("557058:ba8948b2-49da-43a9-9e8b-e7249b8e324a")
+        assert permission.permission == "write", "Result of [user_permissions.get(...)]"
+        assert permission.user.account_id == "557058:ba8948b2-49da-43a9-9e8b-e7249b8e324a"
+
+    def test_grant_user_permission(self):
+        repository = CLOUD.workspaces.get("TestWorkspace1").repositories.get("testrepository1")
+        permission = repository.user_permissions.grant("557058:ba8948b2-49da-43a9-9e8b-e7249b8e324a", "admin")
+        assert permission.permission == "admin", "Result of [user_permissions.grant(...)]"
+
+    def test_grant_user_permission_rejects_invalid_level(self):
+        repository = CLOUD.workspaces.get("TestWorkspace1").repositories.get("testrepository1")
+        with pytest.raises(ValueError, match="Invalid permission"):
+            repository.user_permissions.grant("557058:ba8948b2-49da-43a9-9e8b-e7249b8e324a", "PROJECT_WRITE")
+
+    def test_revoke_user_permission(self):
+        repository = CLOUD.workspaces.get("TestWorkspace1").repositories.get("testrepository1")
+        assert repository.user_permissions.revoke("557058:ba8948b2-49da-43a9-9e8b-e7249b8e324a") == {}
+
+    def test_grant_group_permission(self):
+        repository = CLOUD.workspaces.get("TestWorkspace1").repositories.get("testrepository1")
+        permission = repository.group_permissions.grant("developers", "write")
+        assert permission.permission == "write", "Result of [group_permissions.grant(...)]"
+
+    def test_revoke_group_permission(self):
+        repository = CLOUD.workspaces.get("TestWorkspace1").repositories.get("testrepository1")
+        assert repository.group_permissions.revoke("developers") == {}
+
+    def test_legacy_repo_grant_user_permissions_cloud(self):
+        result = BITBUCKET.repo_grant_user_permissions(
+            "TestWorkspace1",
+            "testrepository1",
+            "557058:ba8948b2-49da-43a9-9e8b-e7249b8e324a",
+            "admin",
+        )
+        assert result["permission"] == "admin", "Result of [repo_grant_user_permissions(...)]"
+
+    def test_legacy_repo_remove_user_permissions_cloud(self):
+        result = BITBUCKET.repo_remove_user_permissions(
+            "TestWorkspace1",
+            "testrepository1",
+            "557058:ba8948b2-49da-43a9-9e8b-e7249b8e324a",
+        )
+        assert result == {}, "Result of [repo_remove_user_permissions(...)]"
 
     def test_get_default_reviewers(self):
         result = [x["display_name"] for x in BITBUCKET.get_default_reviewers("TestWorkspace1", "testrepository1")]
