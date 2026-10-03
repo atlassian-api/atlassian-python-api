@@ -190,6 +190,23 @@ class TestConfluenceServer:
 
         assert mock_post.call_args.kwargs["files"] == {"file": ("diagram.png", content, "image/png")}
 
+    @pytest.mark.parametrize("api_version", [None, "latest", "1.0"], ids=["default", "latest", "1.0"])
+    @patch.object(ConfluenceServer, "put")
+    @patch.object(ConfluenceServer, "get")
+    @patch.object(ConfluenceServer, "post")
+    def test_attach_content_updates_existing_attachment_with_post(self, mock_post, mock_get, mock_put, api_version):
+        kwargs = {} if api_version is None else {"api_version": api_version}
+        confluence = ConfluenceServer(url="https://test.confluence.com", username="test", password="test", **kwargs)
+        content = io.BytesIO(b"new image")
+        mock_get.return_value = {"results": [{"id": "att-1", "title": "diagram.png"}]}
+        mock_post.return_value = {"id": "att-1"}
+
+        confluence.attach_content(content, "diagram.png", "image/png", page_id="123")
+
+        mock_put.assert_not_called()
+        assert mock_post.call_args.kwargs["path"] == "rest/api/content/123/child/attachment/att-1/data"
+        assert mock_post.call_args.kwargs["files"] == {"file": ("diagram.png", content, "image/png")}
+
     def test_attach_content_rejects_empty_attachment_name(self, confluence_server):
         with pytest.raises(ApiValueError, match="must contain a filename"):
             confluence_server.attach_content(io.BytesIO(b"content"), "/", page_id="123")
