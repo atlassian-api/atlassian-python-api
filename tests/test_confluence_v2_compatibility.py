@@ -19,6 +19,15 @@ class TestConfluenceV2Compatibility(unittest.TestCase):
             password="password",
         )
 
+    def test_init_does_not_warn(self):
+        """Creating a client must not emit a DeprecationWarning by itself."""
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+
+            ConfluenceV2(url="https://example.atlassian.net/wiki", username="username", password="password")
+
+        self.assertEqual([str(warning.message) for warning in w if warning.category is DeprecationWarning], [])
+
     def test_method_mapping_exists(self):
         """Test that compatibility method mapping exists."""
         self.assertTrue(hasattr(self.confluence_v2, "_compatibility_method_mapping"))

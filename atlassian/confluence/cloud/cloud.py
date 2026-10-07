@@ -63,11 +63,8 @@ class ConfluenceCloud(
         # self._compatibility_method_mapping = {
         #    "old_method_name": "new_method_name"
         # }
-
-        # Warn about V1 method usage
-        warnings.warn(
-            "V1 methods are deprecated in ConfluenceCloud. Use V2 methods instead.", DeprecationWarning, stacklevel=2
-        )
+        # V1 method names emit their own DeprecationWarning when they are
+        # called, so creating the client itself does not warn.
 
     def __getattr__(self, name):
         """
