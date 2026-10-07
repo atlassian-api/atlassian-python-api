@@ -491,6 +491,7 @@ class ConfluenceCloud(
         status: Optional[str] = None,
         version: Optional[int] = None,
         representation: Optional[str] = None,
+        parent_id: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Updates an existing page.
@@ -513,6 +514,8 @@ class ConfluenceCloud(
                      If not provided, the current version will be incremented
             representation: (optional) The content representation - used only for wiki format.
                            Valid value: 'wiki'
+            parent_id: (optional) The ID of the new parent page. Moves the page under
+                       that parent within the same space.
 
         Returns:
             The updated page object in v2 API format
@@ -555,6 +558,9 @@ class ConfluenceCloud(
             data["body"] = {body_format: {"value": body}}
             if representation:
                 data["body"][body_format]["representation"] = representation
+
+        if parent_id:
+            data["parentId"] = parent_id
 
         return self.put(endpoint, data=data)
 

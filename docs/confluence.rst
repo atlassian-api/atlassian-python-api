@@ -266,6 +266,9 @@ Page actions
     space_id = cloud.get_space_by_key('SPACEKEY')['id']
     cloud.create_page(space_id=space_id, title=title, body=body)
 
+    # Cloud V2: pass parent_id to move the page under another parent in the same space.
+    cloud.update_page(page_id, title=title, body=body, parent_id=parent_id)
+
     # Server/Data Center: retain template macros and replace explicit placeholders.
     confluence.create_page_from_template(
         space, title, template_id, replacements={"{{REPORT_MONTH}}": "August"}
