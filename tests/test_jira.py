@@ -57,7 +57,7 @@ class TestJira(TestCase):
 
     @patch.object(jira.Jira, "post")
     def test_add_attachment_object_with_filename(self, mock_post):
-        """An in-memory attachment is uploaded under the given file name"""
+        """An in-memory attachment is uploaded under the given file name."""
         attachment = BytesIO(b"id,name\n1,foo\n")
 
         self.jira.add_attachment_object("FOO-123", attachment, filename="report.csv")
@@ -70,7 +70,7 @@ class TestJira(TestCase):
 
     @patch.object(jira.Jira, "post")
     def test_add_attachment_object_without_filename(self, mock_post):
-        """Without a file name the IO object is passed through unchanged"""
+        """Without a file name the IO object is passed through unchanged."""
         attachment = BytesIO(b"content")
 
         self.jira.add_attachment_object("FOO-123", attachment)
