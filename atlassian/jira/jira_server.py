@@ -1930,17 +1930,19 @@ class Jira(AtlassianRestAPI):
         with open(filename, "rb") as attachment:
             return self.add_attachment_object(issue_key, attachment)
 
-    def add_attachment_object(self, issue_key: str, attachment: BinaryIO):
+    def add_attachment_object(self, issue_key: str, attachment: BinaryIO, filename: Optional[str] = None):
         """
         Add attachment to Issue
         :param issue_key: str
         :param attachment: IO Object
+        :param filename: str, OPTIONAL: name of the attachment in Jira. Useful for in-memory
+            objects such as ``io.BytesIO``, which otherwise are uploaded as ``file``
         """
         log.info("Adding attachment:  %s", attachment)
         base_url = self.resource_url("issue")
         url = f"{base_url}/{issue_key}/attachments"
         if attachment:
-            files = {"file": attachment}
+            files: Dict[str, Any] = {"file": attachment if filename is None else (filename, attachment)}
         else:
             log.error("Empty attachment")
             return None

@@ -1,10 +1,11 @@
 # coding: utf8
 """Tests for Jira Modules"""
 
+from io import BytesIO
 from unittest import TestCase
 from unittest.mock import patch, sentinel
 
-from requests import HTTPError
+from requests import HTTPError, Request
 
 from atlassian import jira
 
@@ -53,6 +54,28 @@ class TestJira(TestCase):
             mock_put.call_args.kwargs["headers"],
             {"Content-Type": "application/json", "Accept": "application/json", "If-Match": '"role-version"'},
         )
+
+    @patch.object(jira.Jira, "post")
+    def test_add_attachment_object_with_filename(self, mock_post):
+        """An in-memory attachment is uploaded under the given file name"""
+        attachment = BytesIO(b"id,name\n1,foo\n")
+
+        self.jira.add_attachment_object("FOO-123", attachment, filename="report.csv")
+
+        self.assertEqual(mock_post.call_args.args[0], "rest/api/2/issue/FOO-123/attachments")
+        files = mock_post.call_args.kwargs["files"]
+        self.assertEqual(files, {"file": ("report.csv", attachment)})
+        body = Request("POST", "https://jira.example.com", files=files).prepare().body
+        self.assertIn(b'name="file"; filename="report.csv"', body)
+
+    @patch.object(jira.Jira, "post")
+    def test_add_attachment_object_without_filename(self, mock_post):
+        """Without a file name the IO object is passed through unchanged"""
+        attachment = BytesIO(b"content")
+
+        self.jira.add_attachment_object("FOO-123", attachment)
+
+        self.assertEqual(mock_post.call_args.kwargs["files"], {"file": attachment})
 
     def test_get_issue_not_found(self):
         """Receive HTTP Error when Issue does not exist"""

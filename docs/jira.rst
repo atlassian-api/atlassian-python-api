@@ -708,6 +708,9 @@ Attachments actions
     # Add attachment (IO Object) to issue
     jira.add_attachment_object(issue_key, attachment)
 
+    # Add an in-memory attachment (e.g. io.BytesIO) to issue with a file name
+    jira.add_attachment_object(issue_key, attachment, filename="report.csv")
+
     # Gets the binary raw data of single attachment in bytes.
     jira.get_attachment_content(attachment_id)
 
