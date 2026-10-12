@@ -781,14 +781,32 @@ class TestConfluenceCloudV2CqlPagination:
         mock_get_paged.return_value = iter([{"id": "1"}, {"id": "2"}])
 
         assert list(confluence_v2.iter_cql('type = "page"', limit=25)) == [{"id": "1"}, {"id": "2"}]
-        mock_get_paged.assert_called_once_with("api/v2/search", params={"cql": 'type = "page"', "limit": 25})
+        mock_get_paged.assert_called_once_with("rest/api/search", params={"cql": 'type = "page"', "limit": 25})
 
     @patch.object(ConfluenceCloudV2, "_get_paged")
     def test_iter_cql_supports_text_query(self, mock_get_paged, confluence_v2):
         mock_get_paged.return_value = iter([{"id": "1"}])
 
         assert list(confluence_v2.iter_cql(query="meeting notes", limit=10)) == [{"id": "1"}]
-        mock_get_paged.assert_called_once_with("api/v2/search", params={"query": "meeting notes", "limit": 10})
+        mock_get_paged.assert_called_once_with("rest/api/search", params={"cql": 'text ~ "meeting notes"', "limit": 10})
+
+    @patch.object(ConfluenceCloudV2, "_get_paged")
+    def test_iter_cql_combines_cql_and_text_query_before_order_by(self, mock_get_paged, confluence_v2):
+        mock_get_paged.return_value = iter([])
+
+        list(confluence_v2.iter_cql(cql='space.id = "42" order by lastmodified desc', query="notes"))
+
+        assert mock_get_paged.call_args.kwargs["params"]["cql"] == (
+            'space.id = "42" AND text ~ "notes" order by lastmodified desc'
+        )
+
+    @patch.object(ConfluenceCloudV2, "_get_paged")
+    def test_iter_cql_maps_body_format_to_expand(self, mock_get_paged, confluence_v2):
+        mock_get_paged.return_value = iter([])
+
+        list(confluence_v2.iter_cql('type = "page"', body_format="storage"))
+
+        assert mock_get_paged.call_args.kwargs["params"]["expand"] == "content.body.storage"
 
     @patch.object(ConfluenceCloudV2, "_get_paged")
     def test_iter_cql_requires_query_or_cql(self, mock_get_paged, confluence_v2):

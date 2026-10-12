@@ -592,8 +592,11 @@ class ConfluenceCloud(
         """
         Search for content in Confluence.
 
+        Confluence Cloud offers CQL search only on the v1 API, so this call is made
+        against the v1 search endpoint.
+
         Args:
-            query: Text to search for
+            query: Text to search for. It is sent as a ``text ~`` CQL clause
             cql: (optional) Confluence Query Language (CQL) expression to filter by
             cursor: (optional) Cursor to start searching from for pagination
             limit: (optional) Maximum number of results to return per request. Default: 25
@@ -650,6 +653,15 @@ class ConfluenceCloud(
         """
         return list(self.iter_cql(*args, **kwargs))
 
+    @staticmethod
+    def _add_text_clause(cql: str, query: str) -> str:
+        """Add a ``text ~`` clause for *query* to *cql*, keeping ORDER BY last."""
+        text_clause = 'text ~ "{}"'.format(query.replace('"', '\\"'))
+        order_by = re.search(r"\border\s+by\b", cql, re.IGNORECASE)
+        if order_by:
+            return f"{cql[: order_by.start()].rstrip()} AND {text_clause} {cql[order_by.start() :]}"
+        return f"{cql} AND {text_clause}"
+
     def _search_params(
         self,
         query: str = "",
@@ -658,7 +670,10 @@ class ConfluenceCloud(
         excerpt: bool = True,
         body_format: Optional[str] = None,
     ) -> Dict[str, Any]:
-        """Build query parameters for the V2 search endpoint.
+        """Build query parameters for the v1 CQL search endpoint.
+
+        The endpoint takes a CQL expression only, so a free text *query* becomes a
+        ``text ~`` clause and *body_format* becomes the matching ``expand`` value.
 
         Raises:
             ValueError: If neither *query* nor *cql* is provided, or an
@@ -666,17 +681,17 @@ class ConfluenceCloud(
         """
         if not query and not cql:
             raise ValueError("Either 'query' or 'cql' must be provided")
-        params: Dict[str, Any] = {"limit": limit}
-        if query:
-            params["query"] = query
-        if cql:
-            params["cql"] = cql
+        if cql and query:
+            cql = self._add_text_clause(cql, query)
+        elif query:
+            cql = 'text ~ "{}"'.format(query.replace('"', '\\"'))
+        params: Dict[str, Any] = {"limit": limit, "cql": cql}
         if not excerpt:
-            params["excerpt"] = "false"
+            params["excerpt"] = "none"
         if body_format:
             if body_format not in ("view", "storage", "atlas_doc_format"):
                 raise ValueError("body_format must be one of 'view', 'storage', or 'atlas_doc_format'")
-            params["body-format"] = body_format
+            params["expand"] = f"content.body.{body_format}"
         return params
 
     def search_content(
