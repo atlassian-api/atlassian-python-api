@@ -670,14 +670,13 @@ class ConfluenceCloud(
         excerpt: bool = True,
         body_format: Optional[str] = None,
     ) -> Dict[str, Any]:
-        """Build query parameters for the v1 CQL search endpoint.
+        """
+        Build query parameters for the v1 CQL search endpoint.
 
         The endpoint takes a CQL expression only, so a free text *query* becomes a
         ``text ~`` clause and *body_format* becomes the matching ``expand`` value.
-
-        Raises:
-            ValueError: If neither *query* nor *cql* is provided, or an
-                invalid *body_format* is given.
+        A ValueError is raised when neither *query* nor *cql* is given, or when
+        *body_format* is not 'view', 'storage' or 'atlas_doc_format'.
         """
         if not query and not cql:
             raise ValueError("Either 'query' or 'cql' must be provided")
