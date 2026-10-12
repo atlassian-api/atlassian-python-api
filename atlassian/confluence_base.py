@@ -44,6 +44,9 @@ class ConfluenceEndpoints:
         "page_properties": "api/v2/pages/{id}/properties",
         "page_property_by_key": "api/v2/pages/{id}/properties/{key}",
         "page_labels": "api/v2/pages/{id}/labels",
+        # The v2 label endpoints are read-only (only GET is defined in the Confluence
+        # Cloud v2 OpenAPI spec), so adding and deleting labels stays on the v1 API.
+        "page_labels_write": "rest/api/content/{id}/label",
         "space_labels": "api/v2/spaces/{id}/labels",
         # Comment endpoints for V2 API
         "page_footer_comments": "api/v2/pages/{id}/footer-comments",
