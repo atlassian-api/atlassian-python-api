@@ -435,6 +435,25 @@ class TestConfluenceV2(unittest.TestCase):
         mock_put.assert_called_once_with("api/v2/pages/123", data=expected_data)
         self.assertEqual(response, mock_response)
 
+    @patch("atlassian.confluence.cloud.ConfluenceCloud.put")
+    def test_update_page_with_parent_id(self, mock_put):
+        mock_response = {"id": "123", "title": "Moved Page", "parentId": "456"}
+        mock_put.return_value = mock_response
+
+        response = self.confluence_v2.update_page(
+            page_id="123", title="Moved Page", body="<p>Content</p>", version=3, parent_id="456"
+        )
+
+        expected_data = {
+            "id": "123",
+            "title": "Moved Page",
+            "version": {"number": 4, "message": "Updated via Python API"},
+            "body": {"storage": {"value": "<p>Content</p>"}},
+            "parentId": "456",
+        }
+        mock_put.assert_called_once_with("api/v2/pages/123", data=expected_data)
+        self.assertEqual(response, mock_response)
+
     def test_update_page_invalid_body_format(self):
         # Test invalid body_format
         with self.assertRaises(ValueError):
