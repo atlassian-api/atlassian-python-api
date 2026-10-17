@@ -1174,12 +1174,16 @@ class ConfluenceCloud(
         """
         Adds a label to a page.
 
+        The Confluence Cloud v2 API only exposes labels for reading, so this call is
+        made against the v1 endpoint.
+
         Args:
             page_id: The ID of the page
             label: The label to add
 
         Returns:
-            The created label object
+            The response of the v1 label endpoint, holding the created labels in
+            its ``results`` list
 
         Raises:
             HTTPError: If the API call fails
@@ -1188,9 +1192,9 @@ class ConfluenceCloud(
         if not label:
             raise ValueError("Label cannot be empty")
 
-        endpoint = self.get_endpoint("page_labels", id=page_id)
+        endpoint = self.get_endpoint("page_labels_write", id=page_id)
 
-        data = {"name": label}
+        data = [{"prefix": "global", "name": label}]
 
         try:
             return self.post(endpoint, data=data)
@@ -1202,12 +1206,16 @@ class ConfluenceCloud(
         """
         Adds multiple labels to a page.
 
+        The Confluence Cloud v2 API only exposes labels for reading, so this call is
+        made against the v1 endpoint.
+
         Args:
             page_id: The ID of the page
             labels: List of labels to add
 
         Returns:
-            List of created label objects
+            The response of the v1 label endpoint, holding the created labels in
+            its ``results`` list
 
         Raises:
             HTTPError: If the API call fails
@@ -1216,9 +1224,9 @@ class ConfluenceCloud(
         if not labels:
             raise ValueError("Labels list cannot be empty")
 
-        endpoint = self.get_endpoint("page_labels", id=page_id)
+        endpoint = self.get_endpoint("page_labels_write", id=page_id)
 
-        data = [{"name": label} for label in labels]
+        data = [{"prefix": "global", "name": label} for label in labels]
 
         try:
             return self.post(endpoint, data=data)
@@ -1229,6 +1237,9 @@ class ConfluenceCloud(
     def delete_page_label(self, page_id: str, label: str) -> bool:
         """
         Deletes a label from a page.
+
+        The Confluence Cloud v2 API only exposes labels for reading, so this call is
+        made against the v1 endpoint.
 
         Args:
             page_id: The ID of the page
@@ -1243,7 +1254,7 @@ class ConfluenceCloud(
         if not label:
             raise ValueError("Label cannot be empty")
 
-        endpoint = self.get_endpoint("page_labels", id=page_id)
+        endpoint = self.get_endpoint("page_labels_write", id=page_id)
         params = {"name": label}
 
         try:

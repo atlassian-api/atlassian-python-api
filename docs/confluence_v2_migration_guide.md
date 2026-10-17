@@ -231,6 +231,9 @@ response = confluence.delete_custom_content(content_id)
 
 ### Labels
 
+The v2 API only exposes labels for reading, so adding and deleting them is served
+by the v1 endpoint `rest/api/content/{id}/label`.
+
 ```python
 # Get page labels
 labels = confluence.get_page_labels(page_id)

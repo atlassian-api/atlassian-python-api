@@ -857,9 +857,9 @@ class TestConfluenceV2(unittest.TestCase):
         # Call the method
         response = self.confluence_v2.add_page_label("PAGE123", "test-label")
 
-        # Assertions
-        expected_data = {"name": "test-label"}
-        mock_post.assert_called_once_with("api/v2/pages/PAGE123/labels", data=expected_data)
+        # Assertions: v2 has no write endpoint for labels, so v1 is used
+        expected_data = [{"prefix": "global", "name": "test-label"}]
+        mock_post.assert_called_once_with("rest/api/content/PAGE123/label", data=expected_data)
         self.assertEqual(response, mock_response)
 
     def test_add_page_label_empty(self):
@@ -876,9 +876,9 @@ class TestConfluenceV2(unittest.TestCase):
         # Call the method
         response = self.confluence_v2.add_page_labels("PAGE123", ["label1", "label2"])
 
-        # Assertions
-        expected_data = [{"name": "label1"}, {"name": "label2"}]
-        mock_post.assert_called_once_with("api/v2/pages/PAGE123/labels", data=expected_data)
+        # Assertions: v2 has no write endpoint for labels, so v1 is used
+        expected_data = [{"prefix": "global", "name": "label1"}, {"prefix": "global", "name": "label2"}]
+        mock_post.assert_called_once_with("rest/api/content/PAGE123/label", data=expected_data)
         self.assertEqual(response, mock_response)
 
     def test_add_page_labels_empty(self):
@@ -895,7 +895,7 @@ class TestConfluenceV2(unittest.TestCase):
         result = self.confluence_v2.delete_page_label("PAGE123", "test-label")
 
         # Assertions
-        mock_delete.assert_called_once_with("api/v2/pages/PAGE123/labels", params={"name": "test-label"})
+        mock_delete.assert_called_once_with("rest/api/content/PAGE123/label", params={"name": "test-label"})
         self.assertTrue(result)
 
     def test_delete_page_label_empty(self):

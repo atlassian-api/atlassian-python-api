@@ -273,7 +273,8 @@ class TestConfluenceV2WithMocks(unittest.TestCase):
         """Test adding a label to a page."""
         page_id = "123456"
         label = "test-label"
-        endpoint = f"api/v2/pages/{page_id}/labels"
+        # v2 has no write endpoint for labels, so the v1 endpoint is used
+        endpoint = f"rest/api/content/{page_id}/label"
 
         # Mock the response
         expected_data = self.mock_response_for_endpoint(endpoint, mock_data=LABEL_MOCK)
