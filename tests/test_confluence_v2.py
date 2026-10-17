@@ -472,8 +472,8 @@ class TestConfluenceV2(unittest.TestCase):
         # Call the method with just query
         response = self.confluence_v2.search("test query")
 
-        # Assertions
-        mock_get.assert_called_once_with("api/v2/search", params={"limit": 25, "query": "test query"})
+        # Assertions: CQL search only exists on v1, and a text query becomes a CQL clause
+        mock_get.assert_called_once_with("rest/api/search", params={"limit": 25, "cql": 'text ~ "test query"'})
         self.assertEqual(response, mock_response)
 
     @patch("atlassian.confluence.cloud.ConfluenceCloud.get")
@@ -489,7 +489,7 @@ class TestConfluenceV2(unittest.TestCase):
 
         # Assertions
         mock_get.assert_called_once_with(
-            "api/v2/search", params={"limit": 10, "cql": "type = 'page' AND space.id = '123'", "excerpt": "false"}
+            "rest/api/search", params={"limit": 10, "cql": "type = 'page' AND space.id = '123'", "excerpt": "none"}
         )
         self.assertEqual(response, mock_response)
 
