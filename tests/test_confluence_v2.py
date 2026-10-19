@@ -512,6 +512,29 @@ class TestConfluenceV2(unittest.TestCase):
         )
         self.assertEqual(response, mock_response)
 
+    @patch("atlassian.confluence.cloud.ConfluenceCloud.get")
+    def test_cql(self, mock_get):
+        mock_response = {"results": [{"content": {"id": "123"}}], "_links": {}}
+        mock_get.return_value = mock_response
+
+        response = self.confluence_v2.cql('space = "TEAM" and type = page')
+
+        mock_get.assert_called_once_with(
+            "rest/api/search", params={"cql": 'space = "TEAM" and type = page', "limit": 25}
+        )
+        self.assertEqual(response, mock_response)
+
+    @patch("atlassian.confluence.cloud.ConfluenceCloud.get")
+    def test_cql_with_expand_and_cursor(self, mock_get):
+        mock_get.return_value = {"results": []}
+
+        self.confluence_v2.cql("type = page", limit=10, expand="content.body.storage", cursor="abc")
+
+        mock_get.assert_called_once_with(
+            "rest/api/search",
+            params={"cql": "type = page", "limit": 10, "expand": "content.body.storage", "cursor": "abc"},
+        )
+
     def test_search_no_query_or_cql(self):
         # Test missing both query and cql
         with self.assertRaises(ValueError):
