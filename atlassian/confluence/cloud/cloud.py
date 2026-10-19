@@ -628,6 +628,39 @@ class ConfluenceCloud(
             log.error(f"Failed to perform search: {e}")
             raise
 
+    def cql(
+        self,
+        cql: str,
+        limit: int = 25,
+        expand: Optional[str] = None,
+        cursor: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """
+        Return one page of CQL search results.
+
+        Confluence Cloud offers CQL search only on the v1 API, so this call is made
+        against the v1 search endpoint. Use :meth:`iter_cql` to follow the cursor
+        through every page.
+
+        Args:
+            cql: Confluence Query Language (CQL) expression
+            limit: (optional) Maximum number of results to return per request. Default: 25
+            expand: (optional) Properties to expand on each result, e.g. 'content.body.storage'
+            cursor: (optional) Cursor from the ``_links.next`` of a previous response
+
+        Returns:
+            Dictionary with search results
+
+        Raises:
+            HTTPError: If the API call fails
+        """
+        params: Dict[str, Any] = {"cql": cql, "limit": limit}
+        if expand:
+            params["expand"] = expand
+        if cursor:
+            params["cursor"] = cursor
+        return self.get(self.get_endpoint("search"), params=params)
+
     def iter_cql(
         self,
         cql: Optional[str] = None,
