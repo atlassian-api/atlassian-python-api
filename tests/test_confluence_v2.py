@@ -222,7 +222,7 @@ class TestConfluenceV2(unittest.TestCase):
             "spaceId": "SPACE123",
             "status": "current",
             "title": "New Page",
-            "body": {"storage": {"value": "<p>This is the content</p>"}},
+            "body": {"storage": {"value": "<p>This is the content</p>", "representation": "storage"}},
         }
         mock_post.assert_called_once_with("api/v2/pages", data=expected_data)
         self.assertEqual(response, mock_response)
@@ -247,7 +247,7 @@ class TestConfluenceV2(unittest.TestCase):
             "spaceId": "SPACE123",
             "status": "current",
             "title": "New Child Page",
-            "body": {"storage": {"value": "<p>This is a child page</p>"}},
+            "body": {"storage": {"value": "<p>This is a child page</p>", "representation": "storage"}},
             "parentId": "PARENT123",
         }
         mock_post.assert_called_once_with("api/v2/pages", data=expected_data)
@@ -392,7 +392,7 @@ class TestConfluenceV2(unittest.TestCase):
             "id": "123",
             "title": "Updated Page",
             "version": {"number": 2, "message": "Updated via Python API"},
-            "body": {"storage": {"value": "<p>Updated content</p>"}},
+            "body": {"storage": {"value": "<p>Updated content</p>", "representation": "storage"}},
         }
         mock_put.assert_called_once_with("api/v2/pages/123", data=expected_data)
         self.assertEqual(response, mock_response)
@@ -448,11 +448,24 @@ class TestConfluenceV2(unittest.TestCase):
             "id": "123",
             "title": "Moved Page",
             "version": {"number": 4, "message": "Updated via Python API"},
-            "body": {"storage": {"value": "<p>Content</p>"}},
+            "body": {"storage": {"value": "<p>Content</p>", "representation": "storage"}},
             "parentId": "456",
         }
         mock_put.assert_called_once_with("api/v2/pages/123", data=expected_data)
         self.assertEqual(response, mock_response)
+
+    @patch("atlassian.confluence.cloud.ConfluenceCloud.put")
+    def test_update_page_body_representation_follows_body_format(self, mock_put):
+        mock_put.return_value = {"id": "123"}
+
+        self.confluence_v2.update_page(page_id="123", body='{"type": "doc"}', body_format="atlas_doc_format", version=1)
+
+        expected_data = {
+            "id": "123",
+            "version": {"number": 2, "message": "Updated via Python API"},
+            "body": {"atlas_doc_format": {"value": '{"type": "doc"}', "representation": "atlas_doc_format"}},
+        }
+        mock_put.assert_called_once_with("api/v2/pages/123", data=expected_data)
 
     def test_update_page_invalid_body_format(self):
         # Test invalid body_format

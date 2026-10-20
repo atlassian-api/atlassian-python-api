@@ -466,12 +466,8 @@ class ConfluenceCloud(
             "spaceId": space_id,
             "status": status,
             "title": title,
-            "body": {body_format: {"value": body, "representation": representation}},
+            "body": {body_format: {"value": body, "representation": representation or body_format}},
         }
-
-        # Remove representation field if None
-        if representation is None:
-            del data["body"][body_format]["representation"]
 
         # Add parent ID if provided
         if parent_id:
@@ -552,9 +548,7 @@ class ConfluenceCloud(
             data["status"] = status
 
         if body:
-            data["body"] = {body_format: {"value": body}}
-            if representation:
-                data["body"][body_format]["representation"] = representation
+            data["body"] = {body_format: {"value": body, "representation": representation or body_format}}
 
         if parent_id:
             data["parentId"] = parent_id
