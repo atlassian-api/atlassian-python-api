@@ -49,6 +49,20 @@ class ConfluenceBase(AtlassianRestAPI):
         """
         return self.url_joiner(self.url, url)
 
+    @staticmethod
+    def _create_body(body, representation):
+        if representation not in [
+            "atlas_doc_format",
+            "editor",
+            "export_view",
+            "view",
+            "storage",
+            "wiki",
+        ]:
+            raise ValueError("Wrong value for representation, it should be either wiki or storage")
+
+        return {representation: {"value": body, "representation": representation}}
+
     def get_page_id_by_url(self, page_url):
         """Resolve a Confluence page URL to its page ID.
 

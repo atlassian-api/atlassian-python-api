@@ -7,7 +7,7 @@ import pytest
 import logging
 from unittest.mock import patch
 
-from atlassian.confluence import ConfluenceCloud
+from atlassian.confluence import Confluence, ConfluenceCloud
 from atlassian.confluence.cloud import Cloud
 from atlassian.confluence.cloud.cloud import ConfluenceCloud as ConfluenceCloudV2
 from atlassian.errors import ApiError
@@ -255,6 +255,78 @@ class TestConfluenceCloud:
         result = confluence_cloud.update_content("123", content_data)
         mock_put.assert_called_once_with("rest/api/content/123", data=content_data, **{})
         assert result == {"id": "123", "title": "Updated Page"}
+
+    @patch.object(ConfluenceCloud, "post")
+    def test_create_page(self, mock_post, confluence_cloud):
+        mock_post.return_value = {"id": "456", "title": "New Page"}
+
+        result = confluence_cloud.create_page("TEST", "New Page", "<p>Hello</p>", parent_id="123")
+
+        mock_post.assert_called_once_with(
+            "rest/api/content",
+            data={
+                "type": "page",
+                "title": "New Page",
+                "status": "current",
+                "space": {"key": "TEST"},
+                "body": {"storage": {"value": "<p>Hello</p>", "representation": "storage"}},
+                "metadata": {
+                    "properties": {
+                        "content-appearance-draft": {"value": "fixed-width"},
+                        "content-appearance-published": {"value": "fixed-width"},
+                    }
+                },
+                "ancestors": [{"type": "page", "id": "123"}],
+            },
+        )
+        assert result == {"id": "456", "title": "New Page"}
+
+    @patch.object(ConfluenceCloud, "put")
+    @patch.object(ConfluenceCloud, "get")
+    def test_update_page_through_confluence_with_cloud_url(self, mock_get, mock_put):
+        confluence = Confluence(url="https://test.atlassian.net", username="user", password="token")
+        mock_get.return_value = {
+            "id": "123",
+            "title": "Old Title",
+            "version": {"number": 4},
+            "body": {"storage": {"value": "<p>Old</p>"}},
+        }
+        mock_put.return_value = {"id": "123", "version": {"number": 5}}
+
+        result = confluence.update_page("123", "New Title", "<p>New</p>", parent_id="9", version_comment="Sync")
+
+        mock_get.assert_called_once_with("rest/api/content/123", params={"expand": "body.storage,version"})
+        mock_put.assert_called_once_with(
+            "rest/api/content/123",
+            data={
+                "id": "123",
+                "type": "page",
+                "title": "New Title",
+                "version": {"number": 5, "minorEdit": False, "message": "Sync"},
+                "metadata": {
+                    "properties": {
+                        "content-appearance-draft": {"value": "fixed-width"},
+                        "content-appearance-published": {"value": "fixed-width"},
+                    }
+                },
+                "body": {"storage": {"value": "<p>New</p>", "representation": "storage"}},
+                "ancestors": [{"type": "page", "id": "9"}],
+            },
+            params={"status": "current"},
+        )
+        assert result == {"id": "123", "version": {"number": 5}}
+
+    @patch.object(ConfluenceCloud, "put")
+    @patch.object(ConfluenceCloud, "get")
+    def test_update_page_skips_unchanged_content(self, mock_get, mock_put, confluence_cloud):
+        page = {"id": "123", "title": "Title", "version": {"number": 4}, "body": {"storage": {"value": "<p>Same</p>"}}}
+        mock_get.return_value = page
+
+        assert confluence_cloud.update_page("123", "Title", "<p>Same</p>") == page
+        mock_put.assert_not_called()
+
+        confluence_cloud.update_page("123", "Title", "<p>Same</p>", always_update=True)
+        assert mock_put.call_args.kwargs["data"]["version"]["number"] == 5
 
     @patch.object(ConfluenceCloud, "delete")
     def test_delete_content(self, mock_delete, confluence_cloud):

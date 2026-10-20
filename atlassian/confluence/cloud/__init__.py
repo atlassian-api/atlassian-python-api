@@ -7,6 +7,7 @@ import warnings
 from urllib.parse import quote
 from .base import ConfluenceCloudBase
 from requests import HTTPError
+from atlassian import utils
 from atlassian.errors import (
     ApiError,
     ApiNotFoundError,
@@ -321,6 +322,98 @@ class Cloud(ConfluenceCloudBase):
     def get_page_by_id(self, page_id, **kwargs):
         """Get a page (or other content) by ID from the Cloud V1 content API."""
         return self.get(f"rest/api/content/{page_id}", **kwargs)
+
+    def create_page(
+        self,
+        space,
+        title,
+        body,
+        parent_id=None,
+        type="page",
+        representation="storage",
+        editor=None,
+        full_width=False,
+        status="current",
+        version_comment=None,
+    ):
+        """Create a page through the Cloud V1 content API.
+
+        Takes the same arguments as the Server ``create_page``, so ``space``
+        is the space key. ``ConfluenceV2.create_page`` creates pages by space
+        ID through the V2 API instead.
+        """
+        width = "full-width" if full_width else "fixed-width"
+        data = {
+            "type": type,
+            "title": title,
+            "status": status,
+            "space": {"key": space},
+            "body": self._create_body(body, representation),
+            "metadata": {
+                "properties": {
+                    "content-appearance-draft": {"value": width},
+                    "content-appearance-published": {"value": width},
+                }
+            },
+        }
+        if parent_id:
+            data["ancestors"] = [{"type": type, "id": parent_id}]
+        if version_comment is not None:
+            data["version"] = {"message": version_comment}
+        if editor in ("v1", "v2"):
+            data["metadata"]["properties"]["editor"] = {"value": editor}
+        return self.post("rest/api/content", data=data)
+
+    def update_page(
+        self,
+        page_id,
+        title,
+        body=None,
+        parent_id=None,
+        type="page",
+        representation="storage",
+        minor_edit=False,
+        version_comment=None,
+        always_update=False,
+        full_width=False,
+    ):
+        """Update a page through the Cloud V1 content API.
+
+        Takes the same arguments as the Server ``update_page``. The next
+        version number is read from the page. Unless ``always_update`` is set,
+        the page is returned without an update when its title and storage
+        body already match.
+        """
+        page = self.get_page_by_id(page_id, params={"expand": "body.storage,version"})
+        if not always_update and body is not None and page.get("title") == title:
+            current_body = ((page.get("body") or {}).get("storage") or {}).get("value")
+            if (
+                current_body is not None
+                and utils.symbol_normalizer(current_body).strip().lower() == body.strip().lower()
+            ):
+                log.info("Content of %s is exactly the same", page_id)
+                return page
+
+        width = "full-width" if full_width else "fixed-width"
+        data = {
+            "id": page_id,
+            "type": type,
+            "title": title,
+            "version": {"number": page["version"]["number"] + 1, "minorEdit": minor_edit},
+            "metadata": {
+                "properties": {
+                    "content-appearance-draft": {"value": width},
+                    "content-appearance-published": {"value": width},
+                }
+            },
+        }
+        if body is not None:
+            data["body"] = self._create_body(body, representation)
+        if parent_id:
+            data["ancestors"] = [{"type": "page", "id": parent_id}]
+        if version_comment:
+            data["version"]["message"] = version_comment
+        return self.put(f"rest/api/content/{page_id}", data=data, params={"status": "current"})
 
     def get_page_child_count(self, page_id, type="page"):
         """Return the number of direct children of ``type`` without listing them."""

@@ -291,6 +291,8 @@ Page actions
     confluence.update_page(page_id, title, body, parent_id=None, type='page', representation='storage', minor_edit=False, full_width=False)
 
     # Server/Data Center updates use the configured REST API root and send a JSON body.
+    # On Cloud, ``ConfluenceCloud`` (and ``Confluence`` with a Cloud URL) take the
+    # same create_page/update_page arguments and use ``/wiki/rest/api/content``.
 
     # Get every contributor for a collaboratively edited page revision.
     contributors = confluence.get_page_version_contributors(page_id, version_number)

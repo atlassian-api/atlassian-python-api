@@ -144,20 +144,6 @@ class Server(ConfluenceServerBase):
             allow_redirects=allow_redirects,
         )
 
-    @staticmethod
-    def _create_body(body, representation):
-        if representation not in [
-            "atlas_doc_format",
-            "editor",
-            "export_view",
-            "view",
-            "storage",
-            "wiki",
-        ]:
-            raise ValueError("Wrong value for representation, it should be either wiki or storage")
-
-        return {representation: {"value": body, "representation": representation}}
-
     # Content Management
     def get_content(self, content_id, **kwargs):
         """Get content by ID."""
