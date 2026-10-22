@@ -171,6 +171,7 @@ class TestConfluenceServer:
         mock_get.assert_called_once_with(
             path="rest/api/content/123/child/attachment",
             headers={"X-Atlassian-Token": "no-check", "Accept": "application/json"},
+            params={"filename": "diagram.png"},
         )
         assert mock_post.call_args.kwargs["path"] == "rest/api/content/123/child/attachment"
         assert mock_post.call_args.kwargs["headers"] == {
@@ -206,6 +207,34 @@ class TestConfluenceServer:
         mock_put.assert_not_called()
         assert mock_post.call_args.kwargs["path"] == "rest/api/content/123/child/attachment/att-1/data"
         assert mock_post.call_args.kwargs["files"] == {"file": ("diagram.png", content, "image/png")}
+
+    def test_attach_content_finds_existing_attachment_beyond_first_page(self, confluence_server):
+        # Confluence returns 50 attachments per page by default, so the existing
+        # file has to be looked up by name rather than in the first page.
+        first_page = [{"id": f"att-{i}", "title": f"file-{i}.png"} for i in range(50)]
+        calls = []
+
+        def request(method, url, **kwargs):
+            response = Response()
+            response.status_code = 200
+            response.reason = "OK"
+            if method == "GET" and "filename=diagram.png" in url:
+                body = {"results": [{"id": "att-51", "title": "diagram.png"}], "size": 1}
+            elif method == "GET":
+                body = {"results": first_page, "size": 50}
+            else:
+                body = {"id": "att-51"}
+            response._content = json.dumps(body).encode()
+            calls.append((method, url))
+            return response
+
+        with patch.object(confluence_server._session, "request", side_effect=request):
+            confluence_server.attach_content(io.BytesIO(b"new image"), "diagram.png", "image/png", page_id="123")
+
+        assert calls[-1] == (
+            "POST",
+            "https://test.confluence.com/rest/api/content/123/child/attachment/att-51/data",
+        )
 
     def test_attach_content_rejects_empty_attachment_name(self, confluence_server):
         with pytest.raises(ApiValueError, match="must contain a filename"):

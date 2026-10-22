@@ -1407,10 +1407,11 @@ class Server(ConfluenceServerBase):
             try:
                 # Confluence Server doesn't support PUT on the child/attachment endpoint.
                 # We need to check if the attachment exists first, then create or update accordingly.
-                # GET existing attachment to check if it exists
+                # GET existing attachment to check if it exists. Filter by name: the
+                # unfiltered list is paginated (50 per page by default) and may miss it.
                 existing_attachment = None
                 try:
-                    attachments = self.get(path=path, headers=headers)
+                    attachments = self.get(path=path, headers=headers, params={"filename": name})
                     if "results" in attachments:
                         for attachment in attachments["results"]:
                             if attachment.get("title") == name:
