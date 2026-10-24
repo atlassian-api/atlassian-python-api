@@ -275,13 +275,34 @@ class ConfluenceCloud(
         )
         return {"results": pages if isinstance(pages, list) else []}
 
+    def _get_blogposts_by_title(self, space_key: str, title: str) -> List[Dict[str, Any]]:
+        """
+        Find current blog posts with the given title in a space using the V2 blogposts endpoint.
+        Returns an empty list if the space does not exist.
+        """
+        try:
+            space = self.get_space_by_key(space_key)
+        except HTTPError as e:
+            if e.response is not None and e.response.status_code == 404:
+                return []
+            raise
+
+        if not space or "id" not in space:
+            return []
+
+        params = {"space-id": space["id"], "title": title, "status": "current", "limit": 1}
+        return list(self._get_paged(self.get_endpoint("blogpost"), params=params))
+
     def get_page_id(self, space: str, title: str, type: str = "page") -> Optional[str]:
         """
         Get page ID by space key and title using the V2 API.
+        Pass type="blogpost" to look up a blog post instead of a page.
         Returns the ID from the first result or None if not found.
         """
-        res = self.get_page_by_title(space, title)
-        results = res.get("results", [])
+        if type == "blogpost":
+            results = self._get_blogposts_by_title(space, title)
+        else:
+            results = self.get_page_by_title(space, title).get("results", [])
         if results:
             return str(results[0]["id"])
         return None

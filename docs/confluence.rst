@@ -192,7 +192,8 @@ Get page info
     all_results = confluence.cql_all('type=page', limit=250)
 
     # Provide content id from search result by title and space
-    confluence.get_page_id(space, title)
+    # type of the content, 'page' or 'blogpost'. Defaults to 'page'
+    confluence.get_page_id(space, title, type="page")
 
     # Provide space key from content id
     confluence.get_page_space(page_id)
