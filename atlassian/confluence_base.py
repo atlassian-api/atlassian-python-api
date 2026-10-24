@@ -38,6 +38,7 @@ class ConfluenceEndpoints:
         "child_pages": "api/v2/pages/{id}/direct-children",
         "page_versions": "api/v2/pages/{id}/versions",
         "page_version": "api/v2/pages/{id}/versions/{version_number}",
+        "blogpost": "api/v2/blogposts",
         # Confluence Cloud has no CQL search endpoint in v2, so searching keeps
         # using the v1 API.
         "search": "rest/api/search",

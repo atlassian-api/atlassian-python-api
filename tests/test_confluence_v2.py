@@ -196,6 +196,41 @@ class TestConfluenceV2(unittest.TestCase):
         mock_get_paged.assert_called_once_with("api/v2/pages/PARENT123/direct-children", params=expected_params)
         self.assertEqual(response, mock_pages)
 
+    @patch("atlassian.confluence.cloud.ConfluenceCloud._get_paged")
+    @patch("atlassian.confluence.cloud.ConfluenceCloud.get_space_by_key")
+    def test_get_page_id(self, mock_get_space_by_key, mock_get_paged):
+        mock_get_space_by_key.return_value = {"id": "SPACE123", "key": "TEST"}
+        mock_get_paged.return_value = iter([{"id": 123, "title": "Test Page"}])
+
+        response = self.confluence_v2.get_page_id("TEST", "Test Page")
+
+        mock_get_space_by_key.assert_called_once_with("TEST")
+        self.assertEqual(mock_get_paged.call_args[0][0], "api/v2/pages")
+        self.assertEqual(response, "123")
+
+    @patch("atlassian.confluence.cloud.ConfluenceCloud._get_paged")
+    @patch("atlassian.confluence.cloud.ConfluenceCloud.get_space_by_key")
+    def test_get_page_id_for_blogpost(self, mock_get_space_by_key, mock_get_paged):
+        mock_get_space_by_key.return_value = {"id": "SPACE123", "key": "TEST"}
+        mock_get_paged.return_value = iter([{"id": 456, "title": "Release notes"}])
+
+        response = self.confluence_v2.get_page_id("TEST", "Release notes", type="blogpost")
+
+        mock_get_space_by_key.assert_called_once_with("TEST")
+        mock_get_paged.assert_called_once_with(
+            "api/v2/blogposts",
+            params={"space-id": "SPACE123", "title": "Release notes", "status": "current", "limit": 1},
+        )
+        self.assertEqual(response, "456")
+
+    @patch("atlassian.confluence.cloud.ConfluenceCloud._get_paged")
+    @patch("atlassian.confluence.cloud.ConfluenceCloud.get_space_by_key")
+    def test_get_page_id_for_blogpost_not_found(self, mock_get_space_by_key, mock_get_paged):
+        mock_get_space_by_key.return_value = {"id": "SPACE123", "key": "TEST"}
+        mock_get_paged.return_value = iter([])
+
+        self.assertIsNone(self.confluence_v2.get_page_id("TEST", "Missing", type="blogpost"))
+
     def test_get_child_pages_invalid_status(self):
         # Test invalid status
         with self.assertRaises(ValueError):
