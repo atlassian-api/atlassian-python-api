@@ -248,6 +248,52 @@ class TestConfluenceCloud:
         mock_get.assert_called_once_with("api/v2/spaces", params={"keys": ["MISSING"], "limit": 1})
 
     @patch.object(ConfluenceCloud, "get")
+    def test_get_page_id_uses_v2_space_and_page_endpoints(self, mock_get, confluence_cloud):
+        mock_get.side_effect = [{"results": [{"id": "42", "key": "TEST"}]}, {"results": [{"id": "123"}]}]
+
+        assert confluence_cloud.get_page_id("TEST", "Test Page") == "123"
+        assert mock_get.call_args_list[0].args == ("api/v2/spaces",)
+        assert mock_get.call_args_list[0].kwargs == {"params": {"keys": ["TEST"], "limit": 1}}
+        assert mock_get.call_args_list[1].args == ("api/v2/pages",)
+        assert mock_get.call_args_list[1].kwargs == {
+            "params": {
+                "space-id": "42",
+                "title": "Test Page",
+                "status": "current",
+                "body-format": "none",
+                "limit": 1,
+            }
+        }
+
+    @patch.object(ConfluenceCloud, "get")
+    def test_get_page_id_uses_v2_blogpost_endpoint_for_blogpost_type(self, mock_get, confluence_cloud):
+        mock_get.side_effect = [{"results": [{"id": "42", "key": "TEST"}]}, {"results": [{"id": "456"}]}]
+
+        assert confluence_cloud.get_page_id("TEST", "Release notes", type="blogpost") == "456"
+        assert mock_get.call_args_list[1].args == ("api/v2/blogposts",)
+        assert mock_get.call_args_list[1].kwargs["params"]["title"] == "Release notes"
+
+    @patch.object(ConfluenceCloud, "get")
+    def test_get_page_id_returns_none_when_not_found(self, mock_get, confluence_cloud):
+        mock_get.side_effect = [{"results": [{"id": "42", "key": "TEST"}]}, {"results": []}]
+
+        assert confluence_cloud.get_page_id("TEST", "Missing") is None
+
+    @patch.object(ConfluenceCloud, "get")
+    def test_get_page_id_returns_none_for_unknown_space(self, mock_get, confluence_cloud):
+        mock_get.return_value = {"results": []}
+
+        assert confluence_cloud.get_page_id("MISSING", "Test Page") is None
+        mock_get.assert_called_once_with("api/v2/spaces", params={"keys": ["MISSING"], "limit": 1})
+
+    @patch.object(ConfluenceCloud, "get")
+    def test_get_page_id_through_confluence_factory(self, mock_get):
+        mock_get.side_effect = [{"results": [{"id": "42", "key": "TEST"}]}, {"results": [{"id": "123"}]}]
+        confluence = Confluence(url="https://test.atlassian.net", username="user", password="api-token")
+
+        assert confluence.get_page_id("TEST", "Test Page") == "123"
+
+    @patch.object(ConfluenceCloud, "get")
     def test_get_all_blog_posts_from_space(self, mock_get, confluence_cloud):
         """Test get_all_blog_posts_from_space method."""
         mock_get.return_value = {"results": [{"id": "456", "title": "Blog Post"}]}
