@@ -277,6 +277,8 @@ Page actions
 
     # With recursive=True, all descendants are listed before deletion so
     # server-side pagination cannot leave later child pages behind.
+    # ``ConfluenceCloud`` (and ``Confluence`` with a Cloud URL) take the same
+    # arguments and delete through ``/wiki/rest/api/content``.
     confluence.remove_page(page_id, status=None, recursive=False)
 
     # Remove any content
