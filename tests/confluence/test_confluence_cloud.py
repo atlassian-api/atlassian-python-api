@@ -7,10 +7,12 @@ import pytest
 import logging
 from unittest.mock import patch
 
+from requests import HTTPError, Response
+
 from atlassian.confluence import Confluence, ConfluenceCloud
 from atlassian.confluence.cloud import Cloud
 from atlassian.confluence.cloud.cloud import ConfluenceCloud as ConfluenceCloudV2
-from atlassian.errors import ApiError
+from atlassian.errors import ApiError, ApiPermissionError
 
 
 @pytest.fixture
@@ -397,6 +399,56 @@ class TestConfluenceCloud:
 
         confluence_cloud.update_page("123", "Title", "<p>Same</p>", always_update=True)
         assert mock_put.call_args.kwargs["data"]["version"]["number"] == 5
+
+    @patch.object(ConfluenceCloud, "delete")
+    def test_remove_page(self, mock_delete, confluence_cloud):
+        response = Response()
+        response.status_code = 204
+        mock_delete.return_value = response
+
+        assert confluence_cloud.remove_page("123") == 204
+        mock_delete.assert_called_once_with("rest/api/content/123", params={}, advanced_mode=True)
+
+    @patch.object(ConfluenceCloud, "delete")
+    def test_remove_page_passes_status(self, mock_delete, confluence_cloud):
+        mock_delete.return_value = Response()
+
+        confluence_cloud.remove_page("123", status="trashed")
+
+        mock_delete.assert_called_once_with("rest/api/content/123", params={"status": "trashed"}, advanced_mode=True)
+
+    @patch.object(ConfluenceCloud, "delete")
+    @patch.object(ConfluenceCloud, "get_page_child_by_type")
+    def test_remove_page_recursive_removes_children_first(self, mock_get_children, mock_delete, confluence_cloud):
+        mock_get_children.side_effect = [iter([{"id": "first"}, {"id": "second"}]), iter(()), iter(())]
+        mock_delete.return_value = Response()
+
+        confluence_cloud.remove_page("root", recursive=True)
+
+        assert [call.args[0] for call in mock_delete.call_args_list] == [
+            "rest/api/content/first",
+            "rest/api/content/second",
+            "rest/api/content/root",
+        ]
+
+    @patch.object(ConfluenceCloud, "delete")
+    def test_remove_page_403_raises_permission_error(self, mock_delete, confluence_cloud):
+        response = Response()
+        response.status_code = 403
+        mock_delete.side_effect = HTTPError(response=response)
+
+        with pytest.raises(ApiPermissionError, match="does not have permission to trash or purge"):
+            confluence_cloud.remove_page("123")
+
+    @patch.object(ConfluenceCloud, "delete")
+    def test_remove_page_through_confluence_with_cloud_url(self, mock_delete):
+        response = Response()
+        response.status_code = 204
+        mock_delete.return_value = response
+        confluence = Confluence(url="https://test.atlassian.net", username="user", password="token")
+
+        assert confluence.remove_page("123") == 204
+        mock_delete.assert_called_once_with("rest/api/content/123", params={}, advanced_mode=True)
 
     @patch.object(ConfluenceCloud, "delete")
     def test_delete_content(self, mock_delete, confluence_cloud):

@@ -9,8 +9,10 @@ from .base import ConfluenceCloudBase
 from requests import HTTPError
 from atlassian import utils
 from atlassian.errors import (
+    ApiConflictError,
     ApiError,
     ApiNotFoundError,
+    ApiPermissionError,
 )
 from .cloud import ConfluenceCloud  # noqa: F401
 
@@ -435,6 +437,54 @@ class Cloud(ConfluenceCloudBase):
         if version_comment:
             data["version"]["message"] = version_comment
         return self.put(f"rest/api/content/{page_id}", data=data, params={"status": "current"})
+
+    def remove_page(self, page_id, status=None, recursive=False):
+        """
+        Remove a page and optionally its child pages.
+
+        :param page_id: page ID
+        :param status: optional content status (for example ``"trashed"``)
+        :param recursive: if True, remove child pages before this page
+        :return: the successful HTTP status code (normally ``204``). When the
+            client has ``advanced_mode=True``, return the raw response instead.
+        """
+        url = f"rest/api/content/{page_id}"
+        if recursive:
+            # List every child before deleting any of them, so offset
+            # pagination cannot skip pages that shift after a delete.
+            children_pages = list(self.get_page_child_by_type(page_id))
+            for children_page in children_pages:
+                self.remove_page(children_page.get("id"), status, recursive)
+        params = {}
+        if status:
+            params["status"] = status
+
+        try:
+            response = self.delete(url, params=params, advanced_mode=True)
+        except HTTPError as e:
+            if e.response.status_code == 403:
+                raise ApiPermissionError(
+                    "The calling user does not have permission to trash or purge the content",
+                    reason=e,
+                )
+            if e.response.status_code == 404:
+                # Raise ApiError as the documented reason is ambiguous
+                raise ApiError(
+                    "There is no content with the given id, or the calling "
+                    "user does not have permission to trash or purge the content",
+                    reason=e,
+                )
+            if e.response.status_code == 409:
+                raise ApiConflictError(
+                    "There is a stale data object conflict when trying to delete a draft",
+                    reason=e,
+                )
+
+            raise
+
+        if self.advanced_mode:
+            return response
+        return response.status_code
 
     def get_page_child_count(self, page_id, type="page"):
         """Return the number of direct children of ``type`` without listing them."""
