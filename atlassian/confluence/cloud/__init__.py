@@ -244,23 +244,22 @@ class Cloud(ConfluenceCloudBase):
         result = self.get_blog_post_by_title(space_key, title, **kwargs)
         return len(result.get("results", [])) > 0
 
-    def page_exists(self, space_key, title, type=None, **kwargs):
-        """Check whether a page exists using the Cloud V2 page endpoint.
+    def _get_v2_content_by_title(self, space_key, title, type=None, **kwargs):
+        """Return the V2 pages (or blog posts) matching a space key and title.
 
-        The retired V1 content lookup accepted a space key directly. V2 page
-        queries require a space ID, so resolve the key first and request only
-        one matching page. Pass type="blogpost" to check the V2 blog post
-        endpoint instead.
+        V2 page queries require a space ID, so resolve the key first and
+        request only one match. Pass type="blogpost" to query the V2 blog post
+        endpoint instead. Returns an empty list when nothing matches.
         """
         try:
             spaces = self.get("api/v2/spaces", params={"keys": [space_key], "limit": 1})
         except HTTPError as error:
             if error.response is not None and error.response.status_code == 404:
-                return False
+                return []
             raise
         space_results = spaces.get("results", [])
         if not space_results:
-            return False
+            return []
 
         try:
             result = self.get(
@@ -276,9 +275,30 @@ class Cloud(ConfluenceCloudBase):
             )
         except HTTPError as error:
             if error.response is not None and error.response.status_code == 404:
-                return False
+                return []
             raise
-        return bool(result.get("results", []))
+        return result.get("results", [])
+
+    def page_exists(self, space_key, title, type=None, **kwargs):
+        """Check whether a page exists using the Cloud V2 page endpoint.
+
+        The retired V1 content lookup accepted a space key directly. V2 page
+        queries require a space ID, so resolve the key first and request only
+        one matching page. Pass type="blogpost" to check the V2 blog post
+        endpoint instead.
+        """
+        return bool(self._get_v2_content_by_title(space_key, title, type=type, **kwargs))
+
+    def get_page_id(self, space, title, type="page"):
+        """Get a page ID by space key and title using the Cloud V2 API.
+
+        Pass type="blogpost" to look up a blog post instead of a page.
+        Returns the ID of the first match, or None if there is none.
+        """
+        results = self._get_v2_content_by_title(space, title, type=type)
+        if results:
+            return str(results[0]["id"])
+        return None
 
     def get_page_child_by_type(self, page_id, type="page", start=None, limit=None, expand=None):
         """
