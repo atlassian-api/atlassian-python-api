@@ -244,12 +244,13 @@ class Cloud(ConfluenceCloudBase):
         result = self.get_blog_post_by_title(space_key, title, **kwargs)
         return len(result.get("results", [])) > 0
 
-    def page_exists(self, space_key, title, **kwargs):
+    def page_exists(self, space_key, title, type=None, **kwargs):
         """Check whether a page exists using the Cloud V2 page endpoint.
 
         The retired V1 content lookup accepted a space key directly. V2 page
         queries require a space ID, so resolve the key first and request only
-        one matching page.
+        one matching page. Pass type="blogpost" to check the V2 blog post
+        endpoint instead.
         """
         try:
             spaces = self.get("api/v2/spaces", params={"keys": [space_key], "limit": 1})
@@ -263,7 +264,7 @@ class Cloud(ConfluenceCloudBase):
 
         try:
             result = self.get(
-                "api/v2/pages",
+                "api/v2/blogposts" if type == "blogpost" else "api/v2/pages",
                 params={
                     "space-id": space_results[0]["id"],
                     "title": title,

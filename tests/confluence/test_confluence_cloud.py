@@ -217,6 +217,30 @@ class TestConfluenceCloud:
         }
 
     @patch.object(ConfluenceCloud, "get")
+    def test_page_exists_uses_v2_blogpost_endpoint_for_blogpost_type(self, mock_get, confluence_cloud):
+        mock_get.side_effect = [{"results": [{"id": "42", "key": "TEST"}]}, {"results": [{"id": "456"}]}]
+
+        assert confluence_cloud.page_exists("TEST", "Release notes", type="blogpost") is True
+        assert mock_get.call_args_list[1].args == ("api/v2/blogposts",)
+        assert mock_get.call_args_list[1].kwargs == {
+            "params": {
+                "space-id": "42",
+                "title": "Release notes",
+                "status": "current",
+                "body-format": "none",
+                "limit": 1,
+            }
+        }
+
+    @patch.object(ConfluenceCloud, "get")
+    def test_page_exists_does_not_send_page_type_to_v2(self, mock_get, confluence_cloud):
+        mock_get.side_effect = [{"results": [{"id": "42", "key": "TEST"}]}, {"results": []}]
+
+        assert confluence_cloud.page_exists("TEST", "Test Page", type="page") is False
+        assert mock_get.call_args_list[1].args == ("api/v2/pages",)
+        assert "type" not in mock_get.call_args_list[1].kwargs["params"]
+
+    @patch.object(ConfluenceCloud, "get")
     def test_page_exists_returns_false_for_unknown_space(self, mock_get, confluence_cloud):
         mock_get.return_value = {"results": []}
 
