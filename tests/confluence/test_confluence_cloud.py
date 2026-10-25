@@ -296,6 +296,37 @@ class TestConfluenceCloud:
         assert confluence.get_page_id("TEST", "Test Page") == "123"
 
     @patch.object(ConfluenceCloud, "get")
+    def test_get_page_space(self, mock_get, confluence_cloud):
+        mock_get.return_value = {"id": "123", "space": {"id": 42, "key": "TEST"}}
+
+        assert confluence_cloud.get_page_space("123") == "TEST"
+        mock_get.assert_called_once_with("rest/api/content/123", params={"expand": "space"})
+
+    @patch.object(ConfluenceCloud, "get")
+    def test_get_page_space_returns_none_without_space(self, mock_get, confluence_cloud):
+        mock_get.return_value = {"id": "123"}
+
+        assert confluence_cloud.get_page_space("123") is None
+
+    def test_get_page_space_requests_wiki_content_endpoint(self, confluence_cloud):
+        response = Response()
+        response.status_code = 200
+        response._content = b'{"id": "123", "space": {"key": "TEST"}}'
+
+        with patch.object(confluence_cloud._session, "request", return_value=response) as mock_request:
+            assert confluence_cloud.get_page_space("123") == "TEST"
+
+        url = mock_request.call_args.kwargs["url"]
+        assert url == "https://test.atlassian.net/wiki/rest/api/content/123?expand=space"
+
+    @patch.object(ConfluenceCloud, "get")
+    def test_get_page_space_through_confluence_factory(self, mock_get):
+        mock_get.return_value = {"id": "123", "space": {"key": "TEST"}}
+        confluence = Confluence(url="https://test.atlassian.net", username="user", password="api-token")
+
+        assert confluence.get_page_space("123") == "TEST"
+
+    @patch.object(ConfluenceCloud, "get")
     def test_get_all_blog_posts_from_space(self, mock_get, confluence_cloud):
         """Test get_all_blog_posts_from_space method."""
         mock_get.return_value = {"results": [{"id": "456", "title": "Blog Post"}]}
