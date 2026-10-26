@@ -491,6 +491,24 @@ class Cloud(ConfluenceCloudBase):
             return response
         return response.status_code
 
+    def remove_page_from_trash(self, page_id):
+        """
+        Purge a page that is already in the trash.
+
+        :param page_id: page ID
+        :return: the same value as :meth:`remove_page`
+        """
+        return self.remove_page(page_id=page_id, status="trashed")
+
+    def remove_page_as_draft(self, page_id):
+        """
+        Remove a draft page.
+
+        :param page_id: page ID
+        :return: the same value as :meth:`remove_page`
+        """
+        return self.remove_page(page_id=page_id, status="draft")
+
     def get_page_child_count(self, page_id, type="page"):
         """Return the number of direct children of ``type`` without listing them."""
         page = self.get_page_by_id(page_id, expand=f"children.{type}")
