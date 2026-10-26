@@ -346,6 +346,11 @@ class Cloud(ConfluenceCloudBase):
         """Get a page (or other content) by ID from the Cloud V1 content API."""
         return self.get(f"rest/api/content/{page_id}", **kwargs)
 
+    def get_page_space(self, page_id):
+        """Get the space key of a page (or other content) by ID."""
+        page = self.get(f"rest/api/content/{page_id}", params={"expand": "space"})
+        return page.get("space", {}).get("key")
+
     def create_page(
         self,
         space,
