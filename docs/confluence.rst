@@ -285,6 +285,8 @@ Page actions
     confluence.remove_content(content_id):
 
     # Remove page from trash
+    # ``ConfluenceCloud`` (and ``Confluence`` with a Cloud URL) also provide
+    # this and remove_page_as_draft, through ``/wiki/rest/api/content``.
     delete_status = confluence.remove_page_from_trash(page_id)  # normally 204
 
     # Remove page as draft

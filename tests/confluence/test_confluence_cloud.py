@@ -482,6 +482,38 @@ class TestConfluenceCloud:
         mock_delete.assert_called_once_with("rest/api/content/123", params={}, advanced_mode=True)
 
     @patch.object(ConfluenceCloud, "delete")
+    def test_remove_page_from_trash(self, mock_delete, confluence_cloud):
+        response = Response()
+        response.status_code = 204
+        mock_delete.return_value = response
+
+        assert confluence_cloud.remove_page_from_trash("123") == 204
+        mock_delete.assert_called_once_with("rest/api/content/123", params={"status": "trashed"}, advanced_mode=True)
+
+    @patch.object(ConfluenceCloud, "delete")
+    def test_remove_page_as_draft(self, mock_delete, confluence_cloud):
+        response = Response()
+        response.status_code = 204
+        mock_delete.return_value = response
+
+        assert confluence_cloud.remove_page_as_draft("123") == 204
+        mock_delete.assert_called_once_with("rest/api/content/123", params={"status": "draft"}, advanced_mode=True)
+
+    @patch.object(ConfluenceCloud, "delete")
+    def test_remove_page_from_trash_through_confluence_with_cloud_url(self, mock_delete):
+        response = Response()
+        response.status_code = 204
+        mock_delete.return_value = response
+        confluence = Confluence(url="https://test.atlassian.net", username="user", password="token")
+
+        assert confluence.remove_page_from_trash("123") == 204
+        assert confluence.remove_page_as_draft("456") == 204
+        assert [(call.args[0], call.kwargs["params"]) for call in mock_delete.call_args_list] == [
+            ("rest/api/content/123", {"status": "trashed"}),
+            ("rest/api/content/456", {"status": "draft"}),
+        ]
+
+    @patch.object(ConfluenceCloud, "delete")
     def test_delete_content(self, mock_delete, confluence_cloud):
         """Test delete_content method."""
         mock_delete.return_value = {"success": True}
