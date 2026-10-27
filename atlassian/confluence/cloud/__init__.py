@@ -509,6 +509,38 @@ class Cloud(ConfluenceCloudBase):
         """
         return self.remove_page(page_id=page_id, status="draft")
 
+    def remove_content(self, content_id):
+        """
+        Remove any content (page, blog post, comment, attachment, ...).
+
+        :param content_id: content ID
+        :return: the response of the DELETE request
+        """
+        try:
+            response = self.delete(f"rest/api/content/{content_id}")
+        except HTTPError as e:
+            if e.response.status_code == 403:
+                raise ApiPermissionError(
+                    "The calling user does not have permission to trash or purge the content",
+                    reason=e,
+                )
+            if e.response.status_code == 404:
+                # Raise ApiError as the documented reason is ambiguous
+                raise ApiError(
+                    "There is no content with the given id, or the calling "
+                    "user does not have permission to trash or purge the content",
+                    reason=e,
+                )
+            if e.response.status_code == 409:
+                raise ApiConflictError(
+                    "There is a stale data object conflict when trying to delete a draft",
+                    reason=e,
+                )
+
+            raise
+
+        return response
+
     def get_page_child_count(self, page_id, type="page"):
         """Return the number of direct children of ``type`` without listing them."""
         page = self.get_page_by_id(page_id, expand=f"children.{type}")

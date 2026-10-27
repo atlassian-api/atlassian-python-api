@@ -514,6 +514,30 @@ class TestConfluenceCloud:
         ]
 
     @patch.object(ConfluenceCloud, "delete")
+    def test_remove_content(self, mock_delete, confluence_cloud):
+        mock_delete.return_value = None
+
+        assert confluence_cloud.remove_content("123") is None
+        mock_delete.assert_called_once_with("rest/api/content/123")
+
+    @patch.object(ConfluenceCloud, "delete")
+    def test_remove_content_404_raises_api_error(self, mock_delete, confluence_cloud):
+        response = Response()
+        response.status_code = 404
+        mock_delete.side_effect = HTTPError(response=response)
+
+        with pytest.raises(ApiError, match="There is no content with the given id"):
+            confluence_cloud.remove_content("123")
+
+    @patch.object(ConfluenceCloud, "delete")
+    def test_remove_content_through_confluence_with_cloud_url(self, mock_delete):
+        mock_delete.return_value = None
+        confluence = Confluence(url="https://test.atlassian.net", username="user", password="token")
+
+        assert confluence.remove_content("123") is None
+        mock_delete.assert_called_once_with("rest/api/content/123")
+
+    @patch.object(ConfluenceCloud, "delete")
     def test_delete_content(self, mock_delete, confluence_cloud):
         """Test delete_content method."""
         mock_delete.return_value = {"success": True}
