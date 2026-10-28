@@ -564,10 +564,28 @@ class TestConfluenceCloud:
     @patch.object(ConfluenceCloud, "get")
     def test_get_content_ancestors(self, mock_get, confluence_cloud):
         """Test get_content_ancestors method."""
-        mock_get.return_value = {"results": [{"id": "111", "title": "Ancestor Page"}]}
+        mock_get.return_value = {"id": "123", "ancestors": [{"id": "111", "title": "Ancestor Page"}]}
         result = confluence_cloud.get_content_ancestors("123")
-        mock_get.assert_called_once_with("rest/api/content/123/ancestors", **{})
-        assert result == {"results": [{"id": "111", "title": "Ancestor Page"}]}
+        mock_get.assert_called_once_with("rest/api/content/123", params={"expand": "ancestors"})
+        assert result == [{"id": "111", "title": "Ancestor Page"}]
+
+    @patch.object(ConfluenceCloud, "get")
+    def test_get_content_ancestors_keeps_extra_params(self, mock_get, confluence_cloud):
+        mock_get.return_value = {"id": "123", "ancestors": []}
+
+        assert confluence_cloud.get_content_ancestors("123", params={"status": "draft"}) == []
+        mock_get.assert_called_once_with("rest/api/content/123", params={"status": "draft", "expand": "ancestors"})
+
+    def test_get_content_ancestors_requests_wiki_content_endpoint(self, confluence_cloud):
+        response = Response()
+        response.status_code = 200
+        response._content = b'{"id": "123", "ancestors": [{"id": "111"}, {"id": "112"}]}'
+
+        with patch.object(confluence_cloud._session, "request", return_value=response) as mock_request:
+            assert confluence_cloud.get_content_ancestors("123") == [{"id": "111"}, {"id": "112"}]
+
+        url = mock_request.call_args.kwargs["url"]
+        assert url == "https://test.atlassian.net/wiki/rest/api/content/123?expand=ancestors"
 
     # Space Management Tests
     @patch.object(ConfluenceCloud, "get")
