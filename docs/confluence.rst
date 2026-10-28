@@ -282,6 +282,8 @@ Page actions
     confluence.remove_page(page_id, status=None, recursive=False)
 
     # Remove any content
+    # ``ConfluenceCloud`` (and ``Confluence`` with a Cloud URL) also provide
+    # this, through ``/wiki/rest/api/content``.
     confluence.remove_content(content_id):
 
     # Remove page from trash
