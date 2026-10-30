@@ -258,7 +258,7 @@ def main():
     out("VERIFY_SSL: %r" % (cfg["VERIFY_SSL"],))
     out("DIRECT_CONNECTION: %r" % (cfg["DIRECT_CONNECTION"],))
     problems = []
-    if "example.com" in url:
+    if url.startswith("https://confluence.example.com"):
         problems.append("CONFLUENCE_URL still has the example value")
     if not url.startswith(("http://", "https://")):
         problems.append("CONFLUENCE_URL must start with https:// (or http://)")
