@@ -213,11 +213,11 @@ class Cloud(ConfluenceCloudBase):
 
     def get_content_children(self, content_id, **kwargs):
         """Get child content."""
-        return self.get(f"rest/api/content/{content_id}/children", **kwargs)
+        return self.get(f"rest/api/content/{content_id}/child", **kwargs)
 
     def get_content_descendants(self, content_id, **kwargs):
         """Get descendant content."""
-        return self.get(f"rest/api/content/{content_id}/descendants", **kwargs)
+        return self.get(f"rest/api/content/{content_id}/descendant", **kwargs)
 
     def get_child_pages(self, content_id, **kwargs):
         """Get child pages of a content item."""

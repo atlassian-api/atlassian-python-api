@@ -550,7 +550,7 @@ class TestConfluenceCloud:
         """Test get_content_children method."""
         mock_get.return_value = {"results": [{"id": "789", "title": "Child Page"}]}
         result = confluence_cloud.get_content_children("123")
-        mock_get.assert_called_once_with("rest/api/content/123/children", **{})
+        mock_get.assert_called_once_with("rest/api/content/123/child", **{})
         assert result == {"results": [{"id": "789", "title": "Child Page"}]}
 
     @patch.object(ConfluenceCloud, "get")
@@ -558,8 +558,26 @@ class TestConfluenceCloud:
         """Test get_content_descendants method."""
         mock_get.return_value = {"results": [{"id": "999", "title": "Descendant Page"}]}
         result = confluence_cloud.get_content_descendants("123")
-        mock_get.assert_called_once_with("rest/api/content/123/descendants", **{})
+        mock_get.assert_called_once_with("rest/api/content/123/descendant", **{})
         assert result == {"results": [{"id": "999", "title": "Descendant Page"}]}
+
+    @pytest.mark.parametrize(
+        "method, path",
+        [
+            ("get_content_children", "child"),
+            ("get_content_descendants", "descendant"),
+        ],
+    )
+    def test_get_content_children_and_descendants_request_wiki_content_endpoints(self, confluence_cloud, method, path):
+        response = Response()
+        response.status_code = 200
+        response._content = b'{"page": {"results": [{"id": "789"}]}}'
+
+        with patch.object(confluence_cloud._session, "request", return_value=response) as mock_request:
+            assert getattr(confluence_cloud, method)("123") == {"page": {"results": [{"id": "789"}]}}
+
+        url = mock_request.call_args.kwargs["url"]
+        assert url == f"https://test.atlassian.net/wiki/rest/api/content/123/{path}"
 
     @patch.object(ConfluenceCloud, "get")
     def test_get_content_ancestors(self, mock_get, confluence_cloud):
