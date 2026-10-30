@@ -640,8 +640,12 @@ class Cloud(ConfluenceCloudBase):
         return self.get("rest/api/user", **kwargs)
 
     def get_user(self, user_id, **kwargs):
-        """Get user by ID."""
-        return self.get(f"rest/api/user/{user_id}", **kwargs)
+        """Get user by account ID.
+
+        :param user_id: the user's account ID
+        """
+        params = {**(kwargs.pop("params", None) or {}), "accountId": user_id}
+        return self.get("rest/api/user", params=params, **kwargs)
 
     def get_current_user(self, **kwargs):
         """Get current user."""
