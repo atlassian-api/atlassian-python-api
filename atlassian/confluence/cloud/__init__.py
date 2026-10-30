@@ -228,8 +228,16 @@ class Cloud(ConfluenceCloudBase):
         return self.get(f"rest/api/content/{content_id}/descendant/page", **kwargs)
 
     def get_content_ancestors(self, content_id, **kwargs):
-        """Get ancestor content."""
-        return self.get(f"rest/api/content/{content_id}/ancestors", **kwargs)
+        """Get ancestor content.
+
+        The v1 content API has no ancestors endpoint, so the ancestors are read
+        from the content itself with ``expand=ancestors``.
+
+        :return: list of ancestors, from the top-level page down to the parent
+        """
+        params = {**(kwargs.pop("params", None) or {}), "expand": "ancestors"}
+        content = self.get(f"rest/api/content/{content_id}", params=params, **kwargs)
+        return (content or {}).get("ancestors", [])
 
     def get_page_by_title(self, space_key, title, **kwargs):
         """Get page by title and space key."""
