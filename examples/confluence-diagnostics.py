@@ -28,7 +28,7 @@ import traceback
 try:  # Python 3 only, but give a readable message on Python 2
     from urllib.parse import urlparse, urlencode
     from urllib.request import Request, urlopen, getproxies
-    from urllib.error import HTTPError, URLError  # noqa: F401
+    from urllib.error import HTTPError
 except ImportError:
     print("ERROR: this script needs Python 3, you are running Python %s" % sys.version.split()[0])
     raise SystemExit(1)
