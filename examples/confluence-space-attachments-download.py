@@ -289,7 +289,7 @@ def main():
     args = parse_args()
     if not args.token or args.token.startswith("PASTE-"):
         raise SystemExit("ERROR: set CONFLUENCE_TOKEN in the CONFIGURATION section at the top of the script")
-    if args.url.startswith("https://confluence.example.com"):
+    if args.url == "https://confluence.example.com":
         raise SystemExit("ERROR: set CONFLUENCE_URL in the CONFIGURATION section at the top of the script")
 
     verify = args.ca_bundle or resolve_verify(VERIFY_SSL)
