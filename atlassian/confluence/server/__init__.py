@@ -4679,3 +4679,13 @@ class Server(ConfluenceServerBase):
             raise ApiNotAcceptable("Confluence Cloud does not provide license details through this API")
         url = "rest/license/1.0/license/maxUsers"
         return self.get(url)
+
+    def get_server_info(self):
+        """
+        Returns general information about the current Confluence server.
+        """
+        if self.cloud:
+            url = "rest/api/settings/systemInfo"
+        else:
+            url = "rest/api/server-information"
+        return self.get(url)
