@@ -694,10 +694,31 @@ class TestConfluenceCloud:
     @patch.object(ConfluenceCloud, "get")
     def test_get_user(self, mock_get, confluence_cloud):
         """Test get_user method."""
-        mock_get.return_value = {"id": "user1", "name": "Test User"}
+        mock_get.return_value = {"accountId": "user1", "displayName": "Test User"}
         result = confluence_cloud.get_user("user1")
-        mock_get.assert_called_once_with("rest/api/user/user1", **{})
-        assert result == {"id": "user1", "name": "Test User"}
+        mock_get.assert_called_once_with("rest/api/user", params={"accountId": "user1"})
+        assert result == {"accountId": "user1", "displayName": "Test User"}
+
+    @patch.object(ConfluenceCloud, "get")
+    def test_get_user_keeps_extra_params(self, mock_get, confluence_cloud):
+        mock_get.return_value = {"accountId": "user1"}
+
+        assert confluence_cloud.get_user("user1", params={"expand": "personalSpace"}) == {"accountId": "user1"}
+        mock_get.assert_called_once_with("rest/api/user", params={"expand": "personalSpace", "accountId": "user1"})
+
+    def test_get_user_requests_wiki_user_endpoint(self, confluence_cloud):
+        response = Response()
+        response.status_code = 200
+        response._content = b'{"accountId": "557058:f58131cb", "displayName": "Test User"}'
+
+        with patch.object(confluence_cloud._session, "request", return_value=response) as mock_request:
+            assert confluence_cloud.get_user("557058:f58131cb") == {
+                "accountId": "557058:f58131cb",
+                "displayName": "Test User",
+            }
+
+        url = mock_request.call_args.kwargs["url"]
+        assert url == "https://test.atlassian.net/wiki/rest/api/user?accountId=557058%3Af58131cb"
 
     @patch.object(ConfluenceCloud, "get")
     def test_get_current_user(self, mock_get, confluence_cloud):
