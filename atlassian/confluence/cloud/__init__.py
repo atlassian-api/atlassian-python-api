@@ -647,6 +647,33 @@ class Cloud(ConfluenceCloudBase):
         params = {**(kwargs.pop("params", None) or {}), "accountId": user_id}
         return self.get("rest/api/user", params=params, **kwargs)
 
+    def get_user_details_by_accountid(self, accountid, expand=None):
+        """
+        Get information about a user through account ID.
+
+        :param accountid: the user's account ID
+        :param expand: OPTIONAL user properties to expand, for example
+                "personalSpace" or "operations"
+        :return: the user details
+        """
+        params = {"expand": expand} if expand else {}
+
+        try:
+            return self.get_user(accountid, params=params)
+        except HTTPError as e:
+            if e.response.status_code == 403:
+                raise ApiPermissionError(
+                    "The calling user does not have permission to view users",
+                    reason=e,
+                )
+            if e.response.status_code == 404:
+                raise ApiNotFoundError(
+                    "The user with the given account does not exist",
+                    reason=e,
+                )
+
+            raise
+
     def get_current_user(self, **kwargs):
         """Get current user."""
         return self.get("rest/api/user/current", **kwargs)

@@ -934,6 +934,11 @@ Users and Groups
     # Get information about a user through username
     confluence.get_user_details_by_username(username, expand=None)
 
+    # Get information about a user through account ID
+    # ``ConfluenceCloud`` (and ``Confluence`` with a Cloud URL) also provide
+    # this, through ``/wiki/rest/api/user?accountId=...``.
+    confluence.get_user_details_by_accountid(accountid, expand=None)
+
     # Get information about a user through user key
     confluence.get_user_details_by_userkey(userkey, expand=None)
 

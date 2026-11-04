@@ -12,7 +12,7 @@ from requests import HTTPError, Response
 from atlassian.confluence import Confluence, ConfluenceCloud
 from atlassian.confluence.cloud import Cloud
 from atlassian.confluence.cloud.cloud import ConfluenceCloud as ConfluenceCloudV2
-from atlassian.errors import ApiError, ApiPermissionError
+from atlassian.errors import ApiError, ApiNotFoundError, ApiPermissionError
 
 
 @pytest.fixture
@@ -719,6 +719,54 @@ class TestConfluenceCloud:
 
         url = mock_request.call_args.kwargs["url"]
         assert url == "https://test.atlassian.net/wiki/rest/api/user?accountId=557058%3Af58131cb"
+
+    @patch.object(ConfluenceCloud, "get")
+    def test_get_user_details_by_accountid(self, mock_get, confluence_cloud):
+        mock_get.return_value = {"accountId": "user1", "displayName": "Test User"}
+
+        assert confluence_cloud.get_user_details_by_accountid("user1") == {
+            "accountId": "user1",
+            "displayName": "Test User",
+        }
+        mock_get.assert_called_once_with("rest/api/user", params={"accountId": "user1"})
+
+    def test_get_user_details_by_accountid_requests_wiki_user_endpoint(self, confluence_cloud):
+        response = Response()
+        response.status_code = 200
+        response._content = b'{"accountId": "557058:f58131cb", "displayName": "Test User"}'
+
+        with patch.object(confluence_cloud._session, "request", return_value=response) as mock_request:
+            assert confluence_cloud.get_user_details_by_accountid("557058:f58131cb", expand="personalSpace") == {
+                "accountId": "557058:f58131cb",
+                "displayName": "Test User",
+            }
+
+        url = mock_request.call_args.kwargs["url"]
+        assert url == "https://test.atlassian.net/wiki/rest/api/user?expand=personalSpace&accountId=557058%3Af58131cb"
+
+    @pytest.mark.parametrize(
+        "status_code, error, message",
+        [
+            (403, ApiPermissionError, "does not have permission to view users"),
+            (404, ApiNotFoundError, "The user with the given account does not exist"),
+        ],
+    )
+    @patch.object(ConfluenceCloud, "get")
+    def test_get_user_details_by_accountid_errors(self, mock_get, status_code, error, message, confluence_cloud):
+        response = Response()
+        response.status_code = status_code
+        mock_get.side_effect = HTTPError(response=response)
+
+        with pytest.raises(error, match=message):
+            confluence_cloud.get_user_details_by_accountid("user1")
+
+    @patch.object(ConfluenceCloud, "get")
+    def test_get_user_details_by_accountid_through_confluence_factory(self, mock_get):
+        mock_get.return_value = {"accountId": "user1"}
+        confluence = Confluence(url="https://test.atlassian.net", username="user", password="api-token")
+
+        assert confluence.get_user_details_by_accountid("user1") == {"accountId": "user1"}
+        mock_get.assert_called_once_with("rest/api/user", params={"accountId": "user1"})
 
     @patch.object(ConfluenceCloud, "get")
     def test_get_current_user(self, mock_get, confluence_cloud):
