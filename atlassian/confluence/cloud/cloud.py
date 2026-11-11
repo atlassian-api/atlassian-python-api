@@ -153,7 +153,9 @@ class ConfluenceCloud(
             params["body-format"] = body_format
 
         if not get_body:
-            params["body-format"] = "none"
+            # "none" is not a valid body-format and Confluence answers 400.
+            # Leaving body-format out returns the page without a body.
+            params.pop("body-format", None)
 
         if expand:
             params["expand"] = ",".join(expand)
