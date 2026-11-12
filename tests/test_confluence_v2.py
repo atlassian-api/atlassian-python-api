@@ -51,8 +51,16 @@ class TestConfluenceV2(unittest.TestCase):
         response = self.confluence_v2.get_page_by_id("123", get_body=False)
 
         # Assertions
-        mock_get.assert_called_once_with("api/v2/pages/123", params={"body-format": "none"})
+        mock_get.assert_called_once_with("api/v2/pages/123", params={})
         self.assertEqual(response, mock_response)
+
+    @patch("atlassian.confluence.cloud.ConfluenceCloud.get")
+    def test_get_page_by_id_without_body_ignores_body_format(self, mock_get):
+        mock_get.return_value = {"id": "123", "title": "Test Page"}
+
+        self.confluence_v2.get_page_by_id("123", body_format="storage", get_body=False)
+
+        mock_get.assert_called_once_with("api/v2/pages/123", params={})
 
     @patch("atlassian.confluence.cloud.ConfluenceCloud.get")
     def test_get_page_versions(self, mock_get):
