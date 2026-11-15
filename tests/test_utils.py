@@ -3,9 +3,20 @@
 Unit tests for atlassian.utils module
 """
 
+import xml.etree.ElementTree as ET
+
 import pytest
 from .mockup import mockup_server
-from atlassian.utils import is_email, html_email, html_list, html_table_header_row, html_row_with_ordered_headers
+from atlassian.utils import (
+    is_email,
+    html_email,
+    html_list,
+    html_table_header_row,
+    html_row_with_ordered_headers,
+    block_code_macro_confluence,
+    html_code__macro_confluence,
+    noformat_code_macro_confluence,
+)
 
 
 class TestIsEmail:
@@ -341,3 +352,34 @@ class TestHtmlRowWithOrderedHeaders:
         result = is_email("test@example.com")
         assert result is not None
         assert html_email("test@example.com") == '<a href="mailto:test@example.com">test@example.com</a>'
+
+
+class TestConfluenceMacroHelpers:
+    """The code, html and noformat macro helpers must stay well-formed XML for any text."""
+
+    @staticmethod
+    def _plain_text_body(macro):
+        root = ET.fromstring(f'<root xmlns:ac="urn:ac">{macro}</root>')
+        return root.find("{urn:ac}structured-macro").find("{urn:ac}plain-text-body").text
+
+    def test_block_code_macro_keeps_text(self):
+        code = "print('hello')"
+        assert self._plain_text_body(block_code_macro_confluence(code, "python")) == code
+
+    def test_html_macro_keeps_text(self):
+        assert self._plain_text_body(html_code__macro_confluence("<p>hi</p>")) == "<p>hi</p>"
+
+    def test_noformat_macro_keeps_text(self):
+        assert self._plain_text_body(noformat_code_macro_confluence("plain text")) == "plain text"
+
+    def test_block_code_macro_with_cdata_terminator(self):
+        code = "x = '<![CDATA[a]]>b'"
+        assert self._plain_text_body(block_code_macro_confluence(code, "python")) == code
+
+    def test_html_macro_with_cdata_terminator(self):
+        text = "<script>//<![CDATA[\nvar a = 1;\n//]]></script>"
+        assert self._plain_text_body(html_code__macro_confluence(text)) == text
+
+    def test_noformat_macro_with_cdata_terminator(self):
+        text = "a ]]> b ]]]]> c"
+        assert self._plain_text_body(noformat_code_macro_confluence(text)) == text
