@@ -192,8 +192,18 @@ class Cloud(ConfluenceCloudBase):
         return self.get("rest/api/content", params={"type": content_type, **kwargs})
 
     def get_all_pages_from_space(self, space_key, **kwargs):
-        """Get all pages from space."""
-        return self._get_paged("rest/api/content", params={"spaceKey": space_key, "type": "page", **kwargs})
+        """
+        Get all pages from space.
+
+        :param space_key: The space key to fetch pages from.
+        :param content_type: OPTIONAL: The content type to return ('page', 'blogpost'). Default: page.
+        :param kwargs: OPTIONAL: Other query parameters, such as start, limit, status and expand.
+                                 Parameters set to None are not sent.
+        :return: Generator yielding pages one by one, following pagination.
+        """
+        params = {"spaceKey": space_key, "type": kwargs.pop("content_type", None) or "page"}
+        params.update({key: value for key, value in kwargs.items() if value is not None})
+        return self._get_paged("rest/api/content", params=params)
 
     def get_all_blog_posts_from_space(self, space_key, **kwargs):
         """Get all blog posts from space."""
