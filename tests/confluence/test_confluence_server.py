@@ -827,6 +827,23 @@ class TestConfluenceServer:
             absolute=False,
         )
 
+    @patch.object(ConfluenceServer, "get")
+    def test_get_all_pages_from_space_content_type_and_none_params(self, mock_get, confluence_server):
+        """content_type selects the type, and parameters set to None are not sent (#1708)."""
+        mock_get.return_value = {"results": [{"id": "123", "title": "Blog Post"}]}
+        result = confluence_server.get_all_pages_from_space(
+            "TEST", start=0, limit=50, status=None, expand="version", content_type="blogpost"
+        )
+        assert list(result) == [{"id": "123", "title": "Blog Post"}]
+        mock_get.assert_called_once_with(
+            "content",
+            params={"spaceKey": "TEST", "type": "blogpost", "start": 0, "limit": 50, "expand": "version"},
+            trailing=None,
+            data=None,
+            flags=None,
+            absolute=False,
+        )
+
     # Pagination Tests for _get_paged (fix for issue #1598)
     @patch.object(ConfluenceServer, "get")
     def test_pagination_with_next_link_as_string(self, mock_get, confluence_server):

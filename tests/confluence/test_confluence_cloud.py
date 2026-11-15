@@ -185,6 +185,23 @@ class TestConfluenceCloud:
         )
 
     @patch.object(ConfluenceCloud, "get")
+    def test_get_all_pages_from_space_content_type_and_none_params(self, mock_get, confluence_cloud):
+        """content_type selects the type, and parameters set to None are not sent (#1708)."""
+        mock_get.return_value = {"results": [{"id": "123", "title": "Blog Post"}]}
+        result = confluence_cloud.get_all_pages_from_space(
+            "TEST", start=0, limit=50, status=None, expand="version", content_type="blogpost"
+        )
+        assert list(result) == [{"id": "123", "title": "Blog Post"}]
+        mock_get.assert_called_once_with(
+            "rest/api/content",
+            params={"spaceKey": "TEST", "type": "blogpost", "start": 0, "limit": 50, "expand": "version"},
+            trailing=None,
+            data=None,
+            flags=None,
+            absolute=False,
+        )
+
+    @patch.object(ConfluenceCloud, "get")
     def test_get_all_pages_from_space_pagination(self, mock_get, confluence_cloud):
         """Test get_all_pages_from_space paginates correctly."""
         mock_get.side_effect = [
