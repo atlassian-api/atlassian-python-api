@@ -755,6 +755,62 @@ class Cloud(ConfluenceCloudBase):
         """Remove label from content."""
         return self.delete(f"rest/api/content/{content_id}/label/{label_id}", **kwargs)
 
+    def set_page_label(self, page_id, label):
+        """
+        Set a label on the page
+        :param page_id: content_id format
+        :param label: label to add
+        :return:
+        """
+        url = f"rest/api/content/{page_id}/label"
+        data = {"prefix": "global", "name": label}
+
+        try:
+            response = self.post(path=url, data=data)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                # Raise ApiError as the documented reason is ambiguous
+                raise ApiError(
+                    "There is no content with the given id, "
+                    "or the calling user does not have permission to view the content",
+                    reason=e,
+                )
+
+            raise
+
+        return response
+
+    def remove_page_label(self, page_id, label):
+        """
+        Delete Confluence page label
+        :param page_id: content_id format
+        :param label: label name
+        :return:
+        """
+        url = f"rest/api/content/{page_id}/label"
+        # The label goes in the query string so names containing "/" work too
+        params = {"name": label}
+
+        try:
+            response = self.delete(path=url, params=params)
+        except HTTPError as e:
+            if e.response.status_code == 403:
+                raise ApiPermissionError(
+                    "The user has view permission, but no edit permission to the content",
+                    reason=e,
+                )
+            if e.response.status_code == 404:
+                # Raise ApiError as the documented reason is ambiguous
+                raise ApiError(
+                    "The content or label doesn't exist, "
+                    "or the calling user doesn't have view permission to the content",
+                    reason=e,
+                )
+
+            raise
+
+        return response
+
     # Attachment Management
     def get_attachments(self, content_id, **kwargs):
         """Get content attachments."""

@@ -440,9 +440,13 @@ Page actions
     word_export = confluence.get_page_as_word(page_id)
 
     # Set a label on the page
+    # ``ConfluenceCloud`` (and ``Confluence`` with a Cloud URL) also provide
+    # this, through ``/wiki/rest/api/content/{id}/label``.
     confluence.set_page_label(page_id, label)
 
     # Delete Confluence page label
+    # ``ConfluenceCloud`` (and ``Confluence`` with a Cloud URL) also provide
+    # this, through ``/wiki/rest/api/content/{id}/label?name=...``.
     confluence.remove_page_label(page_id, label)
 
     # Add comment into page
