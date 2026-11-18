@@ -82,7 +82,7 @@ class TestJiraCloudClients(TestCase):
             jira.get_issue("ABC-1")
         get.assert_called_once_with("rest/api/2/issue/ABC-1", params=None, data=None)
 
-    def test_core_client_supports_enhanced_jql_at_v3(self):
+    def test_core_client_enhanced_jql_uses_the_configured_api_version(self):
         jira = JiraCloud("https://example.atlassian.net", api_version=2)
 
         with patch.object(jira, "get", return_value={"issues": [], "isLast": True}) as get:
@@ -95,7 +95,7 @@ class TestJiraCloudClients(TestCase):
             )
 
         get.assert_called_once_with(
-            "rest/api/3/search/jql",
+            "rest/api/2/search/jql",
             params={
                 "jql": "project = EXAMPLE ORDER BY key DESC",
                 "fields": "summary,description",
@@ -104,6 +104,11 @@ class TestJiraCloudClients(TestCase):
                 "expand": "names",
             },
         )
+
+        default = JiraCloud("https://example.atlassian.net")
+        with patch.object(default, "get", return_value={"issues": [], "isLast": True}) as get:
+            default.enhanced_jql("project = EXAMPLE")
+        get.assert_called_once_with("rest/api/3/search/jql", params={"jql": "project = EXAMPLE", "fields": "*all"})
 
     def test_core_client_enhanced_jql_collects_cursor_pages(self):
         jira = JiraCloud("https://example.atlassian.net")

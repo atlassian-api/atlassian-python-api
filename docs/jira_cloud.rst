@@ -36,8 +36,8 @@ Enhanced JQL search
 -------------------
 
 Both ``JiraCloud`` and the legacy ``Jira(..., cloud=True)`` client provide
-``enhanced_jql()``. The method always uses Jira Cloud's v3
-``/search/jql`` endpoint, regardless of the Core client's selected version.
+``enhanced_jql()``. ``JiraCloud`` uses the ``/search/jql`` endpoint of its
+``api_version`` (3 by default). The legacy client always uses the v3 endpoint.
 Pass the returned ``nextPageToken`` to fetch another page, or use
 ``enhanced_jql_get_list_of_tickets()`` to collect cursor-paginated results.
 
