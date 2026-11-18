@@ -46,7 +46,7 @@ class JiraCloud(JiraCloudCoreMethods, AtlassianRestAPI):
         limit: Optional[int] = None,
         expand: Optional[str] = None,
     ):
-        """Search Jira Cloud issues through the v3 enhanced JQL endpoint.
+        """Search Jira Cloud issues through the enhanced JQL endpoint of ``api_version``.
 
         Use ``nextPageToken`` from a previous response to retrieve the next
         page. Unlike the older search API, enhanced JQL is cursor-paginated.
@@ -60,7 +60,7 @@ class JiraCloud(JiraCloudCoreMethods, AtlassianRestAPI):
             params["fields"] = ",".join(fields) if isinstance(fields, (list, tuple, set)) else fields
         if expand is not None:
             params["expand"] = expand
-        return self.get(self.endpoint("search/jql", api_version=3), params=params)
+        return self.get(self.endpoint("search/jql"), params=params)
 
     def enhanced_jql_get_list_of_tickets(
         self,
