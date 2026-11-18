@@ -868,6 +868,87 @@ class TestConfluenceCloud:
         mock_delete.assert_called_once_with("rest/api/content/123/label/label1", **{})
         assert result == {"success": True}
 
+    @patch.object(ConfluenceCloud, "post")
+    def test_set_page_label(self, mock_post, confluence_cloud):
+        mock_post.return_value = {"results": [{"prefix": "global", "name": "report"}]}
+
+        assert confluence_cloud.set_page_label("123", "report") == {"results": [{"prefix": "global", "name": "report"}]}
+        mock_post.assert_called_once_with(
+            path="rest/api/content/123/label",
+            data={"prefix": "global", "name": "report"},
+        )
+
+    def test_set_page_label_requests_wiki_label_endpoint(self, confluence_cloud):
+        response = Response()
+        response.status_code = 200
+        response._content = b'{"results": [{"prefix": "global", "name": "report"}]}'
+
+        with patch.object(confluence_cloud._session, "request", return_value=response) as mock_request:
+            confluence_cloud.set_page_label("123", "report")
+
+        assert mock_request.call_args.kwargs["method"] == "POST"
+        assert mock_request.call_args.kwargs["url"] == "https://test.atlassian.net/wiki/rest/api/content/123/label"
+        assert mock_request.call_args.kwargs["data"] == '{"prefix": "global", "name": "report"}'
+
+    @patch.object(ConfluenceCloud, "post")
+    def test_set_page_label_404_raises_api_error(self, mock_post, confluence_cloud):
+        response = Response()
+        response.status_code = 404
+        mock_post.side_effect = HTTPError(response=response)
+
+        with pytest.raises(ApiError, match="There is no content with the given id"):
+            confluence_cloud.set_page_label("123", "report")
+
+    @patch.object(ConfluenceCloud, "delete")
+    def test_remove_page_label(self, mock_delete, confluence_cloud):
+        mock_delete.return_value = None
+
+        assert confluence_cloud.remove_page_label("123", "report") is None
+        mock_delete.assert_called_once_with(path="rest/api/content/123/label", params={"name": "report"})
+
+    def test_remove_page_label_requests_wiki_label_endpoint(self, confluence_cloud):
+        response = Response()
+        response.status_code = 204
+
+        with patch.object(confluence_cloud._session, "request", return_value=response) as mock_request:
+            confluence_cloud.remove_page_label("123", "team/report")
+
+        assert mock_request.call_args.kwargs["method"] == "DELETE"
+        assert (
+            mock_request.call_args.kwargs["url"]
+            == "https://test.atlassian.net/wiki/rest/api/content/123/label?name=team%2Freport"
+        )
+
+    @pytest.mark.parametrize(
+        "status_code, error, message",
+        [
+            (403, ApiPermissionError, "no edit permission to the content"),
+            (404, ApiError, "The content or label doesn't exist"),
+        ],
+    )
+    @patch.object(ConfluenceCloud, "delete")
+    def test_remove_page_label_errors(self, mock_delete, status_code, error, message, confluence_cloud):
+        response = Response()
+        response.status_code = status_code
+        mock_delete.side_effect = HTTPError(response=response)
+
+        with pytest.raises(error, match=message):
+            confluence_cloud.remove_page_label("123", "report")
+
+    @patch.object(ConfluenceCloud, "delete")
+    @patch.object(ConfluenceCloud, "post")
+    def test_page_labels_through_confluence_with_cloud_url(self, mock_post, mock_delete):
+        confluence = Confluence(url="https://test.atlassian.net", username="user", password="api-token")
+
+        confluence.set_page_label("123", "report")
+        confluence.remove_page_label("123", "report")
+
+        mock_post.assert_called_once_with(
+            path="rest/api/content/123/label",
+            data={"prefix": "global", "name": "report"},
+        )
+        mock_delete.assert_called_once_with(path="rest/api/content/123/label", params={"name": "report"})
+
     # Attachment Management Tests
     @patch.object(ConfluenceCloud, "get")
     def test_get_attachments(self, mock_get, confluence_cloud):
