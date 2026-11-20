@@ -204,6 +204,18 @@ def html_table_from_nested_dict(data, ordering):
     return html + "\n</tbody></table>"
 
 
+def _escape_cdata(text):
+    """
+    Make text safe to place inside a CDATA section.
+
+    A CDATA section ends at the first ``]]>``, so that sequence is split over
+    two adjacent sections. The text is unchanged once the XML is parsed.
+    :param text:
+    :return:
+    """
+    return str(text).replace("]]>", "]]]]><![CDATA[>")
+
+
 def block_code_macro_confluence(code, lang=None):
     """
     Wrap into code block macro
@@ -220,7 +232,7 @@ def block_code_macro_confluence(code, lang=None):
                     <ac:plain-text-body><![CDATA[{code}]]></ac:plain-text-body>
                 </ac:structured-macro>
             """
-    ).format(lang=lang, code=code)
+    ).format(lang=lang, code=_escape_cdata(code))
 
 
 def html_code__macro_confluence(text):
@@ -235,7 +247,7 @@ def html_code__macro_confluence(text):
                     <ac:plain-text-body><![CDATA[{text}]]></ac:plain-text-body>
                 </ac:structured-macro>
             """
-    ).format(text=text)
+    ).format(text=_escape_cdata(text))
 
 
 def noformat_code_macro_confluence(text, nopanel=None):
@@ -254,7 +266,7 @@ def noformat_code_macro_confluence(text, nopanel=None):
                     <ac:plain-text-body><![CDATA[{text}]]></ac:plain-text-body>
                 </ac:structured-macro>
             """
-    ).format(nopanel=nopanel, text=text)
+    ).format(nopanel=nopanel, text=_escape_cdata(text))
 
 
 def symbol_normalizer(text):
